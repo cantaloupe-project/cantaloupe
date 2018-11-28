@@ -276,6 +276,7 @@ public class AdminResourceUITest extends AbstractAdminResourceTest {
         css("#cl-endpoints-button > a").click();
 
         // Fill in the form
+        inputNamed(Key.ALLOW_UPSCALING).click();
         inputNamed(Key.MAX_PIXELS).sendKeys("5000");
         selectNamed(Key.IIIF_CONTENT_DISPOSITION).selectByValue("attachment");
         inputNamed(Key.IIIF_MIN_SIZE).sendKeys("75");
@@ -294,6 +295,7 @@ public class AdminResourceUITest extends AbstractAdminResourceTest {
 
         // Assert that the application configuration has been updated correctly
         final Configuration config = Configuration.getInstance();
+        assertTrue(config.getBoolean(Key.ALLOW_UPSCALING));
         assertEquals(5000, config.getInt(Key.MAX_PIXELS));
         assertEquals("attachment",
                 config.getString(Key.IIIF_CONTENT_DISPOSITION));

@@ -16,6 +16,7 @@ title: Change Log
 <ul>
   <li>The <code>redirect()</code> and <code>authorized?()</code> delegate methods have been merged into a new <code>authorize()</code> method, which enables a superset of their functionality, including challenge responses and redirects to &quot;virtual&quot; quality-limited versions. Authorization can also be set up to conform to the IIIF Authentication API 1.0's &quot;all or nothing access&quot; or &quot;tiered access&quot; schemes.</li>
   <li>The <code>endpoint.public.auth.*</code> keys that controlled global HTTP Basic protection have also been replaced by the <code>authorize()</code> delegate method.</li>
+  <li>Upscaling can be disabled in the configuration.</li>
   <li>During image requests, <code>authorize()</code> is called earlier in the setup process, for better efficiency.</li>
   <li>Running tasks are displayed in the Control Panel.</li>
   <li>Added HTTP API endpoints for status and health checks.</li>

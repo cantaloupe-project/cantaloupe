@@ -47,18 +47,18 @@ title: Endpoints
   <dt><code>tiles</code></dt>
   <dd>Contains a tile size that will be relatively efficient to deliver, along with a list of scale factors at which each size is available.
     <ul>
-      <li>For images that are natively tiled, the <code>width</code> and <code>height</code> will be a multiple of the native tile dimensions no smaller than the value of the <code>endpoint.iiif.min_tile_size</code> configuration key.</li>
-      <li>For untiled images, they will be based on the <code>endpoint.iiif.min_tile_size</code> configuration key.</li>
+      <li>For images that are natively tiled, the <code>width</code> and <code>height</code> are a multiple of the native tile dimensions no smaller than the value of the <code>endpoint.iiif.min_tile_size</code> configuration key.</li>
+      <li>For untiled images, they are based on the <code>endpoint.iiif.min_tile_size</code> configuration key.</li>
     </ul>
   </dd>
   <dt><code>profile.formats</code></dt>
   <dd>This list of output formats depends on the processor assigned to the format of the source image.</dd>
   <dt><code>profile.maxArea</code></dt>
-  <dd>This value is based on the value of <code>max_pixels</code> in the configuration. If set to zero, it will be omitted.</dd>
+  <dd>If <code>allow_upscaling</code> is set to <code>true</code>, this value reflects the value of <code>max_pixels</code>. Otherwise, it reflects the smaller of that, or the full image area. If set to zero, it is omitted.</dd>
   <dt><code>profile.qualities</code></dt>
   <dd>Depends on the qualities supported by the processor assigned to the format of the source image.</dd>
   <dt><code>profile.supports</code></dt>
-  <dd>Dynamically computed based on the features supported by the processor assigned to the format of the source image, as well as features built into the image server itself.</dd>
+  <dd>Dynamically computed based on the features supported by the processor assigned to the format of the source image, features built into the image server itself, and various other configuration options.</dd>
   <dt>Other keys (<code>attribution</code>, <code>service</code>, etc.)</dt>
   <dd>See <a href="#Additional Information Response Keys">Additional Information Response Keys</a>.</dd>
 </dl>

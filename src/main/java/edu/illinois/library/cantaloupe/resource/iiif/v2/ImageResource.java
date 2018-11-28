@@ -10,6 +10,7 @@ import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.image.MediaType;
 import edu.illinois.library.cantaloupe.operation.OperationList;
+import edu.illinois.library.cantaloupe.operation.Scale;
 import edu.illinois.library.cantaloupe.processor.Processor;
 import edu.illinois.library.cantaloupe.processor.ProcessorConnector;
 import edu.illinois.library.cantaloupe.processor.ProcessorFactory;
@@ -36,7 +37,7 @@ import java.util.Set;
 /**
  * Handles IIIF Image API 2.x image requests.
  *
- * @see <a href="http://iiif.io/api/image/2.0/#image-request-parameters">Image
+ * @see <a href="http://iiif.io/api/image/2.1/#image-request-parameters">Image
  * Request Operations</a>
  */
 public class ImageResource extends IIIF2Resource {
@@ -182,8 +183,10 @@ public class ImageResource extends IIIF2Resource {
 
             processor.validate(ops, fullSize);
 
+            final Dimension virtualSize = info.getOrientationSize();
             final Dimension resultingSize = ops.getResultingSize(info.getSize());
-            validateSize(resultingSize, info.getOrientationSize(), processor);
+            validateScale(virtualSize, (Scale) ops.getFirst(Scale.class));
+            validateSize(resultingSize, virtualSize, processor);
 
             // Find out whether the processor supports the source format by asking
             // it whether it offers any output formats for it.

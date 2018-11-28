@@ -302,6 +302,18 @@ public class ImageResourceTest extends ResourceTest {
     }
 
     @Test
+    public void testGETLessThanOrEqualToFullScale() {
+        URI uri = getHTTPURI("/" + IMAGE + "/full/full/0/color.png");
+        tester.testLessThanOrEqualToFullScale(uri);
+    }
+
+    @Test
+    public void testGETGreaterThanFullScale() {
+        URI uri = getHTTPURI("/" + IMAGE + "/full/pct:101/0/color.png");
+        tester.testGreaterThanFullScale(uri);
+    }
+
+    @Test
     public void testGETMinPixels() {
         URI uri = getHTTPURI("/" + IMAGE + "/0,0,0,0/full/0/color.png");
         tester.testMinPixels(uri);

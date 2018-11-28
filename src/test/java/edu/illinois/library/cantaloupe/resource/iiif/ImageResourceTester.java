@@ -361,6 +361,20 @@ public class ImageResourceTester extends ImageAPIResourceTester {
         }
     }
 
+    public void testLessThanOrEqualToFullScale(URI uri) {
+        Configuration config = Configuration.getInstance();
+        config.setProperty(Key.ALLOW_UPSCALING, false);
+
+        assertStatus(200, uri);
+    }
+
+    public void testGreaterThanFullScale(URI uri) {
+        Configuration config = Configuration.getInstance();
+        config.setProperty(Key.ALLOW_UPSCALING, false);
+
+        assertStatus(403, uri);
+    }
+
     public void testMinPixels(URI uri) {
         assertStatus(400, uri); // zero area
     }

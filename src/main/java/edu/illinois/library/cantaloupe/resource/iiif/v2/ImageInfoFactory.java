@@ -53,6 +53,7 @@ final class ImageInfoFactory {
     private Set<Quality> processorQualities;
     private Set<Format> processorOutputFormats;
     private DelegateProxy delegateProxy;
+    private boolean allowUpscaling;
     private int maxPixels, minSize, minTileSize;
 
     /**
@@ -67,9 +68,10 @@ final class ImageInfoFactory {
                      final Set<Quality> processorQualities,
                      final Set<Format> processorOutputFormats) {
         Configuration config = Configuration.getInstance();
-        maxPixels = config.getInt(Key.MAX_PIXELS, 0);
-        minSize = config.getInt(Key.IIIF_MIN_SIZE, DEFAULT_MIN_SIZE);
-        minTileSize = config.getInt(Key.IIIF_MIN_TILE_SIZE, DEFAULT_MIN_TILE_SIZE);
+        allowUpscaling = config.getBoolean(Key.ALLOW_UPSCALING, false);
+        maxPixels      = config.getInt(Key.MAX_PIXELS, 0);
+        minSize        = config.getInt(Key.IIIF_MIN_SIZE, DEFAULT_MIN_SIZE);
+        minTileSize    = config.getInt(Key.IIIF_MIN_TILE_SIZE, DEFAULT_MIN_TILE_SIZE);
 
         this.processorFeatures = processorFeatures;
         this.processorQualities = processorQualities;
@@ -161,9 +163,12 @@ final class ImageInfoFactory {
         profileMap.put("formats", formatStrings);
         profile.add(profileMap);
 
-        // maxArea (maxWidth and maxHeight are not supported)
-        if (maxPixels > 0) {
-            profileMap.put("maxArea", maxPixels);
+        // maxArea
+        // N.B.: maxWidth and maxHeight are not supported as maxArea more
+        // succinctly fulfills the "emergency brake" role.
+        final int effectiveMaxPixels = getEffectiveMaxPixels(virtualSize);
+        if (effectiveMaxPixels > 0) {
+            profileMap.put("maxArea", effectiveMaxPixels);
         }
 
         // qualities
@@ -177,10 +182,14 @@ final class ImageInfoFactory {
         final Set<String> featureStrings = new HashSet<>();
         for (Feature feature : processorFeatures) {
             // If the info is being used for a virtual scale-constrained
-            // version, sizeAboveFull should not be available.
+            // version, OR if upscaling is disabled in the configuration,
+            // sizeAboveFull should not be available.
             if (ProcessorFeature.SIZE_ABOVE_FULL.equals(feature) &&
                     (scaleConstraint.getRational().getNumerator() != 1 ||
                             scaleConstraint.getRational().getDenominator() != 1)) {
+                continue;
+            } else if (ProcessorFeature.SIZE_ABOVE_FULL.equals(feature) &&
+                    !allowUpscaling) {
                 continue;
             }
             featureStrings.add(feature.getName());
@@ -215,8 +224,9 @@ final class ImageInfoFactory {
 
         // The min reduction factor is the smallest number of reductions that
         // are required in order to fit within maxPixels.
-        final int minReductionFactor = (maxPixels > 0) ?
-                ImageInfoUtil.minReductionFactor(virtualSize, maxPixels) : 0;
+        final int effectiveMaxPixels = getEffectiveMaxPixels(virtualSize);
+        final int minReductionFactor = (effectiveMaxPixels > 0) ?
+                ImageInfoUtil.minReductionFactor(virtualSize, effectiveMaxPixels) : 0;
         // The max reduction factor is the number of times the full image
         // dimensions can be halved until they're smaller than minSize.
         final int maxReductionFactor =
@@ -230,6 +240,25 @@ final class ImageInfoFactory {
             sizes.add(0, new ImageInfo.Size(width, height));
         }
         return sizes;
+    }
+
+    /**
+     * @param fullSize Full source image size.
+     * @return The smaller of {@link #maxPixels} or the full image area if
+     *         {@link #allowUpscaling} is set to {@literal false}.
+     */
+    private int getEffectiveMaxPixels(Dimension fullSize) {
+        if (!allowUpscaling) {
+            return (int) Math.min(fullSize.width() * fullSize.height(), maxPixels);
+        }
+        return maxPixels;
+    }
+
+    /**
+     * @param allowUpscaling Whether to allow upscaling.
+     */
+    void setAllowUpscaling(boolean allowUpscaling) {
+        this.allowUpscaling = allowUpscaling;
     }
 
     void setDelegateProxy(DelegateProxy proxy) {

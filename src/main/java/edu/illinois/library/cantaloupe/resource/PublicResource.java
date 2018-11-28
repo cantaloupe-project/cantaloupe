@@ -3,10 +3,12 @@ package edu.illinois.library.cantaloupe.resource;
 import edu.illinois.library.cantaloupe.cache.CacheFacade;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
+import edu.illinois.library.cantaloupe.image.Dimension;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.http.Reference;
 import edu.illinois.library.cantaloupe.image.ScaleConstraint;
+import edu.illinois.library.cantaloupe.operation.Scale;
 import edu.illinois.library.cantaloupe.processor.Processor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,9 +17,9 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.Future;
-import java.util.stream.Collectors;
 
 public abstract class PublicResource extends AbstractResource {
 
@@ -71,7 +73,7 @@ public abstract class PublicResource extends AbstractResource {
                     directives.add("no-transform");
                 }
                 getResponse().setHeader("Cache-Control",
-                        directives.stream().collect(Collectors.joining(", ")));
+                        String.join(", ", directives));
             }
         }
     }
@@ -189,6 +191,28 @@ public abstract class PublicResource extends AbstractResource {
             }
         }
         return false;
+    }
+
+    /**
+     * @param virtualSize Orientation-aware full source image size.
+     * @param scale       May be {@literal null}.
+     */
+    protected void validateScale(Dimension virtualSize,
+                                 Scale scale) throws ScaleRestrictedException {
+        final Configuration config = Configuration.getInstance();
+        final ScaleConstraint scaleConstraint = (getScaleConstraint() != null) ?
+                getScaleConstraint() : new ScaleConstraint(1, 1);
+
+        double scalePct = scaleConstraint.getRational().doubleValue();
+        if (scale != null) {
+            scalePct = Arrays.stream(scale.getResultingScales(virtualSize,
+                            scaleConstraint)).max().orElse(1);
+        }
+
+        if (scalePct > 1.00001 &&
+                !config.getBoolean(Key.ALLOW_UPSCALING, false)) {
+            throw new ScaleRestrictedException();
+        }
     }
 
 }

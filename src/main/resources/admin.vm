@@ -959,6 +959,26 @@
                             <h2>All Endpoints</h2>
                             <table class="table table-striped">
                                 <tr>
+                                    <td>Allow Upscaling
+                                        <a tabindex="0" class="btn btn-sm cl-help"
+                                           role="button" data-toggle="popover"
+                                           data-trigger="focus"
+                                           data-content="Whether to allow requests for
+                                           larger-than-full-scale images.">?</a>
+                                    </td>
+                                    <td>
+                                        <div class="checkbox">
+                                            <label>
+                                                <input type="checkbox"
+                                                       name="allow_upscaling"
+                                                       value="true"
+                                                       data-requires-restart="false">
+                                                Enabled
+                                            </label>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
                                     <td>Max Pixels
                                         <a tabindex="0" class="btn btn-sm cl-help"
                                            role="button" data-toggle="popover"

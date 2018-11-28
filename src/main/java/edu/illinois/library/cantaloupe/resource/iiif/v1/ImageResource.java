@@ -10,6 +10,7 @@ import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.image.MediaType;
 import edu.illinois.library.cantaloupe.operation.OperationList;
+import edu.illinois.library.cantaloupe.operation.Scale;
 import edu.illinois.library.cantaloupe.processor.Processor;
 import edu.illinois.library.cantaloupe.processor.ProcessorFactory;
 import edu.illinois.library.cantaloupe.processor.UnsupportedOutputFormatException;
@@ -166,6 +167,8 @@ public class ImageResource extends IIIF1Resource {
             ops.freeze();
 
             processor.validate(ops, fullSize);
+            validateScale(info.getOrientationSize(),
+                    (Scale) ops.getFirst(Scale.class));
 
             // Find out whether the processor supports the source format by
             // asking it whether it offers any output formats for it.

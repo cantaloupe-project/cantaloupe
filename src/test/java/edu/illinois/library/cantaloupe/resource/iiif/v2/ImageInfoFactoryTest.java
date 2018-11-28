@@ -390,6 +390,17 @@ public class ImageInfoFactoryTest extends BaseTest {
     }
 
     @Test
+    public void testNewImageInfoMaxAreaWithAllowUpscalingDisabled() {
+        final int maxPixels = 2000000;
+        instance.setMaxPixels(maxPixels);
+        instance.setAllowUpscaling(false);
+
+        ImageInfo<String, Object> imageInfo = invokeNewImageInfo();
+        List<?> profile = (List<?>) imageInfo.get("profile");
+        assertEquals(1500 * 1200, ((Map<?, ?>) profile.get(1)).get("maxArea"));
+    }
+
+    @Test
     public void testNewImageInfoSupports() {
         ImageInfo<String, Object> imageInfo = invokeNewImageInfo();
 
@@ -400,9 +411,28 @@ public class ImageInfoFactoryTest extends BaseTest {
         assertTrue(supportsSet.contains("cors"));
         assertTrue(supportsSet.contains("jsonldMediaType"));
         assertTrue(supportsSet.contains("profileLinkHeader"));
-        assertTrue(supportsSet.contains("sizeAboveFull"));
         assertTrue(supportsSet.contains("sizeByConfinedWh"));
         assertTrue(supportsSet.contains("sizeByWhListed"));
+    }
+
+    @Test
+    public void testNewImageInfoSupportsWhenUpscalingIsAllowed() {
+        instance.setAllowUpscaling(true);
+        ImageInfo<String, Object> imageInfo = invokeNewImageInfo();
+
+        List<?> profile = (List<?>) imageInfo.get("profile");
+        final Set<?> supportsSet = (Set<?>) ((Map<?, ?>) profile.get(1)).get("supports");
+        assertTrue(supportsSet.contains("sizeAboveFull"));
+    }
+
+    @Test
+    public void testNewImageInfoSupportsWhenUpscalingIsDisallowed() {
+        instance.setAllowUpscaling(false);
+        ImageInfo<String, Object> imageInfo = invokeNewImageInfo();
+
+        List<?> profile = (List<?>) imageInfo.get("profile");
+        final Set<?> supportsSet = (Set<?>) ((Map<?, ?>) profile.get(1)).get("supports");
+        assertFalse(supportsSet.contains("sizeAboveFull"));
     }
 
     @Test

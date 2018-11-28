@@ -28,6 +28,7 @@ public enum Key {
     ADMIN_ENABLED("endpoint.admin.enabled"),
     ADMIN_SECRET("endpoint.admin.secret"),
     ADMIN_USERNAME("endpoint.admin.username"),
+    ALLOW_UPSCALING("allow_upscaling"),
     API_ENABLED("endpoint.api.enabled"),
     API_SECRET("endpoint.api.secret"),
     API_USERNAME("endpoint.api.username"),
