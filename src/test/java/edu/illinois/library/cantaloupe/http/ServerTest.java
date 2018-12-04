@@ -44,6 +44,24 @@ public class ServerTest extends BaseTest {
     }
 
     @Test
+    public void testAcceptingRangesWhenSetToTrue() throws Exception {
+        server.setAcceptingRanges(true);
+        server.start();
+
+        Response response = client.send();
+        assertEquals("bytes", response.getHeaders().getFirstValue("Accept-Ranges"));
+    }
+
+    @Test
+    public void testAcceptingRangesWhenSetToFalse() throws Exception {
+        server.setAcceptingRanges(false);
+        server.start();
+
+        Response response = client.send();
+        assertEquals(0, response.getHeaders().getAll("Accept-Ranges").size());
+    }
+
+    @Test
     public void testBasicAuthWithValidCredentials() throws Exception {
         final String realm = "Test Realm";
         final String user = "dogs";

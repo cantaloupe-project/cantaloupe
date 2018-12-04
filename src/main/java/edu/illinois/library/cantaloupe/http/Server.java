@@ -21,7 +21,6 @@ import org.eclipse.jetty.util.security.Constraint;
 import org.eclipse.jetty.util.security.Password;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 
-import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Path;
@@ -39,7 +38,8 @@ import java.util.Collections;
  */
 public final class Server {
 
-    private boolean isBasicAuthEnabled = false;
+    private boolean isAcceptingRanges = true;
+    private boolean isBasicAuthEnabled;
     private String authRealm;
     private String authUser;
     private String authSecret;
@@ -61,14 +61,14 @@ public final class Server {
      * Initializes a static file HTTP(S) server using the image fixture path as
      * its root.
      */
-    public Server() throws IOException {
+    public Server() {
         httpPort = SocketUtils.getOpenPort();
         do {
             httpsPort = SocketUtils.getOpenPort();
         } while (httpPort == httpsPort);
     }
 
-    private void initializeServer() throws IOException {
+    private void initializeServer() {
         server = new org.eclipse.jetty.server.Server();
 
         ServerConnector connector;
@@ -149,6 +149,7 @@ public final class Server {
         if (handler == null) {
             ResourceHandler handler = new ResourceHandler();
             handler.setDirectoriesListed(false);
+            handler.setAcceptRanges(isAcceptingRanges);
             handler.setResourceBase(root.toString());
             this.handler = handler;
         }
@@ -200,6 +201,10 @@ public final class Server {
             // This should never happen.
         }
         return null;
+    }
+
+    public void setAcceptingRanges(boolean isAcceptingRanges) {
+        this.isAcceptingRanges = isAcceptingRanges;
     }
 
     public void setAuthRealm(String realm) {

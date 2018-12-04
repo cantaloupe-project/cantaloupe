@@ -39,6 +39,10 @@ public final class WebServer {
         return wrappedServer.getHTTPSURI();
     }
 
+    public void setAcceptingRanges(boolean isAcceptingRanges) {
+        wrappedServer.setAcceptingRanges(isAcceptingRanges);
+    }
+
     public void setBasicAuthEnabled(boolean enabled) {
         wrappedServer.setAuthRealm(BASIC_REALM);
         wrappedServer.setAuthUser(BASIC_USER);
