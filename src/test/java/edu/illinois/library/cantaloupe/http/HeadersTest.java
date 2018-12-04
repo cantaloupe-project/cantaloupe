@@ -19,6 +19,16 @@ public class HeadersTest {
     }
 
     @Test
+    public void testCopyConstructor() {
+        instance.add("header1", "cats");
+        instance.add("header1", "dogs");
+        instance.add("header2", "foxes");
+
+        Headers other = new Headers(instance);
+        assertEquals(3, other.size());
+    }
+
+    @Test
     public void testAddWithHeader() {
         assertEquals(0, instance.size());
         instance.add(new Header("name", "value"));
