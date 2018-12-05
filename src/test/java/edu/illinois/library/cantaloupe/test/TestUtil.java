@@ -20,8 +20,7 @@ import java.util.HashSet;
 public final class TestUtil {
 
     public static File getCurrentWorkingDirectory() throws IOException {
-        File directory = new File(".");
-        return directory.getCanonicalFile();
+        return new File(".").getCanonicalFile();
     }
 
     public static Collection<Path> getImageFixtures(Format format)
@@ -61,6 +60,9 @@ public final class TestUtil {
         return getFixturePath().resolve(filename);
     }
 
+    /**
+     * @return Path of the fixtures directory.
+     */
     public static Path getFixturePath() throws IOException {
         return Paths.get(getCurrentWorkingDirectory().getAbsolutePath(),
                 "src", "test", "resources");
@@ -68,6 +70,13 @@ public final class TestUtil {
 
     public static Path getImage(String name) throws IOException {
         return getFixture("images/" + name);
+    }
+
+    /**
+     * @return Path of the image fixtures directory.
+     */
+    public static Path getImagesPath() throws IOException {
+        return getFixturePath().resolve("images");
     }
 
     public static Configuration getTestConfig() {
