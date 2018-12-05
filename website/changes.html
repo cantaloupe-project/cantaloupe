@@ -28,6 +28,7 @@ title: Change Log
 <ul>
   <li>HttpSource uses <code>HEAD</code> requests instead of ranged <code>GET</code> requests.</li>
   <li>The hash returned from the <code>httpsource_resource_info()</code> delegate method may include custom request headers.</li>
+  <li>HttpSource is capable of requesting individual chunks of resources, which can improve performance&mdash;perhaps massively&mdash;when reading images in selectively-readable encodings like JPEG2000 and multi-resolution/tiled TIFF.</li>
 </ul>
 
 <h3>Processors</h3>

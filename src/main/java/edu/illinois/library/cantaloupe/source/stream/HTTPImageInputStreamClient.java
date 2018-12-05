@@ -13,6 +13,10 @@ import java.io.IOException;
 public interface HTTPImageInputStreamClient {
 
     /**
+     * @return Response. In particular, the {@link Response#getStatus() status}
+     *         is set, and {@literal Accept-Ranges} and {@literal
+     *         Content-Length} {@link Response#getHeaders() headers} are
+     *         included if the server sent them.
      * @throws IOException upon failure to receive a valid response
      *         (<strong>not</strong> a response with an error status code).
      */
@@ -20,7 +24,8 @@ public interface HTTPImageInputStreamClient {
 
     /**
      * @param range Byte range to request.
-     * @return      Response.
+     * @return      Same as {@link #sendHEADRequest()}, but the {@link
+     *              Response#getBody() body} is also included.
      * @throws IOException upon failure to receive a valid response
      *         (<strong>not</strong> a response with an error status code).
      */

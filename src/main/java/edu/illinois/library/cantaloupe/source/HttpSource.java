@@ -61,14 +61,40 @@ import java.util.concurrent.TimeoutException;
  *     retrieve a URL (and optional auth info) dynamically.</li>
  * </ol>
  *
- * <h1>Accessing Resources</h1>
+ * <h1>Resource Access</h1>
  *
- * <p>While proceeding through the client request fulfillment flow, it's
- * important is to minimize the number of HTTP request/response round trips
- * needed, as each one may be very costly. Generally, full delivery of a
- * source image requires a {@literal HEAD-GET} request pair, except when {@link
- * #getFormat()} needs to fall back to its last resort, which will end up
- * requiring {@literal HEAD-ranged GET-GET}.</p>
+ * <p>While proceeding through the client request fulfillment flow, this source
+ * issues the following server requests:</p>
+ *
+ * <ol>
+ *     <li>{@literal HEAD}</li>
+ *     <li>If server supports ranges:
+ *         <ol>
+ *             <li>If {@link #getFormat()} needs to check magic bytes:
+ *                 <ol>
+ *                     <li>Ranged {@literal GET}</li>
+ *                 </ol>
+ *             </li>
+ *             <li>If {@link HTTPStreamFactory#newImageInputStream()} is used:
+ *                 <ol>
+ *                     <li>A series of ranged {@literal GET} requests (see {@link
+ *                     edu.illinois.library.cantaloupe.source.stream.HTTPImageInputStream}
+ *                     for details)</li>
+ *                 </ol>
+ *             </li>
+ *             <li>Else if {@link HTTPStreamFactory#newInputStream()} is used:
+ *                 <ol>
+ *                     <li>{@literal GET} to retrieve the full image bytes</li>
+ *                 </ol>
+ *             </li>
+ *         </ol>
+ *     </li>
+ *     <li>Else if server does not support ranges:
+ *         <ol>
+ *             <li>{@literal GET} to retrieve the full image bytes</li>
+ *         </ol>
+ *     </li>
+ * </ol>
  *
  * <h1>Authentication Support</h1>
  *
@@ -150,6 +176,10 @@ class HttpSource extends AbstractSource implements StreamSource {
 
         boolean acceptsRanges() {
             return "bytes".equals(headers.get("Accept-Ranges"));
+        }
+
+        long getContentLength() {
+            return headers.getLongField("Content-Length");
         }
 
     }
@@ -426,7 +456,12 @@ class HttpSource extends AbstractSource implements StreamSource {
 
         if (info != null) {
             LOGGER.debug("Resolved {} to {}", identifier, info.getURI());
-            return new HTTPStreamFactory(getHTTPClient(info), info);
+            fetchHEADResponseInfo();
+            return new HTTPStreamFactory(
+                    getHTTPClient(info),
+                    info,
+                    headResponseInfo.getContentLength(),
+                    headResponseInfo.acceptsRanges());
         }
         return null;
     }
