@@ -1,6 +1,9 @@
 package edu.illinois.library.cantaloupe.source;
 
+import edu.illinois.library.cantaloupe.config.Configuration;
+import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Identifier;
+import edu.illinois.library.cantaloupe.source.stream.ClosingMemoryCacheImageInputStream;
 import edu.illinois.library.cantaloupe.source.stream.HTTPImageInputStream;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.WebServer;
@@ -59,21 +62,39 @@ public class HTTPStreamFactoryTest extends BaseTest {
     }
 
     @Test
-    public void testNewImageInputStreamWhenServerAcceptsRanges()
+    public void testNewImageInputStreamWhenChunkingIsEnabledAndServerAcceptsRanges()
             throws Exception {
         server.start();
+
+        final Configuration config = Configuration.getInstance();
+        config.setProperty(Key.HTTPSOURCE_CHUNKING_ENABLED, true);
+        config.setProperty(Key.HTTPSOURCE_CHUNK_SIZE, 777);
+
         try (ImageInputStream is = newInstance(true).newImageInputStream()) {
             assertTrue(is instanceof HTTPImageInputStream);
+            assertEquals(777 * 1024, ((HTTPImageInputStream) is).getWindowSize());
         }
     }
 
     @Test
-    public void testNewImageInputStreamWhenServerDoesNotAcceptRanges()
+    public void testNewImageInputStreamWhenChunkingIsEnabledButServerDoesNotAcceptRanges()
             throws Exception {
         server.setAcceptingRanges(false);
         server.start();
+
+        Configuration.getInstance().setProperty(Key.HTTPSOURCE_CHUNKING_ENABLED, true);
         try (ImageInputStream is = newInstance(false).newImageInputStream()) {
-            assertFalse(is instanceof HTTPImageInputStream);
+            assertTrue(is instanceof ClosingMemoryCacheImageInputStream);
+        }
+    }
+
+    @Test
+    public void testNewImageInputStreamWhenChunkingIsDisabled() throws Exception {
+        server.start();
+
+        Configuration.getInstance().setProperty(Key.HTTPSOURCE_CHUNKING_ENABLED, false);
+        try (ImageInputStream is = newInstance(true).newImageInputStream()) {
+            assertTrue(is instanceof ClosingMemoryCacheImageInputStream);
         }
     }
 

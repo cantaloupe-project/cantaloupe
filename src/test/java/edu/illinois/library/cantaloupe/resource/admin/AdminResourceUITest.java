@@ -345,10 +345,12 @@ public class AdminResourceUITest extends AbstractAdminResourceTest {
         inputNamed(Key.FILESYSTEMSOURCE_PATH_SUFFIX).sendKeys("/suffix");
         // HttpSource
         css("#cl-source li > a[href=\"#HttpSource\"]").click();
-        selectNamed(Key.HTTPSOURCE_LOOKUP_STRATEGY).
-                selectByValue("BasicLookupStrategy");
+        inputNamed(Key.HTTPSOURCE_CHUNKING_ENABLED).click();
+        inputNamed(Key.HTTPSOURCE_CHUNK_SIZE).sendKeys("412");
         inputNamed(Key.HTTPSOURCE_TRUST_ALL_CERTS).click();
         inputNamed(Key.HTTPSOURCE_REQUEST_TIMEOUT).sendKeys("13");
+        selectNamed(Key.HTTPSOURCE_LOOKUP_STRATEGY).
+                selectByValue("BasicLookupStrategy");
         inputNamed(Key.HTTPSOURCE_URL_PREFIX).sendKeys("http://prefix/");
         inputNamed(Key.HTTPSOURCE_URL_SUFFIX).sendKeys("/suffix");
         inputNamed(Key.HTTPSOURCE_BASIC_AUTH_USERNAME).sendKeys("username");
@@ -410,10 +412,14 @@ public class AdminResourceUITest extends AbstractAdminResourceTest {
         // HttpSource
         assertTrue(
                 config.getBoolean(Key.HTTPSOURCE_TRUST_ALL_CERTS));
-        assertEquals("BasicLookupStrategy",
-                config.getString(Key.HTTPSOURCE_LOOKUP_STRATEGY));
+        assertTrue(
+                config.getBoolean(Key.HTTPSOURCE_CHUNKING_ENABLED));
+        assertEquals("412",
+                config.getString(Key.HTTPSOURCE_CHUNK_SIZE));
         assertEquals("13",
                 config.getString(Key.HTTPSOURCE_REQUEST_TIMEOUT));
+        assertEquals("BasicLookupStrategy",
+                config.getString(Key.HTTPSOURCE_LOOKUP_STRATEGY));
         assertEquals("http://prefix/",
                 config.getString(Key.HTTPSOURCE_URL_PREFIX));
         assertEquals("/suffix",

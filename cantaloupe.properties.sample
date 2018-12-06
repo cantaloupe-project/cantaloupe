@@ -150,6 +150,12 @@ FilesystemSource.BasicLookupStrategy.path_suffix =
 HttpSource.trust_all_certs = false
 HttpSource.request_timeout =
 
+# Read data in chunks when it may be more efficient.
+HttpSource.chunking.enabled = true
+
+# Chunk size (KB).
+HttpSource.chunking.chunk_size = 512
+
 # Tells HttpSource how to look up resources. Allowed values are
 # `BasicLookupStrategy` and `ScriptLookupStrategy`. ScriptLookupStrategy
 # uses a delegate method for dynamic lookups; see the user manual.

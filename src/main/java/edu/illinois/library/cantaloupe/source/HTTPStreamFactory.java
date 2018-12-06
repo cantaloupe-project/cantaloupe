@@ -1,5 +1,7 @@
 package edu.illinois.library.cantaloupe.source;
 
+import edu.illinois.library.cantaloupe.config.Configuration;
+import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.http.Headers;
 import edu.illinois.library.cantaloupe.source.stream.HTTPImageInputStream;
 import org.eclipse.jetty.client.HttpClient;
@@ -24,35 +26,55 @@ import static edu.illinois.library.cantaloupe.source.HttpSource.LOGGER;
  */
 final class HTTPStreamFactory implements StreamFactory {
 
-    private static final HttpMethod HTTP_METHOD = HttpMethod.GET;
-    private static final int WINDOW_SIZE        = (int) Math.pow(2, 19);
+    private static final int DEFAULT_CHUNK_SIZE_KB = (int) Math.pow(2, 19);
 
     private final HttpClient client;
     private final HttpSource.RequestInfo requestInfo;
     private final long contentLength;
-    private final boolean useRanges;
+    private final boolean serverAcceptsRanges;
 
     HTTPStreamFactory(HttpClient client,
                       HttpSource.RequestInfo requestInfo,
                       long contentLength,
-                      boolean useRanges) {
-        this.client        = client;
-        this.requestInfo   = requestInfo;
-        this.contentLength = contentLength;
-        this.useRanges     = useRanges;
+                      boolean serverAcceptsRanges) {
+        this.client              = client;
+        this.requestInfo         = requestInfo;
+        this.contentLength       = contentLength;
+        this.serverAcceptsRanges = serverAcceptsRanges;
+    }
+
+    private boolean isChunkingEnabled() {
+        return Configuration.getInstance().getBoolean(
+                Key.HTTPSOURCE_CHUNKING_ENABLED, true);
+    }
+
+    private int getChunkSize() {
+        return Configuration.getInstance().getInt(
+                Key.HTTPSOURCE_CHUNK_SIZE, DEFAULT_CHUNK_SIZE_KB) * 1024;
     }
 
     @Override
     public ImageInputStream newImageInputStream() throws IOException {
-        if (useRanges) {
-            final JettyHTTPImageInputStreamClient rangingClient =
-                    new JettyHTTPImageInputStreamClient(client, requestInfo.getURI());
-            rangingClient.setRequestTimeout(HttpSource.getRequestTimeout());
-            rangingClient.setExtraRequestHeaders(requestInfo.getHeaders());
-            return new HTTPImageInputStream(rangingClient, WINDOW_SIZE, contentLength);
+        if (isChunkingEnabled()) {
+            if (serverAcceptsRanges) {
+                final int chunkSize = getChunkSize();
+                LOGGER.debug("newImageInputStream(): using {}-byte chunks",
+                        chunkSize);
+                final JettyHTTPImageInputStreamClient rangingClient =
+                        new JettyHTTPImageInputStreamClient(client, requestInfo.getURI());
+                rangingClient.setRequestTimeout(HttpSource.getRequestTimeout());
+                rangingClient.setExtraRequestHeaders(requestInfo.getHeaders());
+                return new HTTPImageInputStream(
+                        rangingClient, chunkSize, contentLength);
+            } else {
+                LOGGER.debug("newImageInputStream(): chunking is enabled, but " +
+                        "won't be used because the server's HEAD response " +
+                        "didn't include an Accept-Ranges header.");
+            }
         } else {
-            return StreamFactory.super.newImageInputStream();
+            LOGGER.debug("newImageInputStream(): chunking is disabled");
         }
+        return StreamFactory.super.newImageInputStream();
     }
 
     @Override
@@ -66,11 +88,11 @@ final class HTTPStreamFactory implements StreamFactory {
             Request request = client
                     .newRequest(requestInfo.getURI())
                     .timeout(HttpSource.getRequestTimeout(), TimeUnit.SECONDS)
-                    .method(HTTP_METHOD);
+                    .method(HttpMethod.GET);
             extraHeaders.forEach(h -> request.header(h.getName(), h.getValue()));
 
-            LOGGER.trace("Requesting {} {} (extra headers: {})",
-                    HTTP_METHOD, requestInfo.getURI(), extraHeaders);
+            LOGGER.trace("Requesting GET {} (extra headers: {})",
+                    requestInfo.getURI(), extraHeaders);
 
             request.send(listener);
 

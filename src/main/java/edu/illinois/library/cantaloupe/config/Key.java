@@ -99,6 +99,8 @@ public enum Key {
     HTTP_PORT("http.port"),
     HTTPSOURCE_BASIC_AUTH_SECRET("HttpSource.BasicLookupStrategy.auth.basic.secret"),
     HTTPSOURCE_BASIC_AUTH_USERNAME("HttpSource.BasicLookupStrategy.auth.basic.username"),
+    HTTPSOURCE_CHUNKING_ENABLED("HttpSource.chunking.enabled"),
+    HTTPSOURCE_CHUNK_SIZE("HttpSource.chunking.chunk_size"),
     HTTPSOURCE_LOOKUP_STRATEGY("HttpSource.lookup_strategy"),
     HTTPSOURCE_REQUEST_TIMEOUT("HttpSource.request_timeout"),
     HTTPSOURCE_TRUST_ALL_CERTS("HttpSource.trust_all_certs"),
