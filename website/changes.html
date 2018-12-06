@@ -57,6 +57,7 @@ title: Change Log
   <li>Fixed a scaling-related regression in PdfBoxProcessor.</li>
   <li>Streams consumed from S3Source are drained fully before closure, which makes its connection pool more efficient and fixes a warning-level error message from its internal HTTP client.</li>
   <li>Fixed a potential math error when cropping certain images with an embedded EXIF Orientation tag.</li>
+  <li>Improved exception handling in S3Source and S3Cache.</li>
   <li>Worked around an issue in OpenJPEG that could cause OpenJpegProcessor to fail when reading certain images from the source cache.</li>
   <li>Corrected the <code>gray</code> quality to <code>grey</code> in the IIIF Image API 1.x endpoint.</li>
 </ul>
