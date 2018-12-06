@@ -86,8 +86,11 @@ final class HTTPStreamFactory implements StreamFactory {
                         new JettyHTTPImageInputStreamClient(client, requestInfo.getURI());
                 rangingClient.setRequestTimeout(HttpSource.getRequestTimeout());
                 rangingClient.setExtraRequestHeaders(requestInfo.getHeaders());
-                return new HTTPImageInputStream(
-                        rangingClient, chunkSize, contentLength);
+
+                HTTPImageInputStream stream = new HTTPImageInputStream(
+                        rangingClient, contentLength);
+                stream.setWindowSize(chunkSize);
+                return stream;
             } else {
                 LOGGER.debug("newSeekableStream(): chunking is enabled, but " +
                         "won't be used because the server's HEAD response " +

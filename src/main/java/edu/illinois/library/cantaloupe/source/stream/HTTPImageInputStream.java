@@ -42,63 +42,63 @@ public class HTTPImageInputStream extends ImageInputStreamImpl
     private static final Logger LOGGER =
             LoggerFactory.getLogger(HTTPImageInputStream.class);
 
+    /**
+     * Can be overridden by {@link #setWindowSize(int)}.
+     */
+    private static final int DEFAULT_WINDOW_SIZE = (int) Math.pow(2, 19);
+
     private static final double MEGABYTE = Math.pow(2, 20);
 
     private HTTPImageInputStreamClient client;
     private int numChunkFetches;
-    private final int windowSize;
+    private int windowSize = DEFAULT_WINDOW_SIZE;
     private long streamLength;
     private int windowIndex = -1, indexWithinBuffer;
-    private byte[] windowBuffer;
+    private byte[] windowBuffer = new byte[windowSize];
 
     /**
      * Variant that sends a preliminary {@literal HEAD} request to retrieve
      * some needed information. Use {@link #HTTPImageInputStream(
-     * HTTPImageInputStreamClient, int, long)} instead if you already know the
+     * HTTPImageInputStreamClient, long)} instead if you already know the
      * resource length and that the server supports {@literal HEAD} requests.
      *
-     * @param client         Client to use to handle requests.
-     * @param windowSize     Window/chunk size. In general, a smaller size means
-     *                       more requests will be needed, and a larger size
-     *                       means more irrelevant data will have to be read and
-     *                       discarded. The optimal size will vary depending on
-     *                       the source image, the amount of data needed from
-     *                       it, and network transfer rate vs. latency.
+     * @param client Client to use to handle requests.
      * @throws RangesNotSupportedException if the server does not support
      *         ranged requests.
      * @throws IOException if something goes wrong when checking for range
      *         support.
      */
-    public HTTPImageInputStream(HTTPImageInputStreamClient client,
-                                int windowSize) throws IOException {
+    public HTTPImageInputStream(HTTPImageInputStreamClient client)
+            throws IOException {
         this.client       = client;
-        this.windowSize   = windowSize;
-        this.windowBuffer = new byte[windowSize];
-
         sendHEADRequest();
     }
 
     /**
      * @param client         Client to use to handle requests.
-     * @param windowSize     Window/chunk size. In general, a smaller size means
-     *                       more requests will be needed, and a larger size
-     *                       means more irrelevant data will have to be read and
-     *                       discarded. The optimal size will vary depending on
-     *                       the source image, the amount of data needed from
-     *                       it, and network transfer rate vs. latency.
      * @param resourceLength Resource length/size.
      */
     public HTTPImageInputStream(HTTPImageInputStreamClient client,
-                                int windowSize,
                                 long resourceLength) {
         this.client       = client;
-        this.windowSize   = windowSize;
-        this.windowBuffer = new byte[windowSize];
         this.streamLength = resourceLength;
     }
 
     public int getWindowSize() {
         return windowSize;
+    }
+
+    /**
+     * @param windowSize Window/chunk size. In general, a smaller size means
+     *                   more requests will be needed, and a larger size means
+     *                   more irrelevant data will have to be read and
+     *                   discarded. The optimal size will vary depending on the
+     *                   source image, the amount of data needed from it, and
+     *                   network transfer rate vs. latency.
+     */
+    public void setWindowSize(int windowSize) {
+        this.windowSize = windowSize;
+        this.windowBuffer = new byte[windowSize];
     }
 
     /**

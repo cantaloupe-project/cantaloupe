@@ -108,8 +108,11 @@ class S3StreamFactory implements StreamFactory {
 
             final S3HTTPImageInputStreamClient client =
                     new S3HTTPImageInputStreamClient(objectInfo);
-            return new HTTPImageInputStream(
-                    client, chunkSize, objectInfo.getLength());
+
+            HTTPImageInputStream stream = new HTTPImageInputStream(
+                    client, objectInfo.getLength());
+            stream.setWindowSize(chunkSize);
+            return stream;
         } else {
             LOGGER.debug("newSeekableStream(): chunking is disabled");
             return StreamFactory.super.newSeekableStream();

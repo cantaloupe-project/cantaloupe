@@ -77,22 +77,20 @@ public class HTTPImageInputStreamTest extends BaseTest {
         webServer.stop();
     }
 
-    private HTTPImageInputStream newInstanceFromConstructor1(Path fixture,
-                                                             int chunkSize) throws IOException {
+    private HTTPImageInputStream newInstanceFromConstructor1(Path fixture) throws IOException {
         final URI uri = webServer.getHTTPURI().resolve("/" + fixture.getFileName());
         final HTTPImageInputStreamClient client =
                 new MockHTTPImageInputStreamClient(uri);
 
-        return new HTTPImageInputStream(client, chunkSize);
+        return new HTTPImageInputStream(client);
     }
 
-    private HTTPImageInputStream newInstanceFromConstructor2(Path fixture,
-                                                             int chunkSize) throws IOException {
+    private HTTPImageInputStream newInstanceFromConstructor2(Path fixture) throws IOException {
         final URI uri = webServer.getHTTPURI().resolve("/" + fixture.getFileName());
         final HTTPImageInputStreamClient client =
                 new MockHTTPImageInputStreamClient(uri);
 
-        return new HTTPImageInputStream(client, chunkSize, Files.size(fixture));
+        return new HTTPImageInputStream(client, Files.size(fixture));
     }
 
     @Test(expected = RangesNotSupportedException.class)
@@ -105,14 +103,14 @@ public class HTTPImageInputStreamTest extends BaseTest {
         webServer.start();
 
         final Path fixture = TestUtil.getImage("tif");
-        try (HTTPImageInputStream is = newInstanceFromConstructor1(fixture, 1024)) {
+        try (HTTPImageInputStream is = newInstanceFromConstructor1(fixture)) {
         }
     }
 
     @Test
     public void testConstructor1ReadsLength() throws Exception {
         final Path fixture = TestUtil.getImage("tif");
-        try (HTTPImageInputStream is = newInstanceFromConstructor1(fixture, 1024)) {
+        try (HTTPImageInputStream is = newInstanceFromConstructor1(fixture)) {
             assertEquals(Files.size(fixture), is.length());
         }
     }
@@ -120,7 +118,8 @@ public class HTTPImageInputStreamTest extends BaseTest {
     @Test
     public void testGetWindowSize() throws Exception {
         final Path fixture = TestUtil.getImage("tif");
-        try (HTTPImageInputStream instance = newInstanceFromConstructor1(fixture, 555)) {
+        try (HTTPImageInputStream instance = newInstanceFromConstructor1(fixture)) {
+            instance.setWindowSize(555);
             assertEquals(555, instance.getWindowSize());
         }
     }
@@ -132,7 +131,8 @@ public class HTTPImageInputStreamTest extends BaseTest {
                 0x80, 0x1a, 0x8b, 0x43, 0xc0, 0x00, 0x05, 0xfe };
 
         final Path fixture = TestUtil.getImage("tif");
-        try (HTTPImageInputStream instance = newInstanceFromConstructor2(fixture, 8)) {
+        try (HTTPImageInputStream instance = newInstanceFromConstructor2(fixture)) {
+            instance.setWindowSize(8);
             final int[] actual = new int[16];
             for (int i = 0; i < actual.length; i++) {
                 actual[i] = instance.read();
@@ -145,7 +145,7 @@ public class HTTPImageInputStreamTest extends BaseTest {
     @Test
     public void functionalTestWithBMP() throws Exception {
         final Path fixture = TestUtil.getImage("bmp");
-        try (HTTPImageInputStream instance = newInstanceFromConstructor2(fixture, 8192);
+        try (HTTPImageInputStream instance = newInstanceFromConstructor2(fixture);
              ImageInputStream is = ImageIO.createImageInputStream(fixture.toFile())) {
             Iterator<ImageReader> readers = ImageIO.getImageReaders(is);
             ImageReader reader = readers.next();
@@ -159,7 +159,7 @@ public class HTTPImageInputStreamTest extends BaseTest {
     @Test
     public void functionalTestWithGIF() throws Exception {
         final Path fixture = TestUtil.getImage("gif");
-        try (HTTPImageInputStream instance = newInstanceFromConstructor2(fixture, 8192);
+        try (HTTPImageInputStream instance = newInstanceFromConstructor2(fixture);
              ImageInputStream is = ImageIO.createImageInputStream(fixture.toFile())) {
             Iterator<ImageReader> readers = ImageIO.getImageReaders(is);
             ImageReader reader = readers.next();
@@ -173,7 +173,7 @@ public class HTTPImageInputStreamTest extends BaseTest {
     @Test
     public void functionalTestWithJPEG() throws Exception {
         final Path fixture = TestUtil.getImage("jpg");
-        try (HTTPImageInputStream instance = newInstanceFromConstructor2(fixture, 8192);
+        try (HTTPImageInputStream instance = newInstanceFromConstructor2(fixture);
              ImageInputStream is = ImageIO.createImageInputStream(fixture.toFile())) {
             Iterator<ImageReader> readers = ImageIO.getImageReaders(is);
             ImageReader reader = readers.next();
@@ -187,7 +187,7 @@ public class HTTPImageInputStreamTest extends BaseTest {
     @Test
     public void functionalTestWithPNG() throws Exception {
         final Path fixture = TestUtil.getImage("png");
-        try (HTTPImageInputStream instance = newInstanceFromConstructor2(fixture, 8192);
+        try (HTTPImageInputStream instance = newInstanceFromConstructor2(fixture);
              ImageInputStream is = ImageIO.createImageInputStream(fixture.toFile())) {
             Iterator<ImageReader> readers = ImageIO.getImageReaders(is);
             ImageReader reader = readers.next();
@@ -201,7 +201,7 @@ public class HTTPImageInputStreamTest extends BaseTest {
     @Test
     public void functionalTestWithTIFF() throws Exception {
         final Path fixture = TestUtil.getImage("tif");
-        try (HTTPImageInputStream instance = newInstanceFromConstructor2(fixture, 8192);
+        try (HTTPImageInputStream instance = newInstanceFromConstructor2(fixture);
              ImageInputStream is = ImageIO.createImageInputStream(fixture.toFile())) {
             Iterator<ImageReader> readers = ImageIO.getImageReaders(is);
             ImageReader reader = readers.next();
@@ -215,8 +215,9 @@ public class HTTPImageInputStreamTest extends BaseTest {
     @Test
     public void functionalTestWithWindowSizeSmallerThanLength() throws Exception {
         final Path fixture = TestUtil.getImage("tif");
-        try (HTTPImageInputStream instance = newInstanceFromConstructor2(fixture, 1024);
+        try (HTTPImageInputStream instance = newInstanceFromConstructor2(fixture);
              ImageInputStream is = ImageIO.createImageInputStream(fixture.toFile())) {
+            instance.setWindowSize(1024);
             Iterator<ImageReader> readers = ImageIO.getImageReaders(is);
             ImageReader reader = readers.next();
             reader.setInput(instance);
@@ -229,8 +230,9 @@ public class HTTPImageInputStreamTest extends BaseTest {
     @Test
     public void functionalTestWithWindowSizeLargerThanLength() throws Exception {
         final Path fixture = TestUtil.getImage("tif");
-        try (HTTPImageInputStream instance = newInstanceFromConstructor2(fixture, 65536);
+        try (HTTPImageInputStream instance = newInstanceFromConstructor2(fixture);
              ImageInputStream is = ImageIO.createImageInputStream(fixture.toFile())) {
+            instance.setWindowSize(65536);
             Iterator<ImageReader> readers = ImageIO.getImageReaders(is);
             ImageReader reader = readers.next();
             reader.setInput(instance);
