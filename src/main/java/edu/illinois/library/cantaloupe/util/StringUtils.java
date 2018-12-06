@@ -147,6 +147,45 @@ public final class StringUtils {
     }
 
     /**
+     * The following byte size formats are supported:
+     *
+     * <ul>
+     *     <li>Whole number</li>
+     *     <li>Decimal number suffixed with {@literal K}, {@literal KB},
+     *     {@literal M}, {@literal MB}, {@literal G}, {@literal GB},
+     *     {@literal T}, {@literal TB}, {@literal P}, {@literal PB}
+     *         <ul>
+     *             <li>Lowercase suffixes are allowed.</li>
+     *             <li>Spaces are allowed between the number and suffix.</li>
+     *         </ul>
+     *     </li>
+     * </ul>
+     *
+     * @param str String byte size.
+     * @return    If the given string had no units, a long representation.
+     *            Otherwise, a power of {@literal 1024}.
+     */
+    public static long toByteSize(String str) {
+        str = str.toUpperCase();
+        final String numberStr = str.replaceAll("[^\\d.]", "");
+        final double number = Double.parseDouble(numberStr);
+        short exponent = 0;
+
+        if (str.endsWith("K") || str.endsWith("KB")) {
+            exponent = 1;
+        } else if (str.endsWith("M") || str.endsWith("MB")) {
+            exponent = 2;
+        } else if (str.endsWith("G") || str.endsWith("GB")) {
+            exponent = 3;
+        } else if (str.endsWith("T") || str.endsWith("TB")) {
+            exponent = 4;
+        } else if (str.endsWith("P") || str.endsWith("PB")) { // you never know
+            exponent = 5;
+        }
+        return Math.round(number * Math.pow(1024, exponent));
+    }
+
+    /**
      * Strips any enclosing tags or other content around the {@literal rdf:RDF}
      * element within an RDF/XML XMP string.
      */

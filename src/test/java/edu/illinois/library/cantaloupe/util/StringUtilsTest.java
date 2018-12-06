@@ -108,6 +108,82 @@ public class StringUtilsTest extends BaseTest {
         assertSame(str, StringUtils.stripStart(str, toStrip));
     }
 
+    @Test(expected = NumberFormatException.class)
+    public void testToByteSizeWithIllegalArgument() {
+        StringUtils.toByteSize("cats");
+    }
+
+    @Test
+    public void testToByteSizeWithNumber() {
+        assertEquals(254254254, StringUtils.toByteSize("254254254"));
+        assertEquals(255, StringUtils.toByteSize("254.9"));
+    }
+
+    @Test
+    public void testToByteSizeWithKB() {
+        long expected = 25 * 1024;
+        assertEquals(expected, StringUtils.toByteSize("25K"));
+        assertEquals(expected, StringUtils.toByteSize("25KB"));
+        assertEquals(expected, StringUtils.toByteSize("25k"));
+        assertEquals(expected, StringUtils.toByteSize("25kb"));
+        assertEquals(expected, StringUtils.toByteSize("25 K"));
+        assertEquals(expected, StringUtils.toByteSize("25 KB"));
+        assertEquals(expected, StringUtils.toByteSize("25 k"));
+        assertEquals(expected, StringUtils.toByteSize("25 kb"));
+    }
+
+    @Test
+    public void testToByteSizeWithMB() {
+        long expected = 25 * (long) Math.pow(1024, 2);
+        assertEquals(expected, StringUtils.toByteSize("25M"));
+        assertEquals(expected, StringUtils.toByteSize("25MB"));
+        assertEquals(expected, StringUtils.toByteSize("25m"));
+        assertEquals(expected, StringUtils.toByteSize("25mb"));
+        assertEquals(expected, StringUtils.toByteSize("25 M"));
+        assertEquals(expected, StringUtils.toByteSize("25 MB"));
+        assertEquals(expected, StringUtils.toByteSize("25 m"));
+        assertEquals(expected, StringUtils.toByteSize("25 mb"));
+    }
+
+    @Test
+    public void testToByteSizeWithGB() {
+        long expected = 25 * (long) Math.pow(1024, 3);
+        assertEquals(expected, StringUtils.toByteSize("25G"));
+        assertEquals(expected, StringUtils.toByteSize("25GB"));
+        assertEquals(expected, StringUtils.toByteSize("25g"));
+        assertEquals(expected, StringUtils.toByteSize("25gb"));
+        assertEquals(expected, StringUtils.toByteSize("25 G"));
+        assertEquals(expected, StringUtils.toByteSize("25 GB"));
+        assertEquals(expected, StringUtils.toByteSize("25 g"));
+        assertEquals(expected, StringUtils.toByteSize("25 gb"));
+    }
+
+    @Test
+    public void testToByteSizeWithTB() {
+        long expected = 25 * (long) Math.pow(1024, 4);
+        assertEquals(expected, StringUtils.toByteSize("25T"));
+        assertEquals(expected, StringUtils.toByteSize("25TB"));
+        assertEquals(expected, StringUtils.toByteSize("25t"));
+        assertEquals(expected, StringUtils.toByteSize("25tb"));
+        assertEquals(expected, StringUtils.toByteSize("25 T"));
+        assertEquals(expected, StringUtils.toByteSize("25 TB"));
+        assertEquals(expected, StringUtils.toByteSize("25 t"));
+        assertEquals(expected, StringUtils.toByteSize("25 tb"));
+    }
+
+    @Test
+    public void testToByteSizeWithPB() {
+        long expected = 25 * (long) Math.pow(1024, 5);
+        assertEquals(expected, StringUtils.toByteSize("25P"));
+        assertEquals(expected, StringUtils.toByteSize("25PB"));
+        assertEquals(expected, StringUtils.toByteSize("25p"));
+        assertEquals(expected, StringUtils.toByteSize("25pb"));
+        assertEquals(expected, StringUtils.toByteSize("25 P"));
+        assertEquals(expected, StringUtils.toByteSize("25 PB"));
+        assertEquals(expected, StringUtils.toByteSize("25 p"));
+        assertEquals(expected, StringUtils.toByteSize("25 pb"));
+    }
+
     @Test
     public void testTrimXMPWithTrimmableXMP() {
         String xmp = "<?xpacket id=\"cats\"?>" +

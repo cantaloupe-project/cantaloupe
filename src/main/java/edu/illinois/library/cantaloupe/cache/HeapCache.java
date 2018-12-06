@@ -7,6 +7,7 @@ import edu.illinois.library.cantaloupe.config.ConfigurationException;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.operation.OperationList;
+import edu.illinois.library.cantaloupe.util.StringUtils;
 import org.apache.commons.io.output.NullOutputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -395,24 +396,8 @@ class HeapCache implements DerivativeCache {
     long getTargetByteSize() throws ConfigurationException {
         final Configuration config = Configuration.getInstance();
         String humanSize = config.getString(HEAPCACHE_TARGET_SIZE);
-        if (humanSize != null && humanSize.length() > 0) {
-            final String numberStr = humanSize.replaceAll("[^\\d.]", "");
-            final double number = Double.parseDouble(numberStr);
-            long size;
-            short exponent;
-
-            if (humanSize.endsWith("M") || humanSize.endsWith("MB")) {
-                exponent = 2;
-            } else if (humanSize.endsWith("G") || humanSize.endsWith("GB")) {
-                exponent = 3;
-            } else if (humanSize.endsWith("T") || humanSize.endsWith("TB")) {
-                exponent = 4;
-            } else if (humanSize.endsWith("P") || humanSize.endsWith("PB")) { // you never know
-                exponent = 5;
-            } else {
-                exponent = 0;
-            }
-            size = Math.round(number * Math.pow(1024, exponent));
+        if (humanSize != null && !humanSize.isEmpty()) {
+            long size = StringUtils.toByteSize(humanSize);
             if (size <= 0) {
                 throw new ConfigurationException(HEAPCACHE_TARGET_SIZE +
                         " must be greater than zero.");
