@@ -22,8 +22,8 @@ class S3StreamFactory implements StreamFactory {
     private static final Logger LOGGER =
             LoggerFactory.getLogger(S3StreamFactory.class);
 
-    private static final int DEFAULT_CHUNK_SIZE_KB       = 512;
-    private static final int DEFAULT_CHUNK_CACHE_SIZE_MB = 10;
+    private static final int DEFAULT_CHUNK_SIZE       = (int) Math.pow(2, 19);
+    private static final int DEFAULT_CHUNK_CACHE_SIZE = (int) Math.pow(1024, 2);
 
     private S3ObjectInfo objectInfo;
     private S3Object object;
@@ -124,9 +124,8 @@ class S3StreamFactory implements StreamFactory {
     }
 
     private int getChunkSize() {
-        return Configuration.getInstance().getInt(
-                Key.S3SOURCE_CHUNK_SIZE,
-                DEFAULT_CHUNK_SIZE_KB) * 1024;
+        return (int) Configuration.getInstance().getLongBytes(
+                Key.S3SOURCE_CHUNK_SIZE, DEFAULT_CHUNK_SIZE);
     }
 
     private boolean isChunkCacheEnabled() {
@@ -135,9 +134,8 @@ class S3StreamFactory implements StreamFactory {
     }
 
     private int getMaxChunkCacheSize() {
-        return Configuration.getInstance().getInt(
-                Key.S3SOURCE_CHUNK_CACHE_MAX_SIZE,
-                DEFAULT_CHUNK_CACHE_SIZE_MB) * 1024 * 1024;
+        return (int) Configuration.getInstance().getLongBytes(
+                Key.S3SOURCE_CHUNK_CACHE_MAX_SIZE, DEFAULT_CHUNK_CACHE_SIZE);
     }
 
 }

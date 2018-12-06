@@ -98,7 +98,7 @@ public class HTTPStreamFactoryTest extends BaseTest {
 
         final Configuration config = Configuration.getInstance();
         config.setProperty(Key.HTTPSOURCE_CHUNKING_ENABLED, true);
-        config.setProperty(Key.HTTPSOURCE_CHUNK_SIZE, 777);
+        config.setProperty(Key.HTTPSOURCE_CHUNK_SIZE, "777K");
 
         try (ImageInputStream is = newInstance(true).newSeekableStream()) {
             assertTrue(is instanceof HTTPImageInputStream);
@@ -162,9 +162,9 @@ public class HTTPStreamFactoryTest extends BaseTest {
     public void testNewSeekableStreamWithChunkCacheEnabled() throws Exception {
         final Configuration config = Configuration.getInstance();
         config.setProperty(Key.HTTPSOURCE_CHUNKING_ENABLED, true);
-        config.setProperty(Key.HTTPSOURCE_CHUNK_SIZE, 777);
+        config.setProperty(Key.HTTPSOURCE_CHUNK_SIZE, "777K");
         config.setProperty(Key.HTTPSOURCE_CHUNK_CACHE_ENABLED, true);
-        config.setProperty(Key.HTTPSOURCE_CHUNK_CACHE_MAX_SIZE, 5);
+        config.setProperty(Key.HTTPSOURCE_CHUNK_CACHE_MAX_SIZE, "5M");
 
         try (ImageInputStream is = newInstance().newSeekableStream()) {
             assertTrue(is instanceof HTTPImageInputStream);

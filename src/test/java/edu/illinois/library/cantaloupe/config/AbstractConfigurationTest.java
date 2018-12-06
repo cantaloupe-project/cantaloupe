@@ -782,6 +782,109 @@ public abstract class AbstractConfigurationTest extends BaseTest {
         assertEquals(6, instance.getLong("test1", 6));
     }
 
+    /* getLongBytes(Key) */
+
+    @Test
+    public void testGetLongBytesWithKeyWithValidProperty() {
+        final Configuration instance = getInstance();
+        instance.setProperty(Key.IIIF_2_ENDPOINT_ENABLED, "55K");
+        assertEquals(55 * 1024, instance.getLongBytes(Key.IIIF_2_ENDPOINT_ENABLED));
+    }
+
+    @Test(expected = ConversionException.class)
+    public void testGetLongBytesWithKeyWithInvalidProperty() {
+        final Configuration instance = getInstance();
+        instance.setProperty(Key.MAX_PIXELS, "cats");
+        instance.getLongBytes(Key.MAX_PIXELS);
+    }
+
+    @Test(expected = NoSuchElementException.class)
+    public void testGetLongBytesWithKeyWithMissingProperty() {
+        final Configuration instance = getInstance();
+        instance.getLongBytes(Key.MAX_PIXELS);
+    }
+
+    /* getLongBytes(String) */
+
+    @Test
+    public void testGetLongBytesWithStringWithValidProperty() {
+        final Configuration instance = getInstance();
+        instance.setProperty("test", "55K");
+        assertEquals(55 * 1024, instance.getLongBytes("test"));
+    }
+
+    @Test(expected = ConversionException.class)
+    public void testGetLongBytesWithStringWithInvalidProperty() {
+        final Configuration instance = getInstance();
+        instance.setProperty("test", "cats");
+        instance.getLongBytes("test");
+    }
+
+    @Test(expected = NoSuchElementException.class)
+    public void testGetLongBytesWithStringWithMissingProperty() {
+        final Configuration instance = getInstance();
+        instance.getLongBytes("test3");
+    }
+
+    @Test
+    public void testGetLongBytesWithStringConcurrently() throws Exception {
+        final Configuration instance = getInstance();
+        final String key = "cats";
+        instance.setProperty(key, "32234");
+
+        new ConcurrentReaderWriter(() -> {
+            instance.setProperty(key, "32234");
+            return null;
+        }, () -> {
+            instance.getLongBytes(key);
+            return null;
+        }).numThreads(NUM_CONCURRENT_THREADS).run();
+    }
+
+    /* getLongBytes(Key, int) */
+
+    @Test
+    public void testGetLongBytesWithKeyWithDefaultWithValidProperty() {
+        final Configuration instance = getInstance();
+        instance.setProperty(Key.MAX_PIXELS, "5K");
+        assertEquals(5 * 1024, instance.getLongBytes(Key.MAX_PIXELS, 6));
+    }
+
+    @Test
+    public void testGetLongBytesWithKeyWithDefaultWithInvalidProperty() {
+        final Configuration instance = getInstance();
+        instance.setProperty(Key.MAX_PIXELS, "cats");
+        assertEquals(5, instance.getLongBytes(Key.MAX_PIXELS, 5));
+    }
+
+    @Test
+    public void testGetLongBytesWithKeyWithDefaultWithMissingProperty() {
+        final Configuration instance = getInstance();
+        assertEquals(6, instance.getLongBytes(Key.MAX_PIXELS, 6));
+    }
+
+    /* getLongBytes(String, int) */
+
+    @Test
+    public void testGetLongBytesWithStringWithDefaultWithValidProperty() {
+        final Configuration instance = getInstance();
+        instance.setProperty("test1", "5K");
+        assertEquals(5 * 1024, instance.getLongBytes("test1", 6));
+    }
+
+    @Test
+    public void testGetLongBytesWithStringWithDefaultWithInvalidProperty() {
+        final Configuration instance = getInstance();
+        instance.setProperty("test1", "cats");
+        assertEquals(5, instance.getLongBytes("test1", 5));
+    }
+
+    @Test
+    public void testGetLongBytesWithStringWithDefaultWithMissingProperty() {
+        final Configuration instance = getInstance();
+        assertEquals(6, instance.getLongBytes("test1", 6));
+    }
+
     /* getProperty(Key) */
 
     @Test

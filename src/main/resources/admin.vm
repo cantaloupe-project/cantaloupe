@@ -1327,11 +1327,12 @@
                                             </td>
                                         </tr>
                                         <tr>
-                                            <td>Chunk Size (KB)
+                                            <td>Chunk Size
                                                 <a tabindex="0" class="btn btn-sm cl-help"
                                                    role="button" data-toggle="popover"
                                                    data-trigger="focus"
-                                                   data-content="Chunk size.">?</a>
+                                                   data-content="Chunk size, in bytes or a number
+                                                   ending in M, MB, G, GB, etc.">?</a>
                                             </td>
                                             <td>
                                                 <input class="form-control" type="number"
@@ -1362,11 +1363,12 @@
                                             </td>
                                         </tr>
                                         <tr>
-                                            <td>Max Chunk Cache Size (MB)
+                                            <td>Max Chunk Cache Size
                                                 <a tabindex="0" class="btn btn-sm cl-help"
                                                    role="button" data-toggle="popover"
                                                    data-trigger="focus"
-                                                   data-content="Max per-request chunk cache size in MB.">?</a>
+                                                   data-content="Max per-request chunk cache size, in bytes or a number
+                                                   ending in M, MB, G, GB, etc..">?</a>
                                             </td>
                                             <td>
                                                 <input class="form-control" type="number"
@@ -1601,11 +1603,12 @@
                                             </td>
                                         </tr>
                                         <tr>
-                                            <td>Chunk Size (KB)
+                                            <td>Chunk Size
                                                 <a tabindex="0" class="btn btn-sm cl-help"
                                                    role="button" data-toggle="popover"
                                                    data-trigger="focus"
-                                                   data-content="Chunk size.">?</a>
+                                                   data-content="Chunk size, in bytes or a number
+                                                   ending in M, MB, G, GB, etc.">?</a>
                                             </td>
                                             <td>
                                                 <input class="form-control" type="number"
@@ -1636,11 +1639,12 @@
                                             </td>
                                         </tr>
                                         <tr>
-                                            <td>Max Chunk Cache Size (MB)
+                                            <td>Max Chunk Cache Size
                                                 <a tabindex="0" class="btn btn-sm cl-help"
                                                    role="button" data-toggle="popover"
                                                    data-trigger="focus"
-                                                   data-content="Max per-request chunk cache size in MB.">?</a>
+                                                   data-content="Max per-request chunk cache size, in bytes or a number
+                                                   ending in M, MB, G, GB, etc.">?</a>
                                             </td>
                                             <td>
                                                 <input class="form-control" type="number"

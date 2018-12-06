@@ -26,8 +26,8 @@ import static edu.illinois.library.cantaloupe.source.HttpSource.LOGGER;
  */
 final class HTTPStreamFactory implements StreamFactory {
 
-    private static final int DEFAULT_CHUNK_SIZE_KB       = 512;
-    private static final int DEFAULT_CHUNK_CACHE_SIZE_MB = 10;
+    private static final int DEFAULT_CHUNK_SIZE       = (int) Math.pow(2, 19);
+    private static final int DEFAULT_CHUNK_CACHE_SIZE = (int) Math.pow(1024, 2);
 
     private final HttpClient client;
     private final HttpSource.RequestInfo requestInfo;
@@ -112,9 +112,8 @@ final class HTTPStreamFactory implements StreamFactory {
     }
 
     private int getChunkSize() {
-        return Configuration.getInstance().getInt(
-                Key.HTTPSOURCE_CHUNK_SIZE,
-                DEFAULT_CHUNK_SIZE_KB) * 1024;
+        return (int) Configuration.getInstance().getLongBytes(
+                Key.HTTPSOURCE_CHUNK_SIZE, DEFAULT_CHUNK_SIZE);
     }
 
     private boolean isChunkCacheEnabled() {
@@ -123,9 +122,8 @@ final class HTTPStreamFactory implements StreamFactory {
     }
 
     private int getMaxChunkCacheSize() {
-        return Configuration.getInstance().getInt(
-                Key.HTTPSOURCE_CHUNK_CACHE_MAX_SIZE,
-                DEFAULT_CHUNK_CACHE_SIZE_MB) * 1024 * 1024;
+        return (int) Configuration.getInstance().getLongBytes(
+                Key.HTTPSOURCE_CHUNK_CACHE_MAX_SIZE, DEFAULT_CHUNK_CACHE_SIZE);
     }
 
 }

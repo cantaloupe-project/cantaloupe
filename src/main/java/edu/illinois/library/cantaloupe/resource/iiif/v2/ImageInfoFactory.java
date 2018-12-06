@@ -69,7 +69,7 @@ final class ImageInfoFactory {
                      final Set<Format> processorOutputFormats) {
         Configuration config = Configuration.getInstance();
         allowUpscaling = config.getBoolean(Key.ALLOW_UPSCALING, false);
-        maxPixels      = config.getInt(Key.MAX_PIXELS, 0);
+        maxPixels      = (int) config.getLongBytes(Key.MAX_PIXELS, 0);
         minSize        = config.getInt(Key.IIIF_MIN_SIZE, DEFAULT_MIN_SIZE);
         minTileSize    = config.getInt(Key.IIIF_MIN_TILE_SIZE, DEFAULT_MIN_TILE_SIZE);
 

@@ -1,10 +1,14 @@
 package edu.illinois.library.cantaloupe.config;
 
+import edu.illinois.library.cantaloupe.util.StringUtils;
+import org.apache.commons.configuration.ConversionException;
+
 import java.io.IOException;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.NoSuchElementException;
 
 /**
  * Application configuration. Provides read-only or read-write access to
@@ -175,6 +179,54 @@ public interface Configuration {
      *         long.
      */
     long getLong(String key, long defaultValue);
+
+    /**
+     * @see #getLongBytes(String)
+     */
+    default long getLongBytes(Key key) {
+        return getLongBytes(key.key());
+    }
+
+    /**
+     * @throws java.util.NoSuchElementException
+     */
+    default long getLongBytes(String key) {
+        String str = getString(key);
+        if (str != null) {
+            try {
+                return StringUtils.toByteSize(str);
+            } catch (NumberFormatException e) {
+                throw new ConversionException(e);
+            }
+        }
+        throw new NoSuchElementException(key);
+    }
+
+    /**
+     * @see #getLongBytes(String, long)
+     */
+    default long getLongBytes(Key key, long defaultValue) {
+        return getLongBytes(key.key(), defaultValue);
+    }
+
+    /**
+     * @return Byte size corresponding to the given key, or the given default
+     *         value if the target value is null or cannot be coerced to a
+     *         byte size.
+     * @see edu.illinois.library.cantaloupe.util.StringUtils#toByteSize(String)
+     *      which is used to parse the string.
+     */
+    default long getLongBytes(String key, long defaultValue) {
+        String str = getString(key);
+        if (str != null && !str.isEmpty()) {
+            try {
+                return StringUtils.toByteSize(str);
+            } catch (NumberFormatException e) {
+                return defaultValue;
+            }
+        }
+        return defaultValue;
+    }
 
     /**
      * @see #getProperty(String)

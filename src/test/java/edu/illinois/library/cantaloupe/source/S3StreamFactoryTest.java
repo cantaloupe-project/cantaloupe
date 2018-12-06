@@ -97,7 +97,7 @@ public class S3StreamFactoryTest extends BaseTest {
     public void testNewSeekableStreamClassWithChunkingEnabled() throws Exception {
         final Configuration config = Configuration.getInstance();
         config.setProperty(Key.S3SOURCE_CHUNKING_ENABLED, true);
-        config.setProperty(Key.S3SOURCE_CHUNK_SIZE, 777);
+        config.setProperty(Key.S3SOURCE_CHUNK_SIZE, "777K");
 
         try (ImageInputStream is = instance.newSeekableStream()) {
             assertTrue(is instanceof HTTPImageInputStream);
@@ -117,9 +117,9 @@ public class S3StreamFactoryTest extends BaseTest {
     public void testNewSeekableStreamWithChunkCacheEnabled() throws Exception {
         final Configuration config = Configuration.getInstance();
         config.setProperty(Key.S3SOURCE_CHUNKING_ENABLED, true);
-        config.setProperty(Key.S3SOURCE_CHUNK_SIZE, 777);
+        config.setProperty(Key.S3SOURCE_CHUNK_SIZE, "777K");
         config.setProperty(Key.S3SOURCE_CHUNK_CACHE_ENABLED, true);
-        config.setProperty(Key.S3SOURCE_CHUNK_CACHE_MAX_SIZE, 5);
+        config.setProperty(Key.S3SOURCE_CHUNK_CACHE_MAX_SIZE, "5M");
 
         try (ImageInputStream is = instance.newSeekableStream()) {
             assertTrue(is instanceof HTTPImageInputStream);

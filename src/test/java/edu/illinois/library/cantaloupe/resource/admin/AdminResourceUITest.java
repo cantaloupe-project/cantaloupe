@@ -296,7 +296,7 @@ public class AdminResourceUITest extends AbstractAdminResourceTest {
         // Assert that the application configuration has been updated correctly
         final Configuration config = Configuration.getInstance();
         assertTrue(config.getBoolean(Key.ALLOW_UPSCALING));
-        assertEquals(5000, config.getInt(Key.MAX_PIXELS));
+        assertEquals(5000, config.getLongBytes(Key.MAX_PIXELS));
         assertEquals("attachment",
                 config.getString(Key.IIIF_CONTENT_DISPOSITION));
         assertEquals(75, config.getInt(Key.IIIF_MIN_SIZE));

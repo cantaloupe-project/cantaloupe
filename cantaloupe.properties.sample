@@ -51,10 +51,10 @@ slash_substitute =
 # Whether to allow requests for larger-than-full-scale images.
 allow_upscaling = false
 
-# Maximum number of pixels to return in a response, to prevent overloading
+# Maximum number of pixels to return in a response, to prevent overtaxing
 # the server. Requests for more pixels than this will receive an error
 # response. Set to 0 for no maximum.
-max_pixels = 400000000
+max_pixels = 100M
 
 # Errors will also be logged to the error log (if enabled).
 print_stack_trace_on_error_pages = true
@@ -154,15 +154,15 @@ HttpSource.request_timeout =
 # being less efficient, depending on many variables; see the user manual.)
 HttpSource.chunking.enabled = false
 
-# Chunk size (KB).
-HttpSource.chunking.chunk_size = 512
+# Chunk size.
+HttpSource.chunking.chunk_size = 512K
 
 # The per-request chunk cache caches downloaded chunks in memory during
 # a request, and clears them when the request is complete.
 HttpSource.chunking.cache.enabled = true
 
-# Max per-request chunk cache size in MB.
-HttpSource.chunking.cache.max_size = 10
+# Max per-request chunk cache size.
+HttpSource.chunking.cache.max_size = 10M
 
 # Tells HttpSource how to look up resources. Allowed values are
 # `BasicLookupStrategy` and `ScriptLookupStrategy`. ScriptLookupStrategy
@@ -205,15 +205,15 @@ S3Source.max_connections =
 # being less efficient, depending on many variables; see the user manual.)
 S3Source.chunking.enabled = false
 
-# Chunk size (KB).
-S3Source.chunking.chunk_size = 512
+# Chunk size.
+S3Source.chunking.chunk_size = 512K
 
 # The per-request chunk cache caches downloaded chunks in memory during
 # a request, and clears them when the request is complete.
 S3Source.chunking.cache.enabled = true
 
-# Max per-request chunk cache size in MB.
-S3Source.chunking.cache.max_size = 10
+# Max per-request chunk cache size.
+S3Source.chunking.cache.max_size = 10M
 
 # How to look up objects. Allowed values are `BasicLookupStrategy` and
 # `ScriptLookupStrategy`. ScriptLookupStrategy uses a delegate method for

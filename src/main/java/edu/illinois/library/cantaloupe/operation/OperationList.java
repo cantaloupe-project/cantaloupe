@@ -711,7 +711,7 @@ public final class OperationList implements Comparable<OperationList>,
         // Ensure that the resulting pixel area is less than or equal to the
         // max allowed area, unless the processing is a no-op.
         final long maxAllowedSize =
-                Configuration.getInstance().getLong(Key.MAX_PIXELS, 0);
+                Configuration.getInstance().getLongBytes(Key.MAX_PIXELS, 0);
         if (maxAllowedSize > 0 && hasEffect(fullSize, sourceFormat) &&
                 resultingSize.width() * resultingSize.height() > maxAllowedSize) {
             throw new IllegalSizeException();
