@@ -72,37 +72,6 @@ public class S3StreamFactoryTest extends BaseTest {
     }
 
     @Test
-    public void testNewImageInputStream() throws Exception {
-        int length = 0;
-        try (ImageInputStream is = instance.newImageInputStream()) {
-            while (is.read() != -1) {
-                length++;
-            }
-        }
-        assertEquals(5439, length);
-    }
-
-    @Test
-    public void testNewImageInputStreamClassWithChunkingEnabled() throws Exception {
-        final Configuration config = Configuration.getInstance();
-        config.setProperty(Key.S3SOURCE_CHUNKING_ENABLED, true);
-        config.setProperty(Key.S3SOURCE_CHUNK_SIZE, 777);
-
-        try (ImageInputStream is = instance.newImageInputStream()) {
-            assertTrue(is instanceof HTTPImageInputStream);
-            assertEquals(777 * 1024, ((HTTPImageInputStream) is).getWindowSize());
-        }
-    }
-
-    @Test
-    public void testNewImageInputStreamClassWithChunkingDisabled() throws Exception {
-        Configuration.getInstance().setProperty(Key.S3SOURCE_CHUNKING_ENABLED, false);
-        try (ImageInputStream is = instance.newImageInputStream()) {
-            assertTrue(is instanceof ClosingMemoryCacheImageInputStream);
-        }
-    }
-
-    @Test
     public void testNewInputStream() throws Exception {
         int length = 0;
         try (InputStream is = instance.newInputStream()) {
@@ -111,6 +80,37 @@ public class S3StreamFactoryTest extends BaseTest {
             }
         }
         assertEquals(5439, length);
+    }
+
+    @Test
+    public void testNewSeekableStream() throws Exception {
+        int length = 0;
+        try (ImageInputStream is = instance.newSeekableStream()) {
+            while (is.read() != -1) {
+                length++;
+            }
+        }
+        assertEquals(5439, length);
+    }
+
+    @Test
+    public void testNewSeekableStreamClassWithChunkingEnabled() throws Exception {
+        final Configuration config = Configuration.getInstance();
+        config.setProperty(Key.S3SOURCE_CHUNKING_ENABLED, true);
+        config.setProperty(Key.S3SOURCE_CHUNK_SIZE, 777);
+
+        try (ImageInputStream is = instance.newSeekableStream()) {
+            assertTrue(is instanceof HTTPImageInputStream);
+            assertEquals(777 * 1024, ((HTTPImageInputStream) is).getWindowSize());
+        }
+    }
+
+    @Test
+    public void testNewSeekableStreamClassWithChunkingDisabled() throws Exception {
+        Configuration.getInstance().setProperty(Key.S3SOURCE_CHUNKING_ENABLED, false);
+        try (ImageInputStream is = instance.newSeekableStream()) {
+            assertTrue(is instanceof ClosingMemoryCacheImageInputStream);
+        }
     }
 
 }

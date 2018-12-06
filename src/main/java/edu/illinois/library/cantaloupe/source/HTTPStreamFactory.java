@@ -43,40 +43,6 @@ final class HTTPStreamFactory implements StreamFactory {
         this.serverAcceptsRanges = serverAcceptsRanges;
     }
 
-    private boolean isChunkingEnabled() {
-        return Configuration.getInstance().getBoolean(
-                Key.HTTPSOURCE_CHUNKING_ENABLED, true);
-    }
-
-    private int getChunkSize() {
-        return Configuration.getInstance().getInt(
-                Key.HTTPSOURCE_CHUNK_SIZE, DEFAULT_CHUNK_SIZE_KB) * 1024;
-    }
-
-    @Override
-    public ImageInputStream newImageInputStream() throws IOException {
-        if (isChunkingEnabled()) {
-            if (serverAcceptsRanges) {
-                final int chunkSize = getChunkSize();
-                LOGGER.debug("newImageInputStream(): using {}-byte chunks",
-                        chunkSize);
-                final JettyHTTPImageInputStreamClient rangingClient =
-                        new JettyHTTPImageInputStreamClient(client, requestInfo.getURI());
-                rangingClient.setRequestTimeout(HttpSource.getRequestTimeout());
-                rangingClient.setExtraRequestHeaders(requestInfo.getHeaders());
-                return new HTTPImageInputStream(
-                        rangingClient, chunkSize, contentLength);
-            } else {
-                LOGGER.debug("newImageInputStream(): chunking is enabled, but " +
-                        "won't be used because the server's HEAD response " +
-                        "didn't include an Accept-Ranges header.");
-            }
-        } else {
-            LOGGER.debug("newImageInputStream(): chunking is disabled");
-        }
-        return StreamFactory.super.newImageInputStream();
-    }
-
     @Override
     public InputStream newInputStream() throws IOException {
         try {
@@ -107,6 +73,40 @@ final class HTTPStreamFactory implements StreamFactory {
             throw new IOException(e);
         }
         return null;
+    }
+
+    @Override
+    public ImageInputStream newSeekableStream() throws IOException {
+        if (isChunkingEnabled()) {
+            if (serverAcceptsRanges) {
+                final int chunkSize = getChunkSize();
+                LOGGER.debug("newSeekableStream(): using {}-byte chunks",
+                        chunkSize);
+                final JettyHTTPImageInputStreamClient rangingClient =
+                        new JettyHTTPImageInputStreamClient(client, requestInfo.getURI());
+                rangingClient.setRequestTimeout(HttpSource.getRequestTimeout());
+                rangingClient.setExtraRequestHeaders(requestInfo.getHeaders());
+                return new HTTPImageInputStream(
+                        rangingClient, chunkSize, contentLength);
+            } else {
+                LOGGER.debug("newSeekableStream(): chunking is enabled, but " +
+                        "won't be used because the server's HEAD response " +
+                        "didn't include an Accept-Ranges header.");
+            }
+        } else {
+            LOGGER.debug("newSeekableStream(): chunking is disabled");
+        }
+        return StreamFactory.super.newSeekableStream();
+    }
+
+    private boolean isChunkingEnabled() {
+        return Configuration.getInstance().getBoolean(
+                Key.HTTPSOURCE_CHUNKING_ENABLED, true);
+    }
+
+    private int getChunkSize() {
+        return Configuration.getInstance().getInt(
+                Key.HTTPSOURCE_CHUNK_SIZE, DEFAULT_CHUNK_SIZE_KB) * 1024;
     }
 
 }

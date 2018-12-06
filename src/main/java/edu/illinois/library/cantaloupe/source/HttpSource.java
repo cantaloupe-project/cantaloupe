@@ -75,7 +75,7 @@ import java.util.concurrent.TimeoutException;
  *                     <li>Ranged {@literal GET}</li>
  *                 </ol>
  *             </li>
- *             <li>If {@link HTTPStreamFactory#newImageInputStream()} is used:
+ *             <li>If {@link HTTPStreamFactory#newSeekableStream()} is used:
  *                 <ol>
  *                     <li>A series of ranged {@literal GET} requests (see {@link
  *                     edu.illinois.library.cantaloupe.source.stream.HTTPImageInputStream}

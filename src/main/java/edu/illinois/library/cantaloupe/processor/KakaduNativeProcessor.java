@@ -238,7 +238,7 @@ class KakaduNativeProcessor implements FileProcessor, StreamProcessor {
     public void setStreamFactory(StreamFactory streamFactory) {
         this.streamFactory = streamFactory;
         try {
-            reader.setSource(streamFactory.newImageInputStream());
+            reader.setSource(streamFactory.newSeekableStream());
         } catch (IOException e) {
             LOGGER.error(e.getMessage());
         }

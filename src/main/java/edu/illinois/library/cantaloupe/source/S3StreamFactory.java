@@ -37,33 +37,6 @@ class S3StreamFactory implements StreamFactory {
         this.object     = object;
     }
 
-    private boolean isChunkingEnabled() {
-        return Configuration.getInstance().getBoolean(
-                Key.S3SOURCE_CHUNKING_ENABLED, true);
-    }
-
-    private int getChunkSize() {
-        return Configuration.getInstance().getInt(
-                Key.S3SOURCE_CHUNK_SIZE, DEFAULT_CHUNK_SIZE_KB) * 1024;
-    }
-
-    @Override
-    public ImageInputStream newImageInputStream() throws IOException {
-        if (isChunkingEnabled()) {
-            final int chunkSize = getChunkSize();
-            LOGGER.debug("newImageInputStream(): using {}-byte chunks",
-                    chunkSize);
-
-            final S3HTTPImageInputStreamClient client =
-                    new S3HTTPImageInputStreamClient(objectInfo);
-            return new HTTPImageInputStream(
-                    client, chunkSize, objectInfo.getLength());
-        } else {
-            LOGGER.debug("newImageInputStream(): chunking is disabled");
-            return StreamFactory.super.newImageInputStream();
-        }
-    }
-
     @Override
     public InputStream newInputStream() {
         final InputStream responseStream = object.getObjectContent();
@@ -124,6 +97,33 @@ class S3StreamFactory implements StreamFactory {
                 return responseStream.skip(n);
             }
         };
+    }
+
+    @Override
+    public ImageInputStream newSeekableStream() throws IOException {
+        if (isChunkingEnabled()) {
+            final int chunkSize = getChunkSize();
+            LOGGER.debug("newSeekableStream(): using {}-byte chunks",
+                    chunkSize);
+
+            final S3HTTPImageInputStreamClient client =
+                    new S3HTTPImageInputStreamClient(objectInfo);
+            return new HTTPImageInputStream(
+                    client, chunkSize, objectInfo.getLength());
+        } else {
+            LOGGER.debug("newSeekableStream(): chunking is disabled");
+            return StreamFactory.super.newSeekableStream();
+        }
+    }
+
+    private boolean isChunkingEnabled() {
+        return Configuration.getInstance().getBoolean(
+                Key.S3SOURCE_CHUNKING_ENABLED, true);
+    }
+
+    private int getChunkSize() {
+        return Configuration.getInstance().getInt(
+                Key.S3SOURCE_CHUNK_SIZE, DEFAULT_CHUNK_SIZE_KB) * 1024;
     }
 
 }

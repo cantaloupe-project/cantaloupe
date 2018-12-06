@@ -12,6 +12,14 @@ import java.io.InputStream;
 public interface StreamFactory {
 
     /**
+     * Provides a new input stream to read from. May be called multiple times.
+     *
+     * @return New input stream to read from.
+     * @throws IOException If there is any issue creating the stream.
+     */
+    InputStream newInputStream() throws IOException;
+
+    /**
      * <p>Provides a new {@link ImageInputStream} to read from.</p>
      *
      * <p>This method may be called multiple times.</p>
@@ -28,16 +36,8 @@ public interface StreamFactory {
      * @return New stream to read from.
      * @throws IOException if there is any issue creating the stream.
      */
-    default ImageInputStream newImageInputStream() throws IOException {
+    default ImageInputStream newSeekableStream() throws IOException {
         return new ClosingMemoryCacheImageInputStream(newInputStream());
     }
-
-    /**
-     * Provides a new input stream to read from. May be called multiple times.
-     *
-     * @return New input stream to read from.
-     * @throws IOException If there is any issue creating the stream.
-     */
-    InputStream newInputStream() throws IOException;
 
 }

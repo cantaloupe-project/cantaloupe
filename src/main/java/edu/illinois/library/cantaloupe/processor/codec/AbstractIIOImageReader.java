@@ -295,7 +295,7 @@ abstract class AbstractIIOImageReader {
                 IOUtils.closeQuietly(inputStream);
             }
         } finally {
-            inputStream = streamFactory.newImageInputStream();
+            inputStream = streamFactory.newSeekableStream();
         }
         createReader();
     }

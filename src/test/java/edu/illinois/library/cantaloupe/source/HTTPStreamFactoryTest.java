@@ -62,73 +62,6 @@ public class HTTPStreamFactoryTest extends BaseTest {
     }
 
     @Test
-    public void testNewImageInputStreamWhenChunkingIsEnabledAndServerAcceptsRanges()
-            throws Exception {
-        server.start();
-
-        final Configuration config = Configuration.getInstance();
-        config.setProperty(Key.HTTPSOURCE_CHUNKING_ENABLED, true);
-        config.setProperty(Key.HTTPSOURCE_CHUNK_SIZE, 777);
-
-        try (ImageInputStream is = newInstance(true).newImageInputStream()) {
-            assertTrue(is instanceof HTTPImageInputStream);
-            assertEquals(777 * 1024, ((HTTPImageInputStream) is).getWindowSize());
-        }
-    }
-
-    @Test
-    public void testNewImageInputStreamWhenChunkingIsEnabledButServerDoesNotAcceptRanges()
-            throws Exception {
-        server.setAcceptingRanges(false);
-        server.start();
-
-        Configuration.getInstance().setProperty(Key.HTTPSOURCE_CHUNKING_ENABLED, true);
-        try (ImageInputStream is = newInstance(false).newImageInputStream()) {
-            assertTrue(is instanceof ClosingMemoryCacheImageInputStream);
-        }
-    }
-
-    @Test
-    public void testNewImageInputStreamWhenChunkingIsDisabled() throws Exception {
-        server.start();
-
-        Configuration.getInstance().setProperty(Key.HTTPSOURCE_CHUNKING_ENABLED, false);
-        try (ImageInputStream is = newInstance(true).newImageInputStream()) {
-            assertTrue(is instanceof ClosingMemoryCacheImageInputStream);
-        }
-    }
-
-    @Test
-    public void testNewImageInputStreamSendsCustomHeaders() throws Exception {
-        server.setHandler(new DefaultHandler() {
-            @Override
-            public void handle(String target,
-                               Request baseRequest,
-                               HttpServletRequest request,
-                               HttpServletResponse response) {
-                assertEquals("yes", request.getHeader("X-Custom"));
-                baseRequest.setHandled(true);
-            }
-        });
-        server.start();
-
-        try (ImageInputStream is = newInstance().newImageInputStream()) {}
-    }
-
-    @Test
-    public void testNewImageInputStreamReturnsContent() throws Exception {
-        server.start();
-
-        int length = 0;
-        try (ImageInputStream is = newInstance().newImageInputStream()) {
-            while (is.read() != -1) {
-                length++;
-            }
-        }
-        assertEquals(5439, length);
-    }
-
-    @Test
     public void testNewInputStreamSendsCustomHeaders() throws Exception {
         server.setHandler(new DefaultHandler() {
             @Override
@@ -151,6 +84,73 @@ public class HTTPStreamFactoryTest extends BaseTest {
 
         int length = 0;
         try (InputStream is = newInstance().newInputStream()) {
+            while (is.read() != -1) {
+                length++;
+            }
+        }
+        assertEquals(5439, length);
+    }
+
+    @Test
+    public void testNewSeekableStreamWhenChunkingIsEnabledAndServerAcceptsRanges()
+            throws Exception {
+        server.start();
+
+        final Configuration config = Configuration.getInstance();
+        config.setProperty(Key.HTTPSOURCE_CHUNKING_ENABLED, true);
+        config.setProperty(Key.HTTPSOURCE_CHUNK_SIZE, 777);
+
+        try (ImageInputStream is = newInstance(true).newSeekableStream()) {
+            assertTrue(is instanceof HTTPImageInputStream);
+            assertEquals(777 * 1024, ((HTTPImageInputStream) is).getWindowSize());
+        }
+    }
+
+    @Test
+    public void testNewSeekableStreamWhenChunkingIsEnabledButServerDoesNotAcceptRanges()
+            throws Exception {
+        server.setAcceptingRanges(false);
+        server.start();
+
+        Configuration.getInstance().setProperty(Key.HTTPSOURCE_CHUNKING_ENABLED, true);
+        try (ImageInputStream is = newInstance(false).newSeekableStream()) {
+            assertTrue(is instanceof ClosingMemoryCacheImageInputStream);
+        }
+    }
+
+    @Test
+    public void testNewSeekableStreamWhenChunkingIsDisabled() throws Exception {
+        server.start();
+
+        Configuration.getInstance().setProperty(Key.HTTPSOURCE_CHUNKING_ENABLED, false);
+        try (ImageInputStream is = newInstance(true).newSeekableStream()) {
+            assertTrue(is instanceof ClosingMemoryCacheImageInputStream);
+        }
+    }
+
+    @Test
+    public void testNewSeekableStreamSendsCustomHeaders() throws Exception {
+        server.setHandler(new DefaultHandler() {
+            @Override
+            public void handle(String target,
+                               Request baseRequest,
+                               HttpServletRequest request,
+                               HttpServletResponse response) {
+                assertEquals("yes", request.getHeader("X-Custom"));
+                baseRequest.setHandled(true);
+            }
+        });
+        server.start();
+
+        try (ImageInputStream is = newInstance().newSeekableStream()) {}
+    }
+
+    @Test
+    public void testNewSeekableStreamReturnsContent() throws Exception {
+        server.start();
+
+        int length = 0;
+        try (ImageInputStream is = newInstance().newSeekableStream()) {
             while (is.read() != -1) {
                 length++;
             }
