@@ -17,6 +17,15 @@ public final class Headers implements Iterable<Header> {
 
     private final List<Header> headers = new ArrayList<>();
 
+    public Headers() {}
+
+    /**
+     * Copy constructor.
+     */
+    public Headers(Headers headers) {
+        headers.forEach(other -> add(new Header(other)));
+    }
+
     public void add(String name, String value) {
         add(new Header(name, value));
     }

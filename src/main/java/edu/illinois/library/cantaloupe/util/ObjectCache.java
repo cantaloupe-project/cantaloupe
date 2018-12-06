@@ -18,7 +18,7 @@ public final class ObjectCache<K, V> {
      */
     public ObjectCache(long maxSize) {
         this.maxSize = maxSize;
-        store = Caffeine.newBuilder().maximumSize(maxSize).build();
+        store = Caffeine.newBuilder().softValues().maximumSize(maxSize).build();
     }
 
     public void cleanUp() {

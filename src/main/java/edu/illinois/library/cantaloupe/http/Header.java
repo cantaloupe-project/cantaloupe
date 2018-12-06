@@ -15,6 +15,13 @@ public final class Header {
         setValue(value);
     }
 
+    /**
+     * Copy constructor.
+     */
+    public Header(Header header) {
+        this(header.getName(), header.getValue());
+    }
+
     @Override
     public boolean equals(Object obj) {
         if (obj == this) {

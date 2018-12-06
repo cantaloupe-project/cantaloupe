@@ -150,6 +150,20 @@ FilesystemSource.BasicLookupStrategy.path_suffix =
 HttpSource.trust_all_certs = false
 HttpSource.request_timeout =
 
+# Read data in chunks when it may be more efficient. (This also may end up
+# being less efficient, depending on many variables; see the user manual.)
+HttpSource.chunking.enabled = false
+
+# Chunk size (KB).
+HttpSource.chunking.chunk_size = 512
+
+# The per-request chunk cache caches downloaded chunks in memory during
+# a request, and clears them when the request is complete.
+HttpSource.chunking.cache.enabled = true
+
+# Max per-request chunk cache size in MB.
+HttpSource.chunking.cache.max_size = 10
+
 # Tells HttpSource how to look up resources. Allowed values are
 # `BasicLookupStrategy` and `ScriptLookupStrategy`. ScriptLookupStrategy
 # uses a delegate method for dynamic lookups; see the user manual.
@@ -166,24 +180,6 @@ HttpSource.BasicLookupStrategy.url_suffix =
 # Enables access to resources that require HTTP Basic authentication.
 HttpSource.BasicLookupStrategy.auth.basic.username =
 HttpSource.BasicLookupStrategy.auth.basic.secret =
-
-#----------------------------------------
-# JdbcSource
-#----------------------------------------
-
-# Note: JdbcSource requires some delegate methods to be implemented in
-# addition to the configuration here, and a JDBC driver to be installed on
-# the classpath; see the user manual.
-
-# !!
-JdbcSource.url = jdbc:postgresql://localhost:5432/my_database
-# !!
-JdbcSource.user = postgres
-# !!
-JdbcSource.password = postgres
-
-# !! Connection timeout in seconds.
-JdbcSource.connection_timeout = 10
 
 #----------------------------------------
 # S3Source
@@ -205,9 +201,23 @@ S3Source.secret_key =
 # use the default.
 S3Source.max_connections =
 
-# Tells S3Source how to look up objects. Allowed values are
-# `BasicLookupStrategy` and `ScriptLookupStrategy`. ScriptLookupStrategy
-# uses a delegate method for dynamic lookups; see the user manual.
+# Read data in chunks when it may be more efficient. (This also may end up
+# being less efficient, depending on many variables; see the user manual.)
+S3Source.chunking.enabled = false
+
+# Chunk size (KB).
+S3Source.chunking.chunk_size = 512
+
+# The per-request chunk cache caches downloaded chunks in memory during
+# a request, and clears them when the request is complete.
+S3Source.chunking.cache.enabled = true
+
+# Max per-request chunk cache size in MB.
+S3Source.chunking.cache.max_size = 10
+
+# How to look up objects. Allowed values are `BasicLookupStrategy` and
+# `ScriptLookupStrategy`. ScriptLookupStrategy uses a delegate method for
+# dynamic lookups; see the user manual.
 S3Source.lookup_strategy = BasicLookupStrategy
 
 # !! Name of the bucket containing images to be served.
@@ -240,6 +250,24 @@ AzureStorageSource.container_name =
 # `BasicLookupStrategy` and `ScriptLookupStrategy`. ScriptLookupStrategy
 # uses a delegate method for dynamic lookups; see the user manual.
 AzureStorageSource.lookup_strategy = BasicLookupStrategy
+
+#----------------------------------------
+# JdbcSource
+#----------------------------------------
+
+# Note: JdbcSource requires some delegate methods to be implemented in
+# addition to the configuration here, and a JDBC driver to be installed on
+# the classpath; see the user manual.
+
+# !!
+JdbcSource.url = jdbc:postgresql://localhost:5432/my_database
+# !!
+JdbcSource.user = postgres
+# !!
+JdbcSource.password = postgres
+
+# !! Connection timeout in seconds.
+JdbcSource.connection_timeout = 10
 
 ###########################################################################
 # PROCESSORS

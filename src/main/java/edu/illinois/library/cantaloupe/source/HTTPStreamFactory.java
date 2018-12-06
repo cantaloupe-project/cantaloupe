@@ -1,6 +1,9 @@
 package edu.illinois.library.cantaloupe.source;
 
+import edu.illinois.library.cantaloupe.config.Configuration;
+import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.http.Headers;
+import edu.illinois.library.cantaloupe.source.stream.HTTPImageInputStream;
 import org.eclipse.jetty.client.HttpClient;
 import org.eclipse.jetty.client.api.Request;
 import org.eclipse.jetty.client.api.Response;
@@ -8,6 +11,7 @@ import org.eclipse.jetty.client.util.InputStreamResponseListener;
 import org.eclipse.jetty.http.HttpMethod;
 import org.eclipse.jetty.http.HttpStatus;
 
+import javax.imageio.stream.ImageInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.concurrent.ExecutionException;
@@ -17,18 +21,27 @@ import java.util.concurrent.TimeoutException;
 import static edu.illinois.library.cantaloupe.source.HttpSource.LOGGER;
 
 /**
- * Returned from {@link HttpSource#newStreamFactory()}.
+ * Source of streams for {@link HttpSource}, returned from {@link
+ * HttpSource#newStreamFactory()}.
  */
 final class HTTPStreamFactory implements StreamFactory {
 
-    private static final HttpMethod HTTP_METHOD = HttpMethod.GET;
+    private static final int DEFAULT_CHUNK_SIZE_KB       = 512;
+    private static final int DEFAULT_CHUNK_CACHE_SIZE_MB = 10;
 
     private final HttpClient client;
     private final HttpSource.RequestInfo requestInfo;
+    private final long contentLength;
+    private final boolean serverAcceptsRanges;
 
-    HTTPStreamFactory(HttpClient client, HttpSource.RequestInfo requestInfo) {
-        this.client = client;
-        this.requestInfo = requestInfo;
+    HTTPStreamFactory(HttpClient client,
+                      HttpSource.RequestInfo requestInfo,
+                      long contentLength,
+                      boolean serverAcceptsRanges) {
+        this.client              = client;
+        this.requestInfo         = requestInfo;
+        this.contentLength       = contentLength;
+        this.serverAcceptsRanges = serverAcceptsRanges;
     }
 
     @Override
@@ -42,11 +55,11 @@ final class HTTPStreamFactory implements StreamFactory {
             Request request = client
                     .newRequest(requestInfo.getURI())
                     .timeout(HttpSource.getRequestTimeout(), TimeUnit.SECONDS)
-                    .method(HTTP_METHOD);
+                    .method(HttpMethod.GET);
             extraHeaders.forEach(h -> request.header(h.getName(), h.getValue()));
 
-            LOGGER.debug("Requesting {} {} (extra headers: {})",
-                    HTTP_METHOD, requestInfo.getURI(), extraHeaders);
+            LOGGER.trace("Requesting GET {} (extra headers: {})",
+                    requestInfo.getURI(), extraHeaders);
 
             request.send(listener);
 
@@ -61,6 +74,58 @@ final class HTTPStreamFactory implements StreamFactory {
             throw new IOException(e);
         }
         return null;
+    }
+
+    @Override
+    public ImageInputStream newSeekableStream() throws IOException {
+        if (isChunkingEnabled()) {
+            if (serverAcceptsRanges) {
+                final int chunkSize = getChunkSize();
+                LOGGER.debug("newSeekableStream(): using {}-byte chunks",
+                        chunkSize);
+                final JettyHTTPImageInputStreamClient rangingClient =
+                        new JettyHTTPImageInputStreamClient(client, requestInfo.getURI());
+                rangingClient.setRequestTimeout(HttpSource.getRequestTimeout());
+                rangingClient.setExtraRequestHeaders(requestInfo.getHeaders());
+
+                HTTPImageInputStream stream = new HTTPImageInputStream(
+                        rangingClient, contentLength);
+                stream.setWindowSize(chunkSize);
+                if (isChunkCacheEnabled()) {
+                    stream.setMaxChunkCacheSize(getMaxChunkCacheSize());
+                }
+                return stream;
+            } else {
+                LOGGER.debug("newSeekableStream(): chunking is enabled, but " +
+                        "won't be used because the server's HEAD response " +
+                        "didn't include an Accept-Ranges header.");
+            }
+        } else {
+            LOGGER.debug("newSeekableStream(): chunking is disabled");
+        }
+        return StreamFactory.super.newSeekableStream();
+    }
+
+    private boolean isChunkingEnabled() {
+        return Configuration.getInstance().getBoolean(
+                Key.HTTPSOURCE_CHUNKING_ENABLED, true);
+    }
+
+    private int getChunkSize() {
+        return Configuration.getInstance().getInt(
+                Key.HTTPSOURCE_CHUNK_SIZE,
+                DEFAULT_CHUNK_SIZE_KB) * 1024;
+    }
+
+    private boolean isChunkCacheEnabled() {
+        return Configuration.getInstance().getBoolean(
+                Key.HTTPSOURCE_CHUNK_CACHE_ENABLED, true);
+    }
+
+    private int getMaxChunkCacheSize() {
+        return Configuration.getInstance().getInt(
+                Key.HTTPSOURCE_CHUNK_CACHE_MAX_SIZE,
+                DEFAULT_CHUNK_CACHE_SIZE_MB) * 1024 * 1024;
     }
 
 }

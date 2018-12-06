@@ -1,4 +1,4 @@
-package edu.illinois.library.cantaloupe.source;
+package edu.illinois.library.cantaloupe.source.stream;
 
 import javax.imageio.stream.MemoryCacheImageInputStream;
 import java.io.IOException;
@@ -8,7 +8,8 @@ import java.io.InputStream;
  * Override whose {@link #close()} method also closes the wrapped
  * {@link InputStream}.
  */
-class ClosingMemoryCacheImageInputStream extends MemoryCacheImageInputStream {
+public class ClosingMemoryCacheImageInputStream
+        extends MemoryCacheImageInputStream {
 
     /**
      * We have to maintain our own reference to this, because the one in super
@@ -16,7 +17,7 @@ class ClosingMemoryCacheImageInputStream extends MemoryCacheImageInputStream {
      */
     private InputStream wrappedStream;
 
-    ClosingMemoryCacheImageInputStream(InputStream stream) {
+    public ClosingMemoryCacheImageInputStream(InputStream stream) {
         super(stream);
         this.wrappedStream = stream;
     }

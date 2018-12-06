@@ -1,5 +1,7 @@
 package edu.illinois.library.cantaloupe.source;
 
+import edu.illinois.library.cantaloupe.source.stream.ClosingMemoryCacheImageInputStream;
+
 import javax.imageio.stream.ImageInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -8,6 +10,14 @@ import java.io.InputStream;
  * Provides input streams to read from.
  */
 public interface StreamFactory {
+
+    /**
+     * Provides a new input stream to read from. May be called multiple times.
+     *
+     * @return New input stream to read from.
+     * @throws IOException If there is any issue creating the stream.
+     */
+    InputStream newInputStream() throws IOException;
 
     /**
      * <p>Provides a new {@link ImageInputStream} to read from.</p>
@@ -26,16 +36,8 @@ public interface StreamFactory {
      * @return New stream to read from.
      * @throws IOException if there is any issue creating the stream.
      */
-    default ImageInputStream newImageInputStream() throws IOException {
+    default ImageInputStream newSeekableStream() throws IOException {
         return new ClosingMemoryCacheImageInputStream(newInputStream());
     }
-
-    /**
-     * Provides a new input stream to read from. May be called multiple times.
-     *
-     * @return New input stream to read from.
-     * @throws IOException If there is any issue creating the stream.
-     */
-    InputStream newInputStream() throws IOException;
 
 }

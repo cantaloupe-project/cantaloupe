@@ -20,6 +20,13 @@ public class HeaderTest {
         assertEquals("value", instance.getValue());
     }
 
+    @Test
+    public void testCopyConstructor() {
+        Header other = new Header(instance);
+        assertEquals("name", other.getName());
+        assertEquals("value", other.getValue());
+    }
+
     @Test(expected = IllegalArgumentException.class)
     public void testConstructorWithNullNameArgument() {
         new Header(null, "value");

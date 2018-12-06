@@ -12,11 +12,11 @@ import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.resource.RequestContext;
 import edu.illinois.library.cantaloupe.script.DelegateProxy;
 import edu.illinois.library.cantaloupe.script.DelegateProxyService;
+import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.ConfigurationConstants;
+import edu.illinois.library.cantaloupe.test.S3Server;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import edu.illinois.library.cantaloupe.util.AWSClientBuilder;
-import edu.illinois.library.cantaloupe.util.SocketUtils;
-import io.findify.s3mock.S3Mock;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -35,32 +35,30 @@ import static org.junit.Assert.*;
 
 public class S3SourceTest extends AbstractSourceTest {
 
-    private static final String OBJECT_KEY_WITH_CONTENT_TYPE_AND_RECOGNIZED_EXTENSION = "jpeg.jpg";
-    private static final String OBJECT_KEY_WITH_CONTENT_TYPE_AND_UNRECOGNIZED_EXTENSION = "jpeg.unknown";
-    private static final String OBJECT_KEY_WITH_CONTENT_TYPE_BUT_NO_EXTENSION = "jpg";
-    private static final String OBJECT_KEY_WITH_NO_CONTENT_TYPE_AND_RECOGNIZED_EXTENSION = "jpeg.jpg";
+    private static final String OBJECT_KEY_WITH_CONTENT_TYPE_AND_RECOGNIZED_EXTENSION      = "jpeg.jpg";
+    private static final String OBJECT_KEY_WITH_CONTENT_TYPE_AND_UNRECOGNIZED_EXTENSION    = "jpeg.unknown";
+    private static final String OBJECT_KEY_WITH_CONTENT_TYPE_BUT_NO_EXTENSION              = "jpg";
+    private static final String OBJECT_KEY_WITH_NO_CONTENT_TYPE_AND_RECOGNIZED_EXTENSION   = "jpeg.jpg";
     private static final String OBJECT_KEY_WITH_NO_CONTENT_TYPE_AND_UNRECOGNIZED_EXTENSION = "jpeg.unknown";
-    private static final String OBJECT_KEY_WITH_NO_CONTENT_TYPE_OR_EXTENSION = "jpg";
-    private static final String NON_IMAGE_KEY = "NotAnImage";
+    private static final String OBJECT_KEY_WITH_NO_CONTENT_TYPE_OR_EXTENSION               = "jpg";
+    private static final String NON_IMAGE_KEY                                              = "NotAnImage";
 
-    private static S3Mock mockS3;
-    private static int mockS3Port;
+    private static final S3Server S3_SERVER = new S3Server();
 
     private S3Source instance;
 
     @BeforeClass
-    public static void beforeClass() throws IOException {
-        startServiceIfNecessary();
+    public static void beforeClass() throws Exception {
+        BaseTest.beforeClass();
+        startS3ServerIfNecessary();
         createBucket();
         seedFixtures();
     }
 
     @AfterClass
-    public static void afterClass() {
-        deleteFixtures();
-        if (mockS3 != null) {
-            mockS3.stop();
-        }
+    public static void afterClass() throws Exception {
+        BaseTest.afterClass();
+        S3_SERVER.stop();
     }
 
     private static void createBucket() {
@@ -94,7 +92,6 @@ public class S3SourceTest extends AbstractSourceTest {
                 OBJECT_KEY_WITH_NO_CONTENT_TYPE_OR_EXTENSION}) {
             try (ByteArrayOutputStream os = new ByteArrayOutputStream()) {
                 Files.copy(fixture, os);
-                os.flush();
                 byte[] imageBytes = os.toByteArray();
 
                 final ObjectMetadata metadata = new ObjectMetadata();
@@ -117,7 +114,6 @@ public class S3SourceTest extends AbstractSourceTest {
         fixture = TestUtil.getImage("text.txt");
         try (ByteArrayOutputStream os = new ByteArrayOutputStream()) {
             Files.copy(fixture, os);
-            os.flush();
             byte[] imageBytes = os.toByteArray();
 
             final ObjectMetadata metadata = new ObjectMetadata();
@@ -136,14 +132,9 @@ public class S3SourceTest extends AbstractSourceTest {
      * Starts a mock S3 service if {@link #getAccessKeyId()} and
      * {@link #getSecretKey()} return an empty value.
      */
-    private static void startServiceIfNecessary() {
+    private static void startS3ServerIfNecessary() throws IOException {
         if ("localhost".equals(getEndpoint().getHost())) {
-            mockS3Port = SocketUtils.getOpenPort();
-            mockS3 = new S3Mock.Builder()
-                    .withPort(mockS3Port)
-                    .withInMemoryBackend()
-                    .build();
-            mockS3.start();
+            S3_SERVER.start();
         }
     }
 
@@ -153,11 +144,6 @@ public class S3SourceTest extends AbstractSourceTest {
                 .accessKeyID(getAccessKeyId())
                 .secretKey(getSecretKey())
                 .build();
-    }
-
-    private static void deleteFixtures() {
-        final AmazonS3 s3 = client();
-        s3.deleteObject(getBucket(), OBJECT_KEY_WITH_CONTENT_TYPE_AND_RECOGNIZED_EXTENSION);
     }
 
     private static String getAccessKeyId() {
@@ -176,14 +162,14 @@ public class S3SourceTest extends AbstractSourceTest {
         org.apache.commons.configuration.Configuration testConfig =
                 TestUtil.getTestConfig();
         String endpointStr = testConfig.getString(ConfigurationConstants.S3_ENDPOINT.getKey());
-        if (endpointStr == null || endpointStr.isEmpty()) {
-            endpointStr = "http://localhost:" + mockS3Port;
+        if (endpointStr != null && !endpointStr.isEmpty()) {
+            try {
+                return new URI(endpointStr);
+            } catch (URISyntaxException e) {
+                return null;
+            }
         }
-        try {
-            return new URI(endpointStr);
-        } catch (URISyntaxException e) {
-            return null;
-        }
+        return S3_SERVER.getEndpoint();
     }
 
     private static String getSecretKey() {
@@ -193,6 +179,7 @@ public class S3SourceTest extends AbstractSourceTest {
     }
 
     @Before
+    @Override
     public void setUp() throws Exception {
         super.setUp();
         instance = newInstance();

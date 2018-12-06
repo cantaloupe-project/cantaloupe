@@ -2,8 +2,8 @@
 # and edit that.
 
 # Used by S3SourceTest and S3CacheTest.
-# Note: to use S3Mock, leave the endpoint blank and set the keys to non-empty
-# strings.
+# Note: to use S3Mock, leave the endpoint blank and set the keys to
+# s3mock/s3mock.
 s3.endpoint =
 s3.access_key_id = s3mock
 s3.secret_key = s3mock

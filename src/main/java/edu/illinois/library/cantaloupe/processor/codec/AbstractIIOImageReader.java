@@ -13,6 +13,7 @@ import edu.illinois.library.cantaloupe.operation.Scale;
 import edu.illinois.library.cantaloupe.operation.ReductionFactor;
 import edu.illinois.library.cantaloupe.processor.UnsupportedSourceFormatException;
 import edu.illinois.library.cantaloupe.source.StreamFactory;
+import edu.illinois.library.cantaloupe.source.stream.ClosingMemoryCacheImageInputStream;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 
@@ -25,6 +26,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -35,6 +37,9 @@ import java.util.Set;
  * need to.
  */
 abstract class AbstractIIOImageReader {
+
+    private static final Set<Format> SELECTIVELY_READABLE_FORMATS =
+            EnumSet.of(Format.JP2, Format.TIF);
 
     /**
      * Assigned by {@link #createReader()}.
@@ -230,7 +235,7 @@ abstract class AbstractIIOImageReader {
         if (!iioReaders.isEmpty()) {
             final String[] preferredImpls = getPreferredIIOImplementations();
 
-            getLogger().debug("ImageIO plugin preferences: {}",
+            getLogger().trace("ImageIO plugin preferences: {}",
                     (preferredImpls.length > 0) ?
                             String.join(", ", preferredImpls) : "none");
 
@@ -295,7 +300,20 @@ abstract class AbstractIIOImageReader {
                 IOUtils.closeQuietly(inputStream);
             }
         } finally {
-            inputStream = streamFactory.newImageInputStream();
+            // Some Image I/O readers, like the ones for JPEG, GIF, and PNG,
+            // must read whole images into memory.
+            if (SELECTIVELY_READABLE_FORMATS.contains(getFormat())) {
+                inputStream = streamFactory.newSeekableStream();
+                getLogger().trace("Using a {} for format {}",
+                        inputStream.getClass().getSimpleName(),
+                        getFormat());
+            } else {
+                inputStream = new ClosingMemoryCacheImageInputStream(
+                        streamFactory.newInputStream());
+                getLogger().trace("Using a {} for format {}",
+                        inputStream.getClass().getSimpleName(),
+                        getFormat());
+            }
         }
         createReader();
     }

@@ -19,13 +19,13 @@ public class PathStreamFactory implements StreamFactory {
     }
 
     @Override
-    public ImageInputStream newImageInputStream() throws IOException {
-        return new FileImageInputStream(path.toFile());
+    public InputStream newInputStream() throws IOException {
+        return Files.newInputStream(path);
     }
 
     @Override
-    public InputStream newInputStream() throws IOException {
-        return Files.newInputStream(path);
+    public ImageInputStream newSeekableStream() throws IOException {
+        return new FileImageInputStream(path.toFile());
     }
 
 }
