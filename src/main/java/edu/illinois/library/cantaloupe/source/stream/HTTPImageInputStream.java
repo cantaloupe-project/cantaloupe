@@ -42,7 +42,10 @@ public class HTTPImageInputStream extends ImageInputStreamImpl
     private static final Logger LOGGER =
             LoggerFactory.getLogger(HTTPImageInputStream.class);
 
+    private static final double MEGABYTE = Math.pow(2, 20);
+
     private HTTPImageInputStreamClient client;
+    private int numChunkFetches;
     private final int windowSize;
     private long streamLength;
     private int windowIndex = -1, indexWithinBuffer;
@@ -113,6 +116,10 @@ public class HTTPImageInputStream extends ImageInputStreamImpl
 
     @Override
     public void close() throws IOException {
+        LOGGER.debug("close(): {} chunks fetched ({}MB of {}MB)",
+                numChunkFetches,
+                ((numChunkFetches * windowSize) / MEGABYTE),
+                String.format("%.2f", streamLength / MEGABYTE));
         try {
             super.close();
         } finally {
@@ -192,6 +199,7 @@ public class HTTPImageInputStream extends ImageInputStreamImpl
             windowBuffer      = response.getBody();
             windowIndex       = streamWindowIndex;
             indexWithinBuffer = (int) streamPos % windowSize;
+            numChunkFetches++;
         }
     }
 
