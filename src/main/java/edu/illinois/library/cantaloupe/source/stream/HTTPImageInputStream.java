@@ -30,7 +30,8 @@ import java.io.IOException;
  *
  * <p>Currently this class is simple and only demonstrates the windowing
  * technique. To improve performance, it could be enhanced to e.g. retain
- * multiple windows, cache them to disk, etc.</p>
+ * multiple windows, asynchronously retrieve adjacent windows, cache windows to
+ * disk, etc.</p>
  *
  * @author Alex Dolski UIUC
  * @since 4.1
@@ -91,6 +92,10 @@ public class HTTPImageInputStream extends ImageInputStreamImpl
         this.windowSize   = windowSize;
         this.windowBuffer = new byte[windowSize];
         this.streamLength = resourceLength;
+    }
+
+    public int getWindowSize() {
+        return windowSize;
     }
 
     /**

@@ -1292,6 +1292,53 @@
                                             </td>
                                         </tr>
                                         <tr>
+                                            <td>Max Connections
+                                                <a tabindex="0" class="btn btn-sm cl-help"
+                                                   role="button" data-toggle="popover"
+                                                   data-trigger="focus"
+                                                   data-content="Maximum number of concurrent HTTP connections to AWS.">?</a>
+                                            </td>
+                                            <td>
+                                                <input class="form-control" type="number"
+                                                       min="1"
+                                                       name="S3Source.max_connections"
+                                                       data-requires-restart="true">
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Chunking
+                                                <a tabindex="0" class="btn btn-sm cl-help"
+                                                   role="button" data-toggle="popover"
+                                                   data-trigger="focus"
+                                                   data-content="Read data in chunks when it may be more efficient.">?</a>
+                                            </td>
+                                            <td>
+                                                <div class="checkbox">
+                                                    <label>
+                                                        <input type="checkbox"
+                                                               name="S3Source.chunking.enabled"
+                                                               value="true"
+                                                               data-requires-restart="false">
+                                                        Enabled
+                                                    </label>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Chunk Size (KB)
+                                                <a tabindex="0" class="btn btn-sm cl-help"
+                                                   role="button" data-toggle="popover"
+                                                   data-trigger="focus"
+                                                   data-content="Chunk size.">?</a>
+                                            </td>
+                                            <td>
+                                                <input class="form-control" type="number"
+                                                       min="16"
+                                                       name="S3Source.chunking.chunk_size"
+                                                       data-requires-restart="true">
+                                            </td>
+                                        </tr>
+                                        <tr>
                                             <td>Lookup Strategy
                                                 <a tabindex="0" class="btn btn-sm cl-help"
                                                    role="button" data-toggle="popover"
@@ -1307,20 +1354,6 @@
                                                     <option value="BasicLookupStrategy">Basic</option>
                                                     <option value="ScriptLookupStrategy">Delegate Script</option>
                                                 </select>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td>Max Connections
-                                                <a tabindex="0" class="btn btn-sm cl-help"
-                                                   role="button" data-toggle="popover"
-                                                   data-trigger="focus"
-                                                   data-content="Maximum number of concurrent HTTP connections to AWS.">?</a>
-                                            </td>
-                                            <td>
-                                                <input class="form-control" type="number"
-                                                       min="1"
-                                                       name="S3Source.max_connections"
-                                                       data-requires-restart="true">
                                             </td>
                                         </tr>
                                         <tr>

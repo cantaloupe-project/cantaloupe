@@ -324,6 +324,8 @@ public class AdminResourceUITest extends AbstractAdminResourceTest {
         inputNamed(Key.S3SOURCE_BUCKET_NAME).sendKeys("cats");
         inputNamed(Key.S3SOURCE_ENDPOINT).sendKeys("http://localhost:1234");
         inputNamed(Key.S3SOURCE_MAX_CONNECTIONS).sendKeys("45");
+        inputNamed(Key.S3SOURCE_CHUNKING_ENABLED).click();
+        inputNamed(Key.S3SOURCE_CHUNK_SIZE).sendKeys("453");
         selectNamed(Key.S3SOURCE_LOOKUP_STRATEGY).
                 selectByValue("BasicLookupStrategy");
         inputNamed(Key.S3SOURCE_PATH_PREFIX).sendKeys("/s3prefix");
@@ -379,6 +381,10 @@ public class AdminResourceUITest extends AbstractAdminResourceTest {
                 config.getString(Key.S3SOURCE_ENDPOINT));
         assertEquals("45",
                 config.getString(Key.S3SOURCE_MAX_CONNECTIONS));
+        assertTrue(
+                config.getBoolean(Key.S3SOURCE_CHUNKING_ENABLED));
+        assertEquals("453",
+                config.getString(Key.S3SOURCE_CHUNK_SIZE));
         assertEquals("BasicLookupStrategy",
                 config.getString(Key.S3SOURCE_LOOKUP_STRATEGY));
         assertEquals("/s3prefix",

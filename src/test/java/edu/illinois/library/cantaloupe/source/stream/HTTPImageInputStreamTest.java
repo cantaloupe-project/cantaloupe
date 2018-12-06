@@ -14,7 +14,6 @@ import org.junit.Test;
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
 import javax.imageio.stream.ImageInputStream;
-import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.file.Files;
@@ -115,6 +114,14 @@ public class HTTPImageInputStreamTest extends BaseTest {
         final Path fixture = TestUtil.getImage("tif");
         try (HTTPImageInputStream is = newInstanceFromConstructor1(fixture, 1024)) {
             assertEquals(Files.size(fixture), is.length());
+        }
+    }
+
+    @Test
+    public void testGetWindowSize() throws Exception {
+        final Path fixture = TestUtil.getImage("tif");
+        try (HTTPImageInputStream instance = newInstanceFromConstructor1(fixture, 555)) {
+            assertEquals(555, instance.getWindowSize());
         }
     }
 

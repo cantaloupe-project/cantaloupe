@@ -205,9 +205,15 @@ S3Source.secret_key =
 # use the default.
 S3Source.max_connections =
 
-# Tells S3Source how to look up objects. Allowed values are
-# `BasicLookupStrategy` and `ScriptLookupStrategy`. ScriptLookupStrategy
-# uses a delegate method for dynamic lookups; see the user manual.
+# Read data in chunks when it may be more efficient.
+S3Source.chunking.enabled = true
+
+# Chunk size (KB).
+S3Source.chunking.chunk_size = 512
+
+# How to look up objects. Allowed values are `BasicLookupStrategy` and
+# `ScriptLookupStrategy`. ScriptLookupStrategy uses a delegate method for
+# dynamic lookups; see the user manual.
 S3Source.lookup_strategy = BasicLookupStrategy
 
 # !! Name of the bucket containing images to be served.

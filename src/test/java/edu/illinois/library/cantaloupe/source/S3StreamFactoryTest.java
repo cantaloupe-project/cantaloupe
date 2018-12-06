@@ -5,6 +5,8 @@ import com.amazonaws.services.s3.model.GetObjectRequest;
 import com.amazonaws.services.s3.model.S3Object;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
+import edu.illinois.library.cantaloupe.source.stream.ClosingMemoryCacheImageInputStream;
+import edu.illinois.library.cantaloupe.source.stream.HTTPImageInputStream;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.S3Server;
 import edu.illinois.library.cantaloupe.util.AWSClientBuilder;
@@ -78,6 +80,26 @@ public class S3StreamFactoryTest extends BaseTest {
             }
         }
         assertEquals(5439, length);
+    }
+
+    @Test
+    public void testNewImageInputStreamClassWithChunkingEnabled() throws Exception {
+        final Configuration config = Configuration.getInstance();
+        config.setProperty(Key.S3SOURCE_CHUNKING_ENABLED, true);
+        config.setProperty(Key.S3SOURCE_CHUNK_SIZE, 777);
+
+        try (ImageInputStream is = instance.newImageInputStream()) {
+            assertTrue(is instanceof HTTPImageInputStream);
+            assertEquals(777 * 1024, ((HTTPImageInputStream) is).getWindowSize());
+        }
+    }
+
+    @Test
+    public void testNewImageInputStreamClassWithChunkingDisabled() throws Exception {
+        Configuration.getInstance().setProperty(Key.S3SOURCE_CHUNKING_ENABLED, false);
+        try (ImageInputStream is = instance.newImageInputStream()) {
+            assertTrue(is instanceof ClosingMemoryCacheImageInputStream);
+        }
     }
 
     @Test

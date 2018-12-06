@@ -182,6 +182,8 @@ public enum Key {
     S3CACHE_SECRET_KEY("S3Cache.secret_key"),
     S3SOURCE_ACCESS_KEY_ID("S3Source.access_key_id"),
     S3SOURCE_BUCKET_NAME("S3Source.BasicLookupStrategy.bucket.name"),
+    S3SOURCE_CHUNKING_ENABLED("S3Source.chunking.enabled"),
+    S3SOURCE_CHUNK_SIZE("S3Source.chunking.chunk_size"),
     S3SOURCE_ENDPOINT("S3Source.endpoint"),
     S3SOURCE_LOOKUP_STRATEGY("S3Source.lookup_strategy"),
     S3SOURCE_MAX_CONNECTIONS("S3Source.max_connections"),

@@ -2,20 +2,32 @@ package edu.illinois.library.cantaloupe.source;
 
 import com.amazonaws.services.s3.model.S3Object;
 import edu.illinois.library.cantaloupe.async.ThreadPool;
+import edu.illinois.library.cantaloupe.config.Configuration;
+import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.source.stream.HTTPImageInputStream;
+import edu.illinois.library.cantaloupe.source.stream.HTTPImageInputStreamClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.imageio.stream.ImageInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+/**
+ * Source of streams for {@link S3Source}, returned from {@link
+ * S3Source#newStreamFactory()}.
+ */
 class S3StreamFactory implements StreamFactory {
 
     private static final Logger LOGGER =
             LoggerFactory.getLogger(S3StreamFactory.class);
 
-    private static final int WINDOW_SIZE = (int) Math.pow(2, 19);
+    /**
+     * See {@link HTTPImageInputStream#HTTPImageInputStream(
+     * HTTPImageInputStreamClient, int, long)} for an explanation of this.
+     */
+    private static final int DEFAULT_CHUNK_SIZE_KB = 512;
 
     private S3ObjectInfo objectInfo;
     private S3Object object;
@@ -25,12 +37,31 @@ class S3StreamFactory implements StreamFactory {
         this.object     = object;
     }
 
+    private boolean isChunkingEnabled() {
+        return Configuration.getInstance().getBoolean(
+                Key.S3SOURCE_CHUNKING_ENABLED, true);
+    }
+
+    private int getChunkSize() {
+        return Configuration.getInstance().getInt(
+                Key.S3SOURCE_CHUNK_SIZE, DEFAULT_CHUNK_SIZE_KB) * 1024;
+    }
+
     @Override
-    public HTTPImageInputStream newImageInputStream() {
-        final S3HTTPImageInputStreamClient client =
-                new S3HTTPImageInputStreamClient(objectInfo);
-        return new HTTPImageInputStream(
-                client, WINDOW_SIZE, objectInfo.getLength());
+    public ImageInputStream newImageInputStream() throws IOException {
+        if (isChunkingEnabled()) {
+            final int chunkSize = getChunkSize();
+            LOGGER.debug("newImageInputStream(): using {}-byte chunks",
+                    chunkSize);
+
+            final S3HTTPImageInputStreamClient client =
+                    new S3HTTPImageInputStreamClient(objectInfo);
+            return new HTTPImageInputStream(
+                    client, chunkSize, objectInfo.getLength());
+        } else {
+            LOGGER.debug("newImageInputStream(): chunking is disabled");
+            return StreamFactory.super.newImageInputStream();
+        }
     }
 
     @Override
