@@ -26,7 +26,8 @@ import static edu.illinois.library.cantaloupe.source.HttpSource.LOGGER;
  */
 final class HTTPStreamFactory implements StreamFactory {
 
-    private static final int DEFAULT_CHUNK_SIZE_KB = (int) Math.pow(2, 19);
+    private static final int DEFAULT_CHUNK_SIZE_KB       = 512;
+    private static final int DEFAULT_CHUNK_CACHE_SIZE_MB = 10;
 
     private final HttpClient client;
     private final HttpSource.RequestInfo requestInfo;
@@ -90,6 +91,9 @@ final class HTTPStreamFactory implements StreamFactory {
                 HTTPImageInputStream stream = new HTTPImageInputStream(
                         rangingClient, contentLength);
                 stream.setWindowSize(chunkSize);
+                if (isChunkCacheEnabled()) {
+                    stream.setMaxChunkCacheSize(getMaxChunkCacheSize());
+                }
                 return stream;
             } else {
                 LOGGER.debug("newSeekableStream(): chunking is enabled, but " +
@@ -109,7 +113,19 @@ final class HTTPStreamFactory implements StreamFactory {
 
     private int getChunkSize() {
         return Configuration.getInstance().getInt(
-                Key.HTTPSOURCE_CHUNK_SIZE, DEFAULT_CHUNK_SIZE_KB) * 1024;
+                Key.HTTPSOURCE_CHUNK_SIZE,
+                DEFAULT_CHUNK_SIZE_KB) * 1024;
+    }
+
+    private boolean isChunkCacheEnabled() {
+        return Configuration.getInstance().getBoolean(
+                Key.HTTPSOURCE_CHUNK_CACHE_ENABLED, true);
+    }
+
+    private int getMaxChunkCacheSize() {
+        return Configuration.getInstance().getInt(
+                Key.HTTPSOURCE_CHUNK_CACHE_MAX_SIZE,
+                DEFAULT_CHUNK_CACHE_SIZE_MB) * 1024 * 1024;
     }
 
 }

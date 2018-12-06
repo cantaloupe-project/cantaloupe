@@ -157,6 +157,13 @@ HttpSource.chunking.enabled = false
 # Chunk size (KB).
 HttpSource.chunking.chunk_size = 512
 
+# The per-request chunk cache caches downloaded chunks in memory during
+# a request, and clears them when the request is complete.
+HttpSource.chunking.cache.enabled = true
+
+# Max per-request chunk cache size in MB.
+HttpSource.chunking.cache.max_size = 10
+
 # Tells HttpSource how to look up resources. Allowed values are
 # `BasicLookupStrategy` and `ScriptLookupStrategy`. ScriptLookupStrategy
 # uses a delegate method for dynamic lookups; see the user manual.
@@ -200,6 +207,13 @@ S3Source.chunking.enabled = false
 
 # Chunk size (KB).
 S3Source.chunking.chunk_size = 512
+
+# The per-request chunk cache caches downloaded chunks in memory during
+# a request, and clears them when the request is complete.
+S3Source.chunking.cache.enabled = true
+
+# Max per-request chunk cache size in MB.
+S3Source.chunking.cache.max_size = 10
 
 # How to look up objects. Allowed values are `BasicLookupStrategy` and
 # `ScriptLookupStrategy`. ScriptLookupStrategy uses a delegate method for

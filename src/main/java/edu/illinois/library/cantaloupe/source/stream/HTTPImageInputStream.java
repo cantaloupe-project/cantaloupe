@@ -2,6 +2,7 @@ package edu.illinois.library.cantaloupe.source.stream;
 
 import edu.illinois.library.cantaloupe.http.Range;
 import edu.illinois.library.cantaloupe.http.Response;
+import edu.illinois.library.cantaloupe.util.ObjectCache;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -18,6 +19,9 @@ import java.io.IOException;
  * readable, like JPEG2000 or multiresolution/tiled TIFF. Conversely, it may
  * reduce efficiency when reading whole images.</p>
  *
+ * <p>Downloaded chunks can be cached in memory by passing a positive value to
+ * {@link #setMaxChunkCacheSize(long)}. The cache is per-instance.</p>
+ *
  * <p>The HTTP client is abstracted into the exceedingly simple {@link
  * HTTPImageInputStreamClient} interface, so probably any HTTP client,
  * including many cloud storage clients, can be hooked up and used easily,
@@ -27,11 +31,6 @@ import java.io.IOException;
  * <p>This class works only with HTTP servers that support {@literal Range}
  * requests, as indicated by the presence of a {@literal Accept-Ranges: bytes}
  * header in a {@literal HEAD} response.</p>
- *
- * <p>Currently this class is simple and only demonstrates the windowing
- * technique. To improve performance, it could be enhanced to e.g. retain
- * multiple windows, asynchronously retrieve adjacent windows, cache windows to
- * disk, etc.</p>
  *
  * @author Alex Dolski UIUC
  * @since 4.1
@@ -50,11 +49,12 @@ public class HTTPImageInputStream extends ImageInputStreamImpl
     private static final double MEGABYTE = Math.pow(2, 20);
 
     private HTTPImageInputStreamClient client;
-    private int numChunkFetches;
+    private int numChunkDownloads, numChunkCacheHits;
     private int windowSize = DEFAULT_WINDOW_SIZE;
     private long streamLength;
     private int windowIndex = -1, indexWithinBuffer;
     private byte[] windowBuffer = new byte[windowSize];
+    private ObjectCache<Range,byte[]> chunkCache;
 
     /**
      * Variant that sends a preliminary {@literal HEAD} request to retrieve
@@ -84,11 +84,34 @@ public class HTTPImageInputStream extends ImageInputStreamImpl
         this.streamLength = resourceLength;
     }
 
+    public long getMaxChunkCacheSize() {
+        if (chunkCache != null) {
+            return chunkCache.maxSize();
+        }
+        return 0;
+    }
+
     public int getWindowSize() {
         return windowSize;
     }
 
     /**
+     * Must be called before any reading or seeking occurs, but
+     * <strong>after</strong> {@link #setWindowSize(int)}.
+     *
+     * @param maxChunkCacheSize Maximum byte size of the shared chunk cache.
+     *                          Supply {@literal 0} to disable the chunk cache.
+     */
+    public void setMaxChunkCacheSize(long maxChunkCacheSize) {
+        long count = Math.round(maxChunkCacheSize / (double) getWindowSize());
+        if (count > 0) {
+            chunkCache = new ObjectCache<>(count);
+        }
+    }
+
+    /**
+     * Must be called before any reading or seeking occurs.
+     *
      * @param windowSize Window/chunk size. In general, a smaller size means
      *                   more requests will be needed, and a larger size means
      *                   more irrelevant data will have to be read and
@@ -116,10 +139,11 @@ public class HTTPImageInputStream extends ImageInputStreamImpl
 
     @Override
     public void close() throws IOException {
-        LOGGER.debug("close(): {} chunks fetched ({}MB of {}MB)",
-                numChunkFetches,
-                ((numChunkFetches * windowSize) / MEGABYTE),
-                String.format("%.2f", streamLength / MEGABYTE));
+        LOGGER.debug("close(): {} chunks fetched ({}MB of {}MB); {} cache hits",
+                numChunkDownloads,
+                ((numChunkDownloads * windowSize) / MEGABYTE),
+                String.format("%.2f", streamLength / MEGABYTE),
+                numChunkCacheHits);
         try {
             super.close();
         } finally {
@@ -193,14 +217,41 @@ public class HTTPImageInputStream extends ImageInputStreamImpl
     private void prepareWindowBuffer() throws IOException {
         final int streamWindowIndex = getStreamWindowIndex();
         if (streamWindowIndex != windowIndex) {
-            Range range = getRange(streamWindowIndex);
-            LOGGER.trace("Filling window buffer with range: {}", range);
-            Response response = client.sendGETRequest(range);
-            windowBuffer      = response.getBody();
+            Range range       = getRange(streamWindowIndex);
+            windowBuffer      = fetchChunk(range);
             windowIndex       = streamWindowIndex;
             indexWithinBuffer = (int) streamPos % windowSize;
-            numChunkFetches++;
         }
+    }
+
+    /**
+     * Fetches a chunk for the given range by either retrieving it from the
+     * chunk cache or downloading it.
+     */
+    private byte[] fetchChunk(Range range) throws IOException {
+        // If the chunk cache is available, try to fetch the needed chunk
+        // from there. Otherwise, fetch it directly from the source.
+        byte[] chunk;
+        if (chunkCache != null) {
+            chunk = chunkCache.get(range);
+            if (chunk != null) {
+                LOGGER.trace("Chunk cache hit for range: {}", range);
+                numChunkCacheHits++;
+            } else {
+                chunk = downloadChunk(range);
+                chunkCache.put(range, chunk);
+            }
+        } else {
+            chunk = downloadChunk(range);
+        }
+        return chunk;
+    }
+
+    private byte[] downloadChunk(Range range) throws IOException {
+        LOGGER.trace("Downloading range: {}", range);
+        numChunkDownloads++;
+        Response response = client.sendGETRequest(range);
+        return response.getBody();
     }
 
     private Range getRange(int windowIndex) {

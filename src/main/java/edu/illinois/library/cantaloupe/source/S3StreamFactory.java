@@ -5,7 +5,6 @@ import edu.illinois.library.cantaloupe.async.ThreadPool;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.source.stream.HTTPImageInputStream;
-import edu.illinois.library.cantaloupe.source.stream.HTTPImageInputStreamClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -23,11 +22,8 @@ class S3StreamFactory implements StreamFactory {
     private static final Logger LOGGER =
             LoggerFactory.getLogger(S3StreamFactory.class);
 
-    /**
-     * See {@link HTTPImageInputStream#HTTPImageInputStream(
-     * HTTPImageInputStreamClient, int, long)} for an explanation of this.
-     */
-    private static final int DEFAULT_CHUNK_SIZE_KB = 512;
+    private static final int DEFAULT_CHUNK_SIZE_KB       = 512;
+    private static final int DEFAULT_CHUNK_CACHE_SIZE_MB = 10;
 
     private S3ObjectInfo objectInfo;
     private S3Object object;
@@ -112,6 +108,9 @@ class S3StreamFactory implements StreamFactory {
             HTTPImageInputStream stream = new HTTPImageInputStream(
                     client, objectInfo.getLength());
             stream.setWindowSize(chunkSize);
+            if (isChunkCacheEnabled()) {
+                stream.setMaxChunkCacheSize(getMaxChunkCacheSize());
+            }
             return stream;
         } else {
             LOGGER.debug("newSeekableStream(): chunking is disabled");
@@ -126,7 +125,19 @@ class S3StreamFactory implements StreamFactory {
 
     private int getChunkSize() {
         return Configuration.getInstance().getInt(
-                Key.S3SOURCE_CHUNK_SIZE, DEFAULT_CHUNK_SIZE_KB) * 1024;
+                Key.S3SOURCE_CHUNK_SIZE,
+                DEFAULT_CHUNK_SIZE_KB) * 1024;
+    }
+
+    private boolean isChunkCacheEnabled() {
+        return Configuration.getInstance().getBoolean(
+                Key.S3SOURCE_CHUNK_CACHE_ENABLED, true);
+    }
+
+    private int getMaxChunkCacheSize() {
+        return Configuration.getInstance().getInt(
+                Key.S3SOURCE_CHUNK_CACHE_MAX_SIZE,
+                DEFAULT_CHUNK_CACHE_SIZE_MB) * 1024 * 1024;
     }
 
 }

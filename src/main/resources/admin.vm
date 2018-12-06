@@ -1341,6 +1341,41 @@
                                             </td>
                                         </tr>
                                         <tr>
+                                            <td>Chunk Cache
+                                                <a tabindex="0" class="btn btn-sm cl-help"
+                                                   role="button" data-toggle="popover"
+                                                   data-trigger="focus"
+                                                   data-content="The per-request chunk cache caches downloaded
+                                                   chunks in memory during a request, and clears them when the
+                                                   request is complete.">?</a>
+                                            </td>
+                                            <td>
+                                                <div class="checkbox">
+                                                    <label>
+                                                        <input type="checkbox"
+                                                               name="S3Source.chunking.cache.enabled"
+                                                               value="true"
+                                                               data-requires-restart="false">
+                                                        Enabled
+                                                    </label>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Max Chunk Cache Size (MB)
+                                                <a tabindex="0" class="btn btn-sm cl-help"
+                                                   role="button" data-toggle="popover"
+                                                   data-trigger="focus"
+                                                   data-content="Max per-request chunk cache size in MB.">?</a>
+                                            </td>
+                                            <td>
+                                                <input class="form-control" type="number"
+                                                       min="1"
+                                                       name="S3Source.chunking.cache.max_size"
+                                                       data-requires-restart="false">
+                                            </td>
+                                        </tr>
+                                        <tr>
                                             <td>Lookup Strategy
                                                 <a tabindex="0" class="btn btn-sm cl-help"
                                                    role="button" data-toggle="popover"
@@ -1576,6 +1611,41 @@
                                                 <input class="form-control" type="number"
                                                        min="16"
                                                        name="HttpSource.chunking.chunk_size"
+                                                       data-requires-restart="false">
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Chunk Cache
+                                                <a tabindex="0" class="btn btn-sm cl-help"
+                                                   role="button" data-toggle="popover"
+                                                   data-trigger="focus"
+                                                   data-content="The per-request chunk cache caches downloaded
+                                                   chunks in memory during a request, and clears them when the
+                                                   request is complete.">?</a>
+                                            </td>
+                                            <td>
+                                                <div class="checkbox">
+                                                    <label>
+                                                        <input type="checkbox"
+                                                               name="HttpSource.chunking.cache.enabled"
+                                                               value="true"
+                                                               data-requires-restart="false">
+                                                        Enabled
+                                                    </label>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Max Chunk Cache Size (MB)
+                                                <a tabindex="0" class="btn btn-sm cl-help"
+                                                   role="button" data-toggle="popover"
+                                                   data-trigger="focus"
+                                                   data-content="Max per-request chunk cache size in MB.">?</a>
+                                            </td>
+                                            <td>
+                                                <input class="form-control" type="number"
+                                                       min="1"
+                                                       name="HttpSource.chunking.cache.max_size"
                                                        data-requires-restart="false">
                                             </td>
                                         </tr>

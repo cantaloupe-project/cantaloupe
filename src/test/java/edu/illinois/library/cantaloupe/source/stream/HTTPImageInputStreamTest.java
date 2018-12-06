@@ -213,6 +213,36 @@ public class HTTPImageInputStreamTest extends BaseTest {
     }
 
     @Test
+    public void functionalTestWithChunkCacheDisabled() throws Exception {
+        final Path fixture = TestUtil.getImage("tif");
+        try (HTTPImageInputStream instance = newInstanceFromConstructor2(fixture);
+             ImageInputStream is = ImageIO.createImageInputStream(fixture.toFile())) {
+            instance.setMaxChunkCacheSize(0);
+            Iterator<ImageReader> readers = ImageIO.getImageReaders(is);
+            ImageReader reader = readers.next();
+            reader.setInput(instance);
+            reader.read(0);
+            assertEquals(64, reader.getWidth(0));
+            assertEquals(56, reader.getHeight(0));
+        }
+    }
+
+    @Test
+    public void functionalTestWithChunkCacheEnabled() throws Exception {
+        final Path fixture = TestUtil.getImage("tif");
+        try (HTTPImageInputStream instance = newInstanceFromConstructor2(fixture);
+             ImageInputStream is = ImageIO.createImageInputStream(fixture.toFile())) {
+            instance.setMaxChunkCacheSize(10000000);
+            Iterator<ImageReader> readers = ImageIO.getImageReaders(is);
+            ImageReader reader = readers.next();
+            reader.setInput(instance);
+            reader.read(0);
+            assertEquals(64, reader.getWidth(0));
+            assertEquals(56, reader.getHeight(0));
+        }
+    }
+
+    @Test
     public void functionalTestWithWindowSizeSmallerThanLength() throws Exception {
         final Path fixture = TestUtil.getImage("tif");
         try (HTTPImageInputStream instance = newInstanceFromConstructor2(fixture);
