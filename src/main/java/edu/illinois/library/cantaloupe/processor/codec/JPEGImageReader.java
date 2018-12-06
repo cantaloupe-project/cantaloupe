@@ -10,6 +10,7 @@ import edu.illinois.library.cantaloupe.operation.Crop;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.operation.ReductionFactor;
 import edu.illinois.library.cantaloupe.processor.UnsupportedSourceFormatException;
+import edu.illinois.library.cantaloupe.source.stream.BufferedImageInputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
