@@ -11,6 +11,7 @@ import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.source.FileSource;
+import edu.illinois.library.cantaloupe.source.MockStreamSource;
 import edu.illinois.library.cantaloupe.source.Source;
 import edu.illinois.library.cantaloupe.source.SourceFactory;
 import edu.illinois.library.cantaloupe.source.StreamFactory;
@@ -231,7 +232,7 @@ public class ProcessorConnectorTest extends BaseTest {
             throws Exception {
         final Identifier identifier = new Identifier("jp2");
         Configuration config = Configuration.getInstance();
-        config.setProperty(Key.SOURCE_STATIC, "HttpSource");
+        config.setProperty(Key.SOURCE_STATIC, MockStreamSource.class.getName());
         config.setProperty(Key.PROCESSOR_FALLBACK,
                 MockFileProcessor.class.getName());
         config.setProperty(Key.PROCESSOR_FALLBACK_RETRIEVAL_STRATEGY,
@@ -248,7 +249,7 @@ public class ProcessorConnectorTest extends BaseTest {
             throws Exception {
         final Identifier identifier = new Identifier("jp2");
         Configuration config = Configuration.getInstance();
-        config.setProperty(Key.SOURCE_STATIC, "HttpSource");
+        config.setProperty(Key.SOURCE_STATIC, MockStreamSource.class.getName());
         config.setProperty(Key.PROCESSOR_FALLBACK,
                 MockFileProcessor.class.getName());
         config.setProperty(Key.PROCESSOR_FALLBACK_RETRIEVAL_STRATEGY,
