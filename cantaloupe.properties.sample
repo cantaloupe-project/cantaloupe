@@ -150,8 +150,9 @@ FilesystemSource.BasicLookupStrategy.path_suffix =
 HttpSource.trust_all_certs = false
 HttpSource.request_timeout =
 
-# Read data in chunks when it may be more efficient.
-HttpSource.chunking.enabled = true
+# Read data in chunks when it may be more efficient. (This also may end up
+# being less efficient, depending on many variables; see the user manual.)
+HttpSource.chunking.enabled = false
 
 # Chunk size (KB).
 HttpSource.chunking.chunk_size = 512
@@ -174,24 +175,6 @@ HttpSource.BasicLookupStrategy.auth.basic.username =
 HttpSource.BasicLookupStrategy.auth.basic.secret =
 
 #----------------------------------------
-# JdbcSource
-#----------------------------------------
-
-# Note: JdbcSource requires some delegate methods to be implemented in
-# addition to the configuration here, and a JDBC driver to be installed on
-# the classpath; see the user manual.
-
-# !!
-JdbcSource.url = jdbc:postgresql://localhost:5432/my_database
-# !!
-JdbcSource.user = postgres
-# !!
-JdbcSource.password = postgres
-
-# !! Connection timeout in seconds.
-JdbcSource.connection_timeout = 10
-
-#----------------------------------------
 # S3Source
 #----------------------------------------
 
@@ -211,8 +194,9 @@ S3Source.secret_key =
 # use the default.
 S3Source.max_connections =
 
-# Read data in chunks when it may be more efficient.
-S3Source.chunking.enabled = true
+# Read data in chunks when it may be more efficient. (This also may end up
+# being less efficient, depending on many variables; see the user manual.)
+S3Source.chunking.enabled = false
 
 # Chunk size (KB).
 S3Source.chunking.chunk_size = 512
@@ -252,6 +236,24 @@ AzureStorageSource.container_name =
 # `BasicLookupStrategy` and `ScriptLookupStrategy`. ScriptLookupStrategy
 # uses a delegate method for dynamic lookups; see the user manual.
 AzureStorageSource.lookup_strategy = BasicLookupStrategy
+
+#----------------------------------------
+# JdbcSource
+#----------------------------------------
+
+# Note: JdbcSource requires some delegate methods to be implemented in
+# addition to the configuration here, and a JDBC driver to be installed on
+# the classpath; see the user manual.
+
+# !!
+JdbcSource.url = jdbc:postgresql://localhost:5432/my_database
+# !!
+JdbcSource.user = postgres
+# !!
+JdbcSource.password = postgres
+
+# !! Connection timeout in seconds.
+JdbcSource.connection_timeout = 10
 
 ###########################################################################
 # PROCESSORS
