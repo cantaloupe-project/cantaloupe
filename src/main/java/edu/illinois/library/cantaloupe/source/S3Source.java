@@ -12,7 +12,7 @@ import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.MediaType;
 import edu.illinois.library.cantaloupe.script.DelegateMethod;
 import edu.illinois.library.cantaloupe.util.AWSClientBuilder;
-
+import edu.illinois.library.cantaloupe.util.Stopwatch;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -111,8 +111,8 @@ class S3Source extends AbstractSource implements StreamSource {
             // log message from the S3 client.
             //
             // This wrapper stream's close() method will drain the stream
-            // before closing it. Because draining the stream may be expensive,
-            // it will happen in another thread.
+            // before closing it. Because this may take a long time, it will be
+            // done in another thread.
             return new InputStream() {
                 @Override
                 public void close() {
@@ -120,20 +120,24 @@ class S3Source extends AbstractSource implements StreamSource {
                         isClosed.set(true);
 
                         ThreadPool.getInstance().submit(() -> {
-                            try {
+                            final Stopwatch watch = new Stopwatch();
+                            synchronized (responseStream) {
                                 try {
-                                    while (responseStream.read() != -1) {
-                                        // drain the stream
-                                    }
-                                } finally {
                                     try {
-                                        responseStream.close();
+                                        while (responseStream.read() != -1) {
+                                            // drain the stream
+                                        }
                                     } finally {
-                                        super.close();
+                                        try {
+                                            responseStream.close();
+                                        } finally {
+                                            LOGGER.trace("Response stream drained in {}", watch);
+                                            super.close();
+                                        }
                                     }
+                                } catch (IOException e) {
+                                    LOGGER.warn(e.getMessage(), e);
                                 }
-                            } catch (IOException e) {
-                                LOGGER.warn(e.getMessage(), e);
                             }
                         });
                     }
