@@ -300,7 +300,7 @@ class FilesystemCache implements SourceCache, DerivativeCache {
         try {
             // Last-accessed time is not reliable on macOS+APFS as of 10.13.2.
             if (SystemUtils.IS_OS_MAC) {
-                LOGGER.debug("macOS detected; using file last-modified " +
+                LOGGER.trace("macOS detected; using file last-modified " +
                         "instead of last-accessed times.");
                 return Files.getLastModifiedTime(file);
             }

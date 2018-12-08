@@ -393,7 +393,7 @@ class HttpSource extends AbstractSource implements StreamSource {
                             requestInfo.getURI());
                 }
             } else {
-                LOGGER.info("HEAD {} returned status {}",
+                LOGGER.debug("HEAD {} returned status {}",
                         requestInfo.getURI(), responseInfo.status);
             }
         } catch (Exception e) {
@@ -427,7 +427,7 @@ class HttpSource extends AbstractSource implements StreamSource {
                                 requestInfo.getURI());
                     }
                 } else {
-                    LOGGER.info("GET {} returned status {}",
+                    LOGGER.debug("GET {} returned status {}",
                             requestInfo.getURI(), responseInfo.status);
                 }
             } else {
