@@ -3,7 +3,6 @@ package edu.illinois.library.cantaloupe.processor.codec;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.source.StreamFactory;
 
-import javax.imageio.ImageIO;
 import javax.imageio.stream.ImageInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -52,7 +51,7 @@ public final class ImageReaderFactory {
      */
     public ImageReader newImageReader(InputStream inputStream,
                                       Format format) throws IOException {
-        return newImageReader(ImageIO.createImageInputStream(inputStream), format);
+        return newImageReader(new ClosingMemoryCacheImageInputStream(inputStream), format);
     }
 
     /**
