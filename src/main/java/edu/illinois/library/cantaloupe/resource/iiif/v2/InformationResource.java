@@ -71,10 +71,10 @@ public class InformationResource extends IIIF2Resource {
         final Identifier identifier = getIdentifier();
         final CacheFacade cacheFacade = new CacheFacade();
 
-        // If we don't need to resolve first, and are using a cache, and the
+        // If we are using a cache, and don't need to resolve first, and the
         // cache contains an info matching the request, skip all the setup and
         // just return the cached info.
-        if (!isResolvingFirst()) {
+        if (!isBypassingCache() && !isResolvingFirst()) {
             try {
                 Info info = cacheFacade.getInfo(identifier);
                 if (info != null) {

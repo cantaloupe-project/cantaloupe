@@ -89,12 +89,12 @@ public class ImageResource extends IIIF2Resource {
 
         Format sourceFormat = Format.UNKNOWN;
 
-        // If we don't need to resolve first, and are using a cache:
+        // If we are using a cache, and don't need to resolve first:
         // 1. If the cache contains an image matching the request, skip all the
         //    setup and just return the cached image.
         // 2. Otherwise, if the cache contains a relevant info, get it to avoid
         //    having to get it from a source later.
-        if (!isResolvingFirst()) {
+        if (!isBypassingCache() && !isResolvingFirst()) {
             final Info info = cacheFacade.getInfo(identifier);
             if (info != null) {
                 ops.setScaleConstraint(getScaleConstraint());

@@ -81,11 +81,11 @@ public class ImageResource extends IIIF1Resource {
         final Identifier identifier = getIdentifier();
         final CacheFacade cacheFacade = new CacheFacade();
 
-        // If we don't need to resolve first, and are using a cache, see if we
+        // If we are using a cache, and don't need to resolve first, see if we
         // can pluck an info from it. This will be more efficient than getting
         // it from a source.
         Format sourceFormat = Format.UNKNOWN;
-        if (!isResolvingFirst()) {
+        if (!isBypassingCache() && !isResolvingFirst()) {
             try {
                 Info info = cacheFacade.getInfo(identifier);
                 if (info != null) {
