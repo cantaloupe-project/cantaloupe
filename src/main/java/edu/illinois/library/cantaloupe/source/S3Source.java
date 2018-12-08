@@ -21,7 +21,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.nio.file.AccessDeniedException;
 import java.nio.file.NoSuchFileException;
 import java.util.List;
 import java.util.Map;
@@ -32,24 +31,7 @@ import java.util.Map;
  *
  * <h1>Format Inference</h1>
  *
- * <ol>
- *     <li>If the object key has a recognized filename extension, the format
- *     will be inferred from that.</li>
- *     <li>Otherwise, if the source image's URI identifier has a recognized
- *     filename extension, the format will be inferred from that.</li>
- *     <li>Otherwise, a {@literal GET} request will be sent with a {@literal
- *     Range} header specifying a small range of data from the beginning of the
- *     resource.
- *         <ol>
- *             <li>If a {@literal Content-Type} header is present in the
- *             response, and is specific enough (i.e. not {@literal
- *             application/octet-stream}), a format will be inferred from
- *             that.</li>
- *             <li>Otherwise, a format will be inferred from the magic bytes in
- *             the response body.</li>
- *         </ol>
- *     </li>
- * </ol>
+ * <p>See {@link #getFormat()}.</p>
  *
  * <h1>Lookup Strategies</h1>
  *
@@ -103,8 +85,6 @@ class S3Source extends AbstractSource implements StreamSource {
 
     private static AmazonS3 client;
 
-    private IOException cachedAccessException;
-
     /**
      * Cached by {@link #getObjectInfo()}.
      */
@@ -133,13 +113,25 @@ class S3Source extends AbstractSource implements StreamSource {
     }
 
     /**
-     * <p>Fetches a whole object.</p>
+     * Fetches a whole object.
      *
-     * <p>N.B.: Either the returned instance, or the return value of
-     * {@link S3Object#getObjectContent()}, must be closed.</p>
+     * @param info Object info.
      */
-    static S3Object fetchObject(S3ObjectInfo info) throws IOException {
-        return fetchObject(info, 0, 0);
+    static InputStream fetchObjectContent(S3ObjectInfo info) throws IOException {
+        return fetchObject(info, 0, 0).getObjectContent();
+    }
+
+    /**
+     * <p>Fetches a byte range of an object.</p>
+     *
+     * @param info  Object info.
+     * @param start Starting byte offset.
+     * @param end   Ending byte offset.
+     */
+    static InputStream fetchObjectContent(S3ObjectInfo info,
+                                          long start,
+                                          long end) throws IOException {
+        return fetchObject(info, start, end).getObjectContent();
     }
 
     /**
@@ -152,7 +144,7 @@ class S3Source extends AbstractSource implements StreamSource {
      * @param start Starting byte offset.
      * @param end   Ending byte offset.
      */
-    static S3Object fetchObject(S3ObjectInfo info,
+    private static S3Object fetchObject(S3ObjectInfo info,
                                 long start,
                                 long end) throws IOException {
         final AmazonS3 s3 = getClientInstance();
@@ -169,8 +161,7 @@ class S3Source extends AbstractSource implements StreamSource {
             }
             return s3.getObject(request);
         } catch (AmazonS3Exception e) {
-            if ("NoSuchKey".equals(e.getErrorCode()) ||
-                    "NoSuchBucket".equals(e.getErrorCode())) {
+            if (e.getStatusCode() == 404) {
                 throw new NoSuchFileException(info.toString());
             } else {
                 throw new IOException(e);
@@ -182,46 +173,7 @@ class S3Source extends AbstractSource implements StreamSource {
 
     @Override
     public void checkAccess() throws IOException {
-        final AmazonS3 s3 = getClientInstance();
-        final S3ObjectInfo info = getObjectInfo();
-        try {
-            s3.getObjectMetadata(info.getBucketName(), info.getKey());
-        } catch (AmazonS3Exception e) {
-            if (e.getStatusCode() == 404) {
-                throw new NoSuchFileException(info.toString());
-            } else {
-                throw new IOException(e);
-            }
-        } catch (SdkBaseException e) {
-            throw new IOException(e);
-        }
-    }
-
-    /**
-     * N.B.: Either the returned instance, or the return value of
-     * {@link S3Object#getObjectContent()}, must be closed.
-     *
-     * @param start Starting byte offset.
-     * @param end   Ending byte offset.
-     * @throws NoSuchFileException   if the object corresponding to {@link
-     *                               #identifier} does not exist.
-     * @throws AccessDeniedException if the object corresponding to {@link
-     *                               #identifier} is not readable.
-     * @throws IOException           if there is some other issue accessing the
-     *                               object.
-     */
-    private S3Object getObject(long start, long end) throws IOException {
-        if (cachedAccessException != null) {
-            throw cachedAccessException;
-        } else {
-            try {
-                final S3ObjectInfo info = getObjectInfo();
-                return fetchObject(info, start, end);
-            } catch (IOException e) {
-                cachedAccessException = e;
-                throw e;
-            }
-        }
+        getObjectMetadata();
     }
 
     /**
@@ -309,6 +261,26 @@ class S3Source extends AbstractSource implements StreamSource {
         return objectMetadata;
     }
 
+    /**
+     * <ol>
+     *     <li>If the object key has a recognized filename extension, the
+     *     format is inferred from that.</li>
+     *     <li>Otherwise, if the source image's URI identifier has a recognized
+     *     filename extension, the format will be inferred from that.</li>
+     *     <li>Otherwise, a {@literal GET} request will be sent with a
+     *     {@literal Range} header specifying a small range of data from the
+     *     beginning of the resource.
+     *         <ol>
+     *             <li>If a {@literal Content-Type} header is present in the
+     *             response, and is specific enough (i.e. not {@literal
+     *             application/octet-stream}), a format will be inferred from
+     *             that.</li>
+     *             <li>Otherwise, a format is inferred from the magic bytes in
+     *             the response body.</li>
+     *         </ol>
+     *     </li>
+     * </ol>
+     */
     @Override
     public Format getFormat() throws IOException {
         if (format == null) {
@@ -327,28 +299,26 @@ class S3Source extends AbstractSource implements StreamSource {
             }
 
             if (Format.UNKNOWN.equals(format)) {
-                try (S3Object object = getObject(0, FORMAT_INFERENCE_RANGE_LENGTH)) {
-                    // Try to infer a format from the Content-Type header.
-                    LOGGER.debug("Inferring format from Content-Type header for {}",
+                // Try to infer a format from the Content-Type header.
+                LOGGER.debug("Inferring format from Content-Type header for {}",
+                        info);
+                String contentType = getObjectMetadata().getContentType();
+                if (contentType != null && !contentType.isEmpty()) {
+                    format = new MediaType(contentType).toFormat();
+                }
+
+                if (Format.UNKNOWN.equals(format)) {
+                    // Try to infer a format from the object's magic bytes.
+                    LOGGER.debug("Inferring format from magic bytes for {}",
                             info);
-                    String contentType = getObjectMetadata().getContentType();
-                    if (contentType != null && !contentType.isEmpty()) {
-                        format = new MediaType(contentType).toFormat();
-                    }
-
-                    if (Format.UNKNOWN.equals(format)) {
-                        // Try to infer a format from the object's magic bytes.
-                        LOGGER.debug("Inferring format from magic bytes for {}",
-                                info);
-
-                        try (InputStream contentStream = new BufferedInputStream(
-                                object.getObjectContent(),
-                                FORMAT_INFERENCE_RANGE_LENGTH)) {
-                            List<MediaType> types =
-                                    MediaType.detectMediaTypes(contentStream);
-                            if (!types.isEmpty()) {
-                                format = types.get(0).toFormat();
-                            }
+                    try (S3Object object = fetchObject(
+                            info, 0, FORMAT_INFERENCE_RANGE_LENGTH);
+                         InputStream is = new BufferedInputStream(
+                                 object.getObjectContent(),
+                                 FORMAT_INFERENCE_RANGE_LENGTH)) {
+                        List<MediaType> types = MediaType.detectMediaTypes(is);
+                        if (!types.isEmpty()) {
+                            format = types.get(0).toFormat();
                         }
                     }
                 }
@@ -361,7 +331,7 @@ class S3Source extends AbstractSource implements StreamSource {
     public StreamFactory newStreamFactory() throws IOException {
         S3ObjectInfo info = getObjectInfo();
         info.setLength(getObjectMetadata().getContentLength());
-        return new S3StreamFactory(info, fetchObject(info));
+        return new S3StreamFactory(info);
     }
 
     @Override

@@ -1,17 +1,16 @@
 package edu.illinois.library.cantaloupe.source;
 
-import com.amazonaws.services.s3.model.S3Object;
 import edu.illinois.library.cantaloupe.async.ThreadPool;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.source.stream.HTTPImageInputStream;
+import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.imageio.stream.ImageInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Source of streams for {@link S3Source}, returned from {@link
@@ -22,36 +21,35 @@ class S3StreamFactory implements StreamFactory {
     private static final Logger LOGGER =
             LoggerFactory.getLogger(S3StreamFactory.class);
 
-    private static final int DEFAULT_CHUNK_SIZE       = (int) Math.pow(2, 19);
-    private static final int DEFAULT_CHUNK_CACHE_SIZE = (int) Math.pow(1024, 2);
+    private static final int DEFAULT_CHUNK_SIZE       = 1024 * 512;
+    private static final int DEFAULT_CHUNK_CACHE_SIZE = 1024 * 1024 * 10;
 
     private S3ObjectInfo objectInfo;
-    private S3Object object;
 
-    S3StreamFactory(S3ObjectInfo objectInfo, S3Object object) {
+    S3StreamFactory(S3ObjectInfo objectInfo) {
         this.objectInfo = objectInfo;
-        this.object     = object;
     }
 
     @Override
-    public InputStream newInputStream() {
-        final InputStream responseStream = object.getObjectContent();
-        final AtomicBoolean isClosed     = new AtomicBoolean();
+    public InputStream newInputStream() throws IOException {
+        final InputStream responseStream =
+                S3Source.fetchObjectContent(objectInfo);
 
-        // Ideally we would just return responseStream. However, if
-        // responseStream is close()d before all of its data has been read,
-        // its underlying TCP connection will also be closed, thus negating
-        // the advantage of the connection pool, and triggering a warning
-        // log message from the S3 client.
+        // Ideally we would just return responseStream. However, if it is
+        // close()d before being fully consumed, its underlying TCP connection
+        // will also be closed, negating the advantage of the connection pool
+        // and triggering a warning log message from the S3 client.
         //
         // This wrapper stream's close() method will drain the stream
-        // before closing it. Because draining the stream may be expensive,
-        // it will happen in another thread.
+        // before closing it. Because this may take a long time, it will be
+        // done in another thread.
         return new InputStream() {
+            private boolean isClosed;
+
             @Override
             public void close() {
-                if (!isClosed.get()) {
-                    isClosed.set(true);
+                if (!isClosed) {
+                    isClosed = true;
 
                     ThreadPool.getInstance().submit(() -> {
                         try {
@@ -107,11 +105,16 @@ class S3StreamFactory implements StreamFactory {
 
             HTTPImageInputStream stream = new HTTPImageInputStream(
                     client, objectInfo.getLength());
-            stream.setWindowSize(chunkSize);
-            if (isChunkCacheEnabled()) {
-                stream.setMaxChunkCacheSize(getMaxChunkCacheSize());
+            try {
+                stream.setWindowSize(chunkSize);
+                if (isChunkCacheEnabled()) {
+                    stream.setMaxChunkCacheSize(getMaxChunkCacheSize());
+                }
+                return stream;
+            } catch (Throwable t) {
+                IOUtils.closeQuietly(stream);
+                throw t;
             }
-            return stream;
         } else {
             LOGGER.debug("newSeekableStream(): chunking is disabled");
             return StreamFactory.super.newSeekableStream();

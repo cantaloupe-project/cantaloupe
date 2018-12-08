@@ -1,15 +1,11 @@
 package edu.illinois.library.cantaloupe.source;
 
-import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.model.GetObjectRequest;
-import com.amazonaws.services.s3.model.S3Object;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.source.stream.ClosingMemoryCacheImageInputStream;
 import edu.illinois.library.cantaloupe.source.stream.HTTPImageInputStream;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.S3Server;
-import edu.illinois.library.cantaloupe.util.AWSClientBuilder;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -38,14 +34,6 @@ public class S3StreamFactoryTest extends BaseTest {
         S3_SERVER.stop();
     }
 
-    private static AmazonS3 client() {
-        return new AWSClientBuilder()
-                .endpointURI(S3_SERVER.getEndpoint())
-                .accessKeyID(S3Server.ACCESS_KEY_ID)
-                .secretKey(S3Server.SECRET_KEY)
-                .build();
-    }
-
     private static void configureS3Source() {
         final Configuration config = Configuration.getInstance();
         config.setProperty(Key.S3SOURCE_ENDPOINT, S3_SERVER.getEndpoint());
@@ -63,12 +51,7 @@ public class S3StreamFactoryTest extends BaseTest {
         S3ObjectInfo info = new S3ObjectInfo("jpg", S3Server.FIXTURES_BUCKET_NAME);
         info.setLength(5439);
 
-        GetObjectRequest request = new GetObjectRequest(
-                info.getBucketName(),
-                info.getKey());
-        S3Object object = client().getObject(request);
-
-        instance = new S3StreamFactory(info, object);
+        instance = new S3StreamFactory(info);
     }
 
     @Test

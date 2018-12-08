@@ -1,16 +1,16 @@
 package edu.illinois.library.cantaloupe.source;
 
+import com.amazonaws.SdkBaseException;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.AmazonS3Exception;
 import com.amazonaws.services.s3.model.ObjectMetadata;
-import com.amazonaws.services.s3.model.S3Object;
-import com.amazonaws.services.s3.model.S3ObjectInputStream;
 import edu.illinois.library.cantaloupe.http.Range;
 import edu.illinois.library.cantaloupe.http.Response;
 import edu.illinois.library.cantaloupe.source.stream.HTTPImageInputStreamClient;
 import org.apache.commons.io.IOUtils;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.NoSuchFileException;
 
 /**
@@ -43,6 +43,8 @@ class S3HTTPImageInputStreamClient implements HTTPImageInputStreamClient {
             } else {
                 throw new IOException(e);
             }
+        } catch (SdkBaseException e) {
+            throw new IOException(e);
         }
     }
 
@@ -50,9 +52,8 @@ class S3HTTPImageInputStreamClient implements HTTPImageInputStreamClient {
     public Response sendGETRequest(Range range) throws IOException {
         final String bucket = objectInfo.getBucketName();
         final String key    = objectInfo.getKey();
-        try (final S3Object object =
-                     S3Source.fetchObject(objectInfo, range.start, range.end);
-             final S3ObjectInputStream is = object.getObjectContent()) {
+        try (InputStream is = S3Source.fetchObjectContent(
+                objectInfo, range.start, range.end)) {
             final byte[] body = IOUtils.toByteArray(is);
 
             final Response response = new Response();
@@ -65,6 +66,8 @@ class S3HTTPImageInputStreamClient implements HTTPImageInputStreamClient {
             } else {
                 throw new IOException(e);
             }
+        } catch (SdkBaseException e) {
+            throw new IOException(e);
         }
     }
 
