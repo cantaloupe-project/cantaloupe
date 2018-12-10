@@ -192,7 +192,6 @@ public enum Key {
     S3SOURCE_CHUNK_CACHE_MAX_SIZE("S3Source.chunking.cache.max_size"),
     S3SOURCE_ENDPOINT("S3Source.endpoint"),
     S3SOURCE_LOOKUP_STRATEGY("S3Source.lookup_strategy"),
-    S3SOURCE_MAX_CONNECTIONS("S3Source.max_connections"),
     S3SOURCE_PATH_PREFIX("S3Source.BasicLookupStrategy.path_prefix"),
     S3SOURCE_PATH_SUFFIX("S3Source.BasicLookupStrategy.path_suffix"),
     S3SOURCE_SECRET_KEY("S3Source.secret_key"),

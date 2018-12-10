@@ -33,7 +33,7 @@ class S3StreamFactory implements StreamFactory {
     @Override
     public InputStream newInputStream() throws IOException {
         final InputStream responseStream =
-                S3Source.fetchObjectContent(objectInfo);
+                S3Source.newObjectInputStream(objectInfo);
 
         // Ideally we would just return responseStream. However, if it is
         // close()d before being fully consumed, its underlying TCP connection

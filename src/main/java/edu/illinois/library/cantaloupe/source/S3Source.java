@@ -1,17 +1,19 @@
 package edu.illinois.library.cantaloupe.source;
 
-import com.amazonaws.SdkBaseException;
-import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.model.AmazonS3Exception;
-import com.amazonaws.services.s3.model.GetObjectRequest;
-import com.amazonaws.services.s3.model.ObjectMetadata;
-import com.amazonaws.services.s3.model.S3Object;
+import com.amazonaws.auth.AWSCredentials;
+import com.amazonaws.auth.AWSCredentialsProvider;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
+import edu.illinois.library.cantaloupe.http.Range;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.MediaType;
 import edu.illinois.library.cantaloupe.script.DelegateMethod;
 import edu.illinois.library.cantaloupe.util.AWSClientBuilder;
+import io.minio.MinioClient;
+import io.minio.errors.ErrorResponseException;
+import io.minio.errors.InvalidBucketNameException;
+import io.minio.errors.InvalidEndpointException;
+import io.minio.errors.InvalidPortException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -19,15 +21,19 @@ import javax.script.ScriptException;
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URI;
-import java.net.URISyntaxException;
+import java.nio.file.AccessDeniedException;
 import java.nio.file.NoSuchFileException;
+import java.security.InvalidKeyException;
 import java.util.List;
 import java.util.Map;
 
 /**
  * <p>Maps an identifier to an <a href="https://aws.amazon.com/s3/">Amazon
  * Simple Storage Service (S3)</a> object, for retrieving images from S3.</p>
+ *
+ * <p>Past versions of this class used the AWS Java SDK's S3 client, which is
+ * poorly designed and not suitable for long-running servers (it leaks
+ * connections like a sieve). This spurred a change to the Minio client.</p>
  *
  * <h1>Format Inference</h1>
  *
@@ -70,20 +76,25 @@ import java.util.Map;
  *     </li>
  * </ol>
  *
- * @see <a href="http://docs.aws.amazon.com/AWSSdkDocsJava/latest/DeveloperGuide/welcome.html">
- *     AWS SDK for Java</a>
+ * @see <a href="https://docs.minio.io/docs/java-client-api-reference">
+ *     Minio Java Client API Reference</a>
  */
 class S3Source extends AbstractSource implements StreamSource {
+
+    private static class S3ObjectAttributes {
+        String contentType;
+        long length;
+    }
 
     private static final Logger LOGGER =
             LoggerFactory.getLogger(S3Source.class);
 
     /**
-     * Byte length of the range used to infer the source image format.
+     * Range used to infer the source image format.
      */
-    private static final int FORMAT_INFERENCE_RANGE_LENGTH = 32;
+    private static final Range FORMAT_INFERENCE_RANGE = new Range(0, 32);
 
-    private static AmazonS3 client;
+    private static MinioClient client;
 
     /**
      * Cached by {@link #getObjectInfo()}.
@@ -91,21 +102,26 @@ class S3Source extends AbstractSource implements StreamSource {
     private S3ObjectInfo objectInfo;
 
     /**
-     * Cached by {@link #getObjectMetadata()}.
+     * Cached by {@link #getObjectAttributes()}.
      */
-    private ObjectMetadata objectMetadata;
+    private S3ObjectAttributes objectAttributes;
 
-    static synchronized AmazonS3 getClientInstance() {
+    static synchronized MinioClient getClientInstance() {
         if (client == null) {
             final Configuration config = Configuration.getInstance();
+            final AWSCredentialsProvider credentialsProvider =
+                    AWSClientBuilder.newCredentialsProvider(
+                            config.getString(Key.S3SOURCE_ACCESS_KEY_ID),
+                            config.getString(Key.S3SOURCE_SECRET_KEY));
+            final AWSCredentials credentials =
+                    credentialsProvider.getCredentials();
             try {
-                client = new AWSClientBuilder()
-                        .endpointURI(new URI(config.getString(Key.S3SOURCE_ENDPOINT)))
-                        .accessKeyID(config.getString(Key.S3SOURCE_ACCESS_KEY_ID))
-                        .secretKey(config.getString(Key.S3SOURCE_SECRET_KEY))
-                        .maxConnections(config.getInt(Key.S3SOURCE_MAX_CONNECTIONS, 0))
-                        .build();
-            } catch (URISyntaxException e) {
+                client = new MinioClient(
+                        config.getString(Key.S3SOURCE_ENDPOINT),
+                        credentials.getAWSAccessKeyId(),
+                        credentials.getAWSSecretKey(),
+                        config.getString("S3Source.bucket.region")); // TODO: fix this
+            } catch (InvalidEndpointException | InvalidPortException e) {
                 throw new IllegalArgumentException(e);
             }
         }
@@ -117,63 +133,76 @@ class S3Source extends AbstractSource implements StreamSource {
      *
      * @param info Object info.
      */
-    static InputStream fetchObjectContent(S3ObjectInfo info) throws IOException {
-        return fetchObject(info, 0, 0).getObjectContent();
+    static InputStream newObjectInputStream(S3ObjectInfo info)
+            throws IOException {
+        return newObjectInputStream(info, null);
     }
 
     /**
      * <p>Fetches a byte range of an object.</p>
      *
      * @param info  Object info.
-     * @param start Starting byte offset.
-     * @param end   Ending byte offset.
+     * @param range Byte range. May be {@literal null}.
      */
-    static InputStream fetchObjectContent(S3ObjectInfo info,
-                                          long start,
-                                          long end) throws IOException {
-        return fetchObject(info, start, end).getObjectContent();
-    }
-
-    /**
-     * <p>Fetches a byte range of an object.</p>
-     *
-     * <p>N.B.: Either the returned instance, or the return value of
-     * {@link S3Object#getObjectContent()}, must be closed.</p>
-     *
-     * @param info  Object info.
-     * @param start Starting byte offset.
-     * @param end   Ending byte offset.
-     */
-    private static S3Object fetchObject(S3ObjectInfo info,
-                                long start,
-                                long end) throws IOException {
-        final AmazonS3 s3 = getClientInstance();
+    static InputStream newObjectInputStream(S3ObjectInfo info,
+                                            Range range) throws IOException {
+        final MinioClient mc = getClientInstance();
         try {
-            GetObjectRequest request = new GetObjectRequest(
-                    info.getBucketName(),
-                    info.getKey());
-            if (end - start > 0) {
-                request.setRange(start, end);
+            if (range != null) {
                 LOGGER.debug("Requesting bytes {}-{} from {}",
-                        start, end, info);
+                        range.start, range.end, info);
+                return mc.getObject(info.getBucketName(), info.getKey(),
+                        range.start, range.end - range.start + 1);
             } else {
                 LOGGER.debug("Requesting {}", info);
+                return mc.getObject(info.getBucketName(), info.getKey());
             }
-            return s3.getObject(request);
-        } catch (AmazonS3Exception e) {
-            if (e.getStatusCode() == 404) {
-                throw new NoSuchFileException(info.toString());
-            } else {
-                throw new IOException(e);
-            }
-        } catch (SdkBaseException e) {
-            throw new IOException(e);
+        } catch (InvalidBucketNameException | InvalidKeyException e) {
+            throw new NoSuchFileException(info.toString());
+        } catch (IOException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new IOException(info.toString(), e);
         }
     }
 
     @Override
     public void checkAccess() throws IOException {
-        getObjectMetadata();
+        getObjectAttributes();
+    }
+
+    private S3ObjectAttributes getObjectAttributes() throws IOException {
+        if (objectAttributes == null) {
+            // https://docs.aws.amazon.com/AmazonS3/latest/API/ErrorResponses.html#ErrorCodeList
+            final S3ObjectInfo info = getObjectInfo();
+            final String bucket     = info.getBucketName();
+            final String key        = info.getKey();
+            final MinioClient mc    = getClientInstance();
+            try {
+                objectAttributes        = new S3ObjectAttributes();
+                objectAttributes.length = mc.statObject(bucket, key).length();
+            } catch (InvalidBucketNameException | InvalidKeyException e) {
+                throw new NoSuchFileException(info.toString());
+            } catch (ErrorResponseException e) {
+                final String code = e.errorResponse().code();
+                if ("NoSuchBucket".equals(code) || "NoSuchKey".equals(code)) {
+                    throw new NoSuchFileException(info.toString());
+                } else if ("AccessDenied".equals(code) ||
+                        "AllAccessDisabled".equals(code)) {
+                    throw new AccessDeniedException(info.toString());
+                } else {
+                    LOGGER.error(e.getMessage(), e);
+                    throw new IOException(e);
+                }
+            } catch (IOException e) {
+                LOGGER.error(e.getMessage(), e);
+                throw e;
+            } catch (Exception e) {
+                LOGGER.error(e.getMessage(), e);
+                throw new IOException(info.toString(), e);
+            }
+        }
+        return objectAttributes;
     }
 
     /**
@@ -241,26 +270,6 @@ class S3Source extends AbstractSource implements StreamSource {
         }
     }
 
-    private ObjectMetadata getObjectMetadata() throws IOException {
-        if (objectMetadata == null) {
-            try {
-                final AmazonS3 s3 = getClientInstance();
-                final S3ObjectInfo objectInfo = getObjectInfo();
-                objectMetadata = s3.getObjectMetadata(
-                        objectInfo.getBucketName(), objectInfo.getKey());
-            } catch (AmazonS3Exception e) {
-                if (e.getStatusCode() == 404) {
-                    throw new NoSuchFileException(objectInfo.toString());
-                } else {
-                    throw new IOException(e);
-                }
-            } catch (SdkBaseException e) {
-                throw new IOException(e);
-            }
-        }
-        return objectMetadata;
-    }
-
     /**
      * <ol>
      *     <li>If the object key has a recognized filename extension, the
@@ -302,7 +311,7 @@ class S3Source extends AbstractSource implements StreamSource {
                 // Try to infer a format from the Content-Type header.
                 LOGGER.debug("Inferring format from Content-Type header for {}",
                         info);
-                String contentType = getObjectMetadata().getContentType();
+                String contentType = getObjectAttributes().contentType;
                 if (contentType != null && !contentType.isEmpty()) {
                     format = new MediaType(contentType).toFormat();
                 }
@@ -311,11 +320,8 @@ class S3Source extends AbstractSource implements StreamSource {
                     // Try to infer a format from the object's magic bytes.
                     LOGGER.debug("Inferring format from magic bytes for {}",
                             info);
-                    try (S3Object object = fetchObject(
-                            info, 0, FORMAT_INFERENCE_RANGE_LENGTH);
-                         InputStream is = new BufferedInputStream(
-                                 object.getObjectContent(),
-                                 FORMAT_INFERENCE_RANGE_LENGTH)) {
+                    try (InputStream is = new BufferedInputStream(
+                                 newObjectInputStream(info, FORMAT_INFERENCE_RANGE))) {
                         List<MediaType> types = MediaType.detectMediaTypes(is);
                         if (!types.isEmpty()) {
                             format = types.get(0).toFormat();
@@ -330,18 +336,8 @@ class S3Source extends AbstractSource implements StreamSource {
     @Override
     public StreamFactory newStreamFactory() throws IOException {
         S3ObjectInfo info = getObjectInfo();
-        info.setLength(getObjectMetadata().getContentLength());
+        info.setLength(getObjectAttributes().length);
         return new S3StreamFactory(info);
-    }
-
-    @Override
-    public void shutdown() {
-        synchronized (S3Source.class) {
-            if (client != null) {
-                client.shutdown();
-                client = null;
-            }
-        }
     }
 
 }

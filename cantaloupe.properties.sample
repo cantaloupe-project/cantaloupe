@@ -197,10 +197,6 @@ S3Source.endpoint =
 S3Source.access_key_id =
 S3Source.secret_key =
 
-# !! Maximum number of concurrent HTTP connections to AWS. Leave blank to
-# use the default.
-S3Source.max_connections =
-
 # Read data in chunks when it may be more efficient. (This also may end up
 # being less efficient, depending on many variables; see the user manual.)
 S3Source.chunking.enabled = false

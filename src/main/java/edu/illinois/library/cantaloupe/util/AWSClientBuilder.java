@@ -9,6 +9,10 @@ import com.amazonaws.auth.AWSCredentials;
 import com.amazonaws.auth.AWSCredentialsProvider;
 import com.amazonaws.auth.AWSCredentialsProviderChain;
 import com.amazonaws.auth.DefaultAWSCredentialsProviderChain;
+import com.amazonaws.auth.EC2ContainerCredentialsProviderWrapper;
+import com.amazonaws.auth.EnvironmentVariableCredentialsProvider;
+import com.amazonaws.auth.SystemPropertiesCredentialsProvider;
+import com.amazonaws.auth.profile.ProfileCredentialsProvider;
 import com.amazonaws.client.builder.AwsClientBuilder;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
@@ -21,43 +25,55 @@ import com.amazonaws.services.s3.AmazonS3ClientBuilder;
  */
 public final class AWSClientBuilder {
 
-    /**
-     * Draws credentials from the parent class' instance variables, which
-     * generally come from the application configuration, although not
-     * necessarily the same keys all the time.
-     */
-    private class ConfigurationCredentialsProvider
-            implements AWSCredentialsProvider {
-
-        @Override
-        public AWSCredentials getCredentials() {
-            return new AWSCredentials() {
-                @Override
-                public String getAWSAccessKeyId() {
-                    return accessKeyID;
-                }
-
-                @Override
-                public String getAWSSecretKey() {
-                    return secretKey;
-                }
-            };
-        }
-
-        @Override
-        public void refresh() {}
-
-    }
-
     private static final int DEFAULT_CLIENT_EXECUTION_TIMEOUT_MSEC = 10 * 60 * 1000;
     private static final long DEFAULT_CONNECTION_TTL_MSEC          = 30 * 60 * 1000;
     private static final int DEFAULT_MAX_CONNECTIONS               = 200;
     private static final boolean DEFAULT_USE_TCP_KEEPALIVE         = true;
 
-    private String accessKeyID;
     private URI endpointURI;
+    private String accessKeyID, secretKey;
     private int maxConnections = DEFAULT_MAX_CONNECTIONS;
-    private String secretKey;
+
+    /**
+     * Returns credentials using a similar strategy as the {@link
+     * DefaultAWSCredentialsProviderChain} except the application configuration
+     * is consulted after the VM arguments.
+     *
+     * @param accessKeyIDFromConfig Access key ID from the application
+     *                              configuration.
+     * @param secretKeyFromConfig   Secret key from the application
+     *                              configuration.
+     */
+    public static AWSCredentialsProvider newCredentialsProvider(
+            final String accessKeyIDFromConfig,
+            final String secretKeyFromConfig) {
+        // The provider chain will consult each provider in this list in order,
+        // and use the first one that returns something.
+        final List<AWSCredentialsProvider> providers = new ArrayList<>();
+        providers.add(new EnvironmentVariableCredentialsProvider());
+        providers.add(new SystemPropertiesCredentialsProvider());
+        providers.add(new AWSCredentialsProvider() {
+            @Override
+            public AWSCredentials getCredentials() {
+                return new AWSCredentials() {
+                    @Override
+                    public String getAWSAccessKeyId() {
+                        return accessKeyIDFromConfig;
+                    }
+
+                    @Override
+                    public String getAWSSecretKey() {
+                        return secretKeyFromConfig;
+                    }
+                };
+            }
+            @Override
+            public void refresh() {}
+        });
+        providers.add(new ProfileCredentialsProvider());
+        providers.add(new EC2ContainerCredentialsProviderWrapper());
+        return new AWSCredentialsProviderChain(providers);
+    }
 
     /**
      * @param accessKeyID AWS access key ID.
@@ -104,7 +120,7 @@ public final class AWSClientBuilder {
                 .withEndpointConfiguration(getEndpointConfiguration())
                 .withPathStyleAccessEnabled(true)
                 .withClientConfiguration(getClientConfiguration())
-                .withCredentials(getCredentialsProvider())
+                .withCredentials(newCredentialsProvider(accessKeyID, secretKey))
                 .build();
     }
 
@@ -116,27 +132,6 @@ public final class AWSClientBuilder {
         clientConfig.setClientExecutionTimeout(DEFAULT_CLIENT_EXECUTION_TIMEOUT_MSEC);
         clientConfig.setUseTcpKeepAlive(DEFAULT_USE_TCP_KEEPALIVE);
         return clientConfig;
-    }
-
-    private AWSCredentialsProvider getCredentialsProvider() {
-        // The AWS client will consult each provider in this list in order,
-        // and use the first one that works.
-        final List<AWSCredentialsProvider> providers = new ArrayList<>();
-
-        // As a first resort, add a provider that draws from the application
-        // configuration.
-        AWSCredentialsProvider configProvider =
-                new ConfigurationCredentialsProvider();
-        String accessKeyId = configProvider.getCredentials().getAWSAccessKeyId();
-        if (accessKeyId != null && !accessKeyId.isEmpty()) {
-            providers.add(configProvider);
-        }
-
-        // Add default providers as fallbacks:
-        // https://docs.aws.amazon.com/AWSJavaSDK/latest/javadoc/index.html?com/amazonaws/auth/DefaultAWSCredentialsProviderChain.html
-        providers.add(new DefaultAWSCredentialsProviderChain());
-
-        return new AWSCredentialsProviderChain(providers);
     }
 
     /**

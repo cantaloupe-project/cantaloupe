@@ -1292,20 +1292,6 @@
                                             </td>
                                         </tr>
                                         <tr>
-                                            <td>Max Connections
-                                                <a tabindex="0" class="btn btn-sm cl-help"
-                                                   role="button" data-toggle="popover"
-                                                   data-trigger="focus"
-                                                   data-content="Maximum number of concurrent HTTP connections to AWS.">?</a>
-                                            </td>
-                                            <td>
-                                                <input class="form-control" type="number"
-                                                       min="1"
-                                                       name="S3Source.max_connections"
-                                                       data-requires-restart="true">
-                                            </td>
-                                        </tr>
-                                        <tr>
                                             <td>Chunking
                                                 <a tabindex="0" class="btn btn-sm cl-help"
                                                    role="button" data-toggle="popover"

@@ -143,6 +143,12 @@
       <version>0.2.4</version>
       <scope>test</scope>
     </dependency>
+    <!-- S3 client for S3Source -->
+    <dependency>
+      <groupId>io.minio</groupId>
+      <artifactId>minio</artifactId>
+      <version>5.0.4</version>
+    </dependency>
     <!-- Dependency on part of Java EE that's available by default in Java 8
     but not 9 -->
     <dependency>
