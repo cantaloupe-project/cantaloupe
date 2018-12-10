@@ -621,11 +621,11 @@ public class AdminResourceUITest extends AbstractAdminResourceTest {
         assertTrue(config.getBoolean(Key.CLIENT_CACHE_PROXY_REVALIDATE));
         assertTrue(config.getBoolean(Key.CLIENT_CACHE_NO_TRANSFORM));
         assertEquals("FilesystemCache", config.getString(Key.SOURCE_CACHE));
-        assertEquals(10, config.getInt(Key.SOURCE_CACHE_TTL));
+        assertEquals(10, config.getLong(Key.SOURCE_CACHE_TTL));
         assertEquals("FilesystemCache", config.getString(Key.DERIVATIVE_CACHE));
         assertTrue(config.getBoolean(Key.DERIVATIVE_CACHE_ENABLED));
         assertTrue(config.getBoolean(Key.INFO_CACHE_ENABLED));
-        assertEquals(15, config.getInt(Key.DERIVATIVE_CACHE_TTL));
+        assertEquals(15, config.getLong(Key.DERIVATIVE_CACHE_TTL));
         assertTrue(config.getBoolean(Key.CACHE_SERVER_PURGE_MISSING));
         assertTrue(config.getBoolean(Key.CACHE_SERVER_RESOLVE_FIRST));
         assertTrue(config.getBoolean(Key.CACHE_WORKER_ENABLED));
