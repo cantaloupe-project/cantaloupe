@@ -193,7 +193,7 @@ public class S3CacheTest extends AbstractCacheTest {
     @Test
     public void testGetObjectKeyWithIdentifier() {
         assertEquals(
-                instance.getObjectKeyPrefix() + "info/" + identifier.toString() + ".json",
+                "test/info/083425bc68eece64753ec83a25f87230.json",
                 instance.getObjectKey(identifier));
     }
 
@@ -201,8 +201,9 @@ public class S3CacheTest extends AbstractCacheTest {
 
     @Test
     public void testGetObjectKeyWithOperationList() {
+        opList.setIdentifier(new Identifier("cats"));
         assertEquals(
-                instance.getObjectKeyPrefix() + "image/" + opList.toString(),
+                "test/image/0832c1202da8d382318e329a7c133ea0/4520700b2323f4d1e65e1b2074f43d47",
                 instance.getObjectKey(opList));
     }
 

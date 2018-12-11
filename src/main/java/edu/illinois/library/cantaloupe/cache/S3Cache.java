@@ -15,11 +15,12 @@ import edu.illinois.library.cantaloupe.async.ThreadPool;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Identifier;
+import edu.illinois.library.cantaloupe.operation.Encode;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.util.AWSClientBuilder;
 import edu.illinois.library.cantaloupe.util.Stopwatch;
-import org.apache.commons.lang3.StringUtils;
+import edu.illinois.library.cantaloupe.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -341,19 +342,31 @@ class S3Cache implements DerivativeCache {
 
     /**
      * @param identifier
-     * @return Object key of the serialized Info associated with the given
-     *         identifier.
+     * @return Object key of the serialized {@link Info} associated with the
+     *         given identifier.
      */
     String getObjectKey(Identifier identifier) {
-        return getObjectKeyPrefix() + "info/" + identifier.toString() + ".json";
+        return getObjectKeyPrefix() + "info/" +
+                StringUtils.md5(identifier.toString()).toLowerCase() + ".json";
     }
 
     /**
      * @param opList
-     * @return Object key of the image associated with the given operation list.
+     * @return Object key of the derivative image associated with the given
+     *         operation list.
      */
     String getObjectKey(OperationList opList) {
-        return getObjectKeyPrefix() + "image/" + opList.toString();
+        final String idStr = StringUtils.md5(opList.getIdentifier().toString()).toLowerCase();
+        final String opsStr = StringUtils.md5(opList.toString()).toLowerCase();
+
+        String extension = "";
+        Encode encode = (Encode) opList.getFirst(Encode.class);
+        if (encode != null) {
+            extension = "." + encode.getFormat().getPreferredExtension();
+        }
+
+        return String.format("%simage/%s/%s%s",
+                getObjectKeyPrefix(), idStr, opsStr, extension);
     }
 
     /**
