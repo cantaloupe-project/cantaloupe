@@ -15,13 +15,9 @@ import edu.illinois.library.cantaloupe.operation.redaction.Redaction;
 import edu.illinois.library.cantaloupe.operation.redaction.RedactionService;
 import edu.illinois.library.cantaloupe.script.DelegateProxy;
 import edu.illinois.library.cantaloupe.util.StringUtils;
-import org.apache.commons.codec.binary.Hex;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.nio.charset.Charset;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -539,15 +535,7 @@ public final class OperationList implements Comparable<OperationList>,
             opStrings.add(key + ":" + this.getOptions().get(key));
         }
 
-        String opsString = String.join("_", opStrings);
-
-        try {
-            final MessageDigest digest = MessageDigest.getInstance("MD5");
-            digest.update(opsString.getBytes(Charset.forName("UTF8")));
-            opsString = Hex.encodeHexString(digest.digest());
-        } catch (NoSuchAlgorithmException e) {
-            LOGGER.error("toFilename(): {}", e.getMessage());
-        }
+        String opsString = StringUtils.md5(String.join("_", opStrings)).toLowerCase();
 
         String idStr = "";
         Identifier identifier = getIdentifier();

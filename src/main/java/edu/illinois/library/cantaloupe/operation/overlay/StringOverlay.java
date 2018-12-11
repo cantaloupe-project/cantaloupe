@@ -4,6 +4,7 @@ import edu.illinois.library.cantaloupe.image.Dimension;
 import edu.illinois.library.cantaloupe.image.ScaleConstraint;
 import edu.illinois.library.cantaloupe.operation.Color;
 import edu.illinois.library.cantaloupe.operation.Operation;
+import edu.illinois.library.cantaloupe.util.StringUtils;
 import org.apache.commons.codec.binary.Hex;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -190,19 +191,10 @@ public class StringOverlay extends Overlay implements Operation {
      */
     @Override
     public String toString() {
-        String string;
-        try {
-            final MessageDigest digest = MessageDigest.getInstance("MD5");
-            digest.update(getString().getBytes(Charset.forName("UTF8")));
-            string = Hex.encodeHexString(digest.digest());
-        } catch (NoSuchAlgorithmException e) {
-            LOGGER.error("toString(): {}", e.getMessage());
-            string = getString().replaceAll("[^A-Za-z0-9]", "");
-        }
         // minSize is not included, as it is more of a potential property than
         // a property.
         return String.format("%s_%s_%d_%s_%d_%.1f_%.01f_%s_%s_%s_%.1f",
-                string,
+                StringUtils.md5(getString()).toLowerCase(),
                 getPosition(),
                 getInset(),
                 getFont().getName(),

@@ -6,6 +6,7 @@ import org.apache.commons.codec.binary.Hex;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.xml.bind.DatatypeConverter;
 import java.nio.charset.Charset;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -68,6 +69,22 @@ public final class StringUtils {
             LOGGER.error("filenameSafe(): {}", e.getMessage());
         }
         return str; // This should never hit.
+    }
+
+    /**
+     * @param str String to hash.
+     * @return    MD5 checksum.
+     */
+    public static String md5(String str) {
+        try {
+            final MessageDigest digest = MessageDigest.getInstance("MD5");
+            digest.update(str.getBytes());
+            byte[] bytes = digest.digest();
+            return DatatypeConverter.printHexBinary(bytes);
+        } catch (NoSuchAlgorithmException e) {
+            LOGGER.error("md5(): {}", e.getMessage());
+            throw new RuntimeException(e);
+        }
     }
 
     /**
