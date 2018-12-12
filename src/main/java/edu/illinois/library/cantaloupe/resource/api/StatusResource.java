@@ -43,4 +43,9 @@ public class StatusResource extends AbstractAPIResource {
                 .write(getResponse().getOutputStream(), features);
     }
 
+    @Override
+    boolean requiresAuth() {
+        return true;
+    }
+
 }

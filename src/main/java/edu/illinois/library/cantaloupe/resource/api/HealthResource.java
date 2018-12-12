@@ -43,4 +43,9 @@ public class HealthResource extends AbstractAPIResource {
                 .write(getResponse().getOutputStream(), features);
     }
 
+    @Override
+    boolean requiresAuth() {
+        return false;
+    }
+
 }

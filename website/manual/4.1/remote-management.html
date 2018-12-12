@@ -23,7 +23,7 @@ title: Remote Management
 <p>The HTTP API is disabled by default, but can be enabled by setting the <code>endpoint.api.enabled</code> configuration option to <code>true</code>.</p>
 
 <p class="text-info">
-  <i class="fa fa-info-circle"></i> All API methods require HTTP Basic authentication. Credentials are set in <code>endpoint.api.username</code> and <code>endpoint.api.secret</code>.
+  <i class="fa fa-info-circle"></i> Some API methods require HTTP Basic authentication. Credentials are set in <code>endpoint.api.username</code> and <code>endpoint.api.secret</code>.
 </p>
 
 <p class="text-info">
@@ -40,6 +40,10 @@ title: Remote Management
 <h4 id="check-status">Check the application status <small>since 4.1</small></h4>
 
 <table class="table table-bordered">
+  <tr>
+    <td>Requires Authentication?</td>
+    <td>Yes</td>
+  </tr>
   <tr>
     <td>Request Method</td>
     <td><code>GET</code></td>
@@ -61,6 +65,10 @@ title: Remote Management
 <h4 id="check-health">Check the application health <small>since 4.1</small></h4>
 
 <table class="table table-bordered">
+  <tr>
+    <td>Requires Authentication?</td>
+    <td>No</td>
+  </tr>
   <tr>
     <td>Request Method</td>
     <td><code>GET</code></td>
@@ -108,6 +116,10 @@ title: Remote Management
 
 <table class="table table-bordered">
   <tr>
+    <td>Requires Authentication?</td>
+    <td>Yes</td>
+  </tr>
+  <tr>
     <td>Request Method</td>
     <td><code>GET</code></td>
   </tr>
@@ -128,6 +140,10 @@ title: Remote Management
 <h4 id="update-configuration">Update the configuration <small>since 3.3</small></h4>
 
 <table class="table table-bordered">
+  <tr>
+    <td>Requires Authentication?</td>
+    <td>Yes</td>
+  </tr>
   <tr>
     <td>Request Method</td>
     <td><code>PUT</code></td>
@@ -176,6 +192,10 @@ title: Remote Management
 
 <table class="table table-bordered">
   <tr>
+    <td>Requires Authentication?</td>
+    <td>Yes</td>
+  </tr>
+  <tr>
     <td>Request Method</td>
     <td><code>POST</code></td>
   </tr>
@@ -202,6 +222,10 @@ title: Remote Management
 <h4 id="PurgeItemFromCache">Purge all content relating to an individual source image from all caches <small>since 3.4</small></h4>
 
 <table class="table table-bordered">
+  <tr>
+    <td>Requires Authentication?</td>
+    <td>Yes</td>
+  </tr>
   <tr>
     <td>Request Method</td>
     <td><code>POST</code></td>
@@ -231,6 +255,10 @@ title: Remote Management
 
 <table class="table table-bordered">
   <tr>
+    <td>Requires Authentication?</td>
+    <td>Yes</td>
+  </tr>
+  <tr>
     <td>Request Method</td>
     <td><code>POST</code></td>
   </tr>
@@ -258,6 +286,10 @@ title: Remote Management
 
 <table class="table table-bordered">
   <tr>
+    <td>Requires Authentication?</td>
+    <td>Yes</td>
+  </tr>
+  <tr>
     <td>Request Method</td>
     <td><code>POST</code></td>
   </tr>
@@ -284,6 +316,10 @@ title: Remote Management
 <h4 id="PurgeInfoCache">Purge the info cache <small>since 3.4</small></h4>
 
 <table class="table table-bordered">
+  <tr>
+    <td>Requires Authentication?</td>
+    <td>Yes</td>
+  </tr>
   <tr>
     <td>Request Method</td>
     <td><code>POST</code></td>

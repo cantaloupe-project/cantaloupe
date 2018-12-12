@@ -39,6 +39,22 @@ public class HealthResourceTest extends AbstractAPIResourceTest {
         }
     }
 
+    @Override // because this endpoint doesn't require auth
+    @Test
+    public void testGETWithNoCredentials() throws Exception {
+        client.setUsername(null);
+        client.setSecret(null);
+        client.send();
+    }
+
+    @Override // because this endpoint doesn't require auth
+    @Test
+    public void testGETWithInvalidCredentials() throws Exception {
+        client.setUsername("invalid");
+        client.setSecret("invalid");
+        client.send();
+    }
+
     @Test
     public void testGETResponseBody() throws Exception {
         Response response = client.send();
