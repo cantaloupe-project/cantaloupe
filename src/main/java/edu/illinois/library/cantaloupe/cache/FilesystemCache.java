@@ -431,7 +431,7 @@ class FilesystemCache implements SourceCache, DerivativeCache {
     static Path infoFile(final Identifier identifier) {
         return rootInfoPath()
                 .resolve(hashedPathFragment(identifier.toString()))
-                .resolve(StringUtils.filesystemSafe(identifier.toString())
+                .resolve(StringUtils.md5(identifier.toString())
                         + INFO_EXTENSION);
     }
 
@@ -443,7 +443,7 @@ class FilesystemCache implements SourceCache, DerivativeCache {
     static Path infoTempFile(final Identifier identifier) {
         return rootInfoPath()
                 .resolve(hashedPathFragment(identifier.toString()))
-                .resolve(StringUtils.filesystemSafe(identifier.toString())
+                .resolve(StringUtils.md5(identifier.toString())
                         + INFO_EXTENSION + tempFileSuffix());
     }
 
@@ -454,7 +454,7 @@ class FilesystemCache implements SourceCache, DerivativeCache {
     static Path sourceImageFile(Identifier identifier) {
         return rootSourceImagePath()
                 .resolve(hashedPathFragment(identifier.toString()))
-                .resolve(StringUtils.filesystemSafe(identifier.toString()));
+                .resolve(StringUtils.md5(identifier.toString()));
     }
 
     /**
@@ -465,7 +465,7 @@ class FilesystemCache implements SourceCache, DerivativeCache {
     static Path sourceImageTempFile(Identifier identifier) {
         return rootSourceImagePath()
                 .resolve(hashedPathFragment(identifier.toString()))
-                .resolve(StringUtils.filesystemSafe(identifier.toString())
+                .resolve(StringUtils.md5(identifier.toString())
                         + tempFileSuffix());
     }
 
@@ -514,7 +514,7 @@ class FilesystemCache implements SourceCache, DerivativeCache {
         final Path cachePath = rootDerivativeImagePath().resolve(
                 hashedPathFragment(identifier.toString()));
         final String expectedNamePrefix =
-                StringUtils.filesystemSafe(identifier.toString());
+                StringUtils.md5(identifier.toString());
         try {
             return Files.list(cachePath)
                     .filter(p -> p.getFileName().toString().startsWith(expectedNamePrefix))

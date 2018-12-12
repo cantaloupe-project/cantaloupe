@@ -55,23 +55,6 @@ public final class StringUtils {
     }
 
     /**
-     * Returns a filename-safe string guaranteed to uniquely represent the
-     * given string.
-     *
-     * @return Filename-safe representation of the given string.
-     */
-    public static String filesystemSafe(String str) {
-        try {
-            final MessageDigest digest = MessageDigest.getInstance("MD5");
-            digest.update(str.getBytes(Charset.forName("UTF8")));
-            return Hex.encodeHexString(digest.digest());
-        } catch (NoSuchAlgorithmException e) {
-            LOGGER.error("filenameSafe(): {}", e.getMessage());
-        }
-        return str; // This should never hit.
-    }
-
-    /**
      * @param str String to hash.
      * @return    MD5 checksum.
      */

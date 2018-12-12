@@ -148,7 +148,7 @@ public class FilesystemCacheTest extends AbstractCacheTest {
                 pathname,
                 "info",
                 FilesystemCache.hashedPathFragment(identifier.toString()),
-                StringUtils.filesystemSafe(identifier.toString()) + ".json");
+                StringUtils.md5(identifier.toString()) + ".json");
         assertEquals(expected, infoFile(identifier));
     }
 
@@ -161,7 +161,7 @@ public class FilesystemCacheTest extends AbstractCacheTest {
                 pathname,
                 "info",
                 FilesystemCache.hashedPathFragment(identifier.toString()),
-                StringUtils.filesystemSafe(identifier.toString()) + ".json"
+                StringUtils.md5(identifier.toString()) + ".json"
                         + FilesystemCache.tempFileSuffix());
         assertEquals(expected, infoTempFile(identifier));
     }
@@ -175,7 +175,7 @@ public class FilesystemCacheTest extends AbstractCacheTest {
                 pathname,
                 "source",
                 FilesystemCache.hashedPathFragment(identifier.toString()),
-                StringUtils.filesystemSafe(identifier.toString()));
+                StringUtils.md5(identifier.toString()));
         assertEquals(expected, sourceImageFile(identifier));
     }
 
@@ -188,7 +188,7 @@ public class FilesystemCacheTest extends AbstractCacheTest {
                 pathname,
                 "source",
                 FilesystemCache.hashedPathFragment(identifier.toString()),
-                StringUtils.filesystemSafe(identifier.toString())
+                StringUtils.md5(identifier.toString())
                         + FilesystemCache.tempFileSuffix());
         assertEquals(expected, sourceImageTempFile(identifier));
     }
