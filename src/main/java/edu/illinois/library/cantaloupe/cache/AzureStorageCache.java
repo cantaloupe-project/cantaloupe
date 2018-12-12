@@ -9,24 +9,22 @@ import com.microsoft.azure.storage.blob.CloudBlobContainer;
 import com.microsoft.azure.storage.blob.CloudBlockBlob;
 import com.microsoft.azure.storage.blob.ListBlobItem;
 import edu.illinois.library.cantaloupe.async.TaskQueue;
-import edu.illinois.library.cantaloupe.async.ThreadPool;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.Info;
+import edu.illinois.library.cantaloupe.operation.Encode;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.util.Stopwatch;
+import edu.illinois.library.cantaloupe.util.StringUtils;
 import org.apache.commons.io.output.NullOutputStream;
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.UnsupportedEncodingException;
 import java.net.URISyntaxException;
-import java.net.URLEncoder;
 import java.security.InvalidKeyException;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -232,31 +230,31 @@ class AzureStorageCache implements DerivativeCache {
 
     /**
      * @param identifier
-     * @return Object key of the serialized Info associated with the given
-     *         identifier.
+     * @return Object key of the serialized {@link Info} associated with the
+     *         given identifier.
      */
     String getObjectKey(Identifier identifier) {
-        try {
-            return getObjectKeyPrefix() + "info/" +
-                    URLEncoder.encode(identifier.toString(), "UTF-8") + ".json";
-        } catch (UnsupportedEncodingException e) {
-            LOGGER.error(e.getMessage(), e);
-        }
-        return null;
+        return getObjectKeyPrefix() + "info/" +
+                StringUtils.md5(identifier.toString()).toLowerCase() + ".json";
     }
 
     /**
      * @param opList
-     * @return Object key of the image associated with the given operation list.
+     * @return Object key of the derivative image associated with the given
+     *         operation list.
      */
     String getObjectKey(OperationList opList) {
-        try {
-            return getObjectKeyPrefix() + "image/" +
-                    URLEncoder.encode(opList.toString(), "UTF-8");
-        } catch (UnsupportedEncodingException e) {
-            LOGGER.error(e.getMessage(), e);
+        final String idStr = StringUtils.md5(opList.getIdentifier().toString()).toLowerCase();
+        final String opsStr = StringUtils.md5(opList.toString()).toLowerCase();
+
+        String extension = "";
+        Encode encode = (Encode) opList.getFirst(Encode.class);
+        if (encode != null) {
+            extension = "." + encode.getFormat().getPreferredExtension();
         }
-        return null;
+
+        return String.format("%simage/%s/%s%s",
+                getObjectKeyPrefix(), idStr, opsStr, extension);
     }
 
     /**
