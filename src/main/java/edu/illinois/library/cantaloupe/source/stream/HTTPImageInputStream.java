@@ -11,22 +11,24 @@ import javax.imageio.stream.ImageInputStreamImpl;
 import java.io.IOException;
 
 /**
- * <p>Input stream that supports crude seeking over HTTP.</p>
+ * <p>Input stream that supports pseudo-seeking over HTTP.</p>
  *
- * <p>The stream is divided conceptually into fixed-size windows a.k.a. chunks
- * which are fetched as needed using ranged HTTP requests. This may improve
- * efficiency when reading small portions of large images that are selectively
- * readable, like JPEG2000 or multiresolution/tiled TIFF. Conversely, it may
- * reduce efficiency when reading whole images.</p>
+ * <p>The stream is divided conceptually into fixed-size windows into which
+ * chunks of data are fetched as needed using ranged HTTP requests. This
+ * technique may improve efficiency when reading small portions of large images
+ * that are selectively readable, like JPEG2000 and multiresolution+tiled TIFF,
+ * over low-bandwidth connections. Conversely, it may reduce efficiency when
+ * reading large portions of images.</p>
  *
  * <p>Downloaded chunks can be cached in memory by passing a positive value to
- * {@link #setMaxChunkCacheSize(long)}. The cache is per-instance.</p>
+ * {@link #setMaxChunkCacheSize(long)}. This could help readers that seek
+ * around a lot beyond the window size. The cache is per-instance.</p>
  *
  * <p>The HTTP client is abstracted into the exceedingly simple {@link
- * HTTPImageInputStreamClient} interface, so probably any HTTP client,
- * including many cloud storage clients, can be hooked up and used easily,
- * without this class needing to know about things like request signing
- * etc.</p>
+ * HTTPImageInputStreamClient} interface, so probably any existing client
+ * implementation, including many cloud storage clients, can be hooked up and
+ * used easily, without this class needing to know about things like SSL/TLS,
+ * request signing, etc.</p>
  *
  * <p>This class works only with HTTP servers that support {@literal Range}
  * requests, as indicated by the presence of a {@literal Accept-Ranges: bytes}
@@ -44,12 +46,11 @@ public class HTTPImageInputStream extends ImageInputStreamImpl
     /**
      * Can be overridden by {@link #setWindowSize(int)}.
      */
-    private static final int DEFAULT_WINDOW_SIZE = (int) Math.pow(2, 19);
-
-    private static final double MEGABYTE = Math.pow(2, 20);
+    private static final int DEFAULT_WINDOW_SIZE = 1024 * 512;
 
     private HTTPImageInputStreamClient client;
-    private int numChunkDownloads, numChunkCacheHits;
+    private int numChunkDownloads, numChunkCacheHits, numChunkCacheMisses;
+    private long numBytesDownloaded, numBytesRead;
     private int windowSize = DEFAULT_WINDOW_SIZE;
     private long streamLength;
     private int windowIndex = -1, indexWithinBuffer;
@@ -60,17 +61,18 @@ public class HTTPImageInputStream extends ImageInputStreamImpl
      * Variant that sends a preliminary {@literal HEAD} request to retrieve
      * some needed information. Use {@link #HTTPImageInputStream(
      * HTTPImageInputStreamClient, long)} instead if you already know the
-     * resource length and that the server supports {@literal HEAD} requests.
+     * resource length and that the server supports ranged requests.
      *
      * @param client Client to use to handle requests.
-     * @throws RangesNotSupportedException if the server does not support
-     *         ranged requests.
-     * @throws IOException if something goes wrong when checking for range
-     *         support.
+     * @throws RangesNotSupportedException if the server does not advertise
+     *                                     support for ranges.
+     * @throws IOException if the response does not include a valid {@literal
+     *                     Content-Length} header or some other communication
+     *                     error occurs.
      */
     public HTTPImageInputStream(HTTPImageInputStreamClient client)
             throws IOException {
-        this.client       = client;
+        this.client = client;
         sendHEADRequest();
     }
 
@@ -110,14 +112,17 @@ public class HTTPImageInputStream extends ImageInputStreamImpl
     }
 
     /**
-     * Must be called before any reading or seeking occurs.
+     * <p>Sets the window size. Must be called before any reading or seeking
+     * occurs.</p>
      *
-     * @param windowSize Window/chunk size. In general, a smaller size means
-     *                   more requests will be needed, and a larger size means
-     *                   more irrelevant data will have to be read and
-     *                   discarded. The optimal size will vary depending on the
-     *                   source image, the amount of data needed from it, and
-     *                   network transfer rate vs. latency.
+     * <p>In general, a smaller size means more requests may be needed, and a
+     * larger size means more irrelevant data will have to be read and
+     * discarded. The optimal size will vary depending on the source image, the
+     * amount of data needed from it, and network transfer rate vs.
+     * latency. The size should always be at least a few KB so as to be able
+     * to read the image header in one request.</p>
+     *
+     * @param windowSize Window/chunk size.
      */
     public void setWindowSize(int windowSize) {
         this.windowSize = windowSize;
@@ -134,22 +139,36 @@ public class HTTPImageInputStream extends ImageInputStreamImpl
         if (!"bytes".equals(response.getHeaders().getFirstValue("Accept-Ranges"))) {
             throw new RangesNotSupportedException();
         }
-        streamLength = Long.parseLong(response.getHeaders().getFirstValue("Content-Length"));
+        try {
+            streamLength = Long.parseLong(
+                    response.getHeaders().getFirstValue("Content-Length"));
+        } catch (NumberFormatException e) {
+            throw new IOException("Invalid or missing Content-Length header");
+        }
     }
 
     @Override
     public void close() throws IOException {
-        LOGGER.debug("close(): {} chunks fetched ({}MB of {}MB); {} cache hits",
-                numChunkDownloads,
-                ((numChunkDownloads * windowSize) / MEGABYTE),
-                String.format("%.2f", streamLength / MEGABYTE),
-                numChunkCacheHits);
+        logStatistics();
         try {
             super.close();
         } finally {
             client       = null;
             windowBuffer = null;
+            chunkCache   = null;
         }
+    }
+
+    private void logStatistics() {
+        LOGGER.debug("Downloaded {} chunks ({} ({}%) of {} bytes); " +
+                        "read {}% of chunk data; {} cache hits; {} cache misses",
+                numChunkDownloads,
+                numBytesDownloaded,
+                String.format("%.2f", numBytesDownloaded * 100 / (double) streamLength),
+                streamLength,
+                String.format("%.2f", numBytesRead * 100 / (double) numBytesDownloaded),
+                numChunkCacheHits,
+                numChunkCacheMisses);
     }
 
     @Override
@@ -165,6 +184,7 @@ public class HTTPImageInputStream extends ImageInputStreamImpl
         prepareWindowBuffer();
         bitOffset = 0;
         int b = windowBuffer[indexWithinBuffer] & 0xff;
+        numBytesRead++;
         indexWithinBuffer++;
         streamPos++;
         return b;
@@ -199,8 +219,9 @@ public class HTTPImageInputStream extends ImageInputStreamImpl
                 b, offset,                       // to, to index
                 fulfilledLength);                // length
 
+        numBytesRead      += fulfilledLength;
         indexWithinBuffer += fulfilledLength;
-        streamPos += fulfilledLength;
+        streamPos         += fulfilledLength;
         return fulfilledLength;
     }
 
@@ -229,8 +250,6 @@ public class HTTPImageInputStream extends ImageInputStreamImpl
      * chunk cache or downloading it.
      */
     private byte[] fetchChunk(Range range) throws IOException {
-        // If the chunk cache is available, try to fetch the needed chunk
-        // from there. Otherwise, fetch it directly from the source.
         byte[] chunk;
         if (chunkCache != null) {
             chunk = chunkCache.get(range);
@@ -238,10 +257,12 @@ public class HTTPImageInputStream extends ImageInputStreamImpl
                 LOGGER.trace("Chunk cache hit for range: {}", range);
                 numChunkCacheHits++;
             } else {
+                numChunkCacheMisses++;
                 chunk = downloadChunk(range);
                 chunkCache.put(range, chunk);
             }
         } else {
+            numChunkCacheMisses++;
             chunk = downloadChunk(range);
         }
         return chunk;
@@ -249,9 +270,11 @@ public class HTTPImageInputStream extends ImageInputStreamImpl
 
     private byte[] downloadChunk(Range range) throws IOException {
         LOGGER.trace("Downloading range: {}", range);
-        numChunkDownloads++;
         Response response = client.sendGETRequest(range);
-        return response.getBody();
+        byte[] entity = response.getBody();
+        numChunkDownloads++;
+        numBytesDownloaded += entity.length;
+        return entity;
     }
 
     private Range getRange(int windowIndex) {
