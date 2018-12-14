@@ -97,7 +97,7 @@ final class ScriptWatcher implements Runnable {
     @Override
     public void run() {
         if (filesystemWatcher != null) {
-            filesystemWatcher.processEvents();
+            filesystemWatcher.start();
         }
     }
 

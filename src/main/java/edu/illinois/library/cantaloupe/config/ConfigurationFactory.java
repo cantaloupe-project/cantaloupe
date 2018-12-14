@@ -11,7 +11,6 @@ public final class ConfigurationFactory {
 
     public static synchronized void clearInstance() {
         if (instance != null) {
-            instance.stopWatching();
             instance = null;
         }
     }
@@ -20,7 +19,8 @@ public final class ConfigurationFactory {
      * Returns the shared application configuration instance. The
      * {@link #CONFIG_VM_ARGUMENT} VM argument must be set to an absolute or
      * relative pathname of a configuration file. It may also be set to the
-     * string {@literal memory} to use an in-memory configuration.
+     * string {@literal memory} to use an in-memory configuration (which will
+     * be empty).
      *
      * @return Shared application configuration instance.
      * @throws RuntimeException If the {@link #CONFIG_VM_ARGUMENT} VM argument
@@ -29,7 +29,7 @@ public final class ConfigurationFactory {
     static synchronized Configuration getInstance() {
         if (instance == null) {
             // We are going to return a ConfigurationProvider with either a
-            // MemoryConfiguration at position 0 (for testing) or an
+            // MapConfiguration at position 0 (for testing) or an
             // EnvironmentConfiguration at position 0 and a
             // HeritablePropertiesConfiguration at position 1 (for production).
             final List<Configuration> configs = new ArrayList<>();
@@ -37,8 +37,8 @@ public final class ConfigurationFactory {
             final String configArg = System.getProperty(CONFIG_VM_ARGUMENT);
             if (configArg != null) {
                 switch (configArg) {
-                    case "memory": // we are in test mode
-                        configs.add(new MemoryConfiguration());
+                    case "memory": // we are in "test mode"
+                        configs.add(new MapConfiguration());
                         break;
                     default:
                         configs.add(new EnvironmentConfiguration());

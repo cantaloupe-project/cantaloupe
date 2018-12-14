@@ -4,6 +4,7 @@ import edu.illinois.library.cantaloupe.async.ThreadPool;
 import edu.illinois.library.cantaloupe.cache.CacheFactory;
 import edu.illinois.library.cantaloupe.cache.CacheWorkerRunner;
 import edu.illinois.library.cantaloupe.config.Configuration;
+import edu.illinois.library.cantaloupe.config.ConfigurationFileWatcher;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.logging.LoggerUtil;
 import edu.illinois.library.cantaloupe.source.Source;
@@ -56,15 +57,14 @@ public class ApplicationContextListener implements ServletContextListener {
         logSystemInfo();
         handleVmArguments();
 
-        final Configuration config = Configuration.getInstance();
-
-        // Start the configuration file watcher.
-        config.startWatching();
+        // Start watching configuration files.
+        ConfigurationFileWatcher.startWatching();
 
         // Start the delegate script file watcher, if necessary.
         DelegateProxyService.getInstance().startWatching();
 
         // Start the cache worker, if necessary.
+        final Configuration config = Configuration.getInstance();
         if (config.getBoolean(Key.CACHE_WORKER_ENABLED, false)) {
             CacheWorkerRunner.getInstance().start();
         }
@@ -78,7 +78,7 @@ public class ApplicationContextListener implements ServletContextListener {
         CacheWorkerRunner.getInstance().stop();
 
         // Stop the configuration file watcher.
-        Configuration.getInstance().stopWatching();
+        ConfigurationFileWatcher.stopWatching();
 
         // Stop the delegate script file watcher.
         DelegateProxyService.getInstance().stopWatching();
@@ -115,9 +115,8 @@ public class ApplicationContextListener implements ServletContextListener {
 
         if (Application.isUsingSystemTempPath()) {
             LOGGER.warn("The effective temp directory is the system temp " +
-                    "directory. If the application is left running for " +
-                    "several days, the OS may clean up important files that " +
-                    "are still in use. Consider setting `" +
+                    "directory. Severe errors may result if the application " +
+                    "is left running for a long time. Consider setting `" +
                     Key.TEMP_PATHNAME + "` for long-running servers.");
         }
 

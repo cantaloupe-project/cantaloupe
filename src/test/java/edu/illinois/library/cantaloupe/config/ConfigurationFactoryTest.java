@@ -19,7 +19,7 @@ public class ConfigurationFactoryTest extends BaseTest {
 
         ConfigurationProvider provider =
                 (ConfigurationProvider) Configuration.getInstance();
-        assertTrue(provider.getWrappedConfigurations().get(0) instanceof MemoryConfiguration);
+        assertTrue(provider.getWrappedConfigurations().get(0) instanceof MapConfiguration);
     }
 
     @Test

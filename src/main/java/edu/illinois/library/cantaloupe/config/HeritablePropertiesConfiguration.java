@@ -10,11 +10,11 @@ import java.nio.file.Files;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Set;
 import java.util.concurrent.locks.StampedLock;
 
 /**
@@ -57,7 +57,7 @@ class HeritablePropertiesConfiguration extends AbstractHeritableFileConfiguratio
     ////////////////// AbstractHeritableFileConfiguration methods ///////////////////
 
     @Override
-    Collection<File> getFiles() {
+    Set<File> getFiles() {
         final long stamp = lock.readLock();
         try {
             return commonsConfigs.keySet();

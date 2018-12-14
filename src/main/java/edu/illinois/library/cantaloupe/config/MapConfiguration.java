@@ -12,7 +12,7 @@ import java.util.concurrent.ConcurrentMap;
 /**
  * In-memory configuration that cannot be persisted.
  */
-class MemoryConfiguration implements Configuration {
+class MapConfiguration implements Configuration {
 
     private final ConcurrentMap<String,Object> configuration =
             new ConcurrentHashMap<>();
@@ -191,18 +191,6 @@ class MemoryConfiguration implements Configuration {
     public void setProperty(String key, Object value) {
         configuration.put(key, value);
     }
-
-    /**
-     * No-op.
-     */
-    @Override
-    public void startWatching() {}
-
-    /**
-     * No-op.
-     */
-    @Override
-    public void stopWatching() {}
 
     @Override
     public Map<String, Object> toMap() {

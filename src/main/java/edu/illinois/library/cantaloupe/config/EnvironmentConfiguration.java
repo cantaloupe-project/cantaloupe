@@ -201,16 +201,4 @@ class EnvironmentConfiguration implements Configuration {
     public void setProperty(String key, Object value) {
     }
 
-    /**
-     * Does nothing, as this implementation does not support watching.
-     */
-    @Override
-    public void startWatching() {}
-
-    /**
-     * Does nothing, as this implementation does not support watching.
-     */
-    @Override
-    public void stopWatching() {}
-
 }

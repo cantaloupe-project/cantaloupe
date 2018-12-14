@@ -2,14 +2,14 @@ package edu.illinois.library.cantaloupe.config;
 
 import org.junit.Before;
 
-public class MemoryConfigurationTest extends AbstractConfigurationTest {
+public class MapConfigurationTest extends AbstractConfigurationTest {
 
-    private MemoryConfiguration instance;
+    private MapConfiguration instance;
 
     @Before
     public void setUp() throws Exception {
         super.setUp();
-        instance = new MemoryConfiguration();
+        instance = new MapConfiguration();
     }
 
     protected Configuration getInstance() {

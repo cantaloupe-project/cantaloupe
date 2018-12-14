@@ -229,14 +229,4 @@ public final class ConfigurationProvider implements Configuration {
         wrappedConfigs.forEach(c -> c.setProperty(key, value));
     }
 
-    @Override
-    public void startWatching() {
-        wrappedConfigs.forEach(Configuration::startWatching);
-    }
-
-    @Override
-    public void stopWatching() {
-        wrappedConfigs.forEach(Configuration::stopWatching);
-    }
-
 }

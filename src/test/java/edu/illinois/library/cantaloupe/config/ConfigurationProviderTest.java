@@ -16,8 +16,8 @@ public class ConfigurationProviderTest extends BaseTest {
     private static final double DELTA = 0.00000001;
 
     private ConfigurationProvider instance;
-    private Configuration config1 = new MemoryConfiguration();
-    private Configuration config2 = new MemoryConfiguration();
+    private Configuration config1 = new MapConfiguration();
+    private Configuration config2 = new MapConfiguration();
 
     @Before
     public void setUp() {

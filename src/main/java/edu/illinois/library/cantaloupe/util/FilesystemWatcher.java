@@ -27,21 +27,21 @@ public class FilesystemWatcher {
 
     private final Callback callback;
     private final Map<WatchKey,Path> keys;
-    private volatile boolean shouldStop = false;
     private final WatchService watcher;
+    private volatile boolean shouldStop;
 
     @SuppressWarnings("unchecked")
-    static <T> WatchEvent<T> cast(WatchEvent<?> event) {
+    private static <T> WatchEvent<T> cast(WatchEvent<?> event) {
         return (WatchEvent<T>)event;
     }
 
     /**
-     * Creates a WatchService and registers the given directory.
+     * Creates a {@link WatchService} and registers the given directory.
      */
     public FilesystemWatcher(Path dir, Callback callback) throws IOException {
         this.callback = callback;
-        this.watcher = FileSystems.getDefault().newWatchService();
-        this.keys = new HashMap<>();
+        this.watcher  = FileSystems.getDefault().newWatchService();
+        this.keys     = new HashMap<>();
 
         WatchKey key = dir.register(watcher, ENTRY_CREATE, ENTRY_DELETE,
                 ENTRY_MODIFY);
@@ -49,13 +49,11 @@ public class FilesystemWatcher {
     }
 
     /**
-     * Process all events for keys queued to the watcher
+     * Starts watching for changes. This will block, so is normally invoked in
+     * a separate thread.
      */
-    public void processEvents() {
-        while (true) {
-            if (shouldStop) {
-                return;
-            }
+    public void start() {
+        while (!shouldStop) {
             // wait for key to be signalled
             WatchKey key;
             try {
@@ -78,8 +76,8 @@ public class FilesystemWatcher {
 
                 // Context for directory entry event is the file name of entry
                 WatchEvent<Path> ev = cast(event);
-                Path name = ev.context();
-                Path child = dir.resolve(name);
+                Path name           = ev.context();
+                Path child          = dir.resolve(name);
 
                 switch (kind.name()) {
                     case "ENTRY_CREATE":

@@ -295,18 +295,6 @@ public interface Configuration {
     void setProperty(String key, Object value);
 
     /**
-     * Starts watching the configuration file for changes. Implementations that
-     * don't support watching do nothing.
-     */
-    void startWatching();
-
-    /**
-     * Stops watching the configuration file for changes. Implementations that
-     * don't support watching do nothing.
-     */
-    void stopWatching();
-
-    /**
      * This default implementation uses the {@link Iterator} returned by {@link
      * #getKeys} in conjunction with {@link #getProperty(String)} to build a
      * map. Implementations should override it if they can do it more
