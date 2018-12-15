@@ -30,6 +30,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
@@ -46,8 +48,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * <p>Implementation notes:</p>
  *
  * <ul>
- *     <li>{@link FileProcessor} is not implemented because testing indicates
- *     that reading from streams is significantly faster.</li>
  *     <li>This processor does not respect the
  *     {@link Key#PROCESSOR_PRESERVE_METADATA} setting because telling GM not
  *     to preserve metadata means telling it not to preserve an ICC profile.
@@ -58,22 +58,25 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * </ul>
  */
 class GraphicsMagickProcessor extends AbstractMagickProcessor
-        implements StreamProcessor {
+        implements FileProcessor, StreamProcessor {
 
     private static final Logger LOGGER =
             LoggerFactory.getLogger(GraphicsMagickProcessor.class);
 
     private static final String GM_NAME = "gm";
 
-    private static final AtomicBoolean initializationAttempted =
+    private static final AtomicBoolean IS_INITIALIZATION_ATTEMPTED =
             new AtomicBoolean(false);
-    private static InitializationException initializationException;
 
     /**
      * Initialized by {@link #readFormats()}.
      */
-    private static final Map<Format, Set<Format>> supportedFormats =
+    private static final Map<Format, Set<Format>> SUPPORTED_FORMATS =
             new HashMap<>();
+
+    private static InitializationException initializationException;
+
+    private Path sourceFile;
 
     private static String getPath() {
         String searchPath = Configuration.getInstance().
@@ -85,7 +88,7 @@ class GraphicsMagickProcessor extends AbstractMagickProcessor
      * Performs one-time class-level/shared initialization.
      */
     private static synchronized void initialize() {
-        initializationAttempted.set(true);
+        IS_INITIALIZATION_ATTEMPTED.set(true);
         readFormats();
     }
 
@@ -95,7 +98,7 @@ class GraphicsMagickProcessor extends AbstractMagickProcessor
      *         result is cached.
      */
     private static synchronized Map<Format, Set<Format>> readFormats() {
-        if (supportedFormats.isEmpty()) {
+        if (SUPPORTED_FORMATS.isEmpty()) {
             final Set<Format> sourceFormats = EnumSet.noneOf(Format.class);
             final Set<Format> outputFormats = EnumSet.noneOf(Format.class);
 
@@ -114,7 +117,7 @@ class GraphicsMagickProcessor extends AbstractMagickProcessor
 
                 final InputStream processInputStream = process.getInputStream();
                 try (BufferedReader bReader = new BufferedReader(
-                        new InputStreamReader(processInputStream, "UTF-8"))) {
+                        new InputStreamReader(processInputStream, StandardCharsets.UTF_8))) {
                     String s;
                     boolean read = false;
                     while ((s = bReader.readLine()) != null) {
@@ -156,7 +159,7 @@ class GraphicsMagickProcessor extends AbstractMagickProcessor
                     outputFormats.add(Format.GIF);
 
                     for (Format format : sourceFormats) {
-                        supportedFormats.put(format, outputFormats);
+                        SUPPORTED_FORMATS.put(format, outputFormats);
                     }
                 }
             } catch (IOException | InterruptedException e) {
@@ -164,20 +167,20 @@ class GraphicsMagickProcessor extends AbstractMagickProcessor
                 // This is safe to swallow.
             }
         }
-        return supportedFormats;
+        return SUPPORTED_FORMATS;
     }
 
     /**
      * For testing only!
      */
     static synchronized void resetInitialization() {
-        initializationAttempted.set(false);
+        IS_INITIALIZATION_ATTEMPTED.set(false);
         initializationException = null;
-        supportedFormats.clear();
+        SUPPORTED_FORMATS.clear();
     }
 
     GraphicsMagickProcessor() {
-        if (!initializationAttempted.get()) {
+        if (!IS_INITIALIZATION_ATTEMPTED.get()) {
             initialize();
         }
     }
@@ -214,9 +217,14 @@ class GraphicsMagickProcessor extends AbstractMagickProcessor
                 (String) ops.getOptions().get("page"),
                 imageInfo.getSourceFormat());
 
-        // :- = read from stdin
-        args.add(getSourceFormat().getPreferredExtension() +
-                ":-[" + pageIndex + "]");
+        if (sourceFile != null) {
+            args.add(getSourceFormat().getPreferredExtension() +
+                    ":" + sourceFile + "[" + pageIndex + "]");
+        } else {
+            // :- = read from stdin
+            args.add(getSourceFormat().getPreferredExtension() +
+                    ":-[" + pageIndex + "]");
+        }
 
         Encode encode = (Encode) ops.getFirst(Encode.class);
 
@@ -354,7 +362,6 @@ class GraphicsMagickProcessor extends AbstractMagickProcessor
     }
 
     /**
-     * @param filter
      * @return String suitable for passing to {@literal gm convert}'s
      *         {@literal -filter} argument, or {@literal null} if an equivalent
      *         is unknown.
@@ -424,33 +431,126 @@ class GraphicsMagickProcessor extends AbstractMagickProcessor
 
     @Override
     public InitializationException getInitializationException() {
-        if (!initializationAttempted.get()) {
+        if (!IS_INITIALIZATION_ATTEMPTED.get()) {
             initialize();
         }
         return initializationException;
     }
 
     @Override
-    public void process(final OperationList ops,
-                        final Info imageInfo,
-                        final OutputStream outputStream)
-            throws ProcessorException {
-        super.process(ops, imageInfo, outputStream);
+    public Path getSourceFile() {
+        return sourceFile;
+    }
 
+    @Override
+    public void process(final OperationList ops,
+                        final Info info,
+                        final OutputStream outputStream) throws ProcessorException {
+        super.process(ops, info, outputStream);
+        try {
+            if (sourceFile != null) {
+                processFromFile(ops, info, outputStream);
+            } else {
+                processFromStream(ops, info, outputStream);
+            }
+        } catch (Exception e) {
+            throw new ProcessorException(e);
+        }
+    }
+
+    private void processFromFile(final OperationList ops,
+                                 final Info info,
+                                 final OutputStream outputStream) throws Exception {
+        final List<String> args  = getConvertArguments(ops, info);
+        final ProcessStarter cmd = new ProcessStarter();
+        cmd.setOutputConsumer(new Pipe(null, outputStream));
+        LOGGER.debug("processFromFile(): invoking {}", String.join(" ", args));
+        cmd.run(args);
+    }
+
+    private void processFromStream(final OperationList ops,
+                                   final Info info,
+                                   final OutputStream outputStream) throws Exception {
         try (InputStream inputStream = streamFactory.newInputStream()) {
-            final List<String> args = getConvertArguments(ops, imageInfo);
+            final List<String> args  = getConvertArguments(ops, info);
             final ProcessStarter cmd = new ProcessStarter();
             cmd.setInputProvider(new Pipe(inputStream, null));
             cmd.setOutputConsumer(new Pipe(null, outputStream));
-            LOGGER.info("process(): invoking {}", String.join(" ", args));
+            LOGGER.debug("processFromStream(): invoking {}", String.join(" ", args));
             cmd.run(args);
-        } catch (Exception e) {
-            throw new ProcessorException(e.getMessage(), e);
         }
     }
 
     @Override
     public Info readInfo() throws IOException {
+        List<String> output;
+        try {
+            if (sourceFile != null) {
+                output = readInfoFromFile();
+            } else {
+                output = readInfoFromStream();
+            }
+
+            if (!output.isEmpty()) {
+                final int width  = Integer.parseInt(output.get(0));
+                final int height = Integer.parseInt(output.get(1));
+                // GM is not tile-aware, so set the tile size to the full
+                // dimensions.
+                final Info info = Info.builder()
+                        .withSize(width, height)
+                        .withTileSize(width, height)
+                        .withFormat(getSourceFormat())
+                        .build();
+                // Do we have an EXIF orientation to deal with?
+                if (output.size() > 2) {
+                    try {
+                        final int exifOrientation = Integer.parseInt(output.get(2));
+                        final Orientation orientation =
+                                Orientation.forEXIFOrientation(exifOrientation);
+                        info.getImages().get(0).setOrientation(orientation);
+                    } catch (IllegalArgumentException ignore) {
+                    }
+                }
+                return info;
+            }
+            throw new IOException("readInfo(): nothing received on stdout: ");
+        } catch (IOException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new IOException(e);
+        }
+    }
+
+    /**
+     * @return Command output.
+     */
+    private List<String> readInfoFromFile() throws Exception {
+        final List<String> args = new ArrayList<>();
+        args.add(getPath());
+        args.add("identify");
+        args.add("-ping");
+        args.add("-format");
+        // We need to read this even when not respecting orientation,
+        // because GM's crop operation is orientation-unaware.
+        args.add("%w\n%h\n%[EXIF:Orientation]");
+        args.add(getSourceFormat().getPreferredExtension() + ":" + sourceFile);
+
+        final ArrayListOutputConsumer consumer =
+                new ArrayListOutputConsumer();
+
+        final ProcessStarter cmd = new ProcessStarter();
+        cmd.setOutputConsumer(consumer);
+        final String cmdString = String.join(" ", args).replace("\n", "");
+        LOGGER.info("readInfo(): invoking {}", cmdString);
+        cmd.run(args);
+
+        return consumer.getOutput();
+    }
+
+    /**
+     * @return Command output.
+     */
+    private List<String> readInfoFromStream() throws Exception {
         try (InputStream inputStream = streamFactory.newInputStream()) {
             final List<String> args = new ArrayList<>();
             args.add(getPath());
@@ -472,37 +572,13 @@ class GraphicsMagickProcessor extends AbstractMagickProcessor
             LOGGER.info("readInfo(): invoking {}", cmdString);
             cmd.run(args);
 
-            final List<String> output = consumer.getOutput();
-            if (!output.isEmpty()) {
-                final int width = Integer.parseInt(output.get(0));
-                final int height = Integer.parseInt(output.get(1));
-                // GM is not tile-aware, so set the tile size to the full
-                // dimensions.
-                final Info info = Info.builder()
-                        .withSize(width, height)
-                        .withTileSize(width, height)
-                        .withFormat(getSourceFormat())
-                        .build();
-                // Do we have an EXIF orientation to deal with?
-                if (output.size() > 2) {
-                    try {
-                        final int exifOrientation = Integer.parseInt(output.get(2));
-                        final Orientation orientation =
-                                Orientation.forEXIFOrientation(exifOrientation);
-                        info.getImages().get(0).setOrientation(orientation);
-                    } catch (IllegalArgumentException e) {
-                        // whatever
-                    }
-                }
-                return info;
-            }
-            throw new IOException("readInfo(): nothing received on " +
-                    "stdout from command: " + cmdString);
-        } catch (IOException e) {
-            throw e;
-        } catch (Exception e) {
-            throw new IOException(e);
+            return consumer.getOutput();
         }
+    }
+
+    @Override
+    public void setSourceFile(Path sourceFile) {
+        this.sourceFile = sourceFile;
     }
 
 }

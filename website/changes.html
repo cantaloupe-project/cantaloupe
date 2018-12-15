@@ -40,6 +40,7 @@ title: Change Log
   <li>KakaduNativeProcessor supports <code>sizeByDistortedWidthHeight</code>.</li>
   <li>Java2dProcessor and PdfBoxProcessor can preserve XMP metadata across most source and output formats.</li>
   <li>KakaduNativeProcessor respects the <code>processor.metadata.preserve</code> configuration key for XMP metadata.</li>
+  <li>Worked around a bug in the GraphicsMagick <code>gm</code> command that causes occasional "broken pipe" errors from GraphicsMagickProcessor when reading images from a FileSource.</li>
   <li>Removed normalization.</li>
 </ul>
 

@@ -10,4 +10,8 @@ public class ProcessorException extends Exception {
         super(message, t);
     }
 
+    public ProcessorException(Throwable t) {
+        super(t);
+    }
+
 }
