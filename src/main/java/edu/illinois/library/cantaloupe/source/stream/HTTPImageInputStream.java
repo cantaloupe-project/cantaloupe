@@ -31,7 +31,7 @@ import java.io.IOException;
  * request signing, etc.</p>
  *
  * <p>This class works only with HTTP servers that support {@literal Range}
- * requests, as indicated by the presence of a {@literal Accept-Ranges: bytes}
+ * requests, as advertised by the presence of a {@literal Accept-Ranges: bytes}
  * header in a {@literal HEAD} response.</p>
  *
  * @author Alex Dolski UIUC
@@ -52,7 +52,7 @@ public class HTTPImageInputStream extends ImageInputStreamImpl
     private int numChunkDownloads, numChunkCacheHits, numChunkCacheMisses;
     private long numBytesDownloaded, numBytesRead;
     private int windowSize = DEFAULT_WINDOW_SIZE;
-    private long streamLength;
+    private long streamLength = -1;
     private int windowIndex = -1, indexWithinBuffer;
     private byte[] windowBuffer = new byte[windowSize];
     private ObjectCache<Range,byte[]> chunkCache;
@@ -169,6 +169,20 @@ public class HTTPImageInputStream extends ImageInputStreamImpl
                 String.format("%.2f", numBytesRead * 100 / (double) numBytesDownloaded),
                 numChunkCacheHits,
                 numChunkCacheMisses);
+    }
+
+    /**
+     * Invalidates any cached data lying entirely before the stream position.
+     */
+    @Override
+    public void flushBefore(long pos) throws IOException {
+        super.flushBefore(pos);
+        if (chunkCache != null) {
+            chunkCache.asMap().keySet()
+                    .stream()
+                    .filter(range -> range.end < streamPos)
+                    .forEach(range -> chunkCache.remove(range));
+        }
     }
 
     @Override
