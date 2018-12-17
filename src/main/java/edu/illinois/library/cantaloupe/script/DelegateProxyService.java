@@ -8,8 +8,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.script.ScriptException;
-import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
@@ -68,7 +68,7 @@ public final class DelegateProxyService {
                 Path file = getScriptFile();
                 if (file != null) {
                     byte[] fileBytes = Files.readAllBytes(file);
-                    String code = new String(fileBytes, "UTF-8");
+                    String code = new String(fileBytes, StandardCharsets.UTF_8);
                     DelegateProxy.load(code);
                     isCodeLoaded = true;
                 }
@@ -115,10 +115,9 @@ public final class DelegateProxyService {
             Configuration config = Configuration.getInstance();
             if (config instanceof FileConfiguration) {
                 FileConfiguration fileConfig = (FileConfiguration) config;
-                final File configFile = fileConfig.getFile();
+                final Path configFile = fileConfig.getFile();
                 if (configFile != null) {
-                    script = Paths.get(configFile.getParent(),
-                            script.getFileName().toString());
+                    script = configFile.getParent().resolve(script.getFileName());
                 } else {
                     script = Paths.get(".", script.getFileName().toString());
                 }

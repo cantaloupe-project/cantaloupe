@@ -7,6 +7,8 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
@@ -25,8 +27,7 @@ import java.util.concurrent.locks.StampedLock;
  * <p>This implementation uses optimistic reads via a {@link StampedLock} for
  * good performance with thread-safety.</p>
  */
-class HeritablePropertiesConfiguration extends AbstractHeritableFileConfiguration
-        implements FileConfiguration {
+class HeritablePropertiesConfiguration implements MultipleFileConfiguration {
 
     private static final String EXTENDS_KEY = "extends";
 
@@ -35,7 +36,7 @@ class HeritablePropertiesConfiguration extends AbstractHeritableFileConfiguratio
     /**
      * Map of PropertiesConfigurations in order from leaf to trunk.
      */
-    private final LinkedHashMap<File, PropertiesConfiguration> commonsConfigs =
+    private final LinkedHashMap<Path,PropertiesConfiguration> commonsConfigs =
             new LinkedHashMap<>();
 
     /**
@@ -44,7 +45,7 @@ class HeritablePropertiesConfiguration extends AbstractHeritableFileConfiguratio
      * checksum and reload only if they don't match. That's because there are
      * often multiple events per change.
      */
-    private byte[] mainContentsChecksum = new byte[] {};
+    private byte[] mainContentsChecksum = new byte[0];
 
     /**
      * @return Wrapped configurations in order from main to most distant
@@ -54,10 +55,10 @@ class HeritablePropertiesConfiguration extends AbstractHeritableFileConfiguratio
         return new ArrayList<>(commonsConfigs.values());
     }
 
-    ////////////////// AbstractHeritableFileConfiguration methods ///////////////////
+    ////////////////// MultipleFileConfiguration methods ///////////////////
 
     @Override
-    Set<File> getFiles() {
+    public Set<Path> getFiles() {
         final long stamp = lock.readLock();
         try {
             return commonsConfigs.keySet();
@@ -423,13 +424,13 @@ class HeritablePropertiesConfiguration extends AbstractHeritableFileConfiguratio
     public void reload() throws ConfigurationException {
         final long stamp = lock.writeLock();
         try {
-            final File mainConfigFile = getFile();
+            final Path mainConfigFile = getFile();
             if (mainConfigFile != null) {
                 // Calculate the checksum of the file contents and compare it to
                 // what has already been loaded. If the sums match, skip the
                 // reload.
                 try {
-                    byte[] fileBytes = Files.readAllBytes(mainConfigFile.toPath());
+                    byte[] fileBytes = Files.readAllBytes(mainConfigFile);
                     final MessageDigest md = MessageDigest.getInstance("MD5");
                     byte[] digestBytes = md.digest(fileBytes);
 
@@ -506,14 +507,14 @@ class HeritablePropertiesConfiguration extends AbstractHeritableFileConfiguratio
     /**
      * N.B.: Not thread-safe!
      */
-    private void loadFileAndAncestors(File file) throws ConfigurationException {
+    private void loadFileAndAncestors(Path file) throws ConfigurationException {
         System.out.println("Loading config file: " + file);
 
         PropertiesConfiguration commonsConfig = new PropertiesConfiguration();
         // Prevent commas in values from being interpreted as list item
         // delimiters.
         commonsConfig.setDelimiterParsingDisabled(true);
-        commonsConfig.setFile(file);
+        commonsConfig.setFile(file.toFile());
         try {
             commonsConfig.load();
             commonsConfigs.put(file, commonsConfig);
@@ -526,18 +527,17 @@ class HeritablePropertiesConfiguration extends AbstractHeritableFileConfiguratio
                 parent = parent.replaceFirst("^~",
                         System.getProperty("user.home"));
                 if (!parent.contains(File.separator)) {
-                    parent = file.getParentFile().getAbsolutePath() +
+                    parent = file.getParent().toAbsolutePath() +
                             File.separator + new File(parent).getName();
                 }
-                File parentFile = new File(parent).getCanonicalFile();
+                Path parentFile = Paths.get(parent).toAbsolutePath();
                 if (!commonsConfigs.keySet().contains(parentFile)) {
                     loadFileAndAncestors(parentFile);
                 } else {
                     throw new ConfigurationException("Inheritance loop");
                 }
             }
-        } catch (IOException |
-                org.apache.commons.configuration.ConfigurationException e) {
+        } catch (org.apache.commons.configuration.ConfigurationException e) {
             // The logger may not have been initialized yet, as it depends
             // on a working configuration. (Also, we don't want to
             // introduce a dependency on the logger.)

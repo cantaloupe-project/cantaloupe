@@ -22,7 +22,7 @@ public abstract class AbstractFileConfigurationTest extends AbstractConfiguratio
 
             String goodProps = testPath + File.separator + "cantaloupe.properties";
             System.setProperty(ConfigurationFactory.CONFIG_VM_ARGUMENT, goodProps);
-            assertEquals(new File(cwd + "/src/test/java/edu/illinois/library/cantaloupe/test/cantaloupe.properties"),
+            assertEquals(Paths.get(cwd, "/src/test/java/edu/illinois/library/cantaloupe/test/cantaloupe.properties"),
                     ((FileConfiguration) getInstance()).getFile());
         } catch (IOException e) {
             fail("Failed to set " + ConfigurationFactory.CONFIG_VM_ARGUMENT);

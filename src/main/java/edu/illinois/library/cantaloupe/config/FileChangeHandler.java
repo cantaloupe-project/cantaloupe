@@ -23,18 +23,17 @@ class FileChangeHandler implements FilesystemWatcher.Callback {
 
     private void handle(Path path) {
         final Configuration config = Configuration.getInstance();
-        // If the ConfigurationProvider wraps any FileConfigurations or
-        // AbstractHeritableFileConfigurations, check whether any of
-        // their files have changed.
+        // If the ConfigurationProvider wraps any FileConfigurations, check
+        // whether any of their files have changed.
         ((ConfigurationProvider) config).getWrappedConfigurations()
                 .stream()
                 .filter(c -> c instanceof FileConfiguration)
                 .forEach(c -> {
-                    if (c instanceof AbstractHeritableFileConfiguration) {
-                        if (((AbstractHeritableFileConfiguration) c).getFiles().contains(path.toFile())) {
+                    if (c instanceof MultipleFileConfiguration) {
+                        if (((MultipleFileConfiguration) c).getFiles().contains(path)) {
                             reload(c);
                         }
-                    } else if (path.toFile().equals(((FileConfiguration) c).getFile())) {
+                    } else if (path.equals(((FileConfiguration) c).getFile())) {
                         reload(c);
                     }
                 });

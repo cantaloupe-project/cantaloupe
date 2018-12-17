@@ -3,7 +3,6 @@ package edu.illinois.library.cantaloupe.config;
 import edu.illinois.library.cantaloupe.async.ThreadPool;
 import edu.illinois.library.cantaloupe.util.FilesystemWatcher;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Set;
@@ -20,17 +19,17 @@ public final class ConfigurationFileWatcher {
      */
     private static class FileChangeHandlerRunner implements Runnable {
 
-        private File file;
+        private Path file;
         private FilesystemWatcher filesystemWatcher;
 
-        FileChangeHandlerRunner(File file) {
+        FileChangeHandlerRunner(Path file) {
             this.file = file;
         }
 
         @Override
         public void run() {
             try {
-                Path path = file.toPath().getParent();
+                Path path = file.getParent();
                 filesystemWatcher = new FilesystemWatcher(path, new FileChangeHandler());
                 filesystemWatcher.start();
             } catch (IOException e) {

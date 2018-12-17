@@ -7,6 +7,8 @@ import edu.illinois.library.cantaloupe.config.FileConfiguration;
 
 import java.io.File;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.security.ProtectionDomain;
 import java.util.List;
 
@@ -73,19 +75,20 @@ public class StandaloneEntry {
             printUsage();
             exitUnlessTesting(-1);
         } else {
-            File configFile = getConfigFile();
+            Path configFile = getConfigFile();
             if (configFile == null) {
                 printUsage();
                 exitUnlessTesting(-1);
-            } else if (!configFile.exists()) {
+            } else if (!Files.exists(configFile)) {
                 System.out.println("Does not exist: " + configFile);
                 printUsage();
                 exitUnlessTesting(-1);
-            } else if (!configFile.isFile()) {
+            } else if (!Files.isRegularFile(configFile) &&
+                    !Files.isSymbolicLink(configFile)) {
                 System.out.println("Not a file: " + configFile);
                 printUsage();
                 exitUnlessTesting(-1);
-            } else if (!configFile.canRead()) {
+            } else if (!Files.isReadable(configFile)) {
                 System.out.println("Not readable: " + configFile);
                 printUsage();
                 exitUnlessTesting(-1);
@@ -94,10 +97,10 @@ public class StandaloneEntry {
         getAppServer().start();
     }
 
-    private static File getConfigFile() {
-        File configFile = null;
-        final Configuration config = Configuration.getInstance();
-        final ConfigurationProvider provider = (ConfigurationProvider) config;
+    private static Path getConfigFile() {
+        Path configFile                          = null;
+        final Configuration config               = Configuration.getInstance();
+        final ConfigurationProvider provider     = (ConfigurationProvider) config;
         final List<Configuration> wrappedConfigs = provider.getWrappedConfigurations();
         if (wrappedConfigs.size() > 1 &&
                 wrappedConfigs.get(1) instanceof FileConfiguration) {
@@ -106,7 +109,7 @@ public class StandaloneEntry {
         return configFile;
     }
 
-    static File getWarFile() {
+    static File getWARFile() {
         ProtectionDomain protectionDomain =
                 ApplicationServer.class.getProtectionDomain();
         URL location = protectionDomain.getCodeSource().getLocation();
@@ -134,7 +137,7 @@ public class StandaloneEntry {
      * @return Program usage message.
      */
     static String usage() {
-        return "Usage: java <VM options> -jar " + getWarFile().getName() +
+        return "Usage: java <VM options> -jar " + getWARFile().getName() +
                 "\n\n" +
                 "VM options:\n" +
                 "-D" + ConfigurationFactory.CONFIG_VM_ARGUMENT + "=<config>" +

@@ -139,7 +139,7 @@ public class ApplicationServer {
 
         // Give the WebAppContext a different "WAR" to use depending on
         // whether we are running from a WAR file or an IDE.
-        final String warPath = StandaloneEntry.getWarFile().getAbsolutePath();
+        final String warPath = StandaloneEntry.getWARFile().getAbsolutePath();
         if (warPath.endsWith(".war")) {
             context.setWar(warPath);
         } else {
