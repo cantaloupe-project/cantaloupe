@@ -3,6 +3,8 @@ package edu.illinois.library.cantaloupe.util;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 
+import java.util.concurrent.ConcurrentMap;
+
 /**
  * Size-bounded heap cache.
  */
@@ -19,6 +21,10 @@ public final class ObjectCache<K, V> {
     public ObjectCache(long maxSize) {
         this.maxSize = maxSize;
         store = Caffeine.newBuilder().softValues().maximumSize(maxSize).build();
+    }
+
+    public ConcurrentMap<K,V> asMap() {
+        return store.asMap();
     }
 
     public void cleanUp() {
