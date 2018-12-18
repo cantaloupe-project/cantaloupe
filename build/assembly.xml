@@ -42,6 +42,11 @@ http://maven.apache.org/plugins/maven-assembly-plugin/assembly.html
             <lineEnding>crlf</lineEnding>
         </file>
         <file>
+            <source>LICENSE-3RD-PARTY.txt</source>
+            <fileMode>0644</fileMode>
+            <lineEnding>crlf</lineEnding>
+        </file>
+        <file>
             <source>README.md</source>
             <fileMode>0644</fileMode>
             <lineEnding>crlf</lineEnding>
