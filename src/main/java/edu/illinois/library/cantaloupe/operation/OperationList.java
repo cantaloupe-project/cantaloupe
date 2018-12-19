@@ -549,7 +549,7 @@ public final class OperationList implements Comparable<OperationList>,
             extension = "." + encode.getFormat().getPreferredExtension();
         }
 
-        return StringUtils.md5(idStr) + "_" + opsString + extension;
+        return StringUtils.md5(idStr).toLowerCase() + "_" + opsString + extension;
     }
 
     /**
