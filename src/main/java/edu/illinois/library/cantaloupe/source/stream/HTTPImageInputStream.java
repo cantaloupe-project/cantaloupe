@@ -44,18 +44,31 @@ public class HTTPImageInputStream extends ImageInputStreamImpl
             LoggerFactory.getLogger(HTTPImageInputStream.class);
 
     /**
+     * Enables debug logging, which may be very expensive.
+     */
+    private static final boolean DEBUG = false;
+
+    /**
      * Can be overridden by {@link #setWindowSize(int)}.
      */
     private static final int DEFAULT_WINDOW_SIZE = 1024 * 512;
 
     private HTTPImageInputStreamClient client;
+    private ObjectCache<Range,byte[]> chunkCache;
+    private long streamLength   = -1;
+    private int windowPos;
+    private int windowSize      = DEFAULT_WINDOW_SIZE;
+    private int windowIndex     = -1;
+    private byte[] windowBuffer = new byte[windowSize];
+
     private int numChunkDownloads, numChunkCacheHits, numChunkCacheMisses;
     private long numBytesDownloaded, numBytesRead;
-    private int windowSize = DEFAULT_WINDOW_SIZE;
-    private long streamLength = -1;
-    private int windowIndex = -1, indexWithinBuffer;
-    private byte[] windowBuffer = new byte[windowSize];
-    private ObjectCache<Range,byte[]> chunkCache;
+
+    private static void debug(String message, Object... vars) {
+        if (DEBUG) {
+            LOGGER.trace(message, vars);
+        }
+    }
 
     /**
      * Variant that sends a preliminary {@literal HEAD} request to retrieve
@@ -119,13 +132,13 @@ public class HTTPImageInputStream extends ImageInputStreamImpl
      * larger size means more irrelevant data will have to be read and
      * discarded. The optimal size will vary depending on the source image, the
      * amount of data needed from it, and network transfer rate vs.
-     * latency. The size should always be at least a few KB so as to be able
-     * to read the image header in one request.</p>
+     * latency. The size should probably always be at least a few KB so as to
+     * be able to read the image header in one request.</p>
      *
      * @param windowSize Window/chunk size.
      */
     public void setWindowSize(int windowSize) {
-        this.windowSize = windowSize;
+        this.windowSize   = windowSize;
         this.windowBuffer = new byte[windowSize];
     }
 
@@ -195,12 +208,19 @@ public class HTTPImageInputStream extends ImageInputStreamImpl
         if (streamPos >= streamLength) {
             return -1;
         }
+
+        debug("read(): begin [pos: {}] [windowPos: {}]",
+                streamPos, windowPos);
+
         prepareWindowBuffer();
         bitOffset = 0;
-        int b = windowBuffer[indexWithinBuffer] & 0xff;
+        int b = windowBuffer[windowPos] & 0xff;
         numBytesRead++;
-        indexWithinBuffer++;
+        windowPos++;
         streamPos++;
+
+        debug("read(): end [pos: {}] [windowPos: {}]",
+                streamPos, windowPos);
         return b;
     }
 
@@ -208,6 +228,7 @@ public class HTTPImageInputStream extends ImageInputStreamImpl
     public int read(byte[] b,
                     int offset,
                     int requestedLength) throws IOException {
+        // Boilerplate checks required by the method contract.
         if (streamPos >= streamLength) {
             return -1;
         } else if (offset < 0) {
@@ -218,44 +239,77 @@ public class HTTPImageInputStream extends ImageInputStreamImpl
             throw new IndexOutOfBoundsException("offset + length > buffer length");
         }
 
-        if (streamPos + requestedLength >= streamLength) {
-            requestedLength = (int) (streamLength - streamPos);
+        // Also required by the method contract.
+        bitOffset = 0;
+
+        debug("read(byte[],int,int): begin [pos: {}] [windowPos: {}] [requested: {}]",
+                streamPos, windowPos, requestedLength);
+
+        // N.B.: although the method contract says we don't have to read all of
+        // requestedLength as long as we return a count of what we did read,
+        // in practice, readers won't' always check the return value, so we
+        // will try to read as much of requestedLength as possible.
+        int fulfilledLength = 0, incrementLength = 0;
+        while (fulfilledLength < requestedLength && incrementLength != -1) {
+            int remainingLength = requestedLength - fulfilledLength;
+            incrementLength = readIncrement(b, offset, remainingLength);
+            fulfilledLength += incrementLength;
+            offset          += incrementLength;
         }
 
+        debug("read(byte[],int,int): end [pos: {}] [windowPos: {}] [fulfilled: {}]",
+                streamPos, windowPos, fulfilledLength);
+
+        return fulfilledLength;
+    }
+
+    /**
+     * Reads the smaller of {@literal requestedLength} or the remaining window
+     * size into a byte array.
+     *
+     * @return Number of bytes read, or {@literal -1} when there are no more
+     *         bytes to read.
+     */
+    private int readIncrement(byte[] b,
+                              int offset,
+                              int requestedLength) throws IOException {
         prepareWindowBuffer();
-        bitOffset = 0;
 
         final int fulfilledLength = Math.min(
                 requestedLength,
-                windowBuffer.length - indexWithinBuffer);
+                windowBuffer.length - windowPos);
         System.arraycopy(
-                windowBuffer, indexWithinBuffer, // from, from index
-                b, offset,                       // to, to index
-                fulfilledLength);                // length
+                windowBuffer, windowPos, // from, from index
+                b, offset,               // to, to index
+                fulfilledLength);        // length
 
-        numBytesRead      += fulfilledLength;
-        indexWithinBuffer += fulfilledLength;
-        streamPos         += fulfilledLength;
-        return fulfilledLength;
+        numBytesRead += fulfilledLength;
+        windowPos    += fulfilledLength;
+        streamPos    += fulfilledLength;
+
+        return (fulfilledLength > 0) ? fulfilledLength : -1;
     }
 
     @Override
     public void seek(long pos) throws IOException {
         super.seek(pos);
-        indexWithinBuffer = (int) streamPos % windowSize;
+        windowPos = getIndexWithinWindow();
+
+        debug("seek(): [pos: {}] [windowPos: {}]",
+                streamPos, windowPos);
     }
 
     /**
-     * Checks that the {@link #windowBuffer window buffer} has some readable
-     * bytes remaining, and fills it with more if not.
+     * Checks that {@link #windowBuffer} has some readable bytes remaining,
+     * and fills it with more if not.
      */
     private void prepareWindowBuffer() throws IOException {
-        final int streamWindowIndex = getStreamWindowIndex();
-        if (streamWindowIndex != windowIndex) {
-            Range range       = getRange(streamWindowIndex);
-            windowBuffer      = fetchChunk(range);
-            windowIndex       = streamWindowIndex;
-            indexWithinBuffer = (int) streamPos % windowSize;
+        final int neededWindowIndex = getStreamWindowIndex();
+        if (neededWindowIndex != windowIndex) {
+            Range range  = getRange(neededWindowIndex);
+            windowBuffer = fetchChunk(range);
+            windowIndex  = neededWindowIndex;
+            windowPos    = getIndexWithinWindow();
         }
     }
 
@@ -283,11 +337,11 @@ public class HTTPImageInputStream extends ImageInputStreamImpl
     }
 
     private byte[] downloadChunk(Range range) throws IOException {
-        LOGGER.trace("Downloading range: {}", range);
-        Response response = client.sendGETRequest(range);
-        byte[] entity = response.getBody();
-        numChunkDownloads++;
+        debug("Downloading range: {}", range);
+        Response response  = client.sendGETRequest(range);
+        byte[] entity      = response.getBody();
         numBytesDownloaded += entity.length;
+        numChunkDownloads++;
         return entity;
     }
 
@@ -299,9 +353,13 @@ public class HTTPImageInputStream extends ImageInputStreamImpl
         return range;
     }
 
+    private int getIndexWithinWindow() {
+        return (int) (streamPos % (long) windowSize);
+    }
+
     /**
-     * Finds the current window index based on the {@link #streamPos stream
-     * position}.
+     * Calculates the current window index based on {@link #streamPos}, but
+     * does not update {@link #windowIndex}.
      */
     private int getStreamWindowIndex() {
         return (int) Math.floor(streamPos / (double) windowSize);

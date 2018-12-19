@@ -18,6 +18,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Arrays;
 import java.util.Iterator;
 
 import static org.junit.Assert.*;
@@ -125,21 +126,50 @@ public class HTTPImageInputStreamTest extends BaseTest {
     }
 
     @Test
-    public void testRead() throws Exception {
-        final int[] expected = new int[] {
-                0x49, 0x49, 0x2a, 0x00, 0x24, 0x2b, 0x00, 0x00,
-                0x80, 0x1a, 0x8b, 0x43, 0xc0, 0x00, 0x05, 0xfe };
+    public void testRead1() throws Exception {
+        final Path fixture         = TestUtil.getImage("tif");
+        final int fixtureLength    = (int) Files.size(fixture);
+        final byte[] expectedBytes = Files.readAllBytes(fixture);
+        final byte[] actualBytes   = new byte[fixtureLength];
 
-        final Path fixture = TestUtil.getImage("tif");
         try (HTTPImageInputStream instance = newInstanceFromConstructor2(fixture)) {
-            instance.setWindowSize(8);
-            final int[] actual = new int[16];
-            for (int i = 0; i < actual.length; i++) {
-                actual[i] = instance.read();
+            instance.setWindowSize(1024);
+            for (int i = 0; i < actualBytes.length; i++) {
+                actualBytes[i] = (byte) (instance.read() & 0xff);
             }
-
-            assertArrayEquals(expected, actual);
+            assertArrayEquals(expectedBytes, actualBytes);
         }
+    }
+
+    @Test
+    public void testRead2() throws Exception {
+        final Path fixture         = TestUtil.getImage("tif");
+        final int fixtureLength    = (int) Files.size(fixture);
+        final byte[] expectedBytes = Files.readAllBytes(fixture);
+        final byte[] actualBytes   = new byte[fixtureLength];
+
+        try (HTTPImageInputStream instance = newInstanceFromConstructor2(fixture)) {
+            instance.setWindowSize(1024);
+            instance.read(actualBytes, 0, fixtureLength);
+        }
+        assertTrue(Arrays.equals(expectedBytes, actualBytes));
+    }
+
+    @Test
+    public void testSeek() throws Exception {
+        final Path fixture         = TestUtil.getImage("tif");
+        final int fixtureLength    = (int) Files.size(fixture);
+        final byte[] expectedBytes = Files.readAllBytes(fixture);
+        final byte[] actualBytes   = new byte[fixtureLength];
+
+        try (HTTPImageInputStream instance = newInstanceFromConstructor2(fixture)) {
+            instance.setWindowSize(1024);
+            instance.read(actualBytes, 0, fixtureLength);
+            instance.seek(0);
+            instance.read(actualBytes, 0, fixtureLength);
+        }
+
+        assertTrue(Arrays.equals(expectedBytes, actualBytes));
     }
 
     @Test
