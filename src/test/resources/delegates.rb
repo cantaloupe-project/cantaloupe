@@ -61,7 +61,14 @@ class CustomDelegate
   end
 
   def azurestoragesource_blob_key(options = {})
-    context['identifier'] != 'missing' ? context['identifier'] : nil
+    case context['identifier']
+      when 'missing'
+        return nil
+      when 'jpeg.jpg'
+        return 'jpg'
+      else
+        return context['identifier']
+     end
   end
 
   def filesystemsource_pathname(options = {})
