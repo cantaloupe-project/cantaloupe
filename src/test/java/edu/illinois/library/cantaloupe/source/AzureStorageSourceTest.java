@@ -355,4 +355,20 @@ public class AzureStorageSourceTest extends AbstractSourceTest {
         instance.newStreamFactory();
     }
 
+    /* getObjectKey() */
+    @Test
+    public void testGetObjectKey() throws Exception {
+        assertNotNull(instance.getObjectKey());
+    }
+    @Test
+    public void testGetObjectKeyBasicLookupStrategy() throws Exception {
+        String result = instance.getObjectKey();
+        assertEquals(OBJECT_KEY_WITH_CONTENT_TYPE_AND_RECOGNIZED_EXTENSION, result);
+    }
+    @Test
+    public void testGetObjectKeyDelegateLookupStrategy() throws Exception {
+        useScriptLookupStrategy();
+        String result = instance.getObjectKey();
+        assertEquals(OBJECT_KEY_WITH_CONTENT_TYPE_BUT_NO_EXTENSION, result);
+    }
 }
