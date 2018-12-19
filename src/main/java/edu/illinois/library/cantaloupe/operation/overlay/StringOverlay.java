@@ -194,7 +194,7 @@ public class StringOverlay extends Overlay implements Operation {
         // minSize is not included, as it is more of a potential property than
         // a property.
         return String.format("%s_%s_%d_%s_%d_%.1f_%.01f_%s_%s_%s_%.1f",
-                StringUtils.md5(getString()).toLowerCase(),
+                StringUtils.md5(getString()),
                 getPosition(),
                 getInset(),
                 getFont().getName(),

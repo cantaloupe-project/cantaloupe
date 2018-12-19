@@ -535,7 +535,7 @@ public final class OperationList implements Comparable<OperationList>,
             opStrings.add(key + ":" + this.getOptions().get(key));
         }
 
-        String opsString = StringUtils.md5(String.join("_", opStrings)).toLowerCase();
+        String opsString = StringUtils.md5(String.join("_", opStrings));
 
         String idStr = "";
         Identifier identifier = getIdentifier();
@@ -549,7 +549,7 @@ public final class OperationList implements Comparable<OperationList>,
             extension = "." + encode.getFormat().getPreferredExtension();
         }
 
-        return StringUtils.md5(idStr).toLowerCase() + "_" + opsString + extension;
+        return StringUtils.md5(idStr) + "_" + opsString + extension;
     }
 
     /**

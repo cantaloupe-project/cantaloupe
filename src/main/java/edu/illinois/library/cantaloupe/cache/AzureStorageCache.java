@@ -235,7 +235,7 @@ class AzureStorageCache implements DerivativeCache {
      */
     String getObjectKey(Identifier identifier) {
         return getObjectKeyPrefix() + "info/" +
-                StringUtils.md5(identifier.toString()).toLowerCase() + ".json";
+                StringUtils.md5(identifier.toString()) + ".json";
     }
 
     /**
@@ -244,8 +244,8 @@ class AzureStorageCache implements DerivativeCache {
      *         operation list.
      */
     String getObjectKey(OperationList opList) {
-        final String idStr = StringUtils.md5(opList.getIdentifier().toString()).toLowerCase();
-        final String opsStr = StringUtils.md5(opList.toString()).toLowerCase();
+        final String idStr = StringUtils.md5(opList.getIdentifier().toString());
+        final String opsStr = StringUtils.md5(opList.toString());
 
         String extension = "";
         Encode encode = (Encode) opList.getFirst(Encode.class);

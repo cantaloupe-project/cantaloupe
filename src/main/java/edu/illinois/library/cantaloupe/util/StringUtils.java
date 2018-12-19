@@ -56,14 +56,14 @@ public final class StringUtils {
 
     /**
      * @param str String to hash.
-     * @return    MD5 checksum.
+     * @return    Lowercase MD5 checksum string.
      */
     public static String md5(String str) {
         try {
             final MessageDigest digest = MessageDigest.getInstance("MD5");
             digest.update(str.getBytes());
             byte[] bytes = digest.digest();
-            return DatatypeConverter.printHexBinary(bytes);
+            return DatatypeConverter.printHexBinary(bytes).toLowerCase();
         } catch (NoSuchAlgorithmException e) {
             LOGGER.error("md5(): {}", e.getMessage());
             throw new RuntimeException(e);

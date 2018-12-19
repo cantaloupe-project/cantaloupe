@@ -27,7 +27,7 @@ public class StringUtilsTest extends BaseTest {
 
     @Test
     public void testMd5() {
-        assertEquals("0832C1202DA8D382318E329A7C133EA0",
+        assertEquals("0832c1202da8d382318e329a7c133ea0",
                 StringUtils.md5("cats"));
     }
 
