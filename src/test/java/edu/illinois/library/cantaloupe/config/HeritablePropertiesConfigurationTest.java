@@ -58,7 +58,37 @@ public class HeritablePropertiesConfigurationTest extends AbstractFileConfigurat
         assertEquals(8, count);
     }
 
-    /* getProperty() */
+    /* getProperty(Key) */
+
+    /**
+     * Override because this class stores all values internally as strings.
+     */
+    @Override
+    @Test
+    public void testGetPropertyWithKeyWithPresentProperty() {
+        final Configuration instance = getInstance();
+        instance.setProperty(Key.IIIF_1_ENDPOINT_ENABLED, "1");
+        instance.setProperty(Key.IIIF_2_ENDPOINT_ENABLED, 2);
+        assertEquals("1", instance.getProperty(Key.IIIF_1_ENDPOINT_ENABLED));
+        assertEquals("2", instance.getProperty(Key.IIIF_2_ENDPOINT_ENABLED));
+        assertNull(instance.getProperty(Key.MAX_PIXELS));
+    }
+
+    /* getProperty(String) */
+
+    /**
+     * Override because this class stores all values internally as strings.
+     */
+    @Override
+    @Test
+    public void testGetPropertyWithStringWithPresentProperty() {
+        final Configuration instance = getInstance();
+        instance.setProperty("cats", "1");
+        instance.setProperty("dogs", 2);
+        assertEquals("1", instance.getProperty("cats"));
+        assertEquals("2", instance.getProperty("dogs"));
+        assertNull(instance.getProperty("pigs"));
+    }
 
     @Test
     public void testGetPropertyUsesChildmostProperty() throws Exception {
@@ -79,24 +109,22 @@ public class HeritablePropertiesConfigurationTest extends AbstractFileConfigurat
     public void testSetPropertySetsExistingPropertiesInSameFile()
             throws Exception {
         instance.reload();
-        List<org.apache.commons.configuration.PropertiesConfiguration> commonsConfigs =
-                instance.getConfigurationTree();
+        List<PropertiesDocument> docs = instance.getConfigurationTree();
         instance.setProperty("level2_key", "bears");
-        assertNull(commonsConfigs.get(0).getString("level2_key"));
-        assertEquals("bears", commonsConfigs.get(1).getString("level2_key"));
-        assertNull(commonsConfigs.get(2).getString("level2_key"));
+        assertNull(docs.get(0).get("level2_key"));
+        assertEquals("bears", docs.get(1).get("level2_key"));
+        assertNull(docs.get(2).get("level2_key"));
     }
 
     @Test
     public void testSetPropertySetsNewPropertiesInChildmostFile()
             throws Exception {
         instance.reload();
-        List<org.apache.commons.configuration.PropertiesConfiguration> commonsConfigs =
-                instance.getConfigurationTree();
+        List<PropertiesDocument> docs = instance.getConfigurationTree();
         instance.setProperty("newkey", "bears");
-        assertEquals("bears", commonsConfigs.get(0).getString("newkey"));
-        assertNull(commonsConfigs.get(1).getString("newkey"));
-        assertNull(commonsConfigs.get(2).getString("newkey"));
+        assertEquals("bears", docs.get(0).get("newkey"));
+        assertNull(docs.get(1).get("newkey"));
+        assertNull(docs.get(2).get("newkey"));
     }
 
 }

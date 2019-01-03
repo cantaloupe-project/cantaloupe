@@ -109,6 +109,19 @@ public class StringUtilsTest extends BaseTest {
     }
 
     @Test(expected = NumberFormatException.class)
+    public void testToBooleanWithUnrecognizedValue() {
+        StringUtils.toBoolean("cats");
+    }
+
+    @Test
+    public void testToBooleanWithRecognizedValue() {
+        assertFalse(StringUtils.toBoolean("0"));
+        assertFalse(StringUtils.toBoolean("false"));
+        assertTrue(StringUtils.toBoolean("1"));
+        assertTrue(StringUtils.toBoolean("true"));
+    }
+
+    @Test(expected = NumberFormatException.class)
     public void testToByteSizeWithIllegalArgument() {
         StringUtils.toByteSize("cats");
     }

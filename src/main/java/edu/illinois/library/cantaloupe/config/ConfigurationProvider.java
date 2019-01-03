@@ -1,7 +1,5 @@
 package edu.illinois.library.cantaloupe.config;
 
-import org.apache.commons.configuration.ConversionException;
-
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.util.Iterator;
@@ -50,7 +48,7 @@ public final class ConfigurationProvider implements Configuration {
         for (Configuration config : wrappedConfigs) {
             try {
                 return config.getBoolean(key);
-            } catch (NoSuchElementException | ConversionException ignore) {}
+            } catch (NoSuchElementException | NumberFormatException ignore) {}
         }
         return defaultValue;
     }
@@ -70,7 +68,7 @@ public final class ConfigurationProvider implements Configuration {
         for (Configuration config : wrappedConfigs) {
             try {
                 return config.getDouble(key);
-            } catch (NoSuchElementException | ConversionException ignore) {}
+            } catch (NoSuchElementException | NumberFormatException ignore) {}
         }
         return defaultValue;
     }
@@ -90,7 +88,7 @@ public final class ConfigurationProvider implements Configuration {
         for (Configuration config : wrappedConfigs) {
             try {
                 return config.getFloat(key);
-            } catch (NoSuchElementException | ConversionException ignore) {}
+            } catch (NoSuchElementException | NumberFormatException ignore) {}
         }
         return defaultValue;
     }
@@ -110,7 +108,7 @@ public final class ConfigurationProvider implements Configuration {
         for (Configuration config : wrappedConfigs) {
             try {
                 return config.getInt(key);
-            } catch (NoSuchElementException | ConversionException ignore) {}
+            } catch (NoSuchElementException | NumberFormatException ignore) {}
         }
         return defaultValue;
     }
@@ -156,7 +154,7 @@ public final class ConfigurationProvider implements Configuration {
         for (Configuration config : wrappedConfigs) {
             try {
                 return config.getLong(key);
-            } catch (NoSuchElementException | ConversionException ignore) {}
+            } catch (NoSuchElementException | NumberFormatException ignore) {}
         }
         return defaultValue;
     }

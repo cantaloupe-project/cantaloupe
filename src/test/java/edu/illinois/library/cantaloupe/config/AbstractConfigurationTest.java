@@ -2,7 +2,6 @@ package edu.illinois.library.cantaloupe.config;
 
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.ConcurrentReaderWriter;
-import org.apache.commons.configuration.ConversionException;
 import org.junit.Test;
 
 import java.util.Iterator;
@@ -92,27 +91,17 @@ public abstract class AbstractConfigurationTest extends BaseTest {
         assertFalse(instance.getBoolean(Key.IIIF_2_ENDPOINT_ENABLED));
     }
 
-    @Test
+    @Test(expected = NumberFormatException.class)
     public void testGetBooleanWithKeyWithInvalidProperty() {
         final Configuration instance = getInstance();
         instance.setProperty(Key.SLASH_SUBSTITUTE, "cats");
-        try {
-            instance.getBoolean(Key.SLASH_SUBSTITUTE);
-            fail("Expected exception");
-        } catch (ConversionException e) {
-            // pass
-        }
+        instance.getBoolean(Key.SLASH_SUBSTITUTE);
     }
 
-    @Test
+    @Test(expected = NoSuchElementException.class)
     public void testGetBooleanWithKeyWithMissingProperty() {
         final Configuration instance = getInstance();
-        try {
-            instance.getBoolean(Key.SLASH_SUBSTITUTE);
-            fail("Expected exception");
-        } catch (NoSuchElementException e) {
-            // pass
-        }
+        instance.getBoolean(Key.SLASH_SUBSTITUTE);
     }
 
     /* getBoolean(String) */
@@ -126,27 +115,17 @@ public abstract class AbstractConfigurationTest extends BaseTest {
         assertFalse(instance.getBoolean("test2"));
     }
 
-    @Test
+    @Test(expected = NumberFormatException.class)
     public void testGetBooleanWithStringWithInvalidProperty() {
         final Configuration instance = getInstance();
         instance.setProperty("test1", "cats");
-        try {
-            instance.getBoolean("test1");
-            fail("Expected exception");
-        } catch (ConversionException e) {
-            // pass
-        }
+        instance.getBoolean("test1");
     }
 
-    @Test
+    @Test(expected = NoSuchElementException.class)
     public void testGetBooleanWithStringWithMissingProperty() {
         final Configuration instance = getInstance();
-        try {
-            instance.getBoolean("test3");
-            fail("Expected exception");
-        } catch (NoSuchElementException e) {
-            // pass
-        }
+        instance.getBoolean("test3");
     }
 
     @Test
@@ -242,27 +221,17 @@ public abstract class AbstractConfigurationTest extends BaseTest {
         assertEquals(0.55f, instance.getDouble(Key.IIIF_2_ENDPOINT_ENABLED), delta);
     }
 
-    @Test
+    @Test(expected = NumberFormatException.class)
     public void testGetDoubleWithKeyWithInvalidProperty() {
         final Configuration instance = getInstance();
         instance.setProperty(Key.IIIF_1_ENDPOINT_ENABLED, "cats");
-        try {
-            instance.getDouble(Key.IIIF_1_ENDPOINT_ENABLED);
-            fail("Expected exception");
-        } catch (ConversionException e) {
-            // pass
-        }
+        instance.getDouble(Key.IIIF_1_ENDPOINT_ENABLED);
     }
 
-    @Test
+    @Test(expected = NoSuchElementException.class)
     public void testGetDoubleWithKeyWithMissingProperty() {
         final Configuration instance = getInstance();
-        try {
-            instance.getDouble(Key.IIIF_1_ENDPOINT_ENABLED);
-            fail("Expected exception");
-        } catch (NoSuchElementException e) {
-            // pass
-        }
+        instance.getDouble(Key.IIIF_1_ENDPOINT_ENABLED);
     }
 
     /* getDouble(String) */
@@ -270,34 +239,24 @@ public abstract class AbstractConfigurationTest extends BaseTest {
     @Test
     public void testGetDoubleWithStringWithValidProperty() {
         final Configuration instance = getInstance();
-        final double delta = 0.0000001f;
-        instance.setProperty("test1", 0.25f);
+        final double delta = 0.0000001;
+        instance.setProperty("test1", 0.25);
         instance.setProperty("test2", "0.55");
-        assertEquals(0.25f, instance.getDouble("test1"), delta);
-        assertEquals(0.55f, instance.getDouble("test2"), delta);
+        assertEquals(0.25, instance.getDouble("test1"), delta);
+        assertEquals(0.55, instance.getDouble("test2"), delta);
     }
 
-    @Test
+    @Test(expected = NumberFormatException.class)
     public void testGetDoubleWithStringWithInvalidProperty() {
         final Configuration instance = getInstance();
         instance.setProperty("test1", "cats");
-        try {
-            instance.getDouble("test1");
-            fail("Expected exception");
-        } catch (ConversionException e) {
-            // pass
-        }
+        instance.getDouble("test1");
     }
 
-    @Test
+    @Test(expected = NoSuchElementException.class)
     public void testGetDoubleWithStringWithMissingProperty() {
         final Configuration instance = getInstance();
-        try {
-            instance.getDouble("test3");
-            fail("Expected exception");
-        } catch (NoSuchElementException e) {
-            // pass
-        }
+        instance.getDouble("test3");
     }
 
     @Test
@@ -376,27 +335,17 @@ public abstract class AbstractConfigurationTest extends BaseTest {
         assertEquals(0.55f, instance.getFloat(Key.IIIF_2_ENDPOINT_ENABLED), delta);
     }
 
-    @Test
+    @Test(expected = NumberFormatException.class)
     public void testGetFloatWithKeyWithInvalidProperty() {
         final Configuration instance = getInstance();
         instance.setProperty(Key.MAX_PIXELS, "cats");
-        try {
-            instance.getFloat(Key.MAX_PIXELS);
-            fail("Expected exception");
-        } catch (ConversionException e) {
-            // pass
-        }
+        instance.getFloat(Key.MAX_PIXELS);
     }
 
-    @Test
+    @Test(expected = NoSuchElementException.class)
     public void testGetFloatWithKeyWithMissingProperty() {
         final Configuration instance = getInstance();
-        try {
-            instance.getFloat(Key.MAX_PIXELS);
-            fail("Expected exception");
-        } catch (NoSuchElementException e) {
-            // pass
-        }
+        instance.getFloat(Key.MAX_PIXELS);
     }
 
     /* getFloat(String) */
@@ -411,27 +360,17 @@ public abstract class AbstractConfigurationTest extends BaseTest {
         assertEquals(0.55f, instance.getFloat("test2"), delta);
     }
 
-    @Test
+    @Test(expected = NumberFormatException.class)
     public void testGetFloatWithInvalidProperty() {
         final Configuration instance = getInstance();
         instance.setProperty("test1", "cats");
-        try {
-            instance.getFloat("test1");
-            fail("Expected exception");
-        } catch (ConversionException e) {
-            // pass
-        }
+        instance.getFloat("test1");
     }
 
-    @Test
+    @Test(expected = NoSuchElementException.class)
     public void testGetFloatWithMissingProperty() {
         final Configuration instance = getInstance();
-        try {
-            instance.getFloat("test3");
-            fail("Expected exception");
-        } catch (NoSuchElementException e) {
-            // pass
-        }
+        instance.getFloat("test3");
     }
 
     @Test
@@ -509,27 +448,17 @@ public abstract class AbstractConfigurationTest extends BaseTest {
         assertEquals(55, instance.getInt(Key.IIIF_2_ENDPOINT_ENABLED));
     }
 
-    @Test
+    @Test(expected = NumberFormatException.class)
     public void testGetIntWithKeyWithInvalidProperty() {
         final Configuration instance = getInstance();
         instance.setProperty(Key.MAX_PIXELS, "cats");
-        try {
-            instance.getInt(Key.MAX_PIXELS);
-            fail("Expected exception");
-        } catch (ConversionException e) {
-            // pass
-        }
+        instance.getInt(Key.MAX_PIXELS);
     }
 
-    @Test
+    @Test(expected = NoSuchElementException.class)
     public void testGetIntWithKeyWithMissingProperty() {
         final Configuration instance = getInstance();
-        try {
-            instance.getInt(Key.MAX_PIXELS);
-            fail("Expected exception");
-        } catch (NoSuchElementException e) {
-            // pass
-        }
+        instance.getInt(Key.MAX_PIXELS);
     }
 
     /* getInt(String) */
@@ -543,27 +472,17 @@ public abstract class AbstractConfigurationTest extends BaseTest {
         assertEquals(55, instance.getInt("test2"));
     }
 
-    @Test
+    @Test(expected = NumberFormatException.class)
     public void testGetIntWithStringWithInvalidProperty() {
         final Configuration instance = getInstance();
         instance.setProperty("test1", "cats");
-        try {
-            instance.getInt("test1");
-            fail("Expected exception");
-        } catch (ConversionException e) {
-            // pass
-        }
+        instance.getInt("test1");
     }
 
-    @Test
+    @Test(expected = NoSuchElementException.class)
     public void testGetIntWithStringWithMissingProperty() {
         final Configuration instance = getInstance();
-        try {
-            instance.getInt("test3");
-            fail("Expected exception");
-        } catch (NoSuchElementException e) {
-            // pass
-        }
+        instance.getInt("test3");
     }
 
     @Test
@@ -667,27 +586,17 @@ public abstract class AbstractConfigurationTest extends BaseTest {
         assertEquals(55, instance.getLong(Key.IIIF_2_ENDPOINT_ENABLED));
     }
 
-    @Test
+    @Test(expected = NumberFormatException.class)
     public void testGetLongWithKeyWithInvalidProperty() {
         final Configuration instance = getInstance();
         instance.setProperty(Key.MAX_PIXELS, "cats");
-        try {
-            instance.getLong(Key.MAX_PIXELS);
-            fail("Expected exception");
-        } catch (ConversionException e) {
-            // pass
-        }
+        instance.getLong(Key.MAX_PIXELS);
     }
 
-    @Test
+    @Test(expected = NoSuchElementException.class)
     public void testGetLongWithKeyWithMissingProperty() {
         final Configuration instance = getInstance();
-        try {
-            instance.getLong(Key.MAX_PIXELS);
-            fail("Expected exception");
-        } catch (NoSuchElementException e) {
-            // pass
-        }
+        instance.getLong(Key.MAX_PIXELS);
     }
 
     /* getLong(String) */
@@ -701,27 +610,17 @@ public abstract class AbstractConfigurationTest extends BaseTest {
         assertEquals(55, instance.getLong("test2"));
     }
 
-    @Test
+    @Test(expected = NumberFormatException.class)
     public void testGetLongWithStringWithInvalidProperty() {
         final Configuration instance = getInstance();
         instance.setProperty("test1", "cats");
-        try {
-            instance.getLong("test1");
-            fail("Expected exception");
-        } catch (ConversionException e) {
-            // pass
-        }
+        instance.getLong("test1");
     }
 
-    @Test
+    @Test(expected = NoSuchElementException.class)
     public void testGetLongWithStringWithMissingProperty() {
         final Configuration instance = getInstance();
-        try {
-            instance.getLong("test3");
-            fail("Expected exception");
-        } catch (NoSuchElementException e) {
-            // pass
-        }
+        instance.getLong("test3");
     }
 
     @Test
@@ -791,7 +690,7 @@ public abstract class AbstractConfigurationTest extends BaseTest {
         assertEquals(55 * 1024, instance.getLongBytes(Key.IIIF_2_ENDPOINT_ENABLED));
     }
 
-    @Test(expected = ConversionException.class)
+    @Test(expected = NumberFormatException.class)
     public void testGetLongBytesWithKeyWithInvalidProperty() {
         final Configuration instance = getInstance();
         instance.setProperty(Key.MAX_PIXELS, "cats");
@@ -813,7 +712,7 @@ public abstract class AbstractConfigurationTest extends BaseTest {
         assertEquals(55 * 1024, instance.getLongBytes("test"));
     }
 
-    @Test(expected = ConversionException.class)
+    @Test(expected = NumberFormatException.class)
     public void testGetLongBytesWithStringWithInvalidProperty() {
         final Configuration instance = getInstance();
         instance.setProperty("test", "cats");

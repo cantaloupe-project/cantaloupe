@@ -124,11 +124,12 @@
       <artifactId>HikariCP</artifactId>
       <version>2.7.2</version>
     </dependency>
-    <!-- Manages the application configuration. -->
+    <!-- Manages the test configuration. -->
     <dependency>
       <groupId>commons-configuration</groupId>
       <artifactId>commons-configuration</artifactId>
       <version>1.10</version>
+      <scope>test</scope>
     </dependency>
     <!-- IOUtils is used widely -->
     <dependency>
@@ -473,9 +474,6 @@
                   **/META-INF/*.RSA, **/META-INF/*.SF,
                   **/META-INF/*.txt</excludes>
               <includeGroupIds>
-                commons-configuration,
-                    commons-lang,
-                    commons-logging,
                 javax.servlet,
                 org.eclipse.jetty
               </includeGroupIds>

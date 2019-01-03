@@ -1,7 +1,6 @@
 package edu.illinois.library.cantaloupe.config;
 
 import edu.illinois.library.cantaloupe.util.StringUtils;
-import org.apache.commons.configuration.ConversionException;
 
 import java.io.IOException;
 import java.util.Collections;
@@ -53,7 +52,8 @@ public interface Configuration {
     }
 
     /**
-     * @throws java.util.NoSuchElementException
+     * @throws NoSuchElementException
+     * @throws NumberFormatException
      */
     boolean getBoolean(String key);
 
@@ -72,14 +72,16 @@ public interface Configuration {
     boolean getBoolean(String key, boolean defaultValue);
 
     /**
-     * @throws java.util.NoSuchElementException
+     * @throws NoSuchElementException
+     * @throws NumberFormatException
      */
     default double getDouble(Key key) {
         return getDouble(key.key());
     }
 
     /**
-     * @throws java.util.NoSuchElementException
+     * @throws NoSuchElementException
+     * @throws NumberFormatException
      */
     double getDouble(String key);
 
@@ -105,7 +107,8 @@ public interface Configuration {
     }
 
     /**
-     * @throws java.util.NoSuchElementException
+     * @throws NoSuchElementException
+     * @throws NumberFormatException
      */
     float getFloat(String key);
 
@@ -131,7 +134,8 @@ public interface Configuration {
     }
 
     /**
-     * @throws java.util.NoSuchElementException
+     * @throws NoSuchElementException
+     * @throws NumberFormatException
      */
     int getInt(String key);
 
@@ -162,7 +166,8 @@ public interface Configuration {
     }
 
     /**
-     * @throws java.util.NoSuchElementException
+     * @throws NoSuchElementException
+     * @throws NumberFormatException
      */
     long getLong(String key);
 
@@ -188,16 +193,13 @@ public interface Configuration {
     }
 
     /**
-     * @throws java.util.NoSuchElementException
+     * @throws NoSuchElementException
+     * @throws NumberFormatException
      */
     default long getLongBytes(String key) {
         String str = getString(key);
         if (str != null) {
-            try {
-                return StringUtils.toByteSize(str);
-            } catch (NumberFormatException e) {
-                throw new ConversionException(e);
-            }
+            return StringUtils.toByteSize(str);
         }
         throw new NoSuchElementException(key);
     }
@@ -297,8 +299,7 @@ public interface Configuration {
     /**
      * This default implementation uses the {@link Iterator} returned by {@link
      * #getKeys} in conjunction with {@link #getProperty(String)} to build a
-     * map. Implementations should override it if they can do it more
-     * efficiently.
+     * map. Implementations should override if they can do it more efficiently.
      *
      * @return Configuration keys and values in a read-only map.
      */

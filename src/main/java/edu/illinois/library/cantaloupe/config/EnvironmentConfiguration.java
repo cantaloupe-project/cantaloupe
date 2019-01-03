@@ -1,6 +1,6 @@
 package edu.illinois.library.cantaloupe.config;
 
-import org.apache.commons.configuration.ConversionException;
+import edu.illinois.library.cantaloupe.util.StringUtils;
 
 import java.util.Iterator;
 import java.util.NoSuchElementException;
@@ -17,7 +17,7 @@ import java.util.NoSuchElementException;
  */
 class EnvironmentConfiguration implements Configuration {
 
-    static final String ENVIRONMENT_KEY_PREFIX = "CANTALOUPE";
+    static final String ENVIRONMENT_KEY_PREFIX      = "CANTALOUPE";
     static final String ENVIRONMENT_KEY_REPLACEMENT = "[^A-Za-z0-9]";
 
     static String toEnvironmentKey(String key) {
@@ -42,16 +42,7 @@ class EnvironmentConfiguration implements Configuration {
         key = toEnvironmentKey(key);
         String value = System.getenv(key);
         if (value != null) {
-            switch (value) {
-                case "1":
-                case "true":
-                    return true;
-                case "0":
-                case "false":
-                    return false;
-                default:
-                    throw new ConversionException(key);
-            }
+            return StringUtils.toBoolean(value);
         }
         throw new NoSuchElementException(key);
     }
@@ -60,7 +51,7 @@ class EnvironmentConfiguration implements Configuration {
     public boolean getBoolean(String key, boolean defaultValue) {
         try {
             return getBoolean(key);
-        } catch (NoSuchElementException | ConversionException e) {
+        } catch (NoSuchElementException | NumberFormatException e) {
             return defaultValue;
         }
     }
@@ -70,11 +61,7 @@ class EnvironmentConfiguration implements Configuration {
         key = toEnvironmentKey(key);
         String value = System.getenv(key);
         if (value != null) {
-            try {
-                return Double.parseDouble(value);
-            } catch (NumberFormatException e) {
-                throw new ConversionException(e);
-            }
+            return Double.parseDouble(value);
         }
         throw new NoSuchElementException(key);
     }
@@ -83,7 +70,7 @@ class EnvironmentConfiguration implements Configuration {
     public double getDouble(String key, double defaultValue) {
         try {
             return getDouble(key);
-        } catch (NoSuchElementException | ConversionException e) {
+        } catch (NoSuchElementException | NumberFormatException e) {
             return defaultValue;
         }
     }
@@ -93,11 +80,7 @@ class EnvironmentConfiguration implements Configuration {
         key = toEnvironmentKey(key);
         String value = System.getenv(key);
         if (value != null) {
-            try {
-                return Float.parseFloat(value);
-            } catch (NumberFormatException e) {
-                throw new ConversionException(e);
-            }
+            return Float.parseFloat(value);
         }
         throw new NoSuchElementException(key);
     }
@@ -106,7 +89,7 @@ class EnvironmentConfiguration implements Configuration {
     public float getFloat(String key, float defaultValue) {
         try {
             return getFloat(key);
-        } catch (NoSuchElementException | ConversionException e) {
+        } catch (NoSuchElementException | NumberFormatException e) {
             return defaultValue;
         }
     }
@@ -116,11 +99,7 @@ class EnvironmentConfiguration implements Configuration {
         key = toEnvironmentKey(key);
         String value = System.getenv(key);
         if (value != null) {
-            try {
-                return Integer.parseInt(value);
-            } catch (NumberFormatException e) {
-                throw new ConversionException(e);
-            }
+            return Integer.parseInt(value);
         }
         throw new NoSuchElementException(key);
     }
@@ -129,7 +108,7 @@ class EnvironmentConfiguration implements Configuration {
     public int getInt(String key, int defaultValue) {
         try {
             return getInt(key);
-        } catch (NoSuchElementException | ConversionException e) {
+        } catch (NoSuchElementException | NumberFormatException e) {
             return defaultValue;
         }
     }
@@ -144,11 +123,7 @@ class EnvironmentConfiguration implements Configuration {
         key = toEnvironmentKey(key);
         String value = System.getenv(key);
         if (value != null) {
-            try {
-                return Long.parseLong(value);
-            } catch (NumberFormatException e) {
-                throw new ConversionException(e);
-            }
+            return Long.parseLong(value);
         }
         throw new NoSuchElementException(key);
     }
@@ -157,7 +132,7 @@ class EnvironmentConfiguration implements Configuration {
     public long getLong(String key, long defaultValue) {
         try {
             return getLong(key);
-        } catch (NoSuchElementException | ConversionException e) {
+        } catch (NoSuchElementException | NumberFormatException e) {
             return defaultValue;
         }
     }

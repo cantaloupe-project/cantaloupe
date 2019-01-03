@@ -2,12 +2,10 @@ package edu.illinois.library.cantaloupe.util;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
-import org.apache.commons.codec.binary.Hex;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.xml.bind.DatatypeConverter;
-import java.nio.charset.Charset;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.regex.Matcher;
@@ -144,6 +142,30 @@ public final class StringUtils {
             return str.substring(toStrip.length());
         }
         return str;
+    }
+
+    /**
+     * Converts a string to a boolean. {@literal 1} and {@literal true} are
+     * accepted as true; {@literal 0} and {@literal false} as false. All other
+     * arguments throw a {@link NumberFormatException}, in contrast to {@link
+     * Boolean#parseBoolean(String)}, which treats all non-true values as
+     * false.
+     *
+     * @param str String to convert.
+     * @return Boolean value of the given string.
+     * @throws NumberFormatException if the string has an unrecognized format.
+     */
+    public static boolean toBoolean(String str) {
+        switch (str) {
+            case "1":
+            case "true":
+                return true;
+            case "0":
+            case "false":
+                return false;
+            default:
+                throw new NumberFormatException();
+        }
     }
 
     /**

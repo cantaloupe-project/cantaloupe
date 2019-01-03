@@ -1,31 +1,32 @@
 package edu.illinois.library.cantaloupe.config;
 
-import org.apache.commons.configuration.ConversionException;
-import org.apache.commons.configuration.PropertiesConfiguration;
+import edu.illinois.library.cantaloupe.util.StringUtils;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.concurrent.locks.StampedLock;
 
 /**
- * <p>Properties configuration that allows file-based inheritance. A file can be
- * linked to a parent file using {@link #EXTENDS_KEY}. Keys in child files
+ * <p>Properties configuration that allows file-based inheritance. A file can
+ * be linked to a parent file using {@link #EXTENDS_KEY}. Keys in child files
  * override ones in ancestor files.</p>
  *
- * <p>This implementation uses optimistic reads via a {@link StampedLock} for
- * good performance with thread-safety.</p>
+ * <p>This implementation uses a {@link StampedLock} for good thread-safe
+ * performance.</p>
  */
 class HeritablePropertiesConfiguration implements MultipleFileConfiguration {
 
@@ -36,14 +37,14 @@ class HeritablePropertiesConfiguration implements MultipleFileConfiguration {
     /**
      * Map of PropertiesConfigurations in order from leaf to trunk.
      */
-    private final LinkedHashMap<Path,PropertiesConfiguration> commonsConfigs =
+    private final Map<Path,PropertiesDocument> propertiesDocs =
             new LinkedHashMap<>();
 
     /**
      * Checksum of the main configuration file contents. When the watcher
      * receives a change event from the filesystem, it will compute the new
-     * checksum and reload only if they don't match. That's because there are
-     * often multiple events per change.
+     * checksum and reload only if they don't match. (That's because there are
+     * often multiple events per change.)
      */
     private byte[] mainContentsChecksum = new byte[0];
 
@@ -51,8 +52,8 @@ class HeritablePropertiesConfiguration implements MultipleFileConfiguration {
      * @return Wrapped configurations in order from main to most distant
      *         ancestor.
      */
-    List<PropertiesConfiguration> getConfigurationTree() {
-        return new ArrayList<>(commonsConfigs.values());
+    List<PropertiesDocument> getConfigurationTree() {
+        return new ArrayList<>(propertiesDocs.values());
     }
 
     ////////////////// MultipleFileConfiguration methods ///////////////////
@@ -61,7 +62,7 @@ class HeritablePropertiesConfiguration implements MultipleFileConfiguration {
     public Set<Path> getFiles() {
         final long stamp = lock.readLock();
         try {
-            return commonsConfigs.keySet();
+            return propertiesDocs.keySet();
         } finally {
             lock.unlock(stamp);
         }
@@ -73,9 +74,8 @@ class HeritablePropertiesConfiguration implements MultipleFileConfiguration {
     public void clear() {
         final long stamp = lock.writeLock();
         try {
-            commonsConfigs.values().parallelStream()
-                    .forEach(PropertiesConfiguration::clear);
-            mainContentsChecksum = new byte[]{};
+            propertiesDocs.values().forEach(PropertiesDocument::clear);
+            mainContentsChecksum = new byte[0];
         } finally {
             lock.unlock(stamp);
         }
@@ -85,8 +85,7 @@ class HeritablePropertiesConfiguration implements MultipleFileConfiguration {
     public void clearProperty(final String key) {
         final long stamp = lock.writeLock();
         try {
-            commonsConfigs.values().parallelStream()
-                    .forEach(c -> c.clearProperty(key));
+            propertiesDocs.values().forEach(doc -> doc.clearKey(key));
         } finally {
             lock.unlock(stamp);
         }
@@ -106,7 +105,7 @@ class HeritablePropertiesConfiguration implements MultipleFileConfiguration {
         try {
             Boolean bool = readBooleanOptimistically(key);
             return (bool != null) ? bool : defaultValue;
-        } catch (ConversionException e) {
+        } catch (NumberFormatException e) {
             return defaultValue;
         }
     }
@@ -129,10 +128,9 @@ class HeritablePropertiesConfiguration implements MultipleFileConfiguration {
 
     private Boolean readBoolean(String key) {
         Boolean bool = null;
-        for (PropertiesConfiguration commonsConfig : commonsConfigs.values()) {
-            if (commonsConfig.containsKey(key)) {
-                bool = commonsConfig.getBoolean(key, null);
-                break;
+        for (PropertiesDocument doc : propertiesDocs.values()) {
+            if (doc.containsKey(key)) {
+                bool = StringUtils.toBoolean(doc.get(key));
             }
         }
         return bool;
@@ -152,7 +150,7 @@ class HeritablePropertiesConfiguration implements MultipleFileConfiguration {
         try {
             Double dub = readDoubleOptimistically(key);
             return (dub != null) ? dub : defaultValue;
-        } catch (ConversionException e) {
+        } catch (NumberFormatException e) {
             return defaultValue;
         }
     }
@@ -175,9 +173,10 @@ class HeritablePropertiesConfiguration implements MultipleFileConfiguration {
 
     private Double readDouble(String key) {
         Double dub = null;
-        for (PropertiesConfiguration commonsConfig : commonsConfigs.values()) {
-            if (commonsConfig.containsKey(key)) {
-                dub = commonsConfig.getDouble(key, null);
+        for (PropertiesDocument doc : propertiesDocs.values()) {
+            if (doc.containsKey(key)) {
+                String value = doc.get(key);
+                dub = Double.parseDouble(value);
                 break;
             }
         }
@@ -198,7 +197,7 @@ class HeritablePropertiesConfiguration implements MultipleFileConfiguration {
         try {
             Float flo = readFloatOptimistically(key);
             return (flo != null) ? flo : defaultValue;
-        } catch (ConversionException e) {
+        } catch (NumberFormatException e) {
             return defaultValue;
         }
     }
@@ -221,9 +220,10 @@ class HeritablePropertiesConfiguration implements MultipleFileConfiguration {
 
     private Float readFloat(String key) {
         Float flo = null;
-        for (PropertiesConfiguration commonsConfig : commonsConfigs.values()) {
-            if (commonsConfig.containsKey(key)) {
-                flo = commonsConfig.getFloat(key, null);
+        for (PropertiesDocument doc : propertiesDocs.values()) {
+            if (doc.containsKey(key)) {
+                String value = doc.get(key);
+                flo = Float.parseFloat(value);
                 break;
             }
         }
@@ -244,7 +244,7 @@ class HeritablePropertiesConfiguration implements MultipleFileConfiguration {
         try {
             Integer integer = readIntegerOptimistically(key);
             return (integer != null) ? integer : defaultValue;
-        } catch (ConversionException e) {
+        } catch (NumberFormatException e) {
             return defaultValue;
         }
     }
@@ -267,9 +267,10 @@ class HeritablePropertiesConfiguration implements MultipleFileConfiguration {
 
     private Integer readInteger(String key) {
         Integer integer = null;
-        for (PropertiesConfiguration commonsConfig : commonsConfigs.values()) {
-            if (commonsConfig.containsKey(key)) {
-                integer = commonsConfig.getInteger(key, null);
+        for (PropertiesDocument doc : propertiesDocs.values()) {
+            if (doc.containsKey(key)) {
+                String value = doc.get(key);
+                integer = Integer.parseInt(value);
                 break;
             }
         }
@@ -295,8 +296,8 @@ class HeritablePropertiesConfiguration implements MultipleFileConfiguration {
      */
     private Iterator<String> readKeys() {
         final List<String> allKeys = new ArrayList<>(Key.values().length + 100);
-        for (PropertiesConfiguration commonsConfig : commonsConfigs.values()) {
-            final Iterator<String> it = commonsConfig.getKeys();
+        for (PropertiesDocument doc : propertiesDocs.values()) {
+            final Iterator<String> it = doc.getKeys();
             while (it.hasNext()) {
                 allKeys.add(it.next());
             }
@@ -318,7 +319,7 @@ class HeritablePropertiesConfiguration implements MultipleFileConfiguration {
         try {
             Long lon = readLongOptimistically(key);
             return (lon != null) ? lon : defaultValue;
-        } catch (ConversionException e) {
+        } catch (NumberFormatException e) {
             return defaultValue;
         }
     }
@@ -341,9 +342,10 @@ class HeritablePropertiesConfiguration implements MultipleFileConfiguration {
 
     private Long readLong(String key) {
         Long lon = null;
-        for (PropertiesConfiguration commonsConfig : commonsConfigs.values()) {
-            if (commonsConfig.containsKey(key)) {
-                lon = commonsConfig.getLong(key, null);
+        for (PropertiesDocument doc : propertiesDocs.values()) {
+            if (doc.containsKey(key)) {
+                String value = doc.get(key);
+                lon = Long.parseLong(value);
                 break;
             }
         }
@@ -373,9 +375,9 @@ class HeritablePropertiesConfiguration implements MultipleFileConfiguration {
 
     private Object readProperty(String key) {
         Object prop = null;
-        for (PropertiesConfiguration commonsConfig : commonsConfigs.values()) {
-            if (commonsConfig.containsKey(key)) {
-                prop = commonsConfig.getProperty(key);
+        for (PropertiesDocument doc : propertiesDocs.values()) {
+            if (doc.containsKey(key)) {
+                prop = doc.get(key);
                 break;
             }
         }
@@ -411,9 +413,9 @@ class HeritablePropertiesConfiguration implements MultipleFileConfiguration {
 
     private String readString(String key) {
         String str = null;
-        for (PropertiesConfiguration commonsConfig : commonsConfigs.values()) {
-            if (commonsConfig.containsKey(key)) {
-                str = commonsConfig.getString(key, null);
+        for (PropertiesDocument doc : propertiesDocs.values()) {
+            if (doc.containsKey(key)) {
+                str = doc.get(key);
                 break;
             }
         }
@@ -426,27 +428,24 @@ class HeritablePropertiesConfiguration implements MultipleFileConfiguration {
         try {
             final Path mainConfigFile = getFile();
             if (mainConfigFile != null) {
-                // Calculate the checksum of the file contents and compare it to
-                // what has already been loaded. If the sums match, skip the
+                // Calculate the checksum of the file contents and compare it
+                // to what has already been loaded. If the sums match, skip the
                 // reload.
-                try {
-                    byte[] fileBytes = Files.readAllBytes(mainConfigFile);
-                    final MessageDigest md = MessageDigest.getInstance("MD5");
-                    byte[] digestBytes = md.digest(fileBytes);
-
-                    if (digestBytes == mainContentsChecksum) {
-                        return;
-                    }
-                    mainContentsChecksum = digestBytes;
-                } catch (FileNotFoundException e) {
-                    System.err.println("File not found: " + e.getMessage());
-                } catch (IOException | NoSuchAlgorithmException e) {
-                    System.err.println(e.getMessage());
+                byte[] fileBytes       = Files.readAllBytes(mainConfigFile);
+                final MessageDigest md = MessageDigest.getInstance("MD5");
+                byte[] digestBytes     = md.digest(fileBytes);
+                if (Arrays.equals(digestBytes, mainContentsChecksum)) {
+                    return;
                 }
+                mainContentsChecksum = digestBytes;
 
-                commonsConfigs.clear();
+                propertiesDocs.clear();
                 loadFileAndAncestors(mainConfigFile);
             }
+        } catch (NoSuchFileException e) {
+            System.err.println("File not found: " + e.getMessage());
+        } catch (IOException | NoSuchAlgorithmException e) {
+            System.err.println(e.getMessage());
         } finally {
             lock.unlock(stamp);
         }
@@ -455,17 +454,15 @@ class HeritablePropertiesConfiguration implements MultipleFileConfiguration {
     /**
      * Saves all configuration files.
      *
-     * @throws IOException If any of the files fail to save.
+     * @throws IOException if any of the files fail to save.
      */
     @Override
     public void save() throws IOException {
         final long stamp = lock.writeLock();
         try {
-            for (PropertiesConfiguration commonsConfig : commonsConfigs.values()) {
-                commonsConfig.save();
+            for (Map.Entry<Path,PropertiesDocument> entry : propertiesDocs.entrySet()) {
+                entry.getValue().save(entry.getKey());
             }
-        } catch (org.apache.commons.configuration.ConfigurationException e) {
-            throw new IOException(e.getMessage(), e);
         } finally {
             lock.unlock(stamp);
         }
@@ -474,8 +471,8 @@ class HeritablePropertiesConfiguration implements MultipleFileConfiguration {
     /**
      * Attempts to set the given property in the first matching config file
      * that already contains the given key, searching the files in order from
-     * main config file to most distant ancestor. If no config files already
-     * contain the key, it will be set in the main file.
+     * main config file to most distant ancestor. If no files already contain
+     * the key, it will be set in the main file.
      */
     @Override
     public void setProperty(String key, Object value) {
@@ -484,19 +481,18 @@ class HeritablePropertiesConfiguration implements MultipleFileConfiguration {
             // Try to set it in the first matching config file that already
             // contains it.
             boolean wasSet = false;
-            for (PropertiesConfiguration commonsConfig :
-                    commonsConfigs.values()) {
-                if (commonsConfig.containsKey(key)) {
-                    commonsConfig.setProperty(key, value);
+            for (PropertiesDocument doc : propertiesDocs.values()) {
+                if (doc.containsKey(key)) {
+                    doc.set(key, value.toString());
                     wasSet = true;
                 }
             }
             // Fall back to setting it in the main config file.
             if (!wasSet) {
-                Iterator<PropertiesConfiguration> it = commonsConfigs.values().iterator();
+                Iterator<PropertiesDocument> it = propertiesDocs.values().iterator();
                 if (it.hasNext()) {
-                    PropertiesConfiguration commonsConfig = it.next();
-                    commonsConfig.setProperty(key, value);
+                    PropertiesDocument doc = it.next();
+                    doc.set(key, value.toString());
                 }
             }
         } finally {
@@ -510,19 +506,15 @@ class HeritablePropertiesConfiguration implements MultipleFileConfiguration {
     private void loadFileAndAncestors(Path file) throws ConfigurationException {
         System.out.println("Loading config file: " + file);
 
-        PropertiesConfiguration commonsConfig = new PropertiesConfiguration();
-        // Prevent commas in values from being interpreted as list item
-        // delimiters.
-        commonsConfig.setDelimiterParsingDisabled(true);
-        commonsConfig.setFile(file.toFile());
+        PropertiesDocument doc = new PropertiesDocument();
         try {
-            commonsConfig.load();
-            commonsConfigs.put(file, commonsConfig);
+            doc.load(file);
+            propertiesDocs.put(file, doc);
 
             // The file has been loaded. If it contains a key specifying a
             // parent file, load that too.
-            String parent = commonsConfig.getString(EXTENDS_KEY);
-            if (parent != null && parent.length() > 0) {
+            String parent = doc.get(EXTENDS_KEY);
+            if (parent != null && !parent.isEmpty()) {
                 // Expand paths that start with "~"
                 parent = parent.replaceFirst("^~",
                         System.getProperty("user.home"));
@@ -531,13 +523,13 @@ class HeritablePropertiesConfiguration implements MultipleFileConfiguration {
                             File.separator + new File(parent).getName();
                 }
                 Path parentFile = Paths.get(parent).toAbsolutePath();
-                if (!commonsConfigs.keySet().contains(parentFile)) {
+                if (!propertiesDocs.keySet().contains(parentFile)) {
                     loadFileAndAncestors(parentFile);
                 } else {
                     throw new ConfigurationException("Inheritance loop");
                 }
             }
-        } catch (org.apache.commons.configuration.ConfigurationException e) {
+        } catch (IOException e) {
             // The logger may not have been initialized yet, as it depends
             // on a working configuration. (Also, we don't want to
             // introduce a dependency on the logger.)

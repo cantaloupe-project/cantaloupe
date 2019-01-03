@@ -1,6 +1,6 @@
 package edu.illinois.library.cantaloupe.config;
 
-import org.apache.commons.configuration.ConversionException;
+import edu.illinois.library.cantaloupe.util.StringUtils;
 
 import java.util.Collections;
 import java.util.Iterator;
@@ -30,21 +30,8 @@ class MapConfiguration implements Configuration {
     @Override
     public boolean getBoolean(String key) {
         Object value = configuration.get(key);
-        boolean bool;
         if (value != null) {
-            switch (value.toString()) {
-                case "1":
-                case "true":
-                    bool = true;
-                    break;
-                case "0":
-                case "false":
-                    bool = false;
-                    break;
-                default:
-                    throw new ConversionException(key);
-            }
-            return bool;
+            return StringUtils.toBoolean(value.toString());
         } else {
             throw new NoSuchElementException(key);
         }
@@ -54,7 +41,7 @@ class MapConfiguration implements Configuration {
     public boolean getBoolean(String key, boolean defaultValue) {
         try {
             return getBoolean(key);
-        } catch (NoSuchElementException | ConversionException e) {
+        } catch (NoSuchElementException | NumberFormatException e) {
             return defaultValue;
         }
     }
@@ -63,11 +50,7 @@ class MapConfiguration implements Configuration {
     public double getDouble(String key) {
         Object value = configuration.get(key);
         if (value != null) {
-            try {
-                return Double.parseDouble(value.toString());
-            } catch (NumberFormatException e) {
-                throw new ConversionException(e.getMessage(), e);
-            }
+            return Double.parseDouble(value.toString());
         }
         throw new NoSuchElementException(key);
     }
@@ -76,7 +59,7 @@ class MapConfiguration implements Configuration {
     public double getDouble(String key, double defaultValue) {
         try {
             return getDouble(key);
-        } catch (NoSuchElementException | ConversionException e) {
+        } catch (NoSuchElementException | NumberFormatException e) {
             return defaultValue;
         }
     }
@@ -85,11 +68,7 @@ class MapConfiguration implements Configuration {
     public float getFloat(String key) {
         Object value = configuration.get(key);
         if (value != null) {
-            try {
-                return Float.parseFloat(value.toString());
-            } catch (NumberFormatException e) {
-                throw new ConversionException(e.getMessage(), e);
-            }
+            return Float.parseFloat(value.toString());
         }
         throw new NoSuchElementException(key);
     }
@@ -98,7 +77,7 @@ class MapConfiguration implements Configuration {
     public float getFloat(String key, float defaultValue) {
         try {
             return getFloat(key);
-        } catch (NoSuchElementException | ConversionException e) {
+        } catch (NoSuchElementException | NumberFormatException e) {
             return defaultValue;
         }
     }
@@ -107,11 +86,7 @@ class MapConfiguration implements Configuration {
     public int getInt(String key) {
         Object value = configuration.get(key);
         if (value != null) {
-            try {
-                return Integer.parseInt(value.toString());
-            } catch (NumberFormatException e) {
-                throw new ConversionException(e.getMessage(), e);
-            }
+            return Integer.parseInt(value.toString());
         }
         throw new NoSuchElementException(key);
     }
@@ -120,7 +95,7 @@ class MapConfiguration implements Configuration {
     public int getInt(String key, int defaultValue) {
         try {
             return getInt(key);
-        } catch (NoSuchElementException | ConversionException e) {
+        } catch (NoSuchElementException | NumberFormatException e) {
             return defaultValue;
         }
     }
@@ -134,11 +109,7 @@ class MapConfiguration implements Configuration {
     public long getLong(String key) {
         Object value = configuration.get(key);
         if (value != null) {
-            try {
-                return Long.parseLong(value.toString());
-            } catch (NumberFormatException e) {
-                throw new ConversionException(e.getMessage(), e);
-            }
+            return Long.parseLong(value.toString());
         }
         throw new NoSuchElementException(key);
     }
@@ -147,7 +118,7 @@ class MapConfiguration implements Configuration {
     public long getLong(String key, long defaultValue) {
         try {
             return getLong(key);
-        } catch (NoSuchElementException | ConversionException e) {
+        } catch (NoSuchElementException | NumberFormatException e) {
             return defaultValue;
         }
     }
