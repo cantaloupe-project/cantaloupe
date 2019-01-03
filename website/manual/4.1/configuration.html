@@ -35,13 +35,13 @@ title: Configuration
 
 <h3 id="EnvironmentConfiguration">Environment Configuration</h3>
 
-<p>Configuration can be obtained from environment variables. Environment variable names are uppercase versions of &quot;ordinary&quot; configuration key names, appended to the string <code>CANTALOUPE_</code>, with only alphanumerics and underscores allowed. For example, the following key-value pair in the configuration file:</p>
+<p>Configuration can be obtained from environment variables. Environment variable names are uppercase versions of &quot;ordinary&quot; configuration key names, with all non-alphanumerics replaced with underscores. For example, the following key-value pair in the configuration file:</p>
 
 <p><code>endpoint.iiif.2.enabled = true</code></p>
 
 <p>When set in the environment, would become:</p>
 
-<p><code>CANTALOUPE_ENDPOINT_IIIF_2_ENABLED=true</code></p>
+<p><code>ENDPOINT_IIIF_2_ENABLED=true</code></p>
 
 <p class="text-info"><i class="fa fa-info-circle"></i> Environment configuration is read-only.</p>
 

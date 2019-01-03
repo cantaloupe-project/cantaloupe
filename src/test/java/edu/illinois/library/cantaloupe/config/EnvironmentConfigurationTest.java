@@ -21,7 +21,7 @@ public class EnvironmentConfigurationTest extends BaseTest {
 
     @Test
     public void toEnvironmentKey() {
-        assertEquals(EnvironmentConfiguration.ENVIRONMENT_KEY_PREFIX + "_ABCABC123__________________",
+        assertEquals("ABCABC123__________________",
                 EnvironmentConfiguration.toEnvironmentKey("ABCabc123_.-?=~`!@#$%^&*()+"));
     }
 
