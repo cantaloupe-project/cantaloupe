@@ -10,8 +10,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 
 /**
  * Contains information about a client request.
@@ -29,8 +27,7 @@ public final class RequestContext {
     static final String RESULTING_SIZE_KEY   = "resulting_size";
     static final String SCALE_CONSTRAINT_KEY = "scale_constraint";
 
-    private final ConcurrentMap<String,Object> backingMap =
-            new ConcurrentHashMap<>();
+    private final Map<String,Object> backingMap = new HashMap<>();
 
     /**
      * Sets or clears {@link #CLIENT_IP_KEY}.
@@ -149,7 +146,7 @@ public final class RequestContext {
      *
      * @return Map representation of the instance.
      */
-    public ConcurrentMap<String,Object> toMap() {
+    public Map<String,Object> toMap() {
         return backingMap;
     }
 
