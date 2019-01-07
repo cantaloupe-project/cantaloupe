@@ -37,15 +37,8 @@ enum ServiceFeature implements Feature {
     PROFILE_LINK_HEADER("profileLinkHeader"),
 
     /**
-     * <p>Size of images may be requested in the form “!w,h”.</p>
-     *
-     * <p>New in Image API 2.1.</p>
-     */
-    SIZE_BY_CONFINED_WIDTH_HEIGHT("sizeByConfinedWh"),
-
-    /**
      * Deprecated in Image API 2.1.
-     * */
+     */
     SIZE_BY_WHITELISTED("sizeByWhListed");
 
     private String name;

@@ -1,7 +1,7 @@
 package edu.illinois.library.cantaloupe.resource.iiif;
 
 /**
- * Encapsulates a "feature" that is processor-dependent.
+ * Processor-dependent feature.
  */
 public enum ProcessorFeature implements Feature {
 
@@ -41,41 +41,49 @@ public enum ProcessorFeature implements Feature {
     ROTATION_BY_90S("rotationBy90s"),
 
     /**
-     * Size of images may be requested larger than the "full" size.
+     * Sizes larger than the full size may be requested.
      */
     SIZE_ABOVE_FULL("sizeAboveFull"),
 
     /**
-     * <p>Size of images may be requested in the form "w,h", including sizes
-     * that would distort the image.</p>
+     * <p>Size of images may be requested in the form {@literal !w,h}.</p>
+     *
+     * <p>New in Image API 2.1.</p>
+     */
+    SIZE_BY_CONFINED_WIDTH_HEIGHT("sizeByConfinedWh"),
+
+    /**
+     * <p>Size of images may be requested in the form {@literal w,h}, including
+     * sizes that would distort the image.</p>
      *
      * <p>New in Image API 2.1.</p>
      * */
     SIZE_BY_DISTORTED_WIDTH_HEIGHT("sizeByDistortedWh"),
 
     /**
-     * Deprecated in Image API 2.1.
+     * Deprecated in Image API 2.1; to be replaced with {@link
+     * #SIZE_BY_CONFINED_WIDTH_HEIGHT}.
      */
     SIZE_BY_FORCED_WIDTH_HEIGHT("sizeByForcedWh"),
 
     /**
-     * Size of images may be requested in the form ",h".
+     * Size of images may be requested in the form {@literal ,h}.
      */
     SIZE_BY_HEIGHT("sizeByH"),
 
     /**
-     * Size of images may be requested in the form "pct:n".
+     * Size of images may be requested in the form {@literal pct:n}.
      */
     SIZE_BY_PERCENT("sizeByPct"),
 
     /**
-     * Size of images may be requested in the form "w,".
+     * Size of images may be requested in the form {@literal w,}.
      */
     SIZE_BY_WIDTH("sizeByW"),
 
     /**
-     * Size of images may be requested in the form "w,h" where the supplied w
-     * and h preserve the aspect ratio.
+     * Size of images may be requested in the form {@literal w,h} where the
+     * supplied {@literal w} and {@literal h} preserve the aspect ratio.
      */
     SIZE_BY_WIDTH_HEIGHT("sizeByWh");
 

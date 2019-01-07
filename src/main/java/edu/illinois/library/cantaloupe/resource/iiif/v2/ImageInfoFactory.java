@@ -41,8 +41,7 @@ final class ImageInfoFactory {
 
     private static final Set<ServiceFeature> SUPPORTED_SERVICE_FEATURES =
             Collections.unmodifiableSet(
-                    EnumSet.of(ServiceFeature.SIZE_BY_CONFINED_WIDTH_HEIGHT,
-                            ServiceFeature.SIZE_BY_WHITELISTED,
+                    EnumSet.of(ServiceFeature.SIZE_BY_WHITELISTED,
                             ServiceFeature.BASE_URI_REDIRECT,
                             ServiceFeature.CANONICAL_LINK_HEADER,
                             ServiceFeature.CORS,

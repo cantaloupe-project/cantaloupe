@@ -25,7 +25,6 @@ public class ServiceFeatureTest extends BaseTest {
         assertEquals("cors", ServiceFeature.CORS.getName());
         assertEquals("jsonldMediaType", ServiceFeature.JSON_LD_MEDIA_TYPE.getName());
         assertEquals("profileLinkHeader", ServiceFeature.PROFILE_LINK_HEADER.getName());
-        assertEquals("sizeByConfinedWh", ServiceFeature.SIZE_BY_CONFINED_WIDTH_HEIGHT.getName());
         assertEquals("sizeByWhListed", ServiceFeature.SIZE_BY_WHITELISTED.getName());
     }
 
@@ -35,7 +34,6 @@ public class ServiceFeatureTest extends BaseTest {
         assertEquals("canonicalLinkHeader", ServiceFeature.CANONICAL_LINK_HEADER.toString());
         assertEquals("cors", ServiceFeature.CORS.toString());
         assertEquals("jsonldMediaType", ServiceFeature.JSON_LD_MEDIA_TYPE.toString());
-        assertEquals("sizeByConfinedWh", ServiceFeature.SIZE_BY_CONFINED_WIDTH_HEIGHT.toString());
         assertEquals("sizeByWhListed", ServiceFeature.SIZE_BY_WHITELISTED.toString());
     }
 
