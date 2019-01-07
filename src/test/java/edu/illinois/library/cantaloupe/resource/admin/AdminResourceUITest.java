@@ -336,6 +336,10 @@ public class AdminResourceUITest extends AbstractAdminResourceTest {
         inputNamed(Key.AZURESTORAGESOURCE_ACCOUNT_NAME).sendKeys("bla");
         inputNamed(Key.AZURESTORAGESOURCE_ACCOUNT_KEY).sendKeys("cats");
         inputNamed(Key.AZURESTORAGESOURCE_CONTAINER_NAME).sendKeys("bucket");
+        inputNamed(Key.AZURESTORAGESOURCE_CHUNKING_ENABLED).click();
+        inputNamed(Key.AZURESTORAGESOURCE_CHUNK_SIZE).sendKeys("412");
+        inputNamed(Key.AZURESTORAGESOURCE_CHUNK_CACHE_ENABLED).click();
+        inputNamed(Key.AZURESTORAGESOURCE_CHUNK_CACHE_MAX_SIZE).sendKeys("333");
         selectNamed(Key.AZURESTORAGESOURCE_LOOKUP_STRATEGY).
                 selectByValue("BasicLookupStrategy");
         // FilesystemSource
@@ -405,6 +409,14 @@ public class AdminResourceUITest extends AbstractAdminResourceTest {
                 config.getString(Key.AZURESTORAGESOURCE_ACCOUNT_KEY));
         assertEquals("bucket",
                 config.getString(Key.AZURESTORAGESOURCE_CONTAINER_NAME));
+        assertTrue(
+                config.getBoolean(Key.AZURESTORAGESOURCE_CHUNKING_ENABLED));
+        assertEquals("412",
+                config.getString(Key.AZURESTORAGESOURCE_CHUNK_SIZE));
+        assertTrue(
+                config.getBoolean(Key.AZURESTORAGESOURCE_CHUNK_CACHE_ENABLED));
+        assertEquals("333",
+                config.getString(Key.AZURESTORAGESOURCE_CHUNK_CACHE_MAX_SIZE));
         assertEquals("BasicLookupStrategy",
                 config.getString(Key.AZURESTORAGESOURCE_LOOKUP_STRATEGY));
         // FilesystemSource

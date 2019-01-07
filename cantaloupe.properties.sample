@@ -150,20 +150,6 @@ FilesystemSource.BasicLookupStrategy.path_suffix =
 HttpSource.trust_all_certs = false
 HttpSource.request_timeout =
 
-# Read data in chunks when it may be more efficient. (This also may end up
-# being less efficient, depending on many variables; see the user manual.)
-HttpSource.chunking.enabled = false
-
-# Chunk size.
-HttpSource.chunking.chunk_size = 512K
-
-# The per-request chunk cache caches downloaded chunks in memory during
-# a request, and clears them when the request is complete.
-HttpSource.chunking.cache.enabled = true
-
-# Max per-request chunk cache size.
-HttpSource.chunking.cache.max_size = 10M
-
 # Tells HttpSource how to look up resources. Allowed values are
 # `BasicLookupStrategy` and `ScriptLookupStrategy`. ScriptLookupStrategy
 # uses a delegate method for dynamic lookups; see the user manual.
@@ -181,6 +167,20 @@ HttpSource.BasicLookupStrategy.url_suffix =
 HttpSource.BasicLookupStrategy.auth.basic.username =
 HttpSource.BasicLookupStrategy.auth.basic.secret =
 
+# Read data in chunks when it may be more efficient. (This also may end up
+# being less efficient, depending on many variables; see the user manual.)
+HttpSource.chunking.enabled = false
+
+# Chunk size.
+HttpSource.chunking.chunk_size = 512K
+
+# The per-request chunk cache caches downloaded chunks in memory during
+# a request, and clears them when the request is complete.
+HttpSource.chunking.cache.enabled = true
+
+# Max per-request chunk cache size.
+HttpSource.chunking.cache.max_size = 10M
+
 #----------------------------------------
 # S3Source
 #----------------------------------------
@@ -197,20 +197,6 @@ S3Source.endpoint =
 S3Source.access_key_id =
 S3Source.secret_key =
 
-# Read data in chunks when it may be more efficient. (This also may end up
-# being less efficient, depending on many variables; see the user manual.)
-S3Source.chunking.enabled = false
-
-# Chunk size.
-S3Source.chunking.chunk_size = 512K
-
-# The per-request chunk cache caches downloaded chunks in memory during
-# a request, and clears them when the request is complete.
-S3Source.chunking.cache.enabled = true
-
-# Max per-request chunk cache size.
-S3Source.chunking.cache.max_size = 10M
-
 # How to look up objects. Allowed values are `BasicLookupStrategy` and
 # `ScriptLookupStrategy`. ScriptLookupStrategy uses a delegate method for
 # dynamic lookups; see the user manual.
@@ -225,6 +211,20 @@ S3Source.BasicLookupStrategy.path_prefix =
 
 # Path or extension that will be suffixed to the identifier in the URL.
 S3Source.BasicLookupStrategy.path_suffix =
+
+# Read data in chunks when it may be more efficient. (This also may end up
+# being less efficient, depending on many variables; see the user manual.)
+S3Source.chunking.enabled = false
+
+# Chunk size.
+S3Source.chunking.chunk_size = 512K
+
+# The per-request chunk cache caches downloaded chunks in memory during
+# a request, and clears them when the request is complete.
+S3Source.chunking.cache.enabled = true
+
+# Max per-request chunk cache size.
+S3Source.chunking.cache.max_size = 10M
 
 #----------------------------------------
 # AzureStorageSource
@@ -246,6 +246,20 @@ AzureStorageSource.container_name =
 # `BasicLookupStrategy` and `ScriptLookupStrategy`. ScriptLookupStrategy
 # uses a delegate method for dynamic lookups; see the user manual.
 AzureStorageSource.lookup_strategy = BasicLookupStrategy
+
+# Read data in chunks when it may be more efficient. (This also may end up
+# being less efficient, depending on many variables; see the user manual.)
+AzureStorageSource.chunking.enabled = false
+
+# Chunk size.
+AzureStorageSource.chunking.chunk_size = 512K
+
+# The per-request chunk cache caches downloaded chunks in memory during
+# a request, and clears them when the request is complete.
+AzureStorageSource.chunking.cache.enabled = true
+
+# Max per-request chunk cache size.
+AzureStorageSource.chunking.cache.max_size = 10M
 
 #----------------------------------------
 # JdbcSource

@@ -2,7 +2,6 @@ package edu.illinois.library.cantaloupe.source;
 
 import com.microsoft.azure.storage.CloudStorageAccount;
 import com.microsoft.azure.storage.StorageException;
-import com.microsoft.azure.storage.blob.BlobInputStream;
 import com.microsoft.azure.storage.blob.CloudBlobClient;
 import com.microsoft.azure.storage.blob.CloudBlobContainer;
 import com.microsoft.azure.storage.blob.CloudBlockBlob;
@@ -10,7 +9,7 @@ import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.MediaType;
-import org.apache.commons.lang3.StringUtils;
+import edu.illinois.library.cantaloupe.script.DelegateMethod;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -53,29 +52,40 @@ import java.util.List;
  * identifiers directly to blob keys. ScriptLookupStrategy invokes a delegate
  * method to retrieve blob keys dynamically.</p>
  *
+ * <h1>Resource Access</h1>
+ *
+ * <p>While proceeding through the client request fulfillment flow, the
+ * following server requests are sent:</p>
+ *
+ * <ol>
+ *     <li>{@literal HEAD}</li>
+ *     <li>
+ *         <ol>
+ *             <li>If {@link #getFormat()} needs to check magic bytes:
+ *                 <ol>
+ *                     <li>Ranged {@literal GET}</li>
+ *                 </ol>
+ *             </li>
+ *             <li>If {@link StreamFactory#newSeekableStream()} is used:
+ *                 <ol>
+ *                     <li>A series of ranged {@literal GET} requests (see {@link
+ *                     edu.illinois.library.cantaloupe.source.stream.HTTPImageInputStream}
+ *                     for details)</li>
+ *                 </ol>
+ *             </li>
+ *             <li>Else if {@link StreamFactory#newInputStream()} is used:
+ *                 <ol>
+ *                     <li>{@literal GET} to retrieve the full image bytes</li>
+ *                 </ol>
+ *             </li>
+ *         </ol>
+ *     </li>
+ * </ol>
+ *
  * @see <a href="https://github.com/azure/azure-storage-java">
  *     Microsoft Azure Storage DSK for Java</a>
  */
 class AzureStorageSource extends AbstractSource implements StreamSource {
-
-    private static class AzureStorageStreamFactory implements StreamFactory {
-
-        private final CloudBlockBlob blob;
-
-        AzureStorageStreamFactory(CloudBlockBlob blob) {
-            this.blob = blob;
-        }
-
-        @Override
-        public BlobInputStream newInputStream() throws IOException {
-            try {
-                return blob.openInputStream();
-            } catch (StorageException e) {
-                throw new IOException(e.getMessage(), e);
-            }
-        }
-
-    }
 
     private static final Logger LOGGER =
             LoggerFactory.getLogger(AzureStorageSource.class);
@@ -84,9 +94,6 @@ class AzureStorageSource extends AbstractSource implements StreamSource {
      * Byte length of the range used to infer the source image format.
      */
     private static final int FORMAT_INFERENCE_RANGE_LENGTH = 32;
-
-    private static final String GET_KEY_DELEGATE_METHOD =
-            "AzureStorageSource::get_blob_key";
 
     private static CloudStorageAccount account;
     private static CloudBlobClient client;
@@ -127,35 +134,32 @@ class AzureStorageSource extends AbstractSource implements StreamSource {
 
     @Override
     public void checkAccess() throws IOException {
-        getObject();
+        getBlob();
     }
 
-    private CloudBlockBlob getObject() throws IOException {
+    private CloudBlockBlob getBlob() throws IOException {
         if (cachedBlobException != null) {
             throw cachedBlobException;
         } else if (cachedBlob == null) {
             try {
-                final Configuration config = Configuration.getInstance();
-                final String containerName =
-                        config.getString(Key.AZURESTORAGESOURCE_CONTAINER_NAME);
+                final String containerName = getContainerName();
                 LOGGER.debug("Using container: {}", containerName);
 
                 try {
                     final CloudBlockBlob blob;
-                    final String objectKey = getObjectKey();
+                    final String objectKey = getBlobKey();
                     // Supports direct URI references: https://docs.microsoft.com/en-us/rest/api/storageservices/naming-and-referencing-containers--blobs--and-metadata#resource-uri-syntax
                     // Supports SAS Token Authentication: https://docs.microsoft.com/en-us/azure/storage/common/storage-dotnet-shared-access-signature-part-1#how-a-shared-access-signature-works
                     if (containerName.isEmpty()) { // use URI with sas token + container + path directly
                         final URI uri = URI.create(objectKey);
-                        LOGGER.debug("Using full URI: {}", uri);
-                        LOGGER.debug("Requesting {}", objectKey);
+                        LOGGER.debug("Requesting {} from {}", objectKey, uri);
                         blob = new CloudBlockBlob(uri);
                     } else { // use a fixed storage account with fixed container.
                         final CloudBlobClient client = getClientInstance();
-                        final CloudBlobContainer container;
-                        LOGGER.debug("Using account with fixed container: {}", containerName);
-                        container = client.getContainerReference(containerName);
-                        LOGGER.debug("Requesting {}", objectKey);
+                        final CloudBlobContainer container =
+                                client.getContainerReference(containerName);
+                        LOGGER.debug("Requesting {} from fixed container {}",
+                                objectKey, containerName);
                         blob = container.getBlockBlobReference(objectKey);
                     }
 
@@ -174,35 +178,43 @@ class AzureStorageSource extends AbstractSource implements StreamSource {
         return cachedBlob;
     }
 
-    private String getObjectKey() throws IOException {
+    private String getBlobKey() throws IOException {
         if (objectKey == null) {
             final LookupStrategy strategy =
                     LookupStrategy.from(Key.AZURESTORAGESOURCE_LOOKUP_STRATEGY);
             switch (strategy) {
                 case DELEGATE_SCRIPT:
                     try {
-                        objectKey = getObjectKeyWithDelegateStrategy();
+                        objectKey = getBlobKeyWithDelegateStrategy();
                     } catch (ScriptException e) {
                         LOGGER.error(e.getMessage(), e);
                         throw new IOException(e);
                     }
+                    break;
                 default:
                     objectKey = identifier.toString();
+                    break;
             }
         }
         return objectKey;
+    }
+
+    private String getContainerName() {
+        final Configuration config = Configuration.getInstance();
+        return config.getString(Key.AZURESTORAGESOURCE_CONTAINER_NAME);
     }
 
     /**
      * @throws NoSuchFileException if the delegate script does not exist.
      * @throws ScriptException     if the delegate method throws an exception.
      */
-    private String getObjectKeyWithDelegateStrategy()
+    private String getBlobKeyWithDelegateStrategy()
             throws NoSuchFileException, ScriptException {
         final String key = getDelegateProxy().getAzureStorageSourceBlobKey();
 
         if (key == null) {
-            throw new NoSuchFileException(GET_KEY_DELEGATE_METHOD +
+            throw new NoSuchFileException(
+                    DelegateMethod.AZURESTORAGESOURCE_BLOB_KEY +
                     " returned nil for " + identifier);
         }
         return key;
@@ -211,7 +223,7 @@ class AzureStorageSource extends AbstractSource implements StreamSource {
     @Override
     public Format getFormat() throws IOException {
         if (format == null) {
-            final String key = getObjectKey();
+            final String key = getBlobKey();
 
             // Try to infer a format based on the object key.
             LOGGER.debug("Inferring format from the object key for {}", key);
@@ -227,8 +239,8 @@ class AzureStorageSource extends AbstractSource implements StreamSource {
                 // Try to infer the format from the Content-Type header.
                 LOGGER.debug("Inferring format from the Content-Type header for {}",
                         key);
-                final CloudBlockBlob blob = getObject();
-                final String contentType = blob.getProperties().getContentType();
+                final CloudBlockBlob blob = getBlob();
+                final String contentType  = blob.getProperties().getContentType();
                 if (contentType != null && !contentType.isEmpty()) {
                     format = new MediaType(contentType).toFormat();
                 }
@@ -259,7 +271,7 @@ class AzureStorageSource extends AbstractSource implements StreamSource {
 
     @Override
     public StreamFactory newStreamFactory() throws IOException {
-        return new AzureStorageStreamFactory(getObject());
+        return new AzureStorageStreamFactory(getBlob());
     }
 
 }
