@@ -23,6 +23,7 @@ import kdu_jni.Kdu_dims;
 import kdu_jni.Kdu_global;
 import kdu_jni.Kdu_message;
 import kdu_jni.Kdu_message_formatter;
+import kdu_jni.Kdu_quality_limiter;
 import kdu_jni.Kdu_region_decompressor;
 import kdu_jni.Kdu_thread_env;
 import org.apache.commons.io.IOUtils;
@@ -192,6 +193,7 @@ public final class JPEG2000KakaduImageReader implements AutoCloseable {
     private Kdu_channel_mapping channels         = new Kdu_channel_mapping();
     private Kdu_region_decompressor decompressor = new Kdu_region_decompressor();
     private Kdu_thread_env threadEnv             = new Kdu_thread_env();
+    private Kdu_quality_limiter limiter          = new Kdu_quality_limiter(1 / 256f, false);
 
     /**
      * Set by {@link #setSource(Path)}. Used preferentially over {@link
@@ -222,6 +224,8 @@ public final class JPEG2000KakaduImageReader implements AutoCloseable {
 
     @Override
     public void close() {
+        limiter.Native_destroy();
+
         try {
             threadEnv.Destroy();
         } catch (KduException e) {
@@ -473,12 +477,17 @@ public final class JPEG2000KakaduImageReader implements AutoCloseable {
             final Kdu_coords regionPos  = regionDims.Access_pos();
             final Kdu_coords regionSize = regionDims.Access_size();
 
+            limiter.Set_display_resolution(600f, 600f);
+            codestream.Apply_input_restrictions(0, 0, 0, 0, null,
+                    accessMode, threadEnv, limiter);
+
             // The expand numerator & denominator here tell
             // kdu_region_decompressor.start() at what fractional scale to
             // render the result. The expansion is relative to the selected
             // resolution level, not the full image dimensions.
             final Kdu_coords expandNumerator = determineReferenceExpansion(
-                    referenceComponent, channels, codestream);
+                    referenceComponent, channels, codestream,
+                    threadEnv, limiter);
             final Dimension regionArea = new Dimension(
                     regionSize.Get_x(), regionSize.Get_y());
             if (scaleOp != null) {
@@ -620,7 +629,9 @@ public final class JPEG2000KakaduImageReader implements AutoCloseable {
     private static Kdu_coords determineReferenceExpansion(
             int reference_component,
             Kdu_channel_mapping channels,
-            Kdu_codestream codestream) throws KduException {
+            Kdu_codestream codestream,
+            Kdu_thread_env threadEnv,
+            Kdu_quality_limiter limiter) throws KduException {
         int c;
         Kdu_coords ref_subs = new Kdu_coords();
         Kdu_coords subs = new Kdu_coords();
@@ -651,7 +662,8 @@ public final class JPEG2000KakaduImageReader implements AutoCloseable {
                                 "whose sub-sampling factors are not integer " +
                                 "multiples of one another.");
                 codestream.Apply_input_restrictions(0, 1, 0, 0, null,
-                        Kdu_global.KDU_WANT_OUTPUT_COMPONENTS);
+                        Kdu_global.KDU_WANT_OUTPUT_COMPONENTS,
+                        threadEnv, limiter);
                 channels.Configure(codestream);
                 expansion = new Kdu_coords(1,1);
             }
