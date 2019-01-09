@@ -13,11 +13,12 @@ title: Change Log
   <li>Fixed inability to use <code>ScriptLookupStrategy</code> with AzureStorageSource. (Thanks to @marc-sensenich)</li>
   <li>Fixed a potential math error when cropping certain images with an embedded EXIF Orientation tag.</li>
   <li>Improved exception handling in S3Source and S3Cache.</li>
-  <li>Fixed inability of S3Cache and AzureStorageCache to recognize a <code>cache.server.derivative.ttl_seconds</code> key value greater than <code>Integer.MAX_VALUE</code>.</li>
+  <li>Fixed inability of S3Cache and AzureStorageCache to recognize a <code>cache.server.derivative.ttl_seconds</code> key value greater than 2<sup>31</sup>.</li>
   <li>Worked around an issue in OpenJPEG that could cause OpenJpegProcessor to fail when reading certain images from the source cache.</li>
   <li>Corrected the <code>gray</code> quality to <code>grey</code> in the IIIF Image API 1.x endpoint.</li>
   <li>Updated the Tika dependency to address the following security vulnerability: CVE-2018-17197.</li>
   <li>Updated the Jackson dependency to address several security vulnerabilities.</li>
+  <li>Updated the PDFBox dependency.</li> 
 </ul>
 
 <h2>4.0.2</h2>
