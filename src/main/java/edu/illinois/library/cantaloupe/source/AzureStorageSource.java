@@ -178,7 +178,7 @@ class AzureStorageSource extends AbstractSource implements StreamSource {
         return cachedBlob;
     }
 
-    private String getBlobKey() throws IOException {
+    String getBlobKey() throws IOException {
         if (objectKey == null) {
             final LookupStrategy strategy =
                     LookupStrategy.from(Key.AZURESTORAGESOURCE_LOOKUP_STRATEGY);

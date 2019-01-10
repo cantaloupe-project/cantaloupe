@@ -298,20 +298,21 @@ public class AzureStorageSourceTest extends AbstractSourceTest {
         instance.newStreamFactory();
     }
 
-    /* getObjectKey() */
+    /* getBlobKey() */
+
     @Test
-    public void testGetObjectKey() throws Exception {
-        assertNotNull(instance.getObjectKey());
+    public void testGetBlobKey() throws Exception {
+        assertNotNull(instance.getBlobKey());
     }
     @Test
-    public void testGetObjectKeyBasicLookupStrategy() throws Exception {
-        String result = instance.getObjectKey();
-        assertEquals(OBJECT_KEY_WITH_CONTENT_TYPE_AND_RECOGNIZED_EXTENSION, result);
+    public void testGetBlobKeyBasicLookupStrategy() throws Exception {
+        String result = instance.getBlobKey();
+        assertEquals(AzureStorageTestUtil.OBJECT_KEY_WITH_CONTENT_TYPE_AND_RECOGNIZED_EXTENSION, result);
     }
     @Test
     public void testGetObjectKeyDelegateLookupStrategy() throws Exception {
         useScriptLookupStrategy();
-        String result = instance.getObjectKey();
-        assertEquals(OBJECT_KEY_WITH_CONTENT_TYPE_BUT_NO_EXTENSION, result);
+        String result = instance.getBlobKey();
+        assertEquals(AzureStorageTestUtil.OBJECT_KEY_WITH_CONTENT_TYPE_BUT_NO_EXTENSION, result);
     }
 }
