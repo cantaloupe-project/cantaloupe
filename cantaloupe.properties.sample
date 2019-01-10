@@ -169,7 +169,7 @@ HttpSource.BasicLookupStrategy.auth.basic.secret =
 
 # Read data in chunks when it may be more efficient. (This also may end up
 # being less efficient, depending on many variables; see the user manual.)
-HttpSource.chunking.enabled = false
+HttpSource.chunking.enabled = true
 
 # Chunk size.
 HttpSource.chunking.chunk_size = 512K
@@ -179,7 +179,7 @@ HttpSource.chunking.chunk_size = 512K
 HttpSource.chunking.cache.enabled = true
 
 # Max per-request chunk cache size.
-HttpSource.chunking.cache.max_size = 10M
+HttpSource.chunking.cache.max_size = 5M
 
 #----------------------------------------
 # S3Source
@@ -214,7 +214,7 @@ S3Source.BasicLookupStrategy.path_suffix =
 
 # Read data in chunks when it may be more efficient. (This also may end up
 # being less efficient, depending on many variables; see the user manual.)
-S3Source.chunking.enabled = false
+S3Source.chunking.enabled = true
 
 # Chunk size.
 S3Source.chunking.chunk_size = 512K
@@ -224,7 +224,7 @@ S3Source.chunking.chunk_size = 512K
 S3Source.chunking.cache.enabled = true
 
 # Max per-request chunk cache size.
-S3Source.chunking.cache.max_size = 10M
+S3Source.chunking.cache.max_size = 5M
 
 #----------------------------------------
 # AzureStorageSource
@@ -249,7 +249,7 @@ AzureStorageSource.lookup_strategy = BasicLookupStrategy
 
 # Read data in chunks when it may be more efficient. (This also may end up
 # being less efficient, depending on many variables; see the user manual.)
-AzureStorageSource.chunking.enabled = false
+AzureStorageSource.chunking.enabled = true
 
 # Chunk size.
 AzureStorageSource.chunking.chunk_size = 512K
@@ -259,7 +259,7 @@ AzureStorageSource.chunking.chunk_size = 512K
 AzureStorageSource.chunking.cache.enabled = true
 
 # Max per-request chunk cache size.
-AzureStorageSource.chunking.cache.max_size = 10M
+AzureStorageSource.chunking.cache.max_size = 5M
 
 #----------------------------------------
 # JdbcSource
