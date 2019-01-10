@@ -423,8 +423,12 @@ class HttpSource extends AbstractSource implements StreamSource {
 
                 rangedGETResponseStatus = response.getStatus();
                 rangedGETResponseHeaders = response.getHeaders();
-                rangedGETResponseEntity = IOUtils.toByteArray(listener.getInputStream());
 
+                try(InputStream ris = listener.getInputStream()) {
+                    rangedGETResponseEntity = IOUtils.toByteArray(ris);
+                } catch (Exception e) {
+                    throw new IOException(e);
+                }
             } catch (ExecutionException | InterruptedException | TimeoutException e) {
                 throw new IOException(e);
             }
