@@ -416,7 +416,8 @@ class HttpSource extends AbstractSource implements StreamSource {
                 client.newRequest(info.getURI())
                     .timeout(getRequestTimeout(), TimeUnit.SECONDS)
                     .header("Range", "bytes=0-" + (FORMAT_INFERENCE_RANGE_LENGTH - 1))
-                    .method(HttpMethod.GET).send(listener);
+                    .method(HttpMethod.GET)
+                    .send(listener);
 
                 Response response = listener.get(getRequestTimeout(), TimeUnit.SECONDS);
 
