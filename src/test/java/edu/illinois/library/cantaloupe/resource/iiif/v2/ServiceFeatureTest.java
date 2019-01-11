@@ -9,13 +9,12 @@ public class ServiceFeatureTest extends BaseTest {
 
     @Test
     public void testValues() {
-        assertNotNull(ServiceFeature.valueOf("BASE_URI_REDIRECT"));
-        assertNotNull(ServiceFeature.valueOf("CANONICAL_LINK_HEADER"));
-        assertNotNull(ServiceFeature.valueOf("CORS"));
-        assertNotNull(ServiceFeature.valueOf("JSON_LD_MEDIA_TYPE"));
-        assertNotNull(ServiceFeature.valueOf("PROFILE_LINK_HEADER"));
-        assertNotNull(ServiceFeature.valueOf("SIZE_BY_CONFINED_WIDTH_HEIGHT"));
-        assertNotNull(ServiceFeature.valueOf("SIZE_BY_WHITELISTED"));
+        ServiceFeature f = ServiceFeature.BASE_URI_REDIRECT;
+        f = ServiceFeature.CANONICAL_LINK_HEADER;
+        f = ServiceFeature.CORS;
+        f = ServiceFeature.JSON_LD_MEDIA_TYPE;
+        f = ServiceFeature.PROFILE_LINK_HEADER;
+        f = ServiceFeature.SIZE_BY_WHITELISTED;
     }
 
     @Test
@@ -34,6 +33,7 @@ public class ServiceFeatureTest extends BaseTest {
         assertEquals("canonicalLinkHeader", ServiceFeature.CANONICAL_LINK_HEADER.toString());
         assertEquals("cors", ServiceFeature.CORS.toString());
         assertEquals("jsonldMediaType", ServiceFeature.JSON_LD_MEDIA_TYPE.toString());
+        assertEquals("profileLinkHeader", ServiceFeature.PROFILE_LINK_HEADER.toString());
         assertEquals("sizeByWhListed", ServiceFeature.SIZE_BY_WHITELISTED.toString());
     }
 
