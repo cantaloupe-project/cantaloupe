@@ -9,10 +9,11 @@ import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.MediaType;
 import edu.illinois.library.cantaloupe.script.DelegateMethod;
 import edu.illinois.library.cantaloupe.script.DelegateProxy;
+
+import org.apache.commons.io.IOUtils;
 import org.eclipse.jetty.client.HttpClient;
 import org.eclipse.jetty.client.HttpClientTransport;
 import org.eclipse.jetty.client.api.AuthenticationStore;
-import org.eclipse.jetty.client.api.ContentResponse;
 import org.eclipse.jetty.client.api.Response;
 import org.eclipse.jetty.client.http.HttpClientTransportOverHTTP;
 import org.eclipse.jetty.client.util.BasicAuthentication;
@@ -410,17 +411,25 @@ class HttpSource extends AbstractSource implements StreamSource {
             try {
                 final HttpClient client = getHTTPClient(info);
 
-                ContentResponse response = client.newRequest(info.getURI())
-                        .timeout(getRequestTimeout(), TimeUnit.SECONDS)
-                        .header("Range", "bytes=0-" + (FORMAT_INFERENCE_RANGE_LENGTH - 1))
-                        .method(HttpMethod.GET)
-                        .send();
+                InputStreamResponseListener listener = new InputStreamResponseListener();
+
+                client.newRequest(info.getURI())
+                    .timeout(getRequestTimeout(), TimeUnit.SECONDS)
+                    .header("Range", "bytes=0-" + (FORMAT_INFERENCE_RANGE_LENGTH - 1))
+                    .method(HttpMethod.GET)
+                    .send(listener);
+
+                Response response = listener.get(getRequestTimeout(), TimeUnit.SECONDS);
+
                 rangedGETResponseStatus = response.getStatus();
                 rangedGETResponseHeaders = response.getHeaders();
-                rangedGETResponseEntity = response.getContent();
-            } catch (ExecutionException e) {
-                throw new AccessDeniedException(info.getURI().toString());
-            } catch (InterruptedException | TimeoutException e) {
+
+                try(InputStream ris = listener.getInputStream()) {
+                    rangedGETResponseEntity = IOUtils.toByteArray(ris);
+                } catch (Exception e) {
+                    throw new IOException(e);
+                }
+            } catch (ExecutionException | InterruptedException | TimeoutException e) {
                 throw new IOException(e);
             }
         }
