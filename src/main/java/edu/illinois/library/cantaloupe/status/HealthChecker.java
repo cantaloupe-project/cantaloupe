@@ -80,8 +80,6 @@ public final class HealthChecker {
     private static final Logger LOGGER =
             LoggerFactory.getLogger(HealthChecker.class);
 
-    private static final double MAX_HEAP_USAGE = 0.8;
-
     private static final Set<SourceProcessorPair> SOURCE_PROCESSOR_PAIRS =
             ConcurrentHashMap.newKeySet();
 
@@ -108,23 +106,6 @@ public final class HealthChecker {
      */
     static Set<SourceProcessorPair> getSourceProcessorPairs() {
         return SOURCE_PROCESSOR_PAIRS;
-    }
-
-    /**
-     * Checks memory usage within the JVM.
-     */
-    private static void checkMemory(Health health) {
-        // TODO: would be better to look at average memory usage over the past n minutes
-        final ApplicationStatus status = new ApplicationStatus();
-        final double usedHeapPct = status.getVMUsedHeap() /
-                (double) status.getVMMaxHeap();
-        final String usedHeapStr = Math.round(usedHeapPct * 100) + "%";
-
-        if (usedHeapPct > MAX_HEAP_USAGE) {
-            health.setMinColor(Health.Color.YELLOW);
-            health.setMessage("Heap memory usage: " + usedHeapStr);
-        }
-        LOGGER.debug("Used heap: {}", usedHeapStr);
     }
 
     /**
@@ -242,7 +223,6 @@ public final class HealthChecker {
         final Health health = new Health();
 
         LOGGER.debug("Initiating a health check");
-        checkMemory(health);
         if (!Health.Color.RED.equals(health.getColor())) {
             checkProcessing(health);
         }

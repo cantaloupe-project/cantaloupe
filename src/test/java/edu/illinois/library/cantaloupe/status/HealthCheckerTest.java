@@ -78,11 +78,6 @@ public class HealthCheckerTest extends BaseTest {
     }
 
     @Test
-    public void testCheckMemoryUsage() {
-        // TODO: write this
-    }
-
-    @Test
     public void testCheckWithProcessorFailure() throws IOException {
         Identifier identifier = new Identifier("cats");
         Path file = TestUtil.getImage("jpg");
