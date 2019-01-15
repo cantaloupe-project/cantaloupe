@@ -93,7 +93,10 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * @see <a href="http://kakadusoftware.com/wp-content/uploads/2014/06/Usage_Examples-v7_7.txt">
  *     Usage Examples for the Demonstration Applications Supplied with Kakadu
  *     V7.7</a>
+ * @deprecated Since version 4.1. {@link KakaduNativeProcessor} is the
+ *             replacement and is superior in virtually every way.
  */
+@Deprecated
 class KakaduDemoProcessor extends AbstractProcessor implements FileProcessor {
 
     private static final Logger LOGGER =

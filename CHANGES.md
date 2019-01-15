@@ -51,6 +51,8 @@
 * Worked around a bug in the GraphicsMagick `gm` command that causes occasional
   "broken pipe" errors from GraphicsMagickProcessor when reading images from a
   FileSource.
+* KakaduDemoProcessor has been deprecated. Consider migrating to either
+  KakaduNativeProcessor or OpenJpegProcessor.
 * Removed normalization.
 
 ### Caches

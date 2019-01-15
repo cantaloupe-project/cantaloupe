@@ -34,6 +34,7 @@ title: Upgrading
   </li>
   <li>If you have implemented the <code>redirect()</code> or <code>authorized?()</code> delegate methods, migrate their logic into <code>authorize()</code> and remove them.</li>
   <li>If you were using the <code>endpoint.public.auth.*</code> keys, you will need to use the new <code>authorize()</code> delegate method instead.</li>
+  <li>Note that <code>KakaduDemoProcessor</code> has been deprecated and may be removed in a future version. Consider migrating now to either <code>KakaduNativeProcessor</code> or <code>OpenJpegProcessor</code>.</li>
 </ol>
 
 <h2>3.4.x &rarr; 4.0</h2>
