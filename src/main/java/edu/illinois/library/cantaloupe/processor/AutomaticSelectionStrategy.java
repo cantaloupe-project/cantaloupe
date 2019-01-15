@@ -3,6 +3,7 @@ package edu.illinois.library.cantaloupe.processor;
 import edu.illinois.library.cantaloupe.image.Format;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -11,28 +12,49 @@ import java.util.List;
  */
 class AutomaticSelectionStrategy implements SelectionStrategy {
 
+    private static final List<Class<? extends Processor>> JP2_CANDIDATES,
+            PDF_CANDIDATES, VIDEO_CANDIDATES, FALLBACK_CANDIDATES;
+
+    static {
+        // JP2
+        List<Class<? extends Processor>> list = new ArrayList<>();
+        list.add(KakaduNativeProcessor.class);
+        list.add(KakaduDemoProcessor.class);
+        list.add(OpenJpegProcessor.class);
+        list.add(ImageMagickProcessor.class);
+        list.add(GraphicsMagickProcessor.class);
+        JP2_CANDIDATES = Collections.unmodifiableList(list);
+
+        // PDF
+        list = new ArrayList<>();
+        list.add(PdfBoxProcessor.class);
+        list.add(GraphicsMagickProcessor.class);
+        list.add(ImageMagickProcessor.class);
+        PDF_CANDIDATES = Collections.unmodifiableList(list);
+
+        // Video
+        list = new ArrayList<>();
+        list.add(FfmpegProcessor.class);
+        VIDEO_CANDIDATES = Collections.unmodifiableList(list);
+
+        // Fallback
+        list = new ArrayList<>();
+        list.add(Java2dProcessor.class);
+        list.add(GraphicsMagickProcessor.class);
+        list.add(ImageMagickProcessor.class);
+        FALLBACK_CANDIDATES = Collections.unmodifiableList(list);
+    }
+
     @Override
     public List<Class<? extends Processor>> getPreferredProcessors(Format sourceFormat) {
-        final List<Class<? extends Processor>> candidates = new ArrayList<>();
-
-        if (sourceFormat.isVideo()) {
-            candidates.add(FfmpegProcessor.class);
+        if (Format.JP2.equals(sourceFormat)) {
+            return JP2_CANDIDATES;
         } else if (Format.PDF.equals(sourceFormat)) {
-            candidates.add(PdfBoxProcessor.class);
-            candidates.add(GraphicsMagickProcessor.class);
-            candidates.add(ImageMagickProcessor.class);
-        } else if (Format.JP2.equals(sourceFormat)) {
-            candidates.add(KakaduNativeProcessor.class);
-            candidates.add(KakaduDemoProcessor.class);
-            candidates.add(OpenJpegProcessor.class);
-            candidates.add(ImageMagickProcessor.class);
-            candidates.add(GraphicsMagickProcessor.class);
-        } else {
-            candidates.add(Java2dProcessor.class);
-            candidates.add(GraphicsMagickProcessor.class);
-            candidates.add(ImageMagickProcessor.class);
+            return PDF_CANDIDATES;
+        } else if (sourceFormat.isVideo()) {
+            return VIDEO_CANDIDATES;
         }
-        return candidates;
+        return FALLBACK_CANDIDATES;
     }
 
     @Override
