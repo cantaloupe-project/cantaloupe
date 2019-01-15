@@ -3,6 +3,7 @@ package edu.illinois.library.cantaloupe.image;
 import edu.illinois.library.cantaloupe.util.StringUtils;
 
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.Objects;
 
 /**
@@ -66,18 +67,17 @@ public class Metadata {
 
     @Override
     public int hashCode() {
-        // TODO: this is a bad implementation
-        int code = 0;
+        final int[] codes = new int[3];
         if (exif != null) {
-            code += exif.hashCode();
+            codes[0] = exif.hashCode();
         }
         if (iptc != null) {
-            code += iptc.hashCode();
+            codes[1] = iptc.hashCode();
         }
         if (xmp != null) {
-            code += xmp.hashCode();
+            codes[2] = xmp.hashCode();
         }
-        return Integer.hashCode(code);
+        return Arrays.hashCode(codes);
     }
 
     public void setEXIF(Object exif) {

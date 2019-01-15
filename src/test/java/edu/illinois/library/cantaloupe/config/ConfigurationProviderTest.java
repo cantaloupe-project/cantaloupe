@@ -344,14 +344,4 @@ public class ConfigurationProviderTest extends BaseTest {
         assertEquals("cats", config2.getProperty("key"));
     }
 
-    @Test
-    public void testStartWatching() {
-        // TODO: write this
-    }
-
-    @Test
-    public void testStopWatching() {
-        // TODO: write this
-    }
-
 }

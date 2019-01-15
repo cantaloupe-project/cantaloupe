@@ -59,6 +59,50 @@ public class MetadataTest {
     }
 
     @Test
+    public void testHashCodeWithEqualInstances() {
+        Metadata m1 = new Metadata();
+        m1.setEXIF("a");
+        m1.setIPTC("b");
+        m1.setXMP("<rdf:RDF>cats</rdf:RDF>");
+
+        Metadata m2 = new Metadata();
+        m2.setEXIF("a");
+        m2.setIPTC("b");
+        m2.setXMP("<rdf:RDF>cats</rdf:RDF>");
+
+        assertEquals(m1.hashCode(), m2.hashCode());
+    }
+
+    @Test
+    public void testHashCodeWithUnequalInstances() {
+        Metadata m1 = new Metadata();
+        m1.setEXIF("a");
+        m1.setIPTC("b");
+        m1.setXMP("<rdf:RDF>cats</rdf:RDF>");
+
+        // different EXIF
+        Metadata m2 = new Metadata();
+        m2.setEXIF("z");
+        m2.setIPTC("b");
+        m2.setXMP("<rdf:RDF>cats</rdf:RDF>");
+        assertNotEquals(m1.hashCode(), m2.hashCode());
+
+        // different IPTC
+        m2 = new Metadata();
+        m2.setEXIF("a");
+        m2.setIPTC("z");
+        m2.setXMP("<rdf:RDF>cats</rdf:RDF>");
+        assertNotEquals(m1.hashCode(), m2.hashCode());
+
+        // different XMP
+        m2 = new Metadata();
+        m2.setEXIF("a");
+        m2.setIPTC("b");
+        m2.setXMP("<rdf:RDF>dogs</rdf:RDF>");
+        assertNotEquals(m1.hashCode(), m2.hashCode());
+    }
+
+    @Test
     public void testSetXMPTrimsData() {
         instance.setXMP("<??><rdf:RDF></rdf:RDF> <??>");
         assertTrue(instance.getXMP().startsWith("<rdf:RDF"));

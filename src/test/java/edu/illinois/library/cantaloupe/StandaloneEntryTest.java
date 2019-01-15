@@ -50,12 +50,7 @@ public class StandaloneEntryTest extends BaseTest {
 
     private Path getCacheDir() throws IOException {
         if (cacheDir == null) {
-            try {
-                cacheDir = Files.createTempDirectory("test");
-            } catch (NoSuchFileException e) { // TODO: why does this happen?
-                cacheDir = Paths.get(System.getProperty("java.io.tmpdir"), "test");
-                Files.createDirectories(cacheDir);
-            }
+            cacheDir = Files.createTempDirectory("test");
         }
         return cacheDir;
     }
