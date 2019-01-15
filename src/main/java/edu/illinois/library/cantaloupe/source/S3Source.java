@@ -26,6 +26,8 @@ import java.nio.file.NoSuchFileException;
 import java.security.InvalidKeyException;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * <p>Maps an identifier to an <a href="https://aws.amazon.com/s3/">Amazon
@@ -94,6 +96,9 @@ class S3Source extends AbstractSource implements StreamSource {
      */
     private static final Range FORMAT_INFERENCE_RANGE = new Range(0, 32);
 
+    private static final Pattern URL_REGION_PATTERN =
+            Pattern.compile("[.-]([a-z]{2}-[a-z]+-[0-9]).amazonaws.com");
+
     private static MinioClient client;
 
     /**
@@ -106,6 +111,29 @@ class S3Source extends AbstractSource implements StreamSource {
      */
     private S3ObjectAttributes objectAttributes;
 
+    /**
+     * Extracts the AWS region from a URL or hostname like {@literal
+     * s3.us-east-2.amazonaws.com}.
+     *
+     * @param url S3 endpoint URL.
+     * @return    AWS region for the given URL, or {@literal null} if the URL
+     *            is not a recognized AWS URL.
+     * @see <a href="https://docs.aws.amazon.com/general/latest/gr/rande.html">AWS Regions and Endpoints</a>
+     */
+    static String awsRegionFromURL(String url) {
+        // special cases
+        if ("s3.amazonaws.com".equals(url) ||
+                "s3-external-1.amazonaws.com".equals(url)) {
+            return "us-east-1";
+        }
+
+        Matcher matcher = URL_REGION_PATTERN.matcher(url);
+        if (matcher.find()) {
+            return matcher.group(1);
+        }
+        return null;
+    }
+
     static synchronized MinioClient getClientInstance() {
         if (client == null) {
             final Configuration config = Configuration.getInstance();
@@ -116,11 +144,12 @@ class S3Source extends AbstractSource implements StreamSource {
             final AWSCredentials credentials =
                     credentialsProvider.getCredentials();
             try {
+                final String endpoint = config.getString(Key.S3SOURCE_ENDPOINT);
                 client = new MinioClient(
-                        config.getString(Key.S3SOURCE_ENDPOINT),
+                        endpoint,
                         credentials.getAWSAccessKeyId(),
                         credentials.getAWSSecretKey(),
-                        config.getString("S3Source.bucket.region")); // TODO: fix this
+                        awsRegionFromURL(endpoint));
             } catch (InvalidEndpointException | InvalidPortException e) {
                 throw new IllegalArgumentException(e);
             }
@@ -139,7 +168,7 @@ class S3Source extends AbstractSource implements StreamSource {
     }
 
     /**
-     * <p>Fetches a byte range of an object.</p>
+     * Fetches a byte range of an object.
      *
      * @param info  Object info.
      * @param range Byte range. May be {@literal null}.
