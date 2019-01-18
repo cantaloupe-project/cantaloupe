@@ -106,6 +106,11 @@ final class HTTPStreamFactory implements StreamFactory {
         return StreamFactory.super.newSeekableStream();
     }
 
+    @Override
+    public boolean isSeekingDirect() {
+        return isChunkingEnabled();
+    }
+
     private boolean isChunkingEnabled() {
         return Configuration.getInstance().getBoolean(
                 Key.HTTPSOURCE_CHUNKING_ENABLED, true);

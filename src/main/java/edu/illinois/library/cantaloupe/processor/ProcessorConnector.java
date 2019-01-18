@@ -21,7 +21,7 @@ import java.util.UUID;
 import java.util.concurrent.Future;
 
 /**
- * Establishes the best connection between a {@link Source} and a
+ * Establishes an optimal connection between a {@link Source} and a
  * {@link Processor}.
  */
 public final class ProcessorConnector {
@@ -56,53 +56,68 @@ public final class ProcessorConnector {
     }
 
     /**
-     * <p>Establishes the best (most efficient &amp; compatible) connection
-     * between a source and a processor according to the application
-     * configuration.</p>
+     * <p>Establishes the best (most efficient and compatible) connection
+     * between a source and a processor.</p>
      *
      * <ul>
-     *     <li>If the source is a {@link FileSource}, the processor will
-     *     read from either a {@link Path} or a {@link StreamFactory}.</li>
-     *     <li>If the source is <em>only</em> a {@link StreamSource} and
-     *     the processor is <em>only</em> a {@link StreamProcessor}:
+     *     <li>If the source is a {@link FileSource}, the processor will read
+     *     from either a {@link Path} or a {@link StreamFactory}.</li>
+     *     <li>If the source is <em>only</em> a {@link StreamSource}:
      *         <ul>
-     *             <li>If {@link Key#PROCESSOR_STREAM_RETRIEVAL_STRATEGY} is
-     *             set to {@link RetrievalStrategy#STREAM}, the processor will
-     *             read from the {@link StreamFactory} provided by the
-     *             source.</li>
-     *             <li>If it is set to {@link RetrievalStrategy#DOWNLOAD}, the
-     *             source image will be downloaded to a temp file, and the
-     *             processor will read that.</li>
-     *             <li>If it is set to {@link RetrievalStrategy#CACHE}, the
-     *             source image will be downloaded to the source cache, and the
-     *             processor will read the file returned by {@link
-     *             SourceCache#getSourceImageFile(Identifier)}. This will
-     *             block all threads that are calling with the same argument,
-     *             forcing them to wait for it to download.</li>
-     *         </ul>
-     *     </li>
-     *     <li>If the source is <em>only</em> a {@link StreamSource} and
-     *     the processor is <em>only</em> a {@link FileProcessor}:
-     *         <ul>
-     *             <li>If {@link Key#PROCESSOR_FALLBACK_RETRIEVAL_STRATEGY} is
-     *             set to {@link RetrievalStrategy#CACHE}:
+     *             <li>If the processor is a {@link StreamProcessor}:
      *                 <ul>
-     *                     <li>If the source cache is enabled, the source image
-     *                     will be downloaded to it, and the processor will
-     *                     read the file returned by {@link
+     *                     <li>If the source is configured to support seeking,
+     *                     and its seeking support is {@link
+     *                     StreamFactory#isSeekingDirect() direct}, the
+     *                     processor will read from a {@link
+     *                     StreamFactory#newSeekableStream() seekable stream
+     *                     provided by the source}.</li>
+     *                     <li>If {@link
+     *                     Key#PROCESSOR_STREAM_RETRIEVAL_STRATEGY} is set to
+     *                     {@link RetrievalStrategy#STREAM}, the processor will
+     *                     read from {@link StreamFactory one of the streams
+     *                     provided by the source}.</li>
+     *                     <li>If it is set to {@link
+     *                     RetrievalStrategy#DOWNLOAD}, the source image will
+     *                     be downloaded to a temp file, and the processor will
+     *                     read that.</li>
+     *                     <li>If it is set to {@link RetrievalStrategy#CACHE},
+     *                     the source image will be downloaded to the source
+     *                     cache, and the processor will read the file returned
+     *                     by {@link
      *                     SourceCache#getSourceImageFile(Identifier)}. This
      *                     will block all threads that are calling with the
      *                     same argument, forcing them to wait for it to
      *                     download.</li>
-     *                     <li>Otherwise, a {@link CacheDisabledException} will
-     *                     be thrown.</li>
      *                 </ul>
      *             </li>
-     *             <li>If it is set to {@link RetrievalStrategy#DOWNLOAD}, the
-     *             source image will be downloaded to a temp file, and the
-     *             processor will read that.</li>
-     *             <li>Otherwise, an {@link IncompatibleSourceException}
-     *             will be thrown.</li>
+     *             <li>If the processor is <em>only</em> a {@link
+     *             FileProcessor}:
+     *                 <ul>
+     *                     <li>If {@link
+     *                     Key#PROCESSOR_FALLBACK_RETRIEVAL_STRATEGY} is set to
+     *                     {@link RetrievalStrategy#CACHE}:
+     *                         <ul>
+     *                             <li>If the source cache is enabled, the
+     *                             source image will be downloaded to it, and
+     *                             the processor will read the file returned by
+     *                             {@link
+     *                             SourceCache#getSourceImageFile(Identifier)}.
+     *                             This will block all threads that are calling
+     *                             with the same argument, forcing them to wait
+     *                             for it to download.</li>
+     *                             <li>Otherwise, a {@link
+     *                             CacheDisabledException} will be thrown.</li>
+     *                         </ul>
+     *                     </li>
+     *                     <li>If it is set to {@link
+     *                     RetrievalStrategy#DOWNLOAD}, the source image will
+     *                     be downloaded to a temp file, and the processor will
+     *                     read that.</li>
+     *                     <li>Otherwise, an {@link IncompatibleSourceException}
+     *                     will be thrown.</li>
+     *                 </ul>
+     *             </li>
      *         </ul>
      *     </li>
      * </ul>
@@ -124,7 +139,7 @@ public final class ProcessorConnector {
                                 Format sourceFormat) throws IOException,
             CacheDisabledException, IncompatibleSourceException,
             InterruptedException {
-        final String sourceName = source.getClass().getSimpleName();
+        final String sourceName    = source.getClass().getSimpleName();
         final String processorName = processor.getClass().getSimpleName();
 
         if (source instanceof FileSource) {
@@ -196,45 +211,44 @@ public final class ProcessorConnector {
                         throw new IncompatibleSourceException(source, processor);
                 }
             } else {
-                switch (getStreamProcessorRetrievalStrategy()) {
-                    case DOWNLOAD:
-                        LOGGER.debug("Using {} with {} as a {}",
-                                RetrievalStrategy.DOWNLOAD,
-                                processorName,
-                                StreamProcessor.class.getSimpleName());
-
-                        TempFileDownload dl = new TempFileDownload(
+                final RetrievalStrategy strategy =
+                        getStreamProcessorRetrievalStrategy();
+                if (RetrievalStrategy.STREAM.equals(strategy) ||
+                        streamFactory.isSeekingDirect()) {
+                    LOGGER.debug("{} -> {} connection between {} and {}",
+                            StreamSource.class.getSimpleName(),
+                            StreamProcessor.class.getSimpleName(),
+                            sourceName,
+                            processorName);
+                    ((StreamProcessor) processor).setStreamFactory(streamFactory);
+                } else if (RetrievalStrategy.DOWNLOAD.equals(strategy)) {
+                    LOGGER.debug("Using {} with {} as a {}",
+                            RetrievalStrategy.DOWNLOAD,
+                            processorName,
+                            StreamProcessor.class.getSimpleName());
+                    TempFileDownload dl = new TempFileDownload(
+                            streamFactory,
+                            getTempFile(sourceFormat));
+                    dl.downloadSync();
+                    StreamFactory tempStreamFactory =
+                            new PathStreamFactory(dl.get());
+                    ((StreamProcessor) processor).setStreamFactory(tempStreamFactory);
+                    return dl;
+                } else if (RetrievalStrategy.CACHE.equals(strategy)) {
+                    LOGGER.debug("Using {} with {} as a {}",
+                            RetrievalStrategy.CACHE,
+                            processorName,
+                            StreamProcessor.class.getSimpleName());
+                    SourceCache sourceCache = CacheFactory.getSourceCache();
+                    if (sourceCache != null) {
+                        Path file = downloadToSourceCache(
                                 streamFactory,
-                                getTempFile(sourceFormat));
-                        dl.downloadSync();
-                        StreamFactory tempStreamFactory =
-                                new PathStreamFactory(dl.get());
-                        ((StreamProcessor) processor).setStreamFactory(tempStreamFactory);
-                        return dl;
-                    case CACHE:
-                        LOGGER.debug("Using {} with {} as a {}",
-                                RetrievalStrategy.CACHE,
-                                processorName,
-                                StreamProcessor.class.getSimpleName());
-
-                        SourceCache sourceCache = CacheFactory.getSourceCache();
-                        if (sourceCache != null) {
-                            Path file = downloadToSourceCache(
-                                    streamFactory, sourceCache, identifier);
-                            connect(sourceCache, file, processor);
-                        } else {
-                            throw new CacheDisabledException("Source cache is disabled.");
-                        }
-                        break;
-                    default: // stream
-                        // All FileSources are also StreamSources.
-                        LOGGER.debug("{} -> {} connection between {} and {}",
-                                StreamSource.class.getSimpleName(),
-                                StreamProcessor.class.getSimpleName(),
-                                sourceName,
-                                processorName);
-                        ((StreamProcessor) processor).setStreamFactory(streamFactory);
-                        break;
+                                sourceCache,
+                                identifier);
+                        connect(sourceCache, file, processor);
+                    } else {
+                        throw new CacheDisabledException("Source cache is disabled.");
+                    }
                 }
             }
         }

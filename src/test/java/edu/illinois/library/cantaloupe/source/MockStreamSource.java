@@ -1,6 +1,7 @@
 package edu.illinois.library.cantaloupe.source;
 
 import edu.illinois.library.cantaloupe.image.Format;
+import org.apache.commons.io.input.NullInputStream;
 
 public class MockStreamSource extends AbstractSource
         implements StreamSource {
@@ -16,7 +17,7 @@ public class MockStreamSource extends AbstractSource
 
     @Override
     public StreamFactory newStreamFactory() {
-        return null;
+        return () -> new NullInputStream(8);
     }
 
 }

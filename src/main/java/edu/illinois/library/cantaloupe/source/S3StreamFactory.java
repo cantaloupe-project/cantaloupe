@@ -121,6 +121,11 @@ class S3StreamFactory implements StreamFactory {
         }
     }
 
+    @Override
+    public boolean isSeekingDirect() {
+        return isChunkingEnabled();
+    }
+
     private boolean isChunkingEnabled() {
         return Configuration.getInstance().getBoolean(
                 Key.S3SOURCE_CHUNKING_ENABLED, true);

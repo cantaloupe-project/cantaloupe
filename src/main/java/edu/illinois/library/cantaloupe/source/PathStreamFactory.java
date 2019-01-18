@@ -28,4 +28,9 @@ public class PathStreamFactory implements StreamFactory {
         return new FileImageInputStream(path.toFile());
     }
 
+    @Override
+    public boolean isSeekingDirect() {
+        return true;
+    }
+
 }

@@ -22,6 +22,11 @@ public class PathStreamFactoryTest extends BaseTest {
     }
 
     @Test
+    public void testIsSeekingDirect() {
+        assertTrue(instance.isSeekingDirect());
+    }
+
+    @Test
     public void testNewInputStream() throws Exception {
         try (InputStream is = instance.newInputStream()) {
             assertEquals(5439, is.available());

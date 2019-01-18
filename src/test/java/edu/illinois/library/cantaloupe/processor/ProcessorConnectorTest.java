@@ -301,12 +301,12 @@ public class ProcessorConnectorTest extends BaseTest {
                     server.getHTTPURI() + "/");
 
             final Source source = new SourceFactory().newSource(IDENTIFIER, null);
-            final Processor processor = new MockStreamProcessor();
+            final StreamProcessor processor = new MockStreamProcessor();
 
             assertNull(instance.connect(source, processor, IDENTIFIER, Format.JPG));
 
             StreamFactory ss1 = ((StreamSource) source).newStreamFactory();
-            StreamFactory ss2 = ((StreamProcessor) processor).getStreamFactory();
+            StreamFactory ss2 = processor.getStreamFactory();
 
             assertEqualSources(ss1, ss2);
         } finally {
@@ -323,11 +323,8 @@ public class ProcessorConnectorTest extends BaseTest {
             server.start();
 
             Configuration config = Configuration.getInstance();
-            config.setProperty(Key.SOURCE_STATIC, "HttpSource");
-            config.setProperty(Key.HTTPSOURCE_LOOKUP_STRATEGY,
-                    "BasicLookupStrategy");
-            config.setProperty(Key.HTTPSOURCE_URL_PREFIX,
-                    server.getHTTPURI() + "/");
+            config.setProperty(Key.SOURCE_STATIC,
+                    MockStreamSource.class.getName());
             config.setProperty(Key.PROCESSOR_STREAM_RETRIEVAL_STRATEGY,
                     RetrievalStrategy.DOWNLOAD.getConfigValue());
             config.setProperty(Key.FILESYSTEMCACHE_PATHNAME,
@@ -354,11 +351,8 @@ public class ProcessorConnectorTest extends BaseTest {
             server.start();
 
             Configuration config = Configuration.getInstance();
-            config.setProperty(Key.SOURCE_STATIC, "HttpSource");
-            config.setProperty(Key.HTTPSOURCE_LOOKUP_STRATEGY,
-                    "BasicLookupStrategy");
-            config.setProperty(Key.HTTPSOURCE_URL_PREFIX,
-                    server.getHTTPURI() + "/");
+            config.setProperty(Key.SOURCE_STATIC,
+                    MockStreamSource.class.getName());
             config.setProperty(Key.SOURCE_CACHE, "FilesystemCache");
             config.setProperty(Key.PROCESSOR_STREAM_RETRIEVAL_STRATEGY,
                     RetrievalStrategy.CACHE.getConfigValue());
@@ -366,13 +360,49 @@ public class ProcessorConnectorTest extends BaseTest {
                     cacheFolder.toString());
 
             final Source source = new SourceFactory().newSource(IDENTIFIER, null);
-            final Processor processor = new MockStreamProcessor();
+            final StreamProcessor processor = new MockStreamProcessor();
 
             assertNull(instance.connect(source, processor, IDENTIFIER, Format.JPG));
 
             assertEqualSources(
                     CacheFactory.getSourceCache().getSourceImageFile(IDENTIFIER),
-                    ((StreamProcessor) processor).getStreamFactory());
+                    processor.getStreamFactory());
+        } finally {
+            server.stop();
+            recursiveDeleteOnExit(cacheFolder);
+        }
+    }
+
+    @Test
+    public void testConnectWithStreamSourceAndStreamProcessorWithCacheStrategyAndSourceCacheAvailableButSourceSupportingDirectSeeking()
+            throws Exception {
+        final WebServer server = new WebServer();
+        final Path cacheFolder = Files.createTempDirectory("test");
+        try {
+            server.start();
+
+            Configuration config = Configuration.getInstance();
+            config.setProperty(Key.SOURCE_STATIC, "HttpSource");
+            config.setProperty(Key.HTTPSOURCE_LOOKUP_STRATEGY,
+                    "BasicLookupStrategy");
+            config.setProperty(Key.HTTPSOURCE_URL_PREFIX,
+                    server.getHTTPURI() + "/");
+            config.setProperty(Key.HTTPSOURCE_CHUNKING_ENABLED, true);
+            config.setProperty(Key.SOURCE_CACHE, "FilesystemCache");
+            config.setProperty(Key.PROCESSOR_STREAM_RETRIEVAL_STRATEGY,
+                    RetrievalStrategy.CACHE.getConfigValue());
+            config.setProperty(Key.FILESYSTEMCACHE_PATHNAME,
+                    cacheFolder.toString());
+
+            final Source source = new SourceFactory().newSource(IDENTIFIER, null);
+            final StreamProcessor processor = new MockStreamProcessor();
+
+            assertNull(instance.connect(source, processor, IDENTIFIER, Format.JPG));
+
+            StreamFactory ss1 = ((StreamSource) source).newStreamFactory();
+            StreamFactory ss2 = processor.getStreamFactory();
+
+            assertEqualSources(ss1, ss2);
         } finally {
             server.stop();
             recursiveDeleteOnExit(cacheFolder);
@@ -405,13 +435,13 @@ public class ProcessorConnectorTest extends BaseTest {
                     RetrievalStrategy.CACHE.getConfigValue());
 
             final Source source = new SourceFactory().newSource(IDENTIFIER, null);
-            final Processor processor = new MockStreamProcessor();
+            final StreamProcessor processor = new MockStreamProcessor();
 
             assertNull(instance.connect(source, processor, IDENTIFIER, Format.JPG));
 
             assertEqualSources(
                     CacheFactory.getSourceCache().getSourceImageFile(IDENTIFIER),
-                    ((StreamProcessor) processor).getStreamFactory());
+                    processor.getStreamFactory());
         } finally {
             server.stop();
         }
@@ -432,24 +462,20 @@ public class ProcessorConnectorTest extends BaseTest {
             server.start();
 
             Configuration config = Configuration.getInstance();
-            config.setProperty(Key.SOURCE_STATIC, "HttpSource");
-            config.setProperty(Key.HTTPSOURCE_LOOKUP_STRATEGY,
-                    "BasicLookupStrategy");
-            config.setProperty(Key.HTTPSOURCE_URL_PREFIX,
-                    server.getHTTPURI() + "/");
+            config.setProperty(Key.SOURCE_STATIC,
+                    MockStreamSource.class.getName());
             config.setProperty(Key.SOURCE_CACHE,
                     MockBrokenSourceInputStreamCache.class.getSimpleName());
             config.setProperty(Key.PROCESSOR_STREAM_RETRIEVAL_STRATEGY,
                     RetrievalStrategy.CACHE.getConfigValue());
 
             final Source source = new SourceFactory().newSource(IDENTIFIER, null);
-            final Processor processor = new MockStreamProcessor();
+            final StreamProcessor processor = new MockStreamProcessor();
 
             assertNull(instance.connect(source, processor, IDENTIFIER, Format.JPG));
 
             Path cacheFile = CacheFactory.getSourceCache().getSourceImageFile(IDENTIFIER);
-            assertEqualSources(cacheFile,
-                    ((StreamProcessor) processor).getStreamFactory());
+            assertEqualSources(cacheFile, processor.getStreamFactory());
         } finally {
             server.stop();
         }
@@ -470,24 +496,21 @@ public class ProcessorConnectorTest extends BaseTest {
             server.start();
 
             Configuration config = Configuration.getInstance();
-            config.setProperty(Key.SOURCE_STATIC, "HttpSource");
-            config.setProperty(Key.HTTPSOURCE_LOOKUP_STRATEGY,
-                    "BasicLookupStrategy");
-            config.setProperty(Key.HTTPSOURCE_URL_PREFIX,
-                    server.getHTTPURI() + "/");
+            config.setProperty(Key.SOURCE_STATIC,
+                    MockStreamSource.class.getName());
             config.setProperty(Key.SOURCE_CACHE,
                     MockUnreliableSourceImageFileCache.class.getSimpleName());
             config.setProperty(Key.PROCESSOR_STREAM_RETRIEVAL_STRATEGY,
                     RetrievalStrategy.CACHE.getConfigValue());
 
             final Source source = new SourceFactory().newSource(IDENTIFIER, null);
-            final Processor processor = new MockStreamProcessor();
+            final StreamProcessor processor = new MockStreamProcessor();
 
             assertNull(instance.connect(source, processor, IDENTIFIER, Format.JPG));
 
             assertEqualSources(
                     CacheFactory.getSourceCache().getSourceImageFile(IDENTIFIER),
-                    ((StreamProcessor) processor).getStreamFactory());
+                    processor.getStreamFactory());
         } finally {
             server.stop();
         }
@@ -519,13 +542,13 @@ public class ProcessorConnectorTest extends BaseTest {
                     RetrievalStrategy.CACHE.getConfigValue());
 
             final Source source = new SourceFactory().newSource(IDENTIFIER, null);
-            final Processor processor = new MockStreamProcessor();
+            final StreamProcessor processor = new MockStreamProcessor();
 
             assertNull(instance.connect(source, processor, IDENTIFIER, Format.JPG));
 
             assertEqualSources(
                     CacheFactory.getSourceCache().getSourceImageFile(IDENTIFIER),
-                    ((StreamProcessor) processor).getStreamFactory());
+                    processor.getStreamFactory());
         } finally {
             server.stop();
         }
@@ -540,11 +563,8 @@ public class ProcessorConnectorTest extends BaseTest {
             server.start();
 
             Configuration config = Configuration.getInstance();
-            config.setProperty(Key.SOURCE_STATIC, "HttpSource");
-            config.setProperty(Key.HTTPSOURCE_LOOKUP_STRATEGY,
-                    "BasicLookupStrategy");
-            config.setProperty(Key.HTTPSOURCE_URL_PREFIX,
-                    server.getHTTPURI() + "/");
+            config.setProperty(Key.SOURCE_STATIC,
+                    MockStreamSource.class.getName());
             config.setProperty(Key.PROCESSOR_STREAM_RETRIEVAL_STRATEGY,
                     RetrievalStrategy.CACHE.getConfigValue());
             config.setProperty(Key.FILESYSTEMCACHE_PATHNAME,

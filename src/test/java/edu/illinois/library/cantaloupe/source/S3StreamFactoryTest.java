@@ -55,6 +55,15 @@ public class S3StreamFactoryTest extends BaseTest {
     }
 
     @Test
+    public void testIsSeekingDirect() {
+        final Configuration config = Configuration.getInstance();
+        config.setProperty(Key.S3SOURCE_CHUNKING_ENABLED, false);
+        assertFalse(instance.isSeekingDirect());
+        config.setProperty(Key.S3SOURCE_CHUNKING_ENABLED, true);
+        assertTrue(instance.isSeekingDirect());
+    }
+
+    @Test
     public void testNewInputStream() throws Exception {
         int length = 0;
         try (InputStream is = instance.newInputStream()) {

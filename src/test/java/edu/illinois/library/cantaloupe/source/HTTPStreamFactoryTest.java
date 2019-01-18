@@ -62,6 +62,16 @@ public class HTTPStreamFactoryTest extends BaseTest {
     }
 
     @Test
+    public void testIsSeekingDirect() {
+        final HTTPStreamFactory instance = newInstance();
+        final Configuration config = Configuration.getInstance();
+        config.setProperty(Key.HTTPSOURCE_CHUNKING_ENABLED, false);
+        assertFalse(instance.isSeekingDirect());
+        config.setProperty(Key.HTTPSOURCE_CHUNKING_ENABLED, true);
+        assertTrue(instance.isSeekingDirect());
+    }
+
+    @Test
     public void testNewInputStreamSendsCustomHeaders() throws Exception {
         server.setHandler(new DefaultHandler() {
             @Override

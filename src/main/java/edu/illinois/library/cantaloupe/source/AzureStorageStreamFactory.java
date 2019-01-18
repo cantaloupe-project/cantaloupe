@@ -75,6 +75,11 @@ class AzureStorageStreamFactory implements StreamFactory {
         }
     }
 
+    @Override
+    public boolean isSeekingDirect() {
+        return isChunkingEnabled();
+    }
+
     private boolean isChunkingEnabled() {
         return Configuration.getInstance().getBoolean(
                 Key.AZURESTORAGESOURCE_CHUNKING_ENABLED, true);
