@@ -16,8 +16,8 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
         property = "verb")
 @JsonSubTypes({
         @JsonSubTypes.Type(
-                name = "DoNothing",
-                value = DoNothingCommand.class),
+                name = "Sleep",
+                value = SleepCommand.class),
         @JsonSubTypes.Type(
                 name = "PurgeCache",
                 value = PurgeCacheCommand.class),

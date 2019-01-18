@@ -5,7 +5,7 @@ import java.util.concurrent.Callable;
 /**
  * Sleeps for a specified duration.
  */
-final class DoNothingCommand<T> extends Command implements Callable<T> {
+final class SleepCommand<T> extends Command implements Callable<T> {
 
     private int duration;
 
@@ -21,7 +21,7 @@ final class DoNothingCommand<T> extends Command implements Callable<T> {
 
     @Override
     String getVerb() {
-        return "DoNothing";
+        return "Sleep";
     }
 
     public void setDuration(int duration) {
