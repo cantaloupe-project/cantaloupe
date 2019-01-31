@@ -37,6 +37,11 @@ http://maven.apache.org/plugins/maven-assembly-plugin/assembly.html
             <lineEnding>crlf</lineEnding>
         </file>
         <file>
+            <source>CHANGES.md</source>
+            <fileMode>0644</fileMode>
+            <lineEnding>crlf</lineEnding>
+        </file>
+        <file>
             <source>LICENSE.txt</source>
             <fileMode>0644</fileMode>
             <lineEnding>crlf</lineEnding>
