@@ -45,6 +45,155 @@ public class ReferenceTest {
     }
 
     @Test
+    public void testApplyProxyHeadersWithNoProxyHeaders() {
+        final String expected = instance.toString();
+        instance.applyProxyHeaders(new Headers());
+        assertEquals(expected, instance.toString());
+    }
+
+    @Test
+    public void testApplyProxyHeadersWithHTTPSchemeAndXForwardedProtoHTTP() {
+        Headers headers = new Headers();
+        headers.set("X-Forwarded-Proto", "HTTP");
+        Reference ref = new Reference("http://bogus/cats");
+        ref.applyProxyHeaders(headers);
+        assertEquals("http://bogus/cats", ref.toString());
+    }
+
+    @Test
+    public void testApplyProxyHeadersWithHTTPSchemeAndXForwardedProtoHTTPS() {
+        Headers headers = new Headers();
+        headers.set("X-Forwarded-Proto", "HTTPS");
+        Reference ref = new Reference("http://bogus/cats");
+        ref.applyProxyHeaders(headers);
+        assertEquals("https://bogus/cats", ref.toString());
+    }
+
+    @Test
+    public void testApplyProxyHeadersWithHTTPSSchemeAndXForwardedProtoHTTP() {
+        Headers headers = new Headers();
+        headers.set("X-Forwarded-Proto", "HTTP");
+        Reference ref = new Reference("https://bogus/cats");
+        ref.applyProxyHeaders(headers);
+        assertEquals("http://bogus/cats", ref.toString());
+    }
+
+    @Test
+    public void testApplyProxyHeadersWithHTTPSSchemeAndXForwardedProtoHTTPS() {
+        Headers headers = new Headers();
+        headers.set("X-Forwarded-Proto", "HTTPS");
+        Reference ref = new Reference("https://bogus/cats");
+        ref.applyProxyHeaders(headers);
+        assertEquals("https://bogus/cats", ref.toString());
+    }
+
+    @Test
+    public void testApplyProxyHeadersWithXForwardedHost() {
+        Headers headers = new Headers();
+        headers.set("X-Forwarded-Host", "example.org");
+        Reference ref = new Reference("http://bogus/cats");
+        ref.applyProxyHeaders(headers);
+        assertEquals("http://example.org/cats", ref.toString());
+    }
+
+    @Test
+    public void testApplyProxyHeadersWithHTTPSchemeAndXForwardedHostContainingDefaultPort() {
+        Headers headers = new Headers();
+        headers.set("X-Forwarded-Host", "example.org:80");
+        Reference ref = new Reference("http://bogus/cats");
+        ref.applyProxyHeaders(headers);
+        assertEquals("http://example.org/cats", ref.toString());
+    }
+
+    @Test
+    public void testApplyProxyHeadersWithHTTPSSchemeAndXForwardedHostContainingDefaultPort() {
+        Headers headers = new Headers();
+        headers.set("X-Forwarded-Host", "example.org:443");
+        Reference ref = new Reference("https://bogus/cats");
+        ref.applyProxyHeaders(headers);
+        assertEquals("https://example.org/cats", ref.toString());
+    }
+
+    @Test
+    public void testApplyProxyHeadersWithXForwardedHostContainingCustomPort() {
+        Headers headers = new Headers();
+        headers.set("X-Forwarded-Host", "example.org:8080");
+        Reference ref = new Reference("http://bogus/cats");
+        ref.applyProxyHeaders(headers);
+        assertEquals("http://example.org:8080/cats", ref.toString());
+    }
+
+    @Test
+    public void testApplyProxyHeadersWithXForwardedHostContainingCustomPortAndXForwardedPort() {
+        Headers headers = new Headers();
+        headers.set("X-Forwarded-Host", "example.org:8080");
+        headers.set("X-Forwarded-Port", "8283");
+        Reference ref = new Reference("http://bogus/cats");
+        ref.applyProxyHeaders(headers);
+        assertEquals("http://example.org:8283/cats", ref.toString());
+    }
+
+    @Test
+    public void testApplyProxyHeadersWithXForwardedPortMatchingDefaultHTTPPort() {
+        Headers headers = new Headers();
+        headers.set("X-Forwarded-Port", "80");
+        Reference ref = new Reference("http://bogus/cats");
+        ref.applyProxyHeaders(headers);
+        assertEquals("http://bogus/cats", ref.toString());
+    }
+
+    @Test
+    public void testApplyProxyHeadersWithXForwardedPortMatchingDefaultHTTPSPort() {
+        Headers headers = new Headers();
+        headers.set("X-Forwarded-Port", "443");
+        Reference ref = new Reference("https://bogus/cats");
+        ref.applyProxyHeaders(headers);
+        assertEquals("https://bogus/cats", ref.toString());
+    }
+
+    @Test
+    public void testApplyProxyHeadersWithXForwardedPort() {
+        Headers headers = new Headers();
+        headers.set("X-Forwarded-Port", "569");
+        Reference ref = new Reference("http://bogus/cats");
+        ref.applyProxyHeaders(headers);
+        assertEquals("http://bogus:569/cats", ref.toString());
+    }
+
+    @Test
+    public void testApplyProxyHeadersWithXForwardedPath1() {
+        Headers headers = new Headers();
+        headers.set("X-Forwarded-Path", "/");
+        Reference ref = new Reference("http://bogus/cats");
+        ref.applyProxyHeaders(headers);
+        assertEquals("http://bogus/cats", ref.toString());
+    }
+
+    @Test
+    public void testApplyProxyHeadersWithXForwardedPath2() {
+        Headers headers = new Headers();
+        headers.set("X-Forwarded-Path", "/dogs");
+        Reference ref = new Reference("http://bogus/cats");
+        ref.applyProxyHeaders(headers);
+        assertEquals("http://bogus/dogs/cats", ref.toString());
+    }
+
+    /**
+     * Tests behavior when using chained {@literal X-Forwarded} headers.
+     */
+    @Test
+    public void testApplyProxyHeadersUsingChainedXForwardedHeaders() {
+        Headers headers = new Headers();
+        headers.set("X-Forwarded-Proto", "http,https");
+        headers.set("X-Forwarded-Host", "example.org,example.mil");
+        headers.set("X-Forwarded-Port", "80,8080");
+        headers.set("X-Forwarded-Path", "/foxes,/dogs");
+        Reference ref = new Reference("http://bogus/cats");
+        ref.applyProxyHeaders(headers);
+        assertEquals("http://example.org/foxes/cats", ref.toString());
+    }
+
+    @Test
     public void testEqualsWithEqualObjects() {
         // equal strings
         Reference ref1 = new Reference("https://user:secret@example.org:81/cats/dogs?cats=dogs&foxes=hens#frag");

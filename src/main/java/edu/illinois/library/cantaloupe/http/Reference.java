@@ -1,14 +1,16 @@
 package edu.illinois.library.cantaloupe.http;
 
+import edu.illinois.library.cantaloupe.util.StringUtils;
+
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URLDecoder;
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
- * <p>Mutable URI class modeled after the one in Restlet.</p>
+ * <p>Mutable URI class inspired by the one in Restlet.</p>
  *
  * <p>Unlike {@link java.net.URL} and {@link java.net.URI}, this class does not
  * throw {@link java.net.MalformedURLException}s or {@link URISyntaxException}s,
@@ -22,7 +24,7 @@ public final class Reference {
 
     public static String decode(String encoded) {
         try {
-            return java.net.URLDecoder.decode(encoded, "UTF-8");
+            return URLDecoder.decode(encoded, "UTF-8");
         } catch (UnsupportedEncodingException e) {
             throw new RuntimeException(e);
         }
@@ -45,7 +47,7 @@ public final class Reference {
     }
 
     /**
-     * @throws IllegalArgumentException
+     * @throws IllegalArgumentException if the argument is not a valid URI.
      */
     public Reference(String reference) {
         try {
@@ -86,13 +88,64 @@ public final class Reference {
         setFragment(uri.getFragment());
     }
 
+    /**
+     * Mutates the instance according to any reverse proxy request headers
+     * present in the argument.
+     *
+     * @param headers Request headers.
+     */
+    public void applyProxyHeaders(Headers headers) {
+        // N.B.: Header values may be comma-separated lists indicating a chain
+        // of reverse proxies in order from furthest to closest.
+
+        // Apply the protocol.
+        final String protoHeader = headers.getFirstValue("X-Forwarded-Proto", "");
+        if (!protoHeader.isEmpty()) {
+            String proto = protoHeader.split(",")[0].trim();
+            setScheme(proto);
+        }
+
+        // Apply the host.
+        final String hostHeader = headers.getFirstValue("X-Forwarded-Host", "");
+        if (!hostHeader.isEmpty()) {
+            String host = hostHeader.split(",")[0];
+            host = host.substring(host.indexOf("://") + 1).trim();
+
+            // The host may include a colon-separated port number.
+            String[] parts = host.split(":");
+            setHost(parts[0]);
+            if (parts.length > 1) {
+                setPort(Integer.parseInt(parts[1]));
+            }
+        }
+
+        // Apply the port.
+        // The port is obtained from the following in order of preference:
+        // 1. The X-Forwarded-Port header
+        // 2. The port in the X-Forwarded-Host header
+        // 3. The default port of the protocol in the X-Forwarded-Proto header
+        final String portHeader = headers.getFirstValue("X-Forwarded-Port", "");
+        if (!portHeader.isEmpty()) {
+            String portStr = portHeader.split(",")[0].trim();
+            setPort(Integer.parseInt(portStr));
+        } else if (!protoHeader.isEmpty()) {
+            setPort("https".equalsIgnoreCase(protoHeader) ? 443 : 80);
+        }
+
+        // Apply the path.
+        final String pathHeader = headers.getFirstValue("X-Forwarded-Path", "");
+        if (!pathHeader.isEmpty()) {
+            String path = pathHeader.split(",")[0].trim();
+            setPath(StringUtils.stripEnd(path, "/") + getPath());
+        }
+    }
+
     @Override
     public boolean equals(Object obj) {
         if (obj == this) {
             return true;
         } else if (obj instanceof Reference) {
-            Reference other = (Reference) obj;
-            return other.toString().equals(toString());
+            return obj.toString().equals(toString());
         }
         return super.equals(obj);
     }
@@ -120,7 +173,7 @@ public final class Reference {
     /**
      * @return String after the period in the last path component, or {@literal
      *         null} if the last path component does not contain a period or
-     *         the period is at index 0 in the component.
+     *         the period is at the first index in the component.
      */
     public String getPathExtension() {
         List<String> components = getPathComponents();
@@ -150,6 +203,9 @@ public final class Reference {
         return getPath();
     }
 
+    /**
+     * @return Lowercase scheme.
+     */
     public String getScheme() {
         return scheme;
     }
@@ -186,7 +242,7 @@ public final class Reference {
     public void setPathComponent(int componentIndex, String pathComponent) {
         List<String> components = getPathComponents();
         components.set(componentIndex, pathComponent);
-        setPath("/" + components.stream().collect(Collectors.joining("/")));
+        setPath("/" + String.join("/", components));
     }
 
     public void setPath(String path) {
@@ -221,7 +277,7 @@ public final class Reference {
         try {
             return new URI(toString());
         } catch (URISyntaxException e) {
-            throw new IllegalArgumentException(e); // should never happen
+            throw new IllegalArgumentException(e);
         }
     }
 
@@ -238,8 +294,8 @@ public final class Reference {
             builder.append("@");
         }
         builder.append(getHost());
-        if (("http".equals(getScheme()) && getPort() > 0 && getPort() != 80) ||
-                ("https".equals(getScheme()) && getPort() > 0 && getPort() != 443)) {
+        if (("http".equalsIgnoreCase(getScheme()) && getPort() > 0 && getPort() != 80) ||
+                ("https".equalsIgnoreCase(getScheme()) && getPort() > 0 && getPort() != 443)) {
             builder.append(":");
             builder.append(getPort());
         }

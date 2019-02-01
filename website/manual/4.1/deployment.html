@@ -119,7 +119,7 @@ title: Deployment
   </tr>
   <tr>
     <td style="white-space: nowrap"><code>X-Forwarded-Proto</code></td>
-    <td>Protocol of the client request; either <code>HTTP</code> or <code>HTTPS</code>.  If missing, HTTP will be assumed.</td>
+    <td>Protocol of the client request; either <code>HTTP</code> or <code>HTTPS</code>. If missing, HTTP is assumed.</td>
     <td>No</td>
   </tr>
   <tr>
@@ -129,12 +129,18 @@ title: Deployment
   </tr>
   <tr>
     <td><code>X-Forwarded-Port</code></td>
-    <td>TCP port of the client-facing reverse proxy. The default protocol port (80 or 443) will be used if missing.</td>
+    <td>TCP port of the client-facing reverse proxy. If missing, the following are consulted in priority order:
+      <ol>
+        <li>The port in the <code>X-Forwarded-Host</code> header;</li>
+        <li>The default port of the protocol in the <code>X-Forwarded-Proto</code> header;</li>
+        <li>The request port.</li>
+      </ol>
+    </td>
     <td>No</td>
   </tr>
   <tr>
     <td><code>X-Forwarded-Path</code></td>
-    <td>Path to use as a base path. Will default to none if missing.</td>
+    <td>Path to use as a base path. Defaults to none if missing.</td>
     <td>No</td>
   </tr>
   <tr>

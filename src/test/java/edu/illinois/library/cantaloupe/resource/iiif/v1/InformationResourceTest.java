@@ -393,41 +393,6 @@ public class InformationResourceTest extends ResourceTest {
     }
 
     @Test
-    public void testGETURIsInJSONWithProxyHeadersWithHostPortAndPort() throws Exception {
-        client = newClient("/" + IMAGE + "/info.json");
-        client.getHeaders().set("X-Forwarded-Proto", "HTTP");
-        client.getHeaders().set("X-Forwarded-Host", "example.org:7500");
-        client.getHeaders().set("X-Forwarded-Port", "8080");
-        client.getHeaders().set("X-Forwarded-Path", "/cats");
-        client.getHeaders().set(
-                AbstractResource.PUBLIC_IDENTIFIER_HEADER, "originalID");
-        Response response = client.send();
-
-        String json = response.getBodyAsString();
-        ObjectMapper mapper = new ObjectMapper();
-        ImageInfo info = mapper.readValue(json, ImageInfo.class);
-        assertEquals("http://example.org:8080/cats" +
-                Route.IIIF_1_PATH + "/originalID", info.id);
-    }
-
-    @Test
-    public void testGETURIsInJSONWithProxyHeadersWithHostPortAndNoPort() throws Exception {
-        client = newClient("/" + IMAGE + "/info.json");
-        client.getHeaders().set("X-Forwarded-Proto", "HTTP");
-        client.getHeaders().set("X-Forwarded-Host", "example.org:7500");
-        client.getHeaders().set("X-Forwarded-Path", "/cats");
-        client.getHeaders().set(
-                AbstractResource.PUBLIC_IDENTIFIER_HEADER, "originalID");
-        Response response = client.send();
-
-        String json = response.getBodyAsString();
-        ObjectMapper mapper = new ObjectMapper();
-        ImageInfo info = mapper.readValue(json, ImageInfo.class);
-        assertEquals("http://example.org:7500/cats" +
-                Route.IIIF_1_PATH + "/originalID", info.id);
-    }
-
-    @Test
     public void testGETBaseURIOverridesProxyHeaders() throws Exception {
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.BASE_URI, "https://example.net/");

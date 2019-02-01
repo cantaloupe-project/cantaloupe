@@ -56,7 +56,7 @@ public class AbstractResourceTest extends BaseTest {
     }
 
     @Test
-    public void testDoOPTIONS() throws Exception {
+    public void testDoOPTIONS() {
         instance.doOPTIONS();
         assertEquals(204, instance.getResponse().getStatus());
     }
@@ -121,10 +121,13 @@ public class AbstractResourceTest extends BaseTest {
 
     /**
      * Tests behavior of {@link AbstractResource#getPublicReference()} when
-     * using {@literal X-Forwarded} headers indicating HTTP port 80.
+     * using {@literal X-Forwarded} headers.
+     *
+     * This isn't a thorough test of every possible header/URI combination.
+     * See {@link Reference#applyProxyHeaders(Headers)} for those.
      */
     @Test
-    public void testGetPublicReferenceUsingXForwardedHeaders1() {
+    public void testGetPublicReferenceUsingXForwardedHeaders() {
         MockHttpServletRequest servletRequest =
                 (MockHttpServletRequest) instance.getRequest().getServletRequest();
         servletRequest.setContextPath("");
@@ -137,86 +140,6 @@ public class AbstractResourceTest extends BaseTest {
         headers.set("X-Forwarded-Path", "/");
         Reference ref = instance.getPublicReference();
         assertEquals("http://example.org/cats", ref.toString());
-    }
-
-    /**
-     * Tests behavior of {@link AbstractResource#getPublicReference()} when
-     * using {@literal X-Forwarded} headers indicating HTTP port != 80.
-     */
-    @Test
-    public void testGetPublicReferenceUsingXForwardedHeaders2() {
-        MockHttpServletRequest servletRequest =
-                (MockHttpServletRequest) instance.getRequest().getServletRequest();
-        servletRequest.setContextPath("");
-        servletRequest.setRequestURL("http://bogus/cats");
-
-        Headers headers = instance.getRequest().getHeaders();
-        headers.set("X-Forwarded-Proto", "HTTP");
-        headers.set("X-Forwarded-Host", "example.org");
-        headers.set("X-Forwarded-Port", "85");
-        headers.set("X-Forwarded-Path", "/");
-        Reference ref = instance.getPublicReference();
-        assertEquals("http://example.org:85/cats", ref.toString());
-    }
-
-    /**
-     * Tests behavior of {@link AbstractResource#getPublicReference()} when
-     * using {@literal X-Forwarded} headers indicating HTTPS port 443.
-     */
-    @Test
-    public void testGetPublicReferenceUsingXForwardedHeaders3() {
-        MockHttpServletRequest servletRequest =
-                (MockHttpServletRequest) instance.getRequest().getServletRequest();
-        servletRequest.setContextPath("");
-        servletRequest.setRequestURL("http://bogus/cats");
-
-        Headers headers = instance.getRequest().getHeaders();
-        headers.set("X-Forwarded-Proto", "HTTPS");
-        headers.set("X-Forwarded-Host", "example.org");
-        headers.set("X-Forwarded-Port", "443");
-        headers.set("X-Forwarded-Path", "/");
-        Reference ref = instance.getPublicReference();
-        assertEquals("https://example.org/cats", ref.toString());
-    }
-
-    /**
-     * Tests behavior of {@link AbstractResource#getPublicReference()} when
-     * using {@literal X-Forwarded} headers indicating HTTPS port != 443.
-     */
-    @Test
-    public void testGetPublicReferenceUsingXForwardedHeaders4() {
-        MockHttpServletRequest servletRequest =
-                (MockHttpServletRequest) instance.getRequest().getServletRequest();
-        servletRequest.setContextPath("");
-        servletRequest.setRequestURL("http://bogus/cats");
-
-        Headers headers = instance.getRequest().getHeaders();
-        headers.set("X-Forwarded-Proto", "HTTPS");
-        headers.set("X-Forwarded-Host", "example.org");
-        headers.set("X-Forwarded-Port", "450");
-        headers.set("X-Forwarded-Path", "/");
-        Reference ref = instance.getPublicReference();
-        assertEquals("https://example.org:450/cats", ref.toString());
-    }
-
-    /**
-     * Tests behavior of {@link AbstractResource#getPublicReference()} when
-     * using {@literal X-Forwarded} headers.
-     */
-    @Test
-    public void testGetPublicReferenceUsingChainedXForwardedHeaders() {
-        MockHttpServletRequest servletRequest =
-                (MockHttpServletRequest) instance.getRequest().getServletRequest();
-        servletRequest.setContextPath("");
-        servletRequest.setRequestURL("http://bogus/cats");
-
-        Headers headers = instance.getRequest().getHeaders();
-        headers.set("X-Forwarded-Proto", "http,http");
-        headers.set("X-Forwarded-Host", "example.org,example.mil");
-        headers.set("X-Forwarded-Port", "80,8080");
-        headers.set("X-Forwarded-Path", "/foxes,/dogs");
-        Reference ref = instance.getPublicReference();
-        assertEquals("http://example.org/foxes/cats", ref.toString());
     }
 
     /**

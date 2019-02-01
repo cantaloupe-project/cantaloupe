@@ -21,6 +21,7 @@
   for better efficiency.
 * Running tasks are displayed in the Control Panel.
 * Added HTTP API endpoints for status and health checks.
+* Improved handling and documentation of the `X-Forwarded-Port` header.
 * The `/iiif` URI path no longer redirects to a specific Image API version, and
   now returns HTTP 404.
 * Replaced the Restlet framework with a custom micro-framework.

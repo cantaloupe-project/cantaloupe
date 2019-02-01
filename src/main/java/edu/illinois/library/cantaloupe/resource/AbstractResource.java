@@ -426,116 +426,43 @@ public abstract class AbstractResource {
     protected String getPublicIdentifier() {
         String urlID = getIdentifierPathComponent();
         // Try to use the value of the identifier header, if supplied.
-        String header = PUBLIC_IDENTIFIER_HEADER;
+        String header   = PUBLIC_IDENTIFIER_HEADER;
         String headerID = request.getHeaders().getFirstValue(header, "");
         if (headerID.isEmpty()) {
             // Fall back to the deprecated one.
-            header = PUBLIC_IDENTIFIER_HEADER_DEPRECATED;
+            header   = PUBLIC_IDENTIFIER_HEADER_DEPRECATED;
             headerID = request.getHeaders().getFirstValue(header, "");
         }
         return headerID.isEmpty() ? urlID : headerID;
     }
 
     /**
-     * <p>Returns the current reference.</p>
+     * <p>Returns the current public reference.</p>
      *
      * <p>{@link Key#BASE_URI} is respected, if set. Otherwise, the {@literal
      * X-Forwarded-*} request headers are respected, if available. Finally,
      * Servlet-supplied information is used otherwise.</p>
      *
-     * <p>Note that this value may not be something the client is expecting to
-     * see; for example, any {@link #getIdentifier() identifier} present in the
-     * URI path is not {@link #getPublicIdentifier() translated}.</p>
+     * <p>Note that the return value may not be something the client is
+     * expecting to see&mdash;for example, any {@link #getIdentifier()
+     * identifier} present in the URI path is not {@link #getPublicIdentifier()
+     * translated}.</p>
      *
      * @see #getPublicRootReference()
      */
     protected Reference getPublicReference() {
+        final Reference ref        = getPublicRootReference();
         final Reference requestRef = new Reference(getRequest().getReference());
         final Reference appRootRef = new Reference(requestRef);
         appRootRef.setPath(getRequest().getContextPath());
-
-        String appRootRelativePath =
+        final String appRootRelativePath =
                 requestRef.getRelativePath(appRootRef.getPath());
-        Reference newRef = new Reference(requestRef);
-
-        // If base_uri is set in the configuration, build a URI based on that.
-        final String baseUri = Configuration.getInstance()
-                .getString(Key.BASE_URI, "");
-        if (!baseUri.isEmpty()) {
-            final Reference baseRef = new Reference(baseUri);
-            newRef = new Reference(appRootRef);
-            newRef.setScheme(baseRef.getScheme());
-            newRef.setHost(baseRef.getHost());
-            newRef.setPort(baseRef.getPort());
-
-            String pathStr = StringUtils.stripEnd(baseRef.getPath(), "/");
-            if (!appRootRelativePath.isEmpty()) {
-                pathStr = StringUtils.stripEnd(pathStr, "/") + "/" +
-                        StringUtils.stripStart(appRootRelativePath, "/");
-            }
-            newRef.setPath(pathStr);
-
-            getLogger().debug("Base URI from assembled from {} key: {}",
-                    Key.BASE_URI, newRef);
-        } else {
-            // Try to use X-Forwarded-* headers.
-            // N.B.: Header values may be comma-separated lists when operating
-            // behind a chain of reverse proxies.
-
-            // This may or may not include a port number. If it does, it should
-            // be used if X-Forwarded-Port was not sent.
-            final String hostHeader = getRequest().getHeaders()
-                    .getFirstValue("X-Forwarded-Host", "");
-            if (!hostHeader.isEmpty()) {
-                String hostStr = hostHeader;
-                if (hostStr.startsWith("http://")) {
-                    hostStr = hostStr.substring(7, hostHeader.length());
-                } else if (hostHeader.startsWith("https://")) {
-                    hostStr = hostStr.substring(8, hostHeader.length());
-                }
-                hostStr = hostStr.split(",")[0].trim();
-                String[] parts = hostStr.split(":");
-                newRef.setHost(parts[0]);
-                if (parts.length > 1) {
-                    newRef.setPort(Integer.parseInt(parts[1]));
-                }
-            }
-
-            String protoHeader = getRequest().getHeaders()
-                    .getFirstValue("X-Forwarded-Proto", "");
-            String protoStr = newRef.getScheme();
-            if (!protoHeader.isEmpty()) {
-                protoStr = protoHeader.split(",")[0].trim().toLowerCase();
-                newRef.setScheme(protoStr);
-            }
-
-            final String portHeader = getRequest().getHeaders()
-                    .getFirstValue("X-Forwarded-Port", "");
-            if (!portHeader.isEmpty()) {
-                String portStr = portHeader.split(",")[0].trim();
-                Integer port = Integer.parseInt(portStr);
-                if ((port == 80 && "http".equalsIgnoreCase(protoStr)) ||
-                        (port == 443 && "https".equalsIgnoreCase(protoStr))) {
-                    port = -1;
-                }
-                newRef.setPort(port);
-            }
-
-            final String pathHeader = getRequest().getHeaders()
-                    .getFirstValue("X-Forwarded-Path", "");
-            if (!pathHeader.isEmpty()) {
-                String pathStr = pathHeader.split(",")[0].trim();
-                if (!appRootRelativePath.isEmpty()) {
-                    pathStr = StringUtils.stripEnd(pathStr, "/") + "/" +
-                            StringUtils.stripStart(appRootRelativePath, "/");
-                }
-                newRef.setPath(StringUtils.stripEnd(pathStr, "/"));
-            }
-
-            getLogger().debug("Base URI assembled from X-Forwarded headers: {}",
-                    newRef);
+        if (!appRootRelativePath.isEmpty()) {
+            String path = StringUtils.stripEnd(ref.getPath(), "/") + "/" +
+                    StringUtils.stripStart(appRootRelativePath, "/");
+            ref.setPath(path);
         }
-        return newRef;
+        return ref;
     }
 
     /**
@@ -584,8 +511,7 @@ public abstract class AbstractResource {
     }
 
     /**
-     * <p>Returns the root reference, i.e. a reference to the base URI path of
-     * the application.</p>
+     * <p>Returns a reference to the base URI path of the application.</p>
      *
      * <p>{@link Key#BASE_URI} is respected, if set. Otherwise, the {@literal
      * X-Forwarded-*} request headers are respected, if available. Finally,
@@ -594,7 +520,7 @@ public abstract class AbstractResource {
      * @see #getPublicReference()
      */
     protected Reference getPublicRootReference() {
-        final Reference ref = new Reference(getRequest().getReference());
+        Reference ref = new Reference(getRequest().getReference());
         ref.setPath(getRequest().getContextPath());
 
         // If base_uri is set in the configuration, build a URI based on that.
@@ -606,56 +532,15 @@ public abstract class AbstractResource {
             ref.setHost(baseRef.getHost());
             ref.setPort(baseRef.getPort());
             ref.setPath(StringUtils.stripEnd(baseRef.getPath(), "/"));
+
+            getLogger().debug("Base URI from assembled from {} key: {}",
+                    Key.BASE_URI, ref);
         } else {
             // Try to use X-Forwarded-* headers.
-            // N.B.: Header values may be comma-separated lists when operating
-            // behind a chain of reverse proxies.
+            ref.applyProxyHeaders(getRequest().getHeaders());
 
-            // This may or may not include a port number. If it does, it should
-            // be used if X-Forwarded-Port was not sent.
-            final String hostHeader = getRequest().getHeaders()
-                    .getFirstValue("X-Forwarded-Host", "");
-            if (!hostHeader.isEmpty()) {
-                String hostStr = hostHeader;
-                if (hostStr.startsWith("http://")) {
-                    hostStr = hostStr.substring(7, hostHeader.length());
-                } else if (hostHeader.startsWith("https://")) {
-                    hostStr = hostStr.substring(8, hostHeader.length());
-                }
-                hostStr = hostStr.split(",")[0].trim();
-                String[] parts = hostStr.split(":");
-                ref.setHost(parts[0]);
-                if (parts.length > 1) {
-                    ref.setPort(Integer.parseInt(parts[1]));
-                }
-            }
-
-            String protoHeader = getRequest().getHeaders()
-                    .getFirstValue("X-Forwarded-Proto", "");
-            String protoStr = ref.getScheme();
-            if (!protoHeader.isEmpty()) {
-                protoStr = protoHeader.split(",")[0].trim().toLowerCase();
-                ref.setScheme(protoStr);
-            }
-
-            final String portHeader = getRequest().getHeaders()
-                    .getFirstValue("X-Forwarded-Port", "");
-            if (!portHeader.isEmpty()) {
-                String portStr = portHeader.split(",")[0].trim();
-                Integer port = Integer.parseInt(portStr);
-                if ((port == 80 && "http".equalsIgnoreCase(protoStr)) ||
-                        (port == 443 && "https".equalsIgnoreCase(protoStr))) {
-                    port = -1;
-                }
-                ref.setPort(port);
-            }
-
-            final String pathHeader = getRequest().getHeaders()
-                    .getFirstValue("X-Forwarded-Path", "");
-            if (!pathHeader.isEmpty()) {
-                String pathStr = pathHeader.split(",")[0].trim();
-                ref.setPath(StringUtils.stripEnd(pathStr, "/"));
-            }
+            getLogger().debug("Base URI assembled from X-Forwarded headers: {}",
+                    ref);
         }
         return ref;
     }
