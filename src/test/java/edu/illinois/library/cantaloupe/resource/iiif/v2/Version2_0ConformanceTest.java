@@ -544,7 +544,6 @@ public class Version2_0ConformanceTest extends ResourceTest {
     @Test
     public void testInformationRequestCORSHeader() throws Exception {
         client = newClient("/" + IMAGE + "/info.json");
-        client.getHeaders().set("Origin", "*");
 
         Response response = client.send();
         assertEquals("*",
