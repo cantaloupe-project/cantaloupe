@@ -2,8 +2,6 @@ package edu.illinois.library.cantaloupe.util;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.xml.bind.DatatypeConverter;
 import java.security.MessageDigest;
@@ -12,9 +10,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public final class StringUtils {
-
-    private static final Logger LOGGER = LoggerFactory.
-            getLogger(StringUtils.class);
 
     public static final String FILENAME_REGEX = "[^A-Za-z0-9._-]";
 
@@ -63,7 +58,6 @@ public final class StringUtils {
             byte[] bytes = digest.digest();
             return DatatypeConverter.printHexBinary(bytes).toLowerCase();
         } catch (NoSuchAlgorithmException e) {
-            LOGGER.error("md5(): {}", e.getMessage());
             throw new RuntimeException(e);
         }
     }
