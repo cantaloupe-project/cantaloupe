@@ -13,6 +13,7 @@ import edu.illinois.library.cantaloupe.script.DelegateProxy;
 import edu.illinois.library.cantaloupe.script.DelegateProxyService;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;
+import org.apache.commons.lang3.SystemUtils;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -51,7 +52,11 @@ public class DelegateOverlayServiceTest extends BaseTest {
         DelegateProxy proxy = service.newDelegateProxy(context);
 
         final ImageOverlay overlay = (ImageOverlay) instance.getOverlay(proxy);
-        assertEquals(new URI("file:///dev/cats"), overlay.getURI());
+        if (SystemUtils.IS_OS_WINDOWS) {
+            assertEquals(new URI("file:///C:/dev/cats"), overlay.getURI());
+        } else {
+            assertEquals(new URI("file:///dev/cats"), overlay.getURI());
+        }
         assertEquals((long) 5, overlay.getInset());
         assertEquals(Position.BOTTOM_LEFT, overlay.getPosition());
     }

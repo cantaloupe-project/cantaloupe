@@ -9,6 +9,7 @@ import edu.illinois.library.cantaloupe.script.DelegateProxy;
 import edu.illinois.library.cantaloupe.script.DelegateProxyService;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;
+import org.apache.commons.lang3.SystemUtils;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -47,7 +48,11 @@ public class OverlayServiceTest extends BaseTest {
     @Test
     public void testNewOverlayWithBasicImageStrategy() throws Exception {
         ImageOverlay overlay = (ImageOverlay) instance.newOverlay(null);
-        assertEquals(new URI("file:///dev/null"), overlay.getURI());
+        if (SystemUtils.IS_OS_WINDOWS) {
+            assertEquals(new URI("file:///C:/dev/null"), overlay.getURI());
+        } else {
+            assertEquals(new URI("file:///dev/null"), overlay.getURI());
+        }
         assertEquals(10, overlay.getInset());
         assertEquals(Position.TOP_LEFT, overlay.getPosition());
     }
@@ -79,7 +84,11 @@ public class OverlayServiceTest extends BaseTest {
         DelegateProxy proxy = service.newDelegateProxy(context);
 
         ImageOverlay overlay = (ImageOverlay) instance.newOverlay(proxy);
-        assertEquals(new URI("file:///dev/cats"), overlay.getURI());
+        if (SystemUtils.IS_OS_WINDOWS) {
+            assertEquals(new URI("file:///C:/dev/cats"), overlay.getURI());
+        } else {
+            assertEquals(new URI("file:///dev/cats"), overlay.getURI());
+        }
         assertEquals(5, overlay.getInset());
         assertEquals(Position.BOTTOM_LEFT, overlay.getPosition());
     }

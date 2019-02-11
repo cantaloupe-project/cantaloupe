@@ -3,7 +3,6 @@ package edu.illinois.library.cantaloupe.processor;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.operation.OperationList;
-import edu.illinois.library.cantaloupe.image.Metadata;
 import edu.illinois.library.cantaloupe.source.StreamFactory;
 import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
 import edu.illinois.library.cantaloupe.resource.iiif.v1.Quality;
@@ -68,7 +67,8 @@ public class MockStreamProcessor implements StreamProcessor {
     }
 
     @Override
-    public void setSourceFormat(Format format) {
+    public void setSourceFormat(Format format)
+            throws UnsupportedSourceFormatException {
         this.sourceFormat = format;
     }
 

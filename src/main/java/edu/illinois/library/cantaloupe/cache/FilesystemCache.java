@@ -336,7 +336,7 @@ class FilesystemCache implements SourceCache, DerivativeCache {
         } catch (NoSuchAlgorithmException e) {
             LOGGER.error(e.getMessage(), e);
         }
-        return String.join("/", components);
+        return String.join(File.separator, components);
     }
 
     /**

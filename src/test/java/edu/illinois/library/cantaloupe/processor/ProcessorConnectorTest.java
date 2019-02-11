@@ -147,7 +147,7 @@ public class ProcessorConnectorTest extends BaseTest {
     public void testConnectWithFileSourceAndStreamProcessor()
             throws Exception {
         Configuration config = Configuration.getInstance();
-        config.setProperty(Key.PROCESSOR_FALLBACK, "ImageMagickProcessor");
+        config.setProperty(Key.PROCESSOR_FALLBACK, MockStreamProcessor.class.getName());
 
         final Source source = new SourceFactory().newSource(IDENTIFIER, null);
         final Processor processor = new ProcessorFactory().newProcessor(Format.JPG);

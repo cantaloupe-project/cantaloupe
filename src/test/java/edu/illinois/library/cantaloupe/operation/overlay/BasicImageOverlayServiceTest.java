@@ -4,6 +4,7 @@ import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Dimension;
 import edu.illinois.library.cantaloupe.test.BaseTest;
+import org.apache.commons.lang3.SystemUtils;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -33,7 +34,11 @@ public class BasicImageOverlayServiceTest extends BaseTest {
     @Test
     public void testGetOverlay() throws Exception {
         final ImageOverlay overlay = instance.getOverlay();
-        assertEquals(new URI("file:///dev/null"), overlay.getURI());
+        if (SystemUtils.IS_OS_WINDOWS) {
+            assertEquals(new URI("file:///C:/dev/null"), overlay.getURI());
+        } else {
+            assertEquals(new URI("file:///dev/null"), overlay.getURI());
+        }
         assertEquals((long) 10, overlay.getInset());
         assertEquals(Position.TOP_LEFT, overlay.getPosition());
     }

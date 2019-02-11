@@ -45,7 +45,7 @@ public class ThreadPoolTest extends BaseTest {
             atomicInt.incrementAndGet();
             return null;
         });
-        Thread.sleep(10); // wait for it to happen
+        Thread.sleep(20); // wait for it to happen
         assertEquals(1, atomicInt.get());
     }
 
@@ -56,7 +56,7 @@ public class ThreadPoolTest extends BaseTest {
             atomicInt.incrementAndGet();
             return null;
         }, ThreadPool.Priority.HIGH);
-        Thread.sleep(10); // wait for it to happen
+        Thread.sleep(20); // wait for it to happen
         assertEquals(1, atomicInt.get());
     }
 

@@ -173,16 +173,17 @@ public class PropertiesDocumentTest extends BaseTest {
         try {
             instance.save(tempFile);
 
-            final String expected = "# This is a test document\n" +
-                    "#with another comment\n" +
-                    "! and a different kind of comment\n" +
-                    "\n" +
-                    "key1=newValue\n" +
-                    "key2 = value=value\n" +
-                    "  key3 = value\\\\value\n" +
-                    "key4:newValue\n" +
-                    "key5 : value\n" +
-                    "newKey=value\n";
+            final String sep = System.lineSeparator();
+            final String expected = "# This is a test document" + sep +
+                    "#with another comment" + sep +
+                    "! and a different kind of comment" + sep +
+                    sep +
+                    "key1=newValue" + sep +
+                    "key2 = value=value" + sep +
+                    "  key3 = value\\\\value" + sep +
+                    "key4:newValue" + sep +
+                    "key5 : value" + sep +
+                    "newKey=value" + sep;
 
             byte[] bytes = Files.readAllBytes(tempFile);
             String actual = new String(bytes);

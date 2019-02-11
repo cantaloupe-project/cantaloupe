@@ -1,6 +1,7 @@
 package edu.illinois.library.cantaloupe.source;
 
 import static org.junit.Assert.*;
+import static org.junit.Assume.assumeTrue;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
@@ -19,9 +20,7 @@ import java.nio.file.AccessDeniedException;
 import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
-import java.nio.file.attribute.PosixFilePermission;
 import java.util.Collections;
-import java.util.Set;
 
 public class FilesystemSourceTest extends AbstractSourceTest {
 
@@ -89,13 +88,11 @@ public class FilesystemSourceTest extends AbstractSourceTest {
     public void testCheckAccessUsingBasicLookupStrategyWithPresentUnreadableFile()
             throws Exception {
         Path path = instance.getPath();
-        Set<PosixFilePermission> initialPermissions =
-                Files.getPosixFilePermissions(path);
         try {
-            Files.setPosixFilePermissions(path, Collections.emptySet());
+            assumeTrue(path.toFile().setReadable(false));
             instance.checkAccess();
         } finally {
-            Files.setPosixFilePermissions(path, initialPermissions);
+            path.toFile().setReadable(true);
         }
     }
 
@@ -131,13 +128,12 @@ public class FilesystemSourceTest extends AbstractSourceTest {
         instance.setIdentifier(identifier);
 
         Path path = instance.getPath();
-        Set<PosixFilePermission> initialPermissions =
-                Files.getPosixFilePermissions(path);
         try {
+            assumeTrue(path.toFile().setReadable(false));
             Files.setPosixFilePermissions(path, Collections.emptySet());
             instance.checkAccess();
         } finally {
-            Files.setPosixFilePermissions(path, initialPermissions);
+            path.toFile().setReadable(true);
         }
     }
 
@@ -172,7 +168,8 @@ public class FilesystemSourceTest extends AbstractSourceTest {
         config.setProperty(Key.FILESYSTEMSOURCE_PATH_SUFFIX, "");
 
         instance.setIdentifier(new Identifier("id"));
-        assertEquals("/prefix/id", instance.getPath().toString());
+        assertEquals(File.separator + "prefix" + File.separator + "id",
+                instance.getPath().toString());
     }
 
     @Test
@@ -183,7 +180,9 @@ public class FilesystemSourceTest extends AbstractSourceTest {
         config.setProperty(Key.FILESYSTEMSOURCE_PATH_SUFFIX, "/suffix");
 
         instance.setIdentifier(new Identifier("id"));
-        assertEquals("/prefix/id/suffix", instance.getPath().toString());
+        assertEquals(
+                File.separator + "prefix" + File.separator + "id" + File.separator + "suffix",
+                instance.getPath().toString());
     }
 
     @Test
@@ -208,16 +207,31 @@ public class FilesystemSourceTest extends AbstractSourceTest {
         config.setProperty(Key.FILESYSTEMSOURCE_PATH_SUFFIX, "/suffix");
 
         instance.setIdentifier(new Identifier("id/../"));
-        assertEquals("/prefix/id/suffix", instance.getPath().toString());
+        assertEquals(
+                File.separator + "prefix" + File.separator + "id" + File.separator + "suffix",
+                instance.getPath().toString());
+
         instance.setIdentifier(new Identifier("/../id"));
-        assertEquals("/prefix/id/suffix", instance.getPath().toString());
+        assertEquals(
+                File.separator + "prefix" + File.separator + "id" + File.separator + "suffix",
+                instance.getPath().toString());
+
         instance.setIdentifier(new Identifier("id\\..\\"));
-        assertEquals("/prefix/id\\/suffix", instance.getPath().toString());
+        assertEquals(
+                File.separator + "prefix" + File.separator + "id" + File.separator + "suffix",
+                instance.getPath().toString());
+
         instance.setIdentifier(new Identifier("\\..\\id"));
-        assertEquals("/prefix/\\id/suffix", instance.getPath().toString());
+        assertEquals(
+                File.separator + "prefix" + File.separator + "id" + File.separator + "suffix",
+                instance.getPath().toString());
+
         // test injection-safety
         instance.setIdentifier(new Identifier("/id/../cats\\..\\dogs/../..\\foxes/.\\...\\/....\\.."));
-        assertEquals("/prefix/id/cats\\dogs\\foxes/suffix",
+        assertEquals(
+                File.separator + "prefix" + File.separator + "id" +
+                        File.separator + "cats" + File.separator + "dogs" +
+                        File.separator + "foxes" + File.separator + "suffix",
                 instance.getPath().toString());
     }
 

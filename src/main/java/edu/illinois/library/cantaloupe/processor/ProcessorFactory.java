@@ -5,6 +5,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -19,20 +20,35 @@ public final class ProcessorFactory {
     private static final Logger LOGGER =
             LoggerFactory.getLogger(ProcessorFactory.class);
 
+    private static final Set<Class<? extends Processor>> ALL_PROCESSOR_IMPLS =
+            Collections.unmodifiableSet(new HashSet<>(Arrays.asList(
+                    FfmpegProcessor.class,
+                    GraphicsMagickProcessor.class,
+                    ImageMagickProcessor.class,
+                    JaiProcessor.class,
+                    Java2dProcessor.class,
+                    KakaduDemoProcessor.class,
+                    KakaduNativeProcessor.class,
+                    OpenJpegProcessor.class,
+                    PdfBoxProcessor.class)));
+
+    private static final Set<Processor> ALL_PROCESSORS = new HashSet<>();
+
     private SelectionStrategy selectionStrategy =
             SelectionStrategy.fromConfiguration();
 
-    public static Set<Processor> getAllProcessors() {
-        return new HashSet<>(Arrays.asList(
-                new FfmpegProcessor(),
-                new GraphicsMagickProcessor(),
-                new ImageMagickProcessor(),
-                new JaiProcessor(),
-                new Java2dProcessor(),
-                new KakaduDemoProcessor(),
-                new KakaduNativeProcessor(),
-                new OpenJpegProcessor(),
-                new PdfBoxProcessor()));
+    public static synchronized Set<Processor> getAllProcessors() {
+        if (ALL_PROCESSORS.isEmpty()) {
+            for (Class<? extends Processor> class_ : ALL_PROCESSOR_IMPLS) {
+                try {
+                    ALL_PROCESSORS.add(class_.getDeclaredConstructor().newInstance());
+                } catch (Exception e) {
+                    // This exception is safe to swallow as it will be thrown
+                    // and handled elsewhere.
+                }
+            }
+        }
+        return Collections.unmodifiableSet(ALL_PROCESSORS);
     }
 
     public SelectionStrategy getSelectionStrategy() {

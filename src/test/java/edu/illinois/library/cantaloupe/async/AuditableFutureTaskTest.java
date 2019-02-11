@@ -90,12 +90,12 @@ public class AuditableFutureTaskTest extends BaseTest {
             return null;
         });
         ThreadPool.getInstance().submit(task);
-        Thread.sleep(10);
+        Thread.sleep(20);
         assertEquals(TaskStatus.RUNNING, task.getStatus());
     }
 
     @Test
-    public void testRunSetsStatusUponSuccess() throws Exception {
+    public void testRunSetsStatusUponSuccess() {
         AuditableFutureTask<?> task = new AuditableFutureTask<>(() -> "");
         task.run();
 

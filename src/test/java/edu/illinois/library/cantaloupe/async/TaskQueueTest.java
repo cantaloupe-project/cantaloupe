@@ -32,7 +32,7 @@ public class TaskQueueTest extends BaseTest {
         instance.submit(future2);
         instance.submit(future3);
 
-        Thread.sleep(20);
+        Thread.sleep(40);
 
         // The first has been taken out and is running.
         assertEquals(2, instance.queuedTasks().size());
