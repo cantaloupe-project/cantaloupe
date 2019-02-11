@@ -12,7 +12,7 @@ title: Remote Management
 
 <h2 id="Control Panel">Control Panel</h2>
 
-<p>The Control Panel is a web-based administrative interface with monitoring and configuration capabilities. It is disabled by default. To enable it, set <code>endpoint.admin.enabled</code> to <code>true</code> and set a username and secret in the corresponding <code>endpoint.admin.*</code> keys. Then, navigate to <span class="filename">/admin</span> in a web browser and log in.</p>
+<p>The Control Panel is a web-based administrative interface with monitoring and configuration capabilities. To enable it, set <code>endpoint.admin.enabled</code> to <code>true</code> and set a username and secret in the <code>endpoint.admin.*</code> keys. Then, navigate to <span class="filename">/admin</span> in a web browser.</p>
 
 <p>Changes made in the Control Panel will instantly update the application's configuration, although some changes will require a restart to take effect. They will also be written to the configuration file within a few seconds.</p>
 
@@ -27,7 +27,7 @@ title: Remote Management
 </p>
 
 <p class="text-info">
-  <i class="fa fa-info-circle"></i> Methods that call <code>POST /tasks</code> will create an asynchronous task identified by a UUID and submit it to a processing queue. Its status can be checked via <code>GET /tasks/:uuid</code>. Task objects are retained in memory, but are not persisted, so checking a task after a restart will result in a <code>404 Not Found</code> response.
+  <i class="fa fa-info-circle"></i> Invoking a <code>POST /tasks</code> request creates an asynchronous task identified by a UUID and submits it to a processing queue. Its status can be checked via <code>GET /tasks/:uuid</code>. Tasks are retained in memory, but are not persisted, so checking a task after a restart will result in a <code>404 Not Found</code> response.
 </p>
 
 <h3>Status</h3>

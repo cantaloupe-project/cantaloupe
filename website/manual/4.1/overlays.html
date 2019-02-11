@@ -22,17 +22,17 @@ title: Overlays
 
 <figure>
   <img src="images/string-overlay-1600.jpg" class="img img-fluid" alt="Image with string overlay applied.">
-  <figcaption>String overlay.</figcaption>
+  <figcaption>String overlay</figcaption>
 </figure>
 
 <figure>
   <img src="images/image-overlay-1600.jpg" class="img img-fluid" alt="Image with image overlay applied.">
-  <figcaption>Image overlay.</figcaption>
+  <figcaption>Image overlay</figcaption>
 </figure>
 
 <figure>
   <img src="images/image-repeat-overlay-1600.jpg" class="img img-fluid" alt="Image with repeating image overlay applied.">
-  <figcaption>Repeating image overlay.</figcaption>
+  <figcaption>Repeating image overlay</figcaption>
 </figure>
 
 <p>With both types of overlays, the position, inset, and output width/height threshold (below which the overlay won't be displayed) are configurable.</p>
@@ -66,7 +66,7 @@ title: Overlays
 
 <p>Line breaks within the string (<code>\n</code>) are respected, enabling multi-line strings. Each line is auto-aligned to the edge of the image according to the <a href="#Positioning">overlay position</a>.</p>
 
-<p>Strings are guaranteed to never overflow the image. When a string doesn't fit entirely inside at its specified font size, the application will try to use the largest font size that fits, down to the configurable minimum allowed size. If none fit, the string won't be drawn.</p>
+<p>Strings will never overflow the image. When a string doesn't fit entirely inside at its specified font size, the application will try to use the largest font size that fits, down to the configurable minimum allowed size. If none fit, the string won't be drawn.</p>
 
 <hr>
 
@@ -149,5 +149,5 @@ end
 
 <ul>
   <li>Set the <code>overlays.BasicStrategy.output_width_threshold</code> and <code>overlays.BasicStrategy.output_height_threshold</code> configuration options to values that are slightly larger than the tile size used by the image viewer. This will disable overlays for images the size of image viewer tiles, and enable them for anything larger. Bear in mind, though, that the tile size used by the viewer may differ depending on the source image, as the recommended tile sizes in <a href="endpoints.html">information responses</a> will vary on a per-image basis.</li>
-  <li>Have the zooming viewer supply a URI query argument, and check for it in the <code>overlay()</code> delegate method. Of course, a user could figure this out and supply the same argument in other image requests to bypass overlays arbitrarily.</li>
+  <li>Have the zooming viewer supply a URI query argument, and check for it in the <code>overlay()</code> delegate method. Of course, a user could figure this out and supply the same argument in other image requests.</li>
 </ul>

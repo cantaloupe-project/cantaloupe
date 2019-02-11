@@ -24,18 +24,18 @@ title: Configuration
 
 <h2 id="Overview">Overview</h2>
 
-<p>The application is configured by a collection of key-value pairs. The sample configuration file contains an authoritative listing of all available keys, and it is perfectly legitimate to use only this file for all configuration.</p>
+<p>The application is configured by an assortment of key-value pairs. The sample configuration file contains an authoritative listing of all available keys, set to reasonable default values.</p>
 
-<p>But, keys don't have to reside in a file. The following sources are consulted in order of precedence:</p>
+<p>When the application searches for a value for a given key, it consults the following sources in order of priority:</p>
 
 <ol>
   <li>The <a href="#EnvironmentConfiguration">environment</a>.</li>
-  <li>A <a href="#FileConfiguration">file</a>.</li>
+  <li>The <a href="#FileConfiguration">configuration file</a>.</li>
 </ol>
 
 <h3 id="EnvironmentConfiguration">Environment Configuration</h3>
 
-<p>Configuration can be obtained from environment variables. Environment variable names are uppercase versions of &quot;ordinary&quot; configuration key names, with all non-alphanumerics replaced with underscores. For example, the following key-value pair in the configuration file:</p>
+<p>Key names in the environment are uppercased versions of &quot;ordinary&quot; configuration key names, with all non-alphanumerics replaced with underscores. For example, the following key-value pair in the configuration file:</p>
 
 <p><code>endpoint.iiif.2.enabled = true</code></p>
 
@@ -43,13 +43,13 @@ title: Configuration
 
 <p><code>ENDPOINT_IIIF_2_ENABLED=true</code></p>
 
-<p class="text-info"><i class="fa fa-info-circle"></i> Environment configuration is read-only.</p>
+<p>Environment configuration is read-only.</p>
 
 <h3 id="FileConfiguration">File Configuration</h3>
 
-<p>The configuration file is encoded in the human-friendly <a href="https://en.wikipedia.org/wiki/.properties">.properties format</a>. A sample file, called <span class="filename">cantaloupe.properties.sample</span>, is included in the distribution archive. It is recommended to make a copy of this file and use the copy as your configuration file. It can be located anywhere, and named anything.</p>
+<p>Configuration files are encoded in the human-friendly <a href="https://en.wikipedia.org/wiki/.properties">.properties format</a>. A sample file, called <span class="filename">cantaloupe.properties.sample</span>, is included in the distribution archive. It is recommended to make a copy of this file and use the copy as your main configuration file. It can be located anywhere, and named anything.</p>
 
-<p>To tell the application where the file is located, supply the <code>-Dcantaloupe.config</code> VM option, pointing to an absolute or relative path to the file. (See <a href="getting-started.html#Running">Getting Started</a> for examples.)</p>
+<p>Supply the <code>-Dcantaloupe.config</code> VM option, pointing to an absolute or relative path to the file, to tell the application where the file is located. (See <a href="getting-started.html#Running">Getting Started</a> for examples.)</p>
 
 <h4 id="Inheritance">Inheritance</h4>
 
@@ -57,7 +57,7 @@ title: Configuration
 
 <p>Keys in child files override ones in parent files. When the same key is defined in multiple files, instances will use the most specific one.</p>
 
-<p>Multiple <code>extends</code> keys in the same file are not supported. If they are present, only the last one will be used.</p>
+<p>Multiple <code>extends</code> keys in the same file are not supported.</p>
 
 <h4 id="Live Changes">Live Changes</h4>
 
@@ -69,6 +69,6 @@ title: Configuration
 
 <h2 id="Remote Changes">Remote Changes</h2>
 
-<p>The configuration can be updated remotely via the <a href="remote-management.html#HTTP%20API">HTTP API</a>. When a change is received, it will be activated immediately and written out to the configuration file, if it is writable.</p>
+<p>The configuration can be updated remotely via the <a href="remote-management.html#HTTP%20API">HTTP API</a>. When a change is received, it will be activated immediately and written out to the configuration file, if it is writable. (But not the environment.)</p>
 
 <p>When using <a href="#Inheritance">inheritance</a>, a key will be written to the most specific file that already contains it, or to the main (child) file, if none already contain it.</p>

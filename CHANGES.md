@@ -12,18 +12,22 @@
 * The `redirect()` and `authorized?()` delegate methods have been merged into a
   new `authorize()` method, which enables a superset of their functionality,
   including challenge responses and redirects to "virtual" quality-limited
-  versions. Authorization can also be set up to conform to the IIIF
+  versions. Authorization can also be set up to align with the IIIF
   Authentication API 1.0's "all or nothing access" or "tiered access" schemes.
 * The `endpoint.public.auth.*` keys that controlled global HTTP Basic
   protection have also been replaced by the `authorize()` delegate method.
 * Upscaling can be disabled in the configuration.
-* During image requests, `authorize()` is called earlier in the setup process,
-  for better efficiency.
 * Running tasks are displayed in the Control Panel.
 * Added HTTP API endpoints for status and health checks.
+* In the IIIF Image API 2.x endpoint, the `Access-Control-Allow-Origin`
+  response header is always included in the information response regardless of
+  whether an `Origin` header was sent in the request, which aligns more closely
+  with the IIIF Image API.
 * Improved handling and documentation of the `X-Forwarded-Port` header.
 * The `/iiif` URI path no longer redirects to a specific Image API version, and
   now returns HTTP 404.
+* During image requests, `authorize()` is called earlier in the setup process,
+  for better efficiency.
 * Replaced the Restlet framework with a custom micro-framework.
 
 ### Sources
@@ -31,17 +35,19 @@
 * HttpSource, S3Source, and AzureStorageSource are able to request chunks of
   resources on demand, which can improve performance when reading images in
   selectively-readable encodings like JPEG2000 and multi-resolution TIFF.
-* HttpSource uses initial `HEAD` requests instead of ranged `GET` requests.
+* HttpSource sends initial `HEAD` requests instead of ranged `GET` requests.
 * The hash returned from the `httpsource_resource_info()` delegate method may
   include custom request headers.
-* S3Source uses a Minio client instead of the AWS Java SDK client.
+* S3Source uses a Minio client instead of the AWS Java SDK client, to work
+  around a possible thread-starvation bug in the AWS Java SDK when S3Source
+  and S3Cache are in use at the same time.
 
 ### Processors
 
 * Added configurable processor selection strategies, one of which uses the
   existing `processor.*` configuration keys, and the other of which uses an
-  automatic strategy which attempts to choose a "best" processor on a
-  per-request basis.
+  automatic strategy that attempts to choose a "best" processor on a per-
+  request basis.
 * Added the `repeat` position for image overlays.
 * Efficiency improvements in KakaduNativeProcessor.
 * KakaduNativeProcessor supports `sizeByDistortedWidthHeight`.
@@ -52,8 +58,8 @@
 * Worked around a bug in the GraphicsMagick `gm` command that causes occasional
   "broken pipe" errors from GraphicsMagickProcessor when reading images from a
   FileSource.
-* KakaduDemoProcessor has been deprecated. Consider migrating to either
-  KakaduNativeProcessor or OpenJpegProcessor.
+* KakaduDemoProcessor has been deprecated, as it has been made more-or-less
+  redundant by KakaduNativeProcessor.
 * Removed normalization.
 
 ### Caches

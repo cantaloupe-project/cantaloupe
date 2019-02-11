@@ -6,8 +6,8 @@ title: Endpoints
 <h1>Endpoints</h1>
 
 <ul class="toc">
-  <li><a href="#IIIFImageAPI2">IIIF Image API 2.x</a></li>
-  <li><a href="#IIIFImageAPI1">IIIF Image API 1.x</a></li>
+  <li><a href="#IIIFImageAPI2">IIIF Image API 2</a></li>
+  <li><a href="#IIIFImageAPI1">IIIF Image API 1</a></li>
   <li>
     <a href="#Additional%20Features">Additional Features</a>
     <ul>
@@ -18,7 +18,7 @@ title: Endpoints
   </li>
 </ul>
 
-<h2 id="IIIFImageAPI2">IIIF Image API 2.x</h2>
+<h2 id="IIIFImageAPI2">IIIF Image API 2</h2>
 
 <h3>Documentation</h3>
 
@@ -37,7 +37,7 @@ title: Endpoints
 
 <h3>Compliance</h3>
 
-<p>Cantaloupe implements version 2.1.1 of this API, for compatibility with all 2.x clients. <a href="http://iiif.io/api/image/2.1/compliance/">Compliance level</a> is dynamically computed and declared on a per-processor basis. Most processors are "Level 2"-compliant.</p>
+<p>Version 2.1.1 of this API is implemented. <a href="http://iiif.io/api/image/2.1/compliance/">Compliance level</a> is dynamically computed and declared on a per-processor basis. Most processors are "Level 2"-compliant.</p>
 
 <h3>Information Response Notes</h3>
 
@@ -87,7 +87,7 @@ end
 
 <hr>
 
-<h2 id="IIIFImageAPI1">IIIF Image API 1.x</h2>
+<h2 id="IIIFImageAPI1">IIIF Image API 1</h2>
 
 <h3>Documentation</h3>
 
@@ -106,7 +106,7 @@ end
 
 <h3>Compliance</h3>
 
-<p>Cantaloupe implements version 1.1 of this API, for compatibility with all 1.x clients. Compliance level is dynamically computed and declared on a per-processor basis. Most processors are "Level 2"-compliant.</p>
+<p>Version 1.1 of this API is implemented. Compliance level is dynamically computed and declared on a per-processor basis. Most processors are "Level 2"-compliant.</p>
 
 <h3>Information Response Notes</h3>
 
@@ -130,22 +130,20 @@ end
 
 <h2 id="Additional Features">Additional Features</h2>
 
-<p>All endpoints support some additional features that may not be obvious:</p>
+<p>All endpoints support these additional features:</p>
 
 <h3 id="Response Content Disposition">Response Content Disposition</h3>
 
-<p>The <a href="https://tools.ietf.org/html/rfc6266"><code>Content-Disposition</code></a> HTTP response header tells clients whether to attempt to display a response entity inline or download it, perhaps accompanied by a user prompt. The <code>endpoint.iiif.content_disposition</code> configuration key can be used to set a value for this header in all responses. In addition, a <code>response-content-disposition</code> query argument can be used to suggest a value to override that on a per-request basis. This is useful for &quot;linking to a download.&quot;</p>
-
-<p>For example, the following URL will cause the image identified by <code>some-identifier</code> to be downloaded and saved as <span class="filename">image.jpg</span>:</p>
+<p>The <a href="https://tools.ietf.org/html/rfc6266"><code>Content-Disposition</code></a> HTTP response header tells clients whether to attempt to display a response entity inline or download it, perhaps accompanied by a user prompt. The <code>endpoint.iiif.content_disposition</code> configuration key can be used to set a value for this header in all responses. In addition, a <code>response-content-disposition</code> query argument can be used to suggest a value to override that on a per-request basis. This is useful for &quot;linking to a download.&quot; For example, the following URL will cause web browsers to download the image identified by <code>some-identifier</code> and save it as <span class="filename">image.jpg</span>:</p>
 
 <pre>http://my-image-server/iiif/2/some-identifier/full/full/0/default.jpg
     ?response-content-disposition=attachment%3B%20filename%3Dimage.jpg</pre>
 
-<p>Note that the value of the query argument must be URL-encoded. In this case, the decoded form looks like: <code>attachment; filename=image.jpg</code>.</p>
+<p>The value of the query argument must be URL-encoded. In this case, the decoded form looks like: <code>attachment; filename=image.jpg</code>.</p>
 
 <h3 id="Bypassing the Caches">Bypassing the Caches</h3>
 
-<p>The <a href="caching.html">caches</a> can be bypassed on a per-request basis by supplying a <code>cache=false</code> URL query argument. This bypasses the source, derivative, and info caches, and also omits any <code>Cache-Control</code> response header that may be configured, on a per-request basis, which is useful for testing and health checks.</p>
+<p>The <a href="caching.html">caches</a> can be bypassed on a per-request basis by supplying a <code>cache=false</code> URL query argument. This bypasses the source, derivative, and info caches, and also omits any <code>Cache-Control</code> response header that may be configured, on a per-request basis. This is useful for testing and health checks.</p>
 
 <h3 id="Processor-Specific Arguments">Processor-Specific Arguments</h3>
 

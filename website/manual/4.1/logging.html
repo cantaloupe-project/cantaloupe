@@ -15,9 +15,7 @@ title: Logging
 
 <h3>Log Levels</h3>
 
-<p>The <code>log.application.level</code> configuration key specifies the severity threshold beneath which log messages will be discarded. Available values, in order of severity, are: <code>trace</code>, <code>debug</code>, <code>info</code>, <code>warn</code>, and <code>error</code>. Additionally, <code>all</code> can be used to log absolutely everything.</p>
-
-<p>To completely disable the application log, use <code>off</code>.</p>
+<p>The <code>log.application.level</code> configuration key specifies the severity threshold beneath which log messages will be discarded. Available values, in order of severity, are: <code>trace</code>, <code>debug</code>, <code>info</code>, <code>warn</code>, and <code>error</code>. Additionally, <code>all</code> can be used to log absolutely everything, and <code>off</code> to log nothing.</p>
 
 <h3>Message Format</h3>
 
@@ -32,7 +30,7 @@ title: Logging
 
 <pre>13:54:12.405 [qtp795326519-32] DEBUG e.i.l.c.r.HandlerServlet - 110 msec total ...</pre>
 
-<p>The thread is then returned to the pool, from which it can be taken again by a future request. Its ID never changes.</p>
+<p>The thread is then returned to its pool, from which it can be reused by a future request. Its ID never changes.</p>
 
 <h3>Appenders</h3>
 
@@ -52,17 +50,17 @@ title: Logging
 
 <p>Currently, the only available rolling policy (<code>log.application.RollingFileAppender.policy</code>) is <code>TimeBasedRollingPolicy</code>, which rolls over the log file based on the value of <code>log.application.RollingFileAppender.TimeBasedRollingPolicy.filename_pattern</code>. <code>log.application.RollingFileAppender.TimeBasedRollingPolicy.max_history</code> defines how many rolled-over log files will be kept.</p>
 
-<p class="text-info"><i class="fa fa-info-circle"></i> FileAppender and RollingFileAppender should not be enabled simultaneously, or if they are, they should not log to the same file.</p>
+<p class="text-warning"><i class="fa fa-warning"></i> FileAppender and RollingFileAppender should not be set to log to the same file.</p>
 
 <h4>SyslogAppender</h4>
 
-<p>SyslogAppender appends log messages to the syslog, managed by syslogd, on a local or remote host.</p>
+<p>SyslogAppender appends log messages to the syslog, managed by syslogd.</p>
 
 <hr>
 
 <h2 id="Error Log">Error Log</h2>
 
-<p>The error log, since version 3.4, is a dedicated log for <code>warn</code>- and <code>error</code>-level application log messages. This log offers a FileAppender and RollingFileAppender that work the same as their <a href="#Application%20Log">application log</a> counterparts.</p>
+<p>The error log is a dedicated log for <code>WARN</code>- and <code>ERROR</code>-level application log messages. This log offers a FileAppender and RollingFileAppender that work the same as their <a href="#Application%20Log">application log</a> counterparts.</p>
 
 <p>Whether or not any error log appenders are enabled, error messages will still appear in the application log.</p>
 

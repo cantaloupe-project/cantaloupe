@@ -17,6 +17,7 @@ title: Access Control
       <li><a href="#example-10">Restrict using HTTP Basic</a></li>
       <li><a href="#example-11">Redirect to a reduced-quality version</a></li>
       <li><a href="#example-9">Redirect to another URL</a></li>
+      <li><a href="#example-12">Add an overlay for some requests</a></li>
     </ul>
   </li>
   <li><a href="#IIIF%20Authentication%20API">IIIF Authentication API</a>
@@ -31,7 +32,7 @@ title: Access Control
 <p>The <code>authorize()</code> <a href="delegate-script.html">delegate method</a> can be used to implement authorization logic ranging from simple to complex. A skeleton with documented parameters and return values is present in the <span class="filename">delegates.rb.sample</span> file. By default, it just returns <code>true</code>, authorizing all requests.</p>
 
 <p class="text-info"><i class="fa fa-info-circle"></i> The authorization method will be called upon every request to a public endpoint, and should therefore be written to be efficient.</p>
-<p class="text-info"><i class="fa fa-info-circle"></i> Implementations should assume that the underlying source image exists, even though it may not. The existence check will happen separately.</p>
+<p class="text-info"><i class="fa fa-info-circle"></i> Implementations should assume that the underlying source image exists. The existence check will happen separately.</p>
 
 <h2 id="Authorization Examples">Examples</h2>
 
@@ -125,11 +126,9 @@ end
 
 <h3 id="example-10">Restrict with HTTP Basic authentication</h3>
 
-<p>With HTTP Basic authentication, the server sends an HTTP 401 (Unauthorized) status code along with a <code>WWW-Authenticate: Basic</code> header, which tells the client that subsequent requests must include an <code>Authorization</code> header containing encoded credentials. (Web browsers normally acquire these from a user prompt or password store.)</p>
+<p>With HTTP Basic authentication, the server sends an HTTP 401 (Unauthorized) status code along with a <code>WWW-Authenticate: Basic</code> header, which tells the client that subsequent requests must include an <code>Authorization</code> header containing encoded credentials. (Web browsers will normally prompt for these and store them for a time.)</p>
 
-<p class="text-warning"><i class="fa fa-warning"></i> Credentials encoded using this scheme can be easily decoded. HTTP Basic should only be used over SSL/TLS.</p>
-
-<p>Here is an example of an HTTP Basic implementation:</p>
+<p class="text-warning"><i class="fa fa-warning"></i> HTTP Basic should only be used over SSL/TLS.</p>
 
 {% highlight ruby %}
 require 'base64'
@@ -177,6 +176,10 @@ class CustomDelegate
 end
 {% endhighlight %}
 
+<h3 id="example-12">Add an overlay for some requests</h3>
+
+<p>See <a href="overlays.html">Overlays</a>.</p>
+
 <h2 id="IIIF Authentication API">IIIF Authentication API</h2>
 
 <p>The <a href="https://iiif.io/api/auth/1.0/">IIIF Authentication API 1.0</a> describes general patterns of access-restricting IIIF resources, including images, in a standard way. The <code>authorize()</code> delegate method can be used in ways that conform to this API's notions of &quot;all or nothing&quot; and &quot;tiered&quot; access.</p>
@@ -216,18 +219,20 @@ end
 
 <p><a href="https://iiif.io/api/auth/1.0/#tiered-access">Tiered Access</a> can be used to redirect to any of a number of &quot;virtual&quot; reduced-quality versions (&quot;tiers&quot;) of an image based on authorization status.</p>
 
-<p>The IIIF Authorization API is agnostic about how a quality tier system should work; Cantaloupe uses a resolution-based system that limits the maximum available resolution by an arbitrary factor. For example, a fully-authorized user might be able to access the full resolution of an image, whereas an unauthorized user might be able to access only a half-resolution version.</p>
+<p>The IIIF Authorization API is agnostic about how a quality tier system should work. Cantaloupe uses a resolution-based system that limits the maximum available resolution. For example, a fully-authorized user might be able to access the full resolution of an image, whereas an unauthorized user might be able to access only a half-resolution version.</p>
 
-<p>This works transparently with zooming viewer clients, limiting the maximum available zoom (and thus detail) level.</p>
+<p>This works transparently with zooming viewer clients, limiting the maximum available zoom level.</p>
 
-<p>URI identifiers of scale-constrained images have a suffix in the format <code>-[scale numerator]:[scale denominator]</code>. So, for example, if the client requests <code>image.tif/full/max/0/default.jpg</code>, but is only authorized to work with a half-resolution version, it is redirected to <code>image.tif-1:2/full/max/0/default.jpg</code>, from which it is allowed to retrieve the full size of a dynamically half-sized version of <code>image.tif</code>.</p>
-
-<p class="text-info"><i class="fa fa-info-circle"></i> This identifier suffix scheme is not guaranteed to remain stable across software versions.</p>
+<p>URI identifiers of scale-constrained images have a suffix in the format <code>-numerator:denominator</code>. So, for example, if the client requests <code>image.tif/full/max/0/default.jpg</code>, but is only authorized to access a half-resolution version, it is redirected to <code>image.tif-1:2/full/max/0/default.jpg</code>, from which it is allowed to retrieve the full size of a dynamically half-sized version of <code>image.tif</code>.</p>
 
 <h4>Example</h4>
 
 {% highlight ruby %}
 class CustomDelegate
+
+  # The maximum scale allowed to unauthorized clients.
+  MAX_UNAUTHORIZED_R = Rational(1, 2)
+
   def authorize(options = {})
     header = context['request_headers']
                  .select{ |name, value| name.downcase == 'authorization' }
@@ -238,7 +243,7 @@ class CustomDelegate
         # Get the current scale constraint fraction, which ultimately comes
         # from the identifier URI path component, which is conveniently
         # made available for you in the delegate script context.
-        # This is an array of numerator and denominator integers.
+        # This is a two-element array of numerator and denominator integers.
         scale_constraint = context['scale_constraint']
 
         # If it exists, convert it to a Rational (Ruby fraction).
@@ -246,17 +251,13 @@ class CustomDelegate
         scale_constraint_r = scale_constraint ?
             Rational(*scale_constraint) : Rational(1)
 
-        # Define the authorized scale constraint. In this case, we want
-        # to allow access to a half-scale version or smaller.
-        authorized_r = Rational(1, 2)
-
         # If the requested scale constraint is larger than authorized,
         # redirect to the authorized scale constraint.
-        if scale_constraint_r > authorized_r
+        if scale_constraint_r > MAX_UNAUTHORIZED_R
           return {
               'status_code' => 302,
-              'scale_numerator' => authorized_r.numerator,
-              'scale_denominator' => authorized_r.denominator
+              'scale_numerator' => MAX_UNAUTHORIZED_R.numerator,
+              'scale_denominator' => MAX_UNAUTHORIZED_R.denominator
           }
         else
           return true
