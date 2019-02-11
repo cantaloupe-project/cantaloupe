@@ -52,7 +52,7 @@ public interface Processor extends AutoCloseable {
      * @see #getWarnings()
      * @since 3.4
      */
-    default InitializationException getInitializationException() {
+    default InitializationException getInitializationError() {
         return null;
     }
 
@@ -87,12 +87,12 @@ public interface Processor extends AutoCloseable {
      *
      * <p>An instance with warnings is still usable.</p>
      *
-     * <p>The return value of {@link #getInitializationException()}, if not
+     * <p>The return value of {@link #getInitializationError()}, if not
      * {@literal null}, should not be duplicated here.</p>
      *
      * <p>This default implementation returns an empty list.</p>
      *
-     * @see #getInitializationException()
+     * @see #getInitializationError()
      * @since 3.4
      */
     default List<String> getWarnings() {

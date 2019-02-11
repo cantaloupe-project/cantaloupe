@@ -120,18 +120,18 @@ public class GraphicsMagickProcessorTest extends MagickProcessorTest {
     }
 
     @Test
-    public void testGetInitializationExceptionWithNoException() {
-        assertNull(instance.getInitializationException());
+    public void testGetInitializationErrorWithNoError() {
+        assertNull(instance.getInitializationError());
     }
 
     @Test
-    public void testGetInitializationExceptionWithMissingBinaries() {
+    public void testGetInitializationErrorWithMissingBinaries() {
         Configuration.getInstance().setProperty(
                 Key.GRAPHICSMAGICKPROCESSOR_PATH_TO_BINARIES,
                 "/bogus/bogus/bogus");
         GraphicsMagickProcessor.resetInitialization();
 
-        assertNotNull(instance.getInitializationException());
+        assertNotNull(instance.getInitializationError());
     }
 
     /* getWarnings() */

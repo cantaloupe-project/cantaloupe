@@ -72,7 +72,7 @@ public final class ProcessorFactory {
 
         for (Class<? extends Processor> class_ : candidates) {
             Processor candidate = class_.getDeclaredConstructor().newInstance();
-            e = candidate.getInitializationException();
+            e = candidate.getInitializationError();
             if (e == null) {
                 try {
                     candidate.setSourceFormat(sourceFormat);

@@ -430,7 +430,7 @@ class GraphicsMagickProcessor extends AbstractMagickProcessor
     }
 
     @Override
-    public InitializationException getInitializationException() {
+    public InitializationException getInitializationError() {
         if (!IS_INITIALIZATION_ATTEMPTED.get()) {
             initialize();
         }

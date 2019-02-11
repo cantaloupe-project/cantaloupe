@@ -44,17 +44,17 @@ public class KakaduDemoProcessorTest extends AbstractProcessorTest {
     }
 
     @Test
-    public void testGetInitializationExceptionWithNoException() {
-        assertNull(instance.getInitializationException());
+    public void testGetInitializationErrorWithNoException() {
+        assertNull(instance.getInitializationError());
     }
 
     @Test
-    public void testGetInitializationExceptionWithMissingBinaries() {
+    public void testGetInitializationErrorWithMissingBinaries() {
         Configuration.getInstance().setProperty(
                 Key.KAKADUDEMOPROCESSOR_PATH_TO_BINARIES,
                 "/bogus/bogus/bogus");
         KakaduDemoProcessor.resetInitialization();
-        assertNotNull(instance.getInitializationException());
+        assertNotNull(instance.getInitializationError());
     }
 
     /**

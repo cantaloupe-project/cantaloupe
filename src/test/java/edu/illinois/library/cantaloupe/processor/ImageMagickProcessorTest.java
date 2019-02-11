@@ -203,21 +203,21 @@ public class ImageMagickProcessorTest extends MagickProcessorTest {
                 instance.getIMOverlayGravity(Position.BOTTOM_RIGHT));
     }
 
-    /* getInitializationException() */
+    /* getInitializationError() */
 
     @Test
-    public void testGetInitializationExceptionWithNoException() {
-        assertNull(instance.getInitializationException());
+    public void testGetInitializationErrorWithNoException() {
+        assertNull(instance.getInitializationError());
     }
 
     @Test
-    public void testGetInitializationExceptionWithMissingBinaries() {
+    public void testGetInitializationErrorWithMissingBinaries() {
         Configuration.getInstance().setProperty(
                 Key.IMAGEMAGICKPROCESSOR_PATH_TO_BINARIES,
                 "/bogus/bogus/bogus");
         ImageMagickProcessor.resetInitialization();
         instance = newInstance();
-        assertNotNull(instance.getInitializationException());
+        assertNotNull(instance.getInitializationError());
     }
 
     /* getOverlayTempFile() */

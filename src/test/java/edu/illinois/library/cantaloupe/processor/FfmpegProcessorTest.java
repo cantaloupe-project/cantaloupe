@@ -78,17 +78,17 @@ public class FfmpegProcessorTest extends AbstractProcessorTest {
     }
 
     @Test
-    public void testGetInitializationExceptionWithNoException() {
-        assertNull(instance.getInitializationException());
+    public void testGetInitializationErrorWithNoError() {
+        assertNull(instance.getInitializationError());
     }
 
     @Test
-    public void testGetInitializationExceptionWithMissingBinaries() {
+    public void testGetInitializationErrorWithMissingBinaries() {
         Configuration.getInstance().setProperty(
                 Key.FFMPEGPROCESSOR_PATH_TO_BINARIES,
                 "/bogus/bogus/bogus");
         FfmpegProcessor.resetInitialization();
-        assertNotNull(instance.getInitializationException());
+        assertNotNull(instance.getInitializationError());
     }
 
     @Test

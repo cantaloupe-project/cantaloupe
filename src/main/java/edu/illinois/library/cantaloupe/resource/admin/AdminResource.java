@@ -74,7 +74,7 @@ public class AdminResource extends AbstractAdminResource {
         /**
          * @return List of all processor warnings, plus the message of the
          *         return value of
-         *         {@link Processor#getInitializationException()}, if any.
+         *         {@link Processor#getInitializationError()}, if any.
          */
         public List<String> getWarnings() {
             Processor proc = (Processor) object;
@@ -82,7 +82,7 @@ public class AdminResource extends AbstractAdminResource {
             List<String> warnings = new ArrayList<>();
 
             // Add the InitializationException message
-            InitializationException e = proc.getInitializationException();
+            InitializationException e = proc.getInitializationError();
             if (e != null) {
                 warnings.add(e.getMessage());
             }

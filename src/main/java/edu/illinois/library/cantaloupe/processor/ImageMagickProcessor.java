@@ -625,7 +625,7 @@ class ImageMagickProcessor extends AbstractMagickProcessor
     }
 
     @Override
-    public InitializationException getInitializationException() {
+    public InitializationException getInitializationError() {
         initialize();
         return initializationException;
     }

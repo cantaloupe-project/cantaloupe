@@ -164,7 +164,7 @@ class KakaduNativeProcessor implements FileProcessor, StreamProcessor {
     }
 
     @Override
-    public InitializationException getInitializationException() {
+    public InitializationException getInitializationError() {
         initializeClass();
         return initializationException;
     }

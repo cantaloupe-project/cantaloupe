@@ -266,7 +266,7 @@ class KakaduDemoProcessor extends AbstractProcessor implements FileProcessor {
     }
 
     @Override
-    public InitializationException getInitializationException() {
+    public InitializationException getInitializationError() {
         if (!initializationAttempted.get()) {
             initialize();
         }
