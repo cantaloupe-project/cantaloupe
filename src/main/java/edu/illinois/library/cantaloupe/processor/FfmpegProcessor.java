@@ -52,7 +52,7 @@ class FfmpegProcessor extends AbstractProcessor implements FileProcessor {
 
     private static final AtomicBoolean IS_INITIALIZATION_ATTEMPTED =
             new AtomicBoolean(false);
-    private static InitializationException initializationException;
+    private static String initializationError;
 
     private Path sourceFile;
 
@@ -75,7 +75,7 @@ class FfmpegProcessor extends AbstractProcessor implements FileProcessor {
             invoke(FFPROBE_NAME);
             invoke(FFMPEG_NAME);
         } catch (IOException e) {
-            initializationException = new InitializationException(e);
+            initializationError = e.getMessage();
         }
     }
 
@@ -94,7 +94,7 @@ class FfmpegProcessor extends AbstractProcessor implements FileProcessor {
      */
     static synchronized void resetInitialization() {
         IS_INITIALIZATION_ATTEMPTED.set(false);
-        initializationException = null;
+        initializationError = null;
     }
 
     FfmpegProcessor() {
@@ -119,11 +119,11 @@ class FfmpegProcessor extends AbstractProcessor implements FileProcessor {
     }
 
     @Override
-    public InitializationException getInitializationError() {
+    public String getInitializationError() {
         if (!IS_INITIALIZATION_ATTEMPTED.get()) {
             initialize();
         }
-        return initializationException;
+        return initializationError;
     }
 
     @Override

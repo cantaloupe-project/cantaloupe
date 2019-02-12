@@ -74,7 +74,7 @@ class GraphicsMagickProcessor extends AbstractMagickProcessor
     private static final Map<Format, Set<Format>> SUPPORTED_FORMATS =
             new HashMap<>();
 
-    private static InitializationException initializationException;
+    private static String initializationError;
 
     private Path sourceFile;
 
@@ -163,7 +163,7 @@ class GraphicsMagickProcessor extends AbstractMagickProcessor
                     }
                 }
             } catch (IOException | InterruptedException e) {
-                initializationException = new InitializationException(e);
+                initializationError = e.getMessage();
                 // This is safe to swallow.
             }
         }
@@ -175,7 +175,7 @@ class GraphicsMagickProcessor extends AbstractMagickProcessor
      */
     static synchronized void resetInitialization() {
         IS_INITIALIZATION_ATTEMPTED.set(false);
-        initializationException = null;
+        initializationError = null;
         SUPPORTED_FORMATS.clear();
     }
 
@@ -430,11 +430,11 @@ class GraphicsMagickProcessor extends AbstractMagickProcessor
     }
 
     @Override
-    public InitializationException getInitializationError() {
+    public String getInitializationError() {
         if (!IS_INITIALIZATION_ATTEMPTED.get()) {
             initialize();
         }
-        return initializationException;
+        return initializationError;
     }
 
     @Override

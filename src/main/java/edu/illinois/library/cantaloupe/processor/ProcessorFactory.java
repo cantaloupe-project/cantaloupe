@@ -68,12 +68,12 @@ public final class ProcessorFactory {
             ReflectiveOperationException {
         final List<Class<? extends Processor>> candidates =
                 getSelectionStrategy().getPreferredProcessors(sourceFormat);
-        InitializationException e = null;
+        String errorMsg = null;
 
         for (Class<? extends Processor> class_ : candidates) {
             Processor candidate = class_.getDeclaredConstructor().newInstance();
-            e = candidate.getInitializationError();
-            if (e == null) {
+            errorMsg = candidate.getInitializationError();
+            if (errorMsg == null) {
                 try {
                     candidate.setSourceFormat(sourceFormat);
                     LOGGER.debug("{} selected for format {} ({} offered {})",
@@ -88,8 +88,8 @@ public final class ProcessorFactory {
             }
         }
 
-        if (e != null) {
-            throw e;
+        if (errorMsg != null) {
+            throw new InitializationException(errorMsg);
         }
         throw new UnsupportedSourceFormatException(sourceFormat);
     }

@@ -123,7 +123,7 @@ class KakaduNativeProcessor implements FileProcessor, StreamProcessor {
 
     private static final AtomicBoolean IS_CLASS_INITIALIZED = new AtomicBoolean();
 
-    private static InitializationException initializationException;
+    private static String initializationError;
 
     private final JPEG2000KakaduImageReader reader =
             new JPEG2000KakaduImageReader();
@@ -144,7 +144,7 @@ class KakaduNativeProcessor implements FileProcessor, StreamProcessor {
             try {
                 Kdu_global.Kdu_get_core_version(); // call something trivial
             } catch (KduException | UnsatisfiedLinkError e) {
-                initializationException = new InitializationException(e);
+                initializationError = e.getMessage();
             }
         }
     }
@@ -164,9 +164,9 @@ class KakaduNativeProcessor implements FileProcessor, StreamProcessor {
     }
 
     @Override
-    public InitializationException getInitializationError() {
+    public String getInitializationError() {
         initializeClass();
-        return initializationException;
+        return initializationError;
     }
 
     @Override

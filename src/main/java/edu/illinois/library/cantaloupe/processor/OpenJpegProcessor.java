@@ -134,7 +134,7 @@ class OpenJpegProcessor extends AbstractProcessor implements FileProcessor {
     /**
      * Set by {@link #initialize()}.
      */
-    private static InitializationException initializationException;
+    private static String initializationError;
 
     /**
      * @see <a href="https://github.com/medusa-project/cantaloupe/issues/190">
@@ -195,7 +195,7 @@ class OpenJpegProcessor extends AbstractProcessor implements FileProcessor {
             }
             // Unix doesn't need any initialization.
         } catch (IOException e) {
-            initializationException = new InitializationException(e);
+            initializationError = e.getMessage();
         }
     }
 
@@ -279,7 +279,7 @@ class OpenJpegProcessor extends AbstractProcessor implements FileProcessor {
      */
     static synchronized void resetInitialization() {
         initializationAttempted.set(false);
-        initializationException = null;
+        initializationError = null;
     }
 
     /**
@@ -340,11 +340,11 @@ class OpenJpegProcessor extends AbstractProcessor implements FileProcessor {
     }
 
     @Override
-    public InitializationException getInitializationError() {
+    public String getInitializationError() {
         if (!initializationAttempted.get()) {
             initialize();
         }
-        return initializationException;
+        return initializationError;
     }
 
     @Override

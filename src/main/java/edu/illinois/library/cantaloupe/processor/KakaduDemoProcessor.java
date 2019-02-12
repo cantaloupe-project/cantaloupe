@@ -128,7 +128,7 @@ class KakaduDemoProcessor extends AbstractProcessor implements FileProcessor {
     /**
      * Set by {@link #initialize()}.
      */
-    private static InitializationException initializationException;
+    private static String initializationError;
 
     /**
      * Not used in Windows.
@@ -197,7 +197,7 @@ class KakaduDemoProcessor extends AbstractProcessor implements FileProcessor {
                 initializeForUnix();
             }
         } catch (IOException e) {
-            initializationException = new InitializationException(e);
+            initializationError = e.getMessage();
         }
     }
 
@@ -237,7 +237,7 @@ class KakaduDemoProcessor extends AbstractProcessor implements FileProcessor {
      */
     static synchronized void resetInitialization() {
         initializationAttempted.set(false);
-        initializationException = null;
+        initializationError = null;
     }
 
     private static String toString(ByteArrayOutputStream os) {
@@ -266,11 +266,11 @@ class KakaduDemoProcessor extends AbstractProcessor implements FileProcessor {
     }
 
     @Override
-    public InitializationException getInitializationError() {
+    public String getInitializationError() {
         if (!initializationAttempted.get()) {
             initialize();
         }
-        return initializationException;
+        return initializationError;
     }
 
     @Override

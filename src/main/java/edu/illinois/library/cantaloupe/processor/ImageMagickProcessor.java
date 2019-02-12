@@ -84,7 +84,7 @@ class ImageMagickProcessor extends AbstractMagickProcessor
 
     private static final AtomicBoolean initializationAttempted =
             new AtomicBoolean(false);
-    private static InitializationException initializationException;
+    private static String initializationError;
 
     private static final AtomicBoolean checkedVersion =
             new AtomicBoolean(false);
@@ -261,7 +261,7 @@ class ImageMagickProcessor extends AbstractMagickProcessor
                     }
                 }
             } catch (IOException | InterruptedException e) {
-                initializationException = new InitializationException(e);
+                initializationError = e.getMessage();
                 // This is safe to swallow.
             }
         }
@@ -273,7 +273,7 @@ class ImageMagickProcessor extends AbstractMagickProcessor
      */
     static synchronized void resetInitialization() {
         initializationAttempted.set(false);
-        initializationException = null;
+        initializationError = null;
         supportedFormats.clear();
         checkedVersion.set(false);
         imVersion = null;
@@ -625,9 +625,9 @@ class ImageMagickProcessor extends AbstractMagickProcessor
     }
 
     @Override
-    public InitializationException getInitializationError() {
+    public String getInitializationError() {
         initialize();
-        return initializationException;
+        return initializationError;
     }
 
     File getOverlayTempFile(ImageOverlay overlay) throws IOException {

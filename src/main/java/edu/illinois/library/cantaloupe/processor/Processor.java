@@ -52,7 +52,7 @@ public interface Processor extends AutoCloseable {
      * @see #getWarnings()
      * @since 3.4
      */
-    default InitializationException getInitializationError() {
+    default String getInitializationError() {
         return null;
     }
 
