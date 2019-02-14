@@ -28,9 +28,9 @@ public final class LoggerUtil {
             final Iterator<String> it = appConfig.getKeys();
             while (it.hasNext()) {
                 final String key = it.next();
-                // EnvironmentConfiguration keys start with "CANTALOUPE_LOG_";
+                // EnvironmentConfiguration keys start with "LOG_";
                 // all others start with "log."
-                if (key.startsWith("log.") || key.startsWith("CANTALOUPE_LOG_")) {
+                if (key.startsWith("log.") || key.startsWith("LOG_")) {
                     loggerContext.putProperty(key, appConfig.getString(key));
                 }
             }
