@@ -97,13 +97,13 @@ public class PropertiesDocumentTest extends BaseTest {
 
         // item 5
         pair = (PropertiesDocument.KeyValuePair) items.get(5);
-        assertEquals("key2 ", pair.key());
-        assertEquals(" value=value", pair.value());
+        assertEquals("key2", pair.key());
+        assertEquals("value=value", pair.value());
 
         // item 6
         pair = (PropertiesDocument.KeyValuePair) items.get(6);
-        assertEquals("key3 ", pair.key());
-        assertEquals(" value\\\\value", pair.value());
+        assertEquals("key3", pair.key());
+        assertEquals("value\\\\value", pair.value());
 
         // item 7
         pair = (PropertiesDocument.KeyValuePair) items.get(7);
@@ -112,8 +112,8 @@ public class PropertiesDocumentTest extends BaseTest {
 
         // item 8
         pair = (PropertiesDocument.KeyValuePair) items.get(8);
-        assertEquals("key5 ", pair.key());
-        assertEquals(" value", pair.value());
+        assertEquals("key5", pair.key());
+        assertEquals("value", pair.value());
     }
 
     @Test

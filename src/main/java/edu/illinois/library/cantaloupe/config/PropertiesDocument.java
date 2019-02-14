@@ -8,6 +8,8 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * <p>Properties document, preserving comments, whitespace, and key order.
@@ -58,6 +60,7 @@ class PropertiesDocument {
     }
 
     static class KeyValuePair extends Item {
+        /** a.k.a. left indent */
         private int offset;
         private String key, normalizedKey,
                 pairSeparator = PAIR_SEPARATOR_1, value;
@@ -76,20 +79,12 @@ class PropertiesDocument {
             return key;
         }
 
-        /**
-         * @return Key without surrounding whitespace.
-         */
-        String normalizedKey() {
-            return normalizedKey;
-        }
-
         String value() {
             return value;
         }
 
         void setKey(String key) {
-            this.key           = key;
-            this.normalizedKey = key.trim();
+            this.key = key;
         }
 
         void setPairSeparator(String pairSeparator) {
@@ -119,6 +114,12 @@ class PropertiesDocument {
     private static final String PAIR_SEPARATOR_2 = ":";
     private static final String SPACE            = " ";
 
+    /**
+     * Used for grabbing the pair separator with surrounding space intact.
+     */
+    private static final Pattern PAIR_SEPARATOR_PATTERN =
+            Pattern.compile("(\\s*[=:]\\s*)");
+
     private final List<Item> items = new ArrayList<>(Key.values().length + 20);
 
     void clear() {
@@ -131,14 +132,14 @@ class PropertiesDocument {
     void clearKey(String key) {
         new ArrayList<>(items).stream()
                 .filter(item -> item instanceof KeyValuePair &&
-                        key.equals(((KeyValuePair) item).normalizedKey()))
+                        key.equals(((KeyValuePair) item).key()))
                 .forEach(items::remove);
     }
 
     boolean containsKey(String key) {
         return items.stream()
                 .anyMatch(it -> it instanceof KeyValuePair &&
-                        key.equals(((KeyValuePair) it).normalizedKey()));
+                        key.equals(((KeyValuePair) it).key()));
     }
 
     /**
@@ -147,7 +148,7 @@ class PropertiesDocument {
     String get(String key) {
         return items.stream()
                 .filter(it -> it instanceof KeyValuePair &&
-                        key.equals(((KeyValuePair) it).normalizedKey()))
+                        key.equals(((KeyValuePair) it).key()))
                 .findFirst()
                 .map(it -> ((KeyValuePair) it).value().trim().replaceAll("\\\\+", "\\\\"))
                 .orElse(null);
@@ -156,7 +157,7 @@ class PropertiesDocument {
     Iterator<String> getKeys() {
         return items.stream()
                 .filter(it -> it instanceof KeyValuePair)
-                .map(it -> ((KeyValuePair) it).normalizedKey())
+                .map(it -> ((KeyValuePair) it).key())
                 .iterator();
     }
 
@@ -176,7 +177,7 @@ class PropertiesDocument {
             Item item = items.get(i);
             if (item instanceof KeyValuePair) {
                 KeyValuePair pair = (KeyValuePair) item;
-                if (key.equals(pair.normalizedKey())) {
+                if (key.equals(pair.key())) {
                     found = true;
                     newPair.pairSeparator = pair.pairSeparator;
                     items.set(i, newPair);
@@ -218,6 +219,7 @@ class PropertiesDocument {
                 }
                 if (i > 0) {
                     KeyValuePair pair = new KeyValuePair();
+                    // Read the pair's left-indentation.
                     for (int s = 0; s < line.length() - 1; s++) {
                         if (SPACE.equals(line.substring(s, s + 1))) {
                             pair.offset++;
@@ -225,9 +227,15 @@ class PropertiesDocument {
                             break;
                         }
                     }
-                    pair.setKey(trimmedLine.substring(0, i));
-                    pair.setPairSeparator(trimmedLine.substring(i, i + 1));
-                    pair.setValue(trimmedLine.substring(i + 1));
+                    pair.setKey(trimmedLine.substring(0, i).trim());
+                    pair.setValue(trimmedLine.substring(i + 1).trim());
+
+                    final Matcher matcher =
+                            PAIR_SEPARATOR_PATTERN.matcher(trimmedLine);
+                    if (matcher.find()) {
+                        pair.setPairSeparator(matcher.group(0));
+                    }
+
                     items.add(pair);
                 } else {
                     throw new IOException(
