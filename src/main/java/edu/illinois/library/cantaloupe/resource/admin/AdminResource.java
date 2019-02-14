@@ -124,7 +124,7 @@ public class AdminResource extends AbstractAdminResource {
      */
     private Map<String,Object> getTemplateVars() {
         final Map<String, Object> vars = getCommonTemplateVars();
-        vars.put("adminUri", vars.get("baseUri") + Route.ADMIN_PATH.substring(1));
+        vars.put("adminUri", vars.get("baseUri") + Route.ADMIN_PATH);
 
         ////////////////////////////////////////////////////////////////////
         //////////////////////// status section ////////////////////////////

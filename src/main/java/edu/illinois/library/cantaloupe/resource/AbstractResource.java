@@ -292,9 +292,10 @@ public abstract class AbstractResource {
         vars.put("version", Application.getVersion());
 
         String baseURI = getPublicRootReference().toString();
-        // A trailing slash is needed to make the <base> tag work.
-        if (!baseURI.endsWith("/")) {
-            baseURI += "/";
+        // Normalize the base URI. Note that the <base> tag will need it to
+        // have a trailing slash.
+        if (baseURI.endsWith("/")) {
+            baseURI = baseURI.substring(0, baseURI.length() - 2);
         }
         vars.put("baseUri", baseURI);
         return vars;
