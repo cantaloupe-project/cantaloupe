@@ -2,9 +2,7 @@ package edu.illinois.library.cantaloupe.config;
 
 import edu.illinois.library.cantaloupe.util.StringUtils;
 
-import java.util.Collections;
 import java.util.Iterator;
-import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -161,11 +159,6 @@ class MapConfiguration implements Configuration {
     @Override
     public void setProperty(String key, Object value) {
         configuration.put(key, value);
-    }
-
-    @Override
-    public Map<String, Object> toMap() {
-        return Collections.unmodifiableMap(configuration);
     }
 
 }

@@ -32,8 +32,8 @@ public class ConfigurationProviderTest extends BaseTest {
 
         instance.clear();
 
-        assertEquals(0, config1.toMap().size());
-        assertEquals(0, config2.toMap().size());
+        assertFalse(config1.getKeys().hasNext());
+        assertFalse(config2.getKeys().hasNext());
     }
 
     @Test
