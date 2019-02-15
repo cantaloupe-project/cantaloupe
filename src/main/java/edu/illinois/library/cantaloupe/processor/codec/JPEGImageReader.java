@@ -139,7 +139,9 @@ final class JPEGImageReader extends AbstractIIOImageReader
         Dimension fullSize = new Dimension(
                 iioReader.getWidth(0),
                 iioReader.getHeight(0));
-        image = readRegion(crop.getRectangle(fullSize), hints);
+        image = readRegion(
+                crop.getRectangle(fullSize, ops.getScaleConstraint()),
+                hints);
 
         if (image == null) {
             throw new UnsupportedSourceFormatException(iioReader.getFormatName());
