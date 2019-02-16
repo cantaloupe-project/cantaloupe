@@ -171,15 +171,15 @@ public class ImageResource extends IIIF2Resource {
             Dimension fullSize;
             try {
                 fullSize = info.getSize(getPageIndex());
-            } catch (IndexOutOfBoundsException e) {
+
+                ops.setScaleConstraint(getScaleConstraint());
+                ops.applyNonEndpointMutations(info, getDelegateProxy());
+                ops.freeze();
+
+                getRequestContext().setOperationList(ops, fullSize);
+            } catch (IllegalArgumentException | IndexOutOfBoundsException e) {
                 throw new IllegalClientArgumentException(e);
             }
-
-            getRequestContext().setOperationList(ops, fullSize);
-
-            ops.setScaleConstraint(getScaleConstraint());
-            ops.applyNonEndpointMutations(info, getDelegateProxy());
-            ops.freeze();
 
             processor.validate(ops, fullSize);
 
