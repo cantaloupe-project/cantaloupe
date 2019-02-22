@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationProvider;
 import edu.illinois.library.cantaloupe.config.FileConfiguration;
+import edu.illinois.library.cantaloupe.config.MapConfiguration;
 import edu.illinois.library.cantaloupe.http.Method;
 import edu.illinois.library.cantaloupe.http.Status;
 import edu.illinois.library.cantaloupe.resource.JacksonRepresentation;
@@ -53,6 +54,8 @@ public class ConfigurationResource extends AbstractAdminResource {
         for (Configuration config : wrappedConfigs) {
             if (config instanceof FileConfiguration) {
                 map = ((FileConfiguration) config).toMap();
+            } else if (config instanceof MapConfiguration) {
+                map = ((MapConfiguration) config).getBackingMap();
             }
         }
 

@@ -3,6 +3,7 @@ package edu.illinois.library.cantaloupe.config;
 import edu.illinois.library.cantaloupe.util.StringUtils;
 
 import java.util.Iterator;
+import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -10,7 +11,7 @@ import java.util.concurrent.ConcurrentMap;
 /**
  * In-memory configuration that cannot be persisted.
  */
-class MapConfiguration implements Configuration {
+public class MapConfiguration implements Configuration {
 
     private final ConcurrentMap<String,Object> configuration =
             new ConcurrentHashMap<>();
@@ -23,6 +24,10 @@ class MapConfiguration implements Configuration {
     @Override
     public void clearProperty(String key) {
         configuration.remove(key);
+    }
+
+    public Map<String,Object> getBackingMap() {
+        return configuration;
     }
 
     @Override
