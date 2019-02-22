@@ -76,7 +76,7 @@ public class AbstractResourceTest extends BaseTest {
     @Test
     public void testGetCommonTemplateVars() {
         Map<String,Object> vars = instance.getCommonTemplateVars();
-        assertTrue(((String) vars.get("baseUri")).endsWith("/"));
+        assertFalse(((String) vars.get("baseUri")).endsWith("/"));
         assertNotNull(vars.get("version"));
     }
 
