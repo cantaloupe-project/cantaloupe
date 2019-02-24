@@ -468,25 +468,6 @@ public class OperationListTest extends BaseTest {
     }
 
     @Test
-    public void compareToWithEqualInstances() {
-        OperationList ops2 = new OperationList();
-        ops2.add(new Scale());
-        ops2.add(new Rotate(0));
-
-        assertEquals(0, ops2.compareTo(instance));
-    }
-
-    @Test
-    public void compareToWithUnequalInstances() {
-        OperationList ops2 = new OperationList();
-        ops2.add(new CropToSquare());
-        ops2.add(new Scale());
-        ops2.add(new Rotate(0));
-
-        assertTrue(ops2.compareTo(instance) > 0);
-    }
-
-    @Test
     public void equalsWithEqualOperationList() {
         OperationList ops1 = new OperationList(new Rotate(1));
         OperationList ops2 = new OperationList(new Rotate(1));

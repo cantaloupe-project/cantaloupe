@@ -51,8 +51,7 @@ import java.util.stream.Stream;
  * #getScaleConstraint() scale constraint} into account when cropping and
  * scaling.</p>
  */
-public final class OperationList implements Comparable<OperationList>,
-        Iterable<Operation> {
+public final class OperationList implements Iterable<Operation> {
 
     private static final Logger LOGGER =
             LoggerFactory.getLogger(OperationList.class);
@@ -302,11 +301,6 @@ public final class OperationList implements Comparable<OperationList>,
     public void clear() {
         checkFrozen();
         operations.clear();
-    }
-
-    @Override
-    public int compareTo(OperationList ops) {
-        return this.toString().compareTo(ops.toString());
     }
 
     @Override
