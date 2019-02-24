@@ -13,15 +13,15 @@ import java.util.regex.Pattern;
  */
 public final class Route {
 
-    public static final String ADMIN_PATH = "/admin";
-    public static final String ADMIN_CONFIG_PATH = "/admin/configuration";
-    public static final String ADMIN_STATUS_PATH = "/admin/status";
+    public static final String ADMIN_PATH         = "/admin";
+    public static final String ADMIN_CONFIG_PATH  = "/admin/configuration";
+    public static final String ADMIN_STATUS_PATH  = "/admin/status";
     public static final String CONFIGURATION_PATH = "/configuration";
-    public static final String HEALTH_PATH = "/health";
-    public static final String IIIF_1_PATH = "/iiif/1";
-    public static final String IIIF_2_PATH = "/iiif/2";
-    public static final String STATUS_PATH = "/status";
-    public static final String TASKS_PATH = "/tasks";
+    public static final String HEALTH_PATH        = "/health";
+    public static final String IIIF_1_PATH        = "/iiif/1";
+    public static final String IIIF_2_PATH        = "/iiif/2";
+    public static final String STATUS_PATH        = "/status";
+    public static final String TASKS_PATH         = "/tasks";
 
     /**
      * N.B.: the LinkedHashMap preserves order as each mapping will be checked
@@ -93,11 +93,11 @@ public final class Route {
      */
     static Route forPath(String path) {
         for (Pattern pattern : MAPPINGS.keySet()) {
-            final Route route = new Route();
-            route.setResource(MAPPINGS.get(pattern));
-
             final Matcher matcher = pattern.matcher(path);
             if (matcher.find()) {
+                final Route route = new Route();
+                route.setResource(MAPPINGS.get(pattern));
+
                 for (int i = 1; i <= matcher.groupCount(); i++) {
                     route.getPathArguments().add(matcher.group(i));
                 }
