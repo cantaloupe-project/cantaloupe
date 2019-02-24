@@ -7,6 +7,7 @@ import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Orientation;
 import edu.illinois.library.cantaloupe.image.Rectangle;
 import edu.illinois.library.cantaloupe.operation.Crop;
+import edu.illinois.library.cantaloupe.operation.CropByPercent;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.operation.ReductionFactor;
 import edu.illinois.library.cantaloupe.processor.UnsupportedSourceFormatException;
@@ -132,8 +133,7 @@ final class JPEGImageReader extends AbstractIIOImageReader
 
         Crop crop = (Crop) ops.getFirst(Crop.class);
         if (crop == null || hints.contains(ReaderHint.IGNORE_CROP)) {
-            crop = new Crop();
-            crop.setFull(true);
+            crop = new CropByPercent();
         }
 
         Dimension fullSize = new Dimension(

@@ -6,6 +6,9 @@ import edu.illinois.library.cantaloupe.image.ScaleConstraint;
 import edu.illinois.library.cantaloupe.operation.ColorTransform;
 import edu.illinois.library.cantaloupe.operation.Crop;
 import edu.illinois.library.cantaloupe.image.Format;
+import edu.illinois.library.cantaloupe.operation.CropByPercent;
+import edu.illinois.library.cantaloupe.operation.CropByPixels;
+import edu.illinois.library.cantaloupe.operation.CropToSquare;
 import edu.illinois.library.cantaloupe.operation.Encode;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.operation.Rotate;
@@ -149,12 +152,10 @@ abstract class AbstractProcessorTest extends BaseTest {
 
     @Test
     public void testProcessWithOnlyNoOpOperations() throws Exception {
-        Crop crop = new Crop();
-        crop.setFull(true);
         Scale scale = new Scale();
         Rotate rotate = new Rotate(0);
         OperationList ops = new OperationList(
-                crop, scale, rotate, new Encode(Format.JPG));
+                scale, rotate, new Encode(Format.JPG));
 
         forEachFixture(ops, new ProcessorAssertion() {
             @Override
@@ -180,28 +181,9 @@ abstract class AbstractProcessorTest extends BaseTest {
             @Override
             public void run() {
                 if (this.sourceSize != null) {
-                    assertEquals(this.sourceSize.width() * 0.5,
+                    assertEquals(this.sourceSize.width() / 2.0,
                             this.resultingImage.getWidth(), DELTA);
-                    assertEquals(this.sourceSize.height() * 0.5,
-                            this.resultingImage.getHeight(), DELTA);
-                }
-            }
-        });
-    }
-
-    @Test
-    public void testProcessWithFullCropOperation() throws Exception {
-        Crop crop = new Crop();
-        crop.setFull(true);
-        OperationList ops = new OperationList(crop, new Encode(Format.JPG));
-
-        forEachFixture(ops, new ProcessorAssertion() {
-            @Override
-            public void run() {
-                if (this.sourceSize != null) {
-                    assertEquals(this.sourceSize.width(),
-                            this.resultingImage.getWidth(), DELTA);
-                    assertEquals(this.sourceSize.height(),
+                    assertEquals(this.sourceSize.height() / 2.0,
                             this.resultingImage.getHeight(), DELTA);
                 }
             }
@@ -210,8 +192,7 @@ abstract class AbstractProcessorTest extends BaseTest {
 
     @Test
     public void testProcessWithSquareCropOperation() throws Exception {
-        Crop crop = new Crop();
-        crop.setShape(Crop.Shape.SQUARE);
+        CropToSquare crop = new CropToSquare();
         OperationList ops = new OperationList(crop, new Encode(Format.JPG));
 
         forEachFixture(ops, new ProcessorAssertion() {
@@ -230,9 +211,9 @@ abstract class AbstractProcessorTest extends BaseTest {
     }
 
     @Test
-    public void testProcessWithCropToPixelsOperation() throws Exception {
+    public void testProcessWithCropByPixelsOperation() throws Exception {
         OperationList ops = new OperationList(
-                new Crop(10, 10, 35, 30),
+                new CropByPixels(10, 10, 35, 30),
                 new Encode(Format.JPG));
 
         forEachFixture(ops, new ProcessorAssertion() {
@@ -248,8 +229,7 @@ abstract class AbstractProcessorTest extends BaseTest {
     public void testProcessWithCropByPercentOperation() throws Exception {
         final double width = 0.2;
         final double height = 0.2;
-        Crop crop = new Crop(0.2, 0.2, width, height);
-        crop.setUnit(Crop.Unit.PERCENT);
+        Crop crop = new CropByPercent(0.2, 0.2, width, height);
         OperationList ops = new OperationList(crop, new Encode(Format.JPG));
 
         forEachFixture(ops, new ProcessorAssertion() {

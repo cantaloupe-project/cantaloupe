@@ -7,6 +7,7 @@ import edu.illinois.library.cantaloupe.image.Metadata;
 import edu.illinois.library.cantaloupe.image.Orientation;
 import edu.illinois.library.cantaloupe.operation.ColorTransform;
 import edu.illinois.library.cantaloupe.operation.Crop;
+import edu.illinois.library.cantaloupe.operation.CropByPercent;
 import edu.illinois.library.cantaloupe.operation.Encode;
 import edu.illinois.library.cantaloupe.operation.MetadataCopy;
 import edu.illinois.library.cantaloupe.operation.Operation;
@@ -248,8 +249,7 @@ final class Java2DPostProcessor {
 
         // Apply the crop operation, if present, and retain a reference
         // to it for subsequent operations to refer to.
-        Crop crop = new Crop(0, 0, image.getWidth(), image.getHeight(),
-                imageInfo.getOrientation(), imageInfo.getSize());
+        Crop crop = new CropByPercent();
         for (Operation op : opList) {
             if (op instanceof Crop) {
                 crop = (Crop) op;

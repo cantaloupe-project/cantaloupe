@@ -1,6 +1,8 @@
 package edu.illinois.library.cantaloupe.resource.iiif.v1;
 
 import edu.illinois.library.cantaloupe.operation.Crop;
+import edu.illinois.library.cantaloupe.operation.CropByPercent;
+import edu.illinois.library.cantaloupe.operation.CropByPixels;
 import edu.illinois.library.cantaloupe.resource.IllegalClientArgumentException;
 import edu.illinois.library.cantaloupe.util.StringUtils;
 
@@ -10,14 +12,12 @@ import edu.illinois.library.cantaloupe.util.StringUtils;
  * @see <a href="http://iiif.io/api/image/1.1/#parameters-region">IIIF Image
  * API 1.1</a>
  */
-class Region {
+final class Region {
 
-    private Float height;
-    private boolean isFull = false;
-    private boolean isPercent = false;
-    private Float width;
-    private Float x;
-    private Float y;
+    private static final double DELTA = 0.00000001;
+
+    private float x, y, width, height;
+    private boolean isFull, isPercent;
 
     /**
      * @param uriRegion Region component of a URI.
@@ -25,17 +25,15 @@ class Region {
      * @throws IllegalClientArgumentException if the argument is invalid.
      */
     public static Region fromUri(String uriRegion) {
-        Region region = new Region();
-
-        if (uriRegion.equals("full")) {
+        final Region region = new Region();
+        if ("full".equals(uriRegion)) {
             region.setFull(true);
         } else {
             region.setFull(false);
             String csv;
             if (uriRegion.startsWith("pct:")) {
                 region.setPercent(true);
-                String[] tmp = uriRegion.split(":");
-                csv = tmp[1];
+                csv = uriRegion.substring(4);
             } else {
                 region.setPercent(false);
                 csv = uriRegion;
@@ -57,51 +55,34 @@ class Region {
     public boolean equals(Object obj) {
         if (obj == this) {
             return true;
-        }
-        final float delta = 0.0001f;
-        if (obj instanceof Region) {
+        } else if (obj instanceof Region) {
             final Region region = (Region) obj;
-            return isFull() == region.isFull() &&
-                    isPercent() == region.isPercent() &&
-                    Math.abs(getX() - region.getX()) < delta &&
-                    Math.abs(getY() - region.getY()) < delta &&
-                    Math.abs(getWidth() - region.getWidth()) < delta &&
-                    Math.abs(getHeight() - region.getHeight()) < delta;
-        }
-        if (obj instanceof Crop) {
-            final Crop crop = (Crop) obj;
-            if (this.isPercent()) {
-                return isFull() == crop.isFull() &&
-                        isPercent() == crop.getUnit().equals(Crop.Unit.PERCENT) &&
-                        Math.abs(getX() - crop.getX() * 100) < delta &&
-                        Math.abs(getY() - crop.getY() * 100) < delta &&
-                        Math.abs(getWidth() - crop.getWidth() * 100) < delta &&
-                        Math.abs(getHeight() - crop.getHeight() * 100) < delta;
+            if (isFull() && region.isFull()) {
+                return true;
             }
-            return isFull() == crop.isFull() &&
-                    isPercent() == crop.getUnit().equals(Crop.Unit.PERCENT) &&
-                    Math.abs(getX() - crop.getX()) < delta &&
-                    Math.abs(getY() - crop.getY()) < delta &&
-                    Math.abs(getWidth() - crop.getWidth()) < delta &&
-                    Math.abs(getHeight() - crop.getHeight()) < delta;
+            return isPercent() == region.isPercent() &&
+                    Math.abs(getX() - region.getX()) < DELTA &&
+                    Math.abs(getY() - region.getY()) < DELTA &&
+                    Math.abs(getWidth() - region.getWidth()) < DELTA &&
+                    Math.abs(getHeight() - region.getHeight()) < DELTA;
         }
         return super.equals(obj);
     }
 
-    public Float getHeight() {
-        return height;
-    }
-
-    public Float getWidth() {
-        return width;
-    }
-
-    public Float getX() {
+    public float getX() {
         return x;
     }
 
-    public Float getY() {
+    public float getY() {
         return y;
+    }
+
+    public float getWidth() {
+        return width;
+    }
+
+    public float getHeight() {
+        return height;
     }
 
     @Override
@@ -121,75 +102,71 @@ class Region {
         this.isFull = isFull;
     }
 
-    public void setHeight(Float height) {
-        if (height <= 0) {
-            throw new IllegalClientArgumentException(
-                    "Height must be a positive integer");
-        }
-        this.height = height;
-    }
-
     public void setPercent(boolean isPercent) {
         this.isPercent = isPercent;
     }
 
-    public void setWidth(Float width) {
-        if (width <= 0) {
-            throw new IllegalClientArgumentException(
-                    "Width must be a positive integer");
-        }
-        this.width = width;
-    }
-
-    public void setX(Float x) {
+    public void setX(float x) {
         if (x < 0) {
-            throw new IllegalClientArgumentException("X must be a positive float");
+            throw new IllegalClientArgumentException("X must be >= 0");
         }
         this.x = x;
     }
 
-    public void setY(Float y) {
+    public void setY(float y) {
         if (y < 0) {
-            throw new IllegalClientArgumentException("Y must be a positive float");
+            throw new IllegalClientArgumentException("Y must be >= 0");
         }
         this.y = y;
     }
 
-    public Crop toCrop() {
-        Crop crop = new Crop();
-        crop.setFull(this.isFull());
-        crop.setUnit(this.isPercent() ? Crop.Unit.PERCENT : Crop.Unit.PIXELS);
-        if (this.getX() != null) {
-            crop.setX(this.isPercent() ? this.getX() / 100f : this.getX());
+    public void setWidth(float width) {
+        if (width <= 0) {
+            throw new IllegalClientArgumentException("Width must be > 0");
         }
-        if (this.getY() != null) {
-            crop.setY(this.isPercent() ? this.getY() / 100f : this.getY());
+        this.width = width;
+    }
+
+    public void setHeight(float height) {
+        if (height <= 0) {
+            throw new IllegalClientArgumentException("Height must be > 0");
         }
-        if (this.getWidth() != null) {
-            crop.setWidth(this.isPercent() ?
-                    this.getWidth() / 100f : this.getWidth());
+        this.height = height;
+    }
+
+    /**
+     * @return Equivalent instance, or {@literal null} if {@link #isFull()}
+     *         returns {@literal true}.
+     */
+    Crop toCrop() {
+        if (isFull()) {
+            return new CropByPercent(); // 100% crop
+        } else if (isPercent()) {
+            return new CropByPercent(
+                    getX() / 100.0, getY() / 100.0,
+                    getWidth() / 100.0, getHeight() / 100.0);
+        } else {
+            return new CropByPixels(
+                    Math.round(getX()), Math.round(getY()),
+                    Math.round(getWidth()), Math.round(getHeight()));
         }
-        if (this.getHeight() != null) {
-            crop.setHeight(this.isPercent() ?
-                    this.getHeight() / 100f : this.getHeight());
-        }
-        return crop;
     }
 
     /**
      * @return Value compatible with the region component of a URI.
      */
     public String toString() {
-        String str = "";
-        if (this.isFull()) {
-            str += "full";
+        String str;
+        if (isFull()) {
+            str = "full";
         } else {
             String x, y;
-            if (this.isPercent()) {
+            if (isPercent()) {
+                str = "pct:";
                 x = StringUtils.removeTrailingZeroes(this.getX());
                 y = StringUtils.removeTrailingZeroes(this.getY());
-                str += "pct:";
             } else {
+                str = "";
                 x = Integer.toString(Math.round(this.getX()));
                 y = Integer.toString(Math.round(this.getY()));
             }

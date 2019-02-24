@@ -30,6 +30,8 @@ import static org.junit.Assert.*;
 
 public class OperationListTest extends BaseTest {
 
+    private static final double DELTA = 0.00000001;
+
     private OperationList instance;
 
     @Before
@@ -147,7 +149,7 @@ public class OperationListTest extends BaseTest {
                 .build();
         final OperationList opList = new OperationList(
                 new Identifier("cats"),
-                new Crop(0, 0, 70, 30),
+                new CropByPixels(0, 0, 70, 30),
                 new Encode(Format.JPG));
         opList.setScaleConstraint(new ScaleConstraint(1, 2));
 
@@ -173,7 +175,7 @@ public class OperationListTest extends BaseTest {
                 .build();
         final OperationList opList = new OperationList(
                 new Identifier("cats"),
-                new Crop(0, 0, 70, 30),
+                new CropByPixels(0, 0, 70, 30),
                 new Encode(Format.JPG));
 
         final RequestContext context = new RequestContext();
@@ -183,8 +185,8 @@ public class OperationListTest extends BaseTest {
 
         opList.applyNonEndpointMutations(info, proxy);
 
-        Crop expectedCrop = new Crop(0, 0, 70, 30);
-        expectedCrop.applyOrientation(Orientation.ROTATE_90, info.getSize());
+        Crop expectedCrop = new CropByPixels(0, 0, 70, 30);
+        expectedCrop.setOrientation(Orientation.ROTATE_90);
         Crop actualCrop = (Crop) opList.getFirst(Crop.class);
         assertEquals(expectedCrop, actualCrop);
     }
@@ -199,7 +201,7 @@ public class OperationListTest extends BaseTest {
                 .build();
         final OperationList opList = new OperationList(
                 new Identifier("cats"),
-                new Crop(0, 0, 70, 30),
+                new CropByPixels(0, 0, 70, 30),
                 new Rotate(45),
                 new Encode(Format.JPG));
 
@@ -338,7 +340,7 @@ public class OperationListTest extends BaseTest {
         final Info info = Info.builder().withSize(fullSize).build();
         final OperationList opList = new OperationList(
                 new Identifier("cats"),
-                new Scale(0.5f),
+                new Scale(0.5),
                 new Encode(Format.JPG));
         final RequestContext context = new RequestContext();
         context.setOperationList(opList, fullSize);
@@ -360,7 +362,7 @@ public class OperationListTest extends BaseTest {
         final Info info = Info.builder().withSize(fullSize).build();
         final OperationList opList = new OperationList(
                 new Identifier("cats"),
-                new Scale(1.5f),
+                new Scale(1.5),
                 new Encode(Format.JPG));
         final RequestContext context = new RequestContext();
         context.setOperationList(opList, fullSize);
@@ -394,7 +396,7 @@ public class OperationListTest extends BaseTest {
         assertTrue(it.next() instanceof Sharpen);
 
         Sharpen sharpen = (Sharpen) opList.getFirst(Sharpen.class);
-        assertEquals(0.2f, sharpen.getAmount(), 0.00001f);
+        assertEquals(0.2, sharpen.getAmount(), DELTA);
     }
 
     @Test
@@ -423,22 +425,22 @@ public class OperationListTest extends BaseTest {
 
     @Test(expected = IllegalStateException.class)
     public void applyNonEndpointMutationsWhileFrozen() throws Exception {
-        final Dimension fullSize = new Dimension(2000, 1000);
-        final Info info = Info.builder().withSize(fullSize).build();
-        final OperationList opList = new OperationList(new Crop(0, 0, 70, 30));
+        final Dimension fullSize   = new Dimension(2000, 1000);
+        final Info info            = Info.builder().withSize(fullSize).build();
+        final OperationList opList = new OperationList(new CropByPixels(0, 0, 70, 30));
 
         opList.freeze();
 
         final RequestContext context = new RequestContext();
         DelegateProxyService service = DelegateProxyService.getInstance();
-        DelegateProxy proxy = service.newDelegateProxy(context);
+        DelegateProxy proxy          = service.newDelegateProxy(context);
 
         opList.applyNonEndpointMutations(info, proxy);
     }
 
     @Test
     public void clear() {
-        instance.add(new Crop(10, 10, 10, 10));
+        instance.add(new CropByPixels(10, 10, 10, 10));
         instance.add(new Scale(0.5));
 
         int opCount = 0;
@@ -466,39 +468,43 @@ public class OperationListTest extends BaseTest {
     }
 
     @Test
-    public void compareTo() {
+    public void compareToWithEqualInstances() {
         OperationList ops2 = new OperationList();
-
-        Crop crop = new Crop();
-        crop.setFull(true);
-        ops2.add(crop);
-
-        Scale scale = new Scale();
-        ops2.add(scale);
+        ops2.add(new Scale());
         ops2.add(new Rotate(0));
 
-        assertEquals(0, ops2.compareTo(this.instance));
+        assertEquals(0, ops2.compareTo(instance));
+    }
+
+    @Test
+    public void compareToWithUnequalInstances() {
+        OperationList ops2 = new OperationList();
+        ops2.add(new CropToSquare());
+        ops2.add(new Scale());
+        ops2.add(new Rotate(0));
+
+        assertTrue(ops2.compareTo(instance) > 0);
     }
 
     @Test
     public void equalsWithEqualOperationList() {
         OperationList ops1 = new OperationList(new Rotate(1));
         OperationList ops2 = new OperationList(new Rotate(1));
-        assertTrue(ops1.equals(ops2));
+        assertEquals(ops1, ops2);
     }
 
     @Test
     public void equalsWithUnequalOperationList() {
         OperationList ops1 = new OperationList();
         OperationList ops2 = new OperationList(new Rotate(1));
-        assertFalse(ops1.equals(ops2));
+        assertNotEquals(ops1, ops2);
     }
 
     @Test(expected = IllegalStateException.class)
     public void freezeFreezesOperations() {
-        instance.add(new Crop(0, 0, 10, 10));
+        instance.add(new CropByPixels(0, 0, 10, 10));
         instance.freeze();
-        ((Crop) instance.getFirst(Crop.class)).setHeight(300);
+        ((CropByPixels) instance.getFirst(CropByPixels.class)).setHeight(300);
     }
 
     @Test
@@ -532,22 +538,15 @@ public class OperationListTest extends BaseTest {
     @Test
     public void getResultingSize() {
         Dimension fullSize = new Dimension(300, 200);
-        instance = new OperationList();
-        Crop crop = new Crop();
-        crop.setFull(true);
-        Scale scale = new Scale();
-        Rotate rotate = new Rotate();
-        instance.add(crop);
+        Scale scale        = new Scale();
+        Rotate rotate      = new Rotate();
         instance.add(scale);
         instance.add(rotate);
         assertEquals(fullSize, instance.getResultingSize(fullSize));
 
-        instance = new OperationList();
-        crop = new Crop();
-        crop.setUnit(Crop.Unit.PERCENT);
-        crop.setWidth(0.5f);
-        crop.setHeight(0.5f);
-        scale = new Scale(0.5f);
+        instance  = new OperationList();
+        Crop crop = new CropByPercent(0, 0, 0.5, 0.5);
+        scale     = new Scale(0.5);
         instance.add(crop);
         instance.add(scale);
         assertEquals(new Dimension(75, 50), instance.getResultingSize(fullSize));
@@ -588,11 +587,12 @@ public class OperationListTest extends BaseTest {
 
     @Test
     public void iterator() {
-        instance.add(new Crop(10, 10, 10, 10));
+        instance.add(new CropByPixels(10, 10, 10, 10));
         instance.add(new Scale(0.5));
 
         int count = 0;
         Iterator<Operation> it = instance.iterator();
+        //noinspection WhileLoopReplaceableByForEach
         while (it.hasNext()) {
             it.next();
             count++;
@@ -635,11 +635,7 @@ public class OperationListTest extends BaseTest {
     @Test
     public void toFilename() {
         instance = new OperationList(new Identifier("identifier.jpg"));
-        Crop crop = new Crop();
-        crop.setX(5f);
-        crop.setY(6f);
-        crop.setWidth(20f);
-        crop.setHeight(22f);
+        CropByPixels crop = new CropByPixels(5, 6, 20, 22);
         instance.add(crop);
         Scale scale = new Scale(0.4f);
         instance.add(scale);
@@ -653,11 +649,11 @@ public class OperationListTest extends BaseTest {
         assertEquals(expected, instance.toFilename());
 
         // Assert that changing an operation changes the filename
-        crop.setX(12f);
+        crop.setX(12);
         assertNotEquals(expected, instance.toFilename());
 
         // Assert that changing an option changes the filename
-        crop.setX(10f);
+        crop.setX(10);
         instance.getOptions().put("animal", "dog");
         assertNotEquals(expected, instance.toFilename());
     }
@@ -667,11 +663,7 @@ public class OperationListTest extends BaseTest {
     public void toMap() {
         instance = new OperationList(new Identifier("identifier.jpg"));
         // crop
-        Crop crop = new Crop();
-        crop.setX(2);
-        crop.setY(4);
-        crop.setWidth(50);
-        crop.setHeight(50);
+        Crop crop = new CropByPixels(2, 4, 50, 50);
         instance.add(crop);
         // no-op scale
         Scale scale = new Scale();
@@ -703,13 +695,9 @@ public class OperationListTest extends BaseTest {
     @Test
     public void testToString() {
         instance = new OperationList(new Identifier("identifier.jpg"));
-        Crop crop = new Crop();
-        crop.setX(5f);
-        crop.setY(6f);
-        crop.setWidth(20f);
-        crop.setHeight(22f);
+        Crop crop = new CropByPixels(5, 6, 20, 22);
         instance.add(crop);
-        Scale scale = new Scale(0.4f);
+        Scale scale = new Scale(0.4);
         instance.add(scale);
         instance.add(new Rotate(15));
         instance.add(ColorTransform.BITONAL);
@@ -717,7 +705,7 @@ public class OperationListTest extends BaseTest {
         instance.getOptions().put("animal", "cat");
         instance.setScaleConstraint(new ScaleConstraint(1, 2));
 
-        String expected = "identifier.jpg_1:2_crop:5,6,20,22_scale:40%_rotate:15_colortransform:bitonal_encode:jpg_UNDEFINED_8_animal:cat";
+        String expected = "identifier.jpg_1:2_cropbypixels:5,6,20,22_scale:40%_rotate:15_colortransform:bitonal_encode:jpg_UNDEFINED_8_animal:cat";
         assertEquals(expected, instance.toString());
     }
 
@@ -726,7 +714,7 @@ public class OperationListTest extends BaseTest {
         Dimension fullSize = new Dimension(1000, 1000);
         OperationList ops = new OperationList(
                 new Identifier("cats"),
-                new Crop(0, 0, 100, 100),
+                new CropByPixels(0, 0, 100, 100),
                 new Encode(Format.JPG));
         ops.validate(fullSize, Format.PNG);
     }
@@ -735,7 +723,8 @@ public class OperationListTest extends BaseTest {
     public void validateWithMissingIdentifier() throws Exception {
         Dimension fullSize = new Dimension(1000, 1000);
         OperationList ops = new OperationList(
-                new Crop(0, 0, 100, 100), new Encode(Format.JPG));
+                new CropByPixels(0, 0, 100, 100),
+                new Encode(Format.JPG));
         ops.validate(fullSize, Format.PNG);
     }
 
@@ -743,14 +732,16 @@ public class OperationListTest extends BaseTest {
     public void validateWithMissingEncodeOperation() throws Exception {
         Dimension fullSize = new Dimension(1000, 1000);
         OperationList ops = new OperationList(
-                new Identifier("cats"), new Crop(0, 0, 100, 100));
+                new Identifier("cats"),
+                new CropByPixels(0, 0, 100, 100));
         ops.validate(fullSize, Format.PNG);
     }
 
     @Test(expected = ValidationException.class)
     public void validateWithOutOfBoundsCrop() throws Exception {
         Dimension fullSize = new Dimension(1000, 1000);
-        OperationList ops = new OperationList(new Crop(1001, 1001, 100, 100),
+        OperationList ops = new OperationList(
+                new CropByPixels(1001, 1001, 100, 100),
                 new Encode(Format.JPG));
         ops.validate(fullSize, Format.PNG);
     }
@@ -758,7 +749,8 @@ public class OperationListTest extends BaseTest {
     @Test
     public void validateWithValidPageArgument() throws Exception {
         OperationList ops = new OperationList(
-                new Identifier("cats"), new Encode(Format.JPG));
+                new Identifier("cats"),
+                new Encode(Format.JPG));
         ops.getOptions().put("page", "2");
         ops.validate(new Dimension(100, 88), Format.PNG);
     }
@@ -766,7 +758,8 @@ public class OperationListTest extends BaseTest {
     @Test(expected = ValidationException.class)
     public void validateWithZeroPageArgument() throws Exception {
         OperationList ops = new OperationList(
-                new Identifier("cats"), new Encode(Format.JPG));
+                new Identifier("cats"),
+                new Encode(Format.JPG));
         ops.getOptions().put("page", "0");
         ops.validate(new Dimension(100, 88), Format.PNG);
     }
@@ -784,7 +777,7 @@ public class OperationListTest extends BaseTest {
         Dimension fullSize = new Dimension(1000, 1000);
         OperationList ops = new OperationList(
                 new Identifier("cats"),
-                new Crop(0, 0, 10, 10),
+                new CropByPixels(0, 0, 10, 10),
                 new Scale(0.0001),
                 new Encode(Format.JPG));
         ops.validate(fullSize, Format.PNG);

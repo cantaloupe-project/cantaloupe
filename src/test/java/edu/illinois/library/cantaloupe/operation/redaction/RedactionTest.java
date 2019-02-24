@@ -4,6 +4,7 @@ import edu.illinois.library.cantaloupe.image.Dimension;
 import edu.illinois.library.cantaloupe.image.Rectangle;
 import edu.illinois.library.cantaloupe.image.ScaleConstraint;
 import edu.illinois.library.cantaloupe.operation.Crop;
+import edu.illinois.library.cantaloupe.operation.CropByPixels;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.operation.Scale;
 import edu.illinois.library.cantaloupe.test.BaseTest;
@@ -42,19 +43,19 @@ public class RedactionTest extends BaseTest {
         ScaleConstraint scaleConstraint = new ScaleConstraint(1, 1);
 
         // redaction within source image bounds
-        Crop crop = new Crop(0, 0, 300, 300);
+        Crop crop = new CropByPixels(0, 0, 300, 300);
         Rectangle resultingRegion = instance.getResultingRegion(
                 sourceSize, scaleConstraint, crop);
         assertEquals(new Rectangle(50, 60, 200, 100), resultingRegion);
 
         // redaction partially within source image bounds
-        crop = new Crop(0, 0, 100, 100);
+        crop = new CropByPixels(0, 0, 100, 100);
         resultingRegion = instance.getResultingRegion(
                 sourceSize, scaleConstraint, crop);
         assertEquals(new Rectangle(50, 60, 200, 100), resultingRegion);
 
         // redaction outside source image bounds
-        crop = new Crop(300, 300, 100, 100);
+        crop = new CropByPixels(300, 300, 100, 100);
         resultingRegion = instance.getResultingRegion(
                 sourceSize, scaleConstraint, crop);
         assertEquals(new Rectangle(0, 0, 0, 0), resultingRegion);
@@ -66,19 +67,19 @@ public class RedactionTest extends BaseTest {
         ScaleConstraint scaleConstraint = new ScaleConstraint(1, 2);
 
         // redaction within source image bounds
-        Crop crop = new Crop(0, 0, 300, 300);
+        Crop crop = new CropByPixels(0, 0, 300, 300);
         Rectangle resultingRegion = instance.getResultingRegion(
                 sourceSize, scaleConstraint, crop);
         assertEquals(new Rectangle(50, 60, 200, 100), resultingRegion);
 
         // redaction partially within source image bounds
-        crop = new Crop(0, 0, 200, 200);
+        crop = new CropByPixels(0, 0, 200, 200);
         resultingRegion = instance.getResultingRegion(
                 sourceSize, scaleConstraint, crop);
         assertEquals(new Rectangle(50, 60, 200, 100), resultingRegion);
 
         // redaction outside source image bounds
-        crop = new Crop(300, 300, 100, 100);
+        crop = new CropByPixels(300, 300, 100, 100);
         resultingRegion = instance.getResultingRegion(
                 sourceSize, scaleConstraint, crop);
         assertEquals(new Rectangle(0, 0, 0, 0), resultingRegion);
@@ -125,17 +126,17 @@ public class RedactionTest extends BaseTest {
 
         // in bounds
         OperationList opList = new OperationList(
-                new Crop(0, 0, 400, 300), new Scale(0.25));
+                new CropByPixels(0, 0, 400, 300), new Scale(0.25));
         assertTrue(instance.hasEffect(fullSize, opList));
 
         // partially in bounds
         opList = new OperationList(
-                new Crop(100, 100, 100, 100), new Scale(0.25));
+                new CropByPixels(100, 100, 100, 100), new Scale(0.25));
         assertTrue(instance.hasEffect(fullSize, opList));
 
         // out of bounds
         opList = new OperationList(
-                new Crop(0, 0, 400, 300), new Scale(0.25));
+                new CropByPixels(0, 0, 400, 300), new Scale(0.25));
         instance = new Redaction(new Rectangle(420, 305, 20, 20));
         assertFalse(instance.hasEffect(fullSize, opList));
     }

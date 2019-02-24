@@ -2,7 +2,7 @@ package edu.illinois.library.cantaloupe.processor.codec;
 
 import edu.illinois.library.cantaloupe.image.Compression;
 import edu.illinois.library.cantaloupe.image.Dimension;
-import edu.illinois.library.cantaloupe.operation.Crop;
+import edu.illinois.library.cantaloupe.operation.CropByPixels;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.image.Orientation;
 import edu.illinois.library.cantaloupe.operation.ReductionFactor;
@@ -89,15 +89,9 @@ abstract class AbstractImageReaderTest extends BaseTest {
 
     @Test
     public void testReadWithArguments() throws Exception {
-        OperationList ops = new OperationList();
-        Crop crop = new Crop();
-        crop.setX(10f);
-        crop.setY(10f);
-        crop.setWidth(40f);
-        crop.setHeight(40f);
-        ops.add(crop);
-        Scale scale = new Scale(35, 35, Scale.Mode.ASPECT_FIT_INSIDE);
-        ops.add(scale);
+        OperationList ops = new OperationList(
+                new CropByPixels(10, 10, 40, 40),
+                new Scale(35, 35, Scale.Mode.ASPECT_FIT_INSIDE));
         Orientation orientation = Orientation.ROTATE_0;
         ReductionFactor rf = new ReductionFactor();
         Set<ReaderHint> hints = new HashSet<>();

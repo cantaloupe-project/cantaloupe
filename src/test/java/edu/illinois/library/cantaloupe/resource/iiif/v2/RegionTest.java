@@ -1,6 +1,9 @@
 package edu.illinois.library.cantaloupe.resource.iiif.v2;
 
 import edu.illinois.library.cantaloupe.operation.Crop;
+import edu.illinois.library.cantaloupe.operation.CropByPercent;
+import edu.illinois.library.cantaloupe.operation.CropByPixels;
+import edu.illinois.library.cantaloupe.operation.CropToSquare;
 import edu.illinois.library.cantaloupe.resource.IllegalClientArgumentException;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import org.junit.Before;
@@ -50,7 +53,7 @@ public class RegionTest extends BaseTest {
      * Tests fromUri(String) with absolute pixel values.
      */
     @Test
-    public void testFromUriAbsolute() {
+    public void testFromUriPixels() {
         Region r = Region.fromUri("0,0,50,40");
         assertEquals(0f, r.getX(), DELTA);
         assertEquals(0f, r.getY(), DELTA);
@@ -59,11 +62,31 @@ public class RegionTest extends BaseTest {
         assertEquals(Region.Type.PIXELS, r.getType());
     }
 
+    @Test(expected = IllegalClientArgumentException.class)
+    public void testFromUriPixelsWithIllegalX() {
+        Region.fromUri("-2,3,50,50");
+    }
+
+    @Test(expected = IllegalClientArgumentException.class)
+    public void testFromUriPixelsWithIllegalY() {
+        Region.fromUri("2,-3,50,50");
+    }
+
+    @Test(expected = IllegalClientArgumentException.class)
+    public void testFromUriPixelsWithIllegalWidth() {
+        Region.fromUri("2,3,-50,50");
+    }
+
+    @Test(expected = IllegalClientArgumentException.class)
+    public void testFromUriPixelsWithIllegalHeight() {
+        Region.fromUri("2,3,50,-50");
+    }
+
     /**
      * Tests fromUri(String) with percentage values.
      */
     @Test
-    public void testFromUriPercentage() {
+    public void testFromUriPercent() {
         Region r = Region.fromUri("pct:0,0,50,40");
         assertEquals(0f, r.getX(), DELTA);
         assertEquals(0f, r.getY(), DELTA);
@@ -72,187 +95,226 @@ public class RegionTest extends BaseTest {
         assertEquals(Region.Type.PERCENT, r.getType());
     }
 
+    @Test(expected = IllegalClientArgumentException.class)
+    public void testFromUriPercentWithIllegalX() {
+        Region.fromUri("pct:-2,3,50,50");
+    }
+
+    @Test(expected = IllegalClientArgumentException.class)
+    public void testFromUriPercentWithIllegalY() {
+        Region.fromUri("pct:2,-3,50,50");
+    }
+
+    @Test(expected = IllegalClientArgumentException.class)
+    public void testFromUriPercentWithIllegalWidth() {
+        Region.fromUri("pct:2,3,-50,50");
+    }
+
+    @Test(expected = IllegalClientArgumentException.class)
+    public void testFromUriPercentWithIllegalHeight() {
+        Region.fromUri("pct:2,3,50,-50");
+    }
+
+    /* equals() */
+
     @Test
-    public void testFromUriWithNegativeX() {
-        try {
-            Region.fromUri("pct:-2,3,50,50");
-        } catch (IllegalClientArgumentException e) {
-            assertEquals("X must be a positive float", e.getMessage());
-        }
+    public void testEqualsWithFullRegions() {
+        Region region1 = new Region();
+        region1.setType(Region.Type.FULL);
+        Region region2 = new Region();
+        region2.setType(Region.Type.FULL);
+        assertEquals(region1, region2);
     }
 
     @Test
-    public void testFromUriWithNegativeY() {
-        try {
-            Region.fromUri("pct:2,-3,50,50");
-        } catch (IllegalClientArgumentException e) {
-            assertEquals("Y must be a positive float", e.getMessage());
-        }
+    public void testEqualsWithSquareRegions() {
+        Region region1 = new Region();
+        region1.setType(Region.Type.SQUARE);
+        Region region2 = new Region();
+        region2.setType(Region.Type.SQUARE);
+        assertEquals(region1, region2);
     }
 
     @Test
-    public void testFromUriWithNegativeWidth() {
-        try {
-            Region.fromUri("2,3,-50,50");
-        } catch (IllegalClientArgumentException e) {
-            assertEquals("Width must be a positive integer", e.getMessage());
-        }
-    }
-
-    @Test
-    public void testFromUriWithNegativeHeight() {
-        try {
-            Region.fromUri("2,3,50,-50");
-        } catch (IllegalClientArgumentException e) {
-            assertEquals("Height must be a positive integer", e.getMessage());
-        }
-    }
-
-    /* equals */
-
-    @Test
-    public void testEqualsWithEqualRegion1() {
+    public void testEqualsWithEqualPercentRegions() {
         Region region2 = new Region();
         region2.setType(Region.Type.PERCENT);
         region2.setX(20f);
         region2.setY(20f);
         region2.setWidth(20f);
         region2.setHeight(20f);
-        assertTrue(instance.equals(region2));
+        assertEquals(region2, instance);
     }
 
     @Test
-    public void testEqualsWithEqualRegion2() {
-        instance.setType(Region.Type.SQUARE);
+    public void testEqualsWithUnequalPercentRegionX() {
+        Region region1 = new Region();
+        region1.setType(Region.Type.PERCENT);
+        region1.setX(50f);
+        region1.setY(20f);
+        region1.setWidth(20f);
+        region1.setHeight(20f);
 
         Region region2 = new Region();
-        region2.setType(Region.Type.SQUARE);
-        assertTrue(instance.equals(region2));
+        region2.setType(Region.Type.PERCENT);
+        region2.setX(51f);
+        region2.setY(20f);
+        region2.setWidth(20f);
+        region2.setHeight(20f);
+
+        assertNotEquals(region1, region2);
     }
 
     @Test
-    public void testEqualsWithUnequalRegion1() {
+    public void testEqualsWithUnequalPercentRegionY() {
+        Region region1 = new Region();
+        region1.setType(Region.Type.PERCENT);
+        region1.setX(50f);
+        region1.setY(20f);
+        region1.setWidth(20f);
+        region1.setHeight(20f);
+
+        Region region2 = new Region();
+        region2.setType(Region.Type.PERCENT);
+        region2.setX(50f);
+        region2.setY(21f);
+        region2.setWidth(20f);
+        region2.setHeight(20f);
+
+        assertNotEquals(region1, region2);
+    }
+
+    @Test
+    public void testEqualsWithUnequalPercentRegionWidth() {
+        Region region1 = new Region();
+        region1.setType(Region.Type.PERCENT);
+        region1.setX(50f);
+        region1.setY(20f);
+        region1.setWidth(20f);
+        region1.setHeight(20f);
+
+        Region region2 = new Region();
+        region2.setType(Region.Type.PERCENT);
+        region2.setX(50f);
+        region2.setY(20f);
+        region2.setWidth(21f);
+        region2.setHeight(20f);
+
+        assertNotEquals(region1, region2);
+    }
+
+    @Test
+    public void testEqualsWithUnequalPercentRegionHeight() {
+        Region region1 = new Region();
+        region1.setType(Region.Type.PERCENT);
+        region1.setX(50f);
+        region1.setY(20f);
+        region1.setWidth(20f);
+        region1.setHeight(20f);
+
         Region region2 = new Region();
         region2.setType(Region.Type.PERCENT);
         region2.setX(50f);
         region2.setY(20f);
         region2.setWidth(20f);
-        region2.setHeight(20f);
-        assertFalse(instance.equals(region2));
+        region2.setHeight(21f);
+
+        assertNotEquals(region1, region2);
     }
 
     @Test
-    public void testEqualsWithUnequalRegion2() {
-        Region region2 = new Region();
-        region2.setType(Region.Type.PERCENT);
-        region2.setX(20f);
-        region2.setY(50f);
-        region2.setWidth(20f);
-        region2.setHeight(20f);
-        assertFalse(instance.equals(region2));
-    }
+    public void testEqualsWithEqualPixelRegions() {
+        Region region1 = new Region();
+        region1.setType(Region.Type.PIXELS);
+        region1.setX(50f);
+        region1.setY(20f);
+        region1.setWidth(20f);
+        region1.setHeight(20f);
 
-    @Test
-    public void testEqualsWithUnequalRegion3() {
         Region region2 = new Region();
-        region2.setType(Region.Type.PERCENT);
-        region2.setX(20f);
-        region2.setY(20f);
-        region2.setWidth(50f);
-        region2.setHeight(20f);
-        assertFalse(instance.equals(region2));
-    }
-
-    @Test
-    public void testEqualsWithUnequalRegion4() {
-        Region region2 = new Region();
-        region2.setType(Region.Type.PERCENT);
-        region2.setX(20f);
+        region2.setType(Region.Type.PIXELS);
+        region2.setX(50f);
         region2.setY(20f);
         region2.setWidth(20f);
-        region2.setHeight(50f);
-        assertFalse(instance.equals(region2));
+        region2.setHeight(20f);
+
+        assertEquals(region1, region2);
     }
 
     @Test
-    public void testEqualsWithUnequalRegion5() {
+    public void testEqualsWithUnequalPixelRegionX() {
+        Region region1 = new Region();
+        region1.setType(Region.Type.PIXELS);
+        region1.setX(50f);
+        region1.setY(20f);
+        region1.setWidth(20f);
+        region1.setHeight(20f);
+
         Region region2 = new Region();
-        region2.setType(Region.Type.SQUARE);
-        instance.setX(20f);
-        instance.setY(20f);
-        instance.setWidth(20f);
-        instance.setHeight(20f);
-        assertFalse(instance.equals(region2));
+        region2.setType(Region.Type.PIXELS);
+        region2.setX(51f);
+        region2.setY(20f);
+        region2.setWidth(20f);
+        region2.setHeight(20f);
+
+        assertNotEquals(region1, region2);
     }
 
     @Test
-    public void testEqualsWithEqualCrop1() {
-        Crop crop = new Crop();
-        crop.setUnit(Crop.Unit.PERCENT);
-        crop.setX(0.2f);
-        crop.setY(0.2f);
-        crop.setWidth(0.2f);
-        crop.setHeight(0.2f);
-        assertTrue(instance.equals(crop));
+    public void testEqualsWithUnequalPixelRegionY() {
+        Region region1 = new Region();
+        region1.setType(Region.Type.PIXELS);
+        region1.setX(50f);
+        region1.setY(20f);
+        region1.setWidth(20f);
+        region1.setHeight(20f);
+
+        Region region2 = new Region();
+        region2.setType(Region.Type.PIXELS);
+        region2.setX(50f);
+        region2.setY(21f);
+        region2.setWidth(20f);
+        region2.setHeight(20f);
+
+        assertNotEquals(region1, region2);
     }
 
     @Test
-    public void testEqualsWithEqualCrop2() {
-        instance.setType(Region.Type.SQUARE);
-        Crop crop = new Crop();
-        crop.setShape(Crop.Shape.SQUARE);
-        assertTrue(instance.equals(crop));
+    public void testEqualsWithUnequalPixelRegionWidth() {
+        Region region1 = new Region();
+        region1.setType(Region.Type.PIXELS);
+        region1.setX(50f);
+        region1.setY(20f);
+        region1.setWidth(20f);
+        region1.setHeight(20f);
+
+        Region region2 = new Region();
+        region2.setType(Region.Type.PIXELS);
+        region2.setX(50f);
+        region2.setY(20f);
+        region2.setWidth(21f);
+        region2.setHeight(20f);
+
+        assertNotEquals(region1, region2);
     }
 
     @Test
-    public void testEqualsWithUnequalCrop1() {
-        Crop crop = new Crop();
-        crop.setUnit(Crop.Unit.PERCENT);
-        crop.setX(0.5f);
-        crop.setY(0.2f);
-        crop.setWidth(0.2f);
-        crop.setHeight(0.2f);
-        assertFalse(instance.equals(crop));
-    }
+    public void testEqualsWithUnequalPixelRegionHeight() {
+        Region region1 = new Region();
+        region1.setType(Region.Type.PIXELS);
+        region1.setX(50f);
+        region1.setY(20f);
+        region1.setWidth(20f);
+        region1.setHeight(20f);
 
-    @Test
-    public void testEqualsWithUnequalCrop2() {
-        Crop crop = new Crop();
-        crop.setUnit(Crop.Unit.PERCENT);
-        crop.setX(0.2f);
-        crop.setY(0.5f);
-        crop.setWidth(0.2f);
-        crop.setHeight(0.2f);
-        assertFalse(instance.equals(crop));
-    }
+        Region region2 = new Region();
+        region2.setType(Region.Type.PIXELS);
+        region2.setX(50f);
+        region2.setY(20f);
+        region2.setWidth(20f);
+        region2.setHeight(21f);
 
-    @Test
-    public void testEqualsWithUnequalCrop3() {
-        Crop crop = new Crop();
-        crop.setUnit(Crop.Unit.PERCENT);
-        crop.setX(0.2f);
-        crop.setY(0.2f);
-        crop.setWidth(0.5f);
-        crop.setHeight(0.2f);
-        assertFalse(instance.equals(crop));
-    }
-
-    @Test
-    public void testEqualsWithUnequalCrop4() {
-        Crop crop = new Crop();
-        crop.setUnit(Crop.Unit.PERCENT);
-        crop.setX(0.2f);
-        crop.setY(0.2f);
-        crop.setWidth(0.2f);
-        crop.setHeight(0.5f);
-        assertFalse(instance.equals(crop));
-    }
-
-    @Test
-    public void testEqualsWithUnequalCrop5() {
-        Crop crop = new Crop();
-        crop.setShape(Crop.Shape.SQUARE);
-        assertFalse(instance.equals(crop));
+        assertNotEquals(region1, region2);
     }
 
     /* height */
@@ -260,28 +322,18 @@ public class RegionTest extends BaseTest {
     @Test
     public void testSetHeight() {
         float height = 50f;
-        this.instance.setHeight(height);
+        instance.setHeight(height);
         assertEquals(height, this.instance.getHeight(), DELTA);
     }
 
-    @Test
-    public void testSetNegativeHeight() {
-        try {
-            this.instance.setHeight(-1f);
-            fail("Expected exception");
-        } catch (IllegalClientArgumentException e) {
-            assertEquals("Height must be a positive integer", e.getMessage());
-        }
+    @Test(expected = IllegalClientArgumentException.class)
+    public void testSetZeroHeight() {
+        instance.setHeight(0f);
     }
 
-    @Test
-    public void testSetZeroHeight() {
-        try {
-            this.instance.setHeight(0f);
-            fail("Expected exception");
-        } catch (IllegalClientArgumentException e) {
-            assertEquals("Height must be a positive integer", e.getMessage());
-        }
+    @Test(expected = IllegalClientArgumentException.class)
+    public void testSetNegativeHeight() {
+        instance.setHeight(-1f);
     }
 
     /* width */
@@ -293,43 +345,28 @@ public class RegionTest extends BaseTest {
         assertEquals(width, this.instance.getWidth(), DELTA);
     }
 
-    @Test
-    public void testSetNegativeWidth() {
-        try {
-            this.instance.setWidth(-1f);
-            fail("Expected exception");
-        } catch (IllegalArgumentException e) {
-            assertEquals("Width must be a positive integer", e.getMessage());
-        }
+    @Test(expected = IllegalClientArgumentException.class)
+    public void testSetZeroWidth() {
+        instance.setWidth(0f);
     }
 
-    @Test
-    public void testSetZeroWidth() {
-        try {
-            this.instance.setWidth(0f);
-            fail("Expected exception");
-        } catch (IllegalClientArgumentException e) {
-            assertEquals("Width must be a positive integer", e.getMessage());
-        }
+    @Test(expected = IllegalClientArgumentException.class)
+    public void testSetNegativeWidth() {
+        instance.setWidth(-1f);
     }
 
     /* x */
 
     @Test
     public void testSetX() {
-        Float x = 50.0f;
-        this.instance.setX(x);
-        assertEquals(x, this.instance.getX());
+        float x = 50.0f;
+        instance.setX(x);
+        assertEquals(x, instance.getX(), DELTA);
     }
 
-    @Test
+    @Test(expected = IllegalClientArgumentException.class)
     public void testSetNegativeX() {
-        try {
-            this.instance.setX(-1f);
-            fail("Expected exception");
-        } catch (IllegalClientArgumentException e) {
-            assertEquals("X must be a positive float", e.getMessage());
-        }
+        instance.setX(-1f);
     }
 
     /* y */
@@ -337,47 +374,85 @@ public class RegionTest extends BaseTest {
     @Test
     public void testSetY() {
         float y = 50.0f;
-        this.instance.setY(y);
-        assertEquals(y, this.instance.getY(), DELTA);
+        instance.setY(y);
+        assertEquals(y, instance.getY(), DELTA);
     }
 
-    @Test
+    @Test(expected = IllegalClientArgumentException.class)
     public void testSetNegativeY() {
-        try {
-            this.instance.setY(-1f);
-            fail("Expected exception");
-        } catch (IllegalClientArgumentException e) {
-            assertEquals("Y must be a positive float", e.getMessage());
-        }
+        instance.setY(-1f);
     }
 
     @Test
-    public void testToCrop() {
+    public void testToCropWithFull() {
         instance = new Region();
-        instance.setX(30f);
-        instance.setY(40f);
-        instance.setWidth(50f);
-        instance.setHeight(50f);
-        instance.setType(Region.Type.PERCENT);
-        assertTrue(instance.equals(instance.toCrop()));
+        instance.setType(Region.Type.FULL);
+        Crop actual = instance.toCrop();
+        Crop expected = new CropByPercent(0, 0, 1, 1);
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    public void testToCropWithSquare() {
+        Crop expected = new CropToSquare();
 
         instance = new Region();
         instance.setType(Region.Type.SQUARE);
-        assertTrue(instance.equals(instance.toCrop()));
+        Crop actual = instance.toCrop();
+
+        assertEquals(expected, actual);
     }
 
     @Test
-    public void testToString() {
+    public void testToCropWithPixels() {
+        Crop expected = new CropByPixels(10, 20, 200, 100);
+
+        instance = new Region();
+        instance.setX(10f);
+        instance.setY(20f);
+        instance.setWidth(200f);
+        instance.setHeight(100f);
+        Crop actual = instance.toCrop();
+
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    public void testToCropWithPercent() {
+        Crop expected = new CropByPercent(0.3, 0.4, 0.5, 0.6);
+
+        instance = new Region();
+        instance.setType(Region.Type.PERCENT);
+        instance.setX(30f);
+        instance.setY(40f);
+        instance.setWidth(50f);
+        instance.setHeight(60f);
+        Crop actual = instance.toCrop();
+
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    public void testToStringWithFull() {
         Region r = Region.fromUri("full");
         assertEquals("full", r.toString());
+    }
 
-        r = Region.fromUri("square");
+    @Test
+    public void testToStringWithSquare() {
+        Region r = Region.fromUri("square");
         assertEquals("square", r.toString());
+    }
 
-        r = Region.fromUri("0,0,50,40");
+    @Test
+    public void testToStringWithPixels() {
+        Region r = Region.fromUri("0,0,50,40");
         assertEquals("0,0,50,40", r.toString());
+    }
 
-        r = Region.fromUri("pct:0,0,50,40");
+    @Test
+    public void testToStringWithPercent() {
+        Region r = Region.fromUri("pct:0,0,50,40");
         assertEquals("pct:0,0,50,40", r.toString());
     }
 

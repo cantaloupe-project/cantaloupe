@@ -183,7 +183,7 @@ public final class OperationList implements Comparable<OperationList>,
         if (sourceImageOrientation != null) {
             Crop crop = (Crop) getFirst(Crop.class);
             if (crop != null) {
-                crop.applyOrientation(sourceImageOrientation, sourceImageSize);
+                crop.setOrientation(sourceImageOrientation);
             }
 
             Rotate rotate = (Rotate) getFirst(Rotate.class);

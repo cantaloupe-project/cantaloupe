@@ -38,7 +38,7 @@ public class TransposeTest extends BaseTest {
     @Test
     public void hasEffectWithArguments() {
         Dimension fullSize = new Dimension(600, 400);
-        OperationList opList = new OperationList(new Crop(0, 0, 300, 200));
+        OperationList opList = new OperationList(new CropByPixels(0, 0, 300, 200));
         assertTrue(instance.hasEffect(fullSize, opList));
     }
 

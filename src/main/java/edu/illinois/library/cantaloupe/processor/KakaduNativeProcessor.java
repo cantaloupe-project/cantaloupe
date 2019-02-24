@@ -8,6 +8,7 @@ import edu.illinois.library.cantaloupe.image.Orientation;
 import edu.illinois.library.cantaloupe.image.Rectangle;
 import edu.illinois.library.cantaloupe.operation.ColorTransform;
 import edu.illinois.library.cantaloupe.operation.Crop;
+import edu.illinois.library.cantaloupe.operation.CropByPercent;
 import edu.illinois.library.cantaloupe.operation.Encode;
 import edu.illinois.library.cantaloupe.operation.MetadataCopy;
 import edu.illinois.library.cantaloupe.operation.Operation;
@@ -311,8 +312,7 @@ class KakaduNativeProcessor implements FileProcessor, StreamProcessor {
         if (!redactions.isEmpty()) {
             Crop crop = (Crop) opList.getFirst(Crop.class);
             if (crop == null) {
-                crop = new Crop(0, 0, fullSize.intWidth(), fullSize.intHeight(),
-                        imageInfo.getOrientation(), imageInfo.getSize());
+                crop = new CropByPercent();
             }
             Java2DUtil.applyRedactions(
                     image, fullSize, crop, diffScales, reductionFactor,

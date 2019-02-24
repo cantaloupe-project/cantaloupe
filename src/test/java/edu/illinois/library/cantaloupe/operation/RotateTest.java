@@ -44,7 +44,7 @@ public class RotateTest extends BaseTest {
     public void equals() {
         assertEquals(instance, new Rotate());
         assertNotEquals(instance, new Rotate(1));
-        assertFalse(instance.equals(new Object()));
+        assertNotEquals(instance, new Object());
     }
 
     @Test
@@ -96,7 +96,7 @@ public class RotateTest extends BaseTest {
     public void hasEffectWithArguments() {
         Dimension fullSize = new Dimension(600, 400);
         OperationList opList = new OperationList();
-        opList.add(new Crop(0, 0, 300, 200));
+        opList.add(new CropByPixels(0, 0, 300, 200));
 
         assertFalse(instance.hasEffect(fullSize, opList));
         instance.setDegrees(30);

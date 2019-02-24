@@ -7,6 +7,9 @@ import edu.illinois.library.cantaloupe.image.ScaleConstraint;
 import edu.illinois.library.cantaloupe.operation.Color;
 import edu.illinois.library.cantaloupe.operation.ColorTransform;
 import edu.illinois.library.cantaloupe.operation.Crop;
+import edu.illinois.library.cantaloupe.operation.CropByPercent;
+import edu.illinois.library.cantaloupe.operation.CropByPixels;
+import edu.illinois.library.cantaloupe.operation.CropToSquare;
 import edu.illinois.library.cantaloupe.operation.ReductionFactor;
 import edu.illinois.library.cantaloupe.operation.Rotate;
 import edu.illinois.library.cantaloupe.operation.Scale;
@@ -117,8 +120,8 @@ public class Java2DUtilTest extends BaseTest {
         Set<Redaction> redactions = new HashSet<>();
         redactions.add(new Redaction(new Rectangle(0, 0, 20, 20)));
         redactions.add(new Redaction(new Rectangle(20, 20, 20, 20)));
-        final Crop crop = new Crop(0, 0,
-                image.getWidth(), image.getTileHeight());
+        final Crop crop = new CropByPixels(
+                0, 0, image.getWidth(), image.getTileHeight());
 
         // apply them
         Java2DUtil.applyRedactions(
@@ -209,8 +212,8 @@ public class Java2DUtilTest extends BaseTest {
     }
 
     @Test
-    @Ignore // TODO: see inline todo
-    public void testApplyOverlayWithStringOverlay() throws Exception {
+    @Ignore // see inline todo
+    public void testApplyOverlayWithStringOverlay() {
         final BufferedImage baseImage = newColorImage(8, false);
 
         // create a StringOverlay
@@ -228,9 +231,9 @@ public class Java2DUtilTest extends BaseTest {
         // Test the font color TODO: this pixel will be different colors on different JVMs and/or with different versions of the SansSerif font
         int pixel = baseImage.getRGB(9, 8);
         int alpha = (pixel >> 24) & 0xff;
-        int red = (pixel >> 16) & 0xff;
+        int red   = (pixel >> 16) & 0xff;
         int green = (pixel >> 8) & 0xff;
-        int blue = (pixel) & 0xff;
+        int blue  = (pixel) & 0xff;
         assertEquals(255, alpha);
         assertTrue(red > 240);
         assertTrue(green > 240);
@@ -262,26 +265,8 @@ public class Java2DUtilTest extends BaseTest {
     /* crop(BufferedImage, Crop) */
 
     @Test
-    public void testCropWithFullCrop() {
-        Crop crop = new Crop();
-        crop.setFull(true);
-
-        BufferedImage inImage = newColorImage(20, 20, 8, false);
-        BufferedImage outImage;
-
-        ReductionFactor rf = new ReductionFactor();
-        ScaleConstraint sc = new ScaleConstraint(1, 1);
-        outImage = Java2DUtil.crop(inImage, crop, rf, sc);
-        assertSame(inImage, outImage);
-    }
-
-    @Test
-    public void testCropWithSquareCrop() {
-        Crop crop = new Crop();
-        crop.setShape(Crop.Shape.SQUARE);
-        crop.setWidth(50);
-        crop.setHeight(50);
-
+    public void testCropWithCropToSquare() {
+        Crop crop = new CropToSquare();
         final int width = 200, height = 100;
         BufferedImage inImage = newColorImage(width, height, 8, false);
         BufferedImage outImage;
@@ -302,11 +287,8 @@ public class Java2DUtilTest extends BaseTest {
     }
 
     @Test
-    public void testCropWithPixelCrop() {
-        Crop crop = new Crop();
-        crop.setWidth(50);
-        crop.setHeight(50);
-
+    public void testCropWithCropByPixels() {
+        CropByPixels crop = new CropByPixels(0, 0, 50, 50);
         final int width = 200, height = 100;
         BufferedImage inImage = newColorImage(width, height, 8, false);
         BufferedImage outImage;
@@ -327,14 +309,8 @@ public class Java2DUtilTest extends BaseTest {
     }
 
     @Test
-    public void testCropWithPercentageCrop() {
-        Crop crop = new Crop();
-        crop.setUnit(Crop.Unit.PERCENT);
-        crop.setX(0.5);
-        crop.setY(0.5);
-        crop.setWidth(0.5);
-        crop.setHeight(0.5);
-
+    public void testCropWithCropByPercent() {
+        CropByPercent crop = new CropByPercent(0.5, 0.5, 0.5, 0.5);
         final int width = 200, height = 100;
         BufferedImage inImage = newColorImage(width, height, 8, false);
         BufferedImage outImage;
@@ -343,15 +319,15 @@ public class Java2DUtilTest extends BaseTest {
         ReductionFactor rf = new ReductionFactor();
         ScaleConstraint sc = new ScaleConstraint(1, 1);
         outImage = Java2DUtil.crop(inImage, crop, rf, sc);
-        assertEquals(width / 2.0, outImage.getWidth(), DELTA);
-        assertEquals(height / 2.0, outImage.getHeight(), DELTA);
+        assertEquals(width * crop.getWidth(), outImage.getWidth(), DELTA);
+        assertEquals(height * crop.getHeight(), outImage.getHeight(), DELTA);
 
         // reduction factor 1
         rf = new ReductionFactor(1);
         sc = new ScaleConstraint(1, 1);
         outImage = Java2DUtil.crop(inImage, crop, rf, sc);
-        assertEquals(width / 4.0, outImage.getWidth(), DELTA);
-        assertEquals(height / 4.0, outImage.getHeight(), DELTA);
+        assertEquals(width * crop.getWidth(), outImage.getWidth(), DELTA);
+        assertEquals(height * crop.getHeight(), outImage.getHeight(), DELTA);
     }
 
     /* getOverlayImage() */

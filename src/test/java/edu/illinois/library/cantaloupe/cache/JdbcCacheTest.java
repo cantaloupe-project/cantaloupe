@@ -4,8 +4,8 @@ import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.operation.Crop;
-import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
+import edu.illinois.library.cantaloupe.operation.CropByPixels;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.operation.Rotate;
 import edu.illinois.library.cantaloupe.operation.Scale;
@@ -104,28 +104,18 @@ public class JdbcCacheTest extends AbstractCacheTest {
             Files.copy(TestUtil.getImage(IMAGE), os);
         }
 
-        Crop crop = new Crop();
-        crop.setX(50f);
-        crop.setY(50f);
-        crop.setWidth(50f);
-        crop.setHeight(50f);
+        Crop crop = new CropByPixels(50, 50, 50, 50);
         Scale scale = new Scale(0.9f);
         Rotate rotate = new Rotate();
-        Format format = Format.JPG;
         ops = new OperationList(crop, scale, rotate);
 
         try (OutputStream os = instance.newDerivativeImageOutputStream(ops)) {
             Files.copy(TestUtil.getImage(IMAGE), os);
         }
 
-        crop = new Crop();
-        crop.setX(10f);
-        crop.setY(20f);
-        crop.setWidth(50f);
-        crop.setHeight(90f);
+        crop = new CropByPixels(10, 20, 50, 90);
         scale = new Scale(40, null, Scale.Mode.ASPECT_FIT_WIDTH);
         rotate = new Rotate(15);
-        format = Format.PNG;
         ops = new OperationList(crop, scale, rotate);
 
         try (OutputStream os = instance.newDerivativeImageOutputStream(ops)) {

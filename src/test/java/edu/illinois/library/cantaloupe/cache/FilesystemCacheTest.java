@@ -5,6 +5,7 @@ import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.operation.ColorTransform;
 import edu.illinois.library.cantaloupe.operation.Crop;
 import edu.illinois.library.cantaloupe.image.Format;
+import edu.illinois.library.cantaloupe.operation.CropToSquare;
 import edu.illinois.library.cantaloupe.operation.Encode;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.operation.Rotate;
@@ -21,6 +22,7 @@ import org.junit.Test;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.DirectoryNotEmptyException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -80,7 +82,7 @@ public class FilesystemCacheTest extends AbstractCacheTest {
     private void writeStringToFile(Path path,
                                    String contents) throws IOException {
         Files.createDirectories(path.getParent());
-        Files.write(path, contents.getBytes("UTF-8"));
+        Files.write(path, contents.getBytes(StandardCharsets.UTF_8));
     }
 
     @Test
@@ -125,9 +127,7 @@ public class FilesystemCacheTest extends AbstractCacheTest {
                 getString(Key.FILESYSTEMCACHE_PATHNAME);
 
         Identifier identifier = new Identifier("cats_~!@#$%^&*()");
-        Crop crop = new Crop();
-        crop.setWidth(50f);
-        crop.setHeight(50f);
+        Crop crop = new CropToSquare();
         Scale scale = new Scale();
         scale.setMode(Scale.Mode.ASPECT_FIT_INSIDE);
         scale.setPercent(0.905);
@@ -500,9 +500,6 @@ public class FilesystemCacheTest extends AbstractCacheTest {
         final Configuration config = Configuration.getInstance();
         config.setProperty(Key.SOURCE_CACHE_TTL, 1);
         config.setProperty(Key.DERIVATIVE_CACHE_TTL, 1);
-
-        Crop crop = new Crop();
-        crop.setFull(true);
 
         // add a source image
         Identifier id = new Identifier("cats");

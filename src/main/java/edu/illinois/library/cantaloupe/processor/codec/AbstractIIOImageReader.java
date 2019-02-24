@@ -8,6 +8,7 @@ import edu.illinois.library.cantaloupe.image.ScaleConstraint;
 import edu.illinois.library.cantaloupe.operation.Crop;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Orientation;
+import edu.illinois.library.cantaloupe.operation.CropByPercent;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.operation.Scale;
 import edu.illinois.library.cantaloupe.operation.ReductionFactor;
@@ -545,8 +546,7 @@ abstract class AbstractIIOImageReader {
                                       final Set<ReaderHint> hints) throws IOException {
         Crop crop = (Crop) ops.getFirst(Crop.class);
         if (crop == null) {
-            crop = new Crop();
-            crop.setFull(true);
+            crop = new CropByPercent();
         }
 
         Scale scale = (Scale) ops.getFirst(Scale.class);

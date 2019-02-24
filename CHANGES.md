@@ -21,14 +21,15 @@
 * Added HTTP API endpoints for status and health checks.
 * In the IIIF Image API 2.x endpoint, the `Access-Control-Allow-Origin`
   response header is always included in the information response regardless of
-  whether an `Origin` header was sent in the request, which aligns more closely
-  with the IIIF Image API.
+  whether an `Origin` header was sent in the request, in order to align more
+  closely with the IIIF Image API.
 * Improved handling and documentation of the `X-Forwarded-Port` header.
 * The `/iiif` URI path no longer redirects to a specific Image API version, and
   now returns HTTP 404.
+* Bug fixes related to cropping-by-percent of EXIF-rotated images.
 * During image requests, `authorize()` is called earlier in the setup process,
   for better efficiency.
-* Replaced the Restlet framework with a custom micro-framework.
+* Removed the Restlet dependency.
 
 ### Sources
 

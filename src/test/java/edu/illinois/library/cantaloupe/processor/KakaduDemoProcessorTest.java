@@ -4,7 +4,8 @@ import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Info;
-import edu.illinois.library.cantaloupe.operation.Crop;
+import edu.illinois.library.cantaloupe.operation.CropByPixels;
+import edu.illinois.library.cantaloupe.operation.CropToSquare;
 import edu.illinois.library.cantaloupe.operation.Encode;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
@@ -65,8 +66,7 @@ public class KakaduDemoProcessorTest extends AbstractProcessorTest {
     @Override
     @Test
     public void testProcessWithSquareCropOperation() throws Exception {
-        Crop crop = new Crop();
-        crop.setShape(Crop.Shape.SQUARE);
+        CropToSquare crop = new CropToSquare();
         OperationList ops = new OperationList(crop, new Encode(Format.JPG));
 
         forEachFixture(ops, new ProcessorAssertion() {
@@ -89,9 +89,9 @@ public class KakaduDemoProcessorTest extends AbstractProcessorTest {
      */
     @Override
     @Test
-    public void testProcessWithCropToPixelsOperation() throws Exception {
+    public void testProcessWithCropByPixelsOperation() throws Exception {
         OperationList ops = new OperationList(
-                new Crop(10, 10, 35, 30),
+                new CropByPixels(10, 10, 35, 30),
                 new Encode(Format.JPG));
 
         forEachFixture(ops, new ProcessorAssertion() {

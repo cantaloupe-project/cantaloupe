@@ -4,6 +4,9 @@ import edu.illinois.library.cantaloupe.image.ScaleConstraint;
 import edu.illinois.library.cantaloupe.operation.ColorTransform;
 import edu.illinois.library.cantaloupe.operation.Crop;
 import edu.illinois.library.cantaloupe.image.Format;
+import edu.illinois.library.cantaloupe.operation.CropByPercent;
+import edu.illinois.library.cantaloupe.operation.CropByPixels;
+import edu.illinois.library.cantaloupe.operation.CropToSquare;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.image.Orientation;
 import edu.illinois.library.cantaloupe.operation.ReductionFactor;
@@ -17,21 +20,16 @@ import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.junit.Test;
 
-import javax.imageio.ImageIO;
 import javax.media.jai.Interpolation;
 import javax.media.jai.PlanarImage;
 import javax.media.jai.RenderedOp;
-import java.awt.Graphics2D;
-import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 import java.awt.image.RenderedImage;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 
 import static edu.illinois.library.cantaloupe.test.Assert.ImageAssert.*;
 import static org.junit.Assert.*;
 
+@SuppressWarnings("deprecation")
 public class JAIUtilTest extends BaseTest {
 
     private static final double DELTA = 0.00000001;
@@ -40,86 +38,79 @@ public class JAIUtilTest extends BaseTest {
     /* cropImage(RenderedOp, Crop) */
 
     @Test
-    public void cropImage() throws Exception {
+    public void cropImageWithCropByPixels() throws Exception {
         RenderedOp inImage = readImage(IMAGE);
 
-        // full
-        Crop crop = new Crop();
-        crop.setFull(true);
+        CropByPixels crop = new CropByPixels(0, 0, 50, 50);
+        crop.setWidth(50);
+        crop.setHeight(50);
         RenderedOp outImage = JAIUtil.cropImage(inImage, crop);
-        assertSame(inImage, outImage);
-
-        // square
-        crop = new Crop();
-        crop.setShape(Crop.Shape.SQUARE);
-        outImage = JAIUtil.cropImage(inImage, crop);
-        assertEquals(56, outImage.getWidth());
-        assertEquals(56, outImage.getHeight());
-
-        // pixel crop
-        crop = new Crop();
-        crop.setWidth(50f);
-        crop.setHeight(50f);
-        outImage = JAIUtil.cropImage(inImage, crop);
         assertEquals(50, outImage.getWidth());
         assertEquals(50, outImage.getHeight());
+    }
 
-        // percentage crop
-        crop = new Crop();
-        crop.setUnit(Crop.Unit.PERCENT);
-        crop.setX(0.5f);
-        crop.setY(0.5f);
-        crop.setWidth(0.5f);
-        crop.setHeight(0.5f);
-        outImage = JAIUtil.cropImage(inImage, crop);
+    @Test
+    public void cropImageWithCropByPercent() throws Exception {
+        RenderedOp inImage = readImage(IMAGE);
+
+        CropByPercent crop = new CropByPercent();
+        crop.setX(0.5);
+        crop.setY(0.5);
+        crop.setWidth(0.5);
+        crop.setHeight(0.5);
+        RenderedOp outImage = JAIUtil.cropImage(inImage, crop);
         assertEquals(32, outImage.getWidth());
         assertEquals(28, outImage.getHeight());
+    }
+
+    @Test
+    public void cropImageWithCropToSquare() throws Exception {
+        RenderedOp inImage = readImage(IMAGE);
+
+        Crop crop = new CropToSquare();
+        RenderedOp outImage = JAIUtil.cropImage(inImage, crop);
+        assertEquals(56, outImage.getWidth());
+        assertEquals(56, outImage.getHeight());
     }
 
     /* cropImage(RenderedOp, Crop, ReductionFactor) */
 
     @Test
-    public void cropImageWithReductionFactor() throws Exception {
+    public void cropImageWithReductionFactorWithCropByPixels() throws Exception {
         RenderedOp inImage = readImage(IMAGE);
         final ScaleConstraint scaleConstraint = new ScaleConstraint(1, 1);
 
-        // full
-        Crop crop = new Crop();
-        crop.setFull(true);
-        ReductionFactor rf = new ReductionFactor(1);
-        RenderedOp outImage = JAIUtil.cropImage(
-                inImage, scaleConstraint, crop, rf);
-        assertSame(inImage, outImage);
-
-        // square
-        crop = new Crop();
-        crop.setShape(Crop.Shape.SQUARE);
-        crop.setWidth(50f);
-        crop.setHeight(50f);
-        outImage = JAIUtil.cropImage(inImage, crop);
-        assertEquals(inImage.getHeight(), outImage.getWidth());
-        assertEquals(inImage.getHeight(), outImage.getHeight());
-
-        // pixel crop
-        crop = new Crop();
-        crop.setWidth(50f);
-        crop.setHeight(50f);
-        rf = new ReductionFactor(1);
-        outImage = JAIUtil.cropImage(inImage, scaleConstraint, crop, rf);
+        CropByPixels crop   = new CropByPixels(0, 0, 50, 50);
+        ReductionFactor rf  = new ReductionFactor(1);
+        RenderedOp outImage = JAIUtil.cropImage(inImage, scaleConstraint, crop, rf);
         assertEquals(25, outImage.getWidth());
         assertEquals(25, outImage.getHeight());
+    }
 
-        // percentage crop
-        crop = new Crop();
-        crop.setUnit(Crop.Unit.PERCENT);
-        crop.setX(0.5f);
-        crop.setY(0.5f);
-        crop.setWidth(0.5f);
-        crop.setHeight(0.5f);
-        rf = new ReductionFactor(1);
-        outImage = JAIUtil.cropImage(inImage, scaleConstraint, crop, rf);
-        assertEquals(inImage.getWidth() / 4f, outImage.getWidth(), DELTA);
-        assertEquals(inImage.getHeight() / 4f, outImage.getHeight(), DELTA);
+    @Test
+    public void cropImageWithReductionFactorWithCropByPercent() throws Exception {
+        RenderedOp inImage = readImage(IMAGE);
+
+        ReductionFactor rf = new ReductionFactor(1);
+        final ScaleConstraint scaleConstraint = new ScaleConstraint(1, 1);
+        CropByPercent crop = new CropByPercent(0.5, 0.5, 0.5, 0.5);
+
+        RenderedOp outImage = JAIUtil.cropImage(
+                inImage, scaleConstraint, crop, rf);
+        assertEquals(inImage.getWidth() * crop.getWidth(),
+                outImage.getWidth(), DELTA);
+        assertEquals(inImage.getHeight() * crop.getHeight(),
+                outImage.getHeight(), DELTA);
+    }
+
+    @Test
+    public void cropImageWithReductionFactorWithCropToSquare() throws Exception {
+        RenderedOp inImage = readImage(IMAGE);
+
+        Crop crop = new CropToSquare();
+        RenderedOp outImage = JAIUtil.cropImage(inImage, crop);
+        assertEquals(inImage.getHeight(), outImage.getWidth());
+        assertEquals(inImage.getHeight(), outImage.getHeight());
     }
 
     /* getAsRenderedOp() */

@@ -1,6 +1,9 @@
 package edu.illinois.library.cantaloupe.resource.iiif.v2;
 
 import edu.illinois.library.cantaloupe.operation.Crop;
+import edu.illinois.library.cantaloupe.operation.CropByPercent;
+import edu.illinois.library.cantaloupe.operation.CropByPixels;
+import edu.illinois.library.cantaloupe.operation.CropToSquare;
 import edu.illinois.library.cantaloupe.resource.IllegalClientArgumentException;
 import edu.illinois.library.cantaloupe.util.StringUtils;
 
@@ -10,26 +13,23 @@ import edu.illinois.library.cantaloupe.util.StringUtils;
  * @see <a href="http://iiif.io/api/image/2.0/#region">IIIF Image API 2.0</a>
  * @see <a href="http://iiif.io/api/image/2.1/#region">IIIF Image API 2.1</a>
  */
-class Region {
+final class Region {
 
     enum Type {
         FULL, PERCENT, PIXELS, SQUARE
     }
 
-    private Float height;
+    private static final double DELTA = 0.00000001;
+
+    private Float x, y, width, height;
     private Type type;
-    private Float width;
-    private Float x;
-    private Float y;
 
     /**
      * @param uriRegion Region component of a URI.
-     * @return
      * @throws IllegalClientArgumentException if the argument is invalid.
      */
     public static Region fromUri(String uriRegion) {
-        Region region = new Region();
-
+        final Region region = new Region();
         switch (uriRegion) {
             case "full":
                 region.setType(Type.FULL);
@@ -41,8 +41,7 @@ class Region {
                 String csv;
                 if (uriRegion.startsWith("pct:")) {
                     region.setType(Type.PERCENT);
-                    String[] tmp = uriRegion.split(":");
-                    csv = tmp[1];
+                    csv = uriRegion.substring(4);
                 } else {
                     region.setType(Type.PIXELS);
                     csv = uriRegion;
@@ -65,62 +64,42 @@ class Region {
     public boolean equals(Object obj) {
         if (obj == this) {
             return true;
-        }
-        final float delta = 0.0001f;
-        if (obj instanceof Region) {
+        } else if (obj instanceof Region) {
             final Region region = (Region) obj;
-            if (getType().equals(Type.SQUARE) &&
-                    region.getType().equals(Type.SQUARE)) {
+            if (Type.FULL.equals(getType()) &&
+                    Type.FULL.equals(region.getType())) {
+                return true;
+            } else if (Type.SQUARE.equals(getType()) &&
+                    Type.SQUARE.equals(region.getType())) {
                 return true;
             }
             return getType().equals(region.getType()) &&
-                    Math.abs(getX() - region.getX()) < delta &&
-                    Math.abs(getY() - region.getY()) < delta &&
-                    Math.abs(getWidth() - region.getWidth()) < delta &&
-                    Math.abs(getHeight() - region.getHeight()) < delta;
-        }
-        if (obj instanceof Crop) {
-            final Crop crop = (Crop) obj;
-            if (getType().equals(Type.FULL) && crop.isFull()) {
-                return true;
-            } else if (getType().equals(Type.SQUARE) &&
-                    crop.getShape().equals(Crop.Shape.SQUARE)) {
-                return true;
-            } else if (getType().equals(Type.PERCENT)) {
-                return crop.getUnit().equals(Crop.Unit.PERCENT) &&
-                        Math.abs(getX() - crop.getX() * 100) < delta &&
-                        Math.abs(getY() - crop.getY() * 100) < delta &&
-                        Math.abs(getWidth() - crop.getWidth() * 100) < delta &&
-                        Math.abs(getHeight() - crop.getHeight() * 100) < delta;
-            }
-            return getType().equals(Type.PERCENT) ==
-                    crop.getUnit().equals(Crop.Unit.PERCENT) &&
-                    Math.abs(getX() - crop.getX()) < delta &&
-                    Math.abs(getY() - crop.getY()) < delta &&
-                    Math.abs(getWidth() - crop.getWidth()) < delta &&
-                    Math.abs(getHeight() - crop.getHeight()) < delta;
+                    Math.abs(getX() - region.getX()) < DELTA &&
+                    Math.abs(getY() - region.getY()) < DELTA &&
+                    Math.abs(getWidth() - region.getWidth()) < DELTA &&
+                    Math.abs(getHeight() - region.getHeight()) < DELTA;
         }
         return super.equals(obj);
-    }
-
-    public Float getHeight() {
-        return height;
     }
 
     public Type getType() {
         return type;
     }
 
-    public Float getWidth() {
-        return width;
-    }
-
-    public Float getX() {
+    public float getX() {
         return x;
     }
 
-    public Float getY() {
+    public float getY() {
         return y;
+    }
+
+    public float getWidth() {
+        return width;
+    }
+
+    public float getHeight() {
+        return height;
     }
 
     @Override
@@ -128,89 +107,84 @@ class Region {
         return toString().hashCode();
     }
 
-    public void setHeight(Float height){
-        if (height <= 0) {
-            throw new IllegalClientArgumentException("Height must be a positive integer");
-        }
-        this.height = height;
-    }
-
     public void setType(Type type) {
         this.type = type;
     }
 
-    public void setWidth(Float width) {
-        if (width <= 0) {
-            throw new IllegalClientArgumentException("Width must be a positive integer");
-        }
-        this.width = width;
-    }
-
-    public void setX(Float x) {
+    public void setX(float x) {
         if (x < 0) {
-            throw new IllegalClientArgumentException("X must be a positive float");
+            throw new IllegalClientArgumentException("X must be >= 0");
         }
         this.x = x;
     }
 
-    public void setY(Float y) {
+    public void setY(float y) {
         if (y < 0) {
-            throw new IllegalClientArgumentException("Y must be a positive float");
+            throw new IllegalClientArgumentException("Y must be >= 0");
         }
         this.y = y;
     }
 
+    public void setWidth(float width) {
+        if (width <= 0) {
+            throw new IllegalClientArgumentException("Width must be > 0");
+        }
+        this.width = width;
+    }
+
+    public void setHeight(float height) {
+        if (height <= 0) {
+            throw new IllegalClientArgumentException("Height must be > 0");
+        }
+        this.height = height;
+    }
+
+    /**
+     * @return Equivalent instance, or {@literal null} if the {@link #getType()
+     *         type} is {@link Type#FULL}.
+     */
     Crop toCrop() {
-        Crop crop = new Crop();
-        crop.setFull(this.getType().equals(Type.FULL));
-        crop.setShape(this.getType().equals(Type.SQUARE) ?
-                Crop.Shape.SQUARE : Crop.Shape.ARBITRARY);
-        crop.setUnit(this.getType().equals(Type.PERCENT) ?
-                Crop.Unit.PERCENT : Crop.Unit.PIXELS);
-        if (this.getX() != null) {
-            crop.setX(this.getType().equals(Type.PERCENT) ?
-                    this.getX() / 100f : this.getX());
+        if (Type.FULL.equals(getType())) {
+            return new CropByPercent(); // 100% crop
+        } else if (Type.SQUARE.equals(getType())) {
+            return new CropToSquare();
+        } else if (Type.PERCENT.equals(getType())) {
+            return new CropByPercent(
+                    getX() / 100.0, getY() / 100.0,
+                    getWidth() / 100.0, getHeight() / 100.0);
+        } else {
+            return new CropByPixels(
+                    Math.round(getX()), Math.round(getY()),
+                    Math.round(getWidth()), Math.round(getHeight()));
         }
-        if (this.getY() != null) {
-            crop.setY(this.getType().equals(Type.PERCENT) ?
-                    this.getY() / 100f : this.getY());
-        }
-        if (this.getWidth() != null) {
-            crop.setWidth(this.getType().equals(Type.PERCENT) ?
-                    this.getWidth() / 100f : this.getWidth());
-        }
-        if (this.getHeight() != null) {
-            crop.setHeight(this.getType().equals(Type.PERCENT) ?
-                    this.getHeight() / 100f : this.getHeight());
-        }
-        return crop;
     }
 
     /**
      * @return Value compatible with the region component of an IIIF URI.
      */
     public String toString() {
-        String str = "";
+        String str;
         switch (getType()) {
             case FULL:
-                str += "full";
+                str = "full";
                 break;
             case SQUARE:
-                str += "square";
+                str = "square";
                 break;
             default:
                 String x, y;
                 if (getType().equals(Type.PERCENT)) {
-                    x = StringUtils.removeTrailingZeroes(this.getX());
-                    y = StringUtils.removeTrailingZeroes(this.getY());
-                    str += "pct:";
+                    str = "pct:";
+                    x = StringUtils.removeTrailingZeroes(getX());
+                    y = StringUtils.removeTrailingZeroes(getY());
                 } else {
-                    x = Integer.toString(Math.round(this.getX()));
-                    y = Integer.toString(Math.round(this.getY()));
+                    str = "";
+                    x = Integer.toString(Math.round(getX()));
+                    y = Integer.toString(Math.round(getY()));
                 }
                 str += String.format("%s,%s,%s,%s", x, y,
-                        StringUtils.removeTrailingZeroes(this.getWidth()),
-                        StringUtils.removeTrailingZeroes(this.getHeight()));
+                        StringUtils.removeTrailingZeroes(getWidth()),
+                        StringUtils.removeTrailingZeroes(getHeight()));
                 break;
         }
         return str;
