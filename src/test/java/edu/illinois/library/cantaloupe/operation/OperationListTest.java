@@ -332,6 +332,28 @@ public class OperationListTest extends BaseTest {
     }
 
     @Test
+    public void applyNonEndpointMutationsWithAllowUpscaling() throws Exception {
+        Configuration config = Configuration.getInstance();
+        config.setProperty(Key.ALLOW_UPSCALING, false);
+
+        final Dimension fullSize = new Dimension(2000, 1000);
+        final Info info = Info.builder().withSize(fullSize).build();
+        final OperationList opList = new OperationList(
+                new Identifier("cats"),
+                new Scale(1.5),
+                new Encode(Format.JPG));
+        final RequestContext context = new RequestContext();
+        context.setOperationList(opList, fullSize);
+        DelegateProxyService service = DelegateProxyService.getInstance();
+        DelegateProxy proxy = service.newDelegateProxy(context);
+
+        opList.applyNonEndpointMutations(info, proxy);
+
+        Iterator<Operation> it = opList.iterator();
+        assertFalse(((Scale) it.next()).isAllowingUpscaling());
+    }
+
+    @Test
     public void applyNonEndpointMutationsWithDownscaleFilter() throws Exception {
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.PROCESSOR_DOWNSCALE_FILTER, "bicubic");

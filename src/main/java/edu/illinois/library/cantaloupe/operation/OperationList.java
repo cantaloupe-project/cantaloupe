@@ -207,9 +207,14 @@ public final class OperationList implements Iterable<Operation> {
             LOGGER.error(e.getMessage(), e);
         }
 
-        // Scale filter
+        // Scale customization
         final Scale scale = (Scale) getFirst(Scale.class);
         if (scale != null) {
+            // Allow upscaling
+            scale.setAllowUpscaling(
+                    config.getBoolean(Key.ALLOW_UPSCALING, false));
+
+            // Filter
             double[] scales = scale.getResultingScales(
                     sourceImageSize, getScaleConstraint());
             double smallestScale = Arrays.stream(scales).min().orElse(1);

@@ -143,6 +143,7 @@ public class Scale implements Operation {
     private static final double DELTA = 0.00000001;
 
     private Filter filter;
+    private boolean allowUpscaling = true;
     private boolean isFrozen;
     private Mode scaleMode = Mode.FULL;
 
@@ -346,6 +347,9 @@ public class Scale implements Operation {
                     result[0] = result[1] = Math.min(
                             getWidth() / fullSize.width(),
                             getHeight() / fullSize.height());
+                    if (!allowUpscaling && (result[0] > 1 || result[1] > 1)) {
+                        result[0] = result[1] = 1;
+                    }
                     break;
                 default:
                     result[0] = getWidth() / fullSize.width();
@@ -412,6 +416,12 @@ public class Scale implements Operation {
                             getHeight() / size.height());
                     size.setWidth(size.width() * scalePct);
                     size.setHeight(size.height() * scalePct);
+                    if (!allowUpscaling &&
+                            (size.width() > imageSize.width() ||
+                                    size.height() > imageSize.height())) {
+                        size.setWidth(imageSize.width());
+                        size.setHeight(imageSize.height());
+                    }
                     break;
                 case NON_ASPECT_FILL:
                     size.setWidth(getWidth());
@@ -471,6 +481,10 @@ public class Scale implements Operation {
         return toString().hashCode();
     }
 
+    public boolean isAllowingUpscaling() {
+        return allowUpscaling;
+    }
+
     /**
      * @param comparedToSize
      * @param comparedToScaleConstraint
@@ -484,6 +498,13 @@ public class Scale implements Operation {
                 comparedToSize, comparedToScaleConstraint);
         return ((resultingSize.width() * resultingSize.height()) -
                 (comparedToSize.width() * comparedToSize.height()) > DELTA);
+    }
+
+    /**
+     * @param allowUpscaling Whether to allow upscaling.
+     */
+    public void setAllowUpscaling(boolean allowUpscaling) {
+        this.allowUpscaling = allowUpscaling;
     }
 
     /**
