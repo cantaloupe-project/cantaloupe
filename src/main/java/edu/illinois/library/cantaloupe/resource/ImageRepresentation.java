@@ -122,7 +122,6 @@ public class ImageRepresentation implements Representation {
             cacheFacade.purge(opList);
             // It may still be possible to fulfill the request.
             copyOrProcess(responseOS);
-            return;
         }
     }
 
@@ -150,17 +149,23 @@ public class ImageRepresentation implements Representation {
     }
 
     private void copyFromSource(OutputStream responseOS) throws IOException {
+        boolean done = false;
         final Stopwatch watch = new Stopwatch();
+
         if (processor instanceof FileProcessor) {
             Path sourceFile = ((FileProcessor) processor).getSourceFile();
             if (sourceFile != null) {
                 Files.copy(sourceFile, responseOS);
+                done = true;
             }
-        } else {
+        }
+        if (!done && processor instanceof StreamProcessor) {
             StreamFactory streamFactory =
                     ((StreamProcessor) processor).getStreamFactory();
-            try (InputStream sourceIS = streamFactory.newInputStream()) {
-                IOUtils.copy(sourceIS, responseOS);
+            if (streamFactory != null) {
+                try (InputStream sourceIS = streamFactory.newInputStream()) {
+                    IOUtils.copy(sourceIS, responseOS);
+                }
             }
         }
         LOGGER.debug("Streamed with no processing in {}: {}", watch, opList);
