@@ -56,5 +56,10 @@ http://maven.apache.org/plugins/maven-assembly-plugin/assembly.html
             <fileMode>0644</fileMode>
             <lineEnding>crlf</lineEnding>
         </file>
+        <file>
+            <source>UPGRADING.md</source>
+            <fileMode>0644</fileMode>
+            <lineEnding>crlf</lineEnding>
+        </file>
     </files>
 </assembly>
