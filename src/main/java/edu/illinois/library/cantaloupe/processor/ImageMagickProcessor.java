@@ -730,12 +730,13 @@ class ImageMagickProcessor extends AbstractMagickProcessor
                 // Do we have an EXIF orientation to deal with?
                 if (output.size() > 2) {
                     try {
-                        final int exifOrientation = Integer.parseInt(output.get(2));
+                        String str = output.get(2).replaceAll("[^\\d+]", "");
+                        final int exifOrientation = Integer.parseInt(str);
                         final Orientation orientation =
                                 Orientation.forEXIFOrientation(exifOrientation);
                         info.getImages().get(0).setOrientation(orientation);
                     } catch (IllegalArgumentException e) {
-                        LOGGER.warn("readInfo(): {}", e.getMessage());
+                        LOGGER.info("readInfo(): {}", e.getMessage());
                     }
                 }
                 return info;
