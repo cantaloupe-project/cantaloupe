@@ -621,8 +621,7 @@
                 <exclude>FfmpegProcessorTest</exclude>
                 <exclude>GraphicsMagickProcessorTest</exclude>
                 <exclude>ImageMagickProcessorTest</exclude>
-                <exclude>KakaduDemoProcessorTest</exclude>
-                <exclude>KakaduNativeProcessorTest</exclude>
+                <exclude>*Kakadu*Test</exclude>
                 <exclude>OpenJpegProcessorTest</exclude>
                 <exclude>RedisCacheTest</exclude>
               </excludes>
