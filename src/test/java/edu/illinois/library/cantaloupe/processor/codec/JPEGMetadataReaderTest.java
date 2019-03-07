@@ -53,6 +53,28 @@ public class JPEGMetadataReaderTest {
         }
     }
 
+    /* getEXIF() */
+
+    @Test
+    public void testGetEXIFWithEXIFImage() throws Exception {
+        Path file = TestUtil.getImage("jpg-exif.jpg");
+        try (ImageInputStream is = ImageIO.createImageInputStream(file.toFile())) {
+            instance.setSource(is);
+            byte[] exif = instance.getEXIF();
+            assertTrue((exif[0] == 0x49 && exif[1] == 0x49) ||
+                    (exif[0] == 0x4d && exif[1] == 0x4d));
+        }
+    }
+
+    @Test
+    public void testGetEXIFWithNonEXIFImage() throws Exception {
+        Path file = TestUtil.getImage("jpg");
+        try (ImageInputStream is = ImageIO.createImageInputStream(file.toFile())) {
+            instance.setSource(is);
+            assertNull(instance.getEXIF());
+        }
+    }
+
     /* getICCProfile() */
 
     @Test
@@ -90,6 +112,49 @@ public class JPEGMetadataReaderTest {
         try (ImageInputStream is = ImageIO.createImageInputStream(file.toFile())) {
             instance.setSource(is);
             instance.getICCProfile();
+        }
+    }
+
+    /* getWidth() */
+
+    @Test
+    public void testGetWidth() throws Exception {
+        Path file = TestUtil.getImage("jpg");
+        try (ImageInputStream is = ImageIO.createImageInputStream(file.toFile())) {
+            instance.setSource(is);
+            assertEquals(64, instance.getWidth());
+        }
+    }
+
+    /* getHeight() */
+
+    @Test
+    public void testGetHeight() throws Exception {
+        Path file = TestUtil.getImage("jpg");
+        try (ImageInputStream is = ImageIO.createImageInputStream(file.toFile())) {
+            instance.setSource(is);
+            assertEquals(56, instance.getHeight());
+        }
+    }
+
+    /* getXMP() */
+
+    @Test
+    public void testGetXMPWithXMPImage() throws Exception {
+        Path file = TestUtil.getImage("jpg-xmp.jpg");
+        try (ImageInputStream is = ImageIO.createImageInputStream(file.toFile())) {
+            instance.setSource(is);
+            byte[] xmp = instance.getXMP();
+            assertNotNull(xmp);
+        }
+    }
+
+    @Test
+    public void testGetXMPWithNonXMPImage() throws Exception {
+        Path file = TestUtil.getImage("jpg");
+        try (ImageInputStream is = ImageIO.createImageInputStream(file.toFile())) {
+            instance.setSource(is);
+            assertNull(instance.getXMP());
         }
     }
 

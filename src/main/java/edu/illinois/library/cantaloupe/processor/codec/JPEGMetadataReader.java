@@ -12,11 +12,8 @@ import java.util.List;
 /**
  * <p>Reads various metadata from a JPEG image.</p>
  *
- * <p>This class is very incomplete and only exists to work around some
- * limitations in the default ImageIO JPEG reader.</p>
- *
- * <p>This class does not rely on ImageIO and has no relationship to {@link
- * JPEGMetadata}.</p>
+ * <p>This class is very incomplete and only contains the bare minimum of
+ * functionality needed by some other application components.</p>
  *
  * @see <a href="http://dev.exiv2.org/projects/exiv2/wiki/The_Metadata_in_JPEG_files">
  *     The Metadata in JPEG Files</a>
@@ -29,34 +26,115 @@ final class JPEGMetadataReader {
     enum Marker {
 
         /**
-         * Start-of-image, expected to be the very first marker in the stream.
+         * Start Of Image, expected to be the very first marker in the stream.
          */
-        SOI,
+        SOI(0xff, 0xd8),
 
-        APP2, APP14,
+        /**
+         * Start Of Frame for baseline DCT images.
+         */
+        SOF0(0xff, 0xc0),
+
+        /**
+         * Start Of Frame for extended sequential DCT images.
+         */
+        SOF1(0xff, 0xc1),
+
+        /**
+         * Start Of Frame for progressive DCT images.
+         */
+        SOF2(0xff, 0xc2),
+
+        /**
+         * Start Of Frame for lossless (sequential) images.
+         */
+        SOF3(0xff, 0xc3),
+
+        /**
+         * Start Of Frame for differential sequential DCT images.
+         */
+        SOF5(0xff, 0xc5),
+
+        /**
+         * Start Of Frame for differential progressive DCT images.
+         */
+        SOF6(0xff, 0xc6),
+
+        /**
+         * Start Of Frame for differential lossless (sequential) images.
+         */
+        SOF7(0xff, 0xc7),
+
+        /**
+         * Start Of Frame for extended sequential DCT images.
+         */
+        SOF9(0xff, 0xc9),
+
+        /**
+         * Start Of Frame for progressive DCT images.
+         */
+        SOF10(0xff, 0xca),
+
+        /**
+         * Start Of Frame for lossless (sequential) images.
+         */
+        SOF11(0xff, 0xcb),
+
+        /**
+         * Start Of Frame for differential sequential DCT images.
+         */
+        SOF13(0xff, 0xcd),
+
+        /**
+         * Start Of Frame for differential progressive DCT images.
+         */
+        SOF14(0xff, 0xce),
+
+        /**
+         * Start Of Frame for differential lossless (sequential) images.
+         */
+        SOF15(0xff, 0xcf),
+
+        /**
+         * EXIF data.
+         */
+        APP1(0xff, 0xe1),
+
+        /**
+         * ICC profile.
+         */
+        APP2(0xff, 0xe2),
+
+        /**
+         * Adobe.
+         */
+        APP14(0xff, 0xee),
 
         /**
          * Define Huffman Table marker; our effective "stop reading" marker.
          */
-        DHT,
+        DHT(0xff, 0xc4),
 
         /**
          * Marker not recognized by this reader, which may still be perfectly
          * valid.
          */
-        UNKNOWN;
+        UNKNOWN(0x00, 0x00);
 
         static Marker forBytes(int byte1, int byte2) {
-            if (byte1 == 0xFF && byte2 == 0xD8) {
-                return SOI;
-            } else if (byte1 == 0xFF && byte2 == 0xE2) {
-                return APP2;
-            } else if (byte1 == 0xFF && byte2 == 0xEE) {
-                return APP14;
-            } else if (byte1 == 0xFF && byte2 == 0xC4) {
-                return DHT;
+            for (Marker marker : values()) {
+                if (marker.byte1 == byte1 && marker.byte2 == byte2) {
+                    return marker;
+                }
             }
             return UNKNOWN;
+        }
+
+        private int byte1, byte2;
+
+        Marker(int byte1, int byte2) {
+            this.byte1 = byte1;
+            this.byte2 = byte2;
         }
 
     }
@@ -88,11 +166,24 @@ final class JPEGMetadataReader {
     }
 
     /**
+     * Header immediately following an {@literal APP1} segment marker
+     * indicating that the segment contains EXIF data.
+     */
+    private static final byte[] EXIF_SEGMENT_HEADER = "Exif\0\0".getBytes();
+
+    /**
      * Header immediately following an {@literal APP2} segment marker
      * indicating that the segment contains an ICC profile.
      */
     private static final char[] ICC_SEGMENT_HEADER =
             "ICC_PROFILE\0".toCharArray();
+
+    /**
+     * Header immediately following an {@literal APP1} segment marker
+     * indicating that the segment contains XMP data.
+     */
+    private static final byte[] XMP_SEGMENT_HEADER =
+            "http://ns.adobe.com/xap/1.0/\0".getBytes();
 
     /**
      * Set to {@literal true} once reading begins.
@@ -109,6 +200,8 @@ final class JPEGMetadataReader {
     private boolean hasAdobeSegment;
 
     private final List<byte[]> iccProfileChunks = new ArrayList<>();
+    private byte[] exif, xmp;
+    private int width, height;
 
     /**
      * Merges the given list of chunks, or returns the single chunk if the
@@ -126,18 +219,19 @@ final class JPEGMetadataReader {
     }
 
     /**
-     * @param inputStream Fresh stream from which to read the image.
-     */
-    void setSource(ImageInputStream inputStream) {
-        this.inputStream = inputStream;
-    }
-
-    /**
-     * Reads the color transform from the {@literal APP14} marker segment.
+     * @return Color transform from the {@literal APP14} segment.
      */
     public AdobeColorTransform getColorTransform() throws IOException {
         readImage();
         return colorTransform;
+    }
+
+    /**
+     * @return EXIF data from the {@literal APP1} segment.
+     */
+    public byte[] getEXIF() throws IOException {
+        readImage();
+        return exif;
     }
 
     /**
@@ -159,9 +253,34 @@ final class JPEGMetadataReader {
         return (data != null) ? ICC_Profile.getInstance(data) : null;
     }
 
+    public int getWidth() throws IOException {
+        readImage();
+        return width;
+    }
+
+    public int getHeight() throws IOException {
+        readImage();
+        return height;
+    }
+
+    /**
+     * @return XMP data from the {@literal APP1} segment.
+     */
+    public byte[] getXMP() throws IOException {
+        readImage();
+        return xmp;
+    }
+
     boolean hasAdobeSegment() throws IOException {
         readImage();
         return hasAdobeSegment;
+    }
+
+    /**
+     * @param inputStream Fresh stream from which to read the image.
+     */
+    void setSource(ImageInputStream inputStream) {
+        this.inputStream = inputStream;
     }
 
     /**
@@ -194,6 +313,48 @@ final class JPEGMetadataReader {
      */
     private int readSegment() throws IOException {
         switch (Marker.forBytes(inputStream.read(), inputStream.read())) {
+            case SOF0:
+                readSOFSegment();
+                break;
+            case SOF1:
+                readSOFSegment();
+                break;
+            case SOF2:
+                readSOFSegment();
+                break;
+            case SOF3:
+                readSOFSegment();
+                break;
+            case SOF5:
+                readSOFSegment();
+                break;
+            case SOF6:
+                readSOFSegment();
+                break;
+            case SOF7:
+                readSOFSegment();
+                break;
+            case SOF9:
+                readSOFSegment();
+                break;
+            case SOF10:
+                readSOFSegment();
+                break;
+            case SOF11:
+                readSOFSegment();
+                break;
+            case SOF13:
+                readSOFSegment();
+                break;
+            case SOF14:
+                readSOFSegment();
+                break;
+            case SOF15:
+                readSOFSegment();
+                break;
+            case APP1:
+                readAPP1Segment();
+                break;
             case APP2:
                 readAPP2Segment();
                 break;
@@ -216,6 +377,54 @@ final class JPEGMetadataReader {
     private void skipSegment() throws IOException {
         int segmentLength = readSegmentLength();
         inputStream.skipBytes(segmentLength);
+    }
+
+    /**
+     * Reads the SOFn segment, which contains image dimensions.
+     */
+    private void readSOFSegment() throws IOException {
+        int segmentLength = readSegmentLength();
+        byte[] data = read(segmentLength);
+        height = ((data[1] & 0xff) << 8) | (data[2] & 0xff);
+        width = ((data[3] & 0xff) << 8) | (data[4] & 0xff);
+    }
+
+    /**
+     * Reads EXIF or XMP data from the APP1 segment.
+     */
+    private void readAPP1Segment() throws IOException {
+        int segmentLength = readSegmentLength();
+        byte[] data = read(segmentLength);
+
+        // Check for EXIF.
+        boolean isEXIF = true;
+        for (int i = 0; i < EXIF_SEGMENT_HEADER.length; i++) {
+            if (data[i] != EXIF_SEGMENT_HEADER[i]) {
+                isEXIF = false;
+                break;
+            }
+        }
+        if (isEXIF) {
+            final int exifLength = data.length - EXIF_SEGMENT_HEADER.length;
+            exif = new byte[exifLength];
+            System.arraycopy(data, EXIF_SEGMENT_HEADER.length,
+                    exif, 0, exifLength);
+        } else {
+            // Check for XMP.
+            boolean isXMP = true;
+            for (int i = 0; i < XMP_SEGMENT_HEADER.length; i++) {
+                if (data[i] != XMP_SEGMENT_HEADER[i]) {
+                    isXMP = false;
+                    break;
+                }
+            }
+            if (isXMP) {
+                final int xmpLength = data.length - XMP_SEGMENT_HEADER.length;
+                xmp = new byte[xmpLength];
+                System.arraycopy(data, XMP_SEGMENT_HEADER.length,
+                        xmp, 0, xmpLength);
+            }
+        }
     }
 
     /**
