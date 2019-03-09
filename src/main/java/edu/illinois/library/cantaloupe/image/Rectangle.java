@@ -14,6 +14,8 @@ public final class Rectangle {
     private double x, y;
     private Dimension dimension = new Dimension(0, 0);
 
+    public Rectangle() {}
+
     public Rectangle(double x, double y, double width, double height) {
         setX(x);
         setY(y);
@@ -89,8 +91,8 @@ public final class Rectangle {
     }
 
     public boolean intersects(Rectangle other) {
-        final double x2 = x() + width();
-        final double y2 = y() + height();
+        final double x2      = x() + width();
+        final double y2      = y() + height();
         final double otherX2 = other.x() + other.width();
         final double otherY2 = other.y() + other.height();
 
@@ -100,6 +102,30 @@ public final class Rectangle {
 
     public boolean isEmpty() {
         return dimension.isEmpty();
+    }
+
+    public void growWidth(double amount) {
+        setWidth(width() + amount);
+    }
+
+    public void growHeight(double amount) {
+        setHeight(height() + amount);
+    }
+
+    public void moveLeft(double amount) {
+        setX(x() - amount);
+    }
+
+    public void moveRight(double amount) {
+        setX(x() + amount);
+    }
+
+    public void moveUp(double amount) {
+        setY(y() - amount);
+    }
+
+    public void moveDown(double amount) {
+        setY(y() + amount);
     }
 
     /**

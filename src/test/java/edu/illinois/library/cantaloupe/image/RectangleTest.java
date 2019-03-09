@@ -53,6 +53,26 @@ public class RectangleTest {
     }
 
     @Test
+    public void testGrowWidth() {
+        final double initialWidth = instance.width();
+        instance.growWidth(3.2);
+        Rectangle expected = new Rectangle(
+                instance.x(), instance.y(),
+                initialWidth + 3.2, instance.height());
+        assertEquals(expected, instance);
+    }
+
+    @Test
+    public void testGrowHeight() {
+        final double initialHeight = instance.height();
+        instance.growHeight(3.2);
+        Rectangle expected = new Rectangle(
+                instance.x(), instance.y(),
+                instance.width(), initialHeight + 3.2);
+        assertEquals(expected, instance);
+    }
+
+    @Test
     public void testHashCode() {
         int expected = Long.hashCode(
                 Double.hashCode(instance.x()) +
@@ -142,6 +162,46 @@ public class RectangleTest {
     public void testIsEmptyWithEmptyHeight() {
         instance.setHeight(0.4);
         assertTrue(instance.isEmpty());
+    }
+
+    @Test
+    public void testMoveLeft() {
+        final double initialX = instance.x();
+        instance.moveLeft(3.5);
+        Rectangle expected = new Rectangle(
+                initialX - 3.5, instance.y(),
+                instance.width(), instance.height());
+        assertEquals(expected, instance);
+    }
+
+    @Test
+    public void testMoveRight() {
+        final double initialX = instance.x();
+        instance.moveRight(3.5);
+        Rectangle expected = new Rectangle(
+                initialX + 3.5, instance.y(),
+                instance.width(), instance.height());
+        assertEquals(expected, instance);
+    }
+
+    @Test
+    public void testMoveUp() {
+        final double initialY = instance.y();
+        instance.moveUp(3.5);
+        Rectangle expected = new Rectangle(
+                instance.x(), initialY - 3.5,
+                instance.width(), instance.height());
+        assertEquals(expected, instance);
+    }
+
+    @Test
+    public void testMoveDown() {
+        final double initialY = instance.y();
+        instance.moveDown(3.5);
+        Rectangle expected = new Rectangle(
+                instance.x(), initialY + 3.5,
+                instance.width(), instance.height());
+        assertEquals(expected, instance);
     }
 
     @Test
