@@ -111,8 +111,9 @@ class Util {
                         Integer.parseInt(it.next().asLiteral().getString());
                 return orientationForExifValue(orientationValue);
             }
-        } catch (RiotException e) {
-            // The XMP string is invalid RDF/XML. Not much we can do.
+        } catch (NullPointerException | RiotException e) {
+            // The XMP string may be invalid RDF/XML, or there may be a bug in
+            // Jena (that would be the NPE). Not much we can do.
             LOGGER.info("readOrientation(String): {}", e.getMessage());
         }
         return null;
