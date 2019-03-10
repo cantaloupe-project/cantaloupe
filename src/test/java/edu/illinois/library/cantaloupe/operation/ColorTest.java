@@ -176,112 +176,83 @@ public class ColorTest extends BaseTest {
         assertEquals(new Color(102, 51, 153), Color.fromString("rebeccapurple"));
     }
 
-    @Test
+    @Test(expected = IllegalArgumentException.class)
     public void testFromStringWithInvalidColorName() {
-        try {
-            Color.fromString("bogus");
-            fail("Expected exception");
-        } catch (IllegalArgumentException e) {
-            // pass
-        }
+        Color.fromString("bogus");
     }
 
     @Test
-    public void testFromStringWithRGBHex() {
-        // valid
+    public void testFromStringWithValidRGBHex() {
         assertEquals(new Color(192, 192, 192), Color.fromString("#ccc"));
+    }
 
-        // invalid
-        try {
-            Color.fromString("#ggg");
-            fail("Expected exception");
-        } catch (IllegalArgumentException e) {
-            // pass
-        }
+    @Test(expected = IllegalArgumentException.class)
+    public void testFromStringWithInvalidRGBHex() {
+        Color.fromString("#ggg");
     }
 
     @Test
-    public void testFromStringWithRGBAHex() {
-        // valid
+    public void testFromStringWithValidRGBAHex() {
         assertEquals(new Color(192, 192, 192, 192), Color.fromString("#cccc"));
+    }
 
-        // invalid
-        try {
-            Color.fromString("#gggg");
-            fail("Expected exception");
-        } catch (IllegalArgumentException e) {
-            // pass
-        }
+    @Test(expected = IllegalArgumentException.class)
+    public void testFromStringWithInvalidRGBAHex() {
+        Color.fromString("#gggg");
     }
 
     @Test
     public void testFromStringWithRRGGBBHex() {
-        // valid
         assertEquals(new Color(12, 23, 34), Color.fromString("#0c1722"));
+    }
 
-        // invalid
-        try {
-            Color.fromString("#fgfgfg");
-            fail("Expected exception");
-        } catch (IllegalArgumentException e) {
-            // pass
-        }
+    @Test(expected = IllegalArgumentException.class)
+    public void testFromStringWithInvalidRRGGBBHex() {
+        Color.fromString("#fgfgfg");
     }
 
     @Test
-    public void testFromStringWithRRGGBBAAHex() {
-        // valid
+    public void testFromStringWithValidRRGGBBAAHex() {
         assertEquals(new Color(12, 23, 34, 45), Color.fromString("#0c17222d"));
+    }
 
-        // invalid
-        try {
-            Color.fromString("#fgfgfgfg");
-            fail("Expected exception");
-        } catch (IllegalArgumentException e) {
-            // pass
-        }
+    @Test(expected = IllegalArgumentException.class)
+    public void testFromStringWithInvalidRRGGBBAAHex() {
+        Color.fromString("#fgfgfgfg");
     }
 
     @Test
-    public void testFromStringWithRGBNotation() {
-        // valid
+    public void testFromStringWithValidRGBNotation() {
         assertEquals(new Color(12, 23, 34),
                 Color.fromString("rgb(12, 23, 34)"));
+    }
 
-        // invalid
-        try {
-            Color.fromString("rgb(280, 280, 280)");
-            fail("Expected exception");
-        } catch (IllegalArgumentException e) {
-            // pass
-        }
+    @Test(expected = IllegalArgumentException.class)
+    public void testFromStringWithInvalidRGBNotation() {
+        Color.fromString("rgb(280, 280, 280)");
     }
 
     @Test
-    public void testFromStringWithRGBANotation() {
-        // valid
+    public void testFromStringWithValidRGBANotation() {
         assertEquals(new Color(12, 23, 34, 45),
                 Color.fromString("rgba(12, 23, 34, 45)"));
+    }
 
-        // invalid
-        try {
-            Color.fromString("rgb(280, 280, 280, 280)");
-            fail("Expected exception");
-        } catch (IllegalArgumentException e) {
-            // pass
-        }
+    @Test(expected = IllegalArgumentException.class)
+    public void testFromStringWithInvalidRGBANotation() {
+        Color.fromString("rgb(280, 280, 280, 280)");
     }
 
     @Test
     public void testEquals() {
         Color color = new Color(1, 2, 3, 4);
-        assertTrue(color.equals(new Color(1, 2, 3, 4)));
-        assertFalse(color.equals(new Color(1, 2, 3)));
-        assertFalse(color.equals(new Color(2, 3, 4, 5)));
+        assertEquals(new Color(1, 2, 3, 4), color);
+        assertNotEquals(new Color(1, 2, 3), color);
+        assertNotEquals(new Color(2, 3, 4, 5), color);
 
         color = new Color(1, 2, 3, 255);
-        assertTrue(color.equals(new Color(1, 2, 3)));
-        assertFalse(color.equals(new Color(1, 2, 3, 4)));
+        assertEquals(new Color(1, 2, 3), color);
+        assertNotEquals(new Color(1, 2, 3, 4), color);
     }
 
     @Test
@@ -292,6 +263,11 @@ public class ColorTest extends BaseTest {
     @Test
     public void testGetRGBAHex() {
         assertEquals("#C017222D", new Color(12, 23, 34, 45).toRGBAHex());
+    }
+
+    @Test
+    public void testIntValue() {
+        assertEquals(755818274, new Color(12, 223, 34, 45).intValue());
     }
 
     @Test

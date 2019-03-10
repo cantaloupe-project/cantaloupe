@@ -267,7 +267,7 @@ public final class Color {
         return builder.toString().toUpperCase();
     }
 
-    public Color(int rgb) {
+    public Color(int rgb) { // TODO: this should take RGBA
         setRed((rgb >> 16) & 0xff);
         setGreen((rgb >> 8) & 0xff);
         setBlue((rgb) & 0xff);
@@ -333,6 +333,16 @@ public final class Color {
     @Override
     public int hashCode() {
         return toRGBAHex().hashCode();
+    }
+
+    public int intValue() {
+        int value = 0;
+        value += alpha;
+        value = value << 8;
+        value += red; value = value << 8;
+        value += green; value = value << 8;
+        value += blue;
+        return value;
     }
 
     private void setAlpha(int alpha) {
