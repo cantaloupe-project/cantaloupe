@@ -974,44 +974,126 @@ public final class Java2DUtil {
         switch (colorTransform) {
             case GRAY:
                 outImage = convertIndexedTo8BitARGB(outImage);
-                convertPixelsToGray(outImage);
+                grayscale(outImage);
                 break;
             case BITONAL:
-                if (inImage.getType() != BufferedImage.TYPE_BYTE_BINARY) {
-                    outImage = new BufferedImage(
-                            inImage.getWidth(),
-                            inImage.getHeight(),
-                            BufferedImage.TYPE_BYTE_BINARY);
-                }
-                if (outImage != inImage) {
-                    Graphics2D g2d = outImage.createGraphics();
-                    g2d.setRenderingHint(RenderingHints.KEY_RENDERING,
-                            RenderingHints.VALUE_RENDER_QUALITY);
-                    g2d.drawImage(inImage, 0, 0, null);
-
-                    LOGGER.debug("transformColor(): transformed {}x{} image in {}",
-                            inImage.getWidth(), inImage.getHeight(), watch);
-                }
+                outImage = convertIndexedTo8BitARGB(outImage);
+                binarize(outImage);
                 break;
+        }
+        if (outImage != inImage) {
+            LOGGER.debug("transformColor(): transformed {}x{} image in {}",
+                    inImage.getWidth(), inImage.getHeight(), watch);
         }
         return outImage;
     }
 
     /**
-     * Converts an image to grayscale in-place.
+     * Grayscales the given image's pixels.
      */
-    private static void convertPixelsToGray(BufferedImage image) {
-        for (int y = 0; y < image.getHeight(); y++) {
-            for (int x = 0; x < image.getWidth(); x++) {
-                int rgb = image.getRGB(x, y);
-                int r = (rgb >> 16) & 0xFF;
-                int g = (rgb >> 8) & 0xFF;
-                int b = (rgb & 0xFF);
-                int gray = (r + g + b) / 3;
-                int val = (rgb & 0xff000000) | (gray << 16) | (gray << 8) | gray;
-                image.setRGB(x, y, val);
+    private static void grayscale(BufferedImage image) {
+        for (int x = 0; x < image.getWidth(); x++) {
+            for (int j = 0; j < image.getHeight(); j++) {
+                int alpha = new java.awt.Color(image.getRGB(x, j)).getAlpha();
+                int red   = new java.awt.Color(image.getRGB(x, j)).getRed();
+                int green = new java.awt.Color(image.getRGB(x, j)).getGreen();
+                int blue  = new java.awt.Color(image.getRGB(x, j)).getBlue();
+
+                red = (int) (0.21 * red + 0.71 * green + 0.07 * blue);
+                Color color = new Color(red, red, red, alpha);
+                image.setRGB(x, j, color.intValue());
             }
         }
+    }
+
+    /**
+     * Binarizes the given image's pixels.
+     *
+     * @see <a href="https://bostjan-cigan.com/java-image-binarization-using-otsus-algorithm/">
+     *     Java Image Binarization Using Otsu's Algorithm</a>
+     */
+    private static void binarize(BufferedImage image) {
+        int red;
+        int newPixel;
+        int threshold = otsuThreshold(image);
+
+        for (int x = 0; x < image.getWidth(); x++) {
+            for (int y = 0; y < image.getHeight(); y++) {
+                red = new Color(image.getRGB(x, y)).getRed();
+                int alpha = new Color(image.getRGB(x, y)).getAlpha();
+                if (red > threshold) {
+                    newPixel = 255;
+                } else {
+                    newPixel = 0;
+                }
+                Color color = new Color(newPixel, newPixel, newPixel, alpha);
+                image.setRGB(x, y, color.intValue());
+            }
+        }
+    }
+
+    /**
+     * @return Histogram of a grayscale image.
+     */
+    private static int[] histogram(BufferedImage input) {
+        int[] histogram = new int[256];
+
+        for (int i = 0; i < histogram.length; i++) {
+            histogram[i] = 0;
+        }
+
+        for (int x = 0; x < input.getWidth(); x++) {
+            for (int y = 0; y < input.getHeight(); y++) {
+                int red = new Color(input.getRGB(x, y)).getRed();
+                histogram[red]++;
+            }
+        }
+        return histogram;
+    }
+
+    /**
+     * @param image
+     * @return Binary threshold using Otsu's method.
+     */
+    private static int otsuThreshold(BufferedImage image) {
+        int[] histogram = histogram(image);
+        int total = image.getHeight() * image.getWidth();
+
+        float sum = 0;
+        for (int i = 0; i < 256; i++) {
+            sum += i * histogram[i];
+        }
+
+        float sumB = 0;
+        int wB = 0, wF;
+
+        float varMax = 0;
+        int threshold = 0;
+
+        for (int i = 0; i < 256; i++) {
+            wB += histogram[i];
+            if (wB == 0) {
+                continue;
+            }
+            wF = total - wB;
+
+            if (wF == 0) {
+                break;
+            }
+
+            sumB += (float) (i * histogram[i]);
+            float mB = sumB / wB;
+            float mF = (sum - sumB) / wF;
+
+            float varBetween = (float) wB * (float) wF * (mB - mF) * (mB - mF);
+
+            if (varBetween > varMax) {
+                varMax = varBetween;
+                threshold = i;
+            }
+        }
+
+        return threshold;
     }
 
     /**
