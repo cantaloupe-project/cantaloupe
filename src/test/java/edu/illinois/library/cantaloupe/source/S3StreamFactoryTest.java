@@ -49,7 +49,7 @@ public class S3StreamFactoryTest extends BaseTest {
         configureS3Source();
 
         S3ObjectInfo info = new S3ObjectInfo("jpg", S3Server.FIXTURES_BUCKET_NAME);
-        info.setLength(5439);
+        info.setLength(1584);
 
         instance = new S3StreamFactory(info);
     }
@@ -71,7 +71,7 @@ public class S3StreamFactoryTest extends BaseTest {
                 length++;
             }
         }
-        assertEquals(5439, length);
+        assertEquals(1584, length);
     }
 
     @Test
@@ -82,7 +82,7 @@ public class S3StreamFactoryTest extends BaseTest {
                 length++;
             }
         }
-        assertEquals(5439, length);
+        assertEquals(1584, length);
     }
 
     @Test

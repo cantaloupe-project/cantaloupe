@@ -38,8 +38,7 @@ import static org.junit.Assert.*;
 
 public class ProcessorConnectorTest extends BaseTest {
 
-    private static final Identifier IDENTIFIER =
-            new Identifier("jpg-rgb-64x56x8-baseline.jpg");
+    private static final Identifier IDENTIFIER = new Identifier("jpg");
 
     private ProcessorConnector instance;
 

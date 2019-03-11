@@ -46,7 +46,7 @@ public class S3HTTPImageInputStreamClientTest extends BaseTest {
         configureS3Source();
 
         S3ObjectInfo info = new S3ObjectInfo("jpg", S3Server.FIXTURES_BUCKET_NAME);
-        info.setLength(5439);
+        info.setLength(1584);
 
         instance = new S3HTTPImageInputStreamClient(info);
     }
@@ -56,12 +56,12 @@ public class S3HTTPImageInputStreamClientTest extends BaseTest {
         Response actual = instance.sendHEADRequest();
         assertEquals(200, actual.getStatus());
         assertEquals("bytes", actual.getHeaders().getFirstValue("Accept-Ranges"));
-        assertEquals("5439", actual.getHeaders().getFirstValue("Content-Length"));
+        assertEquals("1584", actual.getHeaders().getFirstValue("Content-Length"));
     }
 
     @Test
     public void testSendGETRequest() throws Exception {
-        Response actual = instance.sendGETRequest(new Range(10, 50, 5439));
+        Response actual = instance.sendGETRequest(new Range(10, 50, 1584));
         assertEquals(206, actual.getStatus());
         assertEquals(41, actual.getBody().length);
     }

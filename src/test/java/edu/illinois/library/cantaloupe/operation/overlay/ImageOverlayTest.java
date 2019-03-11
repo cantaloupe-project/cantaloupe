@@ -32,7 +32,7 @@ public class ImageOverlayTest extends BaseTest {
         try (InputStream is = instance.openStream();
              ByteArrayOutputStream os = new ByteArrayOutputStream()) {
             IOUtils.copy(is, os);
-            assertEquals(5439, os.toByteArray().length);
+            assertEquals(1584, os.toByteArray().length);
         }
     }
 

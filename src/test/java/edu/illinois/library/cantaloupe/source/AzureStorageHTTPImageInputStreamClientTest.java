@@ -44,7 +44,7 @@ public class AzureStorageHTTPImageInputStreamClientTest extends BaseTest {
         Response actual = instance.sendHEADRequest();
         assertEquals(200, actual.getStatus());
         assertEquals("bytes", actual.getHeaders().getFirstValue("Accept-Ranges"));
-        assertEquals("5439", actual.getHeaders().getFirstValue("Content-Length"));
+        assertEquals("1584", actual.getHeaders().getFirstValue("Content-Length"));
     }
 
     @Test

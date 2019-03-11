@@ -42,36 +42,26 @@ public class ImageOverlayCacheTest extends BaseTest {
     public void testPutAndGetWithPresentFileURI() throws IOException {
         URI uri = TestUtil.getImage("jpg").toUri();
         byte[] bytes = instance.putAndGet(uri);
-        assertEquals(5439, bytes.length);
+        assertEquals(1584, bytes.length);
     }
 
-    @Test
-    public void testPutAndGetWithMissingFileURI() {
-        try {
-            URI uri = TestUtil.getImage("blablabla").toUri();
-            instance.putAndGet(uri);
-            fail("Expected exception");
-        } catch (IOException e) {
-            // pass
-        }
+    @Test(expected = IOException.class)
+    public void testPutAndGetWithMissingFileURI() throws Exception {
+        URI uri = TestUtil.getImage("blablabla").toUri();
+        instance.putAndGet(uri);
     }
 
     @Test
     public void testPutAndGetWithPresentRemoteURI() throws Exception {
         URI uri = new URI(webServer.getHTTPURI() + "/jpg");
         byte[] bytes = instance.putAndGet(uri);
-        assertEquals(5439, bytes.length);
+        assertEquals(1584, bytes.length);
     }
 
-    @Test
+    @Test(expected = IOException.class)
     public void testPutAndGetWithMissingRemoteURI() throws Exception {
-        try {
-            URI uri = new URI(webServer.getHTTPURI() + "/blablabla");
-            instance.putAndGet(uri);
-            fail("Expected exception");
-        } catch (IOException e) {
-            // pass
-        }
+        URI uri = new URI(webServer.getHTTPURI() + "/blablabla");
+        instance.putAndGet(uri);
     }
 
     @Test
@@ -79,7 +69,7 @@ public class ImageOverlayCacheTest extends BaseTest {
         Callable<Void> callable = () -> {
             URI uri = new URI(webServer.getHTTPURI() + "/jpg");
             byte[] bytes = instance.putAndGet(uri);
-            assertEquals(5439, bytes.length);
+            assertEquals(1582, bytes.length);
             return null;
         };
         new ConcurrentReaderWriter(callable, callable, 5000).run();

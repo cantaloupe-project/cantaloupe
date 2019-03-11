@@ -29,14 +29,14 @@ public class PathStreamFactoryTest extends BaseTest {
     @Test
     public void testNewInputStream() throws Exception {
         try (InputStream is = instance.newInputStream()) {
-            assertEquals(5439, is.available());
+            assertEquals(1584, is.available());
         }
     }
 
     @Test
     public void testNewSeekableStream() throws Exception {
         try (ImageInputStream is = instance.newSeekableStream()) {
-            assertEquals(5439, is.length());
+            assertEquals(1584, is.length());
         }
     }
 

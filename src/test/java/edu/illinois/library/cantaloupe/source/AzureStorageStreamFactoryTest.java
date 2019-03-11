@@ -61,7 +61,7 @@ public class AzureStorageStreamFactoryTest extends BaseTest {
                 length++;
             }
         }
-        assertEquals(5439, length);
+        assertEquals(1584, length);
     }
 
     @Test
@@ -88,7 +88,7 @@ public class AzureStorageStreamFactoryTest extends BaseTest {
                 length++;
             }
         }
-        assertEquals(5439, length);
+        assertEquals(1584, length);
     }
 
     @Test
@@ -112,7 +112,7 @@ public class AzureStorageStreamFactoryTest extends BaseTest {
                 length++;
             }
         }
-        assertEquals(5439, length);
+        assertEquals(1584, length);
     }
 
     @Test
