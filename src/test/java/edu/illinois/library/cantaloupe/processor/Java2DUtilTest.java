@@ -616,7 +616,24 @@ public class Java2DUtilTest extends BaseTest {
         assertEquals(BufferedImage.TYPE_CUSTOM, outImage.getType());
     }
 
-    /* scale */
+    /* scale(BufferedImage, double[]) */
+
+    @Test
+    public void testScaleWithNoOpDoubles() {
+        BufferedImage inImage = newColorImage(100, 100, 8, false);
+        BufferedImage outImage = Java2DUtil.scale(inImage, new double[] { 1, 1 });
+        assertSame(inImage, outImage);
+    }
+
+    @Test
+    public void testScaleWithDoubles() {
+        BufferedImage inImage = newColorImage(100, 100, 8, false);
+        BufferedImage outImage = Java2DUtil.scale(inImage, new double[] { 0.8, 0.7 });
+        assertEquals(80, outImage.getWidth());
+        assertEquals(70, outImage.getHeight());
+    }
+
+    /* scale(BufferedImage, Scale, ScaleConstraint, ReductionFactor) */
 
     @Test
     public void testScaleWithFull() {

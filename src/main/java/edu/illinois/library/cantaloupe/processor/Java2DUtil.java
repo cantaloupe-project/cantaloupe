@@ -878,31 +878,26 @@ public final class Java2DUtil {
     }
 
     /**
-     * <p>Scales an image, taking an already-applied reduction factor into
-     * account. In other words, the dimensions of the input image have already
-     * been halved {@link ReductionFactor#factor} times but the given scale is
-     * relative to the full-sized image.</p>
-     *
-     * <p>If one or both target dimensions would end up being less than three
-     * pixels, an empty image (with the correct dimensions) will be
-     * returned.</p>
-     *
-     * @param inImage         Image to scale.
-     * @param scale           Requested size ignoring any reduction factor. If
-     *                        no resample filter is set, a default will be
-     *                        used. {@link
-     *                        Operation#hasEffect(Dimension, OperationList)}
-     *                        should be called before invoking.
-     * @param scaleConstraint Scale constraint.
-     * @param reductionFactor Reduction factor that has already been applied to
-     *                        {@literal inImage}.
-     * @return                Scaled image, or the input image if the given
-     *                        arguments would result in a no-op.
+     * @param inImage Image to scale.
+     * @param scales  X and Y axis scale percentages.
+     * @return        Scaled image, or the input image if the given scales are
+     *                both {@literal 1}.
      */
     static BufferedImage scale(final BufferedImage inImage,
-                               final Scale scale,
-                               final ScaleConstraint scaleConstraint,
-                               final ReductionFactor reductionFactor) {
+                               final double[] scales) {
+        return scale(inImage, scales, null);
+    }
+
+    /**
+     * @param inImage Image to scale.
+     * @param scales  X and Y axis scale percentages.
+     * @param filter  May be {@literal null}.
+     * @return        Scaled image, or the input image if the given scales are
+     *                both {@literal 1}.
+     */
+    static BufferedImage scale(final BufferedImage inImage,
+                               final double[] scales,
+                               Scale.Filter filter) {
         /*
         This method uses resampling code derived from
         com.mortennobel.imagescaling (see
@@ -946,8 +941,9 @@ public final class Java2DUtil {
 
         final Dimension sourceSize = new Dimension(
                 inImage.getWidth(), inImage.getHeight());
-        final Dimension targetSize = scale.getResultingSize(
-                sourceSize, reductionFactor, scaleConstraint);
+        final Dimension targetSize = new Dimension(
+                sourceSize.width() * scales[0],
+                sourceSize.height() * scales[1]);
 
         // ResampleFilter requires both target dimensions to be at least 3
         // pixels. (OpenSeadragon has been known to request smaller.)
@@ -965,21 +961,17 @@ public final class Java2DUtil {
                 final ResampleOp resampleOp = new ResampleOp(
                         targetSize.intWidth(), targetSize.intHeight());
 
-                // Try to use the requested resample filter.
-                ResampleFilter filter = null;
-                if (scale.getFilter() != null) {
-                    filter = scale.getFilter().toResampleFilter();
-                }
-                // No particular filter requested, so select a default.
                 if (filter == null) {
+                    // No particular filter requested, so select a default.
                     if (targetSize.width() < sourceSize.width() ||
                             targetSize.height() < sourceSize.height()) {
-                        filter = DEFAULT_DOWNSCALE_FILTER.toResampleFilter();
+                        filter = DEFAULT_DOWNSCALE_FILTER;
                     } else {
-                        filter = DEFAULT_UPSCALE_FILTER.toResampleFilter();
+                        filter = DEFAULT_UPSCALE_FILTER;
                     }
                 }
-                resampleOp.setFilter(filter);
+
+                resampleOp.setFilter(filter.toResampleFilter());
 
                 scaledImage = resampleOp.filter(inImage, null);
 
@@ -996,6 +988,44 @@ public final class Java2DUtil {
                     inImage.getType());
         }
         return scaledImage;
+    }
+
+    /**
+     * <p>Scales an image, taking an already-applied reduction factor into
+     * account. In other words, the dimensions of the input image have already
+     * been halved {@link ReductionFactor#factor} times but the given scale is
+     * relative to the full-sized image.</p>
+     *
+     * <p>If one or both target dimensions would end up being less than three
+     * pixels, an empty image (with the correct dimensions) will be
+     * returned.</p>
+     *
+     * @param inImage         Image to scale.
+     * @param scale           Requested size ignoring any reduction factor. If
+     *                        no resample filter is set, a default will be
+     *                        used. {@link
+     *                        Operation#hasEffect(Dimension, OperationList)}
+     *                        should be called before invoking.
+     * @param scaleConstraint Scale constraint.
+     * @param reductionFactor Reduction factor that has already been applied to
+     *                        {@literal inImage}.
+     * @return                Scaled image, or the input image if the given
+     *                        arguments would result in a no-op.
+     */
+    static BufferedImage scale(final BufferedImage inImage,
+                               final Scale scale,
+                               final ScaleConstraint scaleConstraint,
+                               final ReductionFactor reductionFactor) {
+        final Dimension fullSize = new Dimension(
+                inImage.getWidth(), inImage.getHeight());
+        final double[] scales = scale.getResultingScales(
+                fullSize, scaleConstraint);
+        // TODO: move this to Scale.getResultingScales(Dimension, ReductionFactor, ScaleConstraint)
+        if (scale.getPercent() != null) {
+            scales[0] /= reductionFactor.getScale();
+            scales[1] /= reductionFactor.getScale();
+        }
+        return scale(inImage, scales, scale.getFilter());
     }
 
     /**
