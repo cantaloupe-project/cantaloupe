@@ -234,6 +234,86 @@ public final class Java2DUtil {
     }
 
     /**
+     * @param image      Image to crop.
+     * @param region     Crop region in source image coordinates.
+     * @param copyRaster Whether to copy the underlying raster. If {@literal
+     *                   true}, the crop will be a "hard crop" that creates a
+     *                   whole new image. If {@literal false}, the returned
+     *                   image will share the raster of the given image.
+     * @return           Cropped image, or the input image if the given region
+     *                   is a no-op.
+     */
+    static BufferedImage crop(BufferedImage image,
+                              final Rectangle region,
+                              final boolean copyRaster) {
+        if (copyRaster) {
+            image = cropPhysically(image, region);
+        } else {
+            image = cropVirtually(image, region);
+        }
+        return convertIndexedTo8BitARGB(image);
+    }
+
+    /**
+     * Creates an entirely new image of the given region dimensions, drawing
+     * only the needed region into it.
+     *
+     * @see #cropVirtually(BufferedImage, Rectangle)
+     */
+    private static BufferedImage cropPhysically(final BufferedImage inImage,
+                                                final Rectangle region) {
+        BufferedImage outImage = inImage;
+
+        if (inImage.getWidth() != region.intWidth() ||
+                inImage.getHeight() != region.intHeight()) {
+            final Stopwatch watch = new Stopwatch();
+
+            outImage = new BufferedImage(
+                    region.intWidth(), region.intHeight(),
+                    BufferedImage.TYPE_INT_ARGB);
+            Graphics2D g2d = outImage.createGraphics();
+            g2d.drawImage(inImage, 0, 0,
+                    region.intWidth(), region.intHeight(),
+                    region.intX(), region.intY(),
+                    region.intX() + region.intWidth(),
+                    region.intY() + region.intHeight(), null);
+            g2d.dispose();
+
+            LOGGER.debug("cropPhysically(): cropped {}x{} image to {}x{} in {}",
+                    inImage.getWidth(), inImage.getHeight(),
+                    region.intWidth(), region.intHeight(), watch);
+        }
+        return outImage;
+    }
+
+    /**
+     * Creates an image that appears to have the given region dimensions, but
+     * wraps the raster of the given image.
+     *
+     * @see #cropPhysically(BufferedImage, Rectangle)
+     */
+    private static BufferedImage cropVirtually(final BufferedImage inImage,
+                                               final Rectangle region) {
+        BufferedImage outImage = inImage;
+
+        final Dimension inSize = new Dimension(
+                inImage.getWidth(), inImage.getHeight());
+
+        if (!inSize.equals(region.size())) {
+            final Stopwatch watch = new Stopwatch();
+
+            outImage = inImage.getSubimage(
+                    region.intX(), region.intY(),
+                    region.intWidth(), region.intHeight());
+
+            LOGGER.debug("cropVirtually(): cropped {}x{} image to {}x{} in {}",
+                    inImage.getWidth(), inImage.getHeight(),
+                    region.intWidth(), region.intHeight(), watch);
+        }
+        return outImage;
+    }
+
+    /**
      * <p>Crops the given image taking into account a reduction factor
      * ({@literal reductionFactor}). In other words, the dimensions of the
      * input image have already been halved {@literal reductionFactor} times
@@ -251,32 +331,17 @@ public final class Java2DUtil {
      *                        full-sized version.
      * @param scaleConstraint Scale constraint.
      * @return                Cropped image, or the input image if the given
-     *                        operation is a no-op.
+     *                        region is a no-op. Note that the image is simply
+     *                        a wrapper around the same data buffer.
      */
     static BufferedImage crop(final BufferedImage inImage,
                               final Crop crop,
                               final ReductionFactor rf,
                               final ScaleConstraint scaleConstraint) {
-        BufferedImage outImage = inImage;
-
         final Dimension inSize = new Dimension(
                 inImage.getWidth(), inImage.getHeight());
-        final Rectangle cropRegion = crop.getRectangle(
-                inSize, rf, scaleConstraint);
-
-        if (!inSize.equals(cropRegion.size())) {
-            final Stopwatch watch = new Stopwatch();
-
-            outImage = inImage.getSubimage(
-                    cropRegion.intX(), cropRegion.intY(),
-                    cropRegion.intWidth(), cropRegion.intHeight());
-
-            outImage = convertIndexedTo8BitARGB(outImage);
-
-            LOGGER.debug("crop(): cropped {}x{} image to {} in {}",
-                    inImage.getWidth(), inImage.getHeight(), crop, watch);
-        }
-        return outImage;
+        final Rectangle roi = crop.getRectangle(inSize, rf, scaleConstraint);
+        return crop(inImage, roi, true);
     }
 
     /**

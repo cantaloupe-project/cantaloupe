@@ -45,7 +45,7 @@ import static org.junit.Assert.*;
 
 public class Java2DUtilTest extends BaseTest {
 
-    private static final float DELTA = 0.0000001f;
+    private static final double DELTA = 0.0000001;
 
     private static BufferedImage newColorImage(int componentSize,
                                                boolean hasAlpha) {
@@ -262,7 +262,27 @@ public class Java2DUtilTest extends BaseTest {
         assertEquals(BufferedImage.TYPE_INT_ARGB, outImage.getType());
     }
 
-    /* crop(BufferedImage, Crop) */
+    /* copyAndCrop(BufferedImage, Rectangle, boolean) */
+
+    @Test
+    public void testCropPhysically() {
+        BufferedImage inImage  = newColorImage(200, 100, 8, false);
+        Rectangle roi          = new Rectangle(20, 20, 80, 70);
+        BufferedImage outImage = Java2DUtil.crop(inImage, roi, false);
+        assertEquals(80, outImage.getWidth());
+        assertEquals(70, outImage.getHeight());
+    }
+
+    @Test
+    public void testCropVirtually() {
+        BufferedImage inImage  = newColorImage(200, 100, 8, false);
+        Rectangle roi          = new Rectangle(20, 20, 80, 70);
+        BufferedImage outImage = Java2DUtil.crop(inImage, roi, true);
+        assertEquals(80, outImage.getWidth());
+        assertEquals(70, outImage.getHeight());
+    }
+
+    /* crop(BufferedImage, Crop, ReductionFactor, ScaleConstraint) */
 
     @Test
     public void testCropWithCropToSquare() {
@@ -733,9 +753,8 @@ public class Java2DUtilTest extends BaseTest {
         // Transform to bitonal.
         outImage = Java2DUtil.transformColor(inImage, ColorTransform.BITONAL);
 
-        // Expect it to be transformed to white.
-        assertRGBA(outImage.getRGB(0, 0), 255, 255, 255, 255);
-        assertEquals(BufferedImage.TYPE_BYTE_BINARY, outImage.getType());
+        // Expect it to be transformed to black.
+        assertRGBA(outImage.getRGB(0, 0), 0, 0, 0, 255);
 
         // Create a red image.
         g2d = inImage.createGraphics();
@@ -746,9 +765,8 @@ public class Java2DUtilTest extends BaseTest {
         // Transform to bitonal.
         outImage = Java2DUtil.transformColor(inImage, ColorTransform.BITONAL);
 
-        // Expect it to be transformed to black.
-        assertRGBA(outImage.getRGB(0, 0), 0, 0, 0, 255);
-        assertEquals(BufferedImage.TYPE_BYTE_BINARY, outImage.getType());
+        // Expect it to be transformed to white.
+        assertRGBA(outImage.getRGB(0, 0), 255, 255, 255, 255);
     }
 
     @Test
@@ -765,9 +783,8 @@ public class Java2DUtilTest extends BaseTest {
         BufferedImage outImage = Java2DUtil.transformColor(inImage,
                 ColorTransform.BITONAL);
 
-        // Expect it to be transformed to white.
-        assertRGBA(outImage.getRGB(0, 0), 255, 255, 255, 255);
-        assertEquals(BufferedImage.TYPE_BYTE_BINARY, outImage.getType());
+        // Expect it to be transformed to black.
+        assertRGBA(outImage.getRGB(0, 0), 0, 0, 0, 255);
 
         // Create a red image.
         g2d = inImage.createGraphics();
@@ -778,9 +795,8 @@ public class Java2DUtilTest extends BaseTest {
         // Transform to bitonal.
         outImage = Java2DUtil.transformColor(inImage, ColorTransform.BITONAL);
 
-        // Expect it to be transformed to black.
-        assertRGBA(outImage.getRGB(0, 0), 0, 0, 0, 255);
-        assertEquals(BufferedImage.TYPE_BYTE_BINARY, outImage.getType());
+        // Expect it to be transformed to white.
+        assertRGBA(outImage.getRGB(0, 0), 255, 255, 255, 255);
     }
 
     @Test
