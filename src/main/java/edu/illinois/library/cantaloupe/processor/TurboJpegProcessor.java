@@ -226,15 +226,7 @@ public class TurboJpegProcessor extends AbstractProcessor
                 } else if (op instanceof Rotate) {
                     rotate = (Rotate) op;
                 } else if (op instanceof ColorTransform) {
-                    if (ColorTransform.GRAY.equals(op)) {
-                        try {
-                            imageReader.setUseGrayscaleConversion(true);
-                        } catch (TransformationNotSupportedException e) {
-                            ctx = (ColorTransform) op;
-                        }
-                    } else {
-                        ctx = (ColorTransform) op;
-                    }
+                    ctx = (ColorTransform) op;
                 } else if (op instanceof Redaction) {
                     requiresRedaction = true;
                 } else if (op instanceof Overlay) {
