@@ -30,7 +30,8 @@ public final class ProcessorFactory {
                     KakaduDemoProcessor.class,
                     KakaduNativeProcessor.class,
                     OpenJpegProcessor.class,
-                    PdfBoxProcessor.class)));
+                    PdfBoxProcessor.class,
+                    TurboJpegProcessor.class)));
 
     private static final Set<Processor> ALL_PROCESSORS = new HashSet<>();
 

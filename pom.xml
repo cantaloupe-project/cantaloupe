@@ -624,6 +624,8 @@
                 <exclude>*Kakadu*Test</exclude>
                 <exclude>OpenJpegProcessorTest</exclude>
                 <exclude>RedisCacheTest</exclude>
+                <exclude>TurboJpegProcessorTest</exclude>
+                <exclude>TurboJPEG*Test</exclude>
               </excludes>
             </configuration>
           </plugin>

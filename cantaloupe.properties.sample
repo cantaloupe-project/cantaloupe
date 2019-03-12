@@ -294,9 +294,10 @@ JdbcSource.connection_timeout = 10
 processor.selection_strategy = AutomaticSelectionStrategy
 
 # Built-in processors are `Java2dProcessor`, `GraphicsMagickProcessor`,
-# `ImageMagickProcessor`, `KakaduDemoProcessor`, `KakaduNativeProcessor`,
-# `OpenJpegProcessor`, `JaiProcessor`, `PdfBoxProcessor`, and
-# `FfmpegProcessor`.
+# `ImageMagickProcessor`, `TurboJpegProcessor`, `KakaduNativeProcessor`,
+# `KakaduDemoProcessor`, `OpenJpegProcessor`, `JaiProcessor`,
+# `PdfBoxProcessor`, and `FfmpegProcessor`.
+# Some of these have third-party dependencies and won't work out-of-the-box.
 
 # These format-specific definitions are optional.
 processor.ManualSelectionStrategy.avi = FfmpegProcessor

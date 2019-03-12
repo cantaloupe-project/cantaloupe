@@ -1,5 +1,9 @@
 # Change Log
 
+## TBD
+
+* Added TurboJpegProcessor.
+
 ## 4.1
 
 ### Configuration

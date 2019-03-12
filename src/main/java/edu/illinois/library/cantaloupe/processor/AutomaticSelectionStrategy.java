@@ -13,17 +13,25 @@ import java.util.List;
 class AutomaticSelectionStrategy implements SelectionStrategy {
 
     private static final List<Class<? extends Processor>> JP2_CANDIDATES,
-            PDF_CANDIDATES, VIDEO_CANDIDATES, FALLBACK_CANDIDATES;
+            JPG_CANDIDATES, PDF_CANDIDATES, VIDEO_CANDIDATES,
+            FALLBACK_CANDIDATES;
 
     static {
         // JP2
         List<Class<? extends Processor>> list = new ArrayList<>();
         list.add(KakaduNativeProcessor.class);
-        list.add(KakaduDemoProcessor.class);
         list.add(OpenJpegProcessor.class);
         list.add(ImageMagickProcessor.class);
         list.add(GraphicsMagickProcessor.class);
         JP2_CANDIDATES = Collections.unmodifiableList(list);
+
+        // JPEG
+        list = new ArrayList<>();
+        list.add(TurboJpegProcessor.class);
+        list.add(Java2dProcessor.class);
+        list.add(GraphicsMagickProcessor.class);
+        list.add(ImageMagickProcessor.class);
+        JPG_CANDIDATES = Collections.unmodifiableList(list);
 
         // PDF
         list = new ArrayList<>();
@@ -49,6 +57,8 @@ class AutomaticSelectionStrategy implements SelectionStrategy {
     public List<Class<? extends Processor>> getPreferredProcessors(Format sourceFormat) {
         if (Format.JP2.equals(sourceFormat)) {
             return JP2_CANDIDATES;
+        } if (Format.JPG.equals(sourceFormat)) {
+            return JPG_CANDIDATES;
         } else if (Format.PDF.equals(sourceFormat)) {
             return PDF_CANDIDATES;
         } else if (sourceFormat.isVideo()) {
