@@ -64,7 +64,7 @@ public final class TurboJPEGImageReader implements AutoCloseable {
      * TurboJPEG has some issues handling lossless transformations on very
      * small images.
      */
-    private static final int TRANSFORM_MIN_SIZE = 64;
+    private static final int TRANSFORM_MIN_SIZE = 48;
 
     /**
      * The region the client wants to read. The region we tell TurboJPEG to
@@ -127,10 +127,10 @@ public final class TurboJPEGImageReader implements AutoCloseable {
                                       final Rectangle roiWithinRegion) {
         final Rectangle safeRegion = new Rectangle(region);
 
-        if (width > TRANSFORM_MIN_SIZE &&
-                height > TRANSFORM_MIN_SIZE &&
-                region.width() > TRANSFORM_MIN_SIZE &&
-                region.height() > TRANSFORM_MIN_SIZE) {
+        if (width >= TRANSFORM_MIN_SIZE &&
+                height >= TRANSFORM_MIN_SIZE &&
+                region.width() >= TRANSFORM_MIN_SIZE &&
+                region.height() >= TRANSFORM_MIN_SIZE) {
             // Stretch origin left
             final int roiXInset = region.intX() % blockWidth;
             safeRegion.moveLeft(roiXInset);
@@ -540,17 +540,12 @@ public final class TurboJPEGImageReader implements AutoCloseable {
         image.setScaledWidth(width);
         image.setScaledHeight(height);
 
-        if ((region == null || isRegionMCUSafe()) && scalingFactor.isOne()) {
-            // Recompression is not necessary.
-            image.setData(decompressor.getJPEGBuf());
-            image.setDataLength(decompressor.getJPEGSize());
-            image.setDecompressed(false);
-        } else {
+
             byte[] data = decompressor.decompress(width, 0, height,
                     TJ.PF_BGRX, getFlags());
             image.setData(data);
             image.setDecompressed(true);
-        }
+
         return image;
     }
 

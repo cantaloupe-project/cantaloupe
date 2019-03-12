@@ -105,7 +105,7 @@ public class TurboJPEGImageReaderTest extends BaseTest {
         instance.close();
         instance = new TurboJPEGImageReader();
 
-        Path image = TestUtil.getImage("jpg-rgb-64x48x8.jpg");
+        Path image = TestUtil.getImage("jpg-rgb-48x42x8.jpg");
         InputStream is = Files.newInputStream(image);
         instance.setSource(is);
         assertFalse(instance.isTransformable());
