@@ -658,10 +658,6 @@ abstract class AbstractProcessorTest extends BaseTest {
                         if (fixtureName.contains("pdf")) {
                             continue;
                         }
-                    } else if (proc instanceof TurboJpegProcessor) {
-                        if (fixtureName.equals("jpg-rgb-64x48x8.jpg")) {
-                            continue;
-                        }
                     }
 
                     // Don't test 1x1 images as they are problematic with

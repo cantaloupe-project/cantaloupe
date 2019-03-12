@@ -8,6 +8,7 @@ import edu.illinois.library.cantaloupe.image.Rectangle;
 import edu.illinois.library.cantaloupe.image.ScaleConstraint;
 import edu.illinois.library.cantaloupe.operation.ColorTransform;
 import edu.illinois.library.cantaloupe.operation.Crop;
+import edu.illinois.library.cantaloupe.operation.CropByPercent;
 import edu.illinois.library.cantaloupe.operation.Encode;
 import edu.illinois.library.cantaloupe.operation.Operation;
 import edu.illinois.library.cantaloupe.operation.OperationList;
@@ -18,8 +19,6 @@ import edu.illinois.library.cantaloupe.operation.Sharpen;
 import edu.illinois.library.cantaloupe.operation.Transpose;
 import edu.illinois.library.cantaloupe.operation.overlay.Overlay;
 import edu.illinois.library.cantaloupe.operation.redaction.Redaction;
-import edu.illinois.library.cantaloupe.processor.codec.turbojpeg.TransformationNotSupportedException;
-import edu.illinois.library.cantaloupe.processor.codec.turbojpeg.TurboJPEGImage;
 import edu.illinois.library.cantaloupe.processor.codec.turbojpeg.TurboJPEGImageReader;
 import edu.illinois.library.cantaloupe.processor.codec.turbojpeg.TurboJPEGImageWriter;
 import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
@@ -34,6 +33,7 @@ import java.util.Collections;
 import java.util.EnumSet;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Collectors;
 
 /**
  * <p>Processor using the TurboJPEG high-level API to the libjpeg-turbo native
@@ -186,134 +186,67 @@ public class TurboJpegProcessor extends AbstractProcessor
                         final Info info,
                         final OutputStream outputStream) throws ProcessorException {
         final Dimension fullSize              = info.getSize();
+        final ReductionFactor reductionFactor = new ReductionFactor();
         final ScaleConstraint scaleConstraint = opList.getScaleConstraint();
-        final double scScale = scaleConstraint.getRational().doubleValue();
+        final TurboJPEGImageWriter writer     = new TurboJPEGImageWriter();
 
-        imageReader.setUseFastDCT(USE_FAST_DECODE_DCT);
-
-        // Initialize the reader with the desired ROI and scale.
-        boolean requiresCrop = false, requiresRedaction = false,
-                progressive = true;
-        Rectangle roi;
-        Scale scale         = null;
-        Transpose transpose = null;
-        Rotate rotate       = null;
-        ColorTransform ctx  = null;
-        Overlay overlay     = null;
-        Sharpen sharpen     = null;
-        int quality         = -1;
         try {
+            imageReader.setUseFastDCT(USE_FAST_DECODE_DCT);
+            writer.setUseFastDCT(USE_FAST_ENCODE_DCT);
+            writer.setSubsampling(imageReader.getSubsampling());
+
+            final Rectangle roiWithinSafeRegion = new Rectangle();
+            BufferedImage image =
+                    imageReader.readAsBufferedImage(roiWithinSafeRegion);
+
+            // Apply the crop operation, if present, and retain a reference
+            // to it for subsequent operations to refer to.
+            Crop crop = new CropByPercent();
+            for (Operation op : opList) {
+                if (op instanceof Crop) {
+                    crop = (Crop) op;
+                    if (crop.hasEffect(fullSize, opList)) {
+                        image = Java2DUtil.crop(image, crop, reductionFactor,
+                                opList.getScaleConstraint());
+                    }
+                }
+            }
+
+            // Redactions happen immediately after cropping.
+            final Set<Redaction> redactions = opList.stream()
+                    .filter(op -> op instanceof Redaction)
+                    .filter(op -> op.hasEffect(fullSize, opList))
+                    .map(op -> (Redaction) op)
+                    .collect(Collectors.toSet());
+            Java2DUtil.applyRedactions(image, fullSize, crop,
+                    new double[] { 1.0, 1.0 }, reductionFactor,
+                    opList.getScaleConstraint(), redactions);
+
             for (Operation op : opList) {
                 if (!op.hasEffect(fullSize, opList)) {
                     continue;
                 }
-                if (op instanceof Crop) {
-                    Crop crop = (Crop) op;
-                    roi = crop.getRectangle(fullSize, scaleConstraint);
-                    imageReader.setRegion(roi.intX(), roi.intY(),
-                            roi.intWidth(), roi.intHeight());
-
-                    final int blockWidth  = imageReader.getBlockWidth();
-                    final int blockHeight = imageReader.getBlockHeight();
-                    requiresCrop = (roi.intX() % blockWidth != 0 ||
-                            roi.intY() % blockHeight != 0 ||
-                            roi.intWidth() % blockWidth != 0 ||
-                            roi.intHeight() % blockHeight != 0);
-                } else if (op instanceof Scale) {
-                    scale = (Scale) op;
+                if (op instanceof Scale) {
+                    image = Java2DUtil.scale(image, (Scale) op,
+                            scaleConstraint, reductionFactor);
                 } else if (op instanceof Transpose) {
-                    transpose = (Transpose) op;
+                    image = Java2DUtil.transpose(image, (Transpose) op);
                 } else if (op instanceof Rotate) {
-                    rotate = (Rotate) op;
+                    image = Java2DUtil.rotate(image, (Rotate) op);
                 } else if (op instanceof ColorTransform) {
-                    ctx = (ColorTransform) op;
-                } else if (op instanceof Redaction) {
-                    requiresRedaction = true;
-                } else if (op instanceof Overlay) {
-                    overlay = (Overlay) op;
+                    image = Java2DUtil.transformColor(image, (ColorTransform) op);
                 } else if (op instanceof Sharpen) {
-                    sharpen = (Sharpen) op;
+                    image = Java2DUtil.sharpen(image, (Sharpen) op);
+                } else if (op instanceof Overlay) {
+                    Java2DUtil.applyOverlay(image, (Overlay) op);
                 } else if (op instanceof Encode) {
                     Encode encode = (Encode) op;
-                    quality       = encode.getQuality();
-                    progressive   = encode.isInterlacing();
+                    writer.setQuality(encode.getQuality());
+                    writer.setProgressive(encode.isInterlacing());
                 }
             }
 
-            // Initialize a writer.
-            final TurboJPEGImageWriter writer = new TurboJPEGImageWriter();
-            writer.setProgressive(progressive);
-            writer.setSubsampling(imageReader.getSubsampling());
-            writer.setUseFastDCT(USE_FAST_ENCODE_DCT);
-            if (quality > 0) {
-                writer.setQuality(quality);
-            }
-
-            if (requiresCrop || scale != null || ctx != null ||
-                    requiresRedaction || transpose != null || rotate != null ||
-                    overlay != null || sharpen != null) {
-                // Read as a BufferedImage. roiWithinSafeRegion is the required
-                // additional crop area within the returned image.
-                final Rectangle roiWithinSafeRegion = new Rectangle();
-                BufferedImage image =
-                        imageReader.readAsBufferedImage(roiWithinSafeRegion);
-                roiWithinSafeRegion.scaleX(scScale);
-                roiWithinSafeRegion.scaleY(scScale);
-
-                if (requiresCrop) {
-                    LOGGER.trace("ROI coordinates are not multiples of the " +
-                            "block size; additional cropping will be needed.");
-                    // TJCompressor will access this BufferedImage's Raster
-                    // directly, bypassing the updated crop info in the new
-                    // BufferedImage. We could use TJCompressor.setSourceImage()
-                    // to provide it the region we want to write, but that's
-                    // harder to do after scaling and rotation etc., so for
-                    // simplicity's sake, we will do a more expensive
-                    // "copy-crop" here.
-                    image = Java2DUtil.crop(image,
-                            new Rectangle(roiWithinSafeRegion), true);
-                }
-
-                if (scale != null) {
-                    LOGGER.trace("Unable to use libjpeg-turbo scaling; " +
-                            "falling back to Java 2D.");
-                    image = Java2DUtil.scale(image, scale, scaleConstraint,
-                            new ReductionFactor());
-                }
-
-                // TODO: redactions
-
-                if (transpose != null) {
-                    image = Java2DUtil.transpose(image, transpose);
-                }
-
-                if (rotate != null) {
-                    image = Java2DUtil.rotate(image, rotate);
-                }
-
-                if (ctx != null) {
-                    image = Java2DUtil.transformColor(image, ctx);
-                }
-
-                if (overlay != null) {
-                    Java2DUtil.applyOverlay(image, overlay);
-                }
-
-                if (sharpen != null) {
-                    image = Java2DUtil.sharpen(image, sharpen);
-                }
-
-                // Write it out.
-                writer.write(image, outputStream);
-            } else {
-                LOGGER.trace("No decompression necessary");
-
-                // Read the compressed image region.
-                TurboJPEGImage image = imageReader.read();
-
-                // Write it.
-                writer.write(image, outputStream);
-            }
+            writer.write(image, outputStream);
         } catch (IOException e) {
             throw new ProcessorException(e);
         }
@@ -324,10 +257,7 @@ public class TurboJpegProcessor extends AbstractProcessor
         return Info.builder()
                 .withFormat(Format.JPG)
                 .withSize(imageReader.getWidth(), imageReader.getHeight())
-                // Blocks aren't really tiles, but efficiency may be improved
-                // when clients request image tiles that align with the block
-                // grid.
-                .withTileSize(imageReader.getBlockWidth(), imageReader.getBlockHeight())
+                .withTileSize(imageReader.getWidth(), imageReader.getHeight())
                 .withNumResolutions(1)
                 .withOrientation(Orientation.ROTATE_0) // TODO: fix this
                 .build();
