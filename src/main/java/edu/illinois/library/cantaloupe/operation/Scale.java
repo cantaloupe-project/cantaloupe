@@ -143,8 +143,8 @@ public class Scale implements Operation {
     private static final double DELTA = 0.00000001;
 
     private Filter filter;
-    private boolean allowUpscaling = true;
     private boolean isFrozen;
+    private double maxScale = Double.MAX_VALUE;
     private Mode scaleMode = Mode.FULL;
 
     /**
@@ -274,6 +274,10 @@ public class Scale implements Operation {
         return result;
     }
 
+    public double getMaxScale() {
+        return maxScale;
+    }
+
     /**
      * @param reducedSize     Size of an image that has been halved {@literal
      *                        n} times.
@@ -347,8 +351,8 @@ public class Scale implements Operation {
                     result[0] = result[1] = Math.min(
                             getWidth() / fullSize.width(),
                             getHeight() / fullSize.height());
-                    if (!allowUpscaling && (result[0] > 1 || result[1] > 1)) {
-                        result[0] = result[1] = 1;
+                    if (result[0] > maxScale || result[1] > maxScale) {
+                        result[0] = result[1] = maxScale;
                     }
                     break;
                 default:
@@ -416,9 +420,8 @@ public class Scale implements Operation {
                             getHeight() / size.height());
                     size.setWidth(size.width() * scalePct);
                     size.setHeight(size.height() * scalePct);
-                    if (!allowUpscaling &&
-                            (size.width() > imageSize.width() ||
-                                    size.height() > imageSize.height())) {
+                    if ((size.width() / imageSize.width() > maxScale ||
+                            size.height() / imageSize.height() > maxScale)) {
                         size.setWidth(imageSize.width());
                         size.setHeight(imageSize.height());
                     }
@@ -481,10 +484,6 @@ public class Scale implements Operation {
         return toString().hashCode();
     }
 
-    public boolean isAllowingUpscaling() {
-        return allowUpscaling;
-    }
-
     /**
      * @param comparedToSize
      * @param comparedToScaleConstraint
@@ -498,13 +497,6 @@ public class Scale implements Operation {
                 comparedToSize, comparedToScaleConstraint);
         return ((resultingSize.width() * resultingSize.height()) -
                 (comparedToSize.width() * comparedToSize.height()) > DELTA);
-    }
-
-    /**
-     * @param allowUpscaling Whether to allow upscaling.
-     */
-    public void setAllowUpscaling(boolean allowUpscaling) {
-        this.allowUpscaling = allowUpscaling;
     }
 
     /**
@@ -527,6 +519,14 @@ public class Scale implements Operation {
             throw new IllegalArgumentException("Height must be a positive integer");
         }
         this.height = height;
+    }
+
+    /**
+     * @param maxScale Maximum scale to allow. Supply {@literal 0} to indicate
+     *                 no max.
+     */
+    public void setMaxScale(double maxScale) {
+        this.maxScale = (maxScale > 0.0001) ? maxScale : Double.MAX_VALUE;
     }
 
     /**

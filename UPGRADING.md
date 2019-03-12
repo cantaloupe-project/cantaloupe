@@ -9,7 +9,7 @@ current version.
     * `processor.[format]` to `processor.ManualSelectionStrategy.[format]`
     * `processor.fallback` to `processor.ManualSelectionStrategy.fallback`
 2. Add the following keys from the sample configuration:
-    * `allow_upscaling`
+    * `max_scale`
     * `HttpSource.chunking.*`
     * `S3Source.chunking.*`
     * `AzureStorageSource.chunking.*`

@@ -393,7 +393,7 @@ public class ImageInfoFactoryTest extends BaseTest {
     public void testNewImageInfoMaxAreaWithAllowUpscalingDisabled() {
         final int maxPixels = 2000000;
         instance.setMaxPixels(maxPixels);
-        instance.setAllowUpscaling(false);
+        instance.setMaxScale(1.0);
 
         ImageInfo<String, Object> imageInfo = invokeNewImageInfo();
         List<?> profile = (List<?>) imageInfo.get("profile");
@@ -417,7 +417,7 @@ public class ImageInfoFactoryTest extends BaseTest {
 
     @Test
     public void testNewImageInfoSupportsWhenUpscalingIsAllowed() {
-        instance.setAllowUpscaling(true);
+        instance.setMaxScale(9.0);
         ImageInfo<String, Object> imageInfo = invokeNewImageInfo();
 
         List<?> profile = (List<?>) imageInfo.get("profile");
@@ -427,7 +427,7 @@ public class ImageInfoFactoryTest extends BaseTest {
 
     @Test
     public void testNewImageInfoSupportsWhenUpscalingIsDisallowed() {
-        instance.setAllowUpscaling(false);
+        instance.setMaxScale(1.0);
         ImageInfo<String, Object> imageInfo = invokeNewImageInfo();
 
         List<?> profile = (List<?>) imageInfo.get("profile");

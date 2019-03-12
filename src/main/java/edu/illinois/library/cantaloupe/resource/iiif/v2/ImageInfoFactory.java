@@ -52,7 +52,7 @@ final class ImageInfoFactory {
     private Set<Quality> processorQualities;
     private Set<Format> processorOutputFormats;
     private DelegateProxy delegateProxy;
-    private boolean allowUpscaling;
+    private double maxScale;
     private int maxPixels, minSize, minTileSize;
 
     /**
@@ -67,10 +67,10 @@ final class ImageInfoFactory {
                      final Set<Quality> processorQualities,
                      final Set<Format> processorOutputFormats) {
         Configuration config = Configuration.getInstance();
-        allowUpscaling = config.getBoolean(Key.ALLOW_UPSCALING, false);
-        maxPixels      = (int) config.getLong(Key.MAX_PIXELS, 0);
-        minSize        = config.getInt(Key.IIIF_MIN_SIZE, DEFAULT_MIN_SIZE);
-        minTileSize    = config.getInt(Key.IIIF_MIN_TILE_SIZE, DEFAULT_MIN_TILE_SIZE);
+        maxPixels            = config.getInt(Key.MAX_PIXELS, 0);
+        maxScale             = config.getDouble(Key.MAX_SCALE, Double.MAX_VALUE);
+        minSize              = config.getInt(Key.IIIF_MIN_SIZE, DEFAULT_MIN_SIZE);
+        minTileSize          = config.getInt(Key.IIIF_MIN_TILE_SIZE, DEFAULT_MIN_TILE_SIZE);
 
         this.processorFeatures = processorFeatures;
         this.processorQualities = processorQualities;
@@ -179,22 +179,20 @@ final class ImageInfoFactory {
 
         // supports
         final Set<String> featureStrings = new HashSet<>();
-        for (Feature feature : processorFeatures) {
-            // If the info is being used for a virtual scale-constrained
-            // version, OR if upscaling is disabled in the configuration,
-            // sizeAboveFull should not be available.
-            if (ProcessorFeature.SIZE_ABOVE_FULL.equals(feature) &&
-                    (scaleConstraint.getRational().getNumerator() != 1 ||
-                            scaleConstraint.getRational().getDenominator() != 1)) {
-                continue;
-            } else if (ProcessorFeature.SIZE_ABOVE_FULL.equals(feature) &&
-                    !allowUpscaling) {
-                continue;
+        for (Feature pFeature : processorFeatures) {
+            // sizeAboveFull should not be available if the info is being used
+            // for a virtual scale-constrained version, or if upscaling is
+            // disallowed in the configuration.
+            if (ProcessorFeature.SIZE_ABOVE_FULL.equals(pFeature)) {
+                if (scaleConstraint.hasEffect() ||
+                        (ProcessorFeature.SIZE_ABOVE_FULL.equals(pFeature) && maxScale <= 1)) {
+                    continue;
+                }
             }
-            featureStrings.add(feature.getName());
+            featureStrings.add(pFeature.getName());
         }
-        for (Feature feature : SUPPORTED_SERVICE_FEATURES) {
-            featureStrings.add(feature.getName());
+        for (Feature sFeature : SUPPORTED_SERVICE_FEATURES) {
+            featureStrings.add(sFeature.getName());
         }
         profileMap.put("supports", featureStrings);
 
@@ -243,21 +241,12 @@ final class ImageInfoFactory {
 
     /**
      * @param fullSize Full source image size.
-     * @return The smaller of {@link #maxPixels} or the full image area if
-     *         {@link #allowUpscaling} is set to {@literal false}.
+     * @return         The smaller of {@link #maxPixels} or the area at {@link
+     *                 #maxScale}.
      */
     private int getEffectiveMaxPixels(Dimension fullSize) {
-        if (!allowUpscaling) {
-            return (int) Math.min(fullSize.width() * fullSize.height(), maxPixels);
-        }
-        return maxPixels;
-    }
-
-    /**
-     * @param allowUpscaling Whether to allow upscaling.
-     */
-    void setAllowUpscaling(boolean allowUpscaling) {
-        this.allowUpscaling = allowUpscaling;
+        final double area = fullSize.width() * fullSize.height();
+        return (int) Math.min(area * maxScale, maxPixels);
     }
 
     void setDelegateProxy(DelegateProxy proxy) {
@@ -270,6 +259,13 @@ final class ImageInfoFactory {
      */
     void setMaxPixels(int maxPixels) {
         this.maxPixels = maxPixels;
+    }
+
+    /**
+     * @param maxScale Maximum allowed scale.
+     */
+    void setMaxScale(double maxScale) {
+        this.maxScale = maxScale;
     }
 
     /**

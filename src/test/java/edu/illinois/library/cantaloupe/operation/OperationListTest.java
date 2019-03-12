@@ -332,9 +332,9 @@ public class OperationListTest extends BaseTest {
     }
 
     @Test
-    public void applyNonEndpointMutationsWithAllowUpscaling() throws Exception {
+    public void applyNonEndpointMutationsWithMaxScale() throws Exception {
         Configuration config = Configuration.getInstance();
-        config.setProperty(Key.ALLOW_UPSCALING, false);
+        config.setProperty(Key.MAX_SCALE, 1);
 
         final Dimension fullSize = new Dimension(2000, 1000);
         final Info info = Info.builder().withSize(fullSize).build();
@@ -350,7 +350,7 @@ public class OperationListTest extends BaseTest {
         opList.applyNonEndpointMutations(info, proxy);
 
         Iterator<Operation> it = opList.iterator();
-        assertFalse(((Scale) it.next()).isAllowingUpscaling());
+        assertEquals(1.0, ((Scale) it.next()).getMaxScale(), DELTA);
     }
 
     @Test

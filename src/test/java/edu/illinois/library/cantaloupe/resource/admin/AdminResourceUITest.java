@@ -23,6 +23,7 @@ import static org.junit.Assert.*;
  */
 public class AdminResourceUITest extends AbstractAdminResourceTest {
 
+    private static final double DELTA = 0.00000001;
     private static final int WAIT_AFTER_SUBMIT = 2000;
     private static final String USERNAME = "admin";
     private static final String SECRET = "secret";
@@ -276,8 +277,8 @@ public class AdminResourceUITest extends AbstractAdminResourceTest {
         css("#cl-endpoints-button > a").click();
 
         // Fill in the form
-        inputNamed(Key.ALLOW_UPSCALING).click();
         inputNamed(Key.MAX_PIXELS).sendKeys("5000");
+        inputNamed(Key.MAX_SCALE).sendKeys("1.1");
         selectNamed(Key.IIIF_CONTENT_DISPOSITION).selectByValue("attachment");
         inputNamed(Key.IIIF_MIN_SIZE).sendKeys("75");
         inputNamed(Key.IIIF_MIN_TILE_SIZE).sendKeys("250");
@@ -295,8 +296,8 @@ public class AdminResourceUITest extends AbstractAdminResourceTest {
 
         // Assert that the application configuration has been updated correctly
         final Configuration config = Configuration.getInstance();
-        assertTrue(config.getBoolean(Key.ALLOW_UPSCALING));
         assertEquals(5000, config.getLong(Key.MAX_PIXELS));
+        assertEquals(1.1, config.getDouble(Key.MAX_SCALE), DELTA);
         assertEquals("attachment",
                 config.getString(Key.IIIF_CONTENT_DISPOSITION));
         assertEquals(75, config.getInt(Key.IIIF_MIN_SIZE));

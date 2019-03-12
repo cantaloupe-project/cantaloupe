@@ -77,7 +77,7 @@ Run them with `mvn clean test -Pbenchmark`.
 
 ### 5. Output tests
 
-There is an [output tester tool](https://gitlab.com/cantaloupe/iiif-endpoint-output-test)
+There is an [output tester tool](https://github.com/medusa-project/cantaloupe-output-tester)
 that enables visual inspection of image output.
 
 ## Build the website
@@ -147,7 +147,7 @@ release branch for that release, and merged back into `develop`.
 3. Run Findbugs (`mvn clean compile findbugs:findbugs findbugs:gui`)
 4. Run the tests:
    * JUnit
-   * Endpoint tests
+   * [Endpoint tests](https://github.com/medusa-project/cantaloupe-output-tester)
 5. Finalize the code to be released, addressing any relevant milestone issues,
    TODOs, etc.
 6. Finalize the documentation, including the website, user manual, and change

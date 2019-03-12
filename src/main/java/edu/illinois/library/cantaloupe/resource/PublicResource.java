@@ -199,19 +199,18 @@ public abstract class PublicResource extends AbstractResource {
      */
     protected void validateScale(Dimension virtualSize,
                                  Scale scale) throws ScaleRestrictedException {
-        final Configuration config = Configuration.getInstance();
         final ScaleConstraint scaleConstraint = (getScaleConstraint() != null) ?
                 getScaleConstraint() : new ScaleConstraint(1, 1);
-
         double scalePct = scaleConstraint.getRational().doubleValue();
         if (scale != null) {
             scalePct = Arrays.stream(scale.getResultingScales(virtualSize,
                             scaleConstraint)).max().orElse(1);
         }
 
-        if (scalePct > 1.00001 &&
-                !config.getBoolean(Key.ALLOW_UPSCALING, false)) {
-            throw new ScaleRestrictedException();
+        final Configuration config = Configuration.getInstance();
+        final double maxScale      = config.getDouble(Key.MAX_SCALE, 1.0);
+        if (maxScale > 0.0001 && scalePct > maxScale) {
+            throw new ScaleRestrictedException(maxScale);
         }
     }
 

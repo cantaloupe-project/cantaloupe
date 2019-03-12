@@ -16,7 +16,7 @@
   Authentication API 1.0's "all or nothing access" or "tiered access" schemes.
 * The `endpoint.public.auth.*` keys that controlled global HTTP Basic
   protection have also been replaced by the `authorize()` delegate method.
-* Upscaling can be disabled in the configuration.
+* The maximum allowed scale can set in the configuration.
 * Running tasks are displayed in the Control Panel.
 * Added HTTP API endpoints for status and health checks.
 * In the IIIF Image API 2.x endpoint, the `Access-Control-Allow-Origin`

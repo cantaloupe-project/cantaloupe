@@ -210,9 +210,8 @@ public final class OperationList implements Iterable<Operation> {
         // Scale customization
         final Scale scale = (Scale) getFirst(Scale.class);
         if (scale != null) {
-            // Allow upscaling
-            scale.setAllowUpscaling(
-                    config.getBoolean(Key.ALLOW_UPSCALING, false));
+            // Max scale
+            scale.setMaxScale(config.getDouble(Key.MAX_SCALE, 1.0));
 
             // Filter
             double[] scales = scale.getResultingScales(

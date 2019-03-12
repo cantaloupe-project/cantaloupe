@@ -959,26 +959,6 @@
                             <h2>All Endpoints</h2>
                             <table class="table table-striped">
                                 <tr>
-                                    <td>Allow Upscaling
-                                        <a tabindex="0" class="btn btn-sm cl-help"
-                                           role="button" data-toggle="popover"
-                                           data-trigger="focus"
-                                           data-content="Whether to allow requests for
-                                           larger-than-full-scale images.">?</a>
-                                    </td>
-                                    <td>
-                                        <div class="checkbox">
-                                            <label>
-                                                <input type="checkbox"
-                                                       name="allow_upscaling"
-                                                       value="true"
-                                                       data-requires-restart="false">
-                                                Enabled
-                                            </label>
-                                        </div>
-                                    </td>
-                                </tr>
-                                <tr>
                                     <td>Max Pixels
                                         <a tabindex="0" class="btn btn-sm cl-help"
                                            role="button" data-toggle="popover"
@@ -993,6 +973,20 @@
                                     <td>
                                         <input class="form-control" type="number"
                                                name="max_pixels" min="0"
+                                               data-requires-restart="false">
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Max Scale
+                                        <a tabindex="0" class="btn btn-sm cl-help"
+                                           role="button" data-toggle="popover"
+                                           data-trigger="focus"
+                                           data-content="Maximum scale to allow
+                                           (1.0 = full scale; 0 = no maximum).">?</a>
+                                    </td>
+                                    <td>
+                                        <input class="form-control" type="number"
+                                               name="max_scale" min="0"
                                                data-requires-restart="false">
                                     </td>
                                 </tr>
@@ -1014,7 +1008,7 @@
                                            cause web browsers to download images
                                            rather than display them. This can be
                                            overridden using the
-                                           &lt;code&gt;?response-content-disposition&lt;/&gt;
+                                           &lt;code&gt;?response-content-disposition&lt;/code&gt;
                                            query argument.">?</a>
                                     </td>
                                     <td>

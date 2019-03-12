@@ -230,13 +230,13 @@ public class ImageResourceTest extends ResourceTest {
     @Test
     public void testGETLessThanOrEqualToFullScale() {
         URI uri = getHTTPURI("/" + IMAGE + "/full/full/0/color.png");
-        tester.testLessThanOrEqualToFullScale(uri);
+        tester.testLessThanOrEqualToMaxScale(uri);
     }
 
     @Test
     public void testGETGreaterThanFullScale() {
         URI uri = getHTTPURI("/" + IMAGE + "/full/pct:101/0/color.png");
-        tester.testGreaterThanFullScale(uri);
+        tester.testGreaterThanMaxScale(uri);
     }
 
     @Test

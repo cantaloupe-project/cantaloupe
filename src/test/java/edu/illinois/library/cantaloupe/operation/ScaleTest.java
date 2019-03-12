@@ -300,7 +300,7 @@ public class ScaleTest extends BaseTest {
     }
 
     @Test
-    public void getResultingScalesWithAspectFitInsideAndAllowedUpscaling() {
+    public void getResultingScalesWithAspectFitInsideAndUnlimitedMaxScale() {
         final Dimension fullSize = new Dimension(900, 600);
         final ScaleConstraint scaleConstraint = new ScaleConstraint(1, 3);
         instance.setMode(Scale.Mode.ASPECT_FIT_INSIDE);
@@ -315,13 +315,13 @@ public class ScaleTest extends BaseTest {
     }
 
     @Test
-    public void getResultingScalesWithAspectFitInsideAndDisallowedUpscaling() {
+    public void getResultingScalesWithAspectFitInsideAndMaxScale1() {
         final Dimension fullSize = new Dimension(900, 600);
         final ScaleConstraint scaleConstraint = new ScaleConstraint(1, 3);
         instance.setMode(Scale.Mode.ASPECT_FIT_INSIDE);
         instance.setWidth(1800);
         instance.setHeight(1200);
-        instance.setAllowUpscaling(false);
+        instance.setMaxScale(1.0);
 
         assertArrayEquals(new double[] { 1.0, 1.0 },
                 instance.getResultingScales(fullSize, scaleConstraint), DELTA);
@@ -411,7 +411,7 @@ public class ScaleTest extends BaseTest {
     }
 
     @Test
-    public void getResultingSize1WithAspectFitInsideAndAllowedUpscaling() {
+    public void getResultingSize1WithAspectFitInsideAndUnlimitedMaxScale() {
         final Dimension fullSize = new Dimension(600, 400);
         final ScaleConstraint scaleConstraint = new ScaleConstraint(1, 1);
         instance.setMode(Scale.Mode.ASPECT_FIT_INSIDE);
@@ -423,11 +423,11 @@ public class ScaleTest extends BaseTest {
     }
 
     @Test
-    public void getResultingSize1WithAspectFitInsideAndDisallowedUpscaling() {
+    public void getResultingSize1WithAspectFitInsideAndMaxScale1() {
         final Dimension fullSize = new Dimension(600, 400);
         final ScaleConstraint scaleConstraint = new ScaleConstraint(1, 1);
         instance.setMode(Scale.Mode.ASPECT_FIT_INSIDE);
-        instance.setAllowUpscaling(false);
+        instance.setMaxScale(1.0);
         instance.setWidth(1200);
         instance.setHeight(600);
 
@@ -556,7 +556,7 @@ public class ScaleTest extends BaseTest {
     }
 
     @Test
-    public void getResultingSize2WithAspectFitInsideAndAllowedUpscaling() {
+    public void getResultingSize2WithAspectFitInsideAndUnlimitedMaxScale() {
         final Dimension fullSize = new Dimension(600, 400);
         final ReductionFactor rf = new ReductionFactor(1);
         final ScaleConstraint sc = new ScaleConstraint(1, 2);
@@ -569,14 +569,14 @@ public class ScaleTest extends BaseTest {
     }
 
     @Test
-    public void getResultingSize2WithAspectFitInsideAndDisallowedUpscaling() {
+    public void getResultingSize2WithAspectFitInsideAndMaxScale1() {
         final Dimension fullSize = new Dimension(600, 400);
         final ReductionFactor rf = new ReductionFactor(1);
         final ScaleConstraint sc = new ScaleConstraint(1, 2);
         instance.setMode(Scale.Mode.ASPECT_FIT_INSIDE);
         instance.setWidth(1200);
         instance.setHeight(600);
-        instance.setAllowUpscaling(false);
+        instance.setMaxScale(1.0);
 
         assertEquals(new Dimension(600, 400),
                 instance.getResultingSize(fullSize, rf, sc));

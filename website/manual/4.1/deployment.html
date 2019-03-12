@@ -98,7 +98,7 @@ title: Deployment
 <h2 id="Limiting">Limiting</h2>
 
 <ul>
-  <li>The <code>allow_upscaling</code> configuration option should be set to <code>false</code> unless there is a known need for it. This will prevent requests for large scales that could overwhelm the server.</li>
+  <li>Setting the <code>max_scale</code> configuration option to <code>1.0</code> will disallow requests for larger scales that could overwhelm the server.</li>
   <li>A <code>max_pixels</code> configuration option is available to limit the maximum returned size of processed images. This is a "safety net" to prevent excessively expensive requests. It does not affect requests for full-sized unmodified images, which do not significantly load the server.
     <ul>
       <li>Note that the <code><a href="access-control.html#Authorization">authorize()</a></code> delegate method can perform the same function as <code>max_pixels</code>, with more granular control.</li>
