@@ -90,6 +90,8 @@ public class CacheFacadeTest extends BaseTest {
     @Test
     public void testGetOrReadInfo() throws Exception {
         Configuration config = Configuration.getInstance();
+        config.setProperty(Key.PROCESSOR_SELECTION_STRATEGY,
+                "ManualSelectionStrategy");
         config.setProperty(Key.PROCESSOR_FALLBACK, "Java2dProcessor");
 
         final Identifier identifier = new Identifier("jpg");

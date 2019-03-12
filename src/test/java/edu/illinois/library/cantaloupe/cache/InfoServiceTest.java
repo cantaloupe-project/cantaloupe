@@ -37,6 +37,8 @@ public class InfoServiceTest extends BaseTest {
 
     private FileProcessor newFileProcessor() throws Exception {
         Configuration config = Configuration.getInstance();
+        config.setProperty(Key.PROCESSOR_SELECTION_STRATEGY,
+                "ManualSelectionStrategy");
         config.setProperty(Key.PROCESSOR_FALLBACK, "Java2dProcessor");
         try (FileProcessor proc = (FileProcessor) new ProcessorFactory().
                 newProcessor(Format.JPG)) {

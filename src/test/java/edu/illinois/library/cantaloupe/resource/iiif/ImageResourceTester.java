@@ -402,7 +402,8 @@ public class ImageResourceTester extends ImageAPIResourceTester {
 
     public void testProcessorValidationFailure(URI uri) {
         Configuration config = Configuration.getInstance();
-        config.setProperty("processor.pdf", "PdfBoxProcessor");
+        config.setProperty(Key.PROCESSOR_SELECTION_STRATEGY, "ManualSelectionStrategy");
+        config.setProperty(Key.PROCESSOR_FALLBACK, "PdfBoxProcessor");
 
         assertStatus(400, uri);
     }
