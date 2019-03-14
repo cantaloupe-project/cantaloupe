@@ -17,6 +17,7 @@ title: Processors
       <li><a href="#JaiProcessor">JaiProcessor</a></li>
       <li><a href="#GraphicsMagickProcessor">GraphicsMagickProcessor</a></li>
       <li><a href="#ImageMagickProcessor">ImageMagickProcessor</a></li>
+      <li><a href="#TurboJpegProcessor">TurboJpegProcessor</a></li>
       <li><a href="#KakaduDemoProcessor">KakaduDemoProcessor</a></li>
       <li><a href="#KakaduNativeProcessor">KakaduNativeProcessor</a></li>
       <li><a href="#OpenJpegProcessor">OpenJpegProcessor</a></li>
@@ -26,7 +27,7 @@ title: Processors
   </li>
 </ul>
 
-<p>A processor reads an image from a <a href="sources.html">source</a>, decodes it, transforms it according to request arguments, and encodes and writes a derivative image to the client. Processors can be <a href="#Selection%20Strategies">selected in different ways</a> per-request.</p>
+<p>Processors read images from <a href="sources.html">sources</a>, decode them, transform them according to request arguments, and encode and write derivative images back to the client. Processors can be <a href="#Selection%20Strategies">selected in different ways</a> per-request.</p>
 
 <p>Different processors use different underlying codecs and image processing engines, which may have different quality, compatibility, dependency, performance, and licensing characteristics. The ability to choose among different processors is intended to make it straightforward to add support for new image formats; improve support for existing image formats via the substitution of better codecs; and decouple the image server implementation from any one codec.</p>
 
@@ -97,9 +98,11 @@ title: Processors
     <th><a href="#OpenJpegProcessor">OpenJPEG</a></th>
     <th><a href="#FfmpegProcessor">FFmpeg</a></th>
     <th><a href="#PdfBoxProcessor">PDFBox</a></th>
+    <th><a href="#TurboJpegProcessor">TurboJPEG</a></th>
   </tr>
   <tr>
     <td>Reading from files</td>
+    <td class="text-center bg-success">&check;</td>
     <td class="text-center bg-success">&check;</td>
     <td class="text-center bg-success">&check;</td>
     <td class="text-center bg-success">&check;</td>
@@ -121,6 +124,7 @@ title: Processors
     <td class="text-center bg-danger">&times;</td>
     <td class="text-center bg-danger">&times;</td>
     <td class="text-center bg-success">&check;</td>
+    <td class="text-center bg-success">&check;</td>
   </tr>
   <tr>
     <td>Reading from seekable streams</td>
@@ -133,9 +137,11 @@ title: Processors
     <td class="text-center bg-danger">&times;</td>
     <td class="text-center bg-danger">&times;</td>
     <td class="text-center bg-danger">&times;</td>
+    <td class="text-center bg-danger">&times;</td>
   </tr>
   <tr>
     <td>Mirroring</td>
+    <td class="text-center bg-success">&check;</td>
     <td class="text-center bg-success">&check;</td>
     <td class="text-center bg-success">&check;</td>
     <td class="text-center bg-success">&check;</td>
@@ -157,9 +163,11 @@ title: Processors
     <td class="text-center bg-success">&check;</td>
     <td class="text-center bg-success">&check;</td>
     <td class="text-center bg-success">&check;</td>
+    <td class="text-center bg-success">&check;</td>
   </tr>
   <tr>
     <td>Region by pixels</td>
+    <td class="text-center bg-success">&check;</td>
     <td class="text-center bg-success">&check;</td>
     <td class="text-center bg-success">&check;</td>
     <td class="text-center bg-success">&check;</td>
@@ -181,9 +189,11 @@ title: Processors
     <td class="text-center bg-success">&check;</td>
     <td class="text-center bg-success">&check;</td>
     <td class="text-center bg-success">&check;</td>
+    <td class="text-center bg-success">&check;</td>
   </tr>
   <tr>
     <td>Right-angle rotation</td>
+    <td class="text-center bg-success">&check;</td>
     <td class="text-center bg-success">&check;</td>
     <td class="text-center bg-success">&check;</td>
     <td class="text-center bg-success">&check;</td>
@@ -205,9 +215,11 @@ title: Processors
     <td class="text-center bg-success">&check;</td>
     <td class="text-center bg-success">&check;</td>
     <td class="text-center bg-success">&check;</td>
+    <td class="text-center bg-success">&check;</td>
   </tr>
   <tr>
     <td>Upsizing</td>
+    <td class="text-center bg-success">&check;</td>
     <td class="text-center bg-success">&check;</td>
     <td class="text-center bg-success">&check;</td>
     <td class="text-center bg-success">&check;</td>
@@ -229,9 +241,11 @@ title: Processors
     <td class="text-center bg-success">&check;</td>
     <td class="text-center bg-success">&check;</td>
     <td class="text-center bg-success">&check;</td>
+    <td class="text-center bg-success">&check;</td>
   </tr>
   <tr>
     <td>Size by forced/distorted width/height</td>
+    <td class="text-center bg-success">&check;</td>
     <td class="text-center bg-success">&check;</td>
     <td class="text-center bg-success">&check;</td>
     <td class="text-center bg-success">&check;</td>
@@ -253,9 +267,11 @@ title: Processors
     <td class="text-center bg-success">&check;</td>
     <td class="text-center bg-success">&check;</td>
     <td class="text-center bg-success">&check;</td>
+    <td class="text-center bg-success">&check;</td>
   </tr>
   <tr>
     <td>Size by width</td>
+    <td class="text-center bg-success">&check;</td>
     <td class="text-center bg-success">&check;</td>
     <td class="text-center bg-success">&check;</td>
     <td class="text-center bg-success">&check;</td>
@@ -277,9 +293,11 @@ title: Processors
     <td class="text-center bg-success">&check;</td>
     <td class="text-center bg-success">&check;</td>
     <td class="text-center bg-success">&check;</td>
+    <td class="text-center bg-success">&check;</td>
   </tr>
   <tr>
     <td>Size by width/height</td>
+    <td class="text-center bg-success">&check;</td>
     <td class="text-center bg-success">&check;</td>
     <td class="text-center bg-success">&check;</td>
     <td class="text-center bg-success">&check;</td>
@@ -301,9 +319,11 @@ title: Processors
     <td class="text-center bg-success">&check;</td>
     <td class="text-center bg-success">&check;</td>
     <td class="text-center bg-success">&check;</td>
+    <td class="text-center bg-success">&check;</td>
   </tr>
   <tr>
     <td>Bitonal output</td>
+    <td class="text-center bg-success">&check;</td>
     <td class="text-center bg-success">&check;</td>
     <td class="text-center bg-success">&check;</td>
     <td class="text-center bg-success">&check;</td>
@@ -325,10 +345,12 @@ title: Processors
     <td class="text-center bg-success">&check;</td>
     <td class="text-center bg-success">&check;</td>
     <td class="text-center bg-success">&check;</td>
+    <td class="text-center bg-success">&check;</td>
   </tr>
   <tr>
     <td>Image overlays</td>
     <td class="text-center bg-danger">&times;</td>
+    <td class="text-center bg-success">&check;</td>
     <td class="text-center bg-success">&check;</td>
     <td class="text-center bg-success">&check;</td>
     <td class="text-center bg-success">&check;</td>
@@ -349,6 +371,7 @@ title: Processors
     <td class="text-center bg-success">&check;</td>
     <td class="text-center bg-success">&check;</td>
     <td class="text-center bg-success">&check;</td>
+    <td class="text-center bg-success">&check;</td>
   </tr>
   <tr>
     <td>Redaction</td>
@@ -356,6 +379,7 @@ title: Processors
     <td class="text-center bg-danger">&times;</td>
     <td class="text-center bg-success">&check;</td>
     <td class="text-center bg-danger">&times;</td>
+    <td class="text-center bg-success">&check;</td>
     <td class="text-center bg-success">&check;</td>
     <td class="text-center bg-success">&check;</td>
     <td class="text-center bg-success">&check;</td>
@@ -373,6 +397,7 @@ title: Processors
     <td class="text-center bg-success">&check;</td>
     <td class="text-center">N/A</td>
     <td class="text-center">N/A</td>
+    <td class="text-center bg-danger">&times;</td>
   </tr>
   <tr>
     <td>Multiresolution reading</td>
@@ -383,6 +408,7 @@ title: Processors
     <td class="text-center bg-success">&check;</td>
     <td class="text-center bg-success">&check;</td>
     <td class="text-center bg-success">&check;</td>
+    <td class="text-center">N/A</td>
     <td class="text-center">N/A</td>
     <td class="text-center">N/A</td>
   </tr>
@@ -397,6 +423,7 @@ title: Processors
     <td class="text-center bg-danger">&times;</td>
     <td class="text-center">N/A</td>
     <td class="text-center">N/A</td>
+    <td class="text-center bg-danger">&times;</td>
   </tr>
   <tr>
     <td>ICC profiles</td>
@@ -409,6 +436,7 @@ title: Processors
     <td class="text-center bg-success">&check;**</td>
     <td class="text-center">N/A</td>
     <td class="text-center bg-danger">&times;</td>
+    <td class="text-center bg-success">&check;**</td>
   </tr>
   <tr>
     <td>Awareness of EXIF Orientation tag</td>
@@ -421,6 +449,7 @@ title: Processors
     <td class="text-center bg-danger">&times;</td>
     <td class="text-center">N/A</td>
     <td class="text-center">N/A</td>
+    <td class="text-center bg-danger">&times;</td>
   </tr>
   <tr>
     <td>Selectable resample filters</td>
@@ -433,9 +462,11 @@ title: Processors
     <td class="text-center bg-success">&check;</td>
     <td class="text-center bg-success">&check;</td>
     <td class="text-center bg-success">&check;</td>
+    <td class="text-center bg-success">&check;</td>
   </tr>
   <tr>
     <td>Sharpening</td>
+    <td class="text-center bg-success">&check;</td>
     <td class="text-center bg-success">&check;</td>
     <td class="text-center bg-success">&check;</td>
     <td class="text-center bg-success">&check;</td>
@@ -466,6 +497,7 @@ title: Processors
     <th><a href="#KakaduNativeProcessor">Kakadu Native</a></th>
     <th><a href="#OpenJpegProcessor">OpenJPEG</a></th>
     <th><a href="#PdfBoxProcessor">PDFBox</a></th>
+    <th><a href="#TurboJpegProcessor">TurboJPEG</a></th>
   </tr>
   <tr>
     <td>BMP</td>
@@ -477,12 +509,14 @@ title: Processors
     <td class="text-center bg-danger">&times;</td>
     <td class="text-center bg-danger">&times;</td>
     <td class="text-center bg-danger">&times;</td>
+    <td class="text-center bg-danger">&times;</td>
   </tr>
   <tr>
     <td>GIF</td>
     <td class="text-center bg-warning">&check;<br>Animation not supported</td>
     <td class="text-center bg-warning">&check;<br>Animation not supported</td>
     <td class="text-center bg-success">&check;</td>
+    <td class="text-center bg-danger">&times;</td>
     <td class="text-center bg-danger">&times;</td>
     <td class="text-center bg-danger">&times;</td>
     <td class="text-center bg-danger">&times;</td>
@@ -499,6 +533,7 @@ title: Processors
     <td class="text-center bg-danger">&times;</td>
     <td class="text-center bg-danger">&times;</td>
     <td class="text-center bg-danger">&times;</td>
+    <td class="text-center bg-success">&check;</td>
   </tr>
   <tr>
     <td>JPEG2000</td>
@@ -509,6 +544,7 @@ title: Processors
     <td class="text-center bg-success">&check;</td>
     <td class="text-center bg-success">&check;</td>
     <td class="text-center bg-success">&check;</td>
+    <td class="text-center bg-danger">&times;</td>
     <td class="text-center bg-danger">&times;</td>
   </tr>
   <tr>
@@ -521,6 +557,7 @@ title: Processors
     <td class="text-center bg-danger">&times;</td>
     <td class="text-center bg-danger">&times;</td>
     <td class="text-center bg-success">&check;</td>
+    <td class="text-center bg-danger">&times;</td>
   </tr>
   <tr>
     <td>PNG</td>
@@ -528,6 +565,7 @@ title: Processors
     <td class="text-center bg-success">&check;</td>
     <td class="text-center bg-success">&check;</td>
     <td class="text-center bg-success">&check;</td>
+    <td class="text-center bg-danger">&times;</td>
     <td class="text-center bg-danger">&times;</td>
     <td class="text-center bg-danger">&times;</td>
     <td class="text-center bg-danger">&times;</td>
@@ -543,11 +581,13 @@ title: Processors
     <td class="text-center bg-danger">&times;</td>
     <td class="text-center bg-danger">&times;</td>
     <td class="text-center bg-danger">&times;</td>
+    <td class="text-center bg-danger">&times;</td>
   </tr>
   <tr>
     <td>WebP</td>
     <td class="bg-success">Requires plugin</td>
     <td class="bg-success">Requires delegate</td>
+    <td class="text-center bg-danger">&times;</td>
     <td class="text-center bg-danger">&times;</td>
     <td class="text-center bg-danger">&times;</td>
     <td class="text-center bg-danger">&times;</td>
@@ -641,6 +681,20 @@ title: Processors
 <pre>http://example.org/iiif/2/document.pdf/full/full/0/default.jpg?page=2</pre>
 
 <p>If the <code>page</code> argument is missing, the first page will be returned.</p>
+
+<hr>
+
+<h3 id="TurboJpegProcessor">TurboJpegProcessor</h3>
+
+<p>This processor uses the Java binding of the high-level TurboJPEG API on top of the <a href="https://libjpeg-turbo.org">libjpeg-turbo</a> library to read and write JPEG images. It uses the same image processing system as <a href="#Java2dProcessor">Java2dProcessor</a>.</p>
+
+<p>The design of the TurboJPEG Java binding is somewhat unfortunate in that it requires JPEG image data to be buffered fully in memory before it can be read or written, which costs time and RAM. However, overall performance is still significantly better than Java2dProcessor thanks to the much faster coding performance of libjpeg-turbo compared to the Image I/O JPEG plugin.</p>
+
+<p>libjpeg(-turbo) is also more lenient than Java2dProcessor when reading malformed JPEGs, JPEGs with mismatching color profiles, and so on.</p>
+
+<p>This processor requires libjpeg-turbo 2.0.2 to be installed. Other 2.0.x versions may work, but are untested. <strong>libjpeg-turbo must be compiled with Java support</strong> (which it often isn't in OS package managers). As of version 2.0.2, this just involves adding the <code>-DWITH_JAVA=1</code> argument to the <code>cmake</code> command.</p>
+
+<h4>
 
 <hr>
 

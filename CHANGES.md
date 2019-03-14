@@ -1,9 +1,5 @@
 # Change Log
 
-## TBD
-
-* Added TurboJpegProcessor.
-
 ## 4.1
 
 ### Configuration
@@ -53,6 +49,7 @@
   existing `processor.*` configuration keys, and the other of which uses an
   automatic strategy that attempts to choose a "best" processor on a per-
   request basis.
+* Added TurboJpegProcessor.
 * Added the `repeat` position for image overlays.
 * Efficiency improvements in KakaduNativeProcessor.
 * KakaduNativeProcessor supports `sizeByDistortedWidthHeight`.
