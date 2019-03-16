@@ -37,17 +37,19 @@ There are a few ways to do this. The simplest is probably:
 
 ## Test
 
-For testing, copy `test.properties.sample` to `test.properties` and fill in
-whatever info you have.
+### Testing the code
 
-The tests are structured into four profiles:
+Copy `test.properties.sample` to `test.properties` and fill in whatever info
+you have.
 
-### 1. Tests with no dependencies
+The code tests are structured into three Maven profiles:
+
+#### 1. Tests with no dependencies
 
 `mvn clean test -Pnodeps` will run only the tests that have no dependencies
 on third-party services and do not require any external tools or libraries.
 
-### 2. Tests with free dependencies
+#### 2. Tests with free dependencies
 
 `mvn clean test -Pfreedeps` will run all of the above tests, plus any that
 depend on open-source tools or libraries. These are the tests run in
@@ -58,8 +60,9 @@ continuous integration. The following dependencies are required:
 * ImageMagick (for ImageMagickProcessorTest)
 * OpenJPEG (for OpenJpegProcessorTest)
 * Redis (for RedisCacheTest)
+* TurboJPEG with Java binding (for TurboJpegProcessorTest)
 
-### 3. All tests
+#### 3. All tests
 
 `mvn clean test` will run all tests, including the ones above. The following
 dependencies are required in addition to the ones above:
@@ -70,15 +73,21 @@ dependencies are required in addition to the ones above:
   KakaduNativeProcessor section of the user manual for information.
 * A Microsoft Azure account
 
-### 4. Performance tests
+#### Docker
 
-Performance tests use [JMH](http://openjdk.java.net/projects/code-tools/jmh/).
-Run them with `mvn clean test -Pbenchmark`.
+Because it can be a chore to install all of the dependencies needed to get all
+of the tests in the `freedeps` profile passing, there is a Docker testing image
+available that contains all needed dependencies. See the `/.travis.yml` file.
 
-### 5. Output tests
+### Output testing
 
 There is an [output tester tool](https://github.com/medusa-project/cantaloupe-output-tester)
 that enables visual inspection of image output.
+
+### Performance testing
+
+Performance tests use [JMH](http://openjdk.java.net/projects/code-tools/jmh/).
+Run them with `mvn clean test -Pbenchmark`.
 
 ## Build the website
 

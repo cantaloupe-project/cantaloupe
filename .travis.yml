@@ -1,33 +1,13 @@
 language: java
-sudo: required
-dist: trusty
-
-jdk:
-  # LTS releases only
-  - oraclejdk8
-  - openjdk11
-
-before_install:
-  # install optional dependencies
-  - sudo mkdir -p /usr/local/bin /usr/local/lib
-  - sudo cp dist/deps/Linux-x86-64/bin/* /usr/local/bin
-  - sudo cp dist/deps/Linux-x86-64/lib/* /usr/local/lib
-  - export LIBRARY_PATH="/usr/local/lib:$LIBRARY_PATH"
-  - export LD_LIBRARY_PATH="/usr/local/lib:$LD_LIBRARY_PATH"
-  # copy properties file
-  - cp test.properties.sample test.properties
-  # trusty used avconv, not ffmpeg, and tools like ffprobe are missing. So we need to add this repo
-  - sudo add-apt-repository -y ppa:mc3man/trusty-media
-  - sudo apt-get install apt-transport-https
-  # update and install all packages
-  - sudo apt-get -qq update
-  - sudo apt-get install -y libav-tools graphicsmagick imagemagick ffmpeg
-
-script:
-  - mvn clean verify -Pfreedeps
 
 services:
-  - redis-server
+  - docker
 
-#after_success:
-#  - mvn clean cobertura:cobertura coveralls:report
+before_install:
+  - docker build -f docker/test/Dockerfile -t cantaloupe/tests .
+  - docker run --name cantaloupe-minio -d -p 7229:7229 cantaloupe/tests /bin/sh -c "./minio server --address :7229 /home/cantaloupe/s3"
+  - docker run --name cantaloupe-redis -d -p 7230:7230 cantaloupe/tests /bin/sh -c "redis-server --port 7230 --protected-mode no"
+  - docker run --net host --user cantaloupe cantaloupe/tests /bin/sh -c "cd /home/cantaloupe; mvn clean test -Pfreedeps"
+
+script:
+  - mvn clean test -Pfreedeps
