@@ -8,7 +8,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 		ffmpeg \
 		maven \
 		libopenjp2-7 \
-		redis \
+		redis-server \
   && rm -rf /var/lib/apt/lists/*
 
 # Install TurboJpegProcessor dependencies
