@@ -69,7 +69,7 @@ public class ImageOverlayCacheTest extends BaseTest {
         Callable<Void> callable = () -> {
             URI uri = new URI(webServer.getHTTPURI() + "/jpg");
             byte[] bytes = instance.putAndGet(uri);
-            assertEquals(1582, bytes.length);
+            assertEquals(1584, bytes.length);
             return null;
         };
         new ConcurrentReaderWriter(callable, callable, 5000).run();
