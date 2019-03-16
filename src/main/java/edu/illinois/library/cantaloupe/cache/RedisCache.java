@@ -22,7 +22,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 
@@ -184,14 +183,18 @@ class RedisCache implements DerivativeCache {
 
     }
 
-    /**
-     * Thread-safely initializes a shared connection.
-     */
-    private static class LazyConnectionHolder {
+    private static final Logger LOGGER = LoggerFactory.
+            getLogger(RedisCache.class);
 
-        static StatefulRedisConnection<String, byte[]> connection;
+    private static final String IMAGE_HASH_KEY =
+            "edu.illinois.library.cantaloupe.image";
+    private static final String INFO_HASH_KEY =
+            "edu.illinois.library.cantaloupe.info";
 
-        static {
+    private static StatefulRedisConnection<String, byte[]> connection;
+
+    private static synchronized StatefulRedisConnection<String, byte[]> getConnection() {
+        if (connection == null) {
             Configuration config = Configuration.getInstance();
             RedisURI redisUri =
                     RedisURI.Builder.redis(config.getString(Key.REDISCACHE_HOST)).
@@ -203,18 +206,7 @@ class RedisCache implements DerivativeCache {
             RedisClient client = RedisClient.create(redisUri);
             connection = client.connect(new CustomRedisCodec());
         }
-    }
-
-    private static final Logger LOGGER = LoggerFactory.
-            getLogger(RedisCache.class);
-
-    static final String IMAGE_HASH_KEY =
-            "edu.illinois.library.cantaloupe.image";
-    static final String INFO_HASH_KEY =
-            "edu.illinois.library.cantaloupe.info";
-
-    private static StatefulRedisConnection<String, byte[]> getConnection() {
-        return LazyConnectionHolder.connection;
+        return connection;
     }
 
     private static String imageKey(OperationList opList) {
@@ -302,8 +294,8 @@ class RedisCache implements DerivativeCache {
         LOGGER.debug("put(): caching info for {}", identifier);
         try {
             getConnection().async().hset(INFO_HASH_KEY, infoKey(identifier),
-                    imageInfo.toJSON().getBytes("UTF-8"));
-        } catch (JsonProcessingException | UnsupportedEncodingException e) {
+                    imageInfo.toJSON().getBytes(StandardCharsets.UTF_8));
+        } catch (JsonProcessingException e) {
             LOGGER.error("put(): {}", e.getMessage());
             throw new IOException(e.getMessage(), e);
         }
