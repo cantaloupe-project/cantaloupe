@@ -15,7 +15,8 @@ public enum ConfigurationConstants {
     S3_BUCKET("s3.bucket"),
     S3_ENDPOINT("s3.endpoint"),
     S3_REGION("s3.region"),
-    S3_SECRET_KEY("s3.secret_key");
+    S3_SECRET_KEY("s3.secret_key"),
+    S3_SERVICE("s3.service");
 
     private String key;
 

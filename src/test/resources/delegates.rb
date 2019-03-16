@@ -193,8 +193,7 @@ class CustomDelegate
 
   def s3source_object_info(options = {})
     identifier = context['identifier']
-
-    if identifier.start_with?('key:')
+    if identifier.include?('bucket:') or identifier.include?('key:')
       parts = identifier.split(';')
       struct = {}
       parts.each do |part|

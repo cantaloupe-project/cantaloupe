@@ -3,8 +3,10 @@ package edu.illinois.library.cantaloupe.source;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.AmazonS3Exception;
 import com.amazonaws.services.s3.model.CreateBucketRequest;
+import com.amazonaws.services.s3.model.ObjectListing;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
+import com.amazonaws.services.s3.model.S3ObjectSummary;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Format;
@@ -17,6 +19,7 @@ import edu.illinois.library.cantaloupe.test.ConfigurationConstants;
 import edu.illinois.library.cantaloupe.test.S3Server;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import edu.illinois.library.cantaloupe.util.AWSClientBuilder;
+import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -52,21 +55,20 @@ public class S3SourceTest extends AbstractSourceTest {
         BaseTest.beforeClass();
         startS3ServerIfNecessary();
         createBucket();
-        seedFixtures();
     }
 
     @AfterClass
     public static void afterClass() throws Exception {
         BaseTest.afterClass();
+        deleteBucket();
         S3_SERVER.stop();
     }
 
     private static void createBucket() {
         final AmazonS3 s3 = client();
         final String bucketName = getBucket();
-
         try {
-            s3.deleteBucket(bucketName);
+            deleteBucket();
         } catch (AmazonS3Exception e) {
             // This probably means it doesn't exist. We'll find out shortly.
         }
@@ -75,6 +77,29 @@ public class S3SourceTest extends AbstractSourceTest {
         } catch (AmazonS3Exception e) {
             if (!e.getMessage().contains("you already own it")) {
                 throw e;
+            }
+        }
+    }
+
+    private static void deleteBucket() throws AmazonS3Exception {
+        final AmazonS3 s3 = client();
+        final String bucketName = getBucket();
+        s3.deleteBucket(bucketName);
+    }
+
+    private static void emptyBucket() {
+        final AmazonS3 s3 = client();
+        final String bucketName = getBucket();
+
+        ObjectListing objectListing = s3.listObjects(bucketName);
+        while (true) {
+            for (S3ObjectSummary s3ObjectSummary : objectListing.getObjectSummaries()) {
+                s3.deleteObject(bucketName, s3ObjectSummary.getKey());
+            }
+            if (objectListing.isTruncated()) {
+                objectListing = s3.listNextBatchOfObjects(objectListing);
+            } else {
+                break;
             }
         }
     }
@@ -182,7 +207,15 @@ public class S3SourceTest extends AbstractSourceTest {
     @Override
     public void setUp() throws Exception {
         super.setUp();
+        seedFixtures();
         instance = newInstance();
+    }
+
+    @After
+    @Override
+    public void tearDown() throws Exception {
+        super.tearDown();
+        emptyBucket();
     }
 
     @Override
@@ -224,6 +257,7 @@ public class S3SourceTest extends AbstractSourceTest {
                     TestUtil.getFixture("delegates.rb"));
 
             Identifier identifier = new Identifier(OBJECT_KEY_WITH_CONTENT_TYPE_AND_RECOGNIZED_EXTENSION);
+            instance.setIdentifier(identifier);
             RequestContext context = new RequestContext();
             context.setIdentifier(identifier);
             DelegateProxyService service = DelegateProxyService.getInstance();
@@ -448,8 +482,16 @@ public class S3SourceTest extends AbstractSourceTest {
             throws Exception {
         useScriptLookupStrategy();
 
-        instance.setIdentifier(new Identifier("bucket:" + getBucket() +
-                ";key:" + OBJECT_KEY_WITH_CONTENT_TYPE_AND_RECOGNIZED_EXTENSION));
+        Identifier identifier = new Identifier("bucket:" + getBucket() +
+                ";key:" + OBJECT_KEY_WITH_CONTENT_TYPE_AND_RECOGNIZED_EXTENSION);
+        instance.setIdentifier(identifier);
+
+        RequestContext context = new RequestContext();
+        context.setIdentifier(identifier);
+        DelegateProxyService service = DelegateProxyService.getInstance();
+        DelegateProxy proxy = service.newDelegateProxy(context);
+        instance.setDelegateProxy(proxy);
+
         instance.checkAccess();
     }
 
