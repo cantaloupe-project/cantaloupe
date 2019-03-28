@@ -1,707 +1,730 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-  <modelVersion>4.0.0</modelVersion>
-  <groupId>edu.illinois.library.cantaloupe</groupId>
-  <artifactId>cantaloupe</artifactId>
-  <packaging>war</packaging>
-  <version>4.1-SNAPSHOT</version>
-  <name>Cantaloupe</name>
-  <url>https://medusa-project.github.io/cantaloupe/</url>
-  <inceptionYear>2015</inceptionYear>
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>edu.illinois.library.cantaloupe</groupId>
+    <artifactId>cantaloupe</artifactId>
+    <packaging>war</packaging>
+    <version>4.1-SNAPSHOT</version>
+    <name>Cantaloupe</name>
+    <url>https://medusa-project.github.io/cantaloupe/</url>
+    <inceptionYear>2015</inceptionYear>
 
-  <properties>
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-    <aws-sdk.version>1.11.291</aws-sdk.version>
-    <jackson.version>2.9.8</jackson.version>
-    <jetty.version>9.4.12.v20180830</jetty.version>
-    <jruby.version>9.1.17.0</jruby.version>
-    <surefire.version>2.21.0</surefire.version>
-  </properties>
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8
+        </project.reporting.outputEncoding>
+        <aws-sdk.version>1.11.291</aws-sdk.version>
+        <jackson.version>2.9.8</jackson.version>
+        <jetty.version>9.4.12.v20180830</jetty.version>
+        <jruby.version>9.1.17.0</jruby.version>
+        <surefire.version>2.21.0</surefire.version>
+    </properties>
 
-  <developers>
-    <developer>
-      <id>alexd</id>
-      <name>Alex Dolski</name>
-      <email>alexd@n-ary.net</email>
-      <organization>University of Illinois at Urbana-Champaign Library</organization>
-      <organizationUrl>http://www.library.illinois.edu/</organizationUrl>
-      <roles>
-        <role>founder</role>
-        <role>lead</role>
-        <role>developer</role>
-        <role>debugger</role>
-        <role>reviewer</role>
-        <role>support</role>
-        <role>maintainer</role>
-      </roles>
-      <timezone>-6</timezone>
-    </developer>
-  </developers>
+    <developers>
+        <developer>
+            <id>alexd</id>
+            <name>Alex Dolski</name>
+            <email>alexd@n-ary.net</email>
+            <organization>University of Illinois at Urbana-Champaign Library
+            </organization>
+            <organizationUrl>http://www.library.illinois.edu/</organizationUrl>
+            <roles>
+                <role>founder</role>
+                <role>lead</role>
+                <role>developer</role>
+                <role>debugger</role>
+                <role>reviewer</role>
+                <role>support</role>
+                <role>maintainer</role>
+            </roles>
+            <timezone>-6</timezone>
+        </developer>
+    </developers>
 
-  <scm>
-    <connection>scm:git:git://github.com/medusa-project/cantaloupe</connection>
-    <developerConnection>scm:git:git@github.com:medusa-project/cantaloupe</developerConnection>
-    <tag>HEAD</tag>
-    <url>https://github.com/medusa-project/cantaloupe</url>
-  </scm>
-  <issueManagement>
-    <system>GitHub Issues</system>
-    <url>https://github.com/medusa-project/cantaloupe/issues</url>
-  </issueManagement>
+    <scm>
+        <connection>scm:git:git://github.com/medusa-project/cantaloupe
+        </connection>
+        <developerConnection>scm:git:git@github.com:medusa-project/cantaloupe
+        </developerConnection>
+        <tag>HEAD</tag>
+        <url>https://github.com/medusa-project/cantaloupe</url>
+    </scm>
+    <issueManagement>
+        <system>GitHub Issues</system>
+        <url>https://github.com/medusa-project/cantaloupe/issues</url>
+    </issueManagement>
 
-  <dependencies>
-    <!-- Used by RedisCache -->
-    <dependency>
-      <groupId>biz.paluch.redis</groupId>
-      <artifactId>lettuce</artifactId>
-      <version>4.3.3.Final</version>
-    </dependency>
-    <!-- The application logger. -->
-    <dependency>
-      <groupId>ch.qos.logback</groupId>
-      <artifactId>logback-classic</artifactId>
-      <version>1.2.3</version>
-    </dependency>
-    <dependency>
-      <groupId>ch.qos.logback</groupId>
-      <artifactId>logback-core</artifactId>
-      <version>1.2.3</version>
-    </dependency>
-    <!-- Used by S3Source and S3Cache -->
-    <dependency>
-      <groupId>com.amazonaws</groupId>
-      <artifactId>aws-java-sdk-core</artifactId>
-      <version>${aws-sdk.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>com.amazonaws</groupId>
-      <artifactId>aws-java-sdk-s3</artifactId>
-      <version>${aws-sdk.version}</version>
-    </dependency>
-    <!-- In-memory object cache: https://github.com/ben-manes/caffeine-->
-    <dependency>
-      <groupId>com.github.ben-manes.caffeine</groupId>
-      <artifactId>caffeine</artifactId>
-      <version>2.5.6</version>
-    </dependency>
-    <!-- Used in tests to test that System.exit() is called -->
-    <dependency>
-      <groupId>com.github.stefanbirkner</groupId>
-      <artifactId>system-rules</artifactId>
-      <version>1.15.1</version>
-      <scope>test</scope>
-    </dependency>
-    <!-- Used by HeapCache -->
-    <dependency>
-      <groupId>com.google.protobuf</groupId>
-      <artifactId>protobuf-java</artifactId>
-      <version>3.5.1</version>
-    </dependency>
-    <!-- Used by JdbcSourceTest and JdbcCacheTest -->
-    <dependency>
-      <groupId>com.h2database</groupId>
-      <artifactId>h2</artifactId>
-      <version>1.4.196</version>
-      <scope>test</scope>
-    </dependency>
-    <!-- Used by com.mortennobel.imagescaling -->
-    <dependency>
-      <groupId>com.jhlabs</groupId>
-      <artifactId>filters</artifactId>
-      <version>2.0.235</version>
-    </dependency>
-    <!-- Used by AzureStorageSource and AzureStorageCache-->
-    <dependency>
-      <groupId>com.microsoft.azure</groupId>
-      <artifactId>azure-storage</artifactId>
-      <version>5.2.0</version>
-    </dependency>
-    <!-- Provides a JDBC connection pool for JdbcSource and JdbcCache -->
-    <dependency>
-      <groupId>com.zaxxer</groupId>
-      <artifactId>HikariCP</artifactId>
-      <version>2.7.2</version>
-    </dependency>
-    <!-- Manages the test configuration. -->
-    <dependency>
-      <groupId>commons-configuration</groupId>
-      <artifactId>commons-configuration</artifactId>
-      <version>1.10</version>
-      <scope>test</scope>
-    </dependency>
-    <!-- IOUtils is used widely -->
-    <dependency>
-      <groupId>commons-io</groupId>
-      <artifactId>commons-io</artifactId>
-      <version>2.4</version>
-    </dependency>
-    <!-- Used by S3SourceTest and S3CacheTest -->
-    <dependency>
-      <groupId>io.findify</groupId>
-      <artifactId>s3mock_2.12</artifactId>
-      <version>0.2.4</version>
-      <scope>test</scope>
-    </dependency>
-    <!-- S3 client for S3Source -->
-    <dependency>
-      <groupId>io.minio</groupId>
-      <artifactId>minio</artifactId>
-      <version>5.0.4</version>
-    </dependency>
-    <!-- Dependency on part of Java EE that's available by default in Java 8
-    but not 9 -->
-    <dependency>
-      <groupId>javax.xml.bind</groupId>
-      <artifactId>jaxb-api</artifactId>
-      <version>2.3.0</version>
-    </dependency>
-    <!-- Enhanced ImageIO TIFF plugin supporting BigTIFF:
-     https://github.com/geosolutions-it/imageio-ext/ -->
-    <dependency>
-      <groupId>it.geosolutions.imageio-ext</groupId>
-      <artifactId>imageio-ext-tiff</artifactId>
-      <version>1.1.19</version>
-    </dependency>
-    <dependency>
-      <groupId>javax.servlet</groupId>
-      <artifactId>javax.servlet-api</artifactId>
-      <version>3.1.0</version>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.commons</groupId>
-      <artifactId>commons-lang3</artifactId>
-      <version>3.6</version>
-    </dependency>
-    <!-- This is used to fix a CVE-2015-6420 in commons-collections-3.2.1, a
-    transitive dependency -->
-    <dependency>
-      <groupId>commons-collections</groupId>
-      <artifactId>commons-collections</artifactId>
-      <version>3.2.2</version>
-    </dependency>
-    <!-- Provides PDFBox for PdfBoxProcessor. Note that there are also some
-    other dependencies in this POM used only by PDFBox. -->
-    <dependency>
-      <groupId>org.apache.pdfbox</groupId>
-      <artifactId>pdfbox</artifactId>
-      <version>2.0.14</version>
-    </dependency>
-    <!-- Assists PDFBox in decoding JBIG2-encoded images -->
-    <dependency>
-      <groupId>org.apache.pdfbox</groupId>
-      <artifactId>jbig2-imageio</artifactId>
-      <version>3.0.0</version>
-    </dependency>
-    <!-- Unit tests -->
-    <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <version>4.12</version>
-      <scope>test</scope>
-    </dependency>
-    <!-- Performance tests -->
-    <dependency>
-      <groupId>org.openjdk.jmh</groupId>
-      <artifactId>jmh-core</artifactId>
-      <version>1.19</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.openjdk.jmh</groupId>
-      <artifactId>jmh-generator-annprocess</artifactId>
-      <version>1.19</version>
-      <scope>test</scope>
-    </dependency>
-    <!-- Assists in parsing XMP metadata in RDF/XML -->
-    <dependency>
-      <groupId>org.apache.jena</groupId>
-      <artifactId>jena-core</artifactId>
-      <version>3.4.0</version>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.jena</groupId>
-      <artifactId>jena-arq</artifactId>
-      <version>3.4.0</version>
-    </dependency>
-    <!-- Used for media type detection -->
-    <dependency>
-      <groupId>org.apache.tika</groupId>
-      <artifactId>tika-core</artifactId>
-      <version>1.20</version>
-    </dependency>
-    <!-- Assists PDFBox in decoding certain PDFs -->
-    <dependency>
-      <groupId>org.bouncycastle</groupId>
-      <artifactId>bcprov-jdk15on</artifactId>
-      <version>1.55</version>
-    </dependency>
-    <!-- Supports <if> expressions in logback.xml -->
-    <dependency>
-      <groupId>org.codehaus.janino</groupId>
-      <artifactId>janino</artifactId>
-      <version>2.7.8</version>
-    </dependency>
-    <!-- Provides HTTP/2 support in the Jetty client.
-    N.B.: ALPN support is in a different module. -->
-    <dependency>
-      <groupId>org.eclipse.jetty.http2</groupId>
-      <artifactId>http2-client</artifactId>
-      <version>${jetty.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.eclipse.jetty.http2</groupId>
-      <artifactId>http2-http-client-transport</artifactId>
-      <version>${jetty.version}</version>
-    </dependency>
-    <!-- Provides HTTP/2 support in the Jetty server.
-    N.B.: ALPN support is in a different module. -->
-    <dependency>
-      <groupId>org.eclipse.jetty.http2</groupId>
-      <artifactId>http2-server</artifactId>
-      <version>${jetty.version}</version>
-    </dependency>
-    <!-- Enables support for ALPN in Jetty client.
-    N.B.: in Java 8, this requires an alpn-boot JAR on the boot classpath. -->
-    <dependency>
-      <groupId>org.eclipse.jetty</groupId>
-      <artifactId>jetty-alpn-client</artifactId>
-      <version>${jetty.version}</version>
-    </dependency>
-    <!-- Enables support for ALPN in Jetty server.
-    N.B.: in Java 8, this requires an alpn-boot JAR on the boot classpath. -->
-    <dependency>
-      <groupId>org.eclipse.jetty</groupId>
-      <artifactId>jetty-alpn-server</artifactId>
-      <version>${jetty.version}</version>
-    </dependency>
-    <!-- Enables Jetty client to support the ALPN built into Java 9 -->
-    <dependency>
-      <groupId>org.eclipse.jetty</groupId>
-      <artifactId>jetty-alpn-java-client</artifactId>
-      <version>${jetty.version}</version>
-    </dependency>
-    <!-- Enables Jetty server to support the ALPN built into Java 9 -->
-    <dependency>
-      <groupId>org.eclipse.jetty</groupId>
-      <artifactId>jetty-alpn-java-server</artifactId>
-      <version>${jetty.version}</version>
-    </dependency>
-    <!-- Used by HttpSource -->
-    <dependency>
-      <groupId>org.eclipse.jetty</groupId>
-      <artifactId>jetty-http</artifactId>
-      <version>${jetty.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.eclipse.jetty</groupId>
-      <artifactId>jetty-io</artifactId>
-      <version>${jetty.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.eclipse.jetty</groupId>
-      <artifactId>jetty-client</artifactId>
-      <version>${jetty.version}</version>
-    </dependency>
-    <!-- Provides the standalone servlet container -->
-    <dependency>
-      <groupId>org.eclipse.jetty</groupId>
-      <artifactId>jetty-util</artifactId>
-      <version>${jetty.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.eclipse.jetty</groupId>
-      <artifactId>jetty-server</artifactId>
-      <version>${jetty.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.eclipse.jetty</groupId>
-      <artifactId>jetty-servlet</artifactId>
-      <version>${jetty.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.eclipse.jetty</groupId>
-      <artifactId>jetty-webapp</artifactId>
-      <version>${jetty.version}</version>
-    </dependency>
-    <!-- Enables colorized Logback console output in Windows -->
-    <dependency>
-      <groupId>org.fusesource.jansi</groupId>
-      <artifactId>jansi</artifactId>
-      <version>1.13</version>
-    </dependency>
-    <!-- JRuby is used to execute delegate script methods. -->
-    <dependency>
-      <groupId>org.jruby</groupId>
-      <artifactId>jruby-core</artifactId>
-      <version>${jruby.version}</version>
-    </dependency>
-    <!-- Needed by tests, but not necessary at compile time. -->
-    <dependency>
-      <groupId>org.jruby</groupId>
-      <artifactId>jruby-stdlib</artifactId>
-      <version>${jruby.version}</version>
-      <scope>runtime</scope>
-    </dependency>
-    <!-- Jackson for data serialization -->
-    <dependency>
-      <groupId>com.fasterxml.jackson.core</groupId>
-      <artifactId>jackson-core</artifactId>
-      <version>${jackson.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>com.fasterxml.jackson.core</groupId>
-      <artifactId>jackson-annotations</artifactId>
-      <version>${jackson.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>com.fasterxml.jackson.core</groupId>
-      <artifactId>jackson-databind</artifactId>
-      <version>${jackson.version}</version>
-    </dependency>
-    <!-- Make Jackson aware of JDK8 date/time objects -->
-    <dependency>
-      <groupId>com.fasterxml.jackson.datatype</groupId>
-      <artifactId>jackson-datatype-jsr310</artifactId>
-      <version>${jackson.version}</version>
-    </dependency>
-    <!-- Provides Velocity for the landing and error page templates -->
-    <dependency>
-      <groupId>org.apache.velocity</groupId>
-      <artifactId>velocity-engine-core</artifactId>
-      <version>2.0</version>
-    </dependency>
-    <!-- Selenium is used to test the control panel, using a headless HtmlUnit
-    browser. -->
-    <dependency>
-      <groupId>org.seleniumhq.selenium</groupId>
-      <artifactId>htmlunit-driver</artifactId>
-      <version>2.21</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.seleniumhq.selenium</groupId>
-      <artifactId>selenium-api</artifactId>
-      <version>2.53.0</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.seleniumhq.selenium</groupId>
-      <artifactId>selenium-support</artifactId>
-      <version>2.53.0</version>
-      <scope>test</scope>
-    </dependency>
-    <!-- Logging interface used by the application -->
-    <dependency>
-      <groupId>org.slf4j</groupId>
-      <artifactId>slf4j-api</artifactId>
-      <version>1.7.25</version>
-    </dependency>
-    <!-- intercepts jcl log messages from Commons etc. -->
-    <dependency>
-      <groupId>org.slf4j</groupId>
-      <artifactId>jcl-over-slf4j</artifactId>
-      <version>1.7.25</version>
-    </dependency>
-  </dependencies>
+    <dependencies>
+        <!-- Used by RedisCache -->
+        <dependency>
+            <groupId>biz.paluch.redis</groupId>
+            <artifactId>lettuce</artifactId>
+            <version>4.3.3.Final</version>
+        </dependency>
+        <!-- The application logger. -->
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+            <version>1.2.3</version>
+        </dependency>
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-core</artifactId>
+            <version>1.2.3</version>
+        </dependency>
+        <!-- Used by S3Source and S3Cache -->
+        <dependency>
+            <groupId>com.amazonaws</groupId>
+            <artifactId>aws-java-sdk-core</artifactId>
+            <version>${aws-sdk.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.amazonaws</groupId>
+            <artifactId>aws-java-sdk-s3</artifactId>
+            <version>${aws-sdk.version}</version>
+        </dependency>
+        <!-- In-memory object cache: https://github.com/ben-manes/caffeine-->
+        <dependency>
+            <groupId>com.github.ben-manes.caffeine</groupId>
+            <artifactId>caffeine</artifactId>
+            <version>2.5.6</version>
+        </dependency>
+        <!-- Used in tests to test that System.exit() is called -->
+        <dependency>
+            <groupId>com.github.stefanbirkner</groupId>
+            <artifactId>system-rules</artifactId>
+            <version>1.15.1</version>
+            <scope>test</scope>
+        </dependency>
+        <!-- Used by HeapCache -->
+        <dependency>
+            <groupId>com.google.protobuf</groupId>
+            <artifactId>protobuf-java</artifactId>
+            <version>3.5.1</version>
+        </dependency>
+        <!-- Used by JdbcSourceTest and JdbcCacheTest -->
+        <dependency>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
+            <version>1.4.196</version>
+            <scope>test</scope>
+        </dependency>
+        <!-- Used by com.mortennobel.imagescaling -->
+        <dependency>
+            <groupId>com.jhlabs</groupId>
+            <artifactId>filters</artifactId>
+            <version>2.0.235</version>
+        </dependency>
+        <!-- Used by AzureStorageSource and AzureStorageCache-->
+        <dependency>
+            <groupId>com.microsoft.azure</groupId>
+            <artifactId>azure-storage</artifactId>
+            <version>5.2.0</version>
+        </dependency>
+        <!-- Provides a JDBC connection pool for JdbcSource and JdbcCache -->
+        <dependency>
+            <groupId>com.zaxxer</groupId>
+            <artifactId>HikariCP</artifactId>
+            <version>2.7.2</version>
+        </dependency>
+        <!-- Manages the test configuration. -->
+        <dependency>
+            <groupId>commons-configuration</groupId>
+            <artifactId>commons-configuration</artifactId>
+            <version>1.10</version>
+            <scope>test</scope>
+        </dependency>
+        <!-- IOUtils is used widely -->
+        <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+            <version>2.4</version>
+        </dependency>
+        <!-- Used by S3SourceTest and S3CacheTest -->
+        <dependency>
+            <groupId>io.findify</groupId>
+            <artifactId>s3mock_2.12</artifactId>
+            <version>0.2.4</version>
+            <scope>test</scope>
+        </dependency>
+        <!-- S3 client for S3Source -->
+        <dependency>
+            <groupId>io.minio</groupId>
+            <artifactId>minio</artifactId>
+            <version>5.0.4</version>
+        </dependency>
+        <!-- Dependency on part of Java EE that's available by default in Java 8
+        but not 9 -->
+        <dependency>
+            <groupId>javax.xml.bind</groupId>
+            <artifactId>jaxb-api</artifactId>
+            <version>2.3.0</version>
+        </dependency>
+        <!-- Enhanced ImageIO TIFF plugin supporting BigTIFF:
+         https://github.com/geosolutions-it/imageio-ext/ -->
+        <dependency>
+            <groupId>it.geosolutions.imageio-ext</groupId>
+            <artifactId>imageio-ext-tiff</artifactId>
+            <version>1.1.19</version>
+        </dependency>
+        <dependency>
+            <groupId>javax.servlet</groupId>
+            <artifactId>javax.servlet-api</artifactId>
+            <version>3.1.0</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+            <version>3.6</version>
+        </dependency>
+        <!-- This is used to fix a CVE-2015-6420 in commons-collections-3.2.1, a
+        transitive dependency -->
+        <dependency>
+            <groupId>commons-collections</groupId>
+            <artifactId>commons-collections</artifactId>
+            <version>3.2.2</version>
+        </dependency>
+        <!-- Provides PDFBox for PdfBoxProcessor. Note that there are also some
+        other dependencies in this POM used only by PDFBox. -->
+        <dependency>
+            <groupId>org.apache.pdfbox</groupId>
+            <artifactId>pdfbox</artifactId>
+            <version>2.0.14</version>
+        </dependency>
+        <!-- Assists PDFBox in decoding JBIG2-encoded images -->
+        <dependency>
+            <groupId>org.apache.pdfbox</groupId>
+            <artifactId>jbig2-imageio</artifactId>
+            <version>3.0.0</version>
+        </dependency>
+        <!-- Unit tests -->
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.12</version>
+            <scope>test</scope>
+        </dependency>
+        <!-- Performance tests -->
+        <dependency>
+            <groupId>org.openjdk.jmh</groupId>
+            <artifactId>jmh-core</artifactId>
+            <version>1.19</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.openjdk.jmh</groupId>
+            <artifactId>jmh-generator-annprocess</artifactId>
+            <version>1.19</version>
+            <scope>test</scope>
+        </dependency>
+        <!-- Assists in parsing XMP metadata in RDF/XML -->
+        <dependency>
+            <groupId>org.apache.jena</groupId>
+            <artifactId>jena-core</artifactId>
+            <version>3.4.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.jena</groupId>
+            <artifactId>jena-arq</artifactId>
+            <version>3.4.0</version>
+        </dependency>
+        <!-- Used for media type detection -->
+        <dependency>
+            <groupId>org.apache.tika</groupId>
+            <artifactId>tika-core</artifactId>
+            <version>1.20</version>
+        </dependency>
+        <!-- Assists PDFBox in decoding certain PDFs -->
+        <dependency>
+            <groupId>org.bouncycastle</groupId>
+            <artifactId>bcprov-jdk15on</artifactId>
+            <version>1.55</version>
+        </dependency>
+        <!-- Supports <if> expressions in logback.xml -->
+        <dependency>
+            <groupId>org.codehaus.janino</groupId>
+            <artifactId>janino</artifactId>
+            <version>2.7.8</version>
+        </dependency>
+        <!-- Provides HTTP/2 support in the Jetty client.
+        N.B.: ALPN support is in a different module. -->
+        <dependency>
+            <groupId>org.eclipse.jetty.http2</groupId>
+            <artifactId>http2-client</artifactId>
+            <version>${jetty.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.jetty.http2</groupId>
+            <artifactId>http2-http-client-transport</artifactId>
+            <version>${jetty.version}</version>
+        </dependency>
+        <!-- Provides HTTP/2 support in the Jetty server.
+        N.B.: ALPN support is in a different module. -->
+        <dependency>
+            <groupId>org.eclipse.jetty.http2</groupId>
+            <artifactId>http2-server</artifactId>
+            <version>${jetty.version}</version>
+        </dependency>
+        <!-- Enables support for ALPN in Jetty client.
+        N.B.: in Java 8, this requires an alpn-boot JAR on the boot classpath. -->
+        <dependency>
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>jetty-alpn-client</artifactId>
+            <version>${jetty.version}</version>
+        </dependency>
+        <!-- Enables support for ALPN in Jetty server.
+        N.B.: in Java 8, this requires an alpn-boot JAR on the boot classpath. -->
+        <dependency>
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>jetty-alpn-server</artifactId>
+            <version>${jetty.version}</version>
+        </dependency>
+        <!-- Enables Jetty client to support the ALPN built into Java 9 -->
+        <dependency>
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>jetty-alpn-java-client</artifactId>
+            <version>${jetty.version}</version>
+        </dependency>
+        <!-- Enables Jetty server to support the ALPN built into Java 9 -->
+        <dependency>
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>jetty-alpn-java-server</artifactId>
+            <version>${jetty.version}</version>
+        </dependency>
+        <!-- Used by HttpSource -->
+        <dependency>
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>jetty-http</artifactId>
+            <version>${jetty.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>jetty-io</artifactId>
+            <version>${jetty.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>jetty-client</artifactId>
+            <version>${jetty.version}</version>
+        </dependency>
+        <!-- Provides the standalone servlet container -->
+        <dependency>
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>jetty-util</artifactId>
+            <version>${jetty.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>jetty-server</artifactId>
+            <version>${jetty.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>jetty-servlet</artifactId>
+            <version>${jetty.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>jetty-webapp</artifactId>
+            <version>${jetty.version}</version>
+        </dependency>
+        <!-- Enables colorized Logback console output in Windows -->
+        <dependency>
+            <groupId>org.fusesource.jansi</groupId>
+            <artifactId>jansi</artifactId>
+            <version>1.13</version>
+        </dependency>
+        <!-- JRuby is used to execute delegate script methods. -->
+        <dependency>
+            <groupId>org.jruby</groupId>
+            <artifactId>jruby-core</artifactId>
+            <version>${jruby.version}</version>
+        </dependency>
+        <!-- Needed by tests, but not necessary at compile time. -->
+        <dependency>
+            <groupId>org.jruby</groupId>
+            <artifactId>jruby-stdlib</artifactId>
+            <version>${jruby.version}</version>
+            <scope>runtime</scope>
+        </dependency>
+        <!-- Jackson for data serialization -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-core</artifactId>
+            <version>${jackson.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-annotations</artifactId>
+            <version>${jackson.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>${jackson.version}</version>
+        </dependency>
+        <!-- Make Jackson aware of JDK8 date/time objects -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.datatype</groupId>
+            <artifactId>jackson-datatype-jsr310</artifactId>
+            <version>${jackson.version}</version>
+        </dependency>
+        <!-- Provides Velocity for the landing and error page templates -->
+        <dependency>
+            <groupId>org.apache.velocity</groupId>
+            <artifactId>velocity-engine-core</artifactId>
+            <version>2.0</version>
+        </dependency>
+        <!-- Selenium is used to test the control panel, using a headless HtmlUnit
+        browser. -->
+        <dependency>
+            <groupId>org.seleniumhq.selenium</groupId>
+            <artifactId>htmlunit-driver</artifactId>
+            <version>2.21</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.seleniumhq.selenium</groupId>
+            <artifactId>selenium-api</artifactId>
+            <version>2.53.0</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.seleniumhq.selenium</groupId>
+            <artifactId>selenium-support</artifactId>
+            <version>2.53.0</version>
+            <scope>test</scope>
+        </dependency>
+        <!-- Logging interface used by the application -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>1.7.25</version>
+        </dependency>
+        <!-- intercepts jcl log messages from Commons etc. -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>jcl-over-slf4j</artifactId>
+            <version>1.7.25</version>
+        </dependency>
+    </dependencies>
 
-  <repositories>
-    <!-- Provides imageio-ext-tiff -->
-    <repository>
-      <id>imageio-ext-repository</id>
-      <name>imageio-ext Repository</name>
-      <url>http://maven.geo-solutions.it/</url>
-    </repository>
-  </repositories>
+    <repositories>
+        <!-- Provides imageio-ext-tiff -->
+        <repository>
+            <id>imageio-ext-repository</id>
+            <name>imageio-ext Repository</name>
+            <url>http://maven.geo-solutions.it/</url>
+        </repository>
+    </repositories>
 
-  <build>
-    <plugins>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-surefire-plugin</artifactId>
-        <version>${surefire.version}</version>
-        <configuration>
-          <runOrder>random</runOrder>
-          <reuseForks>false</reuseForks>
-        </configuration>
-      </plugin>
-
-      <!-- Find bugs with mvn findbugs:findbugs findbugs:gui -->
-      <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>findbugs-maven-plugin</artifactId>
-        <version>3.0.1</version>
-      </plugin>
-
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-compiler-plugin</artifactId>
-        <version>3.3</version>
-        <configuration>
-          <source>1.8</source>
-          <target>1.8</target>
-          <useIncrementalCompilation>false</useIncrementalCompilation>
-        </configuration>
-      </plugin>
-
-      <!-- About the build: it's easy to build a JAR using the Maven Shade
-      plugin, and it's easy to build a WAR using the Maven WAR plugin. However,
-      this application is packaged as a special WAR that can also be run like a
-      JAR, and there's no all-in-one Maven plugin for that. So, from here, we
-      have to go through a sequence of steps to build the custom WAR. -->
-
-      <!-- The first step is to unpack dependencies (direct and transient)
-      needed in standalone mode into the root, for compatibility with
-      `java -jar` invocation. Note that this plugin is not smart about handling
-      dependencies with the same filename, which mainly is a problem with
-      same-named META-INF/services files from e.g. Jetty, so we will have to
-      work around that in a later step. -->
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-dependency-plugin</artifactId>
-        <version>3.0.2</version>
-        <executions>
-          <execution>
-            <id>unpack-dependencies</id>
-            <phase>prepare-package</phase>
-            <goals>
-              <goal>unpack-dependencies</goal>
-            </goals>
-            <configuration>
-              <excludes>**/META-INF/*.DSA, **/META-INF/*.MF,
-                  **/META-INF/*.RSA, **/META-INF/*.SF,
-                  **/META-INF/*.txt</excludes>
-              <includeGroupIds>
-                javax.servlet,
-                org.eclipse.jetty
-              </includeGroupIds>
-              <outputDirectory>
-                ${project.build.directory}/${project.artifactId}-${project.version}
-              </outputDirectory>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-
-      <!-- The previous step copied only dependencies. Now we copy the
-      application classes needed for standalone mode into the root. -->
-      <plugin>
-        <artifactId>maven-antrun-plugin</artifactId>
-        <executions>
-          <execution>
-            <id>copy-standalone-classes-to-root</id>
-            <phase>prepare-package</phase>
-            <goals>
-              <goal>run</goal>
-            </goals>
-            <configuration>
-              <tasks>
-                <copy todir="${project.build.directory}/${project.artifactId}-${project.version}/">
-                  <fileset dir="${project.build.directory}/classes/">
-                    <include name="edu/illinois/library/cantaloupe/config/*" />
-                    <include name="edu/illinois/library/cantaloupe/util/FilesystemWatcher.class" />
-                    <include name="edu/illinois/library/cantaloupe/util/FilesystemWatcher$Callback.class" />
-                    <include name="edu/illinois/library/cantaloupe/util/StringUtils.class" />
-                    <include name="edu/illinois/library/cantaloupe/util/SystemUtils.class" />
-                    <include name="edu/illinois/library/cantaloupe/Application.class" />
-                    <include name="edu/illinois/library/cantaloupe/ApplicationServer.class" />
-                    <include name="edu/illinois/library/cantaloupe/StandaloneEntry.class" />
-                  </fileset>
-                </copy>
-              </tasks>
-            </configuration>
-          </execution>
-
-          <!-- And also add back a missing Jetty service that didn't get
-          copied in the unpack-dependencies execution. -->
-          <execution>
-            <id>finalize-services</id>
-            <phase>prepare-package</phase>
-            <goals>
-              <goal>run</goal>
-            </goals>
-            <configuration>
-              <tasks>
-                <echo file="${project.build.directory}/${project.artifactId}-${project.version}/META-INF/services/org.eclipse.jetty.http.HttpFieldPreEncoder" append="true">
-                  ${line.separator}org.eclipse.jetty.http2.hpack.HpackFieldPreEncoder
-                </echo>
-              </tasks>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-
-      <!-- Create the war file from the stuff we just unpacked. -->
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-war-plugin</artifactId>
-        <version>3.2.0</version>
-        <executions>
-          <execution>
-            <id>create-war</id>
-            <phase>package</phase>
-            <goals>
-              <goal>war</goal>
-            </goals>
-            <configuration>
-              <archive>
-                <manifest>
-                  <mainClass>edu.illinois.library.cantaloupe.StandaloneEntry</mainClass>
-                  <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
-                  <addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
-                </manifest>
-              </archive>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-
-      <!-- Assemble the created war into a release package. -->
-      <plugin>
-        <artifactId>maven-assembly-plugin</artifactId>
-        <version>3.1.0</version>
-        <executions>
-          <execution>
-            <phase>package</phase>
-            <goals>
-              <goal>single</goal>
-            </goals>
-          </execution>
-        </executions>
-        <configuration>
-          <appendAssemblyId>false</appendAssemblyId>
-          <descriptors>
-            <descriptor>${basedir}/build/assembly.xml</descriptor>
-          </descriptors>
-        </configuration>
-        <!-- This plugin depends on a version of plexus-archiver that
-        doesn't work with JDK 9. So, use a version that does.
-        TODO: revisit this -->
-        <dependencies>
-          <dependency>
-             <groupId>org.codehaus.plexus</groupId>
-             <artifactId>plexus-archiver</artifactId>
-             <version>3.5</version>
-          </dependency>
-        </dependencies>
-      </plugin>
-
-      <!-- Enables running with mvn exec:java -->
-      <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>exec-maven-plugin</artifactId>
-        <version>1.2.1</version>
-        <configuration>
-          <mainClass>edu.illinois.library.cantaloupe.StandaloneEntry</mainClass>
-        </configuration>
-      </plugin>
-
-    </plugins>
-  </build>
-
-  <profiles>
-    <profile>
-      <id>nodeps</id>
-      <activation>
-        <activeByDefault>false</activeByDefault>
-      </activation>
-      <build>
+    <build>
         <plugins>
-          <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-surefire-plugin</artifactId>
-            <version>${surefire.version}</version>
-            <configuration>
-              <runOrder>random</runOrder>
-              <reuseForks>false</reuseForks>
-              <excludes>
-                <exclude>AzureStorage*Test</exclude>
-                <exclude>FfmpegProcessorTest</exclude>
-                <exclude>GraphicsMagickProcessorTest</exclude>
-                <exclude>ImageMagickProcessorTest</exclude>
-                <exclude>*Kakadu*Test</exclude>
-                <exclude>OpenJpegProcessorTest</exclude>
-                <exclude>RedisCacheTest</exclude>
-                <exclude>TurboJpegProcessorTest</exclude>
-                <exclude>TurboJPEG*Test</exclude>
-              </excludes>
-            </configuration>
-          </plugin>
-        </plugins>
-      </build>
-    </profile>
-    <profile>
-      <id>freedeps</id>
-      <activation>
-        <activeByDefault>false</activeByDefault>
-      </activation>
-      <build>
-        <plugins>
-          <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-surefire-plugin</artifactId>
-            <version>${surefire.version}</version>
-            <configuration>
-              <runOrder>random</runOrder>
-              <reuseForks>false</reuseForks>
-              <excludes>
-                <exclude>Azure*Test</exclude>
-                <!-- openjpeg is free but there is no package containing opj_decompress in trusty -->
-                <exclude>OpenJpeg*Test</exclude>
-              </excludes>
-            </configuration>
-          </plugin>
-        </plugins>
-      </build>
-    </profile>
-    <profile>
-      <id>benchmark</id>
-      <properties>
-        <skipTests>true</skipTests>
-        <benchmark>edu.illinois</benchmark>
-      </properties>
-      <build>
-        <plugins>
-          <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-compiler-plugin</artifactId>
-            <configuration>
-              <testIncludes>
-                <testInclude>**/*</testInclude>
-              </testIncludes>
-            </configuration>
-          </plugin>
-          <plugin>
-            <groupId>org.codehaus.mojo</groupId>
-            <artifactId>exec-maven-plugin</artifactId>
-            <executions>
-              <execution>
-                <id>benchmark</id>
-                <phase>test</phase>
-                <goals>
-                  <goal>exec</goal>
-                </goals>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>${surefire.version}</version>
                 <configuration>
-                  <classpathScope>test</classpathScope>
-                  <executable>java</executable>
-                  <arguments>
-                    <argument>-classpath</argument>
-                    <classpath/>
-                    <argument>org.openjdk.jmh.Main</argument>
-                    <argument>-rf</argument>
-                    <argument>json</argument>
-                    <argument>-rff</argument>
-                    <argument>target/jmh-result.${benchmark}.json</argument>
-                    <argument>${benchmark}</argument>
-                  </arguments>
+                    <runOrder>random</runOrder>
+                    <reuseForks>false</reuseForks>
                 </configuration>
-              </execution>
-            </executions>
-          </plugin>
+            </plugin>
+
+            <!-- Find bugs with mvn findbugs:findbugs findbugs:gui -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>findbugs-maven-plugin</artifactId>
+                <version>3.0.1</version>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.3</version>
+                <configuration>
+                    <source>1.8</source>
+                    <target>1.8</target>
+                    <useIncrementalCompilation>false</useIncrementalCompilation>
+                </configuration>
+            </plugin>
+
+            <!-- About the build: it's easy to build a JAR using the Maven Shade
+            plugin, and it's easy to build a WAR using the Maven WAR plugin. However,
+            this application is packaged as a special WAR that can also be run like a
+            JAR, and there's no all-in-one Maven plugin for that. So, from here, we
+            have to go through a sequence of steps to build the custom WAR. -->
+
+            <!-- The first step is to unpack dependencies (direct and transient)
+            needed in standalone mode into the root, for compatibility with
+            `java -jar` invocation. Note that this plugin is not smart about handling
+            dependencies with the same filename, which mainly is a problem with
+            same-named META-INF/services files from e.g. Jetty, so we will have to
+            work around that in a later step. -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <version>3.0.2</version>
+                <executions>
+                    <execution>
+                        <id>unpack-dependencies</id>
+                        <phase>prepare-package</phase>
+                        <goals>
+                            <goal>unpack-dependencies</goal>
+                        </goals>
+                        <configuration>
+                            <excludes>**/META-INF/*.DSA, **/META-INF/*.MF,
+                                **/META-INF/*.RSA, **/META-INF/*.SF,
+                                **/META-INF/*.txt
+                            </excludes>
+                            <includeGroupIds>
+                                javax.servlet,
+                                org.eclipse.jetty
+                            </includeGroupIds>
+                            <outputDirectory>
+                                ${project.build.directory}/${project.artifactId}-${project.version}
+                            </outputDirectory>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- The previous step copied only dependencies. Now we copy the
+            application classes needed for standalone mode into the root. -->
+            <plugin>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>copy-standalone-classes-to-root</id>
+                        <phase>prepare-package</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <tasks>
+                                <copy todir="${project.build.directory}/${project.artifactId}-${project.version}/">
+                                    <fileset
+                                            dir="${project.build.directory}/classes/">
+                                        <include
+                                                name="edu/illinois/library/cantaloupe/config/*"/>
+                                        <include
+                                                name="edu/illinois/library/cantaloupe/util/FilesystemWatcher.class"/>
+                                        <include
+                                                name="edu/illinois/library/cantaloupe/util/FilesystemWatcher$Callback.class"/>
+                                        <include
+                                                name="edu/illinois/library/cantaloupe/util/StringUtils.class"/>
+                                        <include
+                                                name="edu/illinois/library/cantaloupe/util/SystemUtils.class"/>
+                                        <include
+                                                name="edu/illinois/library/cantaloupe/Application.class"/>
+                                        <include
+                                                name="edu/illinois/library/cantaloupe/ApplicationServer.class"/>
+                                        <include
+                                                name="edu/illinois/library/cantaloupe/StandaloneEntry.class"/>
+                                    </fileset>
+                                </copy>
+                            </tasks>
+                        </configuration>
+                    </execution>
+
+                    <!-- And also add back a missing Jetty service that didn't get
+                    copied in the unpack-dependencies execution. -->
+                    <execution>
+                        <id>finalize-services</id>
+                        <phase>prepare-package</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <tasks>
+                                <echo file="${project.build.directory}/${project.artifactId}-${project.version}/META-INF/services/org.eclipse.jetty.http.HttpFieldPreEncoder"
+                                      append="true">
+                                    ${line.separator}org.eclipse.jetty.http2.hpack.HpackFieldPreEncoder
+                                </echo>
+                            </tasks>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- Create the war file from the stuff we just unpacked. -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-war-plugin</artifactId>
+                <version>3.2.0</version>
+                <executions>
+                    <execution>
+                        <id>create-war</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>war</goal>
+                        </goals>
+                        <configuration>
+                            <archive>
+                                <manifest>
+                                    <mainClass>
+                                        edu.illinois.library.cantaloupe.StandaloneEntry
+                                    </mainClass>
+                                    <addDefaultImplementationEntries>true
+                                    </addDefaultImplementationEntries>
+                                    <addDefaultSpecificationEntries>true
+                                    </addDefaultSpecificationEntries>
+                                </manifest>
+                            </archive>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- Assemble the created war into a release package. -->
+            <plugin>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <version>3.1.0</version>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <appendAssemblyId>false</appendAssemblyId>
+                    <descriptors>
+                        <descriptor>${basedir}/build/assembly.xml</descriptor>
+                    </descriptors>
+                </configuration>
+                <!-- This plugin depends on a version of plexus-archiver that
+                doesn't work with JDK 9. So, use a version that does.
+                TODO: revisit this -->
+                <dependencies>
+                    <dependency>
+                        <groupId>org.codehaus.plexus</groupId>
+                        <artifactId>plexus-archiver</artifactId>
+                        <version>3.5</version>
+                    </dependency>
+                </dependencies>
+            </plugin>
+
+            <!-- Enables running with mvn exec:java -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>1.2.1</version>
+                <configuration>
+                    <mainClass>edu.illinois.library.cantaloupe.StandaloneEntry
+                    </mainClass>
+                </configuration>
+            </plugin>
+
         </plugins>
-      </build>
-    </profile>
-  </profiles>
+    </build>
+
+    <profiles>
+        <profile>
+            <id>nodeps</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <version>${surefire.version}</version>
+                        <configuration>
+                            <runOrder>random</runOrder>
+                            <reuseForks>false</reuseForks>
+                            <excludes>
+                                <exclude>AzureStorage*Test</exclude>
+                                <exclude>FfmpegProcessorTest</exclude>
+                                <exclude>GraphicsMagickProcessorTest</exclude>
+                                <exclude>ImageMagickProcessorTest</exclude>
+                                <exclude>*Kakadu*Test</exclude>
+                                <exclude>OpenJpegProcessorTest</exclude>
+                                <exclude>RedisCacheTest</exclude>
+                                <exclude>TurboJpegProcessorTest</exclude>
+                                <exclude>TurboJPEG*Test</exclude>
+                            </excludes>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>freedeps</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <version>${surefire.version}</version>
+                        <configuration>
+                            <runOrder>random</runOrder>
+                            <reuseForks>false</reuseForks>
+                            <excludes>
+                                <exclude>Azure*Test</exclude>
+                                <!-- openjpeg is free but there is no package containing opj_decompress in trusty -->
+                                <exclude>OpenJpeg*Test</exclude>
+                            </excludes>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>benchmark</id>
+            <properties>
+                <skipTests>true</skipTests>
+                <benchmark>edu.illinois</benchmark>
+            </properties>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-compiler-plugin</artifactId>
+                        <configuration>
+                            <testIncludes>
+                                <testInclude>**/*</testInclude>
+                            </testIncludes>
+                        </configuration>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>exec-maven-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>benchmark</id>
+                                <phase>test</phase>
+                                <goals>
+                                    <goal>exec</goal>
+                                </goals>
+                                <configuration>
+                                    <classpathScope>test</classpathScope>
+                                    <executable>java</executable>
+                                    <arguments>
+                                        <argument>-classpath</argument>
+                                        <classpath/>
+                                        <argument>org.openjdk.jmh.Main
+                                        </argument>
+                                        <argument>-rf</argument>
+                                        <argument>json</argument>
+                                        <argument>-rff</argument>
+                                        <argument>
+                                            target/jmh-result.${benchmark}.json
+                                        </argument>
+                                        <argument>${benchmark}</argument>
+                                    </arguments>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 </project>
