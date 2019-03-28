@@ -409,6 +409,13 @@
             <artifactId>jcl-over-slf4j</artifactId>
             <version>1.7.25</version>
         </dependency>
+        <!-- Assembles the release zip archive. -->
+        <dependency>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-assembly-plugin</artifactId>
+            <version>3.1.1</version>
+            <type>maven-plugin</type>
+        </dependency>
     </dependencies>
 
     <repositories>
@@ -504,24 +511,15 @@
                         <configuration>
                             <tasks>
                                 <copy todir="${project.build.directory}/${project.artifactId}-${project.version}/">
-                                    <fileset
-                                            dir="${project.build.directory}/classes/">
-                                        <include
-                                                name="edu/illinois/library/cantaloupe/config/*"/>
-                                        <include
-                                                name="edu/illinois/library/cantaloupe/util/FilesystemWatcher.class"/>
-                                        <include
-                                                name="edu/illinois/library/cantaloupe/util/FilesystemWatcher$Callback.class"/>
-                                        <include
-                                                name="edu/illinois/library/cantaloupe/util/StringUtils.class"/>
-                                        <include
-                                                name="edu/illinois/library/cantaloupe/util/SystemUtils.class"/>
-                                        <include
-                                                name="edu/illinois/library/cantaloupe/Application.class"/>
-                                        <include
-                                                name="edu/illinois/library/cantaloupe/ApplicationServer.class"/>
-                                        <include
-                                                name="edu/illinois/library/cantaloupe/StandaloneEntry.class"/>
+                                    <fileset dir="${project.build.directory}/classes/">
+                                        <include name="edu/illinois/library/cantaloupe/config/*"/>
+                                        <include name="edu/illinois/library/cantaloupe/util/FilesystemWatcher.class"/>
+                                        <include name="edu/illinois/library/cantaloupe/util/FilesystemWatcher$Callback.class"/>
+                                        <include name="edu/illinois/library/cantaloupe/util/StringUtils.class"/>
+                                        <include name="edu/illinois/library/cantaloupe/util/SystemUtils.class"/>
+                                        <include name="edu/illinois/library/cantaloupe/Application.class"/>
+                                        <include name="edu/illinois/library/cantaloupe/ApplicationServer.class"/>
+                                        <include name="edu/illinois/library/cantaloupe/StandaloneEntry.class"/>
                                     </fileset>
                                 </copy>
                             </tasks>
@@ -580,7 +578,7 @@
             <!-- Assemble the created war into a release package. -->
             <plugin>
                 <artifactId>maven-assembly-plugin</artifactId>
-                <version>3.1.0</version>
+                <version>3.1.1</version>
                 <executions>
                     <execution>
                         <phase>package</phase>
@@ -595,16 +593,6 @@
                         <descriptor>${basedir}/build/assembly.xml</descriptor>
                     </descriptors>
                 </configuration>
-                <!-- This plugin depends on a version of plexus-archiver that
-                doesn't work with JDK 9. So, use a version that does.
-                TODO: revisit this -->
-                <dependencies>
-                    <dependency>
-                        <groupId>org.codehaus.plexus</groupId>
-                        <artifactId>plexus-archiver</artifactId>
-                        <version>3.5</version>
-                    </dependency>
-                </dependencies>
             </plugin>
 
             <!-- Enables running with mvn exec:java -->
@@ -613,8 +601,7 @@
                 <artifactId>exec-maven-plugin</artifactId>
                 <version>1.2.1</version>
                 <configuration>
-                    <mainClass>edu.illinois.library.cantaloupe.StandaloneEntry
-                    </mainClass>
+                    <mainClass>edu.illinois.library.cantaloupe.StandaloneEntry</mainClass>
                 </configuration>
             </plugin>
 
