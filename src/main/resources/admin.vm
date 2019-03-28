@@ -1600,17 +1600,17 @@
                                                 <a tabindex="0" class="btn btn-sm cl-help"
                                                    role="button" data-toggle="popover"
                                                    data-trigger="focus"
-                                                   data-content="Whether to trust all certificates when
-                                                   making HTTPS connections.">?</a>
+                                                   data-content="Whether to trust all certificates and
+                                                   cipher suites when making HTTPS connections.">?</a>
                                             </td>
                                             <td>
                                                 <div class="checkbox">
                                                     <label>
                                                         <input type="checkbox"
-                                                               name="HttpSource.trust_all_certs"
+                                                               name="HttpSource.allow_insecure"
                                                                value="true"
                                                                data-requires-restart="false">
-                                                        Trust Invalid Certificates
+                                                        Allow Insecure Connections
                                                     </label>
                                                 </div>
                                             </td>

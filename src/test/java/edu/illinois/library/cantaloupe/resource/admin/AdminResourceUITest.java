@@ -351,11 +351,11 @@ public class AdminResourceUITest extends AbstractAdminResourceTest {
         inputNamed(Key.FILESYSTEMSOURCE_PATH_SUFFIX).sendKeys("/suffix");
         // HttpSource
         css("#cl-source li > a[href=\"#HttpSource\"]").click();
+        inputNamed(Key.HTTPSOURCE_ALLOW_INSECURE).click();
         inputNamed(Key.HTTPSOURCE_CHUNKING_ENABLED).click();
         inputNamed(Key.HTTPSOURCE_CHUNK_SIZE).sendKeys("412");
         inputNamed(Key.HTTPSOURCE_CHUNK_CACHE_ENABLED).click();
         inputNamed(Key.HTTPSOURCE_CHUNK_CACHE_MAX_SIZE).sendKeys("333");
-        inputNamed(Key.HTTPSOURCE_TRUST_ALL_CERTS).click();
         inputNamed(Key.HTTPSOURCE_REQUEST_TIMEOUT).sendKeys("13");
         selectNamed(Key.HTTPSOURCE_LOOKUP_STRATEGY).
                 selectByValue("BasicLookupStrategy");
@@ -429,7 +429,7 @@ public class AdminResourceUITest extends AbstractAdminResourceTest {
                 config.getString(Key.FILESYSTEMSOURCE_PATH_SUFFIX));
         // HttpSource
         assertTrue(
-                config.getBoolean(Key.HTTPSOURCE_TRUST_ALL_CERTS));
+                config.getBoolean(Key.HTTPSOURCE_ALLOW_INSECURE));
         assertTrue(
                 config.getBoolean(Key.HTTPSOURCE_CHUNKING_ENABLED));
         assertEquals("412",

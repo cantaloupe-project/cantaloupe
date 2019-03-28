@@ -6,6 +6,7 @@ current version.
 ## 4.0.x → 4.1
 
 1. Rename the following configuration keys:
+    * `HttpSource.trust_all_certs` to `HttpSource.allow_insecure`
     * `processor.[format]` to `processor.ManualSelectionStrategy.[format]`
     * `processor.fallback` to `processor.ManualSelectionStrategy.fallback`
 2. Add the following keys from the sample configuration:

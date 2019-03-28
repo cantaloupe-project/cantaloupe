@@ -15,7 +15,7 @@ abstract class HttpSourceHTTPSTest extends HttpSourceTest {
 
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.HTTPSOURCE_URL_PREFIX, server.getHTTPSURI() + "/");
-        config.setProperty(Key.HTTPSOURCE_TRUST_ALL_CERTS, true);
+        config.setProperty(Key.HTTPSOURCE_ALLOW_INSECURE, true);
     }
 
     @Override

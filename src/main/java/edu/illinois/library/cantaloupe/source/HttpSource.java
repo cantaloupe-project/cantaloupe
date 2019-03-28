@@ -244,10 +244,13 @@ class HttpSource extends AbstractSource implements StreamSource {
     static synchronized HttpClient getHTTPClient(RequestInfo info) {
         if (jettyClient == null) {
             final Configuration config = Configuration.getInstance();
-            final boolean trustInvalidCerts = config.getBoolean(
-                    Key.HTTPSOURCE_TRUST_ALL_CERTS, false);
+            final boolean allowInsecure = config.getBoolean(
+                    Key.HTTPSOURCE_ALLOW_INSECURE, false);
             SslContextFactory sslContextFactory =
-                    new SslContextFactory(trustInvalidCerts);
+                    new SslContextFactory(allowInsecure);
+            if (allowInsecure) {
+                sslContextFactory.setExcludeCipherSuites("");
+            }
 
             HttpClientTransport transport = new HttpClientTransportOverHTTP();
             jettyClient = new HttpClient(transport, sslContextFactory);

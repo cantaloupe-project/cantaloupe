@@ -39,6 +39,9 @@
 * HttpSource sends initial `HEAD` requests instead of ranged `GET` requests.
 * The hash returned from the `httpsource_resource_info()` delegate method may
   include custom request headers.
+* HttpSource's `HttpSource.trust_invalid_certs` configuration key has been
+  renamed `HttpSource.allow_insecure`. When enabled, insecure cipher suites are
+  accepted as well as insecure certificates.
 * S3Source uses a Minio client instead of the AWS Java SDK client, to work
   around a possible thread-starvation bug in the AWS Java SDK when S3Source
   and S3Cache are in use at the same time.
