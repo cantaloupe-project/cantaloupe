@@ -7,7 +7,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         imagemagick \
 		ffmpeg \
 		maven \
-		libopenjp2-7 \
+		libopenjp2-tools \
 		redis-server \
   && rm -rf /var/lib/apt/lists/*
 
