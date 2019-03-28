@@ -65,6 +65,7 @@
   FileSource.
 * KakaduDemoProcessor has been deprecated, as it has been made more-or-less
   redundant by KakaduNativeProcessor.
+* Updated the PDFBox dependency.
 * Removed normalization.
 
 ### Caches
