@@ -531,6 +531,7 @@ class HttpSource extends AbstractSource implements StreamSource {
         try {
             return request.send();
         } catch (ExecutionException e) {
+            LOGGER.debug("ExecutionException from Request.send(); generating AccessDeniedException.", e);
             throw new AccessDeniedException(requestInfo.getURI());
         } catch (InterruptedException | TimeoutException e) {
             throw new IOException(e);
