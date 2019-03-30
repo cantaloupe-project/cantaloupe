@@ -18,7 +18,6 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.nio.file.NoSuchFileException;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -31,7 +30,7 @@ class ErrorResource extends AbstractResource {
             LoggerFactory.getLogger(ErrorResource.class);
 
     private static final List<String> SUPPORTED_MEDIA_TYPES =
-            Arrays.asList("text/plain", "text/html", "application/xhtml+xml");
+            List.of("text/plain", "text/html", "application/xhtml+xml");
 
     private Throwable error;
 
@@ -72,8 +71,7 @@ class ErrorResource extends AbstractResource {
 
         // Use a template that best fits the representation's content type.
         String template, mediaType;
-        if (Arrays.asList("text/html", "application/xhtml+xml").
-                contains(requestedType)) {
+        if (List.of("text/html", "application/xhtml+xml").contains(requestedType)) {
             template = "/error.html.vm";
             mediaType = "text/html";
         } else {

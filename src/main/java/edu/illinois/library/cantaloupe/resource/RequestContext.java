@@ -6,9 +6,9 @@ import edu.illinois.library.cantaloupe.image.ScaleConstraint;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 
 import java.net.URI;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -129,10 +129,9 @@ public final class RequestContext {
      */
     public void setScaleConstraint(ScaleConstraint scaleConstraint) {
         if (scaleConstraint != null) {
-            backingMap.put(SCALE_CONSTRAINT_KEY,
-                    Collections.unmodifiableList(Arrays.asList(
-                            scaleConstraint.getRational().getNumerator(),
-                            scaleConstraint.getRational().getDenominator())));
+            backingMap.put(SCALE_CONSTRAINT_KEY, List.of(
+                    scaleConstraint.getRational().getNumerator(),
+                    scaleConstraint.getRational().getDenominator()));
         } else {
             backingMap.remove(SCALE_CONSTRAINT_KEY);
         }

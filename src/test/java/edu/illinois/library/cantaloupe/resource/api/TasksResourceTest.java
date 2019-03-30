@@ -13,7 +13,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.util.Arrays;
 import java.util.List;
 
 import static org.junit.Assert.*;
@@ -48,7 +47,7 @@ public class TasksResourceTest extends AbstractAPIResourceTest {
 
         Headers headers = response.getHeaders();
         List<String> methods =
-                Arrays.asList(StringUtils.split(headers.getFirstValue("Allow"), ", "));
+                List.of(StringUtils.split(headers.getFirstValue("Allow"), ", "));
         assertEquals(2, methods.size());
         assertTrue(methods.contains("POST"));
         assertTrue(methods.contains("OPTIONS"));

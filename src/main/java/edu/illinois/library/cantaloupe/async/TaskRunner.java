@@ -4,8 +4,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.time.Instant;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Callable;
@@ -16,8 +14,7 @@ final class TaskRunner implements Runnable {
     private static final Logger LOGGER = LoggerFactory.
             getLogger(TaskRunner.class);
 
-    private final BlockingQueue<Object> queue =
-            new LinkedBlockingQueue<>();
+    private final BlockingQueue<Object> queue = new LinkedBlockingQueue<>();
 
     /**
      * @return Unmodifiable list of all queued tasks, including the one
@@ -27,7 +24,7 @@ final class TaskRunner implements Runnable {
      */
     List<Object> queuedTasks() {
         Object[] tasks = new Object[] {};
-        return Collections.unmodifiableList(Arrays.asList(queue.toArray(tasks)));
+        return List.of(queue.toArray(tasks));
     }
 
     @Override

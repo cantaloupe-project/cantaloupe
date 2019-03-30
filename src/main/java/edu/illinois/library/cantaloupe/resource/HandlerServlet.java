@@ -11,7 +11,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -81,7 +80,7 @@ public class HandlerServlet extends HttpServlet {
             resource.doInit();
 
             final List<Method> supportedMethods =
-                    Arrays.asList(resource.getSupportedMethods());
+                    List.of(resource.getSupportedMethods());
             // If the request method is HEAD and GET is supported
             if (("HEAD".equals(request.getMethod()) && supportedMethods.contains(Method.GET)) ||
                     // or if the request method is OPTIONS

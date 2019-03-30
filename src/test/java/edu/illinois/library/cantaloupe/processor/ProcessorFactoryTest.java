@@ -8,6 +8,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.util.Arrays;
+import java.util.List;
 
 import static org.junit.Assert.*;
 
@@ -29,7 +30,7 @@ public class ProcessorFactoryTest extends BaseTest {
     @Test
     public void testNewProcessorWithWorkingFirstPreferenceMatch() throws Exception {
         instance.setSelectionStrategy(f ->
-                Arrays.asList(PdfBoxProcessor.class, Java2dProcessor.class));
+                List.of(PdfBoxProcessor.class, Java2dProcessor.class));
         assertTrue(instance.newProcessor(Format.PDF) instanceof PdfBoxProcessor);
     }
 
@@ -37,28 +38,28 @@ public class ProcessorFactoryTest extends BaseTest {
     public void testNewProcessorWithBrokenFirstPreferenceMatchAndWorkingSecondPreferenceMatch()
             throws Exception {
         instance.setSelectionStrategy(f ->
-                Arrays.asList(MockBrokenProcessor.class, Java2dProcessor.class));
+                List.of(MockBrokenProcessor.class, Java2dProcessor.class));
         assertTrue(instance.newProcessor(Format.JPG) instanceof Java2dProcessor);
     }
 
     @Test
     public void testNewProcessorWithWorkingSecondPreferenceMatch() throws Exception {
         instance.setSelectionStrategy(f ->
-                Arrays.asList(PdfBoxProcessor.class, Java2dProcessor.class));
+                List.of(PdfBoxProcessor.class, Java2dProcessor.class));
         assertTrue(instance.newProcessor(Format.JPG) instanceof Java2dProcessor);
     }
 
     @Test(expected = InitializationException.class)
     public void testNewProcessorWithBrokenSecondPreferenceMatch() throws Exception {
         instance.setSelectionStrategy(f ->
-                Arrays.asList(PdfBoxProcessor.class, MockBrokenProcessor.class));
+                List.of(PdfBoxProcessor.class, MockBrokenProcessor.class));
         instance.newProcessor(Format.JPG);
     }
 
     @Test(expected = UnsupportedSourceFormatException.class)
     public void testNewProcessorWithNoMatch() throws Exception {
-        instance.setSelectionStrategy(f -> Arrays.asList(
-                MockPDFOnlyProcessor.class, MockPNGOnlyProcessor.class));
+        instance.setSelectionStrategy(f ->
+                List.of(MockPDFOnlyProcessor.class, MockPNGOnlyProcessor.class));
         instance.newProcessor(Format.JPG);
     }
 

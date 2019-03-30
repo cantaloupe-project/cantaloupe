@@ -2,7 +2,6 @@ package edu.illinois.library.cantaloupe.image;
 
 import edu.illinois.library.cantaloupe.source.Source;
 
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -23,8 +22,8 @@ public enum Format {
      */
     AVI("AVI",
             ImageType.RASTER,
-            Arrays.asList("video/avi", "video/msvideo", "video/x-msvideo"),
-            Arrays.asList("avi"),
+            List.of("video/avi", "video/msvideo", "video/x-msvideo"),
+            List.of("avi"),
             Type.VIDEO,
             8,
             false),
@@ -34,8 +33,8 @@ public enum Format {
      */
     BMP("BMP",
             ImageType.RASTER,
-            Arrays.asList("image/bmp", "image/x-bmp", "image/x-ms-bmp"),
-            Arrays.asList("bmp", "dib"),
+            List.of("image/bmp", "image/x-bmp", "image/x-ms-bmp"),
+            List.of("bmp", "dib"),
             Type.IMAGE,
             8,
             true),
@@ -45,8 +44,8 @@ public enum Format {
      */
     DCM("DICOM",
             ImageType.RASTER,
-            Arrays.asList("application/dicom"),
-            Arrays.asList("dcm", "dic"),
+            List.of("application/dicom"),
+            List.of("dcm", "dic"),
             Type.IMAGE,
             16,
             false),
@@ -56,8 +55,8 @@ public enum Format {
      */
     FLV("FLV",
             ImageType.RASTER,
-            Arrays.asList("video/x-flv"),
-            Arrays.asList("flv", "f4v"),
+            List.of("video/x-flv"),
+            List.of("flv", "f4v"),
             Type.VIDEO,
             8,
             false),
@@ -67,8 +66,8 @@ public enum Format {
      */
     GIF("GIF",
             ImageType.RASTER,
-            Arrays.asList("image/gif"),
-            Arrays.asList("gif"),
+            List.of("image/gif"),
+            List.of("gif"),
             Type.IMAGE,
             3,
             true),
@@ -78,8 +77,8 @@ public enum Format {
      */
     JP2("JPEG2000",
             ImageType.RASTER,
-            Arrays.asList("image/jp2"),
-            Arrays.asList("jp2", "j2k", "jpx", "jpf"),
+            List.of("image/jp2"),
+            List.of("jp2", "j2k", "jpx", "jpf"),
             Type.IMAGE,
             16,
             true),
@@ -89,8 +88,8 @@ public enum Format {
      */
     JPG("JPEG",
             ImageType.RASTER,
-            Arrays.asList("image/jpeg"),
-            Arrays.asList("jpg", "jpeg"),
+            List.of("image/jpeg"),
+            List.of("jpg", "jpeg"),
             Type.IMAGE,
             8,
             false),
@@ -100,8 +99,8 @@ public enum Format {
      */
     MOV("QuickTime",
             ImageType.RASTER,
-            Arrays.asList("video/quicktime", "video/x-quicktime"),
-            Arrays.asList("mov", "qt"),
+            List.of("video/quicktime", "video/x-quicktime"),
+            List.of("mov", "qt"),
             Type.VIDEO,
             8,
             false),
@@ -111,8 +110,8 @@ public enum Format {
      */
     MP4("MPEG-4",
             ImageType.RASTER,
-            Arrays.asList("video/mp4"),
-            Arrays.asList("mp4", "m4v"),
+            List.of("video/mp4"),
+            List.of("mp4", "m4v"),
             Type.VIDEO,
             8,
             false),
@@ -122,8 +121,8 @@ public enum Format {
      */
     MPG("MPEG",
             ImageType.RASTER,
-            Arrays.asList("video/mpeg"),
-            Arrays.asList("mpg"),
+            List.of("video/mpeg"),
+            List.of("mpg"),
             Type.VIDEO,
             8,
             false),
@@ -133,8 +132,8 @@ public enum Format {
      */
     PDF("PDF",
             ImageType.VECTOR,
-            Arrays.asList("application/pdf"),
-            Arrays.asList("pdf"),
+            List.of("application/pdf"),
+            List.of("pdf"),
             Type.IMAGE,
             16,
             false),
@@ -144,8 +143,8 @@ public enum Format {
      */
     PNG("PNG",
             ImageType.RASTER,
-            Arrays.asList("image/png"),
-            Arrays.asList("png"),
+            List.of("image/png"),
+            List.of("png"),
             Type.IMAGE,
             16,
             true),
@@ -155,8 +154,8 @@ public enum Format {
      */
     TIF("TIFF",
             ImageType.RASTER,
-            Arrays.asList("image/tiff"),
-            Arrays.asList("tif", "ptif", "tiff"),
+            List.of("image/tiff"),
+            List.of("tif", "ptif", "tiff"),
             Type.IMAGE,
             16,
             true),
@@ -166,8 +165,8 @@ public enum Format {
      */
     WEBM("WebM",
             ImageType.RASTER,
-            Arrays.asList("video/webm"),
-            Arrays.asList("webm"),
+            List.of("video/webm"),
+            List.of("webm"),
             Type.VIDEO,
             8,
             false),
@@ -177,8 +176,8 @@ public enum Format {
      */
     WEBP("WebP",
             ImageType.RASTER,
-            Arrays.asList("image/webp"),
-            Arrays.asList("webp"),
+            List.of("image/webp"),
+            List.of("webp"),
             Type.IMAGE,
             8,
             true),
@@ -188,8 +187,8 @@ public enum Format {
      */
     UNKNOWN("Unknown",
             ImageType.UNKNOWN,
-            Arrays.asList("unknown/unknown"),
-            Arrays.asList("unknown"),
+            List.of("unknown/unknown"),
+            List.of("unknown"),
             Type.UNKNOWN,
             0,
             false);

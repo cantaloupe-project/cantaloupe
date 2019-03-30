@@ -2,10 +2,10 @@ package edu.illinois.library.cantaloupe.http;
 
 import edu.illinois.library.cantaloupe.util.StringUtils;
 
-import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
 
@@ -23,11 +23,7 @@ public final class Reference {
     private Query query = new Query();
 
     public static String decode(String encoded) {
-        try {
-            return URLDecoder.decode(encoded, "UTF-8");
-        } catch (UnsupportedEncodingException e) {
-            throw new RuntimeException(e);
-        }
+        return URLDecoder.decode(encoded, StandardCharsets.UTF_8);
     }
 
     public Reference() {}

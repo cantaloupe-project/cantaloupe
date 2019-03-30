@@ -19,7 +19,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.junit.Test;
 
 import java.net.URI;
-import java.util.Arrays;
 import java.util.List;
 
 import static edu.illinois.library.cantaloupe.test.Assert.HTTPAssert.*;
@@ -495,7 +494,7 @@ public class ImageResourceTest extends ResourceTest {
         assertNotNull(headers.getFirstValue("Server"));
         // Vary
         List<String> parts =
-                Arrays.asList(StringUtils.split(headers.getFirstValue("Vary"), ", "));
+                List.of(StringUtils.split(headers.getFirstValue("Vary"), ", "));
         assertEquals(5, parts.size());
         assertTrue(parts.contains("Accept"));
         assertTrue(parts.contains("Accept-Charset"));
@@ -518,7 +517,8 @@ public class ImageResourceTest extends ResourceTest {
         assertEquals(204, response.getStatus());
 
         Headers headers = response.getHeaders();
-        List<String> methods = Arrays.asList(StringUtils.split(headers.getFirstValue("Allow"), ", "));
+        List<String> methods =
+                List.of(StringUtils.split(headers.getFirstValue("Allow"), ", "));
         assertEquals(2, methods.size());
         assertTrue(methods.contains("GET"));
         assertTrue(methods.contains("OPTIONS"));

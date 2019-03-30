@@ -11,15 +11,14 @@ import org.apache.commons.lang3.StringUtils;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.util.Arrays;
 import java.util.List;
 
 import static org.junit.Assert.*;
 
 abstract class AbstractAPIResourceTest extends ResourceTest {
 
-    static final String USERNAME = "admin";
-    static final String SECRET = "secret";
+    private static final String USERNAME = "admin";
+    private static final String SECRET = "secret";
 
     @Before
     @Override
@@ -69,7 +68,7 @@ abstract class AbstractAPIResourceTest extends ResourceTest {
 
         Headers headers = response.getHeaders();
         List<String> methods =
-                Arrays.asList(StringUtils.split(headers.getFirstValue("Allow"), ", "));
+                List.of(StringUtils.split(headers.getFirstValue("Allow"), ", "));
         assertEquals(2, methods.size());
         assertTrue(methods.contains("GET"));
         assertTrue(methods.contains("OPTIONS"));

@@ -13,7 +13,6 @@ import edu.illinois.library.cantaloupe.resource.Route;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Test;
 
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -91,7 +90,7 @@ public class ConfigurationResourceTest extends AbstractAdminResourceTest {
 
         Headers headers = response.getHeaders();
         List<String> methods =
-                Arrays.asList(StringUtils.split(headers.getFirstValue("Allow"), ", "));
+                List.of(StringUtils.split(headers.getFirstValue("Allow"), ", "));
         assertEquals(3, methods.size());
         assertTrue(methods.contains("GET"));
         assertTrue(methods.contains("PUT"));

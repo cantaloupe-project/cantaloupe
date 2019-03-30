@@ -26,7 +26,6 @@ import java.awt.image.RenderedImage;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.List;
@@ -180,7 +179,7 @@ abstract class AbstractIIOImageReader {
         }
         // Fall back to an application-preferred implementation.
         final String[] appImpls = getApplicationPreferredIIOImplementations();
-        impls.addAll(Arrays.asList(appImpls));
+        impls.addAll(List.of(appImpls));
 
         return impls.toArray(new String[] {});
     }

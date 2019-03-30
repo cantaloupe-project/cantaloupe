@@ -127,7 +127,7 @@ public final class DelegateProxy {
         // The cache key is comprised of the method name at position 0, the
         // request context at position 1, and the arguments at succeeding
         // positions.
-        List<Object> key = Arrays.asList(args);
+        List<Object> key = List.of(args);
         key = new LinkedList<>(key);
         key.add(0, methodName);
         key.add(1, requestContext);

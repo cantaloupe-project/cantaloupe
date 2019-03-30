@@ -94,7 +94,7 @@ public class ConfigurationResourceTest extends AbstractAPIResourceTest {
 
         Headers headers = response.getHeaders();
         List<String> methods =
-                Arrays.asList(StringUtils.split(headers.getFirstValue("Allow"), ", "));
+                List.of(StringUtils.split(headers.getFirstValue("Allow"), ", "));
         assertEquals(3, methods.size());
         assertTrue(methods.contains("GET"));
         assertTrue(methods.contains("PUT"));

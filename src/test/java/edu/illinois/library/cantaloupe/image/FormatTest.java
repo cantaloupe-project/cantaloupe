@@ -3,7 +3,7 @@ package edu.illinois.library.cantaloupe.image;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import org.junit.Test;
 
-import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 
 import static org.junit.Assert.*;
@@ -107,39 +107,38 @@ public class FormatTest extends BaseTest {
     @Test
     public void getExtensions() {
         // AVI
-        assertEquals(Arrays.asList("avi"), Format.AVI.getExtensions());
+        assertEquals(List.of("avi"), Format.AVI.getExtensions());
         // BMP
-        assertEquals(Arrays.asList("bmp", "dib"), Format.BMP.getExtensions());
+        assertEquals(List.of("bmp", "dib"), Format.BMP.getExtensions());
         // DCM
-        assertEquals(Arrays.asList("dcm", "dic"), Format.DCM.getExtensions());
+        assertEquals(List.of("dcm", "dic"), Format.DCM.getExtensions());
         // FLV
-        assertEquals(Arrays.asList("flv", "f4v"), Format.FLV.getExtensions());
+        assertEquals(List.of("flv", "f4v"), Format.FLV.getExtensions());
         // GIF
-        assertEquals(Arrays.asList("gif"), Format.GIF.getExtensions());
+        assertEquals(List.of("gif"), Format.GIF.getExtensions());
         // JP2
-        assertEquals(Arrays.asList("jp2", "j2k", "jpx", "jpf"),
-                Format.JP2.getExtensions());
+        assertEquals(List.of("jp2", "j2k", "jpx", "jpf"), Format.JP2.getExtensions());
         // JPG
-        assertEquals(Arrays.asList("jpg", "jpeg"), Format.JPG.getExtensions());
+        assertEquals(List.of("jpg", "jpeg"), Format.JPG.getExtensions());
         // MOV
-        assertEquals(Arrays.asList("mov", "qt"), Format.MOV.getExtensions());
+        assertEquals(List.of("mov", "qt"), Format.MOV.getExtensions());
         // MP4
-        assertEquals(Arrays.asList("mp4", "m4v"), Format.MP4.getExtensions());
+        assertEquals(List.of("mp4", "m4v"), Format.MP4.getExtensions());
         // MPG
-        assertEquals(Arrays.asList("mpg"), Format.MPG.getExtensions());
+        assertEquals(List.of("mpg"), Format.MPG.getExtensions());
         // PDF
-        assertEquals(Arrays.asList("pdf"), Format.PDF.getExtensions());
+        assertEquals(List.of("pdf"), Format.PDF.getExtensions());
         // PNG
-        assertEquals(Arrays.asList("png"), Format.PNG.getExtensions());
+        assertEquals(List.of("png"), Format.PNG.getExtensions());
         // TIF
-        assertEquals(Arrays.asList("tif", "ptif", "tiff"),
+        assertEquals(List.of("tif", "ptif", "tiff"),
                 Format.TIF.getExtensions());
         // WEBM
-        assertEquals(Arrays.asList("webm"), Format.WEBM.getExtensions());
+        assertEquals(List.of("webm"), Format.WEBM.getExtensions());
         // WEBP
-        assertEquals(Arrays.asList("webp"), Format.WEBP.getExtensions());
+        assertEquals(List.of("webp"), Format.WEBP.getExtensions());
         // UNKNOWN
-        assertEquals(Arrays.asList("unknown"), Format.UNKNOWN.getExtensions());
+        assertEquals(List.of("unknown"), Format.UNKNOWN.getExtensions());
     }
 
     @Test
@@ -185,72 +184,72 @@ public class FormatTest extends BaseTest {
     @Test
     public void getMediaTypes() {
         // AVI
-        assertEquals(Arrays.asList(
+        assertEquals(List.of(
                 new MediaType("video/avi"),
                 new MediaType("video/msvideo"),
                 new MediaType("video/x-msvideo")),
                 Format.AVI.getMediaTypes());
         // BMP
-        assertEquals(Arrays.asList(
+        assertEquals(List.of(
                 new MediaType("image/bmp"),
                 new MediaType("image/x-bmp"),
                 new MediaType("image/x-ms-bmp")),
                 Format.BMP.getMediaTypes());
         // DCM
-        assertEquals(Arrays.asList(
+        assertEquals(List.of(
                 new MediaType("application/dicom")),
                 Format.DCM.getMediaTypes());
         // FLV
-        assertEquals(Arrays.asList(
+        assertEquals(List.of(
                 new MediaType("video/x-flv")),
                 Format.FLV.getMediaTypes());
         // GIF
-        assertEquals(Arrays.asList(
+        assertEquals(List.of(
                 new MediaType("image/gif")),
                 Format.GIF.getMediaTypes());
         // JP2
-        assertEquals(Arrays.asList(
+        assertEquals(List.of(
                 new MediaType("image/jp2")),
                 Format.JP2.getMediaTypes());
         // JPG
-        assertEquals(Arrays.asList(
+        assertEquals(List.of(
                 new MediaType("image/jpeg")),
                 Format.JPG.getMediaTypes());
         // MOV
-        assertEquals(Arrays.asList(
+        assertEquals(List.of(
                 new MediaType("video/quicktime"),
                 new MediaType("video/x-quicktime")),
                 Format.MOV.getMediaTypes());
         // MP4
-        assertEquals(Arrays.asList(
+        assertEquals(List.of(
                 new MediaType("video/mp4")),
                 Format.MP4.getMediaTypes());
         // MPG
-        assertEquals(Arrays.asList(
+        assertEquals(List.of(
                 new MediaType("video/mpeg")),
                 Format.MPG.getMediaTypes());
         // PDF
-        assertEquals(Arrays.asList(
+        assertEquals(List.of(
                 new MediaType("application/pdf")),
                 Format.PDF.getMediaTypes());
         // PNG
-        assertEquals(Arrays.asList(
+        assertEquals(List.of(
                 new MediaType("image/png")),
                 Format.PNG.getMediaTypes());
         // TIF
-        assertEquals(Arrays.asList(
+        assertEquals(List.of(
                 new MediaType("image/tiff")),
                 Format.TIF.getMediaTypes());
         // WEBM
-        assertEquals(Arrays.asList(
+        assertEquals(List.of(
                 new MediaType("video/webm")),
                 Format.WEBM.getMediaTypes());
         // WEBP
-        assertEquals(Arrays.asList(
+        assertEquals(List.of(
                 new MediaType("image/webp")),
                 Format.WEBP.getMediaTypes());
         // UNKNOWN
-        assertEquals(Arrays.asList(
+        assertEquals(List.of(
                 new MediaType("unknown/unknown")),
                 Format.UNKNOWN.getMediaTypes());
     }

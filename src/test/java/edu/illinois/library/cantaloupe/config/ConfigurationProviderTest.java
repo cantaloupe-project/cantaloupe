@@ -4,9 +4,8 @@ import edu.illinois.library.cantaloupe.test.BaseTest;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Iterator;
+import java.util.List;
 import java.util.NoSuchElementException;
 
 import static org.junit.Assert.*;
@@ -21,8 +20,7 @@ public class ConfigurationProviderTest extends BaseTest {
 
     @Before
     public void setUp() {
-        instance = new ConfigurationProvider(
-                new ArrayList<>(Arrays.asList(config1, config2)));
+        instance = new ConfigurationProvider(List.of(config1, config2));
     }
 
     @Test

@@ -5,7 +5,6 @@ import edu.illinois.library.cantaloupe.test.BaseTest;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.util.Arrays;
 import java.util.List;
 
 import static org.junit.Assert.*;
@@ -22,7 +21,7 @@ public class AutomaticSelectionStrategyTest extends BaseTest {
 
     @Test
     public void getPreferredProcessorsWithJP2() {
-        List<?> expected = Arrays.asList(
+        List<?> expected = List.of(
                 KakaduNativeProcessor.class,
                 OpenJpegProcessor.class,
                 ImageMagickProcessor.class,
@@ -32,7 +31,7 @@ public class AutomaticSelectionStrategyTest extends BaseTest {
 
     @Test
     public void getPreferredProcessorsWithJPG() {
-        List<?> expected = Arrays.asList(
+        List<?> expected = List.of(
                 TurboJpegProcessor.class,
                 Java2dProcessor.class,
                 GraphicsMagickProcessor.class,
@@ -42,21 +41,25 @@ public class AutomaticSelectionStrategyTest extends BaseTest {
 
     @Test
     public void getPreferredProcessorsWithPDF() {
-        List<?> expected = Arrays.asList(PdfBoxProcessor.class,
-                GraphicsMagickProcessor.class, ImageMagickProcessor.class);
+        List<?> expected = List.of(
+                PdfBoxProcessor.class,
+                GraphicsMagickProcessor.class,
+                ImageMagickProcessor.class);
         assertEquals(expected, instance.getPreferredProcessors(Format.PDF));
     }
 
     @Test
     public void getPreferredProcessorsWithVideo() {
-        List<?> expected = Arrays.asList(FfmpegProcessor.class);
+        List<?> expected = List.of(FfmpegProcessor.class);
         assertEquals(expected, instance.getPreferredProcessors(Format.MPG));
     }
 
     @Test
     public void getPreferredProcessorsWithOther() {
-        List<?> expected = Arrays.asList(Java2dProcessor.class,
-                GraphicsMagickProcessor.class, ImageMagickProcessor.class);
+        List<?> expected = List.of(
+                Java2dProcessor.class,
+                GraphicsMagickProcessor.class,
+                ImageMagickProcessor.class);
         assertEquals(expected, instance.getPreferredProcessors(Format.BMP));
         assertEquals(expected, instance.getPreferredProcessors(Format.GIF));
         assertEquals(expected, instance.getPreferredProcessors(Format.PNG));

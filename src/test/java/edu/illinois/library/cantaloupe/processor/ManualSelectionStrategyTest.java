@@ -49,10 +49,12 @@ public class ManualSelectionStrategyTest extends BaseTest {
         Configuration config = Configuration.getInstance();
         config.setProperty("processor.ManualSelectionStrategy.jpg",
                 GraphicsMagickProcessor.class.getSimpleName());
-        config.setProperty(Key.PROCESSOR_FALLBACK, ImageMagickProcessor.class.getSimpleName());
+        config.setProperty(Key.PROCESSOR_FALLBACK,
+                ImageMagickProcessor.class.getSimpleName());
 
-        List<Class<? extends Processor>> expected =
-                Arrays.asList(GraphicsMagickProcessor.class, ImageMagickProcessor.class);
+        List<Class<? extends Processor>> expected = List.of(
+                GraphicsMagickProcessor.class,
+                ImageMagickProcessor.class);
         assertEquals(expected, instance.getPreferredProcessors(Format.JPG));
     }
 
@@ -77,8 +79,9 @@ public class ManualSelectionStrategyTest extends BaseTest {
                 GraphicsMagickProcessor.class.getName());
         config.setProperty(Key.PROCESSOR_FALLBACK, ImageMagickProcessor.class.getName());
 
-        List<Class<? extends Processor>> expected =
-                Arrays.asList(GraphicsMagickProcessor.class, ImageMagickProcessor.class);
+        List<Class<? extends Processor>> expected = List.of(
+                GraphicsMagickProcessor.class,
+                ImageMagickProcessor.class);
         assertEquals(expected, instance.getPreferredProcessors(Format.JPG));
     }
 

@@ -13,7 +13,6 @@ import java.awt.image.RenderedImage;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
@@ -112,7 +111,7 @@ abstract class AbstractIIOImageWriter {
         }
         // Fall back to an application-preferred implementation.
         final String[] appImpls = getApplicationPreferredIIOImplementations();
-        impls.addAll(Arrays.asList(appImpls));
+        impls.addAll(List.of(appImpls));
 
         return impls.toArray(new String[0]);
     }
