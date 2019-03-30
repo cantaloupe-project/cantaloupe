@@ -38,7 +38,7 @@ public final class RedactionService {
                                 def.get("y").doubleValue(),
                                 def.get("width").doubleValue(),
                                 def.get("height").doubleValue())))
-                .collect(Collectors.toList());
+                .collect(Collectors.toUnmodifiableList());
     }
 
 }

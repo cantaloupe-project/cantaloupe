@@ -400,7 +400,7 @@ public abstract class AbstractResource {
         return preferences.stream()
                 .sorted()
                 .map(p -> p.mediaType)
-                .collect(Collectors.toList());
+                .collect(Collectors.toUnmodifiableList());
     }
 
     /**

@@ -581,7 +581,7 @@ public final class OperationList implements Iterable<Operation> {
         map.put("operations", this.stream()
                 .filter(op -> op.hasEffect(fullSize, this))
                 .map(op -> op.toMap(fullSize, getScaleConstraint()))
-                .collect(Collectors.toList()));
+                .collect(Collectors.toUnmodifiableList()));
         map.put("options", getOptions());
         return Collections.unmodifiableMap(map);
     }

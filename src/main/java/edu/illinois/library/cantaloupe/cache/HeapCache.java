@@ -626,7 +626,7 @@ class HeapCache implements DerivativeCache {
         cache.entrySet().parallelStream()
                 .filter(entry -> Objects.equals(entry.getValue(), item))
                 .map(Map.Entry::getKey)
-                .collect(Collectors.toSet()).forEach(Key::touch);
+                .collect(Collectors.toUnmodifiableSet()).forEach(Key::touch);
     }
 
 }

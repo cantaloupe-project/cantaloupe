@@ -117,9 +117,9 @@ public final class ConfigurationProvider implements Configuration {
     public Iterator<String> getKeys() {
         final List<Iterator<String>> iterators = wrappedConfigs.stream()
                 .map(Configuration::getKeys)
-                .collect(Collectors.toList());
+                .collect(Collectors.toUnmodifiableList());
 
-        return new Iterator<String>() {
+        return new Iterator<>() {
             private int configIndex = 0;
 
             @Override

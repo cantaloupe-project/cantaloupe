@@ -298,7 +298,7 @@ public enum Format {
      */
     public List<MediaType> getMediaTypes() {
         return mediaTypes.stream().map(MediaType::new).
-                collect(Collectors.toList());
+                collect(Collectors.toUnmodifiableList());
     }
 
     /**
