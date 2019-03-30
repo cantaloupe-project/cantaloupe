@@ -3,7 +3,6 @@ package edu.illinois.library.cantaloupe.http;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.WebServer;
 import edu.illinois.library.cantaloupe.util.SocketUtils;
-import edu.illinois.library.cantaloupe.util.SystemUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -13,7 +12,6 @@ import java.net.ConnectException;
 import java.net.URI;
 
 import static org.junit.Assert.*;
-import static org.junit.Assume.assumeTrue;
 
 public class ClientTest extends BaseTest {
 
@@ -187,8 +185,6 @@ public class ClientTest extends BaseTest {
 
     @Test
     public void testSendWorksWithSecureHTTP2() throws Exception {
-        assumeTrue(SystemUtils.isALPNAvailable());
-
         webServer.start();
 
         instance.setTransport(Transport.HTTP2_0);

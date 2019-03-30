@@ -1,7 +1,6 @@
 package edu.illinois.library.cantaloupe.test;
 
 import edu.illinois.library.cantaloupe.http.Server;
-import edu.illinois.library.cantaloupe.util.SystemUtils;
 import org.eclipse.jetty.server.Handler;
 
 import java.io.IOException;
@@ -13,8 +12,8 @@ import java.nio.file.Path;
  */
 public final class WebServer {
 
-    public static final String BASIC_REALM = "Test Realm";
-    public static final String BASIC_USER = "user";
+    public static final String BASIC_REALM  = "Test Realm";
+    public static final String BASIC_USER   = "user";
     public static final String BASIC_SECRET = "secret";
 
     private final Server wrappedServer = new Server();
@@ -28,7 +27,7 @@ public final class WebServer {
         wrappedServer.setHTTP1Enabled(true);
         wrappedServer.setHTTP2Enabled(true);
         wrappedServer.setHTTPS1Enabled(true);
-        wrappedServer.setHTTPS2Enabled(SystemUtils.isALPNAvailable());
+        wrappedServer.setHTTPS2Enabled(true);
     }
 
     public URI getHTTPURI() {

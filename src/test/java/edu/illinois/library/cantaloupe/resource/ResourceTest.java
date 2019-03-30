@@ -9,7 +9,6 @@ import edu.illinois.library.cantaloupe.http.Client;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import edu.illinois.library.cantaloupe.util.SocketUtils;
-import edu.illinois.library.cantaloupe.util.SystemUtils;
 import org.junit.After;
 import org.junit.Before;
 
@@ -70,7 +69,6 @@ public abstract class ResourceTest extends BaseTest {
                 TestUtil.getFixture("keystore.jks").toString());
         appServer.setHTTPSKeyStorePassword("password");
         appServer.setHTTPSKeyPassword("password");
-        appServer.setSecureHTTP2Enabled(SystemUtils.isALPNAvailable());
 
         appServer.start();
     }

@@ -19,7 +19,6 @@ import edu.illinois.library.cantaloupe.source.StreamFactory;
 import edu.illinois.library.cantaloupe.source.StreamSource;
 import edu.illinois.library.cantaloupe.script.DelegateProxy;
 import edu.illinois.library.cantaloupe.test.TestUtil;
-import edu.illinois.library.cantaloupe.util.SystemUtils;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -30,7 +29,6 @@ import java.nio.file.Path;
 import static edu.illinois.library.cantaloupe.test.Assert.HTTPAssert.*;
 import static edu.illinois.library.cantaloupe.test.Assert.PathAssert.*;
 import static org.junit.Assert.*;
-import static org.junit.Assume.assumeTrue;
 
 /**
  * Collection of tests shareable between major versions of IIIF Image and
@@ -178,7 +176,6 @@ public class ImageAPIResourceTester {
     }
 
     public void testHTTPS2(URI uri) throws Exception {
-        assumeTrue(SystemUtils.isALPNAvailable());
         Client client = newClient(uri);
         try {
             client.setTransport(Transport.HTTP2_0);

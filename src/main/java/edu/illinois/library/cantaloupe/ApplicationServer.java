@@ -2,7 +2,6 @@ package edu.illinois.library.cantaloupe;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
-import edu.illinois.library.cantaloupe.util.SystemUtils;
 import org.eclipse.jetty.alpn.server.ALPNServerConnectionFactory;
 import org.eclipse.jetty.http2.HTTP2Cipher;
 import org.eclipse.jetty.http2.server.HTTP2CServerConnectionFactory;
@@ -288,36 +287,28 @@ public class ApplicationServer {
                 contextFactory.setKeyStorePassword(getHTTPSKeyStorePassword());
                 contextFactory.setKeyManagerPassword(getHTTPSKeyPassword());
 
-                ServerConnector connector = null;
+                ServerConnector connector;
 
                 if (isSecureHTTP2Enabled()) {
-                    if (SystemUtils.isALPNAvailable()) {
-                        HttpConnectionFactory http1 =
-                                new HttpConnectionFactory(config);
-                        HTTP2ServerConnectionFactory http2 =
-                                new HTTP2ServerConnectionFactory(config);
+                    HttpConnectionFactory http1 =
+                            new HttpConnectionFactory(config);
+                    HTTP2ServerConnectionFactory http2 =
+                            new HTTP2ServerConnectionFactory(config);
 
-                        ALPNServerConnectionFactory alpn =
-                                new ALPNServerConnectionFactory();
-                        alpn.setDefaultProtocol(http1.getProtocol());
+                    ALPNServerConnectionFactory alpn =
+                            new ALPNServerConnectionFactory();
+                    alpn.setDefaultProtocol(http1.getProtocol());
 
-                        contextFactory.setCipherComparator(HTTP2Cipher.COMPARATOR);
-                        contextFactory.setUseCipherSuitesOrder(true);
+                    contextFactory.setCipherComparator(HTTP2Cipher.COMPARATOR);
+                    contextFactory.setUseCipherSuitesOrder(true);
 
-                        SslConnectionFactory connectionFactory =
-                                new SslConnectionFactory(contextFactory,
-                                        alpn.getProtocol());
+                    SslConnectionFactory connectionFactory =
+                            new SslConnectionFactory(contextFactory,
+                                    alpn.getProtocol());
 
-                        connector = new ServerConnector(server,
-                                connectionFactory, alpn, http2, http1);
-                    } else {
-                        System.err.println(getClass().getSimpleName() +
-                                ".start(): unable to initialize secure " +
-                                "HTTP/2 (JRE <9 or no ALPN JAR on boot classpath)");
-                    }
-                }
-
-                if (connector == null) { // Fall back to HTTP/1.1.
+                    connector = new ServerConnector(server,
+                            connectionFactory, alpn, http2, http1);
+                } else {
                     connector = new ServerConnector(server,
                             new SslConnectionFactory(contextFactory, "HTTP/1.1"),
                             new HttpConnectionFactory(config));

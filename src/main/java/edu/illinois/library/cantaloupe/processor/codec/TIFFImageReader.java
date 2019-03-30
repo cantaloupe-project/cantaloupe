@@ -11,7 +11,6 @@ import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.operation.Scale;
 import edu.illinois.library.cantaloupe.operation.ReductionFactor;
 import edu.illinois.library.cantaloupe.processor.UnsupportedSourceFormatException;
-import edu.illinois.library.cantaloupe.util.SystemUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.NodeList;
@@ -43,14 +42,8 @@ final class TIFFImageReader extends AbstractIIOImageReader
         // shouldn't be any need to fall back.
         String[] impls = new String[2];
         impls[0] = it.geosolutions.imageioimpl.plugins.tiff.TIFFImageReader.class.getName();
+        impls[1] = "com.sun.imageio.plugins.tiff.TIFFImageReader";
 
-        // Before Java 9, the Sun TIFF reader was part of the JAI ImageI/O
-        // Tools. Then it was moved into the JDK.
-        if (SystemUtils.getJavaMajorVersion() < 9) {
-            impls[1] = "com.sun.media.imageioimpl.plugins.tiff.TIFFImageReader";
-        } else {
-            impls[1] = "com.sun.imageio.plugins.tiff.TIFFImageReader";
-        }
         return impls;
     }
 

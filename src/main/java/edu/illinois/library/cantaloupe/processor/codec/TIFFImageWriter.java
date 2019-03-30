@@ -3,7 +3,6 @@ package edu.illinois.library.cantaloupe.processor.codec;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.image.Compression;
 import edu.illinois.library.cantaloupe.image.Metadata;
-import edu.illinois.library.cantaloupe.util.SystemUtils;
 import it.geosolutions.imageio.plugins.tiff.TIFFDirectory;
 import it.geosolutions.imageio.plugins.tiff.TIFFField;
 import it.geosolutions.imageio.plugins.tiff.TIFFTag;
@@ -115,14 +114,7 @@ final class TIFFImageWriter extends AbstractIIOImageWriter
         // shouldn't be any need to fall back.
         String[] impls = new String[2];
         impls[0] = it.geosolutions.imageioimpl.plugins.tiff.TIFFImageWriter.class.getName();
-
-        // Before Java 9, the Sun TIFF reader was part of the JAI ImageI/O
-        // Tools. Then it was moved into the JDK.
-        if (SystemUtils.getJavaMajorVersion() < 9) {
-            impls[1] = "com.sun.media.imageioimpl.plugins.tiff.TIFFImageWriter";
-        } else {
-            impls[1] = "com.sun.imageio.plugins.tiff.TIFFImageWriter";
-        }
+        impls[1] = "com.sun.imageio.plugins.tiff.TIFFImageWriter";
         return impls;
     }
 

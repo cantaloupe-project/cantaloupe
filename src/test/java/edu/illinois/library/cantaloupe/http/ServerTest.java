@@ -2,7 +2,6 @@ package edu.illinois.library.cantaloupe.http;
 
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;
-import edu.illinois.library.cantaloupe.util.SystemUtils;
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.handler.DefaultHandler;
 import org.junit.After;
@@ -171,8 +170,6 @@ public class ServerTest extends BaseTest {
 
     @Test
     public void testHTTPS2() throws Exception {
-        assumeTrue(SystemUtils.isALPNAvailable());
-
         server.setHTTPS1Enabled(false);
         server.setHTTPS2Enabled(true);
         server.setKeyManagerPassword("password");

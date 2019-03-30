@@ -4,7 +4,6 @@ import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.image.Compression;
 import edu.illinois.library.cantaloupe.image.Dimension;
 import edu.illinois.library.cantaloupe.test.TestUtil;
-import edu.illinois.library.cantaloupe.util.SystemUtils;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -26,11 +25,7 @@ public class TIFFImageReaderTest extends AbstractImageReaderTest {
     public void testGetApplicationPreferredIIOImplementations() {
         String[] expected = new String[2];
         expected[0] = it.geosolutions.imageioimpl.plugins.tiff.TIFFImageReader.class.getName();
-        if (SystemUtils.getJavaMajorVersion() < 9) {
-            expected[1] = "com.sun.media.imageioimpl.plugins.tiff.TIFFImageReader";
-        } else {
-            expected[1] = "com.sun.imageio.plugins.tiff.TIFFImageReader";
-        }
+        expected[1] = "com.sun.imageio.plugins.tiff.TIFFImageReader";
         assertArrayEquals(expected,
                 ((TIFFImageReader) instance).getApplicationPreferredIIOImplementations());
     }

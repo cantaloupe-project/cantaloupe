@@ -15,7 +15,6 @@ import edu.illinois.library.cantaloupe.resource.ResourceTest;
 import edu.illinois.library.cantaloupe.resource.Route;
 import edu.illinois.library.cantaloupe.resource.iiif.InformationResourceTester;
 import edu.illinois.library.cantaloupe.test.TestUtil;
-import edu.illinois.library.cantaloupe.util.SystemUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Test;
 
@@ -24,7 +23,6 @@ import java.util.List;
 
 import static edu.illinois.library.cantaloupe.test.Assert.HTTPAssert.*;
 import static org.junit.Assert.*;
-import static org.junit.Assume.assumeTrue;
 
 /**
  * Functional test of the features of InformationResource.
@@ -199,7 +197,6 @@ public class InformationResourceTest extends ResourceTest {
 
     @Test
     public void testGETHTTPS2() throws Exception {
-        assumeTrue(SystemUtils.isALPNAvailable());
         URI uri = getHTTPSURI("/" + IMAGE + "/info.json");
         tester.testHTTPS2(uri);
     }

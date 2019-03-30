@@ -3,7 +3,6 @@ package edu.illinois.library.cantaloupe;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import edu.illinois.library.cantaloupe.util.SocketUtils;
-import edu.illinois.library.cantaloupe.util.SystemUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -13,12 +12,10 @@ import java.io.IOException;
 
 import static edu.illinois.library.cantaloupe.test.Assert.HTTPAssert.*;
 import static org.junit.Assert.*;
-import static org.junit.Assume.assumeTrue;
 
 public class ApplicationServerTest extends BaseTest {
 
-    private static int HTTP_PORT;
-    private static int HTTPS_PORT;
+    private static int HTTP_PORT, HTTPS_PORT;
 
     private ApplicationServer instance;
 
@@ -186,13 +183,11 @@ public class ApplicationServerTest extends BaseTest {
 
     @Test
     public void startStartsInsecureHTTP2Server() {
-        assumeTrue(SystemUtils.isALPNAvailable());
         // TODO: write this
     }
 
     @Test
     public void startStartsSecureHTTP2Server() {
-        assumeTrue(SystemUtils.isALPNAvailable());
         // TODO: write this
     }
 

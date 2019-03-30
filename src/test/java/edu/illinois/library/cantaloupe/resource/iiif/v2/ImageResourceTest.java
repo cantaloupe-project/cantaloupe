@@ -14,7 +14,6 @@ import edu.illinois.library.cantaloupe.resource.ResourceTest;
 import edu.illinois.library.cantaloupe.resource.Route;
 import edu.illinois.library.cantaloupe.resource.iiif.ImageResourceTester;
 import edu.illinois.library.cantaloupe.test.TestUtil;
-import edu.illinois.library.cantaloupe.util.SystemUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Test;
 
@@ -23,7 +22,6 @@ import java.util.List;
 
 import static edu.illinois.library.cantaloupe.test.Assert.HTTPAssert.*;
 import static org.junit.Assert.*;
-import static org.junit.Assume.assumeTrue;
 
 public class ImageResourceTest extends ResourceTest {
 
@@ -207,7 +205,6 @@ public class ImageResourceTest extends ResourceTest {
 
     @Test
     public void testGETHTTPS2() throws Exception {
-        assumeTrue(SystemUtils.isALPNAvailable());
         URI uri = getHTTPSURI("/" + IMAGE + "/full/full/0/color.jpg");
         tester.testHTTPS2(uri);
     }
