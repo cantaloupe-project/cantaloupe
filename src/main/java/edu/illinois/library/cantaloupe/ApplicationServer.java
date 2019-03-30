@@ -34,11 +34,6 @@ public class ApplicationServer {
 
     private static final int IDLE_TIMEOUT = 30000;
 
-    /**
-     * {@literal 0} tells Jetty to use an OS default.
-     */
-    static final int DEFAULT_ACCEPT_QUEUE_LIMIT = 0;
-
     static final String DEFAULT_HTTP_HOST = "0.0.0.0";
 
     static final int DEFAULT_HTTP_PORT = 8182;
@@ -47,7 +42,6 @@ public class ApplicationServer {
 
     static final int DEFAULT_HTTPS_PORT = 8183;
 
-    private int acceptQueueLimit            = DEFAULT_ACCEPT_QUEUE_LIMIT;
     private boolean isHTTPEnabled;
     private String httpHost                 = DEFAULT_HTTP_HOST;
     private int httpPort                    = DEFAULT_HTTP_PORT;
@@ -94,9 +88,6 @@ public class ApplicationServer {
         setHTTPSPort(config.getInt(Key.HTTPS_PORT, DEFAULT_HTTPS_PORT));
         setSecureHTTP2Enabled(
                 config.getBoolean(Key.HTTPS_HTTP2_ENABLED, true));
-
-        setAcceptQueueLimit(config.getInt(Key.HTTP_ACCEPT_QUEUE_LIMIT,
-                DEFAULT_ACCEPT_QUEUE_LIMIT));
     }
 
     private void createServer() {
@@ -149,10 +140,6 @@ public class ApplicationServer {
         server = new Server();
         context.setServer(server);
         server.setHandler(context);
-    }
-
-    public int getAcceptQueueLimit() {
-        return acceptQueueLimit;
     }
 
     public String getHTTPHost() {
@@ -209,10 +196,6 @@ public class ApplicationServer {
 
     public boolean isStopped() {
         return (server == null || server.isStopped());
-    }
-
-    public void setAcceptQueueLimit(int size) {
-        this.acceptQueueLimit = size;
     }
 
     public void setHTTPEnabled(boolean enabled) {
@@ -288,7 +271,6 @@ public class ApplicationServer {
                 connector.setHost(getHTTPHost());
                 connector.setPort(getHTTPPort());
                 connector.setIdleTimeout(IDLE_TIMEOUT);
-                connector.setAcceptQueueSize(getAcceptQueueLimit());
                 server.addConnector(connector);
             }
 
@@ -344,7 +326,6 @@ public class ApplicationServer {
                 connector.setHost(getHTTPSHost());
                 connector.setPort(getHTTPSPort());
                 connector.setIdleTimeout(IDLE_TIMEOUT);
-                connector.setAcceptQueueSize(getAcceptQueueLimit());
                 server.addConnector(connector);
             }
             server.start();

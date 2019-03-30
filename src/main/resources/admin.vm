@@ -883,20 +883,6 @@
                             <h2>Other Settings</h2>
                             <table class="table table-striped">
                                 <tr>
-                                    <td>Accept Queue Limit
-                                        <a tabindex="0" class="btn btn-sm cl-help"
-                                           role="button" data-toggle="popover"
-                                           data-trigger="focus"
-                                           data-content="Maximum size of the HTTP(S) request queue.
-                                           Leave blank or set to 0 to use the OS default.">?</a>
-                                    </td>
-                                    <td>
-                                        <input class="form-control" type="number"
-                                               name="http.accept_queue_limit" min="0"
-                                               data-requires-restart="true">
-                                    </td>
-                                </tr>
-                                <tr>
                                     <td>Base URI
                                         <a tabindex="0" class="btn btn-sm cl-help"
                                            role="button" data-toggle="popover"

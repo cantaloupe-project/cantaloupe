@@ -6,6 +6,7 @@ current version.
 ## 4.1.x → 5.0
 
 1. Remove the following configuration keys:
+    * `http.accept_queue_limit`
     * `endpoint.iiif.content_disposition`
 2. Note that Java 11 is now required.
 3. The `X-IIIF-ID` reverse proxy header is no longer supported. Use
