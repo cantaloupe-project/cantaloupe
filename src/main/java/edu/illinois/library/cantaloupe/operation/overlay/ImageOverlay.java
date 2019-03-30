@@ -8,10 +8,8 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -22,8 +20,8 @@ import java.util.Set;
  */
 public class ImageOverlay extends Overlay implements Operation {
 
-    static final Set<String> SUPPORTED_URI_SCHEMES = Collections.unmodifiableSet(
-            new HashSet<>(Arrays.asList("file", "http", "https")));
+    static final Set<String> SUPPORTED_URI_SCHEMES =
+            Set.of("file", "http", "https");
 
     private static final ImageOverlayCache OVERLAY_CACHE =
             new ImageOverlayCache();

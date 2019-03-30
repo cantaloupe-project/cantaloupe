@@ -11,8 +11,6 @@ import org.slf4j.LoggerFactory;
 
 import javax.script.ScriptException;
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.HashSet;
 import java.util.Set;
 
 import static edu.illinois.library.cantaloupe.source.SourceFactory.SelectionStrategy.DELEGATE_SCRIPT;
@@ -45,16 +43,18 @@ public final class SourceFactory {
     private static final Logger LOGGER =
             LoggerFactory.getLogger(SourceFactory.class);
 
+    private static final Set<Source> ALL_SOURCES = Set.of(
+            new AzureStorageSource(),
+            new FilesystemSource(),
+            new HttpSource(),
+            new JdbcSource(),
+            new S3Source());
+
     /**
      * @return Set of instances of each unique source.
      */
     public static Set<Source> getAllSources() {
-        return new HashSet<>(Arrays.asList(
-                new AzureStorageSource(),
-                new FilesystemSource(),
-                new HttpSource(),
-                new JdbcSource(),
-                new S3Source()));
+        return ALL_SOURCES;
     }
 
     /**

@@ -12,8 +12,6 @@ import org.slf4j.LoggerFactory;
 import javax.imageio.metadata.IIOInvalidTreeException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -33,15 +31,14 @@ class TIFFMetadata extends IIOMetadata {
      * Native TIFF tags to preserve from the baseline IFD by
      * getNativeMetadata().
      */
-    private static final Set<Integer> BASELINE_NATIVE_TAGS_TO_PRESERVE =
-            new HashSet<>(Arrays.asList(
-                    BaselineTIFFTagSet.TAG_ARTIST,
-                    BaselineTIFFTagSet.TAG_COPYRIGHT,
-                    BaselineTIFFTagSet.TAG_DATE_TIME,
-                    BaselineTIFFTagSet.TAG_IMAGE_DESCRIPTION,
-                    BaselineTIFFTagSet.TAG_MAKE,
-                    BaselineTIFFTagSet.TAG_MODEL,
-                    BaselineTIFFTagSet.TAG_SOFTWARE));
+    private static final Set<Integer> BASELINE_NATIVE_TAGS_TO_PRESERVE = Set.of(
+            BaselineTIFFTagSet.TAG_ARTIST,
+            BaselineTIFFTagSet.TAG_COPYRIGHT,
+            BaselineTIFFTagSet.TAG_DATE_TIME,
+            BaselineTIFFTagSet.TAG_IMAGE_DESCRIPTION,
+            BaselineTIFFTagSet.TAG_MAKE,
+            BaselineTIFFTagSet.TAG_MODEL,
+            BaselineTIFFTagSet.TAG_SOFTWARE);
 
     private boolean checkedForEXIF;
     private boolean checkedForNativeMetadata;

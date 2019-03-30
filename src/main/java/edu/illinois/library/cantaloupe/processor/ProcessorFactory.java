@@ -4,7 +4,6 @@ import edu.illinois.library.cantaloupe.image.Format;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -20,18 +19,17 @@ public final class ProcessorFactory {
     private static final Logger LOGGER =
             LoggerFactory.getLogger(ProcessorFactory.class);
 
-    private static final Set<Class<? extends Processor>> ALL_PROCESSOR_IMPLS =
-            Collections.unmodifiableSet(new HashSet<>(Arrays.asList(
-                    FfmpegProcessor.class,
-                    GraphicsMagickProcessor.class,
-                    ImageMagickProcessor.class,
-                    JaiProcessor.class,
-                    Java2dProcessor.class,
-                    KakaduDemoProcessor.class,
-                    KakaduNativeProcessor.class,
-                    OpenJpegProcessor.class,
-                    PdfBoxProcessor.class,
-                    TurboJpegProcessor.class)));
+    private static final Set<Class<? extends Processor>> ALL_PROCESSOR_IMPLS = Set.of(
+            FfmpegProcessor.class,
+            GraphicsMagickProcessor.class,
+            ImageMagickProcessor.class,
+            JaiProcessor.class,
+            Java2dProcessor.class,
+            KakaduDemoProcessor.class,
+            KakaduNativeProcessor.class,
+            OpenJpegProcessor.class,
+            PdfBoxProcessor.class,
+            TurboJpegProcessor.class);
 
     private static final Set<Processor> ALL_PROCESSORS = new HashSet<>();
 

@@ -17,7 +17,6 @@ import org.junit.Test;
 import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.Set;
 
 import static org.junit.Assert.*;
@@ -49,7 +48,7 @@ public class PdfBoxProcessorTest extends AbstractProcessorTest {
     public void testGetSupportedFeatures() throws Exception {
         instance.setSourceFormat(getAnySupportedSourceFormat(instance));
 
-        Set<ProcessorFeature> expectedFeatures = new HashSet<>(Arrays.asList(
+        Set<ProcessorFeature> expectedFeatures = Set.of(
                 ProcessorFeature.MIRRORING,
                 ProcessorFeature.REGION_BY_PERCENT,
                 ProcessorFeature.REGION_BY_PIXELS,
@@ -63,7 +62,7 @@ public class PdfBoxProcessorTest extends AbstractProcessorTest {
                 ProcessorFeature.SIZE_BY_HEIGHT,
                 ProcessorFeature.SIZE_BY_PERCENT,
                 ProcessorFeature.SIZE_BY_WIDTH,
-                ProcessorFeature.SIZE_BY_WIDTH_HEIGHT));
+                ProcessorFeature.SIZE_BY_WIDTH_HEIGHT);
         assertEquals(expectedFeatures, instance.getSupportedFeatures());
     }
 

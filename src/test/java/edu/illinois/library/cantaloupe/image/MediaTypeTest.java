@@ -12,10 +12,9 @@ import java.io.InputStream;
 import java.io.StringWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import static org.junit.Assert.*;
 
@@ -75,8 +74,7 @@ public class MediaTypeTest {
             }
 
             // detectMediaTypes() doesn't understand these.
-            if (!new HashSet<>(Arrays.asList("avi", "webm")).
-                    contains(file.getFileName().toString())) {
+            if (!Set.of("avi", "webm").contains(file.getFileName().toString())) {
                 assertTrue(result);
             }
         }
@@ -99,8 +97,7 @@ public class MediaTypeTest {
             }
 
             // detectMediaTypes() doesn't understand these.
-            if (!new HashSet<>(Arrays.asList("avi", "webm")).
-                    contains(file.getFileName().toString())) {
+            if (!Set.of("avi", "webm").contains(file.getFileName().toString())) {
                 assertTrue(result);
             }
         }
@@ -124,8 +121,7 @@ public class MediaTypeTest {
                 }
 
                 // detectMediaTypes() doesn't understand these.
-                if (!new HashSet<>(Arrays.asList("avi", "webm")).
-                        contains(file.getFileName().toString())) {
+                if (!Set.of("avi", "webm").contains(file.getFileName().toString())) {
                     assertTrue(result);
                 }
             }
