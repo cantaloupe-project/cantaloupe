@@ -20,7 +20,6 @@ import org.apache.commons.io.IOUtils;
 import org.apache.pdfbox.cos.COSObject;
 import org.apache.pdfbox.pdmodel.DefaultResourceCache;
 import org.apache.pdfbox.pdmodel.PDDocument;
-import org.apache.pdfbox.pdmodel.PDDocumentCatalog;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.common.PDMetadata;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
@@ -190,7 +189,7 @@ class PdfBoxProcessor extends AbstractProcessor
             if (pdfMetadata != null) {
                 try (InputStream is = pdfMetadata.exportXMPMetadata()) {
                     ByteArrayOutputStream os = new ByteArrayOutputStream();
-                    IOUtils.copy(is, os);
+                    is.transferTo(os);
                     metadata = new Metadata();
                     metadata.setXMP(os.toByteArray());
                 }

@@ -19,7 +19,6 @@ import edu.illinois.library.cantaloupe.source.StreamSource;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import edu.illinois.library.cantaloupe.test.WebServer;
-import org.apache.commons.io.IOUtils;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -594,8 +593,8 @@ public class ProcessorConnectorTest extends BaseTest {
         try {
             ByteArrayOutputStream os1 = new ByteArrayOutputStream();
             ByteArrayOutputStream os2 = new ByteArrayOutputStream();
-            IOUtils.copy(is1, os1);
-            IOUtils.copy(is2, os2);
+            is1.transferTo(os1);
+            is2.transferTo(os2);
             assertTrue(Arrays.equals(os1.toByteArray(), os2.toByteArray()));
         } finally {
             is1.close();

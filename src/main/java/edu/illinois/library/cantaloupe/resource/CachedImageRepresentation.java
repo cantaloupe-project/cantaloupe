@@ -1,7 +1,6 @@
 package edu.illinois.library.cantaloupe.resource;
 
 import edu.illinois.library.cantaloupe.util.Stopwatch;
-import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,7 +26,7 @@ public class CachedImageRepresentation implements Representation {
     public void write(OutputStream outputStream) throws IOException {
         try {
             final Stopwatch watch = new Stopwatch();
-            IOUtils.copy(inputStream, outputStream);
+            inputStream.transferTo(outputStream);
             LOGGER.debug("Streamed from the cache without resolving in {}",
                     watch);
         } finally {

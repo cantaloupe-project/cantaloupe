@@ -117,7 +117,7 @@ abstract class AbstractCacheTest extends BaseTest {
         // Read it back in
         try (InputStream is = instance.newDerivativeImageInputStream(opList)) {
             ByteArrayOutputStream os = new ByteArrayOutputStream();
-            IOUtils.copy(is, os);
+            is.transferTo(os);
             os.close();
             assertEquals(Files.size(imageFile), os.toByteArray().length);
         }
@@ -212,7 +212,7 @@ abstract class AbstractCacheTest extends BaseTest {
         // Read it back in
         try (InputStream is = instance.newDerivativeImageInputStream(ops)) {
             ByteArrayOutputStream os = new ByteArrayOutputStream();
-            IOUtils.copy(is, os);
+            is.transferTo(os);
             os.close();
             assertEquals(Files.size(fixture), os.toByteArray().length);
         }

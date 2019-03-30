@@ -1,6 +1,5 @@
 package edu.illinois.library.cantaloupe.operation.overlay;
 
-import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -57,7 +56,7 @@ final class ImageOverlayCache {
         downloadingOverlays.add(uri);
         try (InputStream is = uri.toURL().openStream();
              ByteArrayOutputStream os = new ByteArrayOutputStream()) {
-            IOUtils.copy(is, os);
+            is.transferTo(os);
             overlays.put(uri, os.toByteArray());
         } finally {
             downloadingOverlays.remove(uri);

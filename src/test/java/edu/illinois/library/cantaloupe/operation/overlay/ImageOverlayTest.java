@@ -4,7 +4,6 @@ import edu.illinois.library.cantaloupe.image.Dimension;
 import edu.illinois.library.cantaloupe.image.ScaleConstraint;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;
-import org.apache.commons.io.IOUtils;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -31,7 +30,7 @@ public class ImageOverlayTest extends BaseTest {
     public void testOpenStream() throws Exception {
         try (InputStream is = instance.openStream();
              ByteArrayOutputStream os = new ByteArrayOutputStream()) {
-            IOUtils.copy(is, os);
+            is.transferTo(os);
             assertEquals(1584, os.toByteArray().length);
         }
     }

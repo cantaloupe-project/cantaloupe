@@ -26,7 +26,7 @@ class StreamCopier implements Runnable {
 
     public void run() {
         try {
-            IOUtils.copy(inputStream, outputStream);
+            inputStream.transferTo(outputStream);
         } catch (IOException e) {
             if (!e.getMessage().startsWith("Broken pipe")) {
                 logger.error(e.getMessage(), e);

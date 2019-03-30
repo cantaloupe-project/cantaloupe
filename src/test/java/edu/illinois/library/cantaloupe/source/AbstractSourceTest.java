@@ -115,12 +115,12 @@ abstract class AbstractSourceTest extends BaseTest {
 
                 try (InputStream is = source.newInputStream();
                      OutputStream os = new NullOutputStream()) {
-                    IOUtils.copy(is, os);
+                    is.transferTo(os);
                 }
 
                 try (InputStream is = source.newInputStream();
                      OutputStream os = new NullOutputStream()) {
-                    IOUtils.copy(is, os);
+                    is.transferTo(os);
                 }
             } finally {
                 destroyEndpoint();

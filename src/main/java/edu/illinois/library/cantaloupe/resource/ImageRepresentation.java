@@ -84,7 +84,7 @@ public class ImageRepresentation implements Representation {
             if (cacheIS != null) {
                 // The image is available, so write it to the response.
                 final Stopwatch watch = new Stopwatch();
-                IOUtils.copy(cacheIS, responseOS);
+                cacheIS.transferTo(responseOS);
 
                 LOGGER.debug("Streamed from {} in {}: {}",
                         cache.getClass().getSimpleName(), watch, opList);
@@ -164,7 +164,7 @@ public class ImageRepresentation implements Representation {
                     ((StreamProcessor) processor).getStreamFactory();
             if (streamFactory != null) {
                 try (InputStream sourceIS = streamFactory.newInputStream()) {
-                    IOUtils.copy(sourceIS, responseOS);
+                    sourceIS.transferTo(responseOS);
                 }
             }
         }
