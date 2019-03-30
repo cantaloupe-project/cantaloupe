@@ -10,7 +10,6 @@ import edu.illinois.library.cantaloupe.operation.Encode;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.processor.Processor;
 import edu.illinois.library.cantaloupe.source.Source;
-import org.apache.commons.io.output.NullOutputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -131,7 +130,7 @@ public final class HealthChecker {
             ThreadPool.getInstance().submit(() -> {
                 LOGGER.debug("Checking {}", pair);
 
-                try (OutputStream os = new NullOutputStream()) {
+                try (OutputStream os = OutputStream.nullOutputStream()) {
                     // Encode into the same format as the source so that no
                     // processing is performed.
                     OperationList opList = new OperationList(

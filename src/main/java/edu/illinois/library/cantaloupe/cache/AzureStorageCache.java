@@ -17,7 +17,6 @@ import edu.illinois.library.cantaloupe.operation.Encode;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.util.Stopwatch;
 import edu.illinois.library.cantaloupe.util.StringUtils;
-import org.apache.commons.io.output.NullOutputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -225,7 +224,7 @@ class AzureStorageCache implements DerivativeCache {
                 throw new IOException(e.getMessage(), e);
             }
         }
-        return new NullOutputStream();
+        return OutputStream.nullOutputStream();
     }
 
     /**

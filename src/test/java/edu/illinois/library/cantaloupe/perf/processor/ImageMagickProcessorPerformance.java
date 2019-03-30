@@ -1,5 +1,6 @@
 package edu.illinois.library.cantaloupe.perf.processor;
 
+import java.io.OutputStream;
 import java.util.concurrent.TimeUnit;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
@@ -12,7 +13,6 @@ import edu.illinois.library.cantaloupe.processor.ProcessorFactory;
 import edu.illinois.library.cantaloupe.processor.StreamProcessor;
 import edu.illinois.library.cantaloupe.source.PathStreamFactory;
 import edu.illinois.library.cantaloupe.test.TestUtil;
-import org.apache.commons.io.output.NullOutputStream;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.BenchmarkMode;
 import org.openjdk.jmh.annotations.Fork;
@@ -60,7 +60,7 @@ public class ImageMagickProcessorPerformance {
         processor.process(
                 new OperationList(new Encode(OUTPUT_FORMAT)),
                 Info.builder().withSize(64, 56).build(),
-                new NullOutputStream());
+                OutputStream.nullOutputStream());
     }
 
     @Benchmark
@@ -70,7 +70,7 @@ public class ImageMagickProcessorPerformance {
         processor.process(
                 new OperationList(new Encode(OUTPUT_FORMAT)),
                 Info.builder().withSize(64, 56).build(),
-                new NullOutputStream());
+                OutputStream.nullOutputStream());
     }
 
     @Benchmark
@@ -80,7 +80,7 @@ public class ImageMagickProcessorPerformance {
         processor.process(
                 new OperationList(new Encode(OUTPUT_FORMAT)),
                 Info.builder().withSize(64, 56).build(),
-                new NullOutputStream());
+                OutputStream.nullOutputStream());
     }
 
     @Benchmark
@@ -90,7 +90,7 @@ public class ImageMagickProcessorPerformance {
         processor.process(
                 new OperationList(new Encode(OUTPUT_FORMAT)),
                 Info.builder().withSize(64, 56).build(),
-                new NullOutputStream());
+                OutputStream.nullOutputStream());
     }
 
     @Benchmark
@@ -100,7 +100,7 @@ public class ImageMagickProcessorPerformance {
         processor.process(
                 new OperationList(new Encode(OUTPUT_FORMAT)),
                 Info.builder().withSize(64, 56).build(),
-                new NullOutputStream());
+                OutputStream.nullOutputStream());
     }
 
     @Benchmark

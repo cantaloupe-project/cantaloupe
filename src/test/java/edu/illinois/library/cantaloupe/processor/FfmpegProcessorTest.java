@@ -11,7 +11,6 @@ import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.processor.codec.ImageWriterFactory;
 import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
 import edu.illinois.library.cantaloupe.test.TestUtil;
-import org.apache.commons.io.output.NullOutputStream;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -164,7 +163,7 @@ public class FfmpegProcessorTest extends AbstractProcessorTest {
 
         OperationList ops = new OperationList(new Encode(Format.JPG));
         ops.getOptions().put("time", "cats");
-        OutputStream outputStream = new NullOutputStream();
+        OutputStream outputStream = OutputStream.nullOutputStream();
 
         instance.process(ops, imageInfo, outputStream);
     }

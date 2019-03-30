@@ -2,7 +2,6 @@ package edu.illinois.library.cantaloupe.cache;
 
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.test.TestUtil;
-import org.apache.commons.io.output.NullOutputStream;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -27,7 +26,7 @@ public class MockUnreliableSourceOutputStreamCache extends MockCache {
         if (callCount1 == 1) {
             throw new IOException("I'm broken");
         }
-        return new NullOutputStream();
+        return OutputStream.nullOutputStream();
     }
 
 }

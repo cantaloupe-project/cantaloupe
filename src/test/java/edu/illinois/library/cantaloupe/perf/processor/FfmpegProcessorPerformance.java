@@ -1,5 +1,6 @@
 package edu.illinois.library.cantaloupe.perf.processor;
 
+import java.io.OutputStream;
 import java.util.concurrent.TimeUnit;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
@@ -11,7 +12,6 @@ import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.processor.FileProcessor;
 import edu.illinois.library.cantaloupe.processor.ProcessorFactory;
 import edu.illinois.library.cantaloupe.test.TestUtil;
-import org.apache.commons.io.output.NullOutputStream;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.BenchmarkMode;
 import org.openjdk.jmh.annotations.Fork;
@@ -57,7 +57,7 @@ public class FfmpegProcessorPerformance {
         processor.process(
                 new OperationList(new Encode(Format.PNG)),
                 Info.builder().withSize(640, 360).build(),
-                new NullOutputStream());
+                OutputStream.nullOutputStream());
     }
 
     @Benchmark
@@ -67,7 +67,7 @@ public class FfmpegProcessorPerformance {
         processor.process(
                 new OperationList(new Encode(Format.PNG)),
                 Info.builder().withSize(640, 360).build(),
-                new NullOutputStream());
+                OutputStream.nullOutputStream());
     }
 
     @Benchmark
@@ -77,7 +77,7 @@ public class FfmpegProcessorPerformance {
         processor.process(
                 new OperationList(new Encode(Format.PNG)),
                 Info.builder().withSize(640, 360).build(),
-                new NullOutputStream());
+                OutputStream.nullOutputStream());
     }
 
     @Benchmark
@@ -87,7 +87,7 @@ public class FfmpegProcessorPerformance {
         processor.process(
                 new OperationList(new Encode(Format.PNG)),
                 Info.builder().withSize(640, 360).build(),
-                new NullOutputStream());
+                OutputStream.nullOutputStream());
     }
 
     @Benchmark
@@ -97,7 +97,7 @@ public class FfmpegProcessorPerformance {
         processor.process(
                 new OperationList(new Encode(Format.PNG)),
                 Info.builder().withSize(640, 360).build(),
-                new NullOutputStream());
+                OutputStream.nullOutputStream());
     }
 
     @Benchmark
@@ -107,7 +107,7 @@ public class FfmpegProcessorPerformance {
         processor.process(
                 new OperationList(new Encode(Format.PNG)),
                 Info.builder().withSize(640, 360).build(),
-                new NullOutputStream());
+                OutputStream.nullOutputStream());
     }
 
     @Benchmark

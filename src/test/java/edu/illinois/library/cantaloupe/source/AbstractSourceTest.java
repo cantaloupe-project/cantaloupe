@@ -2,8 +2,6 @@ package edu.illinois.library.cantaloupe.source;
 
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.test.BaseTest;
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.io.output.NullOutputStream;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -114,12 +112,12 @@ abstract class AbstractSourceTest extends BaseTest {
                 StreamFactory source = sres.newStreamFactory();
 
                 try (InputStream is = source.newInputStream();
-                     OutputStream os = new NullOutputStream()) {
+                     OutputStream os = OutputStream.nullOutputStream()) {
                     is.transferTo(os);
                 }
 
                 try (InputStream is = source.newInputStream();
-                     OutputStream os = new NullOutputStream()) {
+                     OutputStream os = OutputStream.nullOutputStream()) {
                     is.transferTo(os);
                 }
             } finally {

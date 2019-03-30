@@ -9,7 +9,6 @@ import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.util.DeletingFileVisitor;
 import edu.illinois.library.cantaloupe.util.StringUtils;
 import org.apache.commons.codec.binary.Hex;
-import org.apache.commons.io.output.NullOutputStream;
 import org.apache.commons.lang3.SystemUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -646,9 +645,9 @@ class FilesystemCache implements SourceCache, DerivativeCache {
         // output stream to avoid interfering.
         if (imagesBeingWritten.contains(imageIdentifier)) {
             LOGGER.debug("newOutputStream(): miss, but cache file for {} is " +
-                    "being written in another thread, so returning a {}",
-                    imageIdentifier, NullOutputStream.class.getSimpleName());
-            return new NullOutputStream();
+                    "being written in another thread, so returning a no-op stream",
+                    imageIdentifier);
+            return OutputStream.nullOutputStream();
         }
 
         LOGGER.debug("newOutputStream(): miss; caching {}", imageIdentifier);
@@ -665,10 +664,9 @@ class FilesystemCache implements SourceCache, DerivativeCache {
             // The image either already exists in its complete form, or is
             // being written by another thread/process. Either way, there is no
             // need to write over it.
-            LOGGER.debug("newOutputStream(): {} already exists; returning a {}",
-                    tempFile.getParent(),
-                    NullOutputStream.class.getSimpleName());
-            return new NullOutputStream();
+            LOGGER.debug("newOutputStream(): {} already exists; returning a no-op stream",
+                    tempFile.getParent());
+            return OutputStream.nullOutputStream();
         }
     }
 

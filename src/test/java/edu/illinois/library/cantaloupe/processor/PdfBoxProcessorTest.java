@@ -11,7 +11,6 @@ import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.operation.ValidationException;
 import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
 import edu.illinois.library.cantaloupe.test.TestUtil;
-import org.apache.commons.io.output.NullOutputStream;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -97,7 +96,7 @@ public class PdfBoxProcessorTest extends AbstractProcessorTest {
         // page "35"
         OperationList ops = new OperationList(new Encode(Format.JPG));
         ops.getOptions().put("page", "35");
-        OutputStream outputStream = new NullOutputStream();
+        OutputStream outputStream = OutputStream.nullOutputStream();
 
         instance.process(ops, imageInfo, outputStream);
     }

@@ -3,7 +3,6 @@ package edu.illinois.library.cantaloupe.cache;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.operation.OperationList;
-import org.apache.commons.io.output.NullOutputStream;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -53,7 +52,7 @@ class MockCache implements DerivativeCache, SourceCache {
     @Override
     public OutputStream newSourceImageOutputStream(Identifier identifier)
             throws IOException {
-        return new NullOutputStream();
+        return OutputStream.nullOutputStream();
     }
 
     @Override

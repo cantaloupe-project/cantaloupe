@@ -8,7 +8,6 @@ import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.util.StringUtils;
-import org.apache.commons.io.output.NullOutputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -514,7 +513,7 @@ class HeapCache implements DerivativeCache {
         if (item != null) {
             LOGGER.info("newDerivativeImageOutputStream(): hit for {}", opList);
             touch(item);
-            return new NullOutputStream();
+            return OutputStream.nullOutputStream();
         } else {
             LOGGER.info("newDerivativeImageOutputStream(): miss; caching {}",
                     opList);
