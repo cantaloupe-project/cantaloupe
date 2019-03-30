@@ -9,7 +9,6 @@ import org.slf4j.LoggerFactory;
 
 import javax.script.ScriptException;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
@@ -67,8 +66,7 @@ public final class DelegateProxyService {
             try {
                 Path file = getScriptFile();
                 if (file != null) {
-                    byte[] fileBytes = Files.readAllBytes(file);
-                    String code = new String(fileBytes, StandardCharsets.UTF_8);
+                    String code = Files.readString(file);
                     DelegateProxy.load(code);
                     isCodeLoaded = true;
                 }

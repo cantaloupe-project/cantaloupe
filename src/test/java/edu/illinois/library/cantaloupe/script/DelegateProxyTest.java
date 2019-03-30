@@ -26,7 +26,7 @@ public class DelegateProxyTest extends BaseTest {
         context.setIdentifier(new Identifier("cats"));
 
         Path scriptFile = TestUtil.getFixture("delegates.rb");
-        String code = new String(Files.readAllBytes(scriptFile), "UTF-8");
+        String code = Files.readString(scriptFile);
         DelegateProxy.load(code);
 
         instance = new DelegateProxy(context);

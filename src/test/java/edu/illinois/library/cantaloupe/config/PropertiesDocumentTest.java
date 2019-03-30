@@ -185,9 +185,7 @@ public class PropertiesDocumentTest extends BaseTest {
                     "key5 : value" + sep +
                     "newKey=value" + sep;
 
-            byte[] bytes = Files.readAllBytes(tempFile);
-            String actual = new String(bytes);
-
+            String actual = Files.readString(tempFile);
             assertEquals(expected, actual);
         } finally {
             Files.deleteIfExists(tempFile);
