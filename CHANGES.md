@@ -6,6 +6,7 @@
   should be used instead.
 * The `endpoint.iiif.content_disposition` configuration key has been removed.
   The `?response-content-disposition` query argument should be used instead.
+* Java 11 is required.
 
 ## 4.1
 

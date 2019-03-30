@@ -7,7 +7,8 @@ current version.
 
 1. Remove the following configuration keys:
     * `endpoint.iiif.content_disposition`
-2. The `X-IIIF-ID` reverse proxy header is no longer supported. Use
+2. Note that Java 11 is now required.
+3. The `X-IIIF-ID` reverse proxy header is no longer supported. Use
    `X-Forwarded-ID` instead.
 
 ## 4.0.x → 4.1
