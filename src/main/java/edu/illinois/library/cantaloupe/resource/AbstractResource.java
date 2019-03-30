@@ -46,17 +46,7 @@ import java.util.stream.Collectors;
  */
 public abstract class AbstractResource {
 
-    /**
-     * Replaces {@link #PUBLIC_IDENTIFIER_HEADER_DEPRECATED}.
-     */
     public static final String PUBLIC_IDENTIFIER_HEADER = "X-Forwarded-ID";
-
-    /**
-     * @deprecated Since version 4.0. Still respected, but superseded by
-     *             {@link #PUBLIC_IDENTIFIER_HEADER}.
-     */
-    @Deprecated
-    public static final String PUBLIC_IDENTIFIER_HEADER_DEPRECATED = "X-IIIF-ID";
 
     protected static final String RESPONSE_CONTENT_DISPOSITION_QUERY_ARG =
             "response-content-disposition";
@@ -415,8 +405,7 @@ public abstract class AbstractResource {
 
     /**
      * <p>Returns the identifier that the client sees. This will be the value
-     * of either the {@link #PUBLIC_IDENTIFIER_HEADER} or {@link
-     * #PUBLIC_IDENTIFIER_HEADER_DEPRECATED} headers, if available, or else
+     * of the {@link #PUBLIC_IDENTIFIER_HEADER} header, if available, or else
      * the {@literal identifier} URI path component.</p>
      *
      * <p>The result is not decoded, as the encoding may be influenced by
@@ -425,16 +414,9 @@ public abstract class AbstractResource {
      * @see #getIdentifier()
      */
     protected String getPublicIdentifier() {
-        String urlID = getIdentifierPathComponent();
-        // Try to use the value of the identifier header, if supplied.
-        String header   = PUBLIC_IDENTIFIER_HEADER;
-        String headerID = request.getHeaders().getFirstValue(header, "");
-        if (headerID.isEmpty()) {
-            // Fall back to the deprecated one.
-            header   = PUBLIC_IDENTIFIER_HEADER_DEPRECATED;
-            headerID = request.getHeaders().getFirstValue(header, "");
-        }
-        return headerID.isEmpty() ? urlID : headerID;
+        return request.getHeaders().getFirstValue(
+                PUBLIC_IDENTIFIER_HEADER,
+                getIdentifierPathComponent());
     }
 
     /**

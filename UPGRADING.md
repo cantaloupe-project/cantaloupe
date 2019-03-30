@@ -3,6 +3,11 @@
 If you are skipping versions, work through these sections backwards from your
 current version.
 
+## 4.1.x → 5.0
+
+1. The `X-IIIF-ID` reverse proxy header is no longer supported. Use
+   `X-Forwarded-ID` instead.
+
 ## 4.0.x → 4.1
 
 1. Rename the following configuration keys:

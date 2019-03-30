@@ -44,11 +44,4 @@ public class IdentifierResourceTest extends ResourceTest {
         tester.testRedirectToInfoJSONWithDifferentPublicIdentifier(uri);
     }
 
-    @Test
-    public void testGETRedirectToInfoJSONWithDifferentDeprecatedPublicIdentifier()
-            throws Exception {
-        URI uri = getHTTPURI("/" + IMAGE);
-        tester.testRedirectToInfoJSONWithDifferentDeprecatedPublicIdentifier(uri);
-    }
-
 }

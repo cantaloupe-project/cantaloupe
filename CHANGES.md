@@ -1,5 +1,10 @@
 # Change Log
 
+## 5.0
+
+* The `X-IIIF-ID` reverse proxy header is no longer supported. `X-Forwarded-ID`
+  should be used instead.
+
 ## 4.1
 
 ### Configuration
