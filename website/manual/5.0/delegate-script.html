@@ -1,0 +1,264 @@
+---
+layout: manual_5.0
+title: Delegate Script
+---
+
+<h1>Delegate Script</h1>
+
+<ul class="toc">
+  <li><a href="#Enabling">Enabling</a></li>
+  <li><a href="#How%20It%20Works">How It Works</a></li>
+  <li><a href="#Migrating">Migrating</a>
+    <ul>
+      <li><a href="#MigratingFrom4To41">From the 4.0 Script to the 4.1 Script</a></li>
+      <li><a href="#MigratingFrom3To4">From the 3.x Script to the 4.0 Script</a></li>
+    </ul>
+  </li>
+  <li><a href="#Gems">Gems</a></li>
+  <li><a href="#Calling%20Java%20Code">Calling Java Code</a></li>
+  <li><a href="#Improving%20Efficiency">Improving Efficiency</a>
+    <ul>
+      <li><a href="#Sharing%20Information">Sharing Information</a></li>
+      <li><a href="#Connection Pooling">Connection Pooling</a></li>
+      <li><a href="#Caching">Caching</a></li>
+    </ul>
+  </li>
+  <li><a href="#Logging">Logging</a></li>
+  <li><a href="#Testing%20Delegate%20Methods">Testing Delegate Methods</a></li>
+</ul>
+
+<p>The delegate script mechanism enables the use of custom code to customize the image server's behavior. It is designed for ease-of-use, with a simple interface and shallow learning curve. The language in which the code is written&mdash;Ruby&mdash;is easy to learn and work with, and only a small amount of code is needed to support most use cases.</p>
+
+<p>Delegate methods are invoked by a JRuby interpreter bundled into the application. There is no need to install an external Ruby environment and no need to write Java or interact with internal API.</p>
+
+<p>The JRuby interpreter is compatible with Ruby version 2.3.</p>
+
+<hr>
+
+<h2 id="Enabling">Enabling</h2>
+
+<p>The delegate script is disabled by default. To enable it, follow these steps:</p>
+
+<ol>
+  <li>Copy the sample delegate script, <span class="filename">delegates.rb.sample</span>, included in the distribution, to <span class="filename">delegates.rb</span>.</li>
+  <li>Reference it from the <code>delegate_script.pathname</code> configuration option.</li>
+  <li>Set <code>delegate_script.enabled</code> to <code>true</code>.</li>
+</ol>
+
+<hr>
+
+<h2 id="How It Works">How It Works</h2>
+
+<p>The delegate script is a file containing a delegate class written in Ruby. The class is instantiated per-request, early in the request cycle, and disposed of at the end of the request cycle. At various points in the request cycle, its methods are called by the application to obtain custom information needed to service the request.</p>
+
+<p>Before any other methods are called, the application will set the request context, which is a hash of request properties with perhaps some other helpful information mixed in. See the documentation of the <var>context</var> attribute (<code>attr_accessor :context</code>) in the sample delegate script file for information about the keys that may be present in the context hash.</p>
+
+<p>You can also use a statement like <code>context.each{ |k,v| puts "#{k}: #{v}" }</code> in any method to print the context to the console.</p>
+
+<p>The delegate script is reloaded whenever the script file changes. Be aware, though, that code that has already been loaded into the JRuby runtime cannot be unloaded. For example, when a class is changed, the new version will replace the old version; but constants within the class cannot be redefined.</p>
+
+<div class="alert alert-danger">
+  <i class="fa fa-warning"></i>
+  Generally, neither the context, method arguments, nor return values are sanitized or validated. <strong>Be careful to write defensive, injection-safe code.</strong>
+</div>
+
+<hr>
+
+<h2 id="Migrating">Migrating</h2>
+
+<h3 id="MigratingFrom4To41">From the 4.0 Script to the 4.1 Script</h3>
+
+<p>In version 4.1, the <code>authorized?()</code> and <code>redirect()</code> methods were merged into <code>authorize()</code>. See the documentation in the sample delegate script file for more information.</p>
+
+<h3 id="MigratingFrom3To4">From the 3.x Script to the 4.0 Script</h3>
+
+<p>See the <a href="../4.0/delegate-script.html#Migrating">4.0 user manual</a>.</p>
+
+<hr>
+
+<h2 id="Gems">Gems</h2>
+
+<p>JRuby can use most Ruby gems, except those that have been built with native extensions. To import a gem, use a <code>require</code> statement:</p>
+
+{% highlight ruby %}
+require 'mygem'
+{% endhighlight %}
+
+<p><code>require</code> searches for gems based on the <code>$GEM_PATH</code> environment variable, falling back to <code>$GEM_HOME</code> if that is not defined. If JRuby fails to find your gem, check your <code>$GEM_PATH</code>. If you installed the gem using <code>gem install</code>, check the output of <code>gem env</code> (particularly the "gem paths" section) to see where it might have been installed, and ensure that those locations are present in <code>$GEM_PATH</code>.</p>
+
+<hr>
+
+<h2 id="Calling Java Code">Calling Java Code</h2>
+
+<p>This example uses <a href="https://docs.oracle.com/javase/10/docs/api/java/net/URLConnection.html">URLConnection</a>, which is part of the JDK, to execute an HTTP request, as an alternative to other examples which use Ruby's Net::HTTP library.</p>
+
+{% highlight ruby %}
+require 'java'
+
+java_import java.net.HttpURLConnection
+java_import java.net.URL
+java_import java.io.BufferedReader
+java_import java.io.FileNotFoundException
+java_import java.io.InputStreamReader
+java_import java.util.stream.Collectors
+
+class CustomDelegate
+  def do_something
+    url = URL.new('http://example.org/')
+    conn, is, reader = nil
+    begin
+      conn = url.openConnection
+      conn.setRequestMethod 'GET'
+      conn.setReadTimeout 30 * 1000
+      conn.connect
+      is = conn.getInputStream
+      status = conn.getResponseCode
+
+      if status == 200
+        content_type = conn.getHeaderField 'Content-Type'
+        if content_type.include? 'text/plain'
+          reader = BufferedReader.new(InputStreamReader.new(is))
+          entity = reader.lines.collect(Collectors.joining("\n"))
+          puts entity
+        else
+          raise IOError, "Unexpected Content-Type: #{content_type}"
+        end
+      else
+        raise IOError, "Unexpected status: #{status}"
+      end
+    rescue FileNotFoundException => e
+      return nil
+    rescue => e
+      Java::edu.illinois.library.cantaloupe.script.Logger.error("#{e}", e)
+    ensure
+      reader&.close
+      is&.close
+      conn&.disconnect
+    end
+  end
+end
+{% endhighlight %}
+
+<p>See also: <a href="https://github.com/jruby/jruby/wiki/CallingJavaFromJRuby">CallingJavaFromJRuby</a></p>
+
+<p>The whole JDK is at your fingertips, and there's nothing to stop you from using third-party JARs and accessing their API from JRuby. Be careful, though, as JARs may contain code that conflicts with the application's dependencies&mdash;different versions of the same library, for example.</p>
+
+<hr>
+
+<h2 id="Improving Efficiency">Improving Efficiency</h2>
+
+<p>Several delegate methods will be called over the course of a single request, and making them as efficient as possible will improve response times. A couple of techniques for improving efficiency are:</p>
+
+<h3 id="Sharing Information">Sharing Information</h3>
+
+<p>Some methods may need to do similar work, which may be expensive. To avoid having to do it twice, a useful technique is to cache the result. So, rather than doing this:</p>
+
+{% highlight ruby %}
+class CustomDelegate
+  def method1(options = {})
+    # perform an expensive query and return the result
+  end
+
+  def method2(options = {})
+    # perform an expensive query and return the result
+  end
+end
+{% endhighlight %}
+
+<p>You could do this:</p>
+
+{% highlight ruby %}
+class CustomDelegate
+  def method1(options = {})
+    result = perform_expensive_query
+  end
+
+  def method2(options = {})
+    result = perform_expensive_query
+  end
+
+  # Performs an expensive query only once, caching the result.
+  def perform_expensive_query
+    unless @result
+      # perform the query
+      @result = ... # save the result in an instance variable
+    end
+    @result
+  end
+end
+{% endhighlight %}
+
+<h3 id="Connection Pooling">Connection Pooling</h3>
+
+<p>Most HTTP clients maintain an internal connection pool automatically, but JDBC adapters do not. Any code that accesses a database via JDBC should use a connection pool to improve performance. As of now, there is no &quot;official&quot; provision for this. Options include:</p>
+
+<ol>
+  <li>Use the built-in HikariCP pool used by JdbcSource and JdbcCache, noting that HikariCP is not part of the delegate script contract and may change or go away at some point (see <a href="https://github.com/medusa-project/cantaloupe/issues/221#issuecomment-398402952">here</a> for an example that may or may not work);</li>
+  <li>Supply a third-party connection pool JAR;</li>
+  <li>Write your own connection pool</li>
+</ol>
+
+<h3 id="Caching">Caching</h3>
+
+<p>The <code>delegate_script.cache.enabled</code> option is available to cache the results of delegate method invocations. The cache is an in-memory least-recently-used (LRU) cache with infinite time-to-live and a maximum size auto-computed based on the maximum JVM heap size. When the limit is approached, the oldest invocations will be purged automatically.</p>
+
+<p>The invocation cache can also be purged manually using the <a href="remote-management.html#HTTP%20API">HTTP API</a>.</p>
+
+<p>The cache is not persisted. It will be lost when the application is stopped.</p>
+
+<p>Cached invocations are <strong>not</strong> purged when the script file is auto-reloaded, such as in response to a change. If, while the application is running, you modify the script file in a way that would cause a return value to be different based on the same request context, you should either purge the invocation cache or restart.</p>
+
+<hr>
+
+<h2 id="Logging">Logging</h2>
+
+<p>Delegate methods may access a logger that writes to the <a href="logging.html#Application%20Log">application log</a>:</p>
+
+{% highlight ruby %}
+require 'java'
+
+logger = Java::edu.illinois.library.cantaloupe.script.Logger
+logger.trace 'Hello world'
+logger.debug 'Hello world'
+logger.info 'Hello world'
+logger.warn 'Hello world'
+logger.error 'Hello world'
+{% endhighlight %}
+
+<p>Error stack traces may also be logged:</p>
+
+{% highlight ruby %}
+require 'java'
+
+logger = Java::edu.illinois.library.cantaloupe.script.Logger
+
+begin
+  raise 'Goodbye world'
+rescue => e
+  logger.error "#{e}", e
+end
+{% endhighlight %}
+
+<hr>
+
+<h2 id="Testing Delegate Methods">Testing Delegate Methods</h2>
+
+<p>Delegate methods can be tested by creating an instance of the <code>CustomDelegate</code> class, setting its context to be similar to what the application would set it to, and calling a method:</p>
+
+{% highlight ruby %}
+# This file is named `test.rb`, in the same folder as `delegates.rb`
+require './delegates'
+
+obj = CustomDelegate.new
+obj.context = {
+  'identifier' => 'identifier-to-test',
+  'client_ip' => '127.0.0.1',
+  'request_headers' => ...
+}
+
+puts obj.filesystemsource_pathname
+{% endhighlight %}
+
+<p>This script can then be run on the command line with a command like: <code>ruby test.rb</code>.</p>
+
+<p class="text-info"><i class="fa fa-info-circle"></i> The <span class="filename">ruby</span> command will normally invoke the standard ("MRI") Ruby interpreter, and not the JRuby interpreter. While they mostly work pretty similar, <strong>gems with platform-native extensions won't work in JRuby</strong>. Consider installing a standalone <a href="http://jruby.org">JRuby interpreter</a> and test with that instead. (Something like <a href="http://rvm.io/">RVM</a> can make it easier to switch between different versions of the Ruby interpreter.)</p>

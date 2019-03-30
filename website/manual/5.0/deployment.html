@@ -1,0 +1,226 @@
+---
+layout: manual_5.0
+title: Deployment
+---
+
+<h1>Deployment</h1>
+
+<ul class="toc">
+  <li><a href="#Temporary%20Directory">Temporary Directory</a></li>
+  <li><a href="#Images">Images</a></li>
+  <li><a href="#Health%20Checks">Health Checks</a></li>
+  <li><a href="#Hardware">Hardware</a>
+    <ul>
+      <li><a href="#HardwareCPU">CPU</a></li>
+      <li><a href="#HardwareMemory">Memory</a></li>
+      <li><a href="#HardwareStorage">Storage</a></li>
+    </ul>
+  </li>
+  <li><a href="#Caching">Caching</a></li>
+  <li><a href="#Limiting">Limiting</a></li>
+  <li><a href="#Reverse-Proxying">Reverse-Proxying</a>
+    <ul>
+      <li><a href="#Reverse-ProxyingApache">Apache</a></li>
+      <li><a href="#Reverse-ProxyingNginx">nginx</a></li>
+    </ul>
+  </li>
+  <li><a href="#SSL/TLS">SSL/TLS</a></li>
+  <li><a href="#HTTP/2">HTTP/2</a></li>
+  <li><a href="#Docker">Docker</a></li>
+</ul>
+
+<p>This page gathers some miscellaneous notes on production deployment.</p>
+
+<hr>
+
+<h2 id="Temporary Directory">Temporary Directory</h2>
+
+<p>When running in standalone mode, the embedded Jetty server, by default, caches class files in the system temp directory, which most operating systems will periodically clean out. If this happens while the application is running, it can lead to <code>NoClassDefFoundError</code>s that can only be remedied by restarting the application. Consider either reconfiguring your OS's temp-cleaning strategy to work only at boot or shutdown, or setting the <code>temp_pathname</code> configuration key to use a different location for temporary data.</p>
+
+<hr>
+
+<h2 id="Images">Images</h2>
+
+<p>Some image formats are inherently more efficient to serve than others. If you have control over your source image formats, see the <a href="images.html">Images</a> section for recommendations.</p>
+
+<hr>
+
+<h2 id="Health Checks">Health Checks</h2>
+
+<p>A health check endpoint is available as part of the <a href="remote-management.html#check-health">HTTP API</a>.
+
+<hr>
+
+<h2 id="Hardware">Hardware</h2>
+
+<h3 id="HardwareCPU">CPU</h3>
+
+<p>Cantaloupe uses a thread-per-request model, and maintains a thread pool to carry out certain tasks asynchronously and spread work across processors. Response times will benefit from multiple fast cores.</p>
+
+<p>Some source formats are more processor-intensive than others. JPEG2000 via <a href="processors.html#OpenJpegProcessor">OpenJpegProcessor</a>, for example, will demand much more from a CPU than uncompressed TIFF via <a href="processors.html#Java2dProcessor">Java2dProcessor</a>.</p>
+
+<h3 id="HardwareMemory">Memory</h3>
+
+<p>Memory requirements will vary greatly depending on <a href="processors.html">processors</a> used, source format, source image size, request image size, and request frequency. Image formats that don't support tiling or that can't be selectively decoded will require more memory to process (see <a href="#Images">Images</a>). The application will log an <code>ERROR</code>-level message if it runs out of memory.</p>
+
+<p>As a Java application, the application runs "sandboxed" inside a Java Virtual Machine (JVM), and can only use the memory the JVM makes available to it. The main area of memory of concern inside the JVM is called the heap, and, <a href="#Docker">unless running in Docker</a>, its size characteristics must be configured at startup using arguments to the <code>java</code> command. The two most important are:</p>
+
+<dl>
+  <dt><code>-Xms</code></dt>
+  <dd>Initial heap size. The heap may grow beyond this up to the maximum size, with perhaps a performance penalty during "growth spurts."</dd>
+  <dt><code>-Xmx</code></dt>
+  <dd>Maximum heap size.</dd>
+</dl>
+
+<p>The commands in the <a href="getting-started.html">Getting Started</a> section specify a relatively small maximum heap size, and a production server may need larger.</p>
+
+<p>Operating system utilities like <code>top</code>, Task Manager, Activity Monitor, etc. can show you what a process looks like as the OS sees it, but they can't show what's happening inside a process. A tool like <a href="https://docs.oracle.com/javase/8/docs/technotes/guides/management/jconsole.html">JConsole</a>, included in the Java Development Kit (JDK), can visualize memory usage inside a running JVM.</p>
+
+<figure>
+  <img src="images/jconsole.png" class="img img-fluid" alt="JConsole screenshot">
+  <figcaption>Screenshot of JConsole</figcaption>
+</figure>
+
+<h3 id="HardwareStorage">Storage</h3>
+
+<p>Most source formats benefit from fast read performance&mdash;in terms of both latency and throughput&mdash;in the underlying storage system. Throughput is more important for less efficient source formats&mdash;like JPEG, PNG, and mono-resolution TIFF&mdash;especially as source image size increases. <a href="sources.html#FilesystemSource">Local filesystem storage</a> usually performs best.</p>
+
+<p>As derivative images tend to be small, storage performance is less important for derivative caches.</p>
+
+<hr>
+
+<h2 id="Caching">Caching</h2>
+
+<p>See the <a href="caching.html">Caching</a> section for information about the built-in caching options, which can dramatically improve performance. When using <a href="caching.html#Maintenance">automatic maintenance</a> in a cluster, consider enabling it on only one node.</p>
+
+<hr>
+
+<h2 id="Limiting">Limiting</h2>
+
+<ul>
+  <li>Setting the <code>max_scale</code> configuration option to <code>1.0</code> will disallow requests for larger scales that could overwhelm the server.</li>
+  <li>A <code>max_pixels</code> configuration option is available to limit the maximum returned size of processed images. This is a "safety net" to prevent excessively expensive requests. It does not affect requests for full-sized unmodified images, which do not significantly load the server.
+    <ul>
+      <li>Note that the <code><a href="access-control.html#Authorization">authorize()</a></code> delegate method can perform the same function as <code>max_pixels</code>, with more granular control.</li>
+    </ul>
+  </li>
+</ul>
+
+<hr>
+
+<h2 id="Reverse-Proxying">Reverse-Proxying</h2>
+
+<p>Cantaloupe can run behind a reverse-proxy web server like Apache or nginx. The proxy should be set up to pass-through encoded URI characters without decoding them. It should also be configured to send the following headers:</p>
+
+<table class="table table-bordered">
+  <tr>
+    <th>Header</th>
+    <th>Description</th>
+    <th>Required?</th>
+  </tr>
+  <tr>
+    <td style="white-space: nowrap"><code>X-Forwarded-Proto</code></td>
+    <td>Protocol of the client request; either <code>HTTP</code> or <code>HTTPS</code>. If missing, HTTP is assumed.</td>
+    <td>No</td>
+  </tr>
+  <tr>
+    <td><code>X-Forwarded-Host</code></td>
+    <td>FQDN of the client-facing reverse proxy.</td>
+    <td>Yes</td>
+  </tr>
+  <tr>
+    <td><code>X-Forwarded-Port</code></td>
+    <td>TCP port of the client-facing reverse proxy. If missing, the following are consulted in priority order:
+      <ol>
+        <li>The port in the <code>X-Forwarded-Host</code> header;</li>
+        <li>The default port of the protocol in the <code>X-Forwarded-Proto</code> header;</li>
+        <li>The request port.</li>
+      </ol>
+    </td>
+    <td>No</td>
+  </tr>
+  <tr>
+    <td><code>X-Forwarded-Path</code></td>
+    <td>Path to use as a base path.</td>
+    <td>No</td>
+  </tr>
+  <tr>
+    <td><code>X-Forwarded-For</code></td>
+    <td>Client IP address. If missing, any features that require a client IP address will either not work (such as IP-based authorization), or be incorrect (such as access logs).</td>
+    <td>No</td>
+  </tr>
+  <tr>
+    <td class="text-danger"><code>X-IIIF-ID</code>
+    <strong>Deprecated</strong> since version 4.0. Use <code>X-Forwarded-ID</code> instead.</td>
+    <td>Originally-requested image identifier. Should be set only when the proxy server will change the value of the identifier in the forwarded request; i.e. when the client is asking for a different identifier than the image server ends up seeing.</td>
+    <td>No</td>
+  </tr>
+  <tr>
+    <td><code>X-Forwarded-ID</code></td>
+    <td>Originally-requested image identifier. Should be set only when the proxy server will change the value of the identifier in the forwarded request; i.e. when the client is asking for a different identifier than the image server ends up seeing.</td>
+    <td>No</td>
+  </tr>
+</table>
+
+<p>If the proxy cannot be configured to send the <code>X-Forwarded-*</code> headers, the <code>base_uri</code> configuration option can be used instead; set it to the URI of the client-facing reverse proxy including any base path.</p>
+
+<p>In a reverse-proxying scenario, consider disabling the <a href="logging.html#Access%20Log">access log</a>, if it would be redundant.</p>
+
+<h3 id="Reverse-ProxyingApache">Apache</h3>
+
+<p>The following example will make an instance running at http://image-server:8182/ available at http://apache-server/.</p>
+
+<pre>&lt;VirtualHost *:80&gt;
+  # X-Forwarded-Host will be set automatically by the web server.
+  RequestHeader set X-Forwarded-Proto HTTP
+  RequestHeader set X-Forwarded-Port 80
+  RequestHeader set X-Forwarded-Path /
+
+  ServerName apache-server
+  AllowEncodedSlashes NoDecode
+  ProxyPassReverseCookiePath / /
+  ErrorLog logs/image-error.log
+  CustomLog logs/image-access.log combined
+
+  ProxyPass / http://image-server:8182/ nocanon
+  ProxyPassReverse / http://image-server:8182/
+  ProxyPassReverseCookieDomain image-server:8182 apache-server
+  ProxyPreserveHost on
+&lt;/VirtualHost&gt;
+</pre>
+
+<h3 id="Reverse-ProxyingNginx">nginx</h3>
+
+<p>The following example will make an instance running at <span class="filename">http://image-server:8182/</span> available at <span class="filename">http://nginx-server/</span>.
+
+<pre>location / {
+    if ($request_uri ~* "/(.*)") {
+        proxy_pass http://image-server:8182/$1;
+    }
+    proxy_set_header X-Forwarded-Proto $scheme;
+    proxy_set_header X-Forwarded-Host $host;
+    proxy_set_header X-Forwarded-Port $server_port;
+    proxy_set_header X-Forwarded-Path /;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_redirect http://image-server:8182/ /;
+}</pre>
+
+<hr>
+
+<h2 id="SSL/TLS">SSL/TLS</h2>
+
+<p>In standalone mode, Cantaloupe supports TLS connections over HTTPS, configurable via the <code>https.*</code> keys in the configuration file. The general process for getting this working is to add a signed X.509 certificate to either a Java KeyStore (JKS) or PKCS#12 key store, and then refer to the key store file with the <code>https.key_store_path</code> configuration option.</p>
+
+<p>HTTPS can also be enabled on a Servlet container or <a href="#Reverse-Proxying">reverse-proxying web server</a>, in which case Cantaloupe would require no special configuration.</p>
+
+<hr>
+
+<h2 id="HTTP/2">HTTP/2</h2>
+
+<p>HTTP/2 is supported since version 3.4 via the <code>http.http2.enabled</code> and <code>https.http2.enabled</code> configuration keys. H2C (unencrypted) works in Java 8, but H2S (encrypted) requires at least Java 9.</p>
+
+<hr>
+
+<h2 id="Docker">Docker</h2>
+
+<p>When running in Docker, consider using JRE 8u191 or later. This version includes support for auto-detecting container CPU and memory settings (see <a href="https://www.oracle.com/technetwork/java/javase/8u191-relnotes-5032181.html#JDK-8146115">JDK 8u191 Update Release Notes</a>) as an alternative to using VM arguments like <code>-Xmx</code>.</p>
