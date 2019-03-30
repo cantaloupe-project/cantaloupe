@@ -122,7 +122,6 @@ public enum Key {
     IIIF_1_ENDPOINT_ENABLED("endpoint.iiif.1.enabled"),
     IIIF_2_ENDPOINT_ENABLED("endpoint.iiif.2.enabled"),
     IIIF_2_RESTRICT_TO_SIZES("endpoint.iiif.2.restrict_to_sizes"),
-    IIIF_CONTENT_DISPOSITION("endpoint.iiif.content_disposition"),
     IIIF_MIN_SIZE("endpoint.iiif.min_size"),
     IIIF_MIN_TILE_SIZE("endpoint.iiif.min_tile_size"),
     IMAGEMAGICKPROCESSOR_PATH_TO_BINARIES("ImageMagickProcessor.path_to_binaries"),

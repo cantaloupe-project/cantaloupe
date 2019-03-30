@@ -530,14 +530,8 @@ public abstract class AbstractResource {
 
     /**
      * <p>Returns a value for a {@literal Content-Disposition} header based on
-     * the following in order of preference:</p>
-     *
-     * <ol>
-     *     <li>The value of the {@link #RESPONSE_CONTENT_DISPOSITION_QUERY_ARG}
-     *     query argument</li>
-     *     <li>The setting of {@link Key#IIIF_CONTENT_DISPOSITION} in the
-     *     application configuration</li>
-     * </ol>
+     * the value of the {@link #RESPONSE_CONTENT_DISPOSITION_QUERY_ARG} query
+     * argument.</p>
      *
      * <p>Falls back to an empty disposition, signified by a {@literal null}
      * return value.</p>
@@ -574,18 +568,6 @@ public abstract class AbstractResource {
                             outputFormat);
                 }
                 disposition = "attachment; filename=" + filename;
-            }
-        } else {
-            switch (Configuration.getInstance()
-                    .getString(Key.IIIF_CONTENT_DISPOSITION, "none")) {
-                case "inline":
-                    disposition = "inline; filename=" +
-                            getContentDispositionFilename(identifier, outputFormat);
-                    break;
-                case "attachment":
-                    disposition = "attachment; filename=" +
-                            getContentDispositionFilename(identifier, outputFormat);
-                    break;
             }
         }
         return disposition;

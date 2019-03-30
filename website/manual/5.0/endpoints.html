@@ -134,7 +134,7 @@ end
 
 <h3 id="Response Content Disposition">Response Content Disposition</h3>
 
-<p>The <a href="https://tools.ietf.org/html/rfc6266"><code>Content-Disposition</code></a> HTTP response header tells clients whether to attempt to display a response entity inline or download it, perhaps accompanied by a user prompt. The <code>endpoint.iiif.content_disposition</code> configuration key can be used to set a value for this header in all responses. In addition, a <code>response-content-disposition</code> query argument can be used to suggest a value to override that on a per-request basis. This is useful for &quot;linking to a download.&quot; For example, the following URL will cause web browsers to download the image identified by <code>some-identifier</code> and save it as <span class="filename">image.jpg</span>:</p>
+<p>The <a href="https://tools.ietf.org/html/rfc6266"><code>Content-Disposition</code></a> HTTP response header tells clients whether to attempt to display a response entity inline or download it, perhaps accompanied by a user prompt. A <code>response-content-disposition</code> query argument can be used to suggest a value to override that on a per-request basis. This is useful for &quot;linking to a download.&quot; For example, the following URL will cause web browsers to download the image identified by <code>some-identifier</code> and save it as <span class="filename">image.jpg</span>:</p>
 
 <pre>http://my-image-server/iiif/2/some-identifier/full/full/0/default.jpg
     ?response-content-disposition=attachment%3B%20filename%3Dimage.jpg</pre>

@@ -997,31 +997,6 @@
                             <h2>IIIF Image API Endpoints</h2>
                             <table class="table table-striped">
                                 <tr>
-                                    <td>Content Disposition
-                                        <a tabindex="0" class="btn btn-sm cl-help"
-                                           role="button" data-toggle="popover"
-                                           data-trigger="focus"
-                                           data-content="Controls the response
-                                           Content-Disposition header for images.
-                                           &lt;br&gt;&lt;br&gt;
-                                           &quot;Attachment&quot; will generally
-                                           cause web browsers to download images
-                                           rather than display them. This can be
-                                           overridden using the
-                                           &lt;code&gt;?response-content-disposition&lt;/code&gt;
-                                           query argument.">?</a>
-                                    </td>
-                                    <td>
-                                        <select class="form-control"
-                                                name="endpoint.iiif.content_disposition"
-                                                data-requires-restart="false">
-                                            <option value="none">None</option>
-                                            <option value="inline">Inline</option>
-                                            <option value="attachment">Attachment</option>
-                                        </select>
-                                    </td>
-                                </tr>
-                                <tr>
                                     <td>Minimum Size
                                         <a tabindex="0" class="btn btn-sm cl-help"
                                            role="button" data-toggle="popover"

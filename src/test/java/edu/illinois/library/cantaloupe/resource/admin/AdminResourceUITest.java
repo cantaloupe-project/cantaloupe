@@ -279,7 +279,6 @@ public class AdminResourceUITest extends AbstractAdminResourceTest {
         // Fill in the form
         inputNamed(Key.MAX_PIXELS).sendKeys("5000");
         inputNamed(Key.MAX_SCALE).sendKeys("1.1");
-        selectNamed(Key.IIIF_CONTENT_DISPOSITION).selectByValue("attachment");
         inputNamed(Key.IIIF_MIN_SIZE).sendKeys("75");
         inputNamed(Key.IIIF_MIN_TILE_SIZE).sendKeys("250");
         inputNamed(Key.IIIF_1_ENDPOINT_ENABLED).click();
@@ -298,8 +297,6 @@ public class AdminResourceUITest extends AbstractAdminResourceTest {
         final Configuration config = Configuration.getInstance();
         assertEquals(5000, config.getLong(Key.MAX_PIXELS));
         assertEquals(1.1, config.getDouble(Key.MAX_SCALE), DELTA);
-        assertEquals("attachment",
-                config.getString(Key.IIIF_CONTENT_DISPOSITION));
         assertEquals(75, config.getInt(Key.IIIF_MIN_SIZE));
         assertEquals(250, config.getInt(Key.IIIF_MIN_TILE_SIZE));
         assertTrue(config.getBoolean(Key.IIIF_1_ENDPOINT_ENABLED));

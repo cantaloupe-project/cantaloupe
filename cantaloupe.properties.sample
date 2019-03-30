@@ -85,11 +85,6 @@ endpoint.iiif.1.enabled = false
 # Enables the IIIF Image API 2.x endpoint, at /iiif/2.
 endpoint.iiif.2.enabled = true
 
-# Controls the response Content-Disposition header for images. Allowed
-# values are `inline`, `attachment`, and `none`. This can be overridden
-# using the ?response-content-disposition query argument.
-endpoint.iiif.content_disposition = inline
-
 # Minimum size that will be used in info.json `sizes` keys.
 endpoint.iiif.min_size = 64
 

@@ -4,6 +4,8 @@
 
 * The `X-IIIF-ID` reverse proxy header is no longer supported. `X-Forwarded-ID`
   should be used instead.
+* The `endpoint.iiif.content_disposition` configuration key has been removed.
+  The `?response-content-disposition` query argument should be used instead.
 
 ## 4.1
 

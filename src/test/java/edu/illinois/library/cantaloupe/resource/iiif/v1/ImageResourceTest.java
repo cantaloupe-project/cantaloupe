@@ -180,19 +180,6 @@ public class ImageResourceTest extends ResourceTest {
     }
 
     @Test
-    public void testGETContentDispositionHeaderSetToInline() throws Exception {
-        URI uri = getHTTPURI("/" + IMAGE + "/full/full/0/color.jpg");
-        tester.testContentDispositionHeaderSetToInline(uri);
-    }
-
-    @Test
-    public void testGETContentDispositionHeaderSetToAttachment()
-            throws Exception {
-        URI uri = getHTTPURI("/" + IMAGE + "/full/full/0/color.jpg");
-        tester.testContentDispositionHeaderSetToAttachment(uri);
-    }
-
-    @Test
     public void testGETWithEndpointEnabled() {
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.IIIF_1_ENDPOINT_ENABLED, true);

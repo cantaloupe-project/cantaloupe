@@ -213,41 +213,11 @@ public class AbstractResourceTest extends BaseTest {
     }
 
     @Test
-    public void testGetRepresentationDispositionUsingConfiguration() {
-        Configuration config = Configuration.getInstance();
-
-        final Identifier identifier = new Identifier("cats?/\\dogs");
-        final Format outputFormat = Format.JPG;
-
-        // test with config key set to "inline"
-        config.setProperty(Key.IIIF_CONTENT_DISPOSITION, "inline");
-        String disposition = instance.getRepresentationDisposition(
-                null, identifier, outputFormat);
-        assertEquals("inline; filename=cats___dogs.jpg", disposition);
-
-        // test with config key set to "attachment"
-        config.setProperty(Key.IIIF_CONTENT_DISPOSITION, "attachment");
-        disposition = instance.getRepresentationDisposition(
-                null, identifier, outputFormat);
-        assertEquals("attachment; filename=cats___dogs.jpg", disposition);
-    }
-
-    @Test
     public void testGetRepresentationDispositionFallsBackToNone() {
-        Configuration config = Configuration.getInstance();
-
         final Identifier identifier = new Identifier("cats?/\\dogs");
         final Format outputFormat = Format.JPG;
 
-        // undefined config key
-        config.clearProperty(Key.IIIF_CONTENT_DISPOSITION);
         String disposition = instance.getRepresentationDisposition(
-                null, identifier, outputFormat);
-        assertNull(disposition);
-
-        // empty config key
-        config.setProperty(Key.IIIF_CONTENT_DISPOSITION, "");
-        disposition = instance.getRepresentationDisposition(
                 null, identifier, outputFormat);
         assertNull(disposition);
     }

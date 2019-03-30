@@ -5,7 +5,9 @@ current version.
 
 ## 4.1.x → 5.0
 
-1. The `X-IIIF-ID` reverse proxy header is no longer supported. Use
+1. Remove the following configuration keys:
+    * `endpoint.iiif.content_disposition`
+2. The `X-IIIF-ID` reverse proxy header is no longer supported. Use
    `X-Forwarded-ID` instead.
 
 ## 4.0.x → 4.1
