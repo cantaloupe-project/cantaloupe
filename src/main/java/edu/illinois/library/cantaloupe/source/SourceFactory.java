@@ -125,7 +125,7 @@ public final class SourceFactory {
                 name : SourceFactory.class.getPackage().getName() + "." + name;
         Class<?> class_ = Class.forName(fullName);
 
-        Source source = (Source) class_.newInstance();
+        Source source = (Source) class_.getDeclaredConstructor().newInstance();
         source.setIdentifier(identifier);
         source.setDelegateProxy(proxy);
         return source;
