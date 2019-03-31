@@ -16,7 +16,7 @@ import edu.illinois.library.cantaloupe.processor.ProcessorConnector;
 import edu.illinois.library.cantaloupe.processor.ProcessorFactory;
 import edu.illinois.library.cantaloupe.processor.UnsupportedOutputFormatException;
 import edu.illinois.library.cantaloupe.processor.UnsupportedSourceFormatException;
-import edu.illinois.library.cantaloupe.resource.CachedImageRepresentation;
+import edu.illinois.library.cantaloupe.resource.InputStreamRepresentation;
 import edu.illinois.library.cantaloupe.resource.IllegalClientArgumentException;
 import edu.illinois.library.cantaloupe.resource.ImageRepresentation;
 import edu.illinois.library.cantaloupe.resource.Route;
@@ -113,7 +113,7 @@ public class ImageResource extends IIIF2Resource {
                     addHeaders(params, disposition,
                             params.getOutputFormat().toFormat().getPreferredMediaType().toString());
 
-                    new CachedImageRepresentation(cacheStream)
+                    new InputStreamRepresentation(cacheStream)
                             .write(getResponse().getOutputStream());
                     return;
                 } else {

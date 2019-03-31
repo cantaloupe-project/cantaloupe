@@ -9,16 +9,16 @@ import java.io.InputStream;
 import java.io.OutputStream;
 
 /**
- * Representation that writes an {@link InputStream} to the response.
+ * Writes an {@link InputStream} directly to the response.
  */
-public class CachedImageRepresentation implements Representation {
+public class InputStreamRepresentation implements Representation {
 
     private static final Logger LOGGER =
-            LoggerFactory.getLogger(CachedImageRepresentation.class);
+            LoggerFactory.getLogger(InputStreamRepresentation.class);
 
     private InputStream inputStream;
 
-    public CachedImageRepresentation(InputStream inputStream) {
+    public InputStreamRepresentation(InputStream inputStream) {
         this.inputStream = inputStream;
     }
 
