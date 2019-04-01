@@ -1,6 +1,7 @@
 package edu.illinois.library.cantaloupe.script;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
+import edu.illinois.library.cantaloupe.config.ConfigurationProvider;
 import edu.illinois.library.cantaloupe.config.FileConfiguration;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.resource.RequestContext;
@@ -13,6 +14,7 @@ import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
@@ -110,9 +112,12 @@ public final class DelegateProxyService {
         if (!script.isAbsolute()) {
             // Search for it in the same directory as the application config
             // (if available), or the current working directory if not.
-            Configuration config = Configuration.getInstance();
-            if (config instanceof FileConfiguration) {
-                FileConfiguration fileConfig = (FileConfiguration) config;
+            Configuration config                     = Configuration.getInstance();
+            final ConfigurationProvider provider     = (ConfigurationProvider) config;
+            final List<Configuration> wrappedConfigs = provider.getWrappedConfigurations();
+            if (wrappedConfigs.size() > 1 &&
+                    wrappedConfigs.get(1) instanceof FileConfiguration) {
+                final FileConfiguration fileConfig = (FileConfiguration) wrappedConfigs.get(1);
                 final Path configFile = fileConfig.getFile();
                 if (configFile != null) {
                     script = configFile.getParent().resolve(script.getFileName());

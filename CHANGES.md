@@ -8,6 +8,10 @@
   The `?response-content-disposition` query argument should be used instead.
 * Java 11 is required.
 
+## 4.1.1
+
+* Fixed `NoSuchMethodError`s from various processors when running in Java 8.
+
 ## 4.1
 
 ### Configuration
