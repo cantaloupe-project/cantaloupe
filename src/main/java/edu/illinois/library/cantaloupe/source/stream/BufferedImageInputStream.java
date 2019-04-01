@@ -3,6 +3,7 @@ package edu.illinois.library.cantaloupe.source.stream;
 import javax.imageio.stream.ImageInputStream;
 import javax.imageio.stream.ImageInputStreamImpl;
 import java.io.IOException;
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 
 /**
@@ -21,6 +22,25 @@ public class BufferedImageInputStream extends ImageInputStreamImpl
 
     private static final int DEFAULT_BUFFER_SIZE = 8192;
 
+    /**
+     * N.B.: Java 9 introduced overridden methods with covariant return types
+     * for the following {@link ByteBuffer} methods:
+     *
+     * position​(int newPosition)
+     * limit​(int newLimit)
+     * flip​()
+     * clear​()
+     * mark​()
+     * reset​()
+     * rewind​()
+     *
+     * This {@link ByteBuffer} must be cast to {@link Buffer} before any of
+     * these methods are called, or else a JDK >8 compiler will generate
+     * bytecode that is incompatible with JDK 8, resulting in {@link
+     * NoSuchMethodError}s.
+     *
+     * These recasts can be removed once the project no longer supports JDK 8.
+     */
     private ByteBuffer buffer;
     private ImageInputStream stream;
 
@@ -33,19 +53,19 @@ public class BufferedImageInputStream extends ImageInputStreamImpl
         stream = pStream;
         streamPos = pStream.getStreamPosition();
         buffer = ByteBuffer.allocate(pBufferSize);
-        buffer.limit(0);
+        ((Buffer) buffer).limit(0);
     }
 
     private void fillBuffer() throws IOException {
-        buffer.clear();
+        ((Buffer) buffer).clear();
 
         int length = stream.read(buffer.array(), 0, buffer.capacity());
 
         if (length >= 0) {
-            buffer.position(length);
-            buffer.flip();
+            ((Buffer) buffer).position(length);
+            ((Buffer) buffer).flip();
         } else {
-            buffer.limit(0);
+            ((Buffer) buffer).limit(0);
         }
     }
 
@@ -106,7 +126,7 @@ public class BufferedImageInputStream extends ImageInputStreamImpl
         if (length > 0) {
             int position = buffer.position();
             System.arraycopy(buffer.array(), position, pBuffer, pOffset, length);
-            buffer.position(position + length);
+            ((Buffer) buffer).position(position + length);
         }
 
         streamPos += length;
@@ -118,7 +138,7 @@ public class BufferedImageInputStream extends ImageInputStreamImpl
     public void seek(long pPosition) throws IOException {
         // TODO: Could probably be optimized to not invalidate buffer if new position is within current buffer
         stream.seek(pPosition);
-        buffer.limit(0); // Will invalidate buffer
+        ((Buffer) buffer).limit(0); // Will invalidate buffer
         streamPos = stream.getStreamPosition();
     }
 

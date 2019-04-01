@@ -1,5 +1,9 @@
 # Change Log
 
+## 4.1.1
+
+* Fixed `NoSuchMethodError`s from various processors when running in Java 8.
+
 ## 4.1
 
 ### Configuration
