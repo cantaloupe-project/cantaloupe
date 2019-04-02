@@ -1,7 +1,6 @@
 package edu.illinois.library.cantaloupe.processor.codec;
 
 import edu.illinois.library.cantaloupe.image.Format;
-import edu.illinois.library.cantaloupe.resource.iiif.v2.OutputFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -96,9 +95,10 @@ public final class IIOProviderContextListener implements ServletContextListener 
     }
 
     private static void logImageIOReaders() {
-        final List<Format> imageFormats = Arrays.stream(Format.values()).
-                filter(f -> Format.Type.IMAGE.equals(f.getType())).
-                collect(Collectors.toList());
+        final List<Format> imageFormats = Arrays.stream(Format.values())
+                .filter(f -> Format.Type.IMAGE.equals(f.getType()))
+                .collect(Collectors.toList());
+        final List<String> formatLines = new ArrayList<>(imageFormats.size());
 
         for (Format format : imageFormats) {
             Iterator<javax.imageio.ImageReader> it =
@@ -110,20 +110,21 @@ public final class IIOProviderContextListener implements ServletContextListener 
                 readerClasses.add(reader.getClass().getName());
             }
 
-            LOGGER.debug("Image I/O readers for {}.{}: {}",
-                    Format.class.getSimpleName(),
-                    format.getName(),
-                    readerClasses.stream().collect(Collectors.joining(", ")));
+            formatLines.add("\t" + Format.class.getSimpleName() + "." +
+                    format.getName() + ": " +
+                    String.join(", ", readerClasses));
         }
+        LOGGER.debug("Image I/O readers (not in preference order):\n{}",
+                String.join("\n", formatLines));
     }
 
     private static void logImageIOWriters() {
-        final List<Format> iiifOutputFormats = Arrays
-                .stream(OutputFormat.values())
-                .map(OutputFormat::toFormat)
+        final List<Format> imageFormats = Arrays.stream(Format.values())
+                .filter(f -> Format.Type.IMAGE.equals(f.getType()))
                 .collect(Collectors.toList());
+        final List<String> formatLines = new ArrayList<>(imageFormats.size());
 
-        for (Format format : iiifOutputFormats) {
+        for (Format format : imageFormats) {
             Iterator<javax.imageio.ImageWriter> it =
                     ImageIO.getImageWritersByMIMEType(format.getPreferredMediaType().toString());
             List<String> writerClasses = new ArrayList<>();
@@ -133,11 +134,12 @@ public final class IIOProviderContextListener implements ServletContextListener 
                 writerClasses.add(writer.getClass().getName());
             }
 
-            LOGGER.debug("Image I/O writers for {}.{}: {}",
-                    Format.class.getSimpleName(),
-                    format.getName(),
-                    writerClasses.stream().collect(Collectors.joining(", ")));
+            formatLines.add("\t" + Format.class.getSimpleName() + "." +
+                    format.getName() + ": " +
+                    String.join(", ", writerClasses));
         }
+        LOGGER.debug("Image I/O writers (not in preference order):\n{}",
+                String.join("\n", formatLines));
     }
 
 }
