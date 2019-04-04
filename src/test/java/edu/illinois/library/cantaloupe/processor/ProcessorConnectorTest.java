@@ -363,7 +363,7 @@ public class ProcessorConnectorTest extends BaseTest {
             assertNull(instance.connect(source, processor, IDENTIFIER, Format.JPG));
 
             assertEqualSources(
-                    CacheFactory.getSourceCache().getSourceImageFile(IDENTIFIER),
+                    CacheFactory.getSourceCache().getSourceImageFile(IDENTIFIER).orElseThrow(),
                     processor.getStreamFactory());
         } finally {
             server.stop();
@@ -438,7 +438,7 @@ public class ProcessorConnectorTest extends BaseTest {
             assertNull(instance.connect(source, processor, IDENTIFIER, Format.JPG));
 
             assertEqualSources(
-                    CacheFactory.getSourceCache().getSourceImageFile(IDENTIFIER),
+                    CacheFactory.getSourceCache().getSourceImageFile(IDENTIFIER).orElseThrow(),
                     processor.getStreamFactory());
         } finally {
             server.stop();
@@ -472,7 +472,7 @@ public class ProcessorConnectorTest extends BaseTest {
 
             assertNull(instance.connect(source, processor, IDENTIFIER, Format.JPG));
 
-            Path cacheFile = CacheFactory.getSourceCache().getSourceImageFile(IDENTIFIER);
+            Path cacheFile = CacheFactory.getSourceCache().getSourceImageFile(IDENTIFIER).orElseThrow();
             assertEqualSources(cacheFile, processor.getStreamFactory());
         } finally {
             server.stop();
@@ -507,7 +507,7 @@ public class ProcessorConnectorTest extends BaseTest {
             assertNull(instance.connect(source, processor, IDENTIFIER, Format.JPG));
 
             assertEqualSources(
-                    CacheFactory.getSourceCache().getSourceImageFile(IDENTIFIER),
+                    CacheFactory.getSourceCache().getSourceImageFile(IDENTIFIER).orElseThrow(),
                     processor.getStreamFactory());
         } finally {
             server.stop();
@@ -545,7 +545,7 @@ public class ProcessorConnectorTest extends BaseTest {
             assertNull(instance.connect(source, processor, IDENTIFIER, Format.JPG));
 
             assertEqualSources(
-                    CacheFactory.getSourceCache().getSourceImageFile(IDENTIFIER),
+                    CacheFactory.getSourceCache().getSourceImageFile(IDENTIFIER).orElseThrow(),
                     processor.getStreamFactory());
         } finally {
             server.stop();

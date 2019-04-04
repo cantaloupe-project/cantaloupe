@@ -5,16 +5,19 @@ import edu.illinois.library.cantaloupe.image.Identifier;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.file.Path;
+import java.util.Optional;
 
 public class MockBrokenSourceCache implements SourceCache {
 
     @Override
-    public Path getSourceImageFile(Identifier identifier) throws IOException {
+    public Optional<Path> getSourceImageFile(Identifier identifier)
+            throws IOException {
         throw new IOException("I'm broken");
     }
 
     @Override
-    public OutputStream newSourceImageOutputStream(Identifier identifier) throws IOException {
+    public OutputStream newSourceImageOutputStream(Identifier identifier)
+            throws IOException {
         throw new IOException("I'm broken");
     }
 

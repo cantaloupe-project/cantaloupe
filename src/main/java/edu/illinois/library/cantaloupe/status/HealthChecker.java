@@ -18,6 +18,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -178,8 +179,8 @@ public final class HealthChecker {
                     os.flush();
                 }
                 // Read it back.
-                Path path = sCache.getSourceImageFile(identifier);
-                Files.readAllBytes(path);
+                Optional<Path> path = sCache.getSourceImageFile(identifier);
+                Files.readAllBytes(path.orElseThrow());
             } catch (Throwable t) {
                 health.setMinColor(Health.Color.RED);
                 String message = String.format("%s: %s",

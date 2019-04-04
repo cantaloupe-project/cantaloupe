@@ -6,14 +6,16 @@ import edu.illinois.library.cantaloupe.test.TestUtil;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.file.Path;
+import java.util.Optional;
 
 public class MockUnreliableSourceOutputStreamCache extends MockCache {
 
     private int callCount1 = 0;
 
     @Override
-    public Path getSourceImageFile(Identifier identifier) throws IOException {
-        return TestUtil.getImage("jpg");
+    public Optional<Path> getSourceImageFile(Identifier identifier)
+            throws IOException {
+        return Optional.of(TestUtil.getImage("jpg"));
     }
 
     /**

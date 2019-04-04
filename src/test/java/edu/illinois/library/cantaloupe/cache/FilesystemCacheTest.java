@@ -341,12 +341,12 @@ public class FilesystemCacheTest extends AbstractCacheTest {
         Configuration.getInstance().setProperty(Key.SOURCE_CACHE_TTL, 0);
 
         Identifier identifier = new Identifier("cats");
-        assertNull(instance.getSourceImageFile(identifier));
+        assertFalse(instance.getSourceImageFile(identifier).isPresent());
 
         Path imageFile = sourceImageFile(identifier);
         Files.createDirectories(imageFile.getParent());
         Files.createFile(imageFile);
-        assertNotNull(instance.getSourceImageFile(identifier));
+        assertTrue(instance.getSourceImageFile(identifier).isPresent());
     }
 
     @Test
@@ -361,7 +361,7 @@ public class FilesystemCacheTest extends AbstractCacheTest {
 
         Thread.sleep(1100);
 
-        assertNull(instance.getSourceImageFile(identifier));
+        assertFalse(instance.getSourceImageFile(identifier).isPresent());
 
         Thread.sleep(1000);
 

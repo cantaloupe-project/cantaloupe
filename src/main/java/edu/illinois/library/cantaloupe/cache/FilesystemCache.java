@@ -547,7 +547,8 @@ class FilesystemCache implements SourceCache, DerivativeCache {
     }
 
     @Override
-    public Path getSourceImageFile(Identifier identifier) throws IOException {
+    public Optional<Path> getSourceImageFile(Identifier identifier)
+            throws IOException {
         synchronized (sourceImageWriteLock) {
             while (imagesBeingWritten.contains(identifier)) {
                 try {
@@ -560,19 +561,18 @@ class FilesystemCache implements SourceCache, DerivativeCache {
             }
         }
 
-        Path file = null;
         final Path cacheFile = sourceImageFile(identifier);
 
         if (Files.exists(cacheFile)) {
             if (!isExpired(cacheFile)) {
                 LOGGER.debug("getSourceImageFile(): hit: {} ({})",
                         identifier, cacheFile);
-                file = cacheFile;
+                return Optional.of(cacheFile);
             } else {
                 purgeAsync(cacheFile);
             }
         }
-        return file;
+        return Optional.empty();
     }
 
     @Override

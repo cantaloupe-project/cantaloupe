@@ -259,7 +259,7 @@ public class CacheFacadeTest extends BaseTest {
 
         // Assert that everything is gone.
         assertEquals(0, InfoService.getInstance().getInfoCache().size());
-        assertNull(sourceCache.getSourceImageFile(identifier));
+        assertFalse(sourceCache.getSourceImageFile(identifier).isPresent());
         assertFalse(derivCache.getInfo(identifier).isPresent());
         try (InputStream is = derivCache.newDerivativeImageInputStream(ops)) {
             assertNull(is);
@@ -301,7 +301,7 @@ public class CacheFacadeTest extends BaseTest {
         instance.purge(identifier);
 
         // Assert that everything is gone.
-        assertNull(sourceCache.getSourceImageFile(identifier));
+        assertFalse(sourceCache.getSourceImageFile(identifier).isPresent());
         assertFalse(derivCache.getInfo(identifier).isPresent());
         try (InputStream is = derivCache.newDerivativeImageInputStream(ops)) {
             assertNull(is);
@@ -345,7 +345,7 @@ public class CacheFacadeTest extends BaseTest {
         Thread.sleep(2000);
 
         // Assert that everything is gone.
-        assertNull(sourceCache.getSourceImageFile(identifier));
+        assertFalse(sourceCache.getSourceImageFile(identifier).isPresent());
         assertFalse(derivCache.getInfo(identifier).isPresent());
         try (InputStream is = derivCache.newDerivativeImageInputStream(ops)) {
             assertNull(is);
@@ -416,7 +416,7 @@ public class CacheFacadeTest extends BaseTest {
 
         // Assert that everything is gone.
         assertEquals(0, InfoService.getInstance().getInfoCache().size());
-        assertNull(sourceCache.getSourceImageFile(identifier));
+        assertFalse(sourceCache.getSourceImageFile(identifier).isPresent());
         assertFalse(derivCache.getInfo(identifier).isPresent());
         try (InputStream is = derivCache.newDerivativeImageInputStream(ops)) {
             assertNull(is);

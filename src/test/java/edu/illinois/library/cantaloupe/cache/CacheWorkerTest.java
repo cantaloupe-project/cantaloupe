@@ -78,7 +78,7 @@ public class CacheWorkerTest extends BaseTest {
 
         instance.run();
 
-        assertNull(cache.getSourceImageFile(identifier));
+        assertFalse(cache.getSourceImageFile(identifier).isPresent());
     }
 
     @Test

@@ -12,6 +12,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Path;
+import java.util.Optional;
 
 /**
  * Simplified interface to the caching architecture.
@@ -84,7 +85,10 @@ public final class CacheFacade {
     public Path getSourceCacheFile(Identifier identifier) throws IOException {
         SourceCache sourceCache = getSourceCache();
         if (sourceCache != null) {
-            return sourceCache.getSourceImageFile(identifier);
+            Optional<Path> optFile = sourceCache.getSourceImageFile(identifier);
+            if (optFile.isPresent()) {
+                return optFile.get();
+            }
         }
         return null;
     }

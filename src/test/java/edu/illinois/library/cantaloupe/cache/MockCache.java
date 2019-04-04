@@ -21,8 +21,9 @@ class MockCache implements DerivativeCache, SourceCache {
     }
 
     @Override
-    public Path getSourceImageFile(Identifier identifier) throws IOException {
-        return null;
+    public Optional<Path> getSourceImageFile(Identifier identifier)
+            throws IOException {
+        return Optional.empty();
     }
 
     @Override

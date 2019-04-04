@@ -13,6 +13,7 @@ import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
+import java.util.Optional;
 
 import static org.junit.Assert.*;
 
@@ -34,13 +35,15 @@ public class SourceCacheDownloadTest extends BaseTest {
             }
 
             @Override
-            public Path getSourceImageFile(Identifier identifier)
+            public Optional<Path> getSourceImageFile(Identifier identifier)
                     throws IOException {
                 try {
-                    return Files.size(tempFile) > 0 ? tempFile : null;
-                } catch (NoSuchFileException e) {
-                    return null;
+                    if (Files.size(tempFile) > 0) {
+                        return Optional.of(tempFile);
+                    }
+                } catch (NoSuchFileException ignore) {
                 }
+                return Optional.empty();
             }
 
             @Override

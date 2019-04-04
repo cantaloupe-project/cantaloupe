@@ -15,6 +15,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Path;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
@@ -92,8 +93,9 @@ final class SourceCacheDownload implements Future<Path> {
                     // threads to get the image sooner.
                     // If it throws an exception, we will log it and retry a
                     // few times, and only rethrow it on the last try.
-                    Path sourceFile = sourceCache.getSourceImageFile(identifier);
-                    if (sourceFile == null) {
+                    Optional<Path> sourceFile =
+                            sourceCache.getSourceImageFile(identifier);
+                    if (sourceFile.isEmpty()) {
                         downloadToSourceCache();
                     }
                     succeeded = true;
@@ -183,7 +185,10 @@ final class SourceCacheDownload implements Future<Path> {
     public Path get() throws InterruptedException {
         downloadLatch.await();
         try {
-            return sourceCache.getSourceImageFile(identifier);
+            Optional<Path> optFile = sourceCache.getSourceImageFile(identifier);
+            if (optFile.isPresent()) {
+                return optFile.get();
+            }
         } catch (IOException e) {
             LOGGER.error("get(): {}", e.getMessage());
         }
@@ -195,7 +200,10 @@ final class SourceCacheDownload implements Future<Path> {
                     TimeUnit unit) throws InterruptedException {
         if (downloadLatch.await(timeout, unit)) {
             try {
-                return sourceCache.getSourceImageFile(identifier);
+                Optional<Path> optFile = sourceCache.getSourceImageFile(identifier);
+                if (optFile.isPresent()) {
+                    return optFile.get();
+                }
             } catch (IOException e) {
                 LOGGER.error("get(): {}", e.getMessage());
             }
