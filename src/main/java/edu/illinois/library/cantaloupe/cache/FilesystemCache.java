@@ -33,6 +33,7 @@ import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -526,24 +527,23 @@ class FilesystemCache implements SourceCache, DerivativeCache {
     }
 
     @Override
-    public Info getImageInfo(Identifier identifier) throws IOException {
+    public Optional<Info> getInfo(Identifier identifier) throws IOException {
         final ReadWriteLock lock = acquireInfoLock(identifier);
         lock.readLock().lock();
-
         try {
             final Path cacheFile = infoFile(identifier);
             if (!isExpired(cacheFile)) {
-                LOGGER.debug("getImageInfo(): hit: {}", cacheFile);
-                return Info.fromJSON(cacheFile);
+                LOGGER.debug("getInfo(): hit: {}", cacheFile);
+                return Optional.of(Info.fromJSON(cacheFile));
             } else {
                 purgeAsync(cacheFile);
             }
         } catch (NoSuchFileException | FileNotFoundException e) {
-            LOGGER.debug("getImageInfo(): not found: {}", e.getMessage());
+            LOGGER.debug("getInfo(): not found: {}", e.getMessage());
         } finally {
             lock.readLock().unlock();
         }
-        return null;
+        return Optional.empty();
     }
 
     @Override

@@ -28,14 +28,14 @@ public class RedisCacheTest extends AbstractCacheTest {
     }
 
 
-    /* getImageInfo(Identifier) */
+    /* getInfo(Identifier) */
 
     /**
      * Override that does nothing, as validity is determined by Redis.
      */
     @Override
     @Test
-    public void testGetImageInfoWithExistingInvalidImage() {}
+    public void testGetInfoWithExistingInvalidImage() {}
 
     /* newDerivativeImageInputStream(OperationList) */
 

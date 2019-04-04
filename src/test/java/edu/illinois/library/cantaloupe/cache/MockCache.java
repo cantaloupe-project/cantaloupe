@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Path;
+import java.util.Optional;
 
 class MockCache implements DerivativeCache, SourceCache {
 
@@ -15,8 +16,8 @@ class MockCache implements DerivativeCache, SourceCache {
     private boolean shutdownCalled = false;
 
     @Override
-    public Info getImageInfo(Identifier identifier) {
-        return null;
+    public Optional<Info> getInfo(Identifier identifier) {
+        return Optional.empty();
     }
 
     @Override

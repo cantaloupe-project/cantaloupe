@@ -54,13 +54,13 @@ public class CacheWorkerTest extends BaseTest {
         Identifier identifier = new Identifier("cats");
         cache.put(identifier, new Info());
 
-        assertNotNull(cache.getImageInfo(identifier));
+        assertNotNull(cache.getInfo(identifier));
 
         Thread.sleep(TTL * 1000 * 2);
 
         instance.run();
 
-        assertNull(cache.getImageInfo(identifier));
+        assertFalse(cache.getInfo(identifier).isPresent());
     }
 
     @Test

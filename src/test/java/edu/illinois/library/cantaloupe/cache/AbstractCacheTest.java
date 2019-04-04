@@ -10,7 +10,6 @@ import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.ConcurrentReaderWriter;
 import edu.illinois.library.cantaloupe.test.TestUtil;
-import org.apache.commons.io.IOUtils;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -20,6 +19,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Optional;
 
 import static org.junit.Assert.*;
 
@@ -51,26 +51,25 @@ abstract class AbstractCacheTest extends BaseTest {
     @Before
     public void setUp() throws Exception {
         super.setUp();
-
         Configuration.getInstance().setProperty(Key.DERIVATIVE_CACHE_TTL, 300);
     }
 
-    /* getImageInfo(Identifier) */
+    /* getInfo(Identifier) */
 
     @Test
-    public void testGetImageInfoWithExistingValidImage() throws Exception {
+    public void testGetInfoWithExistingValidImage() throws Exception {
         final DerivativeCache instance = newInstance();
 
         Identifier identifier = new Identifier("cats");
         Info info = new Info();
         instance.put(identifier, info);
 
-        Info actual = instance.getImageInfo(identifier);
-        assertEquals(actual, info);
+        Optional<Info> actual = instance.getInfo(identifier);
+        assertEquals(actual.orElseThrow(), info);
     }
 
     @Test
-    public void testGetImageInfoWithExistingInvalidImage() throws Exception {
+    public void testGetInfoWithExistingInvalidImage() throws Exception {
         final DerivativeCache instance = newInstance();
         Configuration.getInstance().setProperty(Key.DERIVATIVE_CACHE_TTL, 1);
 
@@ -80,17 +79,17 @@ abstract class AbstractCacheTest extends BaseTest {
 
         Thread.sleep(ASYNC_WAIT);
 
-        assertNull(instance.getImageInfo(identifier));
+        assertFalse(instance.getInfo(identifier).isPresent());
     }
 
     @Test
-    public void testGetImageInfoWithNonexistentImage() throws Exception {
+    public void testGetInfoWithNonexistentImage() throws Exception {
         final DerivativeCache instance = newInstance();
-        assertNull(instance.getImageInfo(new Identifier("bogus")));
+        assertFalse(instance.getInfo(new Identifier("bogus")).isPresent());
     }
 
     @Test
-    public void testGetImageInfoConcurrently() {
+    public void testGetInfoConcurrently() {
         // This is tested in testPutConcurrently()
     }
 
@@ -239,7 +238,7 @@ abstract class AbstractCacheTest extends BaseTest {
         }
 
         // assert that a particular info doesn't exist
-        assertNull(instance.getImageInfo(identifier));
+        assertFalse(instance.getInfo(identifier).isPresent());
 
         // add the image
         try (OutputStream outputStream =
@@ -255,13 +254,13 @@ abstract class AbstractCacheTest extends BaseTest {
 
         // assert that they've been added
         assertExists(instance, opList);
-        assertNotNull(instance.getImageInfo(identifier));
+        assertNotNull(instance.getInfo(identifier));
 
         // purge everything
         instance.purge();
 
         // assert that the info has been purged
-        assertNull(instance.getImageInfo(identifier));
+        assertFalse(instance.getInfo(identifier).isPresent());
 
         // assert that the image has been purged
         assertNotExists(instance, opList);
@@ -290,14 +289,14 @@ abstract class AbstractCacheTest extends BaseTest {
         Identifier id2 = new Identifier("dogs");
         instance.put(id2, new Info());
 
-        assertNotNull(instance.getImageInfo(id1));
-        assertNotNull(instance.getImageInfo(id2));
+        assertNotNull(instance.getInfo(id1));
+        assertNotNull(instance.getInfo(id2));
 
         // purge one of them
         instance.purge(id1);
 
-        assertNull(instance.getImageInfo(id1));
-        assertNotNull(instance.getImageInfo(id2));
+        assertFalse(instance.getInfo(id1).isPresent());
+        assertTrue(instance.getInfo(id2).isPresent());
     }
 
     /* purge(OperationList) */
@@ -353,7 +352,7 @@ abstract class AbstractCacheTest extends BaseTest {
         instance.put(id1, info1);
 
         // assert that they've been added
-        assertNotNull(instance.getImageInfo(id1));
+        assertNotNull(instance.getInfo(id1));
         assertExists(instance, ops1);
 
         // wait for them to invalidate
@@ -375,14 +374,14 @@ abstract class AbstractCacheTest extends BaseTest {
         instance.put(id2, new Info());
 
         // assert that they've been added
-        assertNotNull(instance.getImageInfo(id2));
+        assertNotNull(instance.getInfo(id2));
         assertExists(instance, ops2);
 
         instance.purgeInvalid();
 
         // assert that one image and one info have been purged
-        assertNull(instance.getImageInfo(id1));
-        assertNotNull(instance.getImageInfo(id2));
+        assertFalse(instance.getInfo(id1).isPresent());
+        assertTrue(instance.getInfo(id2).isPresent());
         assertNotExists(instance, ops1);
         assertExists(instance, ops2);
     }
@@ -397,14 +396,14 @@ abstract class AbstractCacheTest extends BaseTest {
 
         instance.put(identifier, info);
 
-        Info actualInfo = instance.getImageInfo(identifier);
-        assertEquals(info, actualInfo);
+        Optional<Info> actualInfo = instance.getInfo(identifier);
+        assertEquals(info, actualInfo.orElseThrow());
     }
 
     /**
      * Tests that concurrent calls of {@link
      * DerivativeCache#put(Identifier, Info)} and {@link
-     * DerivativeCache#getImageInfo(Identifier)} don't conflict.
+     * DerivativeCache#getInfo(Identifier)} don't conflict.
      */
     @Test
     public void testPutConcurrently() throws Exception {
@@ -416,8 +415,8 @@ abstract class AbstractCacheTest extends BaseTest {
             instance.put(identifier, info);
             return null;
         }, () -> {
-            Info otherInfo = instance.getImageInfo(identifier);
-            if (otherInfo != null && !info.equals(otherInfo)) {
+            Optional<Info> otherInfo = instance.getInfo(identifier);
+            if (otherInfo.isPresent() && !info.equals(otherInfo.get())) {
                 fail();
             }
             return null;

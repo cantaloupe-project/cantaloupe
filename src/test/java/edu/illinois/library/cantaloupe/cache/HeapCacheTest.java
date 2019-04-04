@@ -134,7 +134,7 @@ public class HeapCacheTest extends AbstractCacheTest {
         assertEquals(5439 + info.toJSON().length(), instance.getByteSize());
     }
 
-    /* getImageInfo(Identifier) */
+    /* getInfo(Identifier) */
 
     /**
      * Override that does nothing as this cache does not invalidate on the
@@ -142,7 +142,7 @@ public class HeapCacheTest extends AbstractCacheTest {
      */
     @Test
     @Override
-    public void testGetImageInfoWithExistingInvalidImage() {}
+    public void testGetInfoWithExistingInvalidImage() {}
 
     /* getTargetByteSize() */
 

@@ -24,6 +24,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
+import java.util.Optional;
 
 /**
  * <p>Cache using Redis via the <a href="http://redis.paluch.biz">Lettuce</a>
@@ -218,14 +219,14 @@ class RedisCache implements DerivativeCache {
     }
 
     @Override
-    public Info getImageInfo(Identifier identifier) throws IOException {
+    public Optional<Info> getInfo(Identifier identifier) throws IOException {
         byte[] json = getConnection().sync().hget(INFO_HASH_KEY,
                 infoKey(identifier));
         if (json != null) {
             String jsonStr = new String(json, StandardCharsets.UTF_8);
-            return Info.fromJSON(jsonStr);
+            return Optional.of(Info.fromJSON(jsonStr));
         }
-        return null;
+        return Optional.empty();
     }
 
     @Override

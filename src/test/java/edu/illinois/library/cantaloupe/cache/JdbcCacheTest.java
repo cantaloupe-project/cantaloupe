@@ -170,7 +170,7 @@ public class JdbcCacheTest extends AbstractCacheTest {
         assertEquals(expected, actual);
     }
 
-    /* getImageInfo(Identifier) */
+    /* getInfo(Identifier) */
 
     @Test
     public void testGetImageInfoUpdatesLastAccessedTime() throws Exception {
@@ -194,7 +194,7 @@ public class JdbcCacheTest extends AbstractCacheTest {
             Thread.sleep(10);
 
             // this should cause the last-accessed time to update asynchronously
-            instance.getImageInfo(identifier);
+            instance.getInfo(identifier);
 
             Thread.sleep(100);
 

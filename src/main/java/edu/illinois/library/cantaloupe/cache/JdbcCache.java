@@ -22,6 +22,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.Calendar;
+import java.util.Optional;
 
 /**
  * <p>Cache using a database table, storing images as BLOBs and image infos
@@ -308,7 +309,7 @@ class JdbcCache implements DerivativeCache {
     }
 
     @Override
-    public Info getImageInfo(Identifier identifier) throws IOException {
+    public Optional<Info> getInfo(Identifier identifier) throws IOException {
         final String sql = String.format(
                 "SELECT %s FROM %s WHERE %s = ? AND %s >= ?",
                 INFO_TABLE_INFO_COLUMN,
@@ -329,7 +330,7 @@ class JdbcCache implements DerivativeCache {
 
                     LOGGER.debug("Hit for info: {}", identifier);
                     String json = resultSet.getString(1);
-                    return Info.fromJSON(json);
+                    return Optional.of(Info.fromJSON(json));
                 } else {
                     LOGGER.debug("Miss for info: {}", identifier);
                     purgeInfoAsync(identifier);
@@ -338,7 +339,7 @@ class JdbcCache implements DerivativeCache {
         } catch (SQLException e) {
             throw new IOException(e.getMessage(), e);
         }
-        return null;
+        return Optional.empty();
     }
 
     @Override

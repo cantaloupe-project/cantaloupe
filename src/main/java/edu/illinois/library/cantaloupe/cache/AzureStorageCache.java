@@ -27,6 +27,7 @@ import java.net.URISyntaxException;
 import java.security.InvalidKeyException;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentSkipListSet;
 
@@ -140,7 +141,7 @@ class AzureStorageCache implements DerivativeCache {
     }
 
     @Override
-    public Info getImageInfo(Identifier identifier) throws IOException {
+    public Optional<Info> getInfo(Identifier identifier) throws IOException {
         final String containerName = getContainerName();
         final CloudBlobClient client = getClientInstance();
 
@@ -155,12 +156,12 @@ class AzureStorageCache implements DerivativeCache {
                 if (isValid(blob)) {
                     try (InputStream is = blob.openInputStream()) {
                         Info info = Info.fromJSON(is);
-                        LOGGER.debug("getImageInfo(): read {} from container {} in {}",
+                        LOGGER.debug("getInfo(): read {} from container {} in {}",
                                 objectKey, containerName, watch);
-                        return info;
+                        return Optional.of(info);
                     }
                 } else {
-                    LOGGER.debug("getImageInfo(): deleting invalid item " +
+                    LOGGER.debug("getInfo(): deleting invalid item " +
                                     "asynchronously: {} in container {}",
                             objectKey, containerName);
                     purgeAsync(blob);
@@ -169,7 +170,7 @@ class AzureStorageCache implements DerivativeCache {
         } catch (URISyntaxException | StorageException e) {
             throw new IOException(e.getMessage(), e);
         }
-        return null;
+        return Optional.empty();
     }
 
     @Override

@@ -26,6 +26,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.RejectedExecutionException;
@@ -350,15 +351,14 @@ class HeapCache implements DerivativeCache {
     }
 
     @Override
-    public Info getImageInfo(Identifier identifier) throws IOException {
-        Info info = null;
+    public Optional<Info> getInfo(Identifier identifier) throws IOException {
         Item item = get(itemKey(identifier));
         if (item != null) {
-            LOGGER.debug("getImageInfo(): hit for {}", identifier);
-
-            info = Info.fromJSON(new String(item.getData(), StandardCharsets.UTF_8));
+            LOGGER.debug("getInfo(): hit for {}", identifier);
+            Info info = Info.fromJSON(new String(item.getData(), StandardCharsets.UTF_8));
+            return Optional.of(info);
         }
-        return info;
+        return Optional.empty();
     }
 
     private List<Key> getKeysSortedByLastAccessedTime() {

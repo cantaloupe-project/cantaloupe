@@ -30,7 +30,7 @@ import java.util.Objects;
  * processor} should be {@link #equals(Object) equal} to an instance describing
  * the same image returned from a different processor. This preserves the
  * freedom to change processor assignments without invalidating any
- * {@link DerivativeCache#getImageInfo(Identifier) cached instances}.</p>
+ * {@link DerivativeCache#getInfo(Identifier) cached instances}.</p>
  *
  * <p>All sizes are raw pixel data sizes, disregarding orientation.</p>
  *

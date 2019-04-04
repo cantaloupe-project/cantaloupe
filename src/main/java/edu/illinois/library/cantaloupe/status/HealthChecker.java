@@ -207,7 +207,7 @@ public final class HealthChecker {
                 // Write to the cache.
                 dCache.put(identifier, new Info());
                 // Read it back.
-                dCache.getImageInfo(identifier);
+                dCache.getInfo(identifier);
             } catch (Throwable t) {
                 health.setMinColor(Health.Color.RED);
                 String message = String.format("%s: %s",

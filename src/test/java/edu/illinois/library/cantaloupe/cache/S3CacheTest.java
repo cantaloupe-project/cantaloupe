@@ -184,14 +184,14 @@ public class S3CacheTest extends AbstractCacheTest {
                 instance.getBucketName());
     }
 
-    /* getImageInfo(Identifier) */
+    /* getInfo(Identifier) */
 
     @Test
     @Override
-    public void testGetImageInfoWithExistingInvalidImage() throws Exception {
+    public void testGetInfoWithExistingInvalidImage() throws Exception {
         assumeFalse(Service.S3MOCK.equals(getService()));
 
-        super.testGetImageInfoWithExistingInvalidImage();
+        super.testGetInfoWithExistingInvalidImage();
     }
 
     @Test
@@ -208,7 +208,7 @@ public class S3CacheTest extends AbstractCacheTest {
 
         for (int i = 0; i < 10; i++) {
             Thread.sleep(250);
-            assertNotNull(instance.getImageInfo(identifier));
+            assertNotNull(instance.getInfo(identifier));
         }
     }
 

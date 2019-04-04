@@ -35,6 +35,7 @@ import java.net.URISyntaxException;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
+import java.util.Optional;
 
 /**
  * <p>Cache using an S3 bucket.</p>
@@ -262,7 +263,7 @@ class S3Cache implements DerivativeCache {
     }
 
     @Override
-    public Info getImageInfo(Identifier identifier) throws IOException {
+    public Optional<Info> getInfo(Identifier identifier) throws IOException {
         final AmazonS3 s3 = getClientInstance();
         final String bucketName = getBucketName();
         final String objectKey = getObjectKey(identifier);
@@ -277,11 +278,10 @@ class S3Cache implements DerivativeCache {
                 try (InputStream is =
                              new BufferedInputStream(object.getObjectContent())) {
                     final Info info = Info.fromJSON(is);
-                    LOGGER.debug("getImageInfo(): read {} from bucket {} in {}",
+                    LOGGER.debug("getInfo(): read {} from bucket {} in {}",
                             objectKey, bucketName, watch);
-
                     touchAsync(objectKey);
-                    return info;
+                    return Optional.of(info);
                 }
             } else {
                 LOGGER.debug("{} in bucket {} is invalid; purging asynchronously",
@@ -295,7 +295,7 @@ class S3Cache implements DerivativeCache {
         } catch (SdkBaseException e) {
             throw new IOException(e);
         }
-        return null;
+        return Optional.empty();
     }
 
     @Override

@@ -12,6 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.util.Optional;
 
 /**
  * <p>Used to obtain {@link Info} instances in an efficient way, utilizing
@@ -72,25 +73,26 @@ public final class InfoService {
         if (info != null) {
             LOGGER.debug("getInfo(): retrieved from {}: {}",
                     infoCache.getClass().getSimpleName(), identifier);
-        } else {
-            // Check the derivative cache.
-            final DerivativeCache derivCache = CacheFactory.getDerivativeCache();
-            if (derivCache != null) {
-                Stopwatch watch = new Stopwatch();
-                info = derivCache.getImageInfo(identifier);
-                if (info != null) {
-                    LOGGER.debug("getInfo(): retrieved info of {} from {} in {}",
-                            identifier,
-                            derivCache.getClass().getSimpleName(),
-                            watch);
-
-                    // Add it to the object cache (which it may already exist
-                    // in, but it doesn't matter).
-                    putInObjectCache(identifier, info);
-                }
+            return info;
+        }
+        // Check the derivative cache.
+        final DerivativeCache derivCache = CacheFactory.getDerivativeCache();
+        if (derivCache != null) {
+            Stopwatch watch = new Stopwatch();
+            Optional<Info> optInfo = derivCache.getInfo(identifier);
+            if (optInfo.isPresent()) {
+                LOGGER.debug("getInfo(): retrieved info of {} from {} in {}",
+                        identifier,
+                        derivCache.getClass().getSimpleName(),
+                        watch);
+                // Add it to the object cache (which it may already exist
+                // in, but it doesn't matter).
+                info = optInfo.get();
+                putInObjectCache(identifier, info);
+                return info;
             }
         }
-        return info;
+        return null;
     }
 
     /**

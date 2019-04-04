@@ -7,6 +7,7 @@ import edu.illinois.library.cantaloupe.image.Info;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Optional;
 
 /**
  * <p>Interface to be implemented by cache that cache derivative images and
@@ -24,11 +25,9 @@ public interface DerivativeCache extends Cache {
      * should delete it&mdash;ideally asynchronously.</p>
      *
      * @param identifier Image identifier for which to retrieve information.
-     * @return Info corresponding to the given identifier, or
-     *         <code>null</code> if no valid info exists in the cache.
-     * @throws IOException
+     * @return           Info corresponding to the given identifier.
      */
-    Info getImageInfo(Identifier identifier) throws IOException;
+    Optional<Info> getInfo(Identifier identifier) throws IOException;
 
     /**
      * <p>Returns an input stream corresponding to the given operation list,
@@ -42,8 +41,7 @@ public interface DerivativeCache extends Cache {
      * @param opList Operation list for which to retrieve an input stream for
      *               reading from the cache.
      * @return Input stream corresponding to the given operation list, or
-     *         <code>null</code> if a valid image does not exist in the cache.
-     * @throws IOException
+     *         {@literal null} if a valid image does not exist in the cache.
      */
     InputStream newDerivativeImageInputStream(OperationList opList)
             throws IOException;
@@ -58,7 +56,6 @@ public interface DerivativeCache extends Cache {
      *               writing to the cache.
      * @return Output stream to which an image corresponding to the given
      *         operation list can be written.
-     * @throws IOException
      */
     OutputStream newDerivativeImageOutputStream(OperationList opList)
             throws IOException;
@@ -84,7 +81,6 @@ public interface DerivativeCache extends Cache {
      * @param identifier Image identifier.
      * @param imageInfo Info containing information about the image with
      *                  the given identifier.
-     * @throws IOException
      */
     void put(Identifier identifier, Info imageInfo) throws IOException;
 
