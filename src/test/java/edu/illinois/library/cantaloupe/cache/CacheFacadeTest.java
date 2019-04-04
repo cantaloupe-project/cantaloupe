@@ -139,7 +139,7 @@ public class CacheFacadeTest extends BaseTest {
 
         Identifier identifier = new Identifier("cats");
 
-        assertNull(instance.getSourceCacheFile(identifier));
+        assertFalse(instance.getSourceCacheFile(identifier).isPresent());
     }
 
     @Test

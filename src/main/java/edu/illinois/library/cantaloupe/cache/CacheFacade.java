@@ -81,21 +81,18 @@ public final class CacheFacade {
 
     /**
      * @param identifier Image identifier.
-     * @return           Path of a file corresponding to the given identifier
-     *                   in the source cache, or {@literal null} if none
+     * @return           Path of a valid file corresponding to the given
+     *                   identifier in the source cache, or empty if none
      *                   exists.
      * @see SourceCache#getSourceImageFile(Identifier)
      */
-    public Path getSourceCacheFile(Identifier identifier) throws IOException {
+    public Optional<Path> getSourceCacheFile(Identifier identifier)
+            throws IOException {
         Optional<SourceCache> optSourceCache = getSourceCache();
         if (optSourceCache.isPresent()) {
-            Optional<Path> optFile =
-                    optSourceCache.get().getSourceImageFile(identifier);
-            if (optFile.isPresent()) {
-                return optFile.get();
-            }
+            return optSourceCache.get().getSourceImageFile(identifier);
         }
-        return null;
+        return Optional.empty();
     }
 
     public boolean isDerivativeCacheAvailable() {

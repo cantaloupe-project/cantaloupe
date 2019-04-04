@@ -108,8 +108,8 @@ public class ImageResource extends IIIF1Resource {
         // If we are resolving first, or if the source image is not present in
         // the source cache (if enabled), check access to it in preparation for
         // retrieval.
-        final Path sourceImage = cacheFacade.getSourceCacheFile(identifier);
-        if (sourceImage == null || isResolvingFirst()) {
+        final Optional<Path> sourceImage = cacheFacade.getSourceCacheFile(identifier);
+        if (sourceImage.isEmpty() || isResolvingFirst()) {
             try {
                 source.checkAccess();
             } catch (NoSuchFileException e) { // this needs to be rethrown!
@@ -127,8 +127,8 @@ public class ImageResource extends IIIF1Resource {
             // cache, read the format from the source-cached-file, as we will
             // expect source cache access to be more efficient.
             // Otherwise, read it from the source.
-            if (!isResolvingFirst() && sourceImage != null) {
-                List<MediaType> mediaTypes = MediaType.detectMediaTypes(sourceImage);
+            if (!isResolvingFirst() && sourceImage.isPresent()) {
+                List<MediaType> mediaTypes = MediaType.detectMediaTypes(sourceImage.get());
                 if (!mediaTypes.isEmpty()) {
                     sourceFormat = mediaTypes.get(0).toFormat();
                 }
