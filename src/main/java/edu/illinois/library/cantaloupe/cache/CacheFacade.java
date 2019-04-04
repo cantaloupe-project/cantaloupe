@@ -27,9 +27,9 @@ public final class CacheFacade {
      */
     public void cleanUp() throws IOException {
         // Clean up the derivative cache.
-        DerivativeCache derivativeCache = getDerivativeCache();
-        if (derivativeCache != null) {
-            derivativeCache.cleanUp();
+        Optional<DerivativeCache> optDerivativeCache = getDerivativeCache();
+        if (optDerivativeCache.isPresent()) {
+            optDerivativeCache.get().cleanUp();
         }
 
         // Clean up the source cache.
@@ -42,8 +42,12 @@ public final class CacheFacade {
     /**
      * @see CacheFactory#getDerivativeCache
      */
-    public DerivativeCache getDerivativeCache() {
-        return CacheFactory.getDerivativeCache();
+    public Optional<DerivativeCache> getDerivativeCache() {
+        DerivativeCache cache = CacheFactory.getDerivativeCache();
+        if (cache != null) {
+            return Optional.of(cache);
+        }
+        return Optional.empty();
     }
 
     /**
@@ -96,7 +100,7 @@ public final class CacheFacade {
     }
 
     public boolean isDerivativeCacheAvailable() {
-        return getDerivativeCache() != null;
+        return getDerivativeCache().isPresent();
     }
 
     public boolean isInfoCacheAvailable() {
@@ -108,9 +112,9 @@ public final class CacheFacade {
      */
     public InputStream newDerivativeImageInputStream(OperationList opList)
             throws IOException {
-        DerivativeCache derivativeCache = getDerivativeCache();
-        if (derivativeCache != null) {
-            return derivativeCache.newDerivativeImageInputStream(opList);
+        Optional<DerivativeCache> optCache = getDerivativeCache();
+        if (optCache.isPresent()) {
+            return optCache.get().newDerivativeImageInputStream(opList);
         }
         return null;
     }
@@ -120,9 +124,9 @@ public final class CacheFacade {
      */
     public OutputStream newDerivativeImageOutputStream(OperationList opList)
             throws IOException {
-        DerivativeCache derivativeCache = getDerivativeCache();
-        if (derivativeCache != null) {
-            return derivativeCache.newDerivativeImageOutputStream(opList);
+        Optional<DerivativeCache> optCache = getDerivativeCache();
+        if (optCache.isPresent()) {
+            return optCache.get().newDerivativeImageOutputStream(opList);
         }
         return null;
     }
@@ -135,9 +139,9 @@ public final class CacheFacade {
         InfoService.getInstance().purgeObjectCache();
 
         // Purge the derivative cache.
-        DerivativeCache derivativeCache = getDerivativeCache();
-        if (derivativeCache != null) {
-            derivativeCache.purge();
+        Optional<DerivativeCache> optDerivativeCache = getDerivativeCache();
+        if (optDerivativeCache.isPresent()) {
+            optDerivativeCache.get().purge();
         }
 
         // Purge the source cache.
@@ -155,9 +159,9 @@ public final class CacheFacade {
         InfoService.getInstance().purgeObjectCache(identifier);
 
         // Purge it from the derivative cache.
-        DerivativeCache derivativeCache = getDerivativeCache();
-        if (derivativeCache != null) {
-            derivativeCache.purge(identifier);
+        Optional<DerivativeCache> optDerivativeCache = getDerivativeCache();
+        if (optDerivativeCache.isPresent()) {
+            optDerivativeCache.get().purge(identifier);
         }
 
         // Purge it from the source cache.
@@ -185,9 +189,9 @@ public final class CacheFacade {
      * @see DerivativeCache#purge(OperationList)
      */
     public void purge(OperationList opList) throws IOException {
-        DerivativeCache derivativeCache = getDerivativeCache();
-        if (derivativeCache != null) {
-            derivativeCache.purge(opList);
+        Optional<DerivativeCache> optCache = getDerivativeCache();
+        if (optCache.isPresent()) {
+            optCache.get().purge(opList);
         }
     }
 
@@ -196,9 +200,9 @@ public final class CacheFacade {
      */
     public void purgeExpired() throws IOException {
         // Purge the derivative cache.
-        DerivativeCache derivativeCache = getDerivativeCache();
-        if (derivativeCache != null) {
-            derivativeCache.purgeInvalid();
+        Optional<DerivativeCache> optDerivativeCache = getDerivativeCache();
+        if (optDerivativeCache.isPresent()) {
+            optDerivativeCache.get().purgeInvalid();
         }
 
         // Purge the source cache.

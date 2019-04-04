@@ -43,19 +43,20 @@ class CacheWorker implements Runnable {
 
         // If the derivative cache is HeapCache, and its persistence is
         // enabled, dump it.
-        DerivativeCache cache = cacheFacade.getDerivativeCache();
-        if (cache != null && cache instanceof HeapCache) {
-            HeapCache heapCache = (HeapCache) cache;
-            if (heapCache.isPersistenceEnabled()) {
-                try {
-                    heapCache.dumpToPersistentStore();
-                } catch (IOException e) {
-                    LOGGER.error("Error while persisting {}: {}",
-                            HeapCache.class.getSimpleName(),
-                            e.getMessage());
+        cacheFacade.getDerivativeCache().ifPresent(cache -> {
+            if (cache instanceof HeapCache) {
+                HeapCache heapCache = (HeapCache) cache;
+                if (heapCache.isPersistenceEnabled()) {
+                    try {
+                        heapCache.dumpToPersistentStore();
+                    } catch (IOException e) {
+                        LOGGER.error("Error while persisting {}: {}",
+                                HeapCache.class.getSimpleName(),
+                                e.getMessage());
+                    }
                 }
             }
-        }
+        });
 
         LOGGER.info("Done working. Next shift starts in {} seconds.", interval);
     }

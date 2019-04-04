@@ -197,8 +197,10 @@ public final class HealthChecker {
      */
     private static synchronized void checkDerivativeCache(Health health) {
         final CacheFacade cacheFacade = new CacheFacade();
-        final DerivativeCache dCache = cacheFacade.getDerivativeCache();
-        if (dCache != null) {
+        final Optional<DerivativeCache> optDerivativeCache =
+                cacheFacade.getDerivativeCache();
+        if (optDerivativeCache.isPresent()) {
+            DerivativeCache dCache = optDerivativeCache.get();
             LOGGER.debug("Checking {}", dCache);
 
             final Identifier identifier =

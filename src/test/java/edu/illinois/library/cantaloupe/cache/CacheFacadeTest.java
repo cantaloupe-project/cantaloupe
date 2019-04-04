@@ -66,13 +66,13 @@ public class CacheFacadeTest extends BaseTest {
     @Test
     public void testGetDerivativeCacheWhenEnabled() {
         enableDerivativeCache();
-        assertNotNull(instance.getDerivativeCache());
+        assertTrue(instance.getDerivativeCache().isPresent());
     }
 
     @Test
     public void testGetDerivativeCacheWhenDisabled() {
         disableDerivativeCache();
-        assertNull(instance.getDerivativeCache());
+        assertFalse(instance.getDerivativeCache().isPresent());
     }
 
     /* getInfo() */

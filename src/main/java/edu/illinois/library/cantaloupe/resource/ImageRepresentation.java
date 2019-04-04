@@ -12,7 +12,6 @@ import edu.illinois.library.cantaloupe.processor.ProcessorException;
 import edu.illinois.library.cantaloupe.processor.StreamProcessor;
 import edu.illinois.library.cantaloupe.source.StreamFactory;
 import edu.illinois.library.cantaloupe.util.Stopwatch;
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.output.TeeOutputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,6 +21,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Optional;
 
 /**
  * Representation that {@link Processor processes} an image and writes the
@@ -79,23 +79,26 @@ public class ImageRepresentation implements Representation {
 
         // A derivative cache is available, so try to copy the image from the
         // cache to the response.
-        final DerivativeCache cache = cacheFacade.getDerivativeCache();
-        try (InputStream cacheIS = cache.newDerivativeImageInputStream(opList)) {
-            if (cacheIS != null) {
-                // The image is available, so write it to the response.
-                final Stopwatch watch = new Stopwatch();
-                cacheIS.transferTo(responseOS);
+        final Optional<DerivativeCache> optCache = cacheFacade.getDerivativeCache();
+        if (optCache.isPresent()) {
+            DerivativeCache cache = optCache.get();
+            try (InputStream cacheIS = cache.newDerivativeImageInputStream(opList)) {
+                if (cacheIS != null) {
+                    // The image is available, so write it to the response.
+                    final Stopwatch watch = new Stopwatch();
+                    cacheIS.transferTo(responseOS);
 
-                LOGGER.debug("Streamed from {} in {}: {}",
-                        cache.getClass().getSimpleName(), watch, opList);
+                    LOGGER.debug("Streamed from {} in {}: {}",
+                            cache.getClass().getSimpleName(), watch, opList);
+                    return;
+                }
+            } catch (IOException e) {
+                LOGGER.error("Failed to read from {}: {}",
+                        cache.getClass().getSimpleName(), e.getMessage(), e);
+                // It may still be possible to fulfill the request.
+                copyOrProcess(responseOS);
                 return;
             }
-        } catch (IOException e) {
-            LOGGER.error("Failed to read from {}: {}",
-                    cache.getClass().getSimpleName(), e.getMessage(), e);
-            // It may still be possible to fulfill the request.
-            copyOrProcess(responseOS);
-            return;
         }
 
         // At this point, a derivative cache is available, but it doesn't
@@ -106,10 +109,10 @@ public class ImageRepresentation implements Representation {
         // N.B.: Closing responseOutputStream is the Servlet container's
         // responsibility. This means we also can't close teeOutputStream,
         // because doing so would close its wrapped streams. So, we have to
-        // leave its closure up to the finalizer. But, when teeOutputStream is
-        // closed, its wrapped streams' close() methods will have been called
-        // twice, so it's important that these two streams' close() methods can
-        // deal with being called twice.
+        // leave its closure up to the finalizer. But, when that happens, its
+        // wrapped streams' close() methods will have been called twice, so
+        // it's important that these two streams' close() methods can deal with
+        // that.
         try (OutputStream cacheOS =
                      cacheFacade.newDerivativeImageOutputStream(opList)) {
             OutputStream teeOS = new TeeOutputStream(responseOS, cacheOS);
