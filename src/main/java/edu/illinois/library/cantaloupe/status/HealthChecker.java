@@ -162,16 +162,17 @@ public final class HealthChecker {
      */
     private static synchronized void checkSourceCache(Health health) {
         final CacheFacade cacheFacade = new CacheFacade();
-        final SourceCache sCache = cacheFacade.getSourceCache();
-        if (sCache != null) {
-            LOGGER.debug("Checking {}", sCache);
+        final Optional<SourceCache> optSrcCache = cacheFacade.getSourceCache();
+        if (optSrcCache.isPresent()) {
+            final SourceCache srcCache = optSrcCache.get();
+            LOGGER.debug("Checking {}", srcCache);
             final Identifier identifier =
                     new Identifier("HealthCheck-" + UUID.randomUUID());
             try {
                 // Exercise the cache. Errors will throw exceptions.
-                sCache.purge(identifier);
+                srcCache.purge(identifier);
                 // Write a file to disk.
-                try (OutputStream os = sCache.newSourceImageOutputStream(identifier)) {
+                try (OutputStream os = srcCache.newSourceImageOutputStream(identifier)) {
                     String message = String.format("This file written by %s",
                             HealthChecker.class.getName());
                     byte[] data = message.getBytes(StandardCharsets.UTF_8);
@@ -179,12 +180,12 @@ public final class HealthChecker {
                     os.flush();
                 }
                 // Read it back.
-                Optional<Path> path = sCache.getSourceImageFile(identifier);
+                Optional<Path> path = srcCache.getSourceImageFile(identifier);
                 Files.readAllBytes(path.orElseThrow());
             } catch (Throwable t) {
                 health.setMinColor(Health.Color.RED);
                 String message = String.format("%s: %s",
-                        sCache.getClass().getSimpleName(),
+                        srcCache.getClass().getSimpleName(),
                         t.getMessage());
                 health.setMessage(message);
             }

@@ -111,7 +111,7 @@ public class CacheFacadeTest extends BaseTest {
 
     @Test
     public void testGetSourceCache() {
-        assertNotNull(instance.getSourceCache());
+        assertTrue(instance.getSourceCache().isPresent());
     }
 
     /* getSourceCacheFile() */

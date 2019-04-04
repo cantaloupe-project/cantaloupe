@@ -33,9 +33,9 @@ public final class CacheFacade {
         }
 
         // Clean up the source cache.
-        SourceCache sourceCache = getSourceCache();
-        if (sourceCache != null) {
-            sourceCache.cleanUp();
+        Optional<SourceCache> optSourceCache = getSourceCache();
+        if (optSourceCache.isPresent()) {
+            optSourceCache.get().cleanUp();
         }
     }
 
@@ -71,8 +71,12 @@ public final class CacheFacade {
     /**
      * @see CacheFactory#getSourceCache
      */
-    public SourceCache getSourceCache() {
-        return CacheFactory.getSourceCache();
+    public Optional<SourceCache> getSourceCache() {
+        SourceCache srcCache = CacheFactory.getSourceCache();
+        if (srcCache != null) {
+            return Optional.of(srcCache);
+        }
+        return Optional.empty();
     }
 
     /**
@@ -83,9 +87,10 @@ public final class CacheFacade {
      * @see SourceCache#getSourceImageFile(Identifier)
      */
     public Path getSourceCacheFile(Identifier identifier) throws IOException {
-        SourceCache sourceCache = getSourceCache();
-        if (sourceCache != null) {
-            Optional<Path> optFile = sourceCache.getSourceImageFile(identifier);
+        Optional<SourceCache> optSourceCache = getSourceCache();
+        if (optSourceCache.isPresent()) {
+            Optional<Path> optFile =
+                    optSourceCache.get().getSourceImageFile(identifier);
             if (optFile.isPresent()) {
                 return optFile.get();
             }
@@ -139,9 +144,9 @@ public final class CacheFacade {
         }
 
         // Purge the source cache.
-        SourceCache sourceCache = getSourceCache();
-        if (sourceCache != null) {
-            sourceCache.purge();
+        Optional<SourceCache> optSourceCache = getSourceCache();
+        if (optSourceCache.isPresent()) {
+            optSourceCache.get().purge();
         }
     }
 
@@ -159,9 +164,9 @@ public final class CacheFacade {
         }
 
         // Purge it from the source cache.
-        SourceCache sourceCache = getSourceCache();
-        if (sourceCache != null) {
-            sourceCache.purge(identifier);
+        Optional<SourceCache> optSourceCache = getSourceCache();
+        if (optSourceCache.isPresent()) {
+            optSourceCache.get().purge(identifier);
         }
     }
 
@@ -200,9 +205,9 @@ public final class CacheFacade {
         }
 
         // Purge the source cache.
-        SourceCache sourceCache = getSourceCache();
-        if (sourceCache != null) {
-            sourceCache.purgeInvalid();
+        Optional<SourceCache> optSourceCache = getSourceCache();
+        if (optSourceCache.isPresent()) {
+            optSourceCache.get().purgeInvalid();
         }
     }
 
