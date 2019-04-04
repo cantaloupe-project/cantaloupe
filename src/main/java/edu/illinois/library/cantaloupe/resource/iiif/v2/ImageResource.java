@@ -32,6 +32,7 @@ import java.io.InputStream;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -95,8 +96,9 @@ public class ImageResource extends IIIF2Resource {
         // 2. Otherwise, if the cache contains a relevant info, get it to avoid
         //    having to get it from a source later.
         if (!isBypassingCache() && !isResolvingFirst()) {
-            final Info info = cacheFacade.getInfo(identifier);
-            if (info != null) {
+            final Optional<Info> optInfo = cacheFacade.getInfo(identifier);
+            if (optInfo.isPresent()) {
+                Info info = optInfo.get();
                 ops.setScaleConstraint(getScaleConstraint());
                 ops.applyNonEndpointMutations(info, getDelegateProxy());
 

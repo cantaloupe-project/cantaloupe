@@ -82,8 +82,8 @@ public class CacheFacadeTest extends BaseTest {
         final Identifier identifier = new Identifier("jpg");
 
         Optional<Info> expected = InfoService.getInstance().getInfo(identifier);
-        Info actual = instance.getInfo(identifier);
-        assertEquals(expected.orElse(null), actual);
+        Optional<Info> actual = instance.getInfo(identifier);
+        assertEquals(expected, actual);
     }
 
     /* getOrReadInfo() */

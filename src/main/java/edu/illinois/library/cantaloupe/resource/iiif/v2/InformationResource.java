@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Optional;
 
 import edu.illinois.library.cantaloupe.cache.CacheFacade;
 import edu.illinois.library.cantaloupe.config.Configuration;
@@ -76,16 +77,16 @@ public class InformationResource extends IIIF2Resource {
         // just return the cached info.
         if (!isBypassingCache() && !isResolvingFirst()) {
             try {
-                Info info = cacheFacade.getInfo(identifier);
-                if (info != null) {
+                Optional<Info> info = cacheFacade.getInfo(identifier);
+                if (info.isPresent()) {
                     // The source format will be null or UNKNOWN if the info was
                     // serialized in version < 3.4.
-                    final Format format = info.getSourceFormat();
+                    final Format format = info.get().getSourceFormat();
                     if (format != null && !Format.UNKNOWN.equals(format)) {
                         final Processor processor = new ProcessorFactory().
                                 newProcessor(format);
                         addHeaders();
-                        newRepresentation(info, processor)
+                        newRepresentation(info.get(), processor)
                                 .write(getResponse().getOutputStream());
                         return;
                     }

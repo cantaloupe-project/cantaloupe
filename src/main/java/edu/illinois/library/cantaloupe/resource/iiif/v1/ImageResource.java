@@ -29,6 +29,7 @@ import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -87,8 +88,9 @@ public class ImageResource extends IIIF1Resource {
         Format sourceFormat = Format.UNKNOWN;
         if (!isBypassingCache() && !isResolvingFirst()) {
             try {
-                Info info = cacheFacade.getInfo(identifier);
-                if (info != null) {
+                Optional<Info> optInfo = cacheFacade.getInfo(identifier);
+                if (optInfo.isPresent()) {
+                    Info info = optInfo.get();
                     Format infoFormat = info.getSourceFormat();
                     if (infoFormat != null) {
                         sourceFormat = infoFormat;
