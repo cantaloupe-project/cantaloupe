@@ -15,6 +15,7 @@ import org.junit.Test;
 
 import java.io.IOException;
 import java.nio.file.Files;
+import java.util.Optional;
 
 import static org.junit.Assert.*;
 
@@ -76,8 +77,8 @@ public class InfoServiceTest extends BaseTest {
         final Info info = new Info();
         instance.putInObjectCache(identifier, info);
 
-        Info actualInfo = instance.getInfo(identifier);
-        assertEquals(info, actualInfo);
+        Optional<Info> actualInfo = instance.getInfo(identifier);
+        assertEquals(info, actualInfo.orElseThrow());
     }
 
     @Test
@@ -90,16 +91,16 @@ public class InfoServiceTest extends BaseTest {
         DerivativeCache cache = CacheFactory.getDerivativeCache();
         cache.put(identifier, info);
 
-        Info actualInfo = instance.getInfo(identifier);
-        assertEquals(info, actualInfo);
+        Optional<Info> actualInfo = instance.getInfo(identifier);
+        assertEquals(info, actualInfo.orElseThrow());
     }
 
     @Test
     public void testGetInfoWithMissEverywhere() throws Exception {
         final Identifier identifier = new Identifier("jpg");
 
-        Info info = instance.getInfo(identifier);
-        assertNull(info);
+        Optional<Info> info = instance.getInfo(identifier);
+        assertFalse(info.isPresent());
     }
 
     /* getOrReadInfo() */

@@ -18,6 +18,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Optional;
 
 import static org.junit.Assert.*;
 
@@ -80,9 +81,9 @@ public class CacheFacadeTest extends BaseTest {
     public void testGetInfo() throws Exception {
         final Identifier identifier = new Identifier("jpg");
 
-        Info expected = InfoService.getInstance().getInfo(identifier);
+        Optional<Info> expected = InfoService.getInstance().getInfo(identifier);
         Info actual = instance.getInfo(identifier);
-        assertEquals(expected, actual);
+        assertEquals(expected.orElse(null), actual);
     }
 
     /* getOrReadInfo() */

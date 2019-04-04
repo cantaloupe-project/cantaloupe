@@ -66,14 +66,13 @@ public final class InfoService {
      *                     from the cache.
      * @see #getOrReadInfo(Identifier, Processor)
      */
-    Info getInfo(final Identifier identifier) throws IOException {
+    Optional<Info> getInfo(final Identifier identifier) throws IOException {
         // Check the info cache.
         Info info = infoCache.get(identifier);
-
         if (info != null) {
             LOGGER.debug("getInfo(): retrieved from {}: {}",
                     infoCache.getClass().getSimpleName(), identifier);
-            return info;
+            return Optional.of(info);
         }
         // Check the derivative cache.
         final DerivativeCache derivCache = CacheFactory.getDerivativeCache();
@@ -85,14 +84,13 @@ public final class InfoService {
                         identifier,
                         derivCache.getClass().getSimpleName(),
                         watch);
-                // Add it to the object cache (which it may already exist
-                // in, but it doesn't matter).
-                info = optInfo.get();
-                putInObjectCache(identifier, info);
-                return info;
+                // Add it to the object cache (where it may already exist,
+                // but it doesn't matter).
+                putInObjectCache(identifier, optInfo.get());
             }
+            return optInfo;
         }
-        return null;
+        return Optional.empty();
     }
 
     /**
@@ -129,17 +127,18 @@ public final class InfoService {
     Info getOrReadInfo(final Identifier identifier, final Processor proc)
             throws IOException {
         // Try to retrieve it from an object or derivative cache.
-        Info info = getInfo(identifier);
-        if (info == null) {
+        Optional<Info> optInfo = getInfo(identifier);
+        if (optInfo.isEmpty()) {
             // Read it from the processor and then add it to both the
             // derivative and object caches.
-            info = readInfo(identifier, proc);
+            Info info = readInfo(identifier, proc);
 
             // Add it to the derivative and object caches.
             final DerivativeCache derivCache = CacheFactory.getDerivativeCache();
             putInCachesAsync(identifier, info, derivCache);
+            return info;
         }
-        return info;
+        return optInfo.get();
     }
 
     boolean isObjectCacheEnabled() {
