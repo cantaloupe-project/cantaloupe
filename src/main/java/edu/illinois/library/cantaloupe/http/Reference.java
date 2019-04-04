@@ -132,7 +132,7 @@ public final class Reference {
         final String pathHeader = headers.getFirstValue("X-Forwarded-Path", "");
         if (!pathHeader.isEmpty()) {
             String path = pathHeader.split(",")[0].trim();
-            setPath(StringUtils.stripEnd(path, "/") + getPath());
+            setPath(StringUtils.stripEnd(path, "/"));
         }
     }
 

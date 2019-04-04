@@ -166,16 +166,16 @@ public class ReferenceTest {
         headers.set("X-Forwarded-Path", "/");
         Reference ref = new Reference("http://bogus/cats");
         ref.applyProxyHeaders(headers);
-        assertEquals("http://bogus/cats", ref.toString());
+        assertEquals("http://bogus", ref.toString());
     }
 
     @Test
     public void testApplyProxyHeadersWithXForwardedPath2() {
         Headers headers = new Headers();
-        headers.set("X-Forwarded-Path", "/dogs");
+        headers.set("X-Forwarded-Path", "/this/is/the/path");
         Reference ref = new Reference("http://bogus/cats");
         ref.applyProxyHeaders(headers);
-        assertEquals("http://bogus/dogs/cats", ref.toString());
+        assertEquals("http://bogus/this/is/the/path", ref.toString());
     }
 
     /**
@@ -187,10 +187,10 @@ public class ReferenceTest {
         headers.set("X-Forwarded-Proto", "http,https");
         headers.set("X-Forwarded-Host", "example.org,example.mil");
         headers.set("X-Forwarded-Port", "80,8080");
-        headers.set("X-Forwarded-Path", "/foxes,/dogs");
+        headers.set("X-Forwarded-Path", "/animals/foxes,/animals/dogs");
         Reference ref = new Reference("http://bogus/cats");
         ref.applyProxyHeaders(headers);
-        assertEquals("http://example.org/foxes/cats", ref.toString());
+        assertEquals("http://example.org/animals/foxes", ref.toString());
     }
 
     @Test
