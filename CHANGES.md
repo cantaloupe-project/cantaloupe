@@ -3,6 +3,8 @@
 ## 4.1.1
 
 * Fixed `NoSuchMethodError`s from various processors when running in Java 8.
+* Fixed failure to locate the delegate script when `delegate_script.pathname`
+  is set to a relative path outside of the current working directory.
 
 ## 4.1
 
