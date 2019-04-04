@@ -75,7 +75,7 @@ public final class CacheFactory {
                     synchronized (CacheFactory.class) {
                         if (cache == null ||
                                 !cache.getClass().getName().equals(qualifiedName)) {
-                            LOGGER.debug("getDerivativeCache(): " +
+                            LOGGER.trace("getDerivativeCache(): " +
                                     "implementation changed; creating a new " +
                                     "instance");
                             try {
@@ -128,7 +128,7 @@ public final class CacheFactory {
                 synchronized (CacheFactory.class) {
                     if (cache == null ||
                             !cache.getClass().getName().equals(qualifiedName)) {
-                        LOGGER.debug("getSourceCache(): implementation " +
+                        LOGGER.trace("getSourceCache(): implementation " +
                                 "changed; creating a new instance");
                         try {
                             Class<?> implClass = Class.forName(qualifiedName);
