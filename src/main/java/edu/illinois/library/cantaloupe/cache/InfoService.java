@@ -124,8 +124,8 @@ public final class InfoService {
      *                            from the cache.
      * @see #getInfo(Identifier)
      */
-    Info getOrReadInfo(final Identifier identifier, final Processor proc)
-            throws IOException {
+    Optional<Info> getOrReadInfo(final Identifier identifier,
+                                 final Processor proc) throws IOException {
         // Try to retrieve it from an object or derivative cache.
         Optional<Info> optInfo = getInfo(identifier);
         if (optInfo.isEmpty()) {
@@ -136,9 +136,9 @@ public final class InfoService {
             // Add it to the derivative and object caches.
             final DerivativeCache derivCache = CacheFactory.getDerivativeCache();
             putInCachesAsync(identifier, info, derivCache);
-            return info;
+            return Optional.of(info);
         }
-        return optInfo.get();
+        return optInfo;
     }
 
     boolean isObjectCacheEnabled() {

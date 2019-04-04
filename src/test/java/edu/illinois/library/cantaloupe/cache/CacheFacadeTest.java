@@ -101,9 +101,9 @@ public class CacheFacadeTest extends BaseTest {
             processor.setSourceFormat(Format.JPG);
             processor.setSourceFile(TestUtil.getImage(identifier.toString()));
 
-            Info expected = InfoService.getInstance().getOrReadInfo(identifier, processor);
+            Optional<Info> expected = InfoService.getInstance().getOrReadInfo(identifier, processor);
             Info actual = instance.getOrReadInfo(identifier, processor);
-            assertEquals(expected, actual);
+            assertEquals(expected.orElse(null), actual);
         }
     }
 

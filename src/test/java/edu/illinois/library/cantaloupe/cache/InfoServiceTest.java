@@ -111,8 +111,8 @@ public class InfoServiceTest extends BaseTest {
         final Info info = new Info();
         instance.putInObjectCache(identifier, info);
 
-        Info actualInfo = instance.getOrReadInfo(identifier, newMockProcessor());
-        assertEquals(info, actualInfo);
+        Optional<Info> actualInfo = instance.getOrReadInfo(identifier, newMockProcessor());
+        assertEquals(info, actualInfo.orElse(null));
     }
 
     @Test
@@ -125,17 +125,17 @@ public class InfoServiceTest extends BaseTest {
         DerivativeCache cache = CacheFactory.getDerivativeCache();
         cache.put(identifier, info);
 
-        Info actualInfo = instance.getOrReadInfo(identifier, newMockProcessor());
-        assertEquals(info, actualInfo);
+        Optional<Info> actualInfo = instance.getOrReadInfo(identifier, newMockProcessor());
+        assertEquals(info, actualInfo.orElse(null));
     }
 
     @Test
     public void testGetOrReadInfoWithHitInProcessor() throws Exception {
         final Identifier identifier = new Identifier("jpg");
 
-        Info info = instance.getOrReadInfo(identifier, newFileProcessor());
-        assertEquals(identifier, info.getIdentifier());
-        assertEquals(64, info.getSize(0).width(), DELTA);
+        Optional<Info> info = instance.getOrReadInfo(identifier, newFileProcessor());
+        assertEquals(identifier, info.orElseThrow().getIdentifier());
+        assertEquals(64, info.orElseThrow().getSize(0).width(), DELTA);
     }
 
     /* isObjectCacheEnabled() */
