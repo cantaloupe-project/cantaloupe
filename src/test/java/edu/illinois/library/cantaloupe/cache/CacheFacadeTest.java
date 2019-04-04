@@ -31,14 +31,14 @@ public class CacheFacadeTest extends BaseTest {
         instance = new CacheFacade();
 
         Configuration config = Configuration.getInstance();
-        config.setProperty(Key.SOURCE_CACHE, "FilesystemCache");
+        config.setProperty(Key.SOURCE_CACHE, FilesystemCache.class.getSimpleName());
     }
 
     private void enableDerivativeCache() {
         try {
             Configuration config = Configuration.getInstance();
             config.setProperty(Key.DERIVATIVE_CACHE_ENABLED, true);
-            config.setProperty(Key.DERIVATIVE_CACHE, "FilesystemCache");
+            config.setProperty(Key.DERIVATIVE_CACHE, FilesystemCache.class.getSimpleName());
             config.setProperty(Key.FILESYSTEMCACHE_PATHNAME,
                     Files.createTempDirectory("test").toString());
         } catch (IOException e) {
@@ -102,8 +102,8 @@ public class CacheFacadeTest extends BaseTest {
             processor.setSourceFile(TestUtil.getImage(identifier.toString()));
 
             Optional<Info> expected = InfoService.getInstance().getOrReadInfo(identifier, processor);
-            Info actual = instance.getOrReadInfo(identifier, processor);
-            assertEquals(expected.orElse(null), actual);
+            Optional<Info> actual = instance.getOrReadInfo(identifier, processor);
+            assertEquals(expected, actual);
         }
     }
 
@@ -119,7 +119,7 @@ public class CacheFacadeTest extends BaseTest {
     @Test
     public void testGetSourceCacheFileWithSourceCacheHit() throws Exception {
         Configuration config = Configuration.getInstance();
-        config.setProperty(Key.SOURCE_CACHE, "FilesystemCache");
+        config.setProperty(Key.SOURCE_CACHE, FilesystemCache.class.getSimpleName());
 
         SourceCache sourceCache = CacheFactory.getSourceCache();
         Identifier identifier = new Identifier("cats");
@@ -135,7 +135,7 @@ public class CacheFacadeTest extends BaseTest {
     @Test
     public void testGetSourceCacheFileWithSourceCacheMiss() throws Exception {
         Configuration config = Configuration.getInstance();
-        config.setProperty(Key.SOURCE_CACHE, "FilesystemCache");
+        config.setProperty(Key.SOURCE_CACHE, FilesystemCache.class.getSimpleName());
 
         Identifier identifier = new Identifier("cats");
 

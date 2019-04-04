@@ -107,7 +107,7 @@ public abstract class PublicResource extends AbstractResource {
                                        final Processor proc) throws IOException {
         Info info;
         if (!isBypassingCache()) {
-            info = new CacheFacade().getOrReadInfo(identifier, proc);
+            info = new CacheFacade().getOrReadInfo(identifier, proc).orElseThrow();
             info.setIdentifier(identifier);
         } else {
             LOGGER.debug("getOrReadInfo(): bypassing the cache, as requested");

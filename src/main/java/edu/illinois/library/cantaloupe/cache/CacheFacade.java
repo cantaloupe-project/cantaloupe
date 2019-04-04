@@ -63,10 +63,9 @@ public final class CacheFacade {
      *
      * @see #getInfo(Identifier)
      */
-    public Info getOrReadInfo(Identifier identifier, Processor processor)
-            throws IOException {
-        return InfoService.getInstance().getOrReadInfo(identifier, processor).
-                orElse(null);
+    public Optional<Info> getOrReadInfo(Identifier identifier,
+                                        Processor processor) throws IOException {
+        return InfoService.getInstance().getOrReadInfo(identifier, processor);
     }
 
     /**
