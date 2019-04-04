@@ -5,6 +5,7 @@
 * Fixed `NoSuchMethodError`s from various processors when running in Java 8.
 * Fixed failure to locate the delegate script when `delegate_script.pathname`
   is set to a relative path outside of the current working directory.
+* Fixed a regression in the handling of the `X-Forwarded-Path` header.
 
 ## 4.1
 
