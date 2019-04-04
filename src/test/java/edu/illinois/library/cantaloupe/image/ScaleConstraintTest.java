@@ -4,6 +4,7 @@ import edu.illinois.library.cantaloupe.test.BaseTest;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.util.Arrays;
 import java.util.Map;
 
 import static org.junit.Assert.*;
@@ -98,8 +99,9 @@ public class ScaleConstraintTest extends BaseTest {
 
     @Test
     public void testHashCode() {
-        assertEquals(instance.hashCode(), new ScaleConstraint(2, 3).hashCode());
-        assertNotEquals(instance.hashCode(), new ScaleConstraint(3, 4).hashCode());
+        double[] codes = { Long.hashCode(2), Long.hashCode(3) };
+        int expected = Arrays.hashCode(codes);
+        assertEquals(expected, instance.hashCode());
     }
 
     @Test

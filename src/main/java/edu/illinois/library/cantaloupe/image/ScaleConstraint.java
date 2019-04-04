@@ -3,6 +3,7 @@ package edu.illinois.library.cantaloupe.image;
 import edu.illinois.library.cantaloupe.http.Reference;
 import edu.illinois.library.cantaloupe.util.Rational;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -130,7 +131,8 @@ public final class ScaleConstraint {
 
     @Override
     public int hashCode() {
-        return toString().hashCode();
+        double[] codes = { rational.getNumerator(), rational.getDenominator() };
+        return Arrays.hashCode(codes);
     }
 
     /**

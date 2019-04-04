@@ -1,8 +1,10 @@
 package edu.illinois.library.cantaloupe.image;
 
+import java.util.Arrays;
+
 /**
  * <p>Rectangle on a 2D plane with origin and dimensions. Values are stored as
- * doubles, in contrast to {@link java.awt.Rectangle}.</p>
+ * doubles, in contrast with {@link java.awt.Rectangle}.</p>
  *
  * <p>A negative origin is allowed. Zero-dimensions are allowed, but not
  * negative ones.</p>
@@ -54,8 +56,13 @@ public final class Rectangle {
 
     @Override
     public int hashCode() {
-        return Long.hashCode(Double.hashCode(x()) + Double.hashCode(y()) +
-                Double.hashCode(width()) + Double.hashCode(height()));
+        int[] codes = {
+                Double.hashCode(x()),
+                Double.hashCode(y()),
+                Double.hashCode(width()),
+                Double.hashCode(height())
+        };
+        return Arrays.hashCode(codes);
     }
 
     public double x() {

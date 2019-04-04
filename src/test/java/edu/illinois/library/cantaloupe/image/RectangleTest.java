@@ -3,6 +3,8 @@ package edu.illinois.library.cantaloupe.image;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.util.Arrays;
+
 import static org.junit.Assert.*;
 
 public class RectangleTest {
@@ -74,11 +76,13 @@ public class RectangleTest {
 
     @Test
     public void testHashCode() {
-        int expected = Long.hashCode(
-                Double.hashCode(instance.x()) +
-                Double.hashCode(instance.y()) +
-                Double.hashCode(instance.width()) +
-                Double.hashCode(instance.height()));
+        int[] codes = {
+                Double.hashCode(instance.x()),
+                Double.hashCode(instance.y()),
+                Double.hashCode(instance.width()),
+                Double.hashCode(instance.height())
+        };
+        int expected = Arrays.hashCode(codes);
         assertEquals(expected, instance.hashCode());
     }
 
