@@ -5,6 +5,7 @@ import edu.illinois.library.cantaloupe.util.FilesystemWatcher;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -55,10 +56,13 @@ public final class ConfigurationFileWatcher {
                 .filter(c -> c instanceof FileConfiguration)
                 .map(c -> (FileConfiguration) c)
                 .forEach(c -> {
-                    FileChangeHandlerRunner runner =
-                            new FileChangeHandlerRunner(c.getFile());
-                    CHANGE_HANDLERS.add(runner);
-                    ThreadPool.getInstance().submit(runner, ThreadPool.Priority.LOW);
+                    Optional<Path> file = c.getFile();
+                    if (file.isPresent()) {
+                        FileChangeHandlerRunner runner =
+                                new FileChangeHandlerRunner(file.get());
+                        CHANGE_HANDLERS.add(runner);
+                        ThreadPool.getInstance().submit(runner, ThreadPool.Priority.LOW);
+                    }
                 });
     }
 

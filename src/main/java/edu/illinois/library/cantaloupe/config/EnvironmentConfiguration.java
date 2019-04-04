@@ -2,8 +2,10 @@ package edu.illinois.library.cantaloupe.config;
 
 import edu.illinois.library.cantaloupe.util.StringUtils;
 
+import java.nio.file.Path;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 
 /**
  * <p>Read-only configuration backed by the environment.</p>
@@ -70,6 +72,11 @@ class EnvironmentConfiguration implements Configuration {
         } catch (NoSuchElementException | NumberFormatException e) {
             return defaultValue;
         }
+    }
+
+    @Override
+    public Optional<Path> getFile() {
+        return Optional.empty();
     }
 
     @Override

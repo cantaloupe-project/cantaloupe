@@ -9,6 +9,7 @@ import java.nio.file.Paths;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Optional;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
@@ -25,8 +26,9 @@ public abstract class AbstractFileConfigurationTest extends AbstractConfiguratio
 
             String goodProps = testPath + File.separator + "cantaloupe.properties";
             System.setProperty(ConfigurationFactory.CONFIG_VM_ARGUMENT, goodProps);
-            assertEquals(Paths.get(cwd, "/src/test/java/edu/illinois/library/cantaloupe/test/cantaloupe.properties"),
-                    ((FileConfiguration) getInstance()).getFile());
+            assertEquals(
+                    Optional.of(Paths.get(cwd, "/src/test/java/edu/illinois/library/cantaloupe/test/cantaloupe.properties")),
+                    getInstance().getFile());
         } catch (IOException e) {
             fail("Failed to set " + ConfigurationFactory.CONFIG_VM_ARGUMENT);
         }
@@ -43,7 +45,6 @@ public abstract class AbstractFileConfigurationTest extends AbstractConfiguratio
             String key = keys.next();
             expected.put(key, instance.getProperty(key));
         }
-
         assertEquals(expected, instance.toMap());
     }
 

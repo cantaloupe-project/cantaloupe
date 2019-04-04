@@ -3,8 +3,10 @@ package edu.illinois.library.cantaloupe.config;
 import edu.illinois.library.cantaloupe.util.StringUtils;
 
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 
 /**
  * Application configuration. Provides read-only or read-write access to
@@ -95,6 +97,13 @@ public interface Configuration {
      *         to a double.
      */
     double getDouble(String key, double defaultValue);
+
+    /**
+     * Convenience method for accessing the file backing the instance, if any.
+     * For implementations backed by more than one file, the main file is
+     * returned.
+     */
+    Optional<Path> getFile();
 
     /**
      * @see #getFloat(String)

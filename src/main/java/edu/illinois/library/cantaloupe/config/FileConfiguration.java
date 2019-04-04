@@ -6,6 +6,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Optional;
 
 public interface FileConfiguration extends Configuration {
 
@@ -13,16 +14,17 @@ public interface FileConfiguration extends Configuration {
      * @return Configuration file based on the {@link
      *         ConfigurationFactory#CONFIG_VM_ARGUMENT}.
      */
-    default Path getFile() {
+    @Override
+    default Optional<Path> getFile() {
         String configFilePath = System.
                 getProperty(ConfigurationFactory.CONFIG_VM_ARGUMENT);
         if (configFilePath != null) {
             // expand paths that start with "~"
             configFilePath = configFilePath.replaceFirst("^~",
                     System.getProperty("user.home"));
-            return Paths.get(configFilePath).toAbsolutePath();
+            return Optional.of(Paths.get(configFilePath).toAbsolutePath());
         }
-        return null;
+        return Optional.empty();
     }
 
     /**

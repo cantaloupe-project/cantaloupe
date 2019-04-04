@@ -2,9 +2,11 @@ package edu.illinois.library.cantaloupe.config;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.nio.file.Path;
 import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -71,6 +73,17 @@ public final class ConfigurationProvider implements Configuration {
             } catch (NoSuchElementException | NumberFormatException ignore) {}
         }
         return defaultValue;
+    }
+
+    @Override
+    public Optional<Path> getFile() {
+        final List<Configuration> wrappedConfigs = getWrappedConfigurations();
+        if (wrappedConfigs.size() > 1 &&
+                wrappedConfigs.get(1) instanceof FileConfiguration) {
+            final FileConfiguration fileConfig = (FileConfiguration) wrappedConfigs.get(1);
+            return fileConfig.getFile();
+        }
+        return Optional.empty();
     }
 
     @Override

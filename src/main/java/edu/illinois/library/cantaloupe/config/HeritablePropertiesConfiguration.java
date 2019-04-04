@@ -5,7 +5,6 @@ import edu.illinois.library.cantaloupe.util.StringUtils;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.MessageDigest;
@@ -423,17 +422,16 @@ class HeritablePropertiesConfiguration implements MultipleFileConfiguration {
     }
 
     @Override
-    public void reload() throws ConfigurationException {
-        final long stamp = lock.writeLock();
-        try {
-            final Path mainConfigFile = getFile();
-            if (mainConfigFile != null) {
+    public void reload() {
+        getFile().ifPresent(mainConfigFile -> {
+            final long stamp = lock.writeLock();
+            try {
                 // Calculate the checksum of the file contents and compare it
                 // to what has already been loaded. If the sums match, skip the
                 // reload.
-                byte[] fileBytes       = Files.readAllBytes(mainConfigFile);
+                byte[] fileBytes = Files.readAllBytes(mainConfigFile);
                 final MessageDigest md = MessageDigest.getInstance("MD5");
-                byte[] digestBytes     = md.digest(fileBytes);
+                byte[] digestBytes = md.digest(fileBytes);
                 if (Arrays.equals(digestBytes, mainContentsChecksum)) {
                     return;
                 }
@@ -441,14 +439,12 @@ class HeritablePropertiesConfiguration implements MultipleFileConfiguration {
 
                 propertiesDocs.clear();
                 loadFileAndAncestors(mainConfigFile);
+            } catch (IOException | NoSuchAlgorithmException e) {
+                System.err.println(e.getMessage());
+            } finally {
+                lock.unlock(stamp);
             }
-        } catch (NoSuchFileException e) {
-            System.err.println("File not found: " + e.getMessage());
-        } catch (IOException | NoSuchAlgorithmException e) {
-            System.err.println(e.getMessage());
-        } finally {
-            lock.unlock(stamp);
-        }
+        });
     }
 
     /**
@@ -500,10 +496,7 @@ class HeritablePropertiesConfiguration implements MultipleFileConfiguration {
         }
     }
 
-    /**
-     * N.B.: Not thread-safe!
-     */
-    private void loadFileAndAncestors(Path file) throws ConfigurationException {
+    private synchronized void loadFileAndAncestors(Path file) {
         System.out.println("Loading config file: " + file);
 
         PropertiesDocument doc = new PropertiesDocument();
@@ -526,7 +519,7 @@ class HeritablePropertiesConfiguration implements MultipleFileConfiguration {
                 if (!propertiesDocs.keySet().contains(parentFile)) {
                     loadFileAndAncestors(parentFile);
                 } else {
-                    throw new ConfigurationException("Inheritance loop");
+                    System.err.println("WARNING: inheritance loop in " + parent);
                 }
             }
         } catch (IOException e) {

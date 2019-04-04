@@ -2,15 +2,13 @@ package edu.illinois.library.cantaloupe;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
-import edu.illinois.library.cantaloupe.config.ConfigurationProvider;
-import edu.illinois.library.cantaloupe.config.FileConfiguration;
 
 import java.io.File;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.ProtectionDomain;
-import java.util.List;
+import java.util.Optional;
 
 /**
  * <p>Serves as the main application class in a standalone context.</p>
@@ -75,20 +73,20 @@ public class StandaloneEntry {
             printUsage();
             exitUnlessTesting(-1);
         } else {
-            Path configFile = getConfigFile();
-            if (configFile == null) {
+            Optional<Path> configFile = getConfigFile();
+            if (configFile.isEmpty()) {
                 printUsage();
                 exitUnlessTesting(-1);
-            } else if (!Files.exists(configFile)) {
+            } else if (!Files.exists(configFile.get())) {
                 System.out.println("Does not exist: " + configFile);
                 printUsage();
                 exitUnlessTesting(-1);
-            } else if (!Files.isRegularFile(configFile) &&
-                    !Files.isSymbolicLink(configFile)) {
+            } else if (!Files.isRegularFile(configFile.get()) &&
+                    !Files.isSymbolicLink(configFile.get())) {
                 System.out.println("Not a file: " + configFile);
                 printUsage();
                 exitUnlessTesting(-1);
-            } else if (!Files.isReadable(configFile)) {
+            } else if (!Files.isReadable(configFile.get())) {
                 System.out.println("Not readable: " + configFile);
                 printUsage();
                 exitUnlessTesting(-1);
@@ -97,16 +95,8 @@ public class StandaloneEntry {
         getAppServer().start();
     }
 
-    private static Path getConfigFile() {
-        Path configFile                          = null;
-        final Configuration config               = Configuration.getInstance();
-        final ConfigurationProvider provider     = (ConfigurationProvider) config;
-        final List<Configuration> wrappedConfigs = provider.getWrappedConfigurations();
-        if (wrappedConfigs.size() > 1 &&
-                wrappedConfigs.get(1) instanceof FileConfiguration) {
-            configFile = ((FileConfiguration) wrappedConfigs.get(1)).getFile();
-        }
-        return configFile;
+    private static Optional<Path> getConfigFile() {
+        return Configuration.getInstance().getFile();
     }
 
     static File getWARFile() {

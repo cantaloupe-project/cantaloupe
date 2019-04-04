@@ -2,9 +2,11 @@ package edu.illinois.library.cantaloupe.config;
 
 import edu.illinois.library.cantaloupe.util.StringUtils;
 
+import java.nio.file.Path;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -65,6 +67,11 @@ public class MapConfiguration implements Configuration {
         } catch (NoSuchElementException | NumberFormatException e) {
             return defaultValue;
         }
+    }
+
+    @Override
+    public Optional<Path> getFile() {
+        return Optional.empty();
     }
 
     @Override
