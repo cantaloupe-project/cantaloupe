@@ -51,3 +51,9 @@ dest_pathname = "#{Dir.getwd}/website/_layouts/manual_#{dest_version}.html"
 FileUtils.rm(dest_pathname) if File.exist?(dest_pathname)
 FileUtils.cp(source_pathname, dest_pathname)
 update_version_in_text_in_pathname(dest_pathname, source_version, dest_version)
+
+# Update the main page redirect
+source_pathname = "#{Dir.getwd}/website/manual/index.html"
+text = File.read(source_pathname)
+text.gsub!(/\/manual\/#{source_version.gsub('.', '\.')}/, "/manual/#{dest_version}")
+File.write(source_pathname, text)
