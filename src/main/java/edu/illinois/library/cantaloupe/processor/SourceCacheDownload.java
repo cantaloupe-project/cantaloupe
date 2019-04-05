@@ -130,7 +130,7 @@ final class SourceCacheDownload implements Future<Path> {
                 }
             }
 
-            if (sourceCache.getSourceImageFile(identifier) != null) {
+            if (sourceCache.getSourceImageFile(identifier).isPresent()) {
                 return;
             }
 

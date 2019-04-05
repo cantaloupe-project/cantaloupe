@@ -372,9 +372,9 @@ public class InformationResourceTester extends ImageAPIResourceTester {
             Thread.sleep(1000);
 
             if (purgeMissing) {
-                assertNull(cache.getInfo(identifier));
+                assertFalse(cache.getInfo(identifier).isPresent());
             } else {
-                assertNotNull(cache.getInfo(identifier));
+                assertTrue(cache.getInfo(identifier).isPresent());
             }
         } finally {
             client.stop();

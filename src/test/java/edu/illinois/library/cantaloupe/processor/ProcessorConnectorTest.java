@@ -217,7 +217,7 @@ public class ProcessorConnectorTest extends BaseTest {
             assertNull(instance.connect(source, processor, identifier, Format.JPG));
 
             assertEquals(
-                    CacheFactory.getSourceCache().getSourceImageFile(identifier),
+                    CacheFactory.getSourceCache().getSourceImageFile(identifier).orElseThrow(),
                     ((FileProcessor) processor).getSourceFile());
         } finally {
             server.stop();

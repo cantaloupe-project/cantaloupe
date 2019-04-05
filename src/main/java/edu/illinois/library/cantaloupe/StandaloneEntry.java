@@ -73,23 +73,26 @@ public class StandaloneEntry {
             printUsage();
             exitUnlessTesting(-1);
         } else {
-            Optional<Path> configFile = getConfigFile();
-            if (configFile.isEmpty()) {
+            Optional<Path> optConfigFile = getConfigFile();
+            if (optConfigFile.isEmpty()) {
                 printUsage();
                 exitUnlessTesting(-1);
-            } else if (!Files.exists(configFile.get())) {
-                System.out.println("Does not exist: " + configFile);
-                printUsage();
-                exitUnlessTesting(-1);
-            } else if (!Files.isRegularFile(configFile.get()) &&
-                    !Files.isSymbolicLink(configFile.get())) {
-                System.out.println("Not a file: " + configFile);
-                printUsage();
-                exitUnlessTesting(-1);
-            } else if (!Files.isReadable(configFile.get())) {
-                System.out.println("Not readable: " + configFile);
-                printUsage();
-                exitUnlessTesting(-1);
+            } else {
+                final Path configFile = optConfigFile.get();
+                if (!Files.exists(configFile)) {
+                    System.out.println("Does not exist: " + configFile);
+                    printUsage();
+                    exitUnlessTesting(-1);
+                } else if (!Files.isRegularFile(configFile) &&
+                        !Files.isSymbolicLink(configFile)) {
+                    System.out.println("Not a file: " + configFile);
+                    printUsage();
+                    exitUnlessTesting(-1);
+                } else if (!Files.isReadable(configFile)) {
+                    System.out.println("Not readable: " + configFile);
+                    printUsage();
+                    exitUnlessTesting(-1);
+                }
             }
         }
         getAppServer().start();
