@@ -154,15 +154,8 @@ class JaiProcessor extends AbstractImageIOProcessor
             RenderedOp renderedOp = JAIUtil.getAsRenderedOp(
                     RenderedOp.wrapRenderedImage(renderedImage));
 
-            // If the Encode specifies a max sample size of 8 bits, or if the
-            // output format's max sample size is 8 bits, we will need to
-            // reduce it. HOWEVER, if the output format's max sample size is
-            // LESS THAN 8 bits (I'm looking at you, GIF), don't do anything
-            // and let the writer handle it.
             Encode encode = (Encode) opList.getFirst(Encode.class);
-            if (((encode != null && encode.getMaxComponentSize() <= 8)
-                    || outputFormat.getMaxSampleSize() <= 8)
-                    && !Format.GIF.equals(outputFormat)) {
+            if (encode != null && !Format.GIF.equals(outputFormat)) {
                 renderedOp = JAIUtil.rescalePixels(renderedOp);
                 renderedOp = JAIUtil.reduceTo8Bits(renderedOp);
             }

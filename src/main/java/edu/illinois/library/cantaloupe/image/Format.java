@@ -25,7 +25,6 @@ public enum Format {
             List.of("video/avi", "video/msvideo", "video/x-msvideo"),
             List.of("avi"),
             Type.VIDEO,
-            8,
             false),
 
     /**
@@ -36,7 +35,6 @@ public enum Format {
             List.of("image/bmp", "image/x-bmp", "image/x-ms-bmp"),
             List.of("bmp", "dib"),
             Type.IMAGE,
-            8,
             true),
 
     /**
@@ -47,7 +45,6 @@ public enum Format {
             List.of("application/dicom"),
             List.of("dcm", "dic"),
             Type.IMAGE,
-            16,
             false),
 
     /**
@@ -58,7 +55,6 @@ public enum Format {
             List.of("video/x-flv"),
             List.of("flv", "f4v"),
             Type.VIDEO,
-            8,
             false),
 
     /**
@@ -69,7 +65,6 @@ public enum Format {
             List.of("image/gif"),
             List.of("gif"),
             Type.IMAGE,
-            3,
             true),
 
     /**
@@ -80,7 +75,6 @@ public enum Format {
             List.of("image/jp2"),
             List.of("jp2", "j2k", "jpx", "jpf"),
             Type.IMAGE,
-            16,
             true),
 
     /**
@@ -91,7 +85,6 @@ public enum Format {
             List.of("image/jpeg"),
             List.of("jpg", "jpeg"),
             Type.IMAGE,
-            8,
             false),
 
     /**
@@ -102,7 +95,6 @@ public enum Format {
             List.of("video/quicktime", "video/x-quicktime"),
             List.of("mov", "qt"),
             Type.VIDEO,
-            8,
             false),
 
     /**
@@ -113,7 +105,6 @@ public enum Format {
             List.of("video/mp4"),
             List.of("mp4", "m4v"),
             Type.VIDEO,
-            8,
             false),
 
     /**
@@ -124,7 +115,6 @@ public enum Format {
             List.of("video/mpeg"),
             List.of("mpg"),
             Type.VIDEO,
-            8,
             false),
 
     /**
@@ -135,7 +125,6 @@ public enum Format {
             List.of("application/pdf"),
             List.of("pdf"),
             Type.IMAGE,
-            16,
             false),
 
     /**
@@ -146,7 +135,6 @@ public enum Format {
             List.of("image/png"),
             List.of("png"),
             Type.IMAGE,
-            16,
             true),
 
     /**
@@ -157,7 +145,6 @@ public enum Format {
             List.of("image/tiff"),
             List.of("tif", "ptif", "tiff"),
             Type.IMAGE,
-            16,
             true),
 
     /**
@@ -168,7 +155,6 @@ public enum Format {
             List.of("video/webm"),
             List.of("webm"),
             Type.VIDEO,
-            8,
             false),
 
     /**
@@ -179,7 +165,6 @@ public enum Format {
             List.of("image/webp"),
             List.of("webp"),
             Type.IMAGE,
-            8,
             true),
 
     /**
@@ -190,7 +175,6 @@ public enum Format {
             List.of("unknown/unknown"),
             List.of("unknown"),
             Type.UNKNOWN,
-            0,
             false);
 
     public enum ImageType {
@@ -205,7 +189,6 @@ public enum Format {
     private ImageType imageType;
     private List<String> mediaTypes;
     private String name;
-    private int maxSampleSize;
     private boolean supportsTransparency;
     private Type type;
 
@@ -257,14 +240,12 @@ public enum Format {
            final List<String> mediaTypes,
            final List<String> extensions,
            final Type type,
-           final int maxSampleSize,
            final boolean supportsTransparency) {
         this.imageType = imageType;
         this.mediaTypes = mediaTypes;
         this.extensions = extensions;
         this.name = name;
         this.type = type;
-        this.maxSampleSize = maxSampleSize;
         this.supportsTransparency = supportsTransparency;
     }
 
@@ -278,17 +259,6 @@ public enum Format {
 
     public ImageType getImageType() {
         return imageType;
-    }
-
-    /**
-     * N.B. This is not to be taken too seriously. As of the time it was
-     * written, its only purpose is to query formats' support for
-     * greater-than-8-bit samples.
-     *
-     * @return Maximum sample size supported by the format.
-     */
-    public int getMaxSampleSize() {
-        return maxSampleSize;
     }
 
     /**
@@ -323,26 +293,6 @@ public enum Format {
 
     public Type getType() {
         return type;
-    }
-
-    /**
-     * Convenience method.
-     *
-     * @return True if the type (as returned by {@link #getType()}) is
-     * {@link Format.Type#IMAGE}.
-     */
-    public boolean isImage() {
-        return (this.getType() != null && this.getType().equals(Type.IMAGE));
-    }
-
-    /**
-     * Convenience method.
-     *
-     * @return True if the type (as returned by {@link #getType()}) is
-     * {@link Format.Type#VIDEO}.
-     */
-    public boolean isVideo() {
-        return (this.getType() != null && this.getType().equals(Type.VIDEO));
     }
 
     public boolean supportsTransparency() {

@@ -162,26 +162,6 @@ public class FormatTest extends BaseTest {
     }
 
     @Test
-    public void getMaxSampleSize() {
-        assertEquals(8, Format.AVI.getMaxSampleSize());
-        assertEquals(8, Format.BMP.getMaxSampleSize());
-        assertEquals(16, Format.DCM.getMaxSampleSize());
-        assertEquals(8, Format.FLV.getMaxSampleSize());
-        assertEquals(3, Format.GIF.getMaxSampleSize());
-        assertEquals(16, Format.JP2.getMaxSampleSize());
-        assertEquals(8, Format.JPG.getMaxSampleSize());
-        assertEquals(8, Format.MOV.getMaxSampleSize());
-        assertEquals(8, Format.MP4.getMaxSampleSize());
-        assertEquals(8, Format.MPG.getMaxSampleSize());
-        assertEquals(16, Format.PDF.getMaxSampleSize());
-        assertEquals(16, Format.PNG.getMaxSampleSize());
-        assertEquals(16, Format.TIF.getMaxSampleSize());
-        assertEquals(8, Format.WEBM.getMaxSampleSize());
-        assertEquals(8, Format.WEBP.getMaxSampleSize());
-        assertEquals(0, Format.UNKNOWN.getMaxSampleSize());
-    }
-
-    @Test
     public void getMediaTypes() {
         // AVI
         assertEquals(List.of(
@@ -347,46 +327,6 @@ public class FormatTest extends BaseTest {
         assertEquals(Format.Type.VIDEO, Format.WEBM.getType());
         assertEquals(Format.Type.IMAGE, Format.WEBP.getType());
         assertEquals(Format.Type.UNKNOWN, Format.UNKNOWN.getType());
-    }
-
-    @Test
-    public void isImage() {
-        assertFalse(Format.AVI.isImage());
-        assertTrue(Format.BMP.isImage());
-        assertTrue(Format.DCM.isImage());
-        assertFalse(Format.FLV.isImage());
-        assertTrue(Format.GIF.isImage());
-        assertTrue(Format.JP2.isImage());
-        assertTrue(Format.JPG.isImage());
-        assertFalse(Format.MOV.isImage());
-        assertFalse(Format.MP4.isImage());
-        assertFalse(Format.MPG.isImage());
-        assertTrue(Format.PDF.isImage());
-        assertTrue(Format.PNG.isImage());
-        assertTrue(Format.TIF.isImage());
-        assertFalse(Format.WEBM.isImage());
-        assertTrue(Format.WEBP.isImage());
-        assertFalse(Format.UNKNOWN.isImage());
-    }
-
-    @Test
-    public void isVideo() {
-        assertTrue(Format.AVI.isVideo());
-        assertFalse(Format.BMP.isVideo());
-        assertFalse(Format.DCM.isVideo());
-        assertTrue(Format.FLV.isVideo());
-        assertFalse(Format.GIF.isVideo());
-        assertFalse(Format.JP2.isVideo());
-        assertFalse(Format.JPG.isVideo());
-        assertTrue(Format.MOV.isVideo());
-        assertTrue(Format.MP4.isVideo());
-        assertTrue(Format.MPG.isVideo());
-        assertFalse(Format.PDF.isVideo());
-        assertFalse(Format.PNG.isVideo());
-        assertFalse(Format.TIF.isVideo());
-        assertTrue(Format.WEBM.isVideo());
-        assertFalse(Format.WEBP.isVideo());
-        assertFalse(Format.UNKNOWN.isVideo());
     }
 
     @Test
