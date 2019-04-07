@@ -6,8 +6,6 @@ import edu.illinois.library.cantaloupe.processor.resample.ResampleFilter;
 import edu.illinois.library.cantaloupe.processor.resample.ResampleFilters;
 import edu.illinois.library.cantaloupe.util.StringUtils;
 
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -86,10 +84,9 @@ public class Scale implements Operation {
         @Override
         public Map<String, Object> toMap(Dimension fullSize,
                                          ScaleConstraint scaleConstraint) {
-            final Map<String,Object> map = new HashMap<>();
-            map.put("class", Filter.class.getSimpleName());
-            map.put("name", getName());
-            return Collections.unmodifiableMap(map);
+            return Map.of(
+                    "class", Filter.class.getSimpleName(),
+                    "name", getName());
         }
 
         /**
@@ -581,11 +578,10 @@ public class Scale implements Operation {
                                     ScaleConstraint scaleConstraint) {
         final Dimension resultingSize =
                 getResultingSize(fullSize, scaleConstraint);
-        final Map<String,Object> map = new HashMap<>();
-        map.put("class", Scale.class.getSimpleName());
-        map.put("width", resultingSize.intWidth());
-        map.put("height", resultingSize.intHeight());
-        return Collections.unmodifiableMap(map);
+        return Map.of(
+                "class", Scale.class.getSimpleName(),
+                "width", resultingSize.intWidth(),
+                "height", resultingSize.intHeight());
     }
 
     /**

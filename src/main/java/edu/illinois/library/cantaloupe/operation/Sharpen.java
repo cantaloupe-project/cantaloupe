@@ -3,8 +3,6 @@ package edu.illinois.library.cantaloupe.operation;
 import edu.illinois.library.cantaloupe.image.Dimension;
 import edu.illinois.library.cantaloupe.image.ScaleConstraint;
 
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
 
 public class Sharpen implements Operation {
@@ -67,10 +65,9 @@ public class Sharpen implements Operation {
     @Override
     public Map<String,Object> toMap(Dimension fullSize,
                                     ScaleConstraint scaleConstraint) {
-        final Map<String,Object> map = new HashMap<>();
-        map.put("class", getClass().getSimpleName());
-        map.put("amount", getAmount());
-        return Collections.unmodifiableMap(map);
+        return Map.of(
+                "class", getClass().getSimpleName(),
+                "amount", getAmount());
     }
 
     /**

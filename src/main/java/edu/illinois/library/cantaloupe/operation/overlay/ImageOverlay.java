@@ -8,8 +8,6 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
@@ -73,12 +71,11 @@ public class ImageOverlay extends Overlay implements Operation {
     @Override
     public Map<String, Object> toMap(Dimension fullSize,
                                      ScaleConstraint scaleConstraint) {
-        final HashMap<String,Object> map = new HashMap<>();
-        map.put("class", getClass().getSimpleName());
-        map.put("uri", getURI().toString());
-        map.put("position", getPosition().toString());
-        map.put("inset", getInset());
-        return Collections.unmodifiableMap(map);
+        return Map.of(
+                "class", getClass().getSimpleName(),
+                "uri", getURI().toString(),
+                "position", getPosition().toString(),
+                "inset", getInset());
     }
 
     /**

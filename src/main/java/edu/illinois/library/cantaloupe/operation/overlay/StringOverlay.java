@@ -5,17 +5,9 @@ import edu.illinois.library.cantaloupe.image.ScaleConstraint;
 import edu.illinois.library.cantaloupe.operation.Color;
 import edu.illinois.library.cantaloupe.operation.Operation;
 import edu.illinois.library.cantaloupe.util.StringUtils;
-import org.apache.commons.codec.binary.Hex;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.awt.Font;
 import java.awt.font.TextAttribute;
-import java.nio.charset.Charset;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -25,9 +17,6 @@ import java.util.Map;
  * {@link OverlayService}.</p>
  */
 public class StringOverlay extends Overlay implements Operation {
-
-    private static final Logger LOGGER = LoggerFactory.
-            getLogger(StringOverlay.class);
 
     private Color backgroundColor;
     private Color color;
@@ -167,22 +156,19 @@ public class StringOverlay extends Overlay implements Operation {
     @Override
     public Map<String, Object> toMap(Dimension fullSize,
                                      ScaleConstraint scaleConstraint) {
-        final HashMap<String,Object> map = new HashMap<>();
-        map.put("background_color", getBackgroundColor().toRGBAHex());
-        map.put("class", getClass().getSimpleName());
-        map.put("color", getColor().toRGBAHex());
-        map.put("font", getFont().getName());
-        map.put("font_size", getFont().getSize());
-        map.put("font_weight",
-                getFont().getAttributes().get(TextAttribute.WEIGHT));
-        map.put("glyph_spacing",
-                getFont().getAttributes().get(TextAttribute.TRACKING));
-        map.put("inset", getInset());
-        map.put("position", getPosition().toString());
-        map.put("string", getString());
-        map.put("stroke_color", getStrokeColor().toRGBAHex());
-        map.put("stroke_width", getStrokeWidth());
-        return Collections.unmodifiableMap(map);
+        return Map.ofEntries(
+                Map.entry("background_color", getBackgroundColor().toRGBAHex()),
+                Map.entry("class", getClass().getSimpleName()),
+                Map.entry("color", getColor().toRGBAHex()),
+                Map.entry("font", getFont().getName()),
+                Map.entry("font_size", getFont().getSize()),
+                Map.entry("font_weight", getFont().getAttributes().get(TextAttribute.WEIGHT)),
+                Map.entry("glyph_spacing", getFont().getAttributes().get(TextAttribute.TRACKING)),
+                Map.entry("inset", getInset()),
+                Map.entry("position", getPosition().toString()),
+                Map.entry("string", getString()),
+                Map.entry("stroke_color", getStrokeColor().toRGBAHex()),
+                Map.entry("stroke_width", getStrokeWidth()));
     }
 
     /**

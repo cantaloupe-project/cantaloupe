@@ -5,8 +5,6 @@ import edu.illinois.library.cantaloupe.image.Orientation;
 import edu.illinois.library.cantaloupe.image.Rectangle;
 import edu.illinois.library.cantaloupe.image.ScaleConstraint;
 
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -139,13 +137,12 @@ public abstract class Crop implements Operation {
     public Map<String,Object> toMap(Dimension fullSize,
                                     ScaleConstraint scaleConstraint) {
         final Rectangle rect = getRectangle(fullSize, scaleConstraint);
-        final Map<String,Object> map = new HashMap<>();
-        map.put("class", getClass().getSimpleName());
-        map.put("x", rect.intX());
-        map.put("y", rect.intY());
-        map.put("width", rect.intWidth());
-        map.put("height", rect.intHeight());
-        return Collections.unmodifiableMap(map);
+        return Map.of(
+                "class", getClass().getSimpleName(),
+                "x", rect.intX(),
+                "y", rect.intY(),
+                "width", rect.intWidth(),
+                "height", rect.intHeight());
     }
 
     /**

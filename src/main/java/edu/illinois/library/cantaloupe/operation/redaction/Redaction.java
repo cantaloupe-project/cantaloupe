@@ -7,8 +7,6 @@ import edu.illinois.library.cantaloupe.operation.Crop;
 import edu.illinois.library.cantaloupe.operation.Operation;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
@@ -125,18 +123,17 @@ public class Redaction implements Operation {
     @Override
     public Map<String, Object> toMap(Dimension fullSize,
                                      ScaleConstraint scaleConstraint) {
-        final HashMap<String,Object> map = new HashMap<>();
-        map.put("class", getClass().getSimpleName());
-        map.put("x", getRegion().intX());
-        map.put("y", getRegion().intY());
-        map.put("width", getRegion().intWidth());
-        map.put("height", getRegion().intHeight());
-        return Collections.unmodifiableMap(map);
+        return Map.of(
+                "class", getClass().getSimpleName(),
+                "x", getRegion().intX(),
+                "y", getRegion().intY(),
+                "width", getRegion().intWidth(),
+                "height", getRegion().intHeight());
     }
 
     /**
      * @return String representation of the instance, in the format
-     * "{x},{y}/{width}x{height}".
+     *         {@literal [x],[y]/[width]x[height]}.
      */
     @Override
     public String toString() {
