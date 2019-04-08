@@ -1980,7 +1980,7 @@
                                                     <td style="width:30%">$format.getName()</td>
                                                     <td>
                                                         <select class="form-control"
-                                                                name="processor.$format.toString()"
+                                                                name="processor.ManualSelectionStrategy.$format.toString()"
                                                                 data-restart-required="false">
                                                             #if ($currentProcessors.get($format))
                                                                 <option value="">Use Fallback</option>

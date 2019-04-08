@@ -6,6 +6,7 @@
 * Fixed failure to locate the delegate script when `delegate_script.pathname`
   is set to a relative path outside of the current working directory.
 * Fixed a regression in the handling of the `X-Forwarded-Path` header.
+* Fixed breakage in manual processor selection from the Control Panel.
 
 ## 4.1
 
