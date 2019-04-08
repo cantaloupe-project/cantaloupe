@@ -134,6 +134,16 @@ public class ReferenceTest {
     }
 
     @Test
+    public void testApplyProxyHeadersWithXForwardedHostContainingCustomPortAndXForwardedProto() {
+        Headers headers = new Headers();
+        headers.set("X-Forwarded-Host", "example.org:8080");
+        headers.set("X-Forwarded-Proto", "HTTP");
+        Reference ref = new Reference("http://bogus/cats");
+        ref.applyProxyHeaders(headers);
+        assertEquals("http://example.org:8080/cats", ref.toString());
+    }
+
+    @Test
     public void testApplyProxyHeadersWithXForwardedPortMatchingDefaultHTTPPort() {
         Headers headers = new Headers();
         headers.set("X-Forwarded-Port", "80");

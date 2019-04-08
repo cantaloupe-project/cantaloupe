@@ -85,14 +85,23 @@ public final class Reference {
     }
 
     /**
-     * Mutates the instance according to any reverse proxy request headers
-     * present in the argument.
+     * <p>Mutates the instance according to any reverse proxying-related
+     * request headers present in the argument. Currently supported
+     * include:</p>
+     *
+     * <ul>
+     *     <li>{@literal X-Forwarded-Proto}</li>
+     *     <li>{@literal X-Forwarded-Host}</li>
+     *     <li>{@literal X-Forwarded-Port}</li>
+     *     <li>{@literal X-Forwarded-Path}</li>
+     * </ul>
      *
      * @param headers Request headers.
      */
     public void applyProxyHeaders(Headers headers) {
         // N.B.: Header values may be comma-separated lists indicating a chain
-        // of reverse proxies in order from furthest to closest.
+        // of reverse proxies in order from closest-to-the-client to
+        // closest-to-this-application.
 
         // Apply the protocol.
         final String protoHeader = headers.getFirstValue("X-Forwarded-Proto", "");
@@ -102,6 +111,7 @@ public final class Reference {
         }
 
         // Apply the host.
+        boolean hostContainsPort = false;
         final String hostHeader = headers.getFirstValue("X-Forwarded-Host", "");
         if (!hostHeader.isEmpty()) {
             String host = hostHeader.split(",")[0];
@@ -111,6 +121,7 @@ public final class Reference {
             String[] parts = host.split(":");
             setHost(parts[0]);
             if (parts.length > 1) {
+                hostContainsPort = true;
                 setPort(Integer.parseInt(parts[1]));
             }
         }
@@ -124,7 +135,7 @@ public final class Reference {
         if (!portHeader.isEmpty()) {
             String portStr = portHeader.split(",")[0].trim();
             setPort(Integer.parseInt(portStr));
-        } else if (!protoHeader.isEmpty()) {
+        } else if (!hostContainsPort && !protoHeader.isEmpty()) {
             setPort("https".equalsIgnoreCase(protoHeader) ? 443 : 80);
         }
 
