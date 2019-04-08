@@ -1,4 +1,4 @@
-language: java
+language: minimal
 
 services:
   - docker
