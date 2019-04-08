@@ -56,15 +56,50 @@ public class AdminResource extends AbstractAdminResource {
     /**
      * N.B.: Velocity requires this class to be public.
      */
+    public static class FormatProxy extends ObjectProxy
+            implements Comparable<FormatProxy> {
+
+        FormatProxy(Format format) {
+            super(format);
+        }
+
+        @Override
+        public int compareTo(FormatProxy o) {
+            return ((Format) object).compareTo((Format) o.object);
+        }
+
+        @Override
+        public String getName() {
+            return ((Format) object).getName();
+        }
+
+        public boolean isImage() {
+            return Format.Type.IMAGE.equals(((Format) object).getType());
+        }
+
+        public boolean isVideo() {
+            return Format.Type.VIDEO.equals(((Format) object).getType());
+        }
+
+        @Override
+        public String toString() {
+            return object.toString();
+        }
+
+    }
+
+    /**
+     * N.B.: Velocity requires this class to be public.
+     */
     public static class ProcessorProxy extends ObjectProxy {
 
         ProcessorProxy(Processor proc) {
             super(proc);
         }
 
-        public boolean supports(Format format) {
+        public boolean supports(FormatProxy format) {
             try {
-                ((Processor) object).setSourceFormat(format);
+                ((Processor) object).setSourceFormat((Format) format.object);
                 return true;
             } catch (UnsupportedSourceFormatException e) {
                 return false;
@@ -186,10 +221,10 @@ public class AdminResource extends AbstractAdminResource {
                 new ProcessorFactory().getSelectionStrategy());
 
         // source format assignments
-        Map<Format,ProcessorProxy> assignments = new TreeMap<>();
+        Map<FormatProxy,ProcessorProxy> assignments = new TreeMap<>();
         for (Format format : Format.values()) {
             try (Processor proc = new ProcessorFactory().newProcessor(format)) {
-                assignments.put(format, new ProcessorProxy(proc));
+                assignments.put(new FormatProxy(format), new ProcessorProxy(proc));
             } catch (UnsupportedSourceFormatException |
                     InitializationException |
                     ReflectiveOperationException e) {
@@ -199,31 +234,39 @@ public class AdminResource extends AbstractAdminResource {
         vars.put("processorAssignments", assignments);
 
         // image source formats
-        List<Format> imageFormats = Arrays.stream(Format.values()).
-                filter(f -> Format.Type.IMAGE.equals(f.getType()) && !Format.DCM.equals(f)).
-                sorted(Comparator.comparing(Format::getName)).
-                collect(Collectors.toList());
+        List<FormatProxy> imageFormats = Arrays
+                .stream(Format.values())
+                .filter(f -> Format.Type.IMAGE.equals(f.getType()) && !Format.DCM.equals(f))
+                .sorted(Comparator.comparing(Format::getName))
+                .map(FormatProxy::new)
+                .collect(Collectors.toUnmodifiableList());
         vars.put("imageSourceFormats", imageFormats);
 
         // video source formats
-        List<Format> videoFormats = Arrays.stream(Format.values()).
-                filter(f -> Format.Type.VIDEO.equals(f.getType())).
-                sorted(Comparator.comparing(Format::getName)).
-                collect(Collectors.toList());
+        List<FormatProxy> videoFormats = Arrays
+                .stream(Format.values())
+                .filter(f -> Format.Type.VIDEO.equals(f.getType()))
+                .sorted(Comparator.comparing(Format::getName))
+                .map(FormatProxy::new)
+                .collect(Collectors.toUnmodifiableList());
         vars.put("videoSourceFormats", videoFormats);
 
         // source format assignments
-        vars.put("sourceFormats", Format.values());
+        vars.put("sourceFormats", Arrays
+                .stream(Format.values())
+                .map(FormatProxy::new)
+                .collect(Collectors.toUnmodifiableList()));
 
         List<ProcessorProxy> sortedProcessorProxies =
                 ProcessorFactory.getAllProcessors().stream().
                         map(ProcessorProxy::new).
                         sorted(Comparator.comparing(ObjectProxy::getName)).
-                        collect(Collectors.toList());
+                        collect(Collectors.toUnmodifiableList());
 
         // warnings
-        vars.put("anyWarnings", sortedProcessorProxies.stream().
-                anyMatch(p -> !p.getWarnings().isEmpty()));
+        vars.put("anyWarnings", sortedProcessorProxies
+                .stream()
+                .anyMatch(p -> !p.getWarnings().isEmpty()));
 
         vars.put("processors", sortedProcessorProxies);
 
@@ -241,10 +284,11 @@ public class AdminResource extends AbstractAdminResource {
             // noop
         }
 
-        sortedProxies = CacheFactory.getAllSourceCaches().stream().
-                map(ObjectProxy::new).
-                sorted(Comparator.comparing(ObjectProxy::getName)).
-                collect(Collectors.toList());
+        sortedProxies = CacheFactory.getAllSourceCaches()
+                .stream()
+                .map(ObjectProxy::new)
+                .sorted(Comparator.comparing(ObjectProxy::getName))
+                .collect(Collectors.toList());
         vars.put("sourceCaches", sortedProxies);
 
         // derivative caches
@@ -255,10 +299,11 @@ public class AdminResource extends AbstractAdminResource {
             // noop
         }
 
-        sortedProxies = CacheFactory.getAllDerivativeCaches().stream().
-                map(ObjectProxy::new).
-                sorted(Comparator.comparing(ObjectProxy::getName)).
-                collect(Collectors.toList());
+        sortedProxies = CacheFactory.getAllDerivativeCaches()
+                .stream()
+                .map(ObjectProxy::new)
+                .sorted(Comparator.comparing(ObjectProxy::getName))
+                .collect(Collectors.toList());
         vars.put("derivativeCaches", sortedProxies);
 
         ////////////////////////////////////////////////////////////////////

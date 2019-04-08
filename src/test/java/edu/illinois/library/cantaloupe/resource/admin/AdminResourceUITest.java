@@ -464,7 +464,8 @@ public class AdminResourceUITest extends AbstractAdminResourceTest {
         selectNamed(Key.PROCESSOR_SELECTION_STRATEGY).
                 selectByVisibleText("Manual");
         css("#cl-processors li > a[href=\"#cl-image-assignments\"]").click();
-        selectNamed("processor.gif").selectByVisibleText("Java2dProcessor");
+        selectNamed("processor.ManualSelectionStrategy.gif").
+                selectByVisibleText("Java2dProcessor");
         selectNamed(Key.PROCESSOR_FALLBACK).selectByVisibleText("JaiProcessor");
         selectNamed(Key.PROCESSOR_STREAM_RETRIEVAL_STRATEGY).
                 selectByValue("StreamStrategy");
@@ -510,7 +511,8 @@ public class AdminResourceUITest extends AbstractAdminResourceTest {
         final Configuration config = Configuration.getInstance();
         assertEquals("ManualSelectionStrategy",
                 config.getString(Key.PROCESSOR_SELECTION_STRATEGY));
-        assertEquals("Java2dProcessor", config.getString("processor.gif"));
+        assertEquals("Java2dProcessor",
+                config.getString("processor.ManualSelectionStrategy.gif"));
         assertEquals("JaiProcessor", config.getString(Key.PROCESSOR_FALLBACK));
         assertEquals("StreamStrategy",
                 config.getString(Key.PROCESSOR_STREAM_RETRIEVAL_STRATEGY));
