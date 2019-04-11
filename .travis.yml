@@ -10,4 +10,4 @@ before_install:
   - docker run --net host --user cantaloupe cantaloupe/tests /bin/sh -c "cd /home/cantaloupe; mvn clean test -Pfreedeps"
 
 script:
-  - exit
+  - exit 0
