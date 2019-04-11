@@ -89,16 +89,6 @@ that enables visual inspection of image output.
 Performance tests use [JMH](http://openjdk.java.net/projects/code-tools/jmh/).
 Run them with `mvn clean test -Pbenchmark`.
 
-## Build the website
-
-The website is built using [Jekyll](http://jekyllrb.com/). With that installed,
-run `jekyll serve` from the `website` directory. Then, open
-[http://localhost:4000/cantaloupe/](http://localhost:4000/cantaloupe/) in a
-web browser.
-
-An effort is made to keep the documentation (`UPGRADING.md`, `CHANGES.md`, and
-the `website` directory) in sync with development on the same branch.
-
 ## Contribute
 
 Contributions are welcome. The suggested process for contributing code changes
