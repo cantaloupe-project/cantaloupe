@@ -1,10 +1,12 @@
 package edu.illinois.library.cantaloupe.operation;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/**
+ * Eight-bits-per-component RGBA color.
+ */
 public final class Color {
 
     public static final Color BLACK = new Color(0, 0, 0);
@@ -14,190 +16,180 @@ public final class Color {
     public static final Color RED = new Color(255, 0, 0);
     public static final Color WHITE = new Color(255, 255, 255);
 
-    private static final Map<String, int[]> namedRGBColors = new HashMap<>();
-    private static final Pattern rgbPattern =
+    private static final Map<String, int[]> CSS_COLORS = Map.ofEntries(
+            // CSS Level 1 colors
+            Map.entry("black", new int[] {0, 0, 0}),
+            Map.entry("silver", new int[] {192, 192, 192}),
+            Map.entry("gray", new int[] {128, 128, 128}),
+            Map.entry("white", new int[] {255, 255, 255}),
+            Map.entry("maroon", new int[] {128, 0, 0}),
+            Map.entry("red", new int[] {255, 0, 0}),
+            Map.entry("purple", new int[] {128, 0, 128}),
+            Map.entry("fuchsia", new int[] {255, 0, 255}),
+            Map.entry("green", new int[] {0, 128, 0}),
+            Map.entry("lime", new int[] {0, 255, 0}),
+            Map.entry("olive", new int[] {128, 128, 0}),
+            Map.entry("yellow", new int[] {255, 255, 0}),
+            Map.entry("navy", new int[] {0, 0, 128}),
+            Map.entry("blue", new int[] {0, 0, 255}),
+            Map.entry("teal", new int[] {0, 128, 128}),
+            Map.entry("aqua", new int[] {0, 255, 255}),
+            // CSS Level 2 colors
+            Map.entry("orange", new int[] {255, 165, 0}),
+            // CSS Level 3 colors
+            Map.entry("aliceblue", new int[] {240, 248, 255}),
+            Map.entry("antiquewhite", new int[] {250, 235, 215}),
+            Map.entry("aquamarine", new int[] {127, 255, 212}),
+            Map.entry("azure", new int[] {240, 255, 255}),
+            Map.entry("beige", new int[] {245, 245, 220}),
+            Map.entry("bisque", new int[] {255, 228, 196}),
+            Map.entry("blanchedalmond", new int[] {255, 235, 205}),
+            Map.entry("blueviolet", new int[] {138, 43, 226}),
+            Map.entry("brown", new int[] {165, 42, 42}),
+            Map.entry("burlywood", new int[] {222, 184, 135}),
+            Map.entry("cadetblue", new int[] {95, 158, 160}),
+            Map.entry("chartreuse", new int[] {127, 255, 0}),
+            Map.entry("chocolate", new int[] {210, 105, 30}),
+            Map.entry("coral", new int[] {255, 127, 80}),
+            Map.entry("cornflowerblue", new int[] {100, 149, 237}),
+            Map.entry("cornsilk", new int[] {255, 248, 220}),
+            Map.entry("crimson", new int[] {220, 20, 60}),
+            Map.entry("darkblue", new int[] {0, 0, 139}),
+            Map.entry("darkcyan", new int[] {0, 139, 139}),
+            Map.entry("darkgoldenrod", new int[] {184, 134, 11}),
+            Map.entry("darkgray", new int[] {169, 169, 169}),
+            Map.entry("darkgreen", new int[] {0, 100, 0}),
+            Map.entry("darkgrey", new int[] {169, 169, 169}),
+            Map.entry("darkkhaki", new int[] {169, 183, 107}),
+            Map.entry("darkmagenta", new int[] {139, 0, 139}),
+            Map.entry("darkolivegreen", new int[] {85, 107, 47}),
+            Map.entry("darkorange", new int[] {255, 140, 0}),
+            Map.entry("darkorchid", new int[] {153, 50, 204}),
+            Map.entry("darkred", new int[] {139, 0, 0}),
+            Map.entry("darksalmon", new int[] {233, 150, 122}),
+            Map.entry("darkseagreen", new int[] {143, 188, 143}),
+            Map.entry("darkslateblue", new int[] {72, 61, 139}),
+            Map.entry("darkslategray", new int[] {47, 79, 79}),
+            Map.entry("darkslategrey", new int[] {47, 79, 79}),
+            Map.entry("darkturquoise", new int[] {0, 206, 209}),
+            Map.entry("darkviolet", new int[] {148, 0, 211}),
+            Map.entry("deeppink", new int[] {255, 20, 147}),
+            Map.entry("deepskyblue", new int[] {0, 191, 255}),
+            Map.entry("dimgray", new int[] {105, 105, 105}),
+            Map.entry("dimgrey", new int[] {105, 105, 105}),
+            Map.entry("dodgerblue", new int[] {30, 144, 255}),
+            Map.entry("firebrick", new int[] {178, 34, 34}),
+            Map.entry("floralwhite", new int[] {255, 250, 240}),
+            Map.entry("forestgreen", new int[] {34, 139, 34}),
+            Map.entry("gainsboro", new int[] {220, 220, 220}),
+            Map.entry("ghostwhite", new int[] {248, 248, 255}),
+            Map.entry("gold", new int[] {255, 215, 0}),
+            Map.entry("goldenrod", new int[] {218, 165, 32}),
+            Map.entry("greenyellow", new int[] {173, 255, 47}),
+            Map.entry("grey", new int[] {128, 128, 128}),
+            Map.entry("honeydew", new int[] {240, 255, 240}),
+            Map.entry("hotpink", new int[] {255, 105, 180}),
+            Map.entry("indianred", new int[] {205, 92, 92}),
+            Map.entry("indigo", new int[] {75, 0, 130}),
+            Map.entry("ivory", new int[] {255, 255, 240}),
+            Map.entry("khaki", new int[] {240, 230, 140}),
+            Map.entry("lavender", new int[] {230, 230, 250}),
+            Map.entry("lavenderblush", new int[] {255, 240, 245}),
+            Map.entry("lawngreen", new int[] {124, 252, 0}),
+            Map.entry("lemonchiffon", new int[] {255, 250, 205}),
+            Map.entry("lightblue", new int[] {173, 216, 230}),
+            Map.entry("lightcoral", new int[] {240, 128, 128}),
+            Map.entry("lightcyan", new int[] {224, 255, 255}),
+            Map.entry("lightgoldenrodyellow", new int[] {250, 250, 210}),
+            Map.entry("lightgray", new int[] {211, 211, 211}),
+            Map.entry("lightgreen", new int[] {144, 238, 144}),
+            Map.entry("lightgrey", new int[] {211, 211, 211}),
+            Map.entry("lightpink", new int[] {255, 182, 193}),
+            Map.entry("lightsalmon", new int[] {255, 160, 122}),
+            Map.entry("lightseagreen", new int[] {32, 178, 170}),
+            Map.entry("lightskyblue", new int[] {135, 206, 250}),
+            Map.entry("lightslategray", new int[] {119, 136, 153}),
+            Map.entry("lightslategrey", new int[] {119, 136, 153}),
+            Map.entry("lightsteelblue", new int[] {176, 196, 222}),
+            Map.entry("lightyellow", new int[] {255, 255, 224}),
+            Map.entry("limegreen", new int[] {50, 205, 50}),
+            Map.entry("linen", new int[] {250, 240, 230}),
+            Map.entry("mediumaquamarine", new int[] {102, 205, 170}),
+            Map.entry("mediumblue", new int[] {0, 0, 205}),
+            Map.entry("mediumorchid", new int[] {186, 85, 211}),
+            Map.entry("mediumpurple", new int[] {147, 112, 219}),
+            Map.entry("mediumseagreen", new int[] {60, 179, 113}),
+            Map.entry("mediumslateblue", new int[] {123, 104, 238}),
+            Map.entry("mediumspringgreen", new int[] {0, 250, 154}),
+            Map.entry("mediumturquoise", new int[] {72, 209, 204}),
+            Map.entry("mediumvioletred", new int[] {199, 21, 133}),
+            Map.entry("midnightblue", new int[] {25, 25, 112}),
+            Map.entry("mintcream", new int[] {245, 255, 250}),
+            Map.entry("mistyrose", new int[] {255, 228, 225}),
+            Map.entry("moccasin", new int[] {255, 228, 181}),
+            Map.entry("navajowhite", new int[] {255, 222, 173}),
+            Map.entry("oldlace", new int[] {253, 245, 230}),
+            Map.entry("olivedrab", new int[] {107, 142, 35}),
+            Map.entry("orangered", new int[] {255, 69, 0}),
+            Map.entry("orchid", new int[] {218, 112, 214}),
+            Map.entry("palegoldenrod", new int[] {238, 232, 170}),
+            Map.entry("palegreen", new int[] {152, 251, 152}),
+            Map.entry("paleturquoise", new int[] {175, 238, 238}),
+            Map.entry("palevioletred", new int[] {219, 112, 147}),
+            Map.entry("papayawhip", new int[] {255, 239, 213}),
+            Map.entry("peachpuff", new int[] {255, 218, 185}),
+            Map.entry("peru", new int[] {205, 133, 63}),
+            Map.entry("pink", new int[] {255, 192, 203}),
+            Map.entry("plum", new int[] {221, 160, 221}),
+            Map.entry("powderblue", new int[] {176, 224, 230}),
+            Map.entry("rosybrown", new int[] {188, 143, 143}),
+            Map.entry("royalblue", new int[] {65, 105, 225}),
+            Map.entry("saddlebrown", new int[] {139, 69, 19}),
+            Map.entry("salmon", new int[] {250, 128, 114}),
+            Map.entry("sandybrown", new int[] {244, 164, 96}),
+            Map.entry("seagreen", new int[] {46, 139, 87}),
+            Map.entry("seashell", new int[] {255, 245, 238}),
+            Map.entry("sienna", new int[] {160, 82, 45}),
+            Map.entry("skyblue", new int[] {135, 206, 235}),
+            Map.entry("slateblue", new int[] {106, 90, 205}),
+            Map.entry("slategray", new int[] {112, 128, 144}),
+            Map.entry("slategrey", new int[] {112, 128, 144}),
+            Map.entry("snow", new int[] {255, 250, 250}),
+            Map.entry("springgreen", new int[] {0, 255, 127}),
+            Map.entry("steelblue", new int[] {70, 130, 180}),
+            Map.entry("tan", new int[] {210, 180, 140}),
+            Map.entry("thistle", new int[] {216, 191, 216}),
+            Map.entry("tomato", new int[] {255, 99, 71}),
+            Map.entry("turquoise", new int[] {64, 224, 208}),
+            Map.entry("violet", new int[] {238, 130, 238}),
+            Map.entry("wheat", new int[] {245, 222, 179}),
+            Map.entry("whitesmoke", new int[] {245, 245, 245}),
+            Map.entry("yellowgreen", new int[] {154, 205, 50}),
+            // CSS Level 4 colors
+            Map.entry("rebeccapurple", new int[] {102, 51, 153}));
+
+    private static final Pattern CSS_RGB_PATTERN =
             Pattern.compile("rgb *\\( *([0-9]+), *([0-9]+), *([0-9]+) *\\)");
-    private static final Pattern rgbaPattern =
+    private static final Pattern CSS_RGBA_PATTERN =
             Pattern.compile("rgba *\\( *([0-9]+), *([0-9]+), *([0-9]+), *([0-9]+) *\\)");
 
-    private int red, green, blue;
-    private int alpha = 255;
-
-    static {
-        // CSS Level 1 colors
-        namedRGBColors.put("black", new int[] {0, 0, 0});
-        namedRGBColors.put("silver", new int[] {192, 192, 192});
-        namedRGBColors.put("gray", new int[] {128, 128, 128});
-        namedRGBColors.put("white", new int[] {255, 255, 255});
-        namedRGBColors.put("maroon", new int[] {128, 0, 0});
-        namedRGBColors.put("red", new int[] {255, 0, 0});
-        namedRGBColors.put("purple", new int[] {128, 0, 128});
-        namedRGBColors.put("fuchsia", new int[] {255, 0, 255});
-        namedRGBColors.put("green", new int[] {0, 128, 0});
-        namedRGBColors.put("lime", new int[] {0, 255, 0});
-        namedRGBColors.put("olive", new int[] {128, 128, 0});
-        namedRGBColors.put("yellow", new int[] {255, 255, 0});
-        namedRGBColors.put("navy", new int[] {0, 0, 128});
-        namedRGBColors.put("blue", new int[] {0, 0, 255});
-        namedRGBColors.put("teal", new int[] {0, 128, 128});
-        namedRGBColors.put("aqua", new int[] {0, 255, 255});
-
-        // CSS Level 2 colors
-        namedRGBColors.put("orange", new int[] {255, 165, 0});
-
-        // CSS Level 3 colors
-        namedRGBColors.put("aliceblue", new int[] {240, 248, 255});
-        namedRGBColors.put("antiquewhite", new int[] {250, 235, 215});
-        namedRGBColors.put("aquamarine", new int[] {127, 255, 212});
-        namedRGBColors.put("azure", new int[] {240, 255, 255});
-        namedRGBColors.put("beige", new int[] {245, 245, 220});
-        namedRGBColors.put("bisque", new int[] {255, 228, 196});
-        namedRGBColors.put("blanchedalmond", new int[] {255, 235, 205});
-        namedRGBColors.put("blueviolet", new int[] {138, 43, 226});
-        namedRGBColors.put("brown", new int[] {165, 42, 42});
-        namedRGBColors.put("burlywood", new int[] {222, 184, 135});
-        namedRGBColors.put("cadetblue", new int[] {95, 158, 160});
-        namedRGBColors.put("chartreuse", new int[] {127, 255, 0});
-        namedRGBColors.put("chocolate", new int[] {210, 105, 30});
-        namedRGBColors.put("coral", new int[] {255, 127, 80});
-        namedRGBColors.put("cornflowerblue", new int[] {100, 149, 237});
-        namedRGBColors.put("cornsilk", new int[] {255, 248, 220});
-        namedRGBColors.put("crimson", new int[] {220, 20, 60});
-        namedRGBColors.put("darkblue", new int[] {0, 0, 139});
-        namedRGBColors.put("darkcyan", new int[] {0, 139, 139});
-        namedRGBColors.put("darkgoldenrod", new int[] {184, 134, 11});
-        namedRGBColors.put("darkgray", new int[] {169, 169, 169});
-        namedRGBColors.put("darkgreen", new int[] {0, 100, 0});
-        namedRGBColors.put("darkgrey", new int[] {169, 169, 169});
-        namedRGBColors.put("darkkhaki", new int[] {169, 183, 107});
-        namedRGBColors.put("darkmagenta", new int[] {139, 0, 139});
-        namedRGBColors.put("darkolivegreen", new int[] {85, 107, 47});
-        namedRGBColors.put("darkorange", new int[] {255, 140, 0});
-        namedRGBColors.put("darkorchid", new int[] {153, 50, 204});
-        namedRGBColors.put("darkred", new int[] {139, 0, 0});
-        namedRGBColors.put("darksalmon", new int[] {233, 150, 122});
-        namedRGBColors.put("darkseagreen", new int[] {143, 188, 143});
-        namedRGBColors.put("darkslateblue", new int[] {72, 61, 139});
-        namedRGBColors.put("darkslategray", new int[] {47, 79, 79});
-        namedRGBColors.put("darkslategrey", new int[] {47, 79, 79});
-        namedRGBColors.put("darkturquoise", new int[] {0, 206, 209});
-        namedRGBColors.put("darkviolet", new int[] {148, 0, 211});
-        namedRGBColors.put("deeppink", new int[] {255, 20, 147});
-        namedRGBColors.put("deepskyblue", new int[] {0, 191, 255});
-        namedRGBColors.put("dimgray", new int[] {105, 105, 105});
-        namedRGBColors.put("dimgrey", new int[] {105, 105, 105});
-        namedRGBColors.put("dodgerblue", new int[] {30, 144, 255});
-        namedRGBColors.put("firebrick", new int[] {178, 34, 34});
-        namedRGBColors.put("floralwhite", new int[] {255, 250, 240});
-        namedRGBColors.put("forestgreen", new int[] {34, 139, 34});
-        namedRGBColors.put("gainsboro", new int[] {220, 220, 220});
-        namedRGBColors.put("ghostwhite", new int[] {248, 248, 255});
-        namedRGBColors.put("gold", new int[] {255, 215, 0});
-        namedRGBColors.put("goldenrod", new int[] {218, 165, 32});
-        namedRGBColors.put("greenyellow", new int[] {173, 255, 47});
-        namedRGBColors.put("grey", new int[] {128, 128, 128});
-        namedRGBColors.put("honeydew", new int[] {240, 255, 240});
-        namedRGBColors.put("hotpink", new int[] {255, 105, 180});
-        namedRGBColors.put("indianred", new int[] {205, 92, 92});
-        namedRGBColors.put("indigo", new int[] {75, 0, 130});
-        namedRGBColors.put("ivory", new int[] {255, 255, 240});
-        namedRGBColors.put("khaki", new int[] {240, 230, 140});
-        namedRGBColors.put("lavender", new int[] {230, 230, 250});
-        namedRGBColors.put("lavenderblush", new int[] {255, 240, 245});
-        namedRGBColors.put("lawngreen", new int[] {124, 252, 0});
-        namedRGBColors.put("lemonchiffon", new int[] {255, 250, 205});
-        namedRGBColors.put("lightblue", new int[] {173, 216, 230});
-        namedRGBColors.put("lightcoral", new int[] {240, 128, 128});
-        namedRGBColors.put("lightcyan", new int[] {224, 255, 255});
-        namedRGBColors.put("lightgoldenrodyellow", new int[] {250, 250, 210});
-        namedRGBColors.put("lightgray", new int[] {211, 211, 211});
-        namedRGBColors.put("lightgreen", new int[] {144, 238, 144});
-        namedRGBColors.put("lightgrey", new int[] {211, 211, 211});
-        namedRGBColors.put("lightpink", new int[] {255, 182, 193});
-        namedRGBColors.put("lightsalmon", new int[] {255, 160, 122});
-        namedRGBColors.put("lightseagreen", new int[] {32, 178, 170});
-        namedRGBColors.put("lightskyblue", new int[] {135, 206, 250});
-        namedRGBColors.put("lightslategray", new int[] {119, 136, 153});
-        namedRGBColors.put("lightslategrey", new int[] {119, 136, 153});
-        namedRGBColors.put("lightsteelblue", new int[] {176, 196, 222});
-        namedRGBColors.put("lightyellow", new int[] {255, 255, 224});
-        namedRGBColors.put("limegreen", new int[] {50, 205, 50});
-        namedRGBColors.put("linen", new int[] {250, 240, 230});
-        namedRGBColors.put("mediumaquamarine", new int[] {102, 205, 170});
-        namedRGBColors.put("mediumblue", new int[] {0, 0, 205});
-        namedRGBColors.put("mediumorchid", new int[] {186, 85, 211});
-        namedRGBColors.put("mediumpurple", new int[] {147, 112, 219});
-        namedRGBColors.put("mediumseagreen", new int[] {60, 179, 113});
-        namedRGBColors.put("mediumslateblue", new int[] {123, 104, 238});
-        namedRGBColors.put("mediumspringgreen", new int[] {0, 250, 154});
-        namedRGBColors.put("mediumturquoise", new int[] {72, 209, 204});
-        namedRGBColors.put("mediumvioletred", new int[] {199, 21, 133});
-        namedRGBColors.put("midnightblue", new int[] {25, 25, 112});
-        namedRGBColors.put("mintcream", new int[] {245, 255, 250});
-        namedRGBColors.put("mistyrose", new int[] {255, 228, 225});
-        namedRGBColors.put("moccasin", new int[] {255, 228, 181});
-        namedRGBColors.put("navajowhite", new int[] {255, 222, 173});
-        namedRGBColors.put("oldlace", new int[] {253, 245, 230});
-        namedRGBColors.put("olivedrab", new int[] {107, 142, 35});
-        namedRGBColors.put("orangered", new int[] {255, 69, 0});
-        namedRGBColors.put("orchid", new int[] {218, 112, 214});
-        namedRGBColors.put("palegoldenrod", new int[] {238, 232, 170});
-        namedRGBColors.put("palegreen", new int[] {152, 251, 152});
-        namedRGBColors.put("paleturquoise", new int[] {175, 238, 238});
-        namedRGBColors.put("palevioletred", new int[] {219, 112, 147});
-        namedRGBColors.put("papayawhip", new int[] {255, 239, 213});
-        namedRGBColors.put("peachpuff", new int[] {255, 218, 185});
-        namedRGBColors.put("peru", new int[] {205, 133, 63});
-        namedRGBColors.put("pink", new int[] {255, 192, 203});
-        namedRGBColors.put("plum", new int[] {221, 160, 221});
-        namedRGBColors.put("powderblue", new int[] {176, 224, 230});
-        namedRGBColors.put("rosybrown", new int[] {188, 143, 143});
-        namedRGBColors.put("royalblue", new int[] {65, 105, 225});
-        namedRGBColors.put("saddlebrown", new int[] {139, 69, 19});
-        namedRGBColors.put("salmon", new int[] {250, 128, 114});
-        namedRGBColors.put("sandybrown", new int[] {244, 164, 96});
-        namedRGBColors.put("seagreen", new int[] {46, 139, 87});
-        namedRGBColors.put("seashell", new int[] {255, 245, 238});
-        namedRGBColors.put("sienna", new int[] {160, 82, 45});
-        namedRGBColors.put("skyblue", new int[] {135, 206, 235});
-        namedRGBColors.put("slateblue", new int[] {106, 90, 205});
-        namedRGBColors.put("slategray", new int[] {112, 128, 144});
-        namedRGBColors.put("slategrey", new int[] {112, 128, 144});
-        namedRGBColors.put("snow", new int[] {255, 250, 250});
-        namedRGBColors.put("springgreen", new int[] {0, 255, 127});
-        namedRGBColors.put("steelblue", new int[] {70, 130, 180});
-        namedRGBColors.put("tan", new int[] {210, 180, 140});
-        namedRGBColors.put("thistle", new int[] {216, 191, 216});
-        namedRGBColors.put("tomato", new int[] {255, 99, 71});
-        namedRGBColors.put("turquoise", new int[] {64, 224, 208});
-        namedRGBColors.put("violet", new int[] {238, 130, 238});
-        namedRGBColors.put("wheat", new int[] {245, 222, 179});
-        namedRGBColors.put("whitesmoke", new int[] {245, 245, 245});
-        namedRGBColors.put("yellowgreen", new int[] {154, 205, 50});
-
-        // CSS Level 4 colors
-        namedRGBColors.put("rebeccapurple", new int[] {102, 51, 153});
-    }
+    private int rgba;
 
     /**
-     * Alternative to {@link java.awt.Color#decode(String)} that supports most
-     * CSS color syntax, including named colors and alpha values.
+     * Alternative to {@link java.awt.Color#decode(String)} that supports
+     * RGB(A) and named color CSS syntax.
      *
      * @see <a href="https://developer.mozilla.org/en-US/docs/Web/CSS/color">color</a>
      * @see <a href="https://developer.mozilla.org/en-US/docs/Web/CSS/color_value">color</a>
      *
      * @param string Hexadecimal, named, or functional color.
-     * @return Color instance corresponding to the given string, or
-     *         <code>null</code> if the given string is null.
+     * @return       New instance corresponding to the given string.
      * @throws IllegalArgumentException
      */
     public static Color fromString(final String string) {
-        if (string == null) {
-            return null;
-        }
         // Check for hexadecimal.
         if ("#".equals(string.substring(0, 1))) {
-            int r = 0, g = 0, b = 0, a = 255;
+            int r, g, b, a = 255;
             switch (string.length()) {
                 case 4: // #rgb
                     r = Integer.parseInt(string.substring(1, 2), 16) * 16;
@@ -230,7 +222,7 @@ public final class Color {
 
         // Check for a color name.
         if (string.matches("[a-z]+")) {
-            final int[] rgb = namedRGBColors.get(string);
+            final int[] rgb = CSS_COLORS.get(string);
             if (rgb != null) {
                 return new Color(rgb[0], rgb[1], rgb[2]);
             } else {
@@ -240,7 +232,7 @@ public final class Color {
         }
 
         // Check for rgb(r, g, b).
-        Matcher m = rgbPattern.matcher(string.replace(" ", ""));
+        Matcher m = CSS_RGB_PATTERN.matcher(string.replace(" ", ""));
         if (m.matches()) {
             return new Color(Integer.parseInt(m.group(1)),
                     Integer.parseInt(m.group(2)),
@@ -248,7 +240,7 @@ public final class Color {
         }
 
         // Check for rgba(r, g, b, a).
-        m = rgbaPattern.matcher(string.replace(" ", ""));
+        m = CSS_RGBA_PATTERN.matcher(string.replace(" ", ""));
         if (m.matches()) {
             return new Color(Integer.parseInt(m.group(1)),
                     Integer.parseInt(m.group(2)),
@@ -267,25 +259,30 @@ public final class Color {
         return builder.toString().toUpperCase();
     }
 
-    public Color(int rgb) { // TODO: this should take RGBA
-        setRed((rgb >> 16) & 0xff);
-        setGreen((rgb >> 8) & 0xff);
-        setBlue((rgb) & 0xff);
-        setAlpha(255);
+    private static void validateComponent(int component) {
+        if (component < 0 || component > 255) {
+            throw new IllegalArgumentException(
+                    "Component must be in the range (0-255).");
+        }
+    }
+
+    public Color(int rgba) {
+        this.rgba = rgba;
     }
 
     public Color(int r, int g, int b) {
-        setRed(r);
-        setGreen(g);
-        setBlue(b);
-        setAlpha(255);
+        this(r, g, b, 255);
     }
 
     public Color(int r, int g, int b, int a) {
-        setRed(r);
-        setGreen(g);
-        setBlue(b);
-        setAlpha(a);
+        validateComponent(r);
+        validateComponent(g);
+        validateComponent(b);
+        validateComponent(a);
+        this.rgba = ((r & 0xff) << 24) |
+                ((g & 0xff) << 16) |
+                ((b & 0xff) << 8) |
+                (a & 0xff);
     }
 
     @Override
@@ -294,40 +291,44 @@ public final class Color {
             return true;
         } else if (obj instanceof Color) {
             final Color color = (Color) obj;
-            return (color.getRed() == getRed() &&
-                    color.getGreen() == getGreen() &&
-                    color.getBlue() == getBlue() &&
-                    color.getAlpha() == getAlpha());
+            return color.getRGBA() == getRGBA();
         }
         return super.equals(obj);
-    }
-
-    /**
-     * @return Alpha value in the range (0-255).
-     */
-    public int getAlpha() {
-        return alpha;
-    }
-
-    /**
-     * @return Blue value in the range (0-255).
-     */
-    public int getBlue() {
-        return blue;
-    }
-
-    /**
-     * @return Green value in the range (0-255).
-     */
-    public int getGreen() {
-        return green;
     }
 
     /**
      * @return Red value in the range (0-255).
      */
     public int getRed() {
-        return red;
+        return (rgba >> 24) & 0xff;
+    }
+
+    /**
+     * @return Green value in the range (0-255).
+     */
+    public int getGreen() {
+        return (rgba >> 16) & 0xff;
+    }
+
+    /**
+     * @return Blue value in the range (0-255).
+     */
+    public int getBlue() {
+        return (rgba >> 8) & 0xff;
+    }
+
+    /**
+     * @return Alpha value in the range (0-255).
+     */
+    public int getAlpha() {
+        return rgba & 0xff;
+    }
+
+    /**
+     * @return RGBA integer.
+     */
+    public int getRGBA() {
+        return rgba;
     }
 
     @Override
@@ -335,38 +336,8 @@ public final class Color {
         return toRGBAHex().hashCode();
     }
 
-    public int intValue() {
-        int value = 0;
-        value += alpha;
-        value = value << 8;
-        value += red; value = value << 8;
-        value += green; value = value << 8;
-        value += blue;
-        return value;
-    }
-
-    private void setAlpha(int alpha) {
-        validateComponent(alpha);
-        this.alpha = alpha;
-    }
-
-    private void setBlue(int blue) {
-        validateComponent(blue);
-        this.blue = blue;
-    }
-
-    private void setGreen(int green) {
-        validateComponent(green);
-        this.green = green;
-    }
-
-    private void setRed(int red) {
-        validateComponent(red);
-        this.red = red;
-    }
-
     public java.awt.Color toColor() {
-        return new java.awt.Color(red, green, blue, alpha);
+        return new java.awt.Color(getRed(), getGreen(), getBlue(), getAlpha());
     }
 
     /**
@@ -382,13 +353,6 @@ public final class Color {
     public String toRGBAHex() {
         return "#" + toHex(getRed()) + toHex(getGreen()) + toHex(getBlue()) +
                 toHex(getAlpha());
-    }
-
-    private void validateComponent(int component) {
-        if (component < 0 || component > 255) {
-            throw new IllegalArgumentException(
-                    "Component must be in the range (0-255).");
-        }
     }
 
 }

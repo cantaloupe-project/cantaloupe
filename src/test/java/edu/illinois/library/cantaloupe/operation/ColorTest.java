@@ -10,11 +10,6 @@ public class ColorTest extends BaseTest {
     /* fromString(String) */
 
     @Test
-    public void testFromStringWithNull() {
-        assertNull(Color.fromString(null));
-    }
-
-    @Test
     public void testFromStringWithCSSLevel1ColorName() {
         assertEquals(new Color(0, 0, 0), Color.fromString("black"));
         assertEquals(new Color(192, 192, 192), Color.fromString("silver"));
@@ -256,18 +251,44 @@ public class ColorTest extends BaseTest {
     }
 
     @Test
-    public void testGetRGBHex() {
+    public void testConstructor1() {
+        Color instance = new Color(234292446);
+        assertEquals(13, instance.getRed());
+        assertEquals(247, instance.getGreen());
+        assertEquals(4, instance.getBlue());
+        assertEquals(222, instance.getAlpha());
+    }
+
+    @Test
+    public void testConstructor2() {
+        Color instance = new Color(150, 180, 220);
+        assertEquals(150, instance.getRed());
+        assertEquals(180, instance.getGreen());
+        assertEquals(220, instance.getBlue());
+    }
+
+    @Test
+    public void testConstructor3() {
+        Color instance = new Color(150, 180, 220, 240);
+        assertEquals(150, instance.getRed());
+        assertEquals(180, instance.getGreen());
+        assertEquals(220, instance.getBlue());
+        assertEquals(240, instance.getAlpha());
+    }
+
+    @Test
+    public void testGetRGBA() {
+        assertEquals(215949869, new Color(12, 223, 34, 45).getRGBA());
+    }
+
+    @Test
+    public void testToRGBHex() {
         assertEquals("#C01722", new Color(12, 23, 34, 45).toRGBHex());
     }
 
     @Test
-    public void testGetRGBAHex() {
+    public void testToRGBAHex() {
         assertEquals("#C017222D", new Color(12, 23, 34, 45).toRGBAHex());
-    }
-
-    @Test
-    public void testIntValue() {
-        assertEquals(755818274, new Color(12, 223, 34, 45).intValue());
     }
 
     @Test
