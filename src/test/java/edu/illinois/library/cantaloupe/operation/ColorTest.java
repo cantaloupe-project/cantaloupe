@@ -297,4 +297,10 @@ public class ColorTest extends BaseTest {
                 new Color(1, 2, 3, 4).toColor());
     }
 
+    @Test
+    public void testToString() {
+        assertEquals("[R: 45] [G: 50] [B: 55] [A: 60]",
+                new Color(45, 50, 55, 60).toString());
+    }
+
 }

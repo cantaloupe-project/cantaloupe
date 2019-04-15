@@ -355,4 +355,10 @@ public final class Color {
                 toHex(getAlpha());
     }
 
+    @Override
+    public String toString() {
+        return String.format("[R: %d] [G: %d] [B: %d] [A: %d]",
+                getRed(), getGreen(), getBlue(), getAlpha());
+    }
+
 }
