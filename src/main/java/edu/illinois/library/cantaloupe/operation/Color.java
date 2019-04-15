@@ -182,11 +182,16 @@ public final class Color {
      * @see <a href="https://developer.mozilla.org/en-US/docs/Web/CSS/color">color</a>
      * @see <a href="https://developer.mozilla.org/en-US/docs/Web/CSS/color_value">color</a>
      *
-     * @param string Hexadecimal, named, or functional color.
-     * @return       New instance corresponding to the given string.
-     * @throws IllegalArgumentException
+     * @param string Hexadecimal, named, or functional color. For API
+     *               convenience, this may be {@code null}.
+     * @return       New instance corresponding to the given string, or {@code
+     *               null} if the argument was {@code null}.
+     * @throws IllegalArgumentException if an unrecognized string was supplied.
      */
     public static Color fromString(final String string) {
+        if (string == null) {
+            return null;
+        }
         // Check for hexadecimal.
         if ("#".equals(string.substring(0, 1))) {
             int r, g, b, a = 255;

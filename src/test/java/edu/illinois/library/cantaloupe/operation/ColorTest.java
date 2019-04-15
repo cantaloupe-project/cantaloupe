@@ -10,6 +10,11 @@ public class ColorTest extends BaseTest {
     /* fromString(String) */
 
     @Test
+    public void testFromStringWithNullArgument() {
+        assertNull(Color.fromString(null));
+    }
+
+    @Test
     public void testFromStringWithCSSLevel1ColorName() {
         assertEquals(new Color(0, 0, 0), Color.fromString("black"));
         assertEquals(new Color(192, 192, 192), Color.fromString("silver"));
