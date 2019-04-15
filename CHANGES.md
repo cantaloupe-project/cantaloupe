@@ -9,6 +9,8 @@
 * Fixed breakage in manual processor selection from the Control Panel.
 * Fixed improper codestream access in KakaduNativeProcessor that could cause
   cause degraded output for certain images.
+* Improved resilience when reading certain oddly-encoded GIFs in
+  Java2dProcessor and JaiProcessor.
 
 ## 4.1
 

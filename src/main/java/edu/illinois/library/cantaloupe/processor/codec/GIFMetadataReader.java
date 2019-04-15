@@ -6,16 +6,18 @@ import org.slf4j.LoggerFactory;
 
 import javax.imageio.stream.ImageInputStream;
 import javax.xml.bind.DatatypeConverter;
+import java.io.EOFException;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
 /**
  * <p>Reads various metadata from a GIF image.</p>
  *
- * <p>The main use case for this class is as a workaround for the Image I/O
- * GIF reader's inability to read XMP data.</p>
+ * <p>The main use case for this class is as a workaround for the JDK Image I/O
+ * GIF reader's inability to read XMP data without corrupting it.</p>
  *
  * @see <a href="https://www.w3.org/Graphics/GIF/spec-gif89a.txt">Graphics
  *      Interchange Format Version 89a</a>
@@ -49,19 +51,17 @@ final class GIFMetadataReader implements AutoCloseable {
 
     private static final byte[] GIF_SIGNATURE = new byte[] { 0x47, 0x49, 0x46 };
 
-    private static final byte[] NETSCAPE_APPLICATION_IDENTIFIER = new byte[] {
-            (byte) 'N', (byte) 'E', (byte) 'T', (byte) 'S',
-            (byte) 'C', (byte) 'A', (byte) 'P', (byte) 'E' };
+    private static final byte[] NETSCAPE_APPLICATION_IDENTIFIER =
+            "NETSCAPE".getBytes(StandardCharsets.US_ASCII);
 
-    private static final byte[] NETSCAPE_APPLICATION_AUTH_CODE = new byte[] {
-            (byte) '2', (byte) '.', (byte) '0' };
+    private static final byte[] NETSCAPE_APPLICATION_AUTH_CODE =
+            "2.0".getBytes(StandardCharsets.US_ASCII);
 
-    private static final byte[] XMP_APPLICATION_IDENTIFIER = new byte[] {
-            (byte) 'X', (byte) 'M', (byte) 'P', (byte) ' ',
-            (byte) 'D', (byte) 'a', (byte) 't', (byte) 'a' };
+    private static final byte[] XMP_APPLICATION_IDENTIFIER =
+            "XMP Data".getBytes(StandardCharsets.US_ASCII);
 
-    private static final byte[] XMP_APPLICATION_AUTH_CODE = new byte[] {
-            (byte) 'X', (byte) 'M', (byte) 'P' };
+    private static final byte[] XMP_APPLICATION_AUTH_CODE =
+            "XMP".getBytes(StandardCharsets.US_ASCII);
 
     /**
      * Set to {@literal true} once reading begins.
@@ -126,6 +126,7 @@ final class GIFMetadataReader implements AutoCloseable {
      */
     void setSource(ImageInputStream inputStream) {
         this.inputStream = inputStream;
+        this.inputStream.setByteOrder(ByteOrder.LITTLE_ENDIAN);
     }
 
     @Override
@@ -156,20 +157,48 @@ final class GIFMetadataReader implements AutoCloseable {
         isReadAttempted = true;
 
         // Read the Logical Screen Descriptor block.
-        byte[] bytes = read(7);
-        width = ((bytes[1] & 0xff) << 8) | (bytes[0] & 0xff);
-        height = ((bytes[3] & 0xff) << 8) | (bytes[2] & 0xff);
+        width  = inputStream.readShort();
+        height = inputStream.readShort();
 
-        // If the Global Color Table Flag bit == 1...
-        if ((bytes[4] & 0x01) == 1) {
+        boolean isGCTPresent = false;
+        int gctLength = 0;
+
+        // This byte contains packed bits:
+        // 0-2: GCT size
+        //   3: Color Table Sort flag
+        // 4-6: color resolution
+        //   7: Global Color Table (GCT) flag
+        // If the GCT == 1...
+        byte packed = inputStream.readByte();
+        if ((packed & 0x01) == 1) {
+            isGCTPresent = true;
             // Read the GCT length from bits 0-3 in order to skip the GCT.
-            int numEntries = bytes[4] & 0b111;
-            int gctLength = 3 * (1 << (numEntries + 1));
+            int gctSize = packed & 0b111;
+            int numEntries = (1 << (gctSize + 1)); // always a power of 2
+            gctLength = 3 * numEntries;
+        }
+
+        // Skip background color & aspect ratio.
+        inputStream.skipBytes(2);
+        // Skip the GCT.
+        // Note that some GIFs say they have a GCT but don't. In that case
+        // readBlock() will likely throw an EOFException. So, we will mark the
+        // current offset, seek past the GCT, try reading, and if an
+        // EOFException is thrown, reset and try again.
+        inputStream.mark();
+        if (isGCTPresent && gctLength < inputStream.length()) {
             inputStream.skipBytes(gctLength);
         }
 
-        while (readBlock() != -1) {
-            // Read the stream block-by-block.
+        try {
+            //noinspection StatementWithEmptyBody
+            while (readBlock() != -1) {
+            }
+        } catch (EOFException e) {
+            inputStream.reset();
+            //noinspection StatementWithEmptyBody
+            while (readBlock() != -1) {
+            }
         }
 
         LOGGER.debug("Read in {}: {}", watch, this);
@@ -220,6 +249,7 @@ final class GIFMetadataReader implements AutoCloseable {
     }
 
     private void skipSubBlocks() throws IOException {
+        //noinspection StatementWithEmptyBody
         while (skipSubBlock() != -1) {
         }
     }
