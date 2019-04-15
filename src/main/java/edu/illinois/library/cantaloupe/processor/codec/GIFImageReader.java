@@ -54,7 +54,12 @@ final class GIFImageReader extends AbstractIIOImageReader
         GIFMetadataReader reader = new GIFMetadataReader();
         reader.setSource(inputStream);
         // Call one of GIFMetadataReader's reader methods to read from it...
-        reader.getXMP();
+        try {
+            reader.getXMP();
+        } catch (IOException e) {
+            // If XMP-reading fails, we don't want the whole response to fail.
+            LOGGER.info("getMetadata(): {}", e.getMessage());
+        }
         // and then call reset() again so we can use it again.
         reset();
         // This is horrible of course, but it'll work for now.

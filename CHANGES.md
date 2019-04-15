@@ -15,6 +15,10 @@
   is set to a relative path outside of the current working directory.
 * Fixed a regression in the handling of the `X-Forwarded-Path` header.
 * Fixed breakage in manual processor selection from the Control Panel.
+* Fixed improper codestream access in KakaduNativeProcessor that could cause
+  cause degraded output for certain images.
+* Improved resilience when reading certain oddly-encoded GIFs in
+  Java2dProcessor and JaiProcessor.
 
 ## 4.1
 

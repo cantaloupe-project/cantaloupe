@@ -10,6 +10,7 @@ import edu.illinois.library.cantaloupe.util.StringUtils;
 import kdu_jni.Jp2_threadsafe_family_src;
 import kdu_jni.Jpx_codestream_source;
 import kdu_jni.Jpx_input_box;
+import kdu_jni.Jpx_layer_source;
 import kdu_jni.Jpx_meta_manager;
 import kdu_jni.Jpx_metanode;
 import kdu_jni.Jpx_source;
@@ -25,6 +26,7 @@ import kdu_jni.Kdu_message;
 import kdu_jni.Kdu_message_formatter;
 import kdu_jni.Kdu_quality_limiter;
 import kdu_jni.Kdu_region_decompressor;
+import kdu_jni.Kdu_simple_file_source;
 import kdu_jni.Kdu_thread_env;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
@@ -359,27 +361,49 @@ public final class JPEG2000KakaduImageReader implements AutoCloseable {
             Kdu_global.Kdu_customize_errors(prettySyserr);
 
             if (sourceFile != null) {
-                familySrc.Open(sourceFile.toString(), true);
+                familySrc.Open(sourceFile.toString());
             } else {
                 compSrc = new KduImageInputStreamSource(inputStream);
                 familySrc.Open(compSrc);
             }
-            jpxSrc.Open(familySrc, false);
 
-            threadEnv.Create();
+            Jpx_layer_source xLayer       = null;
+            Jpx_codestream_source xStream = null;
+            int success = jpxSrc.Open(familySrc, true);
+            if (success >= 0) {
+                // Succeeded in opening as wrapped JP2/JPX source.
+                xLayer  = jpxSrc.Access_layer(0);
+                xStream = jpxSrc.Access_codestream(xLayer.Get_codestream_id(0));
+                compSrc = xStream.Open_stream();
+            } else {
+                // Must open as raw codestream.
+                familySrc.Close();
+                jpxSrc.Close();
+                if (sourceFile != null) {
+                    compSrc = new Kdu_simple_file_source(sourceFile.toString());
+                } else {
+                    inputStream.seek(0);
+                    compSrc = new KduImageInputStreamSource(inputStream);
+                }
+            }
 
             // Tell Kakadu to use as many more threads as we have CPUs.
+            threadEnv.Create();
             for (int t = 1; t < NUM_THREADS; t++) {
                 threadEnv.Add_thread();
             }
 
-            Jpx_codestream_source codestreamSrc = jpxSrc.Access_codestream(0);
-            Jpx_input_box inputBox = codestreamSrc.Open_stream();
-
-            codestream.Create(inputBox, threadEnv);
+            codestream.Create(compSrc, threadEnv);
             codestream.Set_resilient();
-
-            channels.Configure(codestream);
+            if (xLayer != null) {
+                channels.Configure(
+                        xLayer.Access_colour(0), xLayer.Access_channels(),
+                        xStream.Get_codestream_id(),
+                        xStream.Access_palette(),
+                        xStream.Access_dimensions());
+            } else {
+                channels.Configure(codestream);
+            }
         } catch (KduException e) {
             handle(e);
             throw new IOException(e);
@@ -478,8 +502,6 @@ public final class JPEG2000KakaduImageReader implements AutoCloseable {
             final Kdu_coords regionSize = regionDims.Access_size();
 
             limiter.Set_display_resolution(600f, 600f);
-            codestream.Apply_input_restrictions(0, 0, 0, 0, null,
-                    accessMode, threadEnv, limiter);
 
             // The expand numerator & denominator here tell
             // kdu_region_decompressor.start() at what fractional scale to
