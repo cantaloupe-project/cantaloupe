@@ -252,11 +252,11 @@ public class ColorTest extends BaseTest {
 
     @Test
     public void testConstructor1() {
-        Color instance = new Color(234292446);
-        assertEquals(13, instance.getRed());
-        assertEquals(247, instance.getGreen());
-        assertEquals(4, instance.getBlue());
-        assertEquals(222, instance.getAlpha());
+        Color instance = new Color(755818274);
+        assertEquals(12, instance.getRed());
+        assertEquals(223, instance.getGreen());
+        assertEquals(34, instance.getBlue());
+        assertEquals(45, instance.getAlpha());
     }
 
     @Test
@@ -277,8 +277,8 @@ public class ColorTest extends BaseTest {
     }
 
     @Test
-    public void testGetRGBA() {
-        assertEquals(215949869, new Color(12, 223, 34, 45).getRGBA());
+    public void testGetARGB() {
+        assertEquals(755818274, new Color(12, 223, 34, 45).getARGB());
     }
 
     @Test

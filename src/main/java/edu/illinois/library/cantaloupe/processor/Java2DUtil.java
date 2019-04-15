@@ -1066,7 +1066,7 @@ public final class Java2DUtil {
 
                 red = (int) (0.21 * red + 0.71 * green + 0.07 * blue);
                 Color color = new Color(red, red, red, alpha);
-                image.setRGB(x, j, color.getRGBA());
+                image.setRGB(x, j, color.getARGB());
             }
         }
     }
@@ -1092,7 +1092,7 @@ public final class Java2DUtil {
                     newPixel = 0;
                 }
                 Color color = new Color(newPixel, newPixel, newPixel, alpha);
-                image.setRGB(x, y, color.getRGBA());
+                image.setRGB(x, y, color.getARGB());
             }
         }
     }

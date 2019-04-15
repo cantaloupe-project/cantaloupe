@@ -173,7 +173,7 @@ public final class Color {
     private static final Pattern CSS_RGBA_PATTERN =
             Pattern.compile("rgba *\\( *([0-9]+), *([0-9]+), *([0-9]+), *([0-9]+) *\\)");
 
-    private int rgba;
+    private int argb;
 
     /**
      * Alternative to {@link java.awt.Color#decode(String)} that supports
@@ -266,8 +266,8 @@ public final class Color {
         }
     }
 
-    public Color(int rgba) {
-        this.rgba = rgba;
+    public Color(int argb) {
+        this.argb = argb;
     }
 
     public Color(int r, int g, int b) {
@@ -279,10 +279,10 @@ public final class Color {
         validateComponent(g);
         validateComponent(b);
         validateComponent(a);
-        this.rgba = ((r & 0xff) << 24) |
-                ((g & 0xff) << 16) |
-                ((b & 0xff) << 8) |
-                (a & 0xff);
+        this.argb = ((a & 0xff) << 24) |
+                ((r & 0xff) << 16) |
+                ((g & 0xff) << 8) |
+                (b & 0xff);
     }
 
     @Override
@@ -291,7 +291,7 @@ public final class Color {
             return true;
         } else if (obj instanceof Color) {
             final Color color = (Color) obj;
-            return color.getRGBA() == getRGBA();
+            return color.getARGB() == getARGB();
         }
         return super.equals(obj);
     }
@@ -300,35 +300,35 @@ public final class Color {
      * @return Red value in the range (0-255).
      */
     public int getRed() {
-        return (rgba >> 24) & 0xff;
+        return (argb >> 16) & 0xff;
     }
 
     /**
      * @return Green value in the range (0-255).
      */
     public int getGreen() {
-        return (rgba >> 16) & 0xff;
+        return (argb >> 8) & 0xff;
     }
 
     /**
      * @return Blue value in the range (0-255).
      */
     public int getBlue() {
-        return (rgba >> 8) & 0xff;
+        return argb & 0xff;
     }
 
     /**
      * @return Alpha value in the range (0-255).
      */
     public int getAlpha() {
-        return rgba & 0xff;
+        return (argb >> 24) & 0xff;
     }
 
     /**
-     * @return RGBA integer.
+     * @return ARGB integer.
      */
-    public int getRGBA() {
-        return rgba;
+    public int getARGB() {
+        return argb;
     }
 
     @Override
