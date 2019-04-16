@@ -32,6 +32,12 @@ public class StringUtilsTest extends BaseTest {
     }
 
     @Test
+    public void testMD5() {
+        assertEquals("0832c1202da8d382318e329a7c133ea0",
+                StringUtils.md5("cats"));
+    }
+
+    @Test
     public void testRemoveTrailingZeroes() {
         // with floats
         assertEquals("0", StringUtils.removeTrailingZeroes(0.0f));
