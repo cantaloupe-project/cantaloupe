@@ -993,7 +993,7 @@ public final class Java2DUtil {
             scaledImage = new BufferedImage(
                     targetSize.intWidth(),
                     targetSize.intHeight(),
-                    inImage.getType());
+                    BufferedImage.TYPE_INT_ARGB);
         }
         return scaledImage;
     }
