@@ -3,6 +3,7 @@ package edu.illinois.library.cantaloupe.resource;
 import edu.illinois.library.cantaloupe.image.Dimension;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
+import edu.illinois.library.cantaloupe.image.Metadata;
 import edu.illinois.library.cantaloupe.image.ScaleConstraint;
 import edu.illinois.library.cantaloupe.operation.Encode;
 import edu.illinois.library.cantaloupe.operation.OperationList;
@@ -18,6 +19,7 @@ import static edu.illinois.library.cantaloupe.resource.RequestContext.CLIENT_IP_
 import static edu.illinois.library.cantaloupe.resource.RequestContext.COOKIES_KEY;
 import static edu.illinois.library.cantaloupe.resource.RequestContext.FULL_SIZE_KEY;
 import static edu.illinois.library.cantaloupe.resource.RequestContext.IDENTIFIER_KEY;
+import static edu.illinois.library.cantaloupe.resource.RequestContext.METADATA_KEY;
 import static edu.illinois.library.cantaloupe.resource.RequestContext.OPERATIONS_KEY;
 import static edu.illinois.library.cantaloupe.resource.RequestContext.OUTPUT_FORMAT_KEY;
 import static edu.illinois.library.cantaloupe.resource.RequestContext.REQUEST_HEADERS_KEY;
@@ -80,6 +82,14 @@ public class RequestContextTest {
         assertEquals("cats", instance.toMap().get(IDENTIFIER_KEY));
         instance.setIdentifier(null);
         assertNull(instance.toMap().get(IDENTIFIER_KEY));
+    }
+
+    @Test
+    public void testSetMetadata() {
+        instance.setMetadata(new Metadata());
+        assertNotNull(instance.toMap().get(METADATA_KEY));
+        instance.setMetadata(null);
+        assertNull(instance.toMap().get(METADATA_KEY));
     }
 
     @Test

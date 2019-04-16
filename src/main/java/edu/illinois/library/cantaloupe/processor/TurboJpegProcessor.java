@@ -3,7 +3,7 @@ package edu.illinois.library.cantaloupe.processor;
 import edu.illinois.library.cantaloupe.image.Dimension;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Info;
-import edu.illinois.library.cantaloupe.image.Orientation;
+import edu.illinois.library.cantaloupe.image.Metadata;
 import edu.illinois.library.cantaloupe.image.Rectangle;
 import edu.illinois.library.cantaloupe.image.ScaleConstraint;
 import edu.illinois.library.cantaloupe.operation.ColorTransform;
@@ -19,8 +19,9 @@ import edu.illinois.library.cantaloupe.operation.Sharpen;
 import edu.illinois.library.cantaloupe.operation.Transpose;
 import edu.illinois.library.cantaloupe.operation.overlay.Overlay;
 import edu.illinois.library.cantaloupe.operation.redaction.Redaction;
-import edu.illinois.library.cantaloupe.processor.codec.turbojpeg.TurboJPEGImageReader;
-import edu.illinois.library.cantaloupe.processor.codec.turbojpeg.TurboJPEGImageWriter;
+import edu.illinois.library.cantaloupe.processor.codec.jpeg.JPEGMetadataReader;
+import edu.illinois.library.cantaloupe.processor.codec.jpeg.TurboJPEGImageReader;
+import edu.illinois.library.cantaloupe.processor.codec.jpeg.TurboJPEGImageWriter;
 import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
 import edu.illinois.library.cantaloupe.source.StreamFactory;
 import org.slf4j.Logger;
@@ -38,11 +39,6 @@ import java.util.stream.Collectors;
 /**
  * <p>Processor using the TurboJPEG high-level API to the libjpeg-turbo native
  * library via the Java Native Interface (JNI).</p>
- *
- * <p>{@link TurboJPEGImageReader} is used to acquire a (possibly) scaled
- * region of interest that is buffered in memory. Java 2D is used for
- * post-processing steps when necessary, but otherwise, care is taken to only
- * decompress the source JPEG data when later processing steps require it.</p>
  *
  * <h1>Usage</h1>
  *
@@ -102,6 +98,7 @@ public class TurboJpegProcessor extends AbstractProcessor
     private static String initializationError;
 
     private final TurboJPEGImageReader imageReader = new TurboJPEGImageReader();
+    private final JPEGMetadataReader metadataReader = new JPEGMetadataReader();
 
     private StreamFactory streamFactory;
 
@@ -177,7 +174,13 @@ public class TurboJpegProcessor extends AbstractProcessor
         try {
             imageReader.setSource(streamFactory.newInputStream());
         } catch (IOException e) {
-            LOGGER.error(e.getMessage());
+            LOGGER.warn(e.getMessage());
+        } finally {
+            try {
+                metadataReader.setSource(streamFactory.newSeekableStream());
+            } catch (IOException e) {
+                LOGGER.warn(e.getMessage());
+            }
         }
     }
 
@@ -243,6 +246,10 @@ public class TurboJpegProcessor extends AbstractProcessor
                     Encode encode = (Encode) op;
                     writer.setQuality(encode.getQuality());
                     writer.setProgressive(encode.isInterlacing());
+                    Metadata metadata = encode.getMetadata();
+                    if (metadata != null) {
+                        metadata.getXMP().ifPresent(writer::setXMP);
+                    }
                 }
             }
 
@@ -259,8 +266,33 @@ public class TurboJpegProcessor extends AbstractProcessor
                 .withSize(imageReader.getWidth(), imageReader.getHeight())
                 .withTileSize(imageReader.getWidth(), imageReader.getHeight())
                 .withNumResolutions(1)
-                .withOrientation(Orientation.ROTATE_0) // TODO: fix this
+                .withMetadata(readMetadata())
                 .build();
+    }
+
+    private Metadata readMetadata() throws IOException {
+        final Metadata metadata = new Metadata();
+        // EXIF
+        byte[] exif = metadataReader.getEXIF();
+        if (exif != null) {
+            try (edu.illinois.library.cantaloupe.image.exif.Reader exifReader =
+                    new edu.illinois.library.cantaloupe.image.exif.Reader()) {
+                exifReader.setSource(exif);
+                metadata.setEXIF(exifReader.read());
+            }
+        }
+        // IPTC
+        byte[] iptc = metadataReader.getIPTC();
+        if (iptc != null) {
+            try (edu.illinois.library.cantaloupe.image.iptc.Reader iptcReader =
+                    new edu.illinois.library.cantaloupe.image.iptc.Reader()) {
+                iptcReader.setSource(iptc);
+                metadata.setIPTC(iptcReader.read());
+            }
+        }
+        // XMP
+        metadata.setXMP(metadataReader.getXMP());
+        return metadata;
     }
 
 }

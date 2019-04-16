@@ -8,7 +8,9 @@ import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Dimension;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Info;
+import edu.illinois.library.cantaloupe.image.Metadata;
 import edu.illinois.library.cantaloupe.image.Rectangle;
+import edu.illinois.library.cantaloupe.image.iptc.Reader;
 import edu.illinois.library.cantaloupe.operation.Operation;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.operation.ReductionFactor;
@@ -17,7 +19,7 @@ import edu.illinois.library.cantaloupe.operation.Crop;
 import edu.illinois.library.cantaloupe.processor.codec.ImageReader;
 import edu.illinois.library.cantaloupe.processor.codec.ImageReaderFactory;
 import edu.illinois.library.cantaloupe.processor.codec.ImageWriterFactory;
-import edu.illinois.library.cantaloupe.processor.codec.JPEG2000MetadataReader;
+import edu.illinois.library.cantaloupe.processor.codec.jpeg2000.JPEG2000MetadataReader;
 import edu.illinois.library.cantaloupe.processor.codec.ReaderHint;
 import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
 import edu.illinois.library.cantaloupe.source.stream.BufferedImageInputStream;
@@ -128,7 +130,7 @@ class OpenJpegProcessor extends AbstractProcessor implements FileProcessor {
     /**
      * Set by {@link #initialize()}.
      */
-    private static final AtomicBoolean initializationAttempted =
+    private static final AtomicBoolean IS_INITIALIZATION_ATTEMPTED =
             new AtomicBoolean(false);
 
     /**
@@ -184,7 +186,7 @@ class OpenJpegProcessor extends AbstractProcessor implements FileProcessor {
     }
 
     private static synchronized void initialize() {
-        initializationAttempted.set(true);
+        IS_INITIALIZATION_ATTEMPTED.set(true);
 
         try {
             // Check for the presence of opj_decompress.
@@ -278,7 +280,7 @@ class OpenJpegProcessor extends AbstractProcessor implements FileProcessor {
      * For testing only!
      */
     static synchronized void resetInitialization() {
-        initializationAttempted.set(false);
+        IS_INITIALIZATION_ATTEMPTED.set(false);
         initializationError = null;
     }
 
@@ -294,7 +296,7 @@ class OpenJpegProcessor extends AbstractProcessor implements FileProcessor {
     }
 
     OpenJpegProcessor() {
-        if (!initializationAttempted.get()) {
+        if (!IS_INITIALIZATION_ATTEMPTED.get()) {
             initialize();
         }
     }
@@ -341,7 +343,7 @@ class OpenJpegProcessor extends AbstractProcessor implements FileProcessor {
 
     @Override
     public String getInitializationError() {
-        if (!initializationAttempted.get()) {
+        if (!IS_INITIALIZATION_ATTEMPTED.get()) {
             initialize();
         }
         return initializationError;
@@ -421,14 +423,21 @@ class OpenJpegProcessor extends AbstractProcessor implements FileProcessor {
             reader.setSource(new BufferedImageInputStream(
                     new FileImageInputStream(getSourceFile().toFile())));
 
+            Metadata metadata = new Metadata();
+            byte[] iptc = reader.getIPTC();
+            if (iptc != null) {
+                try (Reader iptcReader = new Reader()) {
+                    iptcReader.setSource(iptc);
+                    metadata.setIPTC(iptcReader.read());
+                }
+            }
+            metadata.setXMP(reader.getXMP());
+            info.setMetadata(metadata);
             info.setNumResolutions(reader.getNumDecompositionLevels() + 1);
 
             Info.Image image = info.getImages().get(0);
-            image.setSize(new Dimension(
-                    reader.getWidth(), reader.getHeight()));
-            image.setTileSize(new Dimension(
-                    reader.getTileWidth(), reader.getTileHeight()));
-            // TODO: set orientation
+            image.setSize(new Dimension(reader.getWidth(), reader.getHeight()));
+            image.setTileSize(new Dimension(reader.getTileWidth(), reader.getTileHeight()));
             // JP2 tile dimensions are inverted, so swap them
             if ((image.width > image.height && image.tileWidth < image.tileHeight) ||
                     (image.width < image.height && image.tileWidth > image.tileHeight)) {
@@ -437,8 +446,6 @@ class OpenJpegProcessor extends AbstractProcessor implements FileProcessor {
                 image.tileWidth = image.tileHeight;
                 image.tileHeight = tmp;
             }
-
-            LOGGER.trace("readInfo(): {}", info.toJSON());
             return info;
         }
     }
@@ -529,7 +536,7 @@ class OpenJpegProcessor extends AbstractProcessor implements FileProcessor {
                         EnumSet.of(ReaderHint.ALREADY_CROPPED);
 
                 Java2DPostProcessor.postProcess(image, hints, opList, info,
-                        reductionFactor, reader.getMetadata(0), outputStream);
+                        reductionFactor, outputStream);
             } finally {
                 reader.dispose();
             }
@@ -570,7 +577,7 @@ class OpenJpegProcessor extends AbstractProcessor implements FileProcessor {
                         EnumSet.of(ReaderHint.ALREADY_CROPPED);
 
                 Java2DPostProcessor.postProcess(image, hints, opList, info,
-                        reductionFactor, reader.getMetadata(0), outputStream);
+                        reductionFactor, outputStream);
 
                 final int code = process.waitFor();
                 if (code != 0) {

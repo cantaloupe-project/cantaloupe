@@ -11,6 +11,7 @@ import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.operation.ValidationException;
 import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
 import edu.illinois.library.cantaloupe.test.TestUtil;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -31,6 +32,12 @@ public class PdfBoxProcessorTest extends AbstractProcessorTest {
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.PROCESSOR_DPI, 72);
         instance = newInstance();
+    }
+
+    @After
+    public void tearDown() throws Exception {
+        super.tearDown();
+        instance.close();
     }
 
     @Override
@@ -101,7 +108,14 @@ public class PdfBoxProcessorTest extends AbstractProcessorTest {
     }
 
     @Test
-    public void testReadImageInfoWithMultiPagePDF() throws Exception {
+    public void testReadInfoXMPAwareness() throws Exception {
+        instance.setSourceFile(TestUtil.getImage("pdf-xmp.pdf"));
+        Info info = instance.readInfo();
+        assertTrue(info.getMetadata().getXMP().isPresent());
+    }
+
+    @Test
+    public void testReadInfoWithMultiPagePDF() throws Exception {
         instance.close();
         instance.setSourceFile(TestUtil.getImage("pdf-multipage.pdf"));
         final Info info = instance.readInfo();

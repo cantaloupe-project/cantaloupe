@@ -5,6 +5,8 @@ import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Dimension;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Info;
+import edu.illinois.library.cantaloupe.image.Metadata;
+import edu.illinois.library.cantaloupe.image.Orientation;
 import edu.illinois.library.cantaloupe.image.ScaleConstraint;
 import edu.illinois.library.cantaloupe.processor.Processor;
 import edu.illinois.library.cantaloupe.resource.iiif.ImageInfoUtil;
@@ -20,8 +22,8 @@ final class ImageInfoFactory {
 
     ImageInfo newImageInfo(final String imageURI,
                            final Processor processor,
-                           final Info.Image infoImage,
-                           final int numResolutions,
+                           final Info info,
+                           final int imageIndex,
                            ScaleConstraint scaleConstraint) {
         if (scaleConstraint == null) {
             scaleConstraint = new ScaleConstraint(1, 1);
@@ -35,16 +37,20 @@ final class ImageInfoFactory {
                 getInt(Key.IIIF_MIN_TILE_SIZE, DEFAULT_MIN_TILE_SIZE);
 
         // Find a tile width and height. If the image is not tiled,
-        // calculate a tile size close to MIN_TILE_SIZE_CONFIG_KEY pixels.
+        // calculate a tile size close to Key.IIIF_MIN_TILE_SIZE pixels.
         // Otherwise, use the smallest multiple of the tile size above
-        // MIN_TILE_SIZE_CONFIG_KEY of image resolution 0.
-        final Dimension virtualSize = infoImage.getOrientationSize();
+        // Key.IIIF_MIN_TILE_SIZE of image resolution 0.
+        final Metadata metadata = info.getMetadata();
+        final Orientation orientation = (metadata != null) ?
+                metadata.getOrientation() : Orientation.ROTATE_0;
+        final Dimension virtualSize = orientation.adjustedSize(info.getSize());
         final double scScale = scaleConstraint.getRational().doubleValue();
         virtualSize.scale(scScale);
-        Dimension virtualTileSize = infoImage.getOrientationTileSize();
+        Dimension virtualTileSize = orientation.adjustedSize(
+                info.getImages().get(imageIndex).getTileSize());
         virtualTileSize.scale(scScale);
 
-        if (numResolutions > 0) {
+        if (info.getNumResolutions() > 0) {
             if (!virtualTileSize.equals(virtualSize)) {
                 virtualTileSize = ImageInfoUtil.getTileSize(
                         virtualSize, virtualTileSize, minTileSize);

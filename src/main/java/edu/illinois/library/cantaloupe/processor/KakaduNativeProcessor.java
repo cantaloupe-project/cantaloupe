@@ -4,13 +4,12 @@ import edu.illinois.library.cantaloupe.image.Dimension;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.image.Metadata;
-import edu.illinois.library.cantaloupe.image.Orientation;
 import edu.illinois.library.cantaloupe.image.Rectangle;
+import edu.illinois.library.cantaloupe.image.iptc.Reader;
 import edu.illinois.library.cantaloupe.operation.ColorTransform;
 import edu.illinois.library.cantaloupe.operation.Crop;
 import edu.illinois.library.cantaloupe.operation.CropByPercent;
 import edu.illinois.library.cantaloupe.operation.Encode;
-import edu.illinois.library.cantaloupe.operation.MetadataCopy;
 import edu.illinois.library.cantaloupe.operation.Operation;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.operation.ReductionFactor;
@@ -20,9 +19,8 @@ import edu.illinois.library.cantaloupe.operation.Sharpen;
 import edu.illinois.library.cantaloupe.operation.Transpose;
 import edu.illinois.library.cantaloupe.operation.overlay.Overlay;
 import edu.illinois.library.cantaloupe.operation.redaction.Redaction;
-import edu.illinois.library.cantaloupe.processor.codec.ImageWriter;
 import edu.illinois.library.cantaloupe.processor.codec.ImageWriterFactory;
-import edu.illinois.library.cantaloupe.processor.codec.JPEG2000KakaduImageReader;
+import edu.illinois.library.cantaloupe.processor.codec.jpeg2000.JPEG2000KakaduImageReader;
 import edu.illinois.library.cantaloupe.source.StreamFactory;
 import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
 import kdu_jni.KduException;
@@ -287,21 +285,21 @@ class KakaduNativeProcessor implements FileProcessor, StreamProcessor {
      * @param opList          List of operations to apply to {@literal image}.
      * @param diffScales      Differential X and Y scales that have already
      *                        been applied to {@literal image}.
-     * @param imageInfo       Information about the source image.
+     * @param info            Information about the source image.
      * @param reductionFactor May be {@literal null}.
      * @param outputStream    Stream to write the resulting image to.
      */
     private void postProcess(BufferedImage image,
                              final OperationList opList,
                              final double[] diffScales,
-                             final Info imageInfo,
+                             final Info info,
                              ReductionFactor reductionFactor,
                              final OutputStream outputStream) throws IOException {
         if (reductionFactor == null) {
             reductionFactor = new ReductionFactor();
         }
 
-        final Dimension fullSize = imageInfo.getSize();
+        final Dimension fullSize = info.getSize();
 
         // Apply redactions.
         final Set<Redaction> redactions = opList.stream()
@@ -336,17 +334,9 @@ class KakaduNativeProcessor implements FileProcessor, StreamProcessor {
             }
         }
 
-        ImageWriter writer = new ImageWriterFactory()
-                .newImageWriter((Encode) opList.getFirst(Encode.class));
-        if (opList.getFirst(MetadataCopy.class) != null) {
-            String xmp = reader.getXMP();
-            if (xmp != null) {
-                Metadata metadata = new Metadata();
-                metadata.setXMP(xmp);
-                writer.setMetadata(metadata);
-            }
-        }
-        writer.write(image, outputStream);
+        new ImageWriterFactory()
+                .newImageWriter((Encode) opList.getFirst(Encode.class))
+                .write(image, outputStream);
     }
 
     @Override
@@ -355,9 +345,24 @@ class KakaduNativeProcessor implements FileProcessor, StreamProcessor {
                 .withFormat(Format.JP2)
                 .withSize(reader.getWidth(), reader.getHeight())
                 .withTileSize(reader.getTileWidth(), reader.getTileHeight())
-                .withOrientation(Orientation.ROTATE_0) // TODO: may need to parse the EXIF to get this?
                 .withNumResolutions(reader.getNumDecompositionLevels() + 1)
+                .withMetadata(readMetadata())
                 .build();
+    }
+
+    private Metadata readMetadata() throws IOException {
+        final Metadata metadata = new Metadata();
+        // IPTC
+        byte[] iptc = reader.getIPTC();
+        if (iptc != null) {
+            try (Reader iptcReader = new Reader()) {
+                iptcReader.setSource(iptc);
+                metadata.setIPTC(iptcReader.read());
+            }
+        }
+        // XMP
+        metadata.setXMP(reader.getXMP());
+        return metadata;
     }
 
 }

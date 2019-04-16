@@ -7,6 +7,7 @@ import edu.illinois.library.cantaloupe.image.Dimension;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.Info;
+import edu.illinois.library.cantaloupe.image.Metadata;
 import edu.illinois.library.cantaloupe.image.Orientation;
 import edu.illinois.library.cantaloupe.image.Rectangle;
 import edu.illinois.library.cantaloupe.image.ScaleConstraint;
@@ -171,7 +172,12 @@ public class OperationListTest extends BaseTest {
         final Dimension fullSize = new Dimension(2000, 1000);
         final Info info = Info.builder()
                 .withSize(fullSize)
-                .withOrientation(Orientation.ROTATE_90)
+                .withMetadata(new Metadata() {
+                    @Override
+                    public Orientation getOrientation() {
+                        return Orientation.ROTATE_90;
+                    }
+                })
                 .build();
         final OperationList opList = new OperationList(
                 new Identifier("cats"),
@@ -197,7 +203,12 @@ public class OperationListTest extends BaseTest {
         final Dimension fullSize = new Dimension(2000, 1000);
         final Info info = Info.builder()
                 .withSize(fullSize)
-                .withOrientation(Orientation.ROTATE_90)
+                .withMetadata(new Metadata() {
+                    @Override
+                    public Orientation getOrientation() {
+                        return Orientation.ROTATE_90;
+                    }
+                })
                 .build();
         final OperationList opList = new OperationList(
                 new Identifier("cats"),
@@ -267,28 +278,6 @@ public class OperationListTest extends BaseTest {
         Encode encode = (Encode) opList.getFirst(Encode.class);
         assertEquals(50, encode.getQuality());
         assertTrue(encode.isInterlacing());
-    }
-
-    @Test
-    public void applyNonEndpointMutationsWithMetadataCopies()
-            throws Exception {
-        final Configuration config = Configuration.getInstance();
-        config.setProperty(Key.PROCESSOR_PRESERVE_METADATA, true);
-
-        final Dimension fullSize = new Dimension(2000, 1000);
-        final Info info = Info.builder().withSize(fullSize).build();
-        final OperationList opList = new OperationList(
-                new Identifier("cats"), new Encode(Format.JPG));
-
-        final RequestContext context = new RequestContext();
-        context.setOperationList(opList, fullSize);
-        DelegateProxyService service = DelegateProxyService.getInstance();
-        DelegateProxy proxy = service.newDelegateProxy(context);
-
-        opList.applyNonEndpointMutations(info, proxy);
-
-        Iterator<Operation> it = opList.iterator();
-        assertTrue(it.next() instanceof MetadataCopy);
     }
 
     @Test
@@ -445,6 +434,33 @@ public class OperationListTest extends BaseTest {
         assertEquals(Compression.LZW, encode.getCompression());
     }
 
+    @Test
+    public void applyNonEndpointMutationsWithMetadata() throws Exception {
+        Configuration config = Configuration.getInstance();
+        config.setProperty(Key.DELEGATE_SCRIPT_ENABLED, true);
+        config.setProperty(Key.DELEGATE_SCRIPT_PATHNAME,
+                TestUtil.getFixture("delegates.rb").toString());
+
+        final Dimension fullSize = new Dimension(2000, 1000);
+        final Info info = Info.builder().withSize(fullSize).build();
+        final Encode encode = new Encode(Format.JPG);
+        final Metadata metadata = new Metadata();
+        metadata.setXMP("<rdf:RDF>source metadata</rdf:RDF>");
+        encode.setMetadata(metadata);
+        final OperationList opList = new OperationList(
+                new Identifier("metadata"), encode);
+
+        final RequestContext context = new RequestContext();
+        context.setOperationList(opList, fullSize);
+        DelegateProxyService service = DelegateProxyService.getInstance();
+        DelegateProxy proxy = service.newDelegateProxy(context);
+
+        opList.applyNonEndpointMutations(info, proxy);
+
+        assertEquals("<rdf:RDF>derivative metadata</rdf:RDF>",
+                encode.getMetadata().getXMP().orElseThrow());
+    }
+
     @Test(expected = IllegalStateException.class)
     public void applyNonEndpointMutationsWhileFrozen() throws Exception {
         final Dimension fullSize   = new Dimension(2000, 1000);
@@ -514,7 +530,7 @@ public class OperationListTest extends BaseTest {
     public void getFirst() {
         instance.add(new Scale(0.5));
 
-        assertNull(instance.getFirst(MetadataCopy.class));
+        assertNull(instance.getFirst(Crop.class));
         assertNotNull(instance.getFirst(Scale.class));
     }
 

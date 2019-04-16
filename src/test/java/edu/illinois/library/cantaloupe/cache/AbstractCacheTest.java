@@ -423,4 +423,17 @@ abstract class AbstractCacheTest extends BaseTest {
         }).run();
     }
 
+    @Test
+    public void testPutWithIncompleteInstance() throws Exception {
+        final DerivativeCache instance = newInstance();
+        final Identifier identifier = new Identifier("incomplete");
+        final Info info = new Info();
+        info.setComplete(false);
+
+        instance.put(identifier, info);
+
+        Optional<Info> actualInfo = instance.getInfo(identifier);
+        assertFalse(actualInfo.isPresent());
+    }
+
 }

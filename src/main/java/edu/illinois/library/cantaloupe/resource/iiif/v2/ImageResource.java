@@ -9,6 +9,8 @@ import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.image.MediaType;
+import edu.illinois.library.cantaloupe.image.Metadata;
+import edu.illinois.library.cantaloupe.image.Orientation;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.operation.Scale;
 import edu.illinois.library.cantaloupe.processor.Processor;
@@ -173,11 +175,11 @@ public class ImageResource extends IIIF2Resource {
             Dimension fullSize;
             try {
                 fullSize = info.getSize(getPageIndex());
+                getRequestContext().setMetadata(info.getMetadata());
 
                 ops.setScaleConstraint(getScaleConstraint());
                 ops.applyNonEndpointMutations(info, getDelegateProxy());
                 ops.freeze();
-
                 getRequestContext().setOperationList(ops, fullSize);
             } catch (IllegalArgumentException | IndexOutOfBoundsException e) {
                 throw new IllegalClientArgumentException(e);
@@ -185,7 +187,10 @@ public class ImageResource extends IIIF2Resource {
 
             processor.validate(ops, fullSize);
 
-            final Dimension virtualSize = info.getOrientationSize();
+            final Metadata metadata = info.getMetadata();
+            final Orientation orientation = (metadata != null) ?
+                    metadata.getOrientation() : Orientation.ROTATE_0;
+            final Dimension virtualSize = orientation.adjustedSize(fullSize);
             final Dimension resultingSize = ops.getResultingSize(info.getSize());
             validateScale(virtualSize, (Scale) ops.getFirst(Scale.class));
             validateSize(resultingSize, virtualSize, processor);

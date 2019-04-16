@@ -11,6 +11,7 @@ import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.processor.codec.ImageWriterFactory;
 import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
 import edu.illinois.library.cantaloupe.test.TestUtil;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -41,6 +42,12 @@ public class FfmpegProcessorTest extends AbstractProcessorTest {
         FfmpegProcessor.resetInitialization();
 
         instance = newInstance();
+    }
+
+    @After
+    public void tearDown() throws Exception {
+        super.tearDown();
+        instance.close();
     }
 
     @Override

@@ -3,6 +3,7 @@ package edu.illinois.library.cantaloupe.operation;
 import edu.illinois.library.cantaloupe.image.Compression;
 import edu.illinois.library.cantaloupe.image.Dimension;
 import edu.illinois.library.cantaloupe.image.Format;
+import edu.illinois.library.cantaloupe.image.Metadata;
 import edu.illinois.library.cantaloupe.image.ScaleConstraint;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import org.junit.Before;
@@ -77,6 +78,19 @@ public class EncodeTest extends BaseTest {
         instance.setMaxComponentSize(8);
     }
 
+    @Test(expected = IllegalStateException.class)
+    public void setMetadataWhenFrozenThrowsException() {
+        instance.freeze();
+        instance.setMetadata(new Metadata());
+    }
+
+    @Test
+    public void setMetadataWithValidArgument() {
+        Metadata metadata = new Metadata();
+        instance.setMetadata(metadata);
+        assertEquals(metadata, instance.getMetadata());
+    }
+
     @Test(expected = IllegalArgumentException.class)
     public void setQualityWithZeroArgumentThrowsException() {
         instance.setQuality(0);
@@ -111,6 +125,9 @@ public class EncodeTest extends BaseTest {
         instance.setQuality(50);
         instance.setBackgroundColor(Color.BLUE);
         instance.setMaxComponentSize(10);
+        Metadata metadata = new Metadata();
+        metadata.setXMP("<rdf:RDF></rdf:RDF>");
+        instance.setMetadata(metadata);
 
         Dimension size = new Dimension(500, 500);
         ScaleConstraint scaleConstraint = new ScaleConstraint(1, 1);
@@ -122,6 +139,7 @@ public class EncodeTest extends BaseTest {
         assertTrue((boolean) map.get("interlace"));
         assertEquals(50, map.get("quality"));
         assertEquals(10, map.get("max_sample_size"));
+        assertEquals("<rdf:RDF></rdf:RDF>", ((Map<String,Object>) map.get("metadata")).get("xmp_string"));
     }
 
     @Test(expected = UnsupportedOperationException.class)
@@ -139,7 +157,10 @@ public class EncodeTest extends BaseTest {
         instance.setQuality(50);
         instance.setBackgroundColor(Color.BLUE);
         instance.setMaxComponentSize(10);
-        assertEquals("jpg_JPEG_50_interlace_#0000FF_10", instance.toString());
+        Metadata metadata = new Metadata();
+        metadata.setXMP("<rdf:RDF></rdf:RDF>");
+        instance.setMetadata(metadata);
+        assertTrue(instance.toString().matches("^jpg_JPEG_50_interlace_#0000FF_10_.*"));
     }
 
 }

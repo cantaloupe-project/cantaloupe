@@ -5,6 +5,7 @@ import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Compression;
 import edu.illinois.library.cantaloupe.image.Dimension;
 import edu.illinois.library.cantaloupe.image.Info;
+import edu.illinois.library.cantaloupe.image.Metadata;
 import edu.illinois.library.cantaloupe.image.Orientation;
 import edu.illinois.library.cantaloupe.image.Rectangle;
 import edu.illinois.library.cantaloupe.operation.Color;
@@ -48,13 +49,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * <p>Implementation notes:</p>
  *
  * <ul>
- *     <li>This processor does not respect the
- *     {@link Key#PROCESSOR_PRESERVE_METADATA} setting because telling GM not
- *     to preserve metadata means telling it not to preserve an ICC profile.
- *     Therefore, metadata always passes through.</li>
- *     <li>This processor does not respect the
- *     {@link Key#PROCESSOR_RESPECT_ORIENTATION} setting. The orientation is
- *     always respected.</li>
+ *     <li>{@link FileProcessor} is not implemented because testing indicates
+ *     that reading from streams is significantly faster.</li>
+ *     <li>This processor is not metadata-aware. (See {@link #readInfo()}.)</li>
  * </ul>
  */
 class GraphicsMagickProcessor extends AbstractMagickProcessor
@@ -199,6 +196,8 @@ class GraphicsMagickProcessor extends AbstractMagickProcessor
         final List<String> args = new ArrayList<>(30);
         args.add(getPath());
         args.add("convert");
+
+        args.add("-auto-orient");
 
         // If we need to rasterize, and the op list contains a scale operation,
         // see if we can use it to compute a scale-appropriate DPI.
@@ -481,6 +480,15 @@ class GraphicsMagickProcessor extends AbstractMagickProcessor
         }
     }
 
+    /**
+     * Note: it's tough to get all of the info needed to fully populate an
+     * {@link Info} from GraphicsMagick. Getting most of it, including raw EXIF
+     * and XMP data, would require at least three separate process invocations,
+     * and two of them don't work reliably when reading from streams&mdash;and
+     * then {@link Info.Image#getTileSize() tile sizes} are still missing. The
+     * returned instance is therefore marked {@link Info#isComplete()
+     * incomplete}.
+     */
     @Override
     public Info readInfo() throws IOException {
         List<String> output;
@@ -501,19 +509,22 @@ class GraphicsMagickProcessor extends AbstractMagickProcessor
                         .withTileSize(width, height)
                         .withFormat(getSourceFormat())
                         .build();
+                info.setComplete(false);
+
                 // Do we have an EXIF orientation to deal with?
                 if (output.size() > 2) {
-                    try {
-                        final int exifOrientation = Integer.parseInt(output.get(2));
-                        final Orientation orientation =
-                                Orientation.forEXIFOrientation(exifOrientation);
-                        info.getImages().get(0).setOrientation(orientation);
-                    } catch (IllegalArgumentException ignore) {
-                    }
+                    final int exifOrientation = Integer.parseInt(
+                            output.get(2).replaceAll("[^\\d+]", ""));
+                    info.setMetadata(new Metadata() {
+                        @Override
+                        public Orientation getOrientation() {
+                            return Orientation.forEXIFOrientation(exifOrientation);
+                        }
+                    });
                 }
                 return info;
             }
-            throw new IOException("readInfo(): nothing received on stdout: ");
+            throw new IOException("readInfo(): nothing received on stdout");
         } catch (IOException e) {
             throw e;
         } catch (Exception e) {
@@ -532,8 +543,9 @@ class GraphicsMagickProcessor extends AbstractMagickProcessor
         args.add("-format");
         // We need to read this even when not respecting orientation,
         // because GM's crop operation is orientation-unaware.
-        args.add("%w\n%h\n%[EXIF:Orientation]");
-        args.add(getSourceFormat().getPreferredExtension() + ":" + sourceFile);
+        args.add("%w\n%h");
+        args.add(getSourceFormat().getPreferredExtension() +
+                ":" + sourceFile + "[0]");
 
         final ArrayListOutputConsumer consumer =
                 new ArrayListOutputConsumer();
@@ -559,8 +571,8 @@ class GraphicsMagickProcessor extends AbstractMagickProcessor
             args.add("-format");
             // We need to read this even when not respecting orientation,
             // because GM's crop operation is orientation-unaware.
-            args.add("%w\n%h\n%[EXIF:Orientation]");
-            args.add(getSourceFormat().getPreferredExtension() + ":-");
+            args.add("%w\n%h");
+            args.add(getSourceFormat().getPreferredExtension() + ":-[0]");
 
             final ArrayListOutputConsumer consumer =
                     new ArrayListOutputConsumer();
@@ -573,6 +585,10 @@ class GraphicsMagickProcessor extends AbstractMagickProcessor
             cmd.run(args);
 
             return consumer.getOutput();
+        } catch (IOException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new IOException(e);
         }
     }
 

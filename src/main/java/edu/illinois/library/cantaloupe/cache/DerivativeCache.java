@@ -31,17 +31,17 @@ public interface DerivativeCache extends Cache {
 
     /**
      * <p>Returns an input stream corresponding to the given operation list,
-     * or <code>null</code> if a valid image corresponding to the given
-     * operation list does not exist in the cache.</p>
+     * or {@code null} if a valid image corresponding to the given operation
+     * list does not exist in the cache.</p>
      *
      * <p>If an invalid image corresponding to the given operation list exists
      * in the cache, implementations should delete it (ideally asynchronously)
-     * and return <code>null</code>.</p>
+     * and return {@code null}.</p>
      *
      * @param opList Operation list for which to retrieve an input stream for
      *               reading from the cache.
-     * @return Input stream corresponding to the given operation list, or
-     *         {@literal null} if a valid image does not exist in the cache.
+     * @return       Input stream corresponding to the given operation list, or
+     *               {@code null} if a valid image does not exist in the cache.
      */
     InputStream newDerivativeImageInputStream(OperationList opList)
             throws IOException;
@@ -54,8 +54,8 @@ public interface DerivativeCache extends Cache {
      *
      * @param opList Operation list for which to retrieve an output stream for
      *               writing to the cache.
-     * @return Output stream to which an image corresponding to the given
-     *         operation list can be written.
+     * @return       Output stream to which an image corresponding to the given
+     *               operation list can be written.
      */
     OutputStream newDerivativeImageOutputStream(OperationList opList)
             throws IOException;
@@ -64,23 +64,24 @@ public interface DerivativeCache extends Cache {
      * Deletes the cached image corresponding to the given operation list.
      *
      * @param opList
-     * @throws IOException Upon fatal error. Implementations should do the
+     * @throws IOException upon fatal error. Implementations should do the
      *         best they can to complete the operation and swallow and log
      *         non-fatal errors.
      */
     void purge(OperationList opList) throws IOException;
 
     /**
-     * <p>Adds image information to the cache.</p>
+     * <p>Synchronously adds image information to the cache.</p>
      *
      * <p>If the information corresponding to the given identifier already
-     * exists, it should be overwritten.</p>
+     * exists, it will be overwritten.</p>
      *
-     * <p>This method is synchronous.</p>
+     * <p>{@link Info#isComplete() Incomplete instances} are silently
+     * ignored.</p>
      *
      * @param identifier Image identifier.
-     * @param imageInfo Info containing information about the image with
-     *                  the given identifier.
+     * @param imageInfo  Info containing information about the image with the
+     *                   given identifier.
      */
     void put(Identifier identifier, Info imageInfo) throws IOException;
 

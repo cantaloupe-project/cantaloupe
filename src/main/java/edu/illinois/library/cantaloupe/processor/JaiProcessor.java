@@ -2,11 +2,11 @@ package edu.illinois.library.cantaloupe.processor;
 
 import edu.illinois.library.cantaloupe.image.Dimension;
 import edu.illinois.library.cantaloupe.image.Info;
+import edu.illinois.library.cantaloupe.image.Metadata;
+import edu.illinois.library.cantaloupe.image.Orientation;
 import edu.illinois.library.cantaloupe.operation.ColorTransform;
 import edu.illinois.library.cantaloupe.image.Format;
-import edu.illinois.library.cantaloupe.image.Orientation;
 import edu.illinois.library.cantaloupe.operation.Encode;
-import edu.illinois.library.cantaloupe.operation.MetadataCopy;
 import edu.illinois.library.cantaloupe.operation.Operation;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.operation.ReductionFactor;
@@ -135,22 +135,24 @@ class JaiProcessor extends AbstractImageIOProcessor
 
     @Override
     public void process(final OperationList opList,
-                        final Info imageInfo,
+                        final Info info,
                         final OutputStream outputStream)
             throws ProcessorException {
-        super.process(opList, imageInfo, outputStream);
+        super.process(opList, info, outputStream);
 
         ImageReader reader = null;
         try {
-            reader = getReader();
+
+            reader                        = getReader();
             final Format outputFormat     = opList.getOutputFormat();
-            final Orientation orientation = getEffectiveOrientation();
-            final Dimension fullSize      = imageInfo.getSize();
+            final Metadata metadata       = info.getMetadata();
+            final Orientation orientation = metadata.getOrientation();
+            final Dimension fullSize      = info.getSize();
             final ReductionFactor rf      = new ReductionFactor();
             final Set<ReaderHint> hints   = EnumSet.noneOf(ReaderHint.class);
 
-            final RenderedImage renderedImage = reader.readRendered(opList,
-                    orientation, rf, hints);
+            final RenderedImage renderedImage = reader.readRendered(
+                    opList, rf, hints);
             RenderedOp renderedOp = JAIUtil.getAsRenderedOp(
                     RenderedOp.wrapRenderedImage(renderedImage));
 
@@ -160,14 +162,22 @@ class JaiProcessor extends AbstractImageIOProcessor
                 renderedOp = JAIUtil.reduceTo8Bits(renderedOp);
             }
 
+            // Apply the Crop operation, if present.
+            Crop crop = (Crop) opList.getFirst(Crop.class);
+            if (crop != null) {
+                renderedOp = JAIUtil.cropImage(
+                        renderedOp, opList.getScaleConstraint(), crop, rf);
+            }
+
+            // Correct for orientation -- this will be a no-op if the
+            // orientation is 0.
+            renderedOp = JAIUtil.rotateImage(
+                    renderedOp, orientation.getDegrees());
+
             // Apply remaining operations, except Overlay.
             for (Operation op : opList) {
                 if (op.hasEffect(fullSize, opList)) {
-                    if (op instanceof Crop) {
-                        renderedOp = JAIUtil.cropImage(
-                                renderedOp, opList.getScaleConstraint(),
-                                (Crop) op, rf);
-                    } else if (op instanceof Scale) {
+                    if (op instanceof Scale) {
                         /*
                         JAI has a bug that causes it to fail on certain right-
                         edge compressed TIFF tiles when using the
@@ -238,12 +248,9 @@ class JaiProcessor extends AbstractImageIOProcessor
                     Java2DUtil.applyOverlay(image, (Overlay) op);
                 }
             }
+
             final ImageWriter writer = new ImageWriterFactory()
                     .newImageWriter((Encode) opList.getFirst(Encode.class));
-            if (opList.getFirst(MetadataCopy.class) != null) {
-                writer.setMetadata(getReader().getMetadata(0));
-            }
-
             if (image != null) {
                 writer.write(image, outputStream);
             } else {

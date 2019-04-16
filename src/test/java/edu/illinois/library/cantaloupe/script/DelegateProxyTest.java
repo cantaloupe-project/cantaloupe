@@ -167,6 +167,18 @@ public class DelegateProxyTest extends BaseTest {
         assertTrue(result.isEmpty());
     }
 
+    /* getMetadata() */
+
+    @Test
+    public void testGetMetadata() throws Exception {
+        RequestContext context = new RequestContext();
+        context.setIdentifier(new Identifier("metadata"));
+        instance.setRequestContext(context);
+
+        String result = instance.getMetadata();
+        assertEquals("<rdf:RDF>derivative metadata</rdf:RDF>", result);
+    }
+
     /* getJdbcSourceDatabaseIdentifier() */
 
     @Test

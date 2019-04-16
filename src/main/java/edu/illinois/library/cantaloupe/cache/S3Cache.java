@@ -502,6 +502,12 @@ class S3Cache implements DerivativeCache {
      */
     @Override
     public void put(Identifier identifier, Info info) throws IOException {
+        if (!info.isComplete()) {
+            LOGGER.debug("put(): info for {} is incomplete; ignoring",
+                    identifier);
+            return;
+        }
+        LOGGER.debug("put(): caching info for {}", identifier);
         final AmazonS3 s3 = getClientInstance();
         final String objectKey = getObjectKey(identifier);
         final String bucketName = getBucketName();

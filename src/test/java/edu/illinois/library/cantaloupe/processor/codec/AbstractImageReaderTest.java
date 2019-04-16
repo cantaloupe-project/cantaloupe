@@ -4,7 +4,6 @@ import edu.illinois.library.cantaloupe.image.Compression;
 import edu.illinois.library.cantaloupe.image.Dimension;
 import edu.illinois.library.cantaloupe.operation.CropByPixels;
 import edu.illinois.library.cantaloupe.operation.OperationList;
-import edu.illinois.library.cantaloupe.image.Orientation;
 import edu.illinois.library.cantaloupe.operation.ReductionFactor;
 import edu.illinois.library.cantaloupe.operation.Scale;
 import edu.illinois.library.cantaloupe.test.BaseTest;
@@ -20,12 +19,12 @@ import java.util.Set;
 
 import static org.junit.Assert.*;
 
-abstract class AbstractImageReaderTest extends BaseTest {
+public abstract class AbstractImageReaderTest extends BaseTest {
 
     private static final double DELTA = 0.00000001;
     private static final Dimension FIXTURE_SIZE = new Dimension(64, 56);
 
-    ImageReader instance;
+    protected ImageReader instance;
 
     @Before
     public void setUp() throws Exception {
@@ -40,7 +39,7 @@ abstract class AbstractImageReaderTest extends BaseTest {
         }
     }
 
-    abstract ImageReader newInstance() throws IOException;
+    abstract protected ImageReader newInstance() throws IOException;
 
     @Test
     public void testGetCompression() throws Exception {
@@ -92,11 +91,11 @@ abstract class AbstractImageReaderTest extends BaseTest {
         OperationList ops = new OperationList(
                 new CropByPixels(10, 10, 40, 40),
                 new Scale(35, 35, Scale.Mode.ASPECT_FIT_INSIDE));
-        Orientation orientation = Orientation.ROTATE_0;
+
         ReductionFactor rf = new ReductionFactor();
         Set<ReaderHint> hints = new HashSet<>();
 
-        BufferedImage image = instance.read(ops, orientation, rf, hints);
+        BufferedImage image = instance.read(ops, rf, hints);
 
         assertEquals(40, image.getWidth());
         assertEquals(40, image.getHeight());

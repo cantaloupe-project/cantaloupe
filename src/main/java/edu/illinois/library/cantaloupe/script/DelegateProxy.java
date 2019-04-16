@@ -146,7 +146,7 @@ public final class DelegateProxy {
                     RUBY_DELEGATE_CLASS_NAME + ".new" + "\n");
             setRequestContext(context);
 
-            LOGGER.debug("Instantiated delegate object in {}", watch);
+            LOGGER.trace("Instantiated delegate object in {}", watch);
         } catch (javax.script.ScriptException e) {
             LOGGER.error(e.getMessage());
         } finally {
@@ -255,6 +255,14 @@ public final class DelegateProxy {
     }
 
     /**
+     * @return Return value of {@link DelegateMethod#METADATA}.
+     */
+    public String getMetadata() throws ScriptException {
+        Object result = invoke(DelegateMethod.METADATA);
+        return (String) result;
+    }
+
+    /**
      * @return Return value of {@link DelegateMethod#OVERLAY}, or an empty map
      *         if it returned {@literal nil}.
      */
@@ -336,9 +344,9 @@ public final class DelegateProxy {
         Object returnValue = invocationCache.get(cacheKey);
 
         if (returnValue != null) {
-            LOGGER.debug("invoke({}): cache hit (skipping invocation)", method);
+            LOGGER.trace("invoke({}): cache hit (skipping invocation)", method);
         } else {
-            LOGGER.debug("invoke({}): cache miss", method);
+            LOGGER.trace("invoke({}): cache miss", method);
             returnValue = invokeUncached(method, args);
             if (returnValue != null) {
                 invocationCache.put(cacheKey, returnValue);
@@ -364,7 +372,7 @@ public final class DelegateProxy {
                     delegate, methodName, args);
 
             if (!RUBY_REQUEST_CONTEXT_SETTER.equals(methodName)) {
-                LOGGER.debug("invokeUncached(): {}() returned {} for args: ({}) in {}",
+                LOGGER.trace("invokeUncached(): {}() returned {} for args: ({}) in {}",
                         methodName, retval, argsList, watch);
             }
             return retval;

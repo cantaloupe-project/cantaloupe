@@ -2172,27 +2172,6 @@
                                         <a tabindex="0" class="btn btn-sm cl-help"
                                            role="button" data-toggle="popover"
                                            data-trigger="focus"
-                                           data-content="Attempts to copy source image metadata
-                                           (EXIF, IPTC, XMP) into derivative images. (This is
-                                           not foolproof; see the user manual.)">?</a>
-                                    </td>
-                                    <td>
-                                        <div class="checkbox">
-                                            <label>
-                                                <input type="checkbox"
-                                                       name="processor.metadata.preserve"
-                                                       value="true"
-                                                       data-requires-restart="false">
-                                                Preserve Metadata
-                                            </label>
-                                        </div>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>
-                                        <a tabindex="0" class="btn btn-sm cl-help"
-                                           role="button" data-toggle="popover"
-                                           data-trigger="focus"
                                            data-content="Progressive JPEGs are generally more
                                            space-efficient and can provide a better user
                                            experience, but they are not quite as well-supported

@@ -9,6 +9,12 @@ public enum ReaderHint {
     ALREADY_CROPPED,
 
     /**
+     * Returned from a reader. The reader has already transformed the image
+     * according to its embedded orientation property.
+     */
+    ALREADY_ORIENTED,
+
+    /**
      * Provided to a reader, telling it to read the entire image ignoring
      * {@link edu.illinois.library.cantaloupe.operation.Crop} operations.
      */

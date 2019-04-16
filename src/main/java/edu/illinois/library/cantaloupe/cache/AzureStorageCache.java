@@ -373,7 +373,14 @@ class AzureStorageCache implements DerivativeCache {
     }
 
     @Override
-    public void put(Identifier identifier, Info imageInfo) throws IOException {
+    public void put(Identifier identifier, Info info) throws IOException {
+        if (!info.isComplete()) {
+            LOGGER.debug("put(): info for {} is incomplete; ignoring",
+                    identifier);
+            return;
+        }
+
+        LOGGER.debug("put(): caching info for {}", identifier);
         final String objectKey = getObjectKey(identifier);
         if (!uploadingKeys.contains(objectKey)) {
             uploadingKeys.add(objectKey);
@@ -389,7 +396,7 @@ class AzureStorageCache implements DerivativeCache {
                 // writeAsJSON() will close this.
                 OutputStream os = new AzureStorageOutputStream(
                         objectKey, blob.openOutputStream(), uploadingKeys);
-                imageInfo.writeAsJSON(os);
+                info.writeAsJSON(os);
             } catch (URISyntaxException | StorageException e) {
                 throw new IOException(e.getMessage(), e);
             }

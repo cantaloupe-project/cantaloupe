@@ -306,7 +306,7 @@ class HeapCache implements DerivativeCache {
                                 HeapCacheProtos.Info.newBuilder()
                                         .setLastAccessed(key.getLastAccessedTime())
                                         .setIdentifier(key.getIdentifier())
-                                        .setJson(new String(item.getData(), "UTF-8"))
+                                        .setJson(new String(item.getData(), StandardCharsets.UTF_8))
                                         .build();
                         cacheBuilder.addInfo(info);
                     }
@@ -584,13 +584,18 @@ class HeapCache implements DerivativeCache {
 
     @Override
     public void put(Identifier identifier, Info imageInfo) throws IOException {
-        LOGGER.info("put(): caching info for {}", identifier);
+        if (!imageInfo.isComplete()) {
+            LOGGER.debug("put(): info for {} is incomplete; ignoring",
+                    identifier);
+            return;
+        }
+        LOGGER.debug("put(): caching info for {}", identifier);
         isDirty.lazySet(true);
         Key key = itemKey(identifier);
 
         // Rather than storing the info instance itself, we store its JSON
         // serialization, mainly in order to be able to easily get its size.
-        Item item = new Item(imageInfo.toJSON().getBytes("UTF-8"));
+        Item item = new Item(imageInfo.toJSON().getBytes(StandardCharsets.UTF_8));
         cache.putIfAbsent(key, item);
     }
 

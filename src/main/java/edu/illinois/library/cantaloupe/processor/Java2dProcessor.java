@@ -38,10 +38,10 @@ class Java2dProcessor extends AbstractImageIOProcessor
 
     @Override
     public void process(final OperationList ops,
-                        final Info imageInfo,
+                        final Info info,
                         final OutputStream outputStream)
             throws ProcessorException {
-        super.process(ops, imageInfo, outputStream);
+        super.process(ops, info, outputStream);
 
         ImageReader reader = null;
         try {
@@ -53,18 +53,14 @@ class Java2dProcessor extends AbstractImageIOProcessor
             // contain multiple frames, in which case the post-processing steps
             // will have to be different. (No problem if it only contains one
             // frame, though.)
-            if (Format.GIF.equals(imageInfo.getSourceFormat()) &&
+            if (Format.GIF.equals(info.getSourceFormat()) &&
                     Format.GIF.equals(ops.getOutputFormat())) {
                 BufferedImageSequence seq = reader.readSequence();
-                Java2DPostProcessor.postProcess(
-                        seq, ops, imageInfo, reader.getMetadata(0),
-                        outputStream);
+                Java2DPostProcessor.postProcess(seq, ops, info, outputStream);
             } else {
-                BufferedImage image =
-                        reader.read(ops, imageInfo.getOrientation(), rf, hints);
+                BufferedImage image = reader.read(ops, rf, hints);
                 Java2DPostProcessor.postProcess(
-                        image, hints, ops, imageInfo, rf, reader.getMetadata(0),
-                        outputStream);
+                        image, hints, ops, info, rf, outputStream);
             }
         } catch (IOException e) {
             throw new ProcessorException(e.getMessage(), e);

@@ -2,25 +2,18 @@ package edu.illinois.library.cantaloupe.processor;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
-import edu.illinois.library.cantaloupe.image.Dimension;
 import edu.illinois.library.cantaloupe.image.Format;
-import edu.illinois.library.cantaloupe.image.Info;
-import edu.illinois.library.cantaloupe.operation.OperationList;
-import edu.illinois.library.cantaloupe.source.PathStreamFactory;
-import edu.illinois.library.cantaloupe.source.StreamFactory;
-import edu.illinois.library.cantaloupe.test.TestUtil;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.BufferedReader;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.nio.file.Path;
-import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 
 import static org.junit.Assert.*;
@@ -28,11 +21,9 @@ import static org.junit.Assert.*;
 /**
  * For this to work, the GraphicsMagick binary must be on the PATH.
  */
-public class GraphicsMagickProcessorTest extends MagickProcessorTest {
+public class GraphicsMagickProcessorTest extends AbstractMagickProcessorTest {
 
-    private static final double DELTA = 0.00000001;
-
-    private static HashMap<Format, Set<Format>> supportedFormats;
+    private static Map<Format, Set<Format>> supportedFormats;
 
     private GraphicsMagickProcessor instance;
 
@@ -47,8 +38,13 @@ public class GraphicsMagickProcessorTest extends MagickProcessorTest {
         instance = newInstance();
     }
 
-    protected HashMap<Format, Set<Format>> getAvailableOutputFormats()
-            throws IOException {
+    @After
+    public void tearDown() throws Exception {
+        super.tearDown();
+        instance.close();
+    }
+
+    Map<Format, Set<Format>> getAvailableOutputFormats() throws IOException {
         if (supportedFormats == null) {
             final Set<Format> sourceFormats = EnumSet.noneOf(Format.class);
             final Set<Format> outputFormats = EnumSet.noneOf(Format.class);
@@ -143,133 +139,11 @@ public class GraphicsMagickProcessorTest extends MagickProcessorTest {
 
     /* process() */
 
-    @Test
-    public void testProcessWithPageOption() throws Exception {
-        // Skip if GraphicsMagick does not support PDF.
-        try {
-            instance.setSourceFormat(Format.PDF);
-        } catch (UnsupportedSourceFormatException e) {
-            return;
-        }
-
-        final Path fixture = TestUtil.getImage("pdf-multipage.pdf");
-        byte[] page1, page2;
-        Info imageInfo;
-
-        // page option missing
-        instance.setStreamFactory(new PathStreamFactory(fixture));
-        imageInfo = instance.readInfo();
-
-        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        OperationList ops = new OperationList();
-        instance.process(ops, imageInfo, outputStream);
-        page1 = outputStream.toByteArray();
-
-        // page option present
-        instance.setStreamFactory(new PathStreamFactory(fixture));
-
-        ops = new OperationList();
-        ops.getOptions().put("page", "2");
-        outputStream = new ByteArrayOutputStream();
-        instance.process(ops, imageInfo, outputStream);
-        page2 = outputStream.toByteArray();
-
-        assertFalse(Arrays.equals(page1, page2));
-    }
-
     @Override
     @Ignore
     @Test
     public void testProcessWithAllSupportedOutputFormats() {
         // TODO: The parent fails on a lot of fixtures.
-    }
-
-    /* readInfo() */
-
-    /**
-     * Override that doesn't check {@link Info#getNumResolutions()}.
-     */
-    @Override
-    @Test
-    public void testReadImageInfoOnAllFixtures() throws Exception {
-        final Processor proc = newInstance();
-
-        for (Format format : Format.values()) {
-            try {
-                // The processor will throw an exception if it doesn't support
-                // this format, which is fine. No processor supports all
-                // formats.
-                proc.setSourceFormat(format);
-
-                for (Path fixture : TestUtil.getImageFixtures(format)) {
-                    // TODO: address this
-                    if (fixture.getFileName().toString().equals("jpg-rgb-594x522x8-baseline.jpg")) {
-                        continue;
-                    }
-
-                    StreamProcessor sproc = (StreamProcessor) proc;
-                    StreamFactory streamFactory =
-                            new PathStreamFactory(fixture);
-                    sproc.setStreamFactory(streamFactory);
-
-                    try {
-                        // We don't know the dimensions of the source image and
-                        // we can't get them because that would require using
-                        // the method we are now testing, so the best we can do
-                        // is to assert that they are nonzero.
-                        final Info actualInfo = proc.readInfo();
-                        assertEquals(format, actualInfo.getSourceFormat());
-                        assertTrue(actualInfo.getSize().width() > DELTA);
-                        assertTrue(actualInfo.getSize().height() > DELTA);
-
-                        assertEquals(-1, actualInfo.getNumResolutions());
-                    } catch (Exception e) {
-                        System.err.println(format + " : " + fixture);
-                        throw e;
-                    }
-                }
-            } catch (UnsupportedSourceFormatException e) {
-                // OK, continue
-            }
-        }
-    }
-
-    /* validate() */
-
-    @Test
-    public void testValidate() throws Exception {
-        // Skip if GraphicsMagick does not support PDF.
-        try {
-            instance.setSourceFormat(Format.PDF);
-        } catch (UnsupportedSourceFormatException e) {
-            return;
-        }
-
-        instance.setStreamFactory(new PathStreamFactory(
-                TestUtil.getImage("pdf.pdf")));
-
-        OperationList ops = new OperationList();
-        Dimension fullSize = new Dimension(1000, 1000);
-        instance.validate(ops, fullSize);
-
-        ops.getOptions().put("page", "1");
-        instance.validate(ops, fullSize);
-
-        ops.getOptions().put("page", "0");
-        try {
-            instance.validate(ops, fullSize);
-            fail("Expected exception");
-        } catch (IllegalArgumentException e) {
-            // pass
-        }
-
-        ops.getOptions().put("page", "-1");
-        try {
-            instance.validate(ops, fullSize);
-            fail("Expected exception");
-        } catch (IllegalArgumentException e) {
-            // pass
-        }
     }
 
 }

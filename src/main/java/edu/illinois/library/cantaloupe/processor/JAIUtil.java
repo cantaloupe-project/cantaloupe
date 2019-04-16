@@ -154,24 +154,33 @@ final class JAIUtil {
     }
 
     /**
-     * @param inImage Image to rotate
-     * @param rotate  Rotate operation
-     * @return Rotated image, or the input image if the given rotate operation
-     *         is a no-op.
+     * @param inImage Image to rotate.
+     * @param degrees Degrees to rotate.
+     * @return        Rotated image, or the input image if the {@literal
+     *                degrees} value is too small.
      */
-    static RenderedOp rotateImage(RenderedOp inImage, Rotate rotate) {
-        if (rotate.hasEffect()) {
-            LOGGER.debug("rotateImage(): rotating {} degrees",
-                    rotate.getDegrees());
+    static RenderedOp rotateImage(RenderedOp inImage, double degrees) {
+        if (degrees > 0.0001) {
+            LOGGER.debug("rotateImage(): rotating {} degrees", degrees);
             final ParameterBlock pb = new ParameterBlock();
             pb.addSource(inImage);
-            pb.add(inImage.getWidth() / 2.0f);                   // x origin
-            pb.add(inImage.getHeight() / 2.0f);                  // y origin
-            pb.add((float) Math.toRadians(rotate.getDegrees())); // radians
+            pb.add(inImage.getWidth() / 2.0f);       // x origin
+            pb.add(inImage.getHeight() / 2.0f);      // y origin
+            pb.add((float) Math.toRadians(degrees)); // radians
             pb.add(Interpolation.getInstance(Interpolation.INTERP_BILINEAR));
             inImage = JAI.create("rotate", pb);
         }
         return inImage;
+    }
+
+    /**
+     * @param inImage Image to rotate.
+     * @param rotate  Rotate operation.
+     * @return        Rotated image, or the input image if the given operation
+     *                is a no-op.
+     */
+    static RenderedOp rotateImage(RenderedOp inImage, Rotate rotate) {
+        return rotateImage(inImage, rotate.getDegrees());
     }
 
     /**

@@ -6,6 +6,7 @@ import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Compression;
 import edu.illinois.library.cantaloupe.image.Dimension;
 import edu.illinois.library.cantaloupe.image.Info;
+import edu.illinois.library.cantaloupe.image.Metadata;
 import edu.illinois.library.cantaloupe.image.Rectangle;
 import edu.illinois.library.cantaloupe.operation.Color;
 import edu.illinois.library.cantaloupe.operation.ColorTransform;
@@ -37,6 +38,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
@@ -60,13 +62,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * <ul>
  *     <li>{@link FileProcessor} is not implemented because testing indicates
  *     that reading from streams is significantly faster.</li>
- *     <li>This processor does not respect the
- *     {@link Key#PROCESSOR_PRESERVE_METADATA} setting because telling IM not
- *     to preserve metadata means telling it not to preserve an ICC profile.
- *     Therefore, metadata always passes through.</li>
- *     <li>This processor does not respect the
- *     {@link Key#PROCESSOR_RESPECT_ORIENTATION} setting. The orientation is
- *     always respected.</li>
+ *     <li>This processor is not metadata-aware. (See {@link #readInfo()}.)</li>
  * </ul>
  */
 class ImageMagickProcessor extends AbstractMagickProcessor
@@ -89,15 +85,21 @@ class ImageMagickProcessor extends AbstractMagickProcessor
     private static final AtomicBoolean checkedVersion =
             new AtomicBoolean(false);
 
-    // ImageMagick 7 uses a `magick` command. Earlier versions use `convert`
-    // and `identify`. IM7 may provide aliases for these.
+    /**
+     * ImageMagick 7 uses a `magick` command. Earlier versions use {@literal
+     * convert} and {@literal identify}. IM7 may provide aliases for these.
+     */
     private static IMVersion imVersion;
 
-    /** Map of overlay images downloaded from web servers. Files are temp files
-    set to delete-on-exit. */
+    /**
+     * Map of overlay images downloaded from web servers. Files are temp files
+     * set to delete-on-exit.
+     */
     private static final Map<URI,File> overlays = new ConcurrentHashMap<>();
 
-    /** Lazy-initialized by readFormats(). */
+    /**
+     * Lazy-initialized by {@link #readFormats()}.
+     */
     protected static final Map<Format, Set<Format>> supportedFormats =
             new HashMap<>();
 
@@ -205,7 +207,7 @@ class ImageMagickProcessor extends AbstractMagickProcessor
                 final Process process = pb.start();
                 final InputStream pis = process.getInputStream();
                 final InputStreamReader isReader =
-                        new InputStreamReader(pis, "UTF-8");
+                        new InputStreamReader(pis, StandardCharsets.UTF_8);
                 try (final BufferedReader bReader = new BufferedReader(isReader)) {
                     String s;
                     while ((s = bReader.readLine()) != null) {
@@ -312,6 +314,8 @@ class ImageMagickProcessor extends AbstractMagickProcessor
         } else {
             args.add(getPath("convert"));
         }
+
+        args.add("-auto-orient");
 
         // If we need to rasterize, and the op list contains a scale operation,
         // see if we can use it to compute a scale-appropriate DPI.
@@ -683,6 +687,15 @@ class ImageMagickProcessor extends AbstractMagickProcessor
         }
     }
 
+    /**
+     * Note: it's tough to get all of the info needed to fully populate an
+     * {@link Info} from ImageMagick. Getting most of it, including raw EXIF
+     * and XMP data, would require at least three separate process invocations,
+     * and two of them don't work reliably when reading from streams&mdash;and
+     * then {@link Info.Image#getTileSize() tile sizes} are still missing. The
+     * returned instance is therefore marked {@link Info#isComplete()
+     * incomplete}.
+     */
     @Override
     public Info readInfo() throws IOException {
         try (InputStream inputStream = streamFactory.newInputStream()) {
@@ -718,7 +731,7 @@ class ImageMagickProcessor extends AbstractMagickProcessor
 
             final List<String> output = consumer.getOutput();
             if (!output.isEmpty()) {
-                final int width = Integer.parseInt(output.get(0));
+                final int width  = Integer.parseInt(output.get(0));
                 final int height = Integer.parseInt(output.get(1));
                 // GM is not tile-aware, so set the tile size to the full
                 // dimensions.
@@ -727,14 +740,19 @@ class ImageMagickProcessor extends AbstractMagickProcessor
                         .withTileSize(width, height)
                         .withFormat(getSourceFormat())
                         .build();
+                info.setComplete(false);
+
                 // Do we have an EXIF orientation to deal with?
                 if (output.size() > 2) {
                     try {
-                        String str = output.get(2).replaceAll("[^\\d+]", "");
-                        final int exifOrientation = Integer.parseInt(str);
-                        final Orientation orientation =
-                                Orientation.forEXIFOrientation(exifOrientation);
-                        info.getImages().get(0).setOrientation(orientation);
+                        final int exifOrientation = Integer.parseInt(
+                                output.get(2).replaceAll("[^\\d+]", ""));
+                        info.setMetadata(new Metadata() {
+                            @Override
+                            public Orientation getOrientation() {
+                                return Orientation.forEXIFOrientation(exifOrientation);
+                            }
+                        });
                     } catch (IllegalArgumentException e) {
                         LOGGER.info("readInfo(): {}", e.getMessage());
                     }

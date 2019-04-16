@@ -158,18 +158,18 @@ public class ImageResource extends IIIF1Resource {
             Dimension fullSize;
             try {
                 fullSize = info.getSize(getPageIndex());
+                getRequestContext().setMetadata(info.getMetadata());
 
                 ops.setScaleConstraint(getScaleConstraint());
                 ops.applyNonEndpointMutations(info, getDelegateProxy());
                 ops.freeze();
-
                 getRequestContext().setOperationList(ops, fullSize);
             } catch (IllegalArgumentException | IndexOutOfBoundsException e) {
                 throw new IllegalClientArgumentException(e);
             }
 
             processor.validate(ops, fullSize);
-            validateScale(info.getOrientationSize(),
+            validateScale(info.getMetadata().getOrientation().adjustedSize(fullSize),
                     (Scale) ops.getFirst(Scale.class));
 
             // Find out whether the processor supports the source format by

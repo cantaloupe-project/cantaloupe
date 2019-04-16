@@ -8,8 +8,7 @@
 # **does** need to be done thread-safely.
 #
 # This version of the script works with Cantaloupe version 4, and not earlier
-# versions. Likewise, earlier versions of the script are not compatible with
-# Cantaloupe 4.
+# versions.
 #
 class CustomDelegate
 
@@ -41,6 +40,9 @@ class CustomDelegate
   # * `full_size`      [Hash<String,Integer>] Hash with `width` and `height`
   #                    keys corresponding to the pixel dimensions of the
   #                    source image.
+  # * `metadata`       [Hash<String,Object>] Embedded image metadata. Object
+  #                    structure varies depending on the source image.
+  #                    See the `metadata()` method.
   # * `operations`     [Array<Hash<String,Object>>] Array of operations in
   #                    order of application. Only operations that are not
   #                    no-ops will be included. Every hash contains a `class`
@@ -241,6 +243,61 @@ class CustomDelegate
   #
   def redactions(options = {})
     []
+  end
+
+  ##
+  # Returns XMP metadata to embed in the derivative image.
+  #
+  # Source image metadata is available in the `metadata` context key, and has
+  # the following structure:
+  #
+  # {
+  #     "exif": {
+  #         "tagSet": "Baseline TIFF",
+  #         "fields": {
+  #             "Field1Name": value,
+  #             "Field2Name": value,
+  #             "EXIFIFD": {
+  #                 "tagSet": "EXIF",
+  #                 "fields": {
+  #                     "Field1Name": value,
+  #                     "Field2Name": value
+  #                 }
+  #             }
+  #         }
+  #     },
+  #     "iptc": [
+  #         "Field1Name": value,
+  #         "Field2Name": value
+  #     ],
+  #     "xmp_string": "<rdf:RDF>...</rdf:RDF>",
+  #     "xmp_model": https://jena.apache.org/documentation/javadoc/jena/org/apache/jena/rdf/model/Model.html
+  #     "native": {
+  #         # structure varies
+  #     }
+  # }
+  #
+  # * The `exif` key refers to embedded EXIF data. This also includes IFD0
+  #   metadata from source TIFFs, whether or not an EXIF IFD is present.
+  # * The `iptc` key refers to embedded IPTC IIM data.
+  # * The `xmp_string` key refers to raw embedded XMP data, which may or may
+  #   not contain EXIF and/or IPTC information.
+  # * The `xmp_model` key contains a Jena Model object pre-loaded with the
+  #   contents of `xmp_string`.
+  # * The `native` key refers to format-specific metadata.
+  #
+  # Any combination of the above keys may be present or missing depending on
+  # what is available in a particular source image.
+  #
+  # Only XMP can be embedded in derivative images. See the user manual for
+  # examples of working with the XMP model programmatically.
+  #
+  # @return [String,Model,nil] String or Jena model containing XMP data to
+  #                            embed in the derivative image, or nil to not
+  #                            embed anything.
+  #
+  def metadata(options = {})
+    nil
   end
 
 end

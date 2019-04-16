@@ -478,7 +478,6 @@ public class AdminResourceUITest extends AbstractAdminResourceTest {
         selectNamed(Key.PROCESSOR_DOWNSCALE_FILTER).
                 selectByVisibleText("Mitchell");
         inputNamed(Key.PROCESSOR_SHARPEN).sendKeys("0.2");
-        inputNamed(Key.PROCESSOR_PRESERVE_METADATA).click();
         inputNamed(Key.PROCESSOR_JPG_PROGRESSIVE).click();
         inputNamed(Key.PROCESSOR_JPG_QUALITY).sendKeys("55");
         selectNamed(Key.PROCESSOR_TIF_COMPRESSION).selectByVisibleText("LZW");
@@ -525,7 +524,6 @@ public class AdminResourceUITest extends AbstractAdminResourceTest {
         assertEquals("mitchell",
                 config.getString(Key.PROCESSOR_DOWNSCALE_FILTER));
         assertEquals("0.2", config.getString(Key.PROCESSOR_SHARPEN));
-        assertTrue(config.getBoolean(Key.PROCESSOR_PRESERVE_METADATA));
         assertEquals("true", config.getString(Key.PROCESSOR_JPG_PROGRESSIVE));
         assertEquals("55", config.getString(Key.PROCESSOR_JPG_QUALITY));
         assertEquals("LZW", config.getString(Key.PROCESSOR_TIF_COMPRESSION));

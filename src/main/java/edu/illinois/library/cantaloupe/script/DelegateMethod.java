@@ -46,6 +46,11 @@ public enum DelegateMethod {
     JDBCSOURCE_LOOKUP_SQL("jdbcsource_lookup_sql"),
 
     /**
+     * Called by {@link DelegateProxy#getMetadata()}.
+     */
+    METADATA("metadata"),
+
+    /**
      * Called by {@link DelegateProxy#getOverlayProperties()}.
      */
     OVERLAY("overlay"),

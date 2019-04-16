@@ -5,6 +5,8 @@ import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Dimension;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Info;
+import edu.illinois.library.cantaloupe.image.Metadata;
+import edu.illinois.library.cantaloupe.image.Orientation;
 import edu.illinois.library.cantaloupe.image.ScaleConstraint;
 import edu.illinois.library.cantaloupe.processor.Processor;
 import edu.illinois.library.cantaloupe.resource.iiif.Feature;
@@ -93,7 +95,11 @@ final class ImageInfoFactory {
         }
         // We want to use the orientation-aware full size, which takes the
         // embedded orientation into account.
-        final Dimension virtualSize = info.getOrientationSize(infoImageIndex);
+        final Metadata metadata = info.getMetadata();
+        final Orientation orientation = (metadata != null) ?
+                metadata.getOrientation() : Orientation.ROTATE_0;
+        final Dimension virtualSize =
+                orientation.adjustedSize(info.getSize(infoImageIndex));
         virtualSize.scale(scaleConstraint.getRational().doubleValue());
 
         // Create a Map instance, which will eventually be serialized to JSON
@@ -129,7 +135,8 @@ final class ImageInfoFactory {
 
         info.getImages().forEach(image ->
                 uniqueTileSizes.add(ImageInfoUtil.getTileSize(
-                        virtualSize, image.getOrientationTileSize(),
+                        virtualSize,
+                        orientation.adjustedSize(image.getTileSize()),
                         minTileSize)));
 
         for (Dimension uniqueTileSize : uniqueTileSizes) {

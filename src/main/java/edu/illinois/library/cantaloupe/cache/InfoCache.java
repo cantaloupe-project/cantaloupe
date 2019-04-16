@@ -17,20 +17,15 @@ public final class InfoCache {
             LoggerFactory.getLogger(InfoCache.class);
 
     /**
-     * We can't know the average size of an info in advance, but 100 bytes is
-     * a reasonable estimate for an image with no other embedded subimages.
-     * Infos for multiresolution images may be bigger. It's better to
-     * overestimate this than underestimate it.
+     * This includes all {@link Info} properties including embedded metadata
+     * (which will probably comprise most of this size, if present).
      */
-    private static final int EXPECTED_AVERAGE_INFO_SIZE = 150;
+    private static final int EXPECTED_AVERAGE_INFO_SIZE = 4096;
 
     /**
      * Cached infos will consume, at most, this much of max heap.
-     *
-     * Of course, infos are tiny and in typical use they'll never consume
-     * anywhere near this much of a reasonable-sized heap.
      */
-    private static final float MAX_HEAP_PERCENT = 0.1f;
+    private static final double MAX_HEAP_PERCENT = 0.05;
 
     private final ObjectCache<Identifier, Info> objectCache;
 
@@ -81,6 +76,9 @@ public final class InfoCache {
         objectCache.put(identifier, info);
     }
 
+    /**
+     * @return Number of items in the cache.
+     */
     public long size() {
         return objectCache.size();
     }

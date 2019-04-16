@@ -2,6 +2,10 @@ package edu.illinois.library.cantaloupe.processor.codec;
 
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.operation.Encode;
+import edu.illinois.library.cantaloupe.processor.codec.gif.GIFImageWriter;
+import edu.illinois.library.cantaloupe.processor.codec.jpeg.JPEGImageWriter;
+import edu.illinois.library.cantaloupe.processor.codec.png.PNGImageWriter;
+import edu.illinois.library.cantaloupe.processor.codec.tiff.TIFFImageWriter;
 
 import java.util.Collections;
 import java.util.EnumSet;

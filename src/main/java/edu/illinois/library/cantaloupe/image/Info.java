@@ -8,6 +8,7 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.annotation.JsonSetter;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import edu.illinois.library.cantaloupe.cache.DerivativeCache;
 import edu.illinois.library.cantaloupe.processor.Processor;
 
@@ -16,39 +17,52 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
 /**
  * <p>Contains JSON-serializable information about an image, including its
- * format, dimensions, orientation, subimages, and tile sizes&mdash;
+ * format, dimensions, embedded metadata, subimages, and tile sizes&mdash;
  * essentially a superset of characteristics of all {@link Format formats}
  * supported by the application.</p>
  *
- * <p>Instances are format- and processor-agnostic. An instance describing a
- * particular image {@link Processor#readInfo() returned from one
- * processor} should be {@link #equals(Object) equal} to an instance describing
- * the same image returned from a different processor. This preserves the
- * freedom to change processor assignments without invalidating any
- * {@link DerivativeCache#getInfo(Identifier) cached instances}.</p>
+ * <p>Instances are format-, {@link Processor}-, and endpoint-agnostic. An
+ * instance describing a particular image {@link Processor#readInfo() returned
+ * from one processor} should be {@link #equals equal} to an instance
+ * describing the same image returned from a different processor. This
+ * preserves the freedom to change processor assignments without invalidating
+ * any {@link DerivativeCache#getInfo(Identifier) cached instances}.</p>
  *
  * <p>All sizes are raw pixel data sizes, disregarding orientation.</p>
  *
  * <p>Instances ultimately originate from {@link Processor#readInfo()}, but
  * subsequently they can be {@link DerivativeCache#put(Identifier, Info)
- * cached}, perhaps for a very long time. For efficiency's sake, when an
- * instance is needed, it will be preferentially acquired from a cache, and a
- * processor will be consulted only as a last resort. As a result, changes to
- * the class definition need to be implemented carefully so that older
- * serializations remain d{@link Processor#readInfo() readable}. Otherwise,
- * users would have to purge their cache whenever the class design
+ * cached}, perhaps for a very long time. When an instance is needed, it may be
+ * preferentially acquired from a cache, with a processor being consulted only
+ * as a last resort. As a result, changes to the class definition need to be
+ * implemented carefully so that older serializations remain readable.
+ * Otherwise, users would have to purge their cache whenever the class design
  * changes.)</p>
+ *
+ * <h1>History</h1>
+ *
+ * <dl>
+ *     <dt>5.0</dt>
+ *     <dd>Replaced {@literal orientation} key with {@literal metadata}
+ *     key</dd>
+ *     <dt>4.0</dt>
+ *     <dd>Added {@literal numResolutions} and {@literal identifier} keys</dd>
+ *     <dt>3.4</dt>
+ *     <dd>Added {@literal mediaType} key</dd>
+ * </dl>
  *
  * @see <a href="https://github.com/FasterXML/jackson-databind">jackson-databind
  *      docs</a>
  */
-@JsonPropertyOrder({ "identifier", "mediaType", "numResolutions", "images" })
-@JsonInclude(JsonInclude.Include.NON_NULL)
+@JsonPropertyOrder({ "identifier", "mediaType", "numResolutions", "images",
+        "metadata" })
+@JsonInclude(JsonInclude.Include.NON_ABSENT)
 @JsonIgnoreProperties(ignoreUnknown = true)
 public final class Info {
 
@@ -74,13 +88,13 @@ public final class Info {
             return this;
         }
 
-        public Builder withNumResolutions(int numResolutions) {
-            info.setNumResolutions(numResolutions);
+        public Builder withMetadata(Metadata metadata) {
+            info.setMetadata(metadata);
             return this;
         }
 
-        public Builder withOrientation(Orientation orientation) {
-            info.getImages().get(0).setOrientation(orientation);
+        public Builder withNumResolutions(int numResolutions) {
+            info.setNumResolutions(numResolutions);
             return this;
         }
 
@@ -108,23 +122,12 @@ public final class Info {
      * Represents an embedded subimage within a container stream. This is a
      * physical image such as an embedded EXIF thumbnail or embedded TIFF page.
      */
-    @JsonPropertyOrder({ "width", "height", "tileWidth", "tileHeight",
-            "orientation" })
+    @JsonPropertyOrder({ "width", "height", "tileWidth", "tileHeight" })
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public static final class Image {
 
-        public int width = 0;
-        public int height = 0;
-        public String orientation;
-        public Integer tileWidth;
-        public Integer tileHeight;
-
-        /**
-         * No-op constructor.
-         */
-        public Image() {
-            setOrientation(Orientation.ROTATE_0);
-        }
+        public int width, height;
+        public Integer tileWidth, tileHeight;
 
         @Override
         public boolean equals(Object obj) {
@@ -132,53 +135,16 @@ public final class Info {
                 return true;
             } else if (obj instanceof Image) {
                 final Image other = (Image) obj;
-                return (width == other.width && height == other.height &&
+                return (width == other.width &&
+                        height == other.height &&
                         Objects.equals(tileWidth, other.tileWidth) &&
-                        Objects.equals(tileHeight, other.tileHeight) &&
-                        Objects.equals(orientation, other.orientation));
+                        Objects.equals(tileHeight, other.tileHeight));
             }
             return super.equals(obj);
         }
 
         /**
-         * @return The instance's orientation, or {@link Orientation#ROTATE_0}
-         *         if none.
-         */
-        public Orientation getOrientation() {
-            if (orientation != null) {
-                return Orientation.valueOf(orientation);
-            }
-            return Orientation.ROTATE_0;
-        }
-
-        /**
-         * @return Image size with the orientation taken into account.
-         */
-        @JsonIgnore
-        public Dimension getOrientationSize() {
-            Dimension size = getSize();
-            if (getOrientation().equals(Orientation.ROTATE_90) ||
-                    getOrientation().equals(Orientation.ROTATE_270)) {
-                size.invert();
-            }
-            return size;
-        }
-
-        /**
-         * @return Tile size with the orientation taken into account.
-         */
-        @JsonIgnore
-        public Dimension getOrientationTileSize() {
-            Dimension tileSize = getTileSize();
-            if (getOrientation().equals(Orientation.ROTATE_90) ||
-                    getOrientation().equals(Orientation.ROTATE_270)) {
-                tileSize.invert();
-            }
-            return tileSize;
-        }
-
-        /**
-         * @return Physical image size, disregarding orientation.
+         * @return Physical image size.
          */
         @JsonIgnore
         public Dimension getSize() {
@@ -186,7 +152,7 @@ public final class Info {
         }
 
         /**
-         * @return Physical tile size, disregarding orientation.
+         * @return Physical tile size.
          */
         @JsonIgnore
         public Dimension getTileSize() {
@@ -198,16 +164,12 @@ public final class Info {
 
         @Override
         public int hashCode() {
-            return String.format("%d%d%s%d%d", width, height,
-                    orientation, tileWidth, tileHeight).hashCode();
-        }
-
-        public void setOrientation(Orientation orientation) {
-            this.orientation = orientation.toString();
+            int[] codes = new int[] { width, height, tileWidth, tileHeight };
+            return Arrays.hashCode(codes);
         }
 
         /**
-         * @param size Physical image size, disregarding orientation.
+         * @param size Physical image size.
          */
         public void setSize(Dimension size) {
             width = size.intWidth();
@@ -215,7 +177,7 @@ public final class Info {
         }
 
         /**
-         * @param tileSize Physical image tile size, disregarding orientation.
+         * @param tileSize Physical image tile size.
          */
         public void setTileSize(Dimension tileSize) {
             tileWidth = tileSize.intWidth();
@@ -225,35 +187,45 @@ public final class Info {
     }
 
     private Identifier identifier;
+    private MediaType mediaType;
+    private Metadata metadata = new Metadata();
 
     /**
      * Ordered list of subimages. The main image is at index {@literal 0}.
      */
-    private final List<Image> images = new ArrayList<>();
-
-    private MediaType mediaType;
+    private final List<Image> images = new ArrayList<>(8);
 
     /**
      * Number of resolutions available in the image. This applies to images
-     * that may not have literal embedded subimages, but can be decoded at
-     * reduced scale multiples.
+     * that may not have {@link #images literal embedded subimages}, but can
+     * still be decoded at reduced scale factors.
      */
     private int numResolutions = -1;
+
+    private transient boolean isComplete = true;
 
     public static Builder builder() {
         return new Builder(new Info());
     }
 
     public static Info fromJSON(Path jsonFile) throws IOException {
-        return new ObjectMapper().readValue(jsonFile.toFile(), Info.class);
+        return newMapper().readValue(jsonFile.toFile(), Info.class);
     }
 
     public static Info fromJSON(InputStream jsonStream) throws IOException {
-        return new ObjectMapper().readValue(jsonStream, Info.class);
+        return newMapper().readValue(jsonStream, Info.class);
     }
 
     public static Info fromJSON(String json) throws IOException {
-        return new ObjectMapper().readValue(json, Info.class);
+        return newMapper().readValue(json, Info.class);
+    }
+
+    private static ObjectMapper newMapper() {
+        ObjectMapper mapper = new ObjectMapper();
+        // This module obscures Optionals from the serialization (e.g.
+        // Optional.empty() maps to null rather than { isPresent: false })
+        mapper.registerModule(new Jdk8Module());
+        return mapper;
     }
 
     public Info() {
@@ -267,7 +239,7 @@ public final class Info {
         } else if (obj instanceof Info) {
             Info other = (Info) obj;
             return Objects.equals(other.getIdentifier(), getIdentifier()) &&
-                    Objects.equals(other.getOrientation(), getOrientation()) &&
+                    Objects.equals(other.getMetadata(), getMetadata()) &&
                     Objects.equals(other.getSourceFormat(), getSourceFormat()) &&
                     other.getNumResolutions() == getNumResolutions() &&
                     other.getImages().equals(getImages());
@@ -276,8 +248,8 @@ public final class Info {
     }
 
     /**
-     * @return Identifier. Will be {@literal null} if the instance was
-     *         serialized in an application version prior to 4.0.
+     * @return Identifier. Will be {@code null} if the instance was serialized
+     *         in an application version prior to 4.0.
      * @since 4.0
      */
     @JsonGetter
@@ -302,6 +274,14 @@ public final class Info {
     }
 
     /**
+     * @since 5.0
+     */
+    @JsonGetter
+    public Metadata getMetadata() {
+        return metadata;
+    }
+
+    /**
      * <p>Returns the number of resolutions contained in the image.</p>
      *
      * <ul>
@@ -317,39 +297,12 @@ public final class Info {
      * </ul>
      *
      * @return Number of resolutions contained in the image, or {@literal -1}
-     *         if the instance was serialized in an application version prior
-     *         to 4.0.
+     *         if the instance was serialized in an older application version.
      * @since 4.0
      */
     @JsonGetter
     public int getNumResolutions() {
         return numResolutions;
-    }
-
-    /**
-     * @return Orientation of the main image.
-     */
-    @JsonIgnore
-    public Orientation getOrientation() {
-        return images.get(0).getOrientation();
-    }
-
-    /**
-     * @return Size of the main image, respecting its orientation.
-     */
-    @JsonIgnore
-    public Dimension getOrientationSize() {
-        return getOrientationSize(0);
-    }
-
-    /**
-     * @param imageIndex
-     * @return Size of the image at the given index, respecting its
-     *         orientation.
-     */
-    @JsonIgnore
-    public Dimension getOrientationSize(int imageIndex) {
-        return images.get(imageIndex).getOrientationSize();
     }
 
     /**
@@ -383,9 +336,35 @@ public final class Info {
 
     @Override
     public int hashCode() {
-        return String.format("%d%d",
-                getImages().hashCode(),
-                getSourceFormat().hashCode()).hashCode();
+        int[] codes = new int[3];
+        codes[0] = getImages().hashCode();
+        codes[1] = getSourceFormat().hashCode();
+        if (getMetadata() != null) {
+            codes[2] = getMetadata().hashCode();
+        }
+        return Arrays.hashCode(codes);
+    }
+
+    /**
+     * @return Whether the instance contains complete and full information
+     *         about the source image.
+     * @since 5.0
+     */
+    @JsonIgnore
+    public boolean isComplete() {
+        return isComplete;
+    }
+
+    /**
+     * If a {@link Processor} cannot fully {@link Processor#readInfo()
+     * populate} an instance&mdash;for example, if it can't read XMP metadata
+     * in order to set a complete {@link #metadata}&mdash;then it should call
+     * this method with a {@code false} argument to make that clear.
+     *
+     * @since 5.0
+     */
+    public void setComplete(boolean isComplete) {
+        this.isComplete = isComplete;
     }
 
     /**
@@ -407,6 +386,14 @@ public final class Info {
     @SuppressWarnings("unused")
     public void setMediaType(MediaType mediaType) {
         this.mediaType = mediaType;
+    }
+
+    /**
+     * @since 5.0
+     */
+    @JsonSetter
+    public void setMetadata(Metadata metadata) {
+        this.metadata = metadata;
     }
 
     /**
@@ -432,7 +419,7 @@ public final class Info {
      */
     @JsonIgnore
     public String toJSON() throws JsonProcessingException {
-        return new ObjectMapper().writer().writeValueAsString(this);
+        return newMapper().writer().writeValueAsString(this);
     }
 
     @Override
@@ -449,7 +436,7 @@ public final class Info {
      */
     @JsonIgnore
     public void writeAsJSON(OutputStream os) throws IOException {
-        new ObjectMapper().writer().writeValue(os, this);
+        newMapper().writer().writeValue(os, this);
     }
 
 }

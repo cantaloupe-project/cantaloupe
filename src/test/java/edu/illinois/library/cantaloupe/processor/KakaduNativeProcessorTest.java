@@ -2,16 +2,12 @@ package edu.illinois.library.cantaloupe.processor;
 
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Info;
-import edu.illinois.library.cantaloupe.operation.Encode;
-import edu.illinois.library.cantaloupe.operation.MetadataCopy;
-import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
 import edu.illinois.library.cantaloupe.test.TestUtil;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.io.ByteArrayOutputStream;
-import java.nio.charset.StandardCharsets;
 import java.util.EnumSet;
 import java.util.Set;
 
@@ -28,6 +24,12 @@ public class KakaduNativeProcessorTest extends AbstractProcessorTest {
         KakaduNativeProcessor.resetInitialization();
 
         instance = newInstance();
+    }
+
+    @After
+    public void tearDown() throws Exception {
+        super.tearDown();
+        instance.close();
     }
 
     @Override
@@ -47,41 +49,7 @@ public class KakaduNativeProcessorTest extends AbstractProcessorTest {
     }
 
     @Test
-    public void testProcessWithMetadataCopy() throws Exception {
-        try (ByteArrayOutputStream os = new ByteArrayOutputStream()) {
-            instance.setSourceFormat(Format.JP2);
-            instance.setSourceFile(TestUtil.getImage("jp2-xmp.jp2"));
-
-            OperationList opList = new OperationList(
-                    new MetadataCopy(),
-                    new Encode(Format.JPG));
-            Info info = instance.readInfo();
-
-            instance.process(opList, info, os);
-
-            String str = new String(os.toByteArray(), StandardCharsets.UTF_8);
-            assertTrue(str.contains("<rdf:RDF"));
-        }
-    }
-
-    @Test
-    public void testProcessWithoutMetadataCopy() throws Exception {
-        try (ByteArrayOutputStream os = new ByteArrayOutputStream()) {
-            instance.setSourceFormat(Format.JP2);
-            instance.setSourceFile(TestUtil.getImage("jp2-xmp.jp2"));
-
-            OperationList opList = new OperationList(new Encode(Format.JPG));
-            Info info = instance.readInfo();
-
-            instance.process(opList, info, os);
-
-            String str = new String(os.toByteArray(), StandardCharsets.UTF_8);
-            assertFalse(str.contains("<rdf:RDF"));
-        }
-    }
-
-    @Test
-    public void testReadImageInfoWithUntiledImage() throws Exception {
+    public void testReadInfoWithUntiledImage() throws Exception {
         instance.setSourceFile(TestUtil.getImage("jp2-5res-rgb-64x56x8-monotiled-lossy.jp2"));
         Info expectedInfo = Info.builder()
                 .withSize(64, 56)
@@ -93,7 +61,7 @@ public class KakaduNativeProcessorTest extends AbstractProcessorTest {
     }
 
     @Test
-    public void testReadImageInfoWithTiledImage() throws Exception {
+    public void testReadInfoWithTiledImage() throws Exception {
         instance.setSourceFile(TestUtil.getImage("jp2-6res-rgb-64x56x8-multitiled-lossy.jp2"));
         Info expectedInfo = Info.builder()
                 .withSize(64, 56)
@@ -102,6 +70,20 @@ public class KakaduNativeProcessorTest extends AbstractProcessorTest {
                 .withNumResolutions(6)
                 .build();
         assertEquals(expectedInfo, instance.readInfo());
+    }
+
+    @Test
+    public void testReadInfoIPTCAwareness() throws Exception {
+        instance.setSourceFile(TestUtil.getImage("jp2-iptc.jp2"));
+        Info info = instance.readInfo();
+        assertTrue(info.getMetadata().getIPTC().isPresent());
+    }
+
+    @Test
+    public void testReadInfoXMPAwareness() throws Exception {
+        instance.setSourceFile(TestUtil.getImage("jp2-xmp.jp2"));
+        Info info = instance.readInfo();
+        assertTrue(info.getMetadata().getXMP().isPresent());
     }
 
     @Test

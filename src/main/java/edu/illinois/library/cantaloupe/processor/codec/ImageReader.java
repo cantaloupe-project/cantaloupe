@@ -3,7 +3,6 @@ package edu.illinois.library.cantaloupe.processor.codec;
 import edu.illinois.library.cantaloupe.image.Compression;
 import edu.illinois.library.cantaloupe.image.Dimension;
 import edu.illinois.library.cantaloupe.image.Metadata;
-import edu.illinois.library.cantaloupe.image.Orientation;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.operation.ReductionFactor;
 import edu.illinois.library.cantaloupe.source.StreamFactory;
@@ -90,7 +89,6 @@ public interface ImageReader {
      * @throws IOException if there is an error reading the image.
      */
     BufferedImage read(OperationList opList,
-                       Orientation orientation,
                        ReductionFactor reductionFactor,
                        Set<ReaderHint> hints) throws IOException;
 
@@ -102,7 +100,6 @@ public interface ImageReader {
      */
     @Deprecated
     RenderedImage readRendered(OperationList opList,
-                               Orientation orientation,
                                ReductionFactor reductionFactor,
                                Set<ReaderHint> hints) throws IOException;
 

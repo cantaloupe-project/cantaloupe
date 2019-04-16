@@ -882,8 +882,13 @@ class FilesystemCache implements SourceCache, DerivativeCache {
 
     @Override
     public void put(Identifier identifier, Info info) throws IOException {
-        final ReadWriteLock lock = acquireInfoLock(identifier);
+        if (!info.isComplete()) {
+            LOGGER.debug("put(): info for {} is incomplete; ignoring",
+                    identifier);
+            return;
+        }
 
+        final ReadWriteLock lock = acquireInfoLock(identifier);
         lock.writeLock().lock();
 
         final Path destFile = infoFile(identifier);

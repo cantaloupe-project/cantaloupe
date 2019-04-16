@@ -4,6 +4,9 @@ import edu.illinois.library.cantaloupe.test.BaseTest;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.util.LinkedHashMap;
+import java.util.Map;
+
 import static org.junit.Assert.*;
 
 public class RationalTest extends BaseTest {
@@ -50,6 +53,14 @@ public class RationalTest extends BaseTest {
     public void testHashCode() {
         assertEquals(instance.hashCode(), new Rational(2, 3).hashCode());
         assertNotEquals(instance.hashCode(), new Rational(3, 4).hashCode());
+    }
+
+    @Test
+    public void testToMap() {
+        Map<String,Long> expected = new LinkedHashMap<>(2);
+        expected.put("numerator", 2L);
+        expected.put("denominator", 3L);
+        assertEquals(expected, instance.toMap());
     }
 
     @Test

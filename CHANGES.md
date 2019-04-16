@@ -6,6 +6,16 @@
   should be used instead.
 * The `endpoint.iiif.content_disposition` configuration key has been removed.
   The `?response-content-disposition` query argument should be used instead.
+* The metadata-handling system has been redesigned:
+    * Source image metadata is cached in derivative caches.
+    * XMP metadata can be copied or edited using a delegate method.
+    * The `processor.metadata.respect_orientation` configuration key has been
+      removed and EXIF Orientation values are always respected.
+* KakaduNativeProcessor, KakaduDemoProcessor, OpenJpegProcessor, and
+  TurboJpegProcessor respect the EXIF `Orientation` tag.
+* KakaduNativeProcessor, KakaduDemoProcessor, and OpenJpegProcessor support
+  IPTC and XMP metadata.
+* TurboJpegProcessor supports EXIF, IPTC, and XMP metadata.
 * Java 11 is required.
 
 ## 4.1.1

@@ -20,12 +20,9 @@
  * <h1>Custom readers &amp; writers</h1>
  *
  * <p>The Image I/O readers &amp; writers work well within the bounds of their
- * capabilities, but there are some things they can't do. Where going through
- * Image I/O would be too difficult, there are also some custom classes, like
- * {@link
- * edu.illinois.library.cantaloupe.processor.codec.JPEG2000MetadataReader} and
- * {@link edu.illinois.library.cantaloupe.processor.codec.GIFMetadataReader},
- * that access images directly.</p>
+ * capabilities, but there are some things they can't do, or for which the API
+ * is awkward. Where going through Image I/O would be too difficult, there are
+ * also some custom classes in subpackages that access images directly.</p>
  *
  * <h1>Metadata</h1>
  *

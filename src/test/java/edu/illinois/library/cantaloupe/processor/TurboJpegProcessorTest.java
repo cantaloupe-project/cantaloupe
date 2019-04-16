@@ -1,8 +1,12 @@
 package edu.illinois.library.cantaloupe.processor;
 
 import edu.illinois.library.cantaloupe.image.Format;
+import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
+import edu.illinois.library.cantaloupe.source.PathStreamFactory;
+import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.EnumSet;
@@ -59,6 +63,41 @@ public class TurboJpegProcessorTest extends AbstractProcessorTest {
                 ProcessorFeature.SIZE_BY_WIDTH,
                 ProcessorFeature.SIZE_BY_WIDTH_HEIGHT);
         assertEquals(expectedFeatures, instance.getSupportedFeatures());
+    }
+
+    @Override
+    @Ignore // This processor doesn't support this output format.
+    @Test
+    public void testProcessWritesXMPMetadataIntoPNG() throws Exception {
+        super.testProcessWritesXMPMetadataIntoPNG();
+    }
+
+    @Override
+    @Ignore // This processor doesn't support this output format.
+    @Test
+    public void testProcessWritesXMPMetadataIntoTIFF() throws Exception {
+        super.testProcessWritesXMPMetadataIntoTIFF();
+    }
+
+    @Test
+    public void testReadInfoEXIFAwareness() throws Exception {
+        instance.setStreamFactory(new PathStreamFactory(TestUtil.getImage("jpg-exif.jpg")));
+        Info info = instance.readInfo();
+        assertTrue(info.getMetadata().getEXIF().isPresent());
+    }
+
+    @Test
+    public void testReadInfoIPTCAwareness() throws Exception {
+        instance.setStreamFactory(new PathStreamFactory(TestUtil.getImage("jpg-iptc.jpg")));
+        Info info = instance.readInfo();
+        assertTrue(info.getMetadata().getIPTC().isPresent());
+    }
+
+    @Test
+    public void testReadInfoXMPAwareness() throws Exception {
+        instance.setStreamFactory(new PathStreamFactory(TestUtil.getImage("jpg-xmp.jpg")));
+        Info info = instance.readInfo();
+        assertTrue(info.getMetadata().getXMP().isPresent());
     }
 
 }

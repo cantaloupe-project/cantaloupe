@@ -1,10 +1,8 @@
 package edu.illinois.library.cantaloupe.processor;
 
-import edu.illinois.library.cantaloupe.config.Configuration;
-import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Info;
-import edu.illinois.library.cantaloupe.image.Orientation;
+import edu.illinois.library.cantaloupe.image.Metadata;
 import edu.illinois.library.cantaloupe.processor.codec.ImageReaderFactory;
 import edu.illinois.library.cantaloupe.processor.codec.ImageWriterFactory;
 import edu.illinois.library.cantaloupe.source.PathStreamFactory;
@@ -16,7 +14,7 @@ import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Set;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
 abstract class ImageIOProcessorTest extends AbstractProcessorTest {
 
@@ -27,14 +25,54 @@ abstract class ImageIOProcessorTest extends AbstractProcessorTest {
             formats.put(format, ImageWriterFactory.supportedFormats());
         }
 
-        Processor proc = newInstance();
-        proc.setSourceFormat(Format.JPG);
-        Set<Format> expectedFormats = formats.get(Format.JPG);
-        assertEquals(expectedFormats, proc.getAvailableOutputFormats());
+        try (Processor proc = newInstance()) {
+            proc.setSourceFormat(Format.JPG);
+            Set<Format> expectedFormats = formats.get(Format.JPG);
+            assertEquals(expectedFormats, proc.getAvailableOutputFormats());
+        }
     }
 
     @Test
-    public void testReadImageInfoTileAwareness() throws Exception {
+    public void testReadInfoEXIFAwareness() throws Exception {
+        final Path fixture = TestUtil.getImage("jpg-exif.jpg");
+
+        try (FileProcessor fproc = (FileProcessor) newInstance()) {
+            fproc.setSourceFile(fixture);
+            fproc.setSourceFormat(Format.JPG);
+
+            final Info info = fproc.readInfo();
+            assertTrue(info.getMetadata().getEXIF().isPresent());
+        }
+    }
+
+    @Test
+    public void testReadInfoIPTCAwareness() throws Exception {
+        final Path fixture = TestUtil.getImage("jpg-iptc.jpg");
+
+        try (FileProcessor fproc = (FileProcessor) newInstance()) {
+            fproc.setSourceFile(fixture);
+            fproc.setSourceFormat(Format.JPG);
+
+            final Info info = fproc.readInfo();
+            assertTrue(info.getMetadata().getIPTC().isPresent());
+        }
+    }
+
+    @Test
+    public void testReadInfoXMPAwareness() throws Exception {
+        final Path fixture = TestUtil.getImage("jpg-xmp.jpg");
+
+        try (FileProcessor fproc = (FileProcessor) newInstance()) {
+            fproc.setSourceFile(fixture);
+            fproc.setSourceFormat(Format.JPG);
+
+            final Info info = fproc.readInfo();
+            assertTrue(info.getMetadata().getXMP().isPresent());
+        }
+    }
+
+    @Test
+    public void testReadInfoTileAwareness() throws Exception {
         Info expectedInfo = Info.builder()
                 .withSize(64, 56)
                 .withTileSize(16, 16)
@@ -45,44 +83,23 @@ abstract class ImageIOProcessorTest extends AbstractProcessorTest {
                 getImage("tif-rgb-1res-64x56x8-tiled-uncompressed.tif");
 
         // test as a StreamProcessor
-        StreamProcessor sproc = (StreamProcessor) newInstance();
-        StreamFactory streamFactory = new PathStreamFactory(fixture);
-        sproc.setStreamFactory(streamFactory);
-        sproc.setSourceFormat(Format.TIF);
-        assertEquals(expectedInfo, sproc.readInfo());
+        try (StreamProcessor sproc = (StreamProcessor) newInstance()) {
+            StreamFactory streamFactory = new PathStreamFactory(fixture);
+            sproc.setStreamFactory(streamFactory);
+            sproc.setSourceFormat(Format.TIF);
+            Info actualInfo = sproc.readInfo();
+            actualInfo.setMetadata(new Metadata()); // we don't care about this
+            assertEquals(expectedInfo, actualInfo);
+        }
 
         // test as a FileProcessor
-        FileProcessor fproc = (FileProcessor) newInstance();
-        fproc.setSourceFile(fixture);
-        fproc.setSourceFormat(Format.TIF);
-        assertEquals(expectedInfo, fproc.readInfo());
-
-        try {
-            fproc.setSourceFile(TestUtil.getImage("mpg"));
-            fproc.setSourceFormat(Format.MPG);
-            expectedInfo = Info.builder()
-                    .withSize(640, 360)
-                    .withFormat(Format.MPG)
-                    .build();
-            assertEquals(expectedInfo, fproc.readInfo());
-        } catch (UnsupportedSourceFormatException e) {
-            // pass
+        try (FileProcessor fproc = (FileProcessor) newInstance()) {
+            fproc.setSourceFile(fixture);
+            fproc.setSourceFormat(Format.TIF);
+            Info actualInfo = fproc.readInfo();
+            actualInfo.setMetadata(new Metadata()); // we don't care about this
+            assertEquals(expectedInfo, actualInfo);
         }
-    }
-
-    @Test
-    public void testReadImageInfoWithOrientation() throws Exception {
-        Configuration.getInstance().
-                setProperty(Key.PROCESSOR_RESPECT_ORIENTATION, true);
-
-        final Path fixture = TestUtil.getImage("jpg-rotated.jpg");
-
-        final FileProcessor fproc = (FileProcessor) newInstance();
-        fproc.setSourceFile(fixture);
-        fproc.setSourceFormat(Format.JPG);
-
-        final Info info = fproc.readInfo();
-        assertEquals(Orientation.ROTATE_90, info.getOrientation());
     }
 
 }

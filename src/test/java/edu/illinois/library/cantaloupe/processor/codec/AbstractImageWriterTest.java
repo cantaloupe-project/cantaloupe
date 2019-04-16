@@ -9,9 +9,9 @@ import java.io.IOException;
 
 import static org.junit.Assert.*;
 
-abstract class AbstractImageWriterTest extends BaseTest {
+public abstract class AbstractImageWriterTest extends BaseTest {
 
-    ImageWriter instance;
+    protected ImageWriter instance;
 
     @Before
     public void setUp() throws Exception {
@@ -26,7 +26,7 @@ abstract class AbstractImageWriterTest extends BaseTest {
         }
     }
 
-    abstract ImageWriter newInstance() throws IOException;
+    abstract protected ImageWriter newInstance() throws IOException;
 
     @Test
     public void testGetPreferredIIOImplementationsWithNoUserPreference() {

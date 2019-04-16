@@ -10,6 +10,7 @@ import edu.illinois.library.cantaloupe.operation.Encode;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
 import edu.illinois.library.cantaloupe.test.TestUtil;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -31,6 +32,12 @@ public class KakaduDemoProcessorTest extends AbstractProcessorTest {
         KakaduDemoProcessor.resetInitialization();
 
         instance = newInstance();
+    }
+
+    @After
+    public void tearDown() throws Exception {
+        super.tearDown();
+        instance.close();
     }
 
     @Override
@@ -104,7 +111,21 @@ public class KakaduDemoProcessorTest extends AbstractProcessorTest {
     }
 
     @Test
-    public void testReadImageInfoTileAwareness() throws Exception {
+    public void testReadInfoIPTCAwareness() throws Exception {
+        instance.setSourceFile(TestUtil.getImage("jp2-iptc.jp2"));
+        Info info = instance.readInfo();
+        assertTrue(info.getMetadata().getIPTC().isPresent());
+    }
+
+    @Test
+    public void testReadInfoXMPAwareness() throws Exception {
+        instance.setSourceFile(TestUtil.getImage("jp2-xmp.jp2"));
+        Info info = instance.readInfo();
+        assertTrue(info.getMetadata().getXMP().isPresent());
+    }
+
+    @Test
+    public void testReadInfoTileAwareness() throws Exception {
         // untiled image
         instance.setSourceFile(TestUtil.getImage("jp2-5res-rgb-64x56x8-monotiled-lossy.jp2"));
         Info expectedInfo = Info.builder()

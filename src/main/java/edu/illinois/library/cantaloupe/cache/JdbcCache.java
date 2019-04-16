@@ -589,6 +589,11 @@ class JdbcCache implements DerivativeCache {
 
     @Override
     public void put(Identifier identifier, Info info) throws IOException {
+        if (!info.isComplete()) {
+            LOGGER.debug("put(): info for {} is incomplete; ignoring",
+                    identifier);
+            return;
+        }
         LOGGER.debug("put(): {}", identifier);
 
         final String sql = String.format(
@@ -610,7 +615,7 @@ class JdbcCache implements DerivativeCache {
             statement.setString(2, info.toJSON());
             statement.setTimestamp(3, now());
 
-            LOGGER.debug(sql);
+            LOGGER.trace(sql);
             statement.executeUpdate();
             conn.commit();
         } catch (SQLException | JsonProcessingException e) {

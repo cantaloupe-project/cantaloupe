@@ -69,8 +69,8 @@ public class InformationResource extends IIIF1Resource {
             // https://iiif.io/api/auth/1.0/#interaction-with-access-controlled-resources
         }
 
-        final Configuration config = Configuration.getInstance();
-        final Identifier identifier = getIdentifier();
+        final Configuration config    = Configuration.getInstance();
+        final Identifier identifier   = getIdentifier();
         final CacheFacade cacheFacade = new CacheFacade();
 
         // If we are using a cache, and don't need to resolve first, and the
@@ -87,14 +87,12 @@ public class InformationResource extends IIIF1Resource {
                     if (format != null && !Format.UNKNOWN.equals(format)) {
                         final Processor processor = new ProcessorFactory().
                                 newProcessor(format);
-                        final Info.Image infoImage =
-                                info.getImages().get(getPageIndex());
                         final ImageInfo imageInfo =
                                 new ImageInfoFactory().newImageInfo(
                                         getImageURI(),
                                         processor,
-                                        infoImage,
-                                        info.getNumResolutions(),
+                                        info,
+                                        getPageIndex(),
                                         getScaleConstraint());
                         addHeaders(imageInfo);
                         newRepresentation(imageInfo)
@@ -148,16 +146,15 @@ public class InformationResource extends IIIF1Resource {
                     source, processor, identifier, format);
 
             final Info info = getOrReadInfo(identifier, processor);
-            final Info.Image infoImage = info.getImages().get(getPageIndex());
-            final ImageInfo imageInfo = new ImageInfoFactory().newImageInfo(
+            final ImageInfo iiifInfo = new ImageInfoFactory().newImageInfo(
                     getImageURI(),
                     processor,
-                    infoImage,
-                    info.getNumResolutions(),
+                    info,
+                    getPageIndex(),
                     getScaleConstraint());
 
-            addHeaders(imageInfo);
-            newRepresentation(imageInfo).write(getResponse().getOutputStream());
+            addHeaders(iiifInfo);
+            newRepresentation(iiifInfo).write(getResponse().getOutputStream());
         }
     }
 

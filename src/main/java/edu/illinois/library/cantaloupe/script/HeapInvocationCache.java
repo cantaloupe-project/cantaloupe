@@ -9,18 +9,26 @@ class HeapInvocationCache implements InvocationCache {
     private static final Logger LOGGER = LoggerFactory.
             getLogger(HeapInvocationCache.class);
 
+    private static final int EXPECTED_AVERAGE_VALUE_SIZE = 2048;
+    private static final double MAX_HEAP_PERCENT = 0.05;
+
     private ObjectCache<Object, Object> store;
 
     HeapInvocationCache() {
-        final long maxSize = computeMaxSize();
-        LOGGER.info("Invocation cache limit: {}", maxSize);
-        store = new ObjectCache<>(maxSize);
+        final long maxCount = computeMaxCount();
+
+        LOGGER.info("Max {} capacity: {} ({}% max heap / {}-byte expected average value size)",
+                HeapInvocationCache.class.getSimpleName(),
+                maxCount,
+                Math.round(MAX_HEAP_PERCENT * 100),
+                EXPECTED_AVERAGE_VALUE_SIZE);
+        store = new ObjectCache<>(maxCount);
     }
 
-    private long computeMaxSize() {
-        // TODO: this is very crude and needs tuning.
-        final Runtime runtime = Runtime.getRuntime();
-        return Math.round(runtime.maxMemory() / 1024f / 2f);
+    private long computeMaxCount() {
+        final long maxByteSize = Math.round(
+                Runtime.getRuntime().maxMemory() * MAX_HEAP_PERCENT);
+        return Math.round(maxByteSize / (double) EXPECTED_AVERAGE_VALUE_SIZE);
     }
 
     @Override

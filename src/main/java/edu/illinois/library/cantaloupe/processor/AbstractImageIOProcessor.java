@@ -1,10 +1,8 @@
 package edu.illinois.library.cantaloupe.processor;
 
-import edu.illinois.library.cantaloupe.config.Configuration;
-import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Info;
-import edu.illinois.library.cantaloupe.image.Orientation;
+import edu.illinois.library.cantaloupe.image.Metadata;
 import edu.illinois.library.cantaloupe.processor.codec.ImageReader;
 import edu.illinois.library.cantaloupe.processor.codec.ImageReaderFactory;
 import edu.illinois.library.cantaloupe.processor.codec.ImageWriterFactory;
@@ -42,7 +40,7 @@ abstract class AbstractImageIOProcessor extends AbstractProcessor {
     /**
      * @return Map of available output formats for all known source formats.
      */
-    private static HashMap<Format, Set<Format>> availableOutputFormats() {
+    private static Map<Format, Set<Format>> availableOutputFormats() {
         final HashMap<Format,Set<Format>> map = new HashMap<>();
         for (Format format : ImageReaderFactory.supportedFormats()) {
             map.put(format, ImageWriterFactory.supportedFormats());
@@ -76,12 +74,10 @@ abstract class AbstractImageIOProcessor extends AbstractProcessor {
         info.setSourceFormat(getSourceFormat());
 
         final ImageReader reader = getReader();
-        final Orientation orientation = getEffectiveOrientation();
         info.setNumResolutions(reader.getNumResolutions());
 
         for (int i = 0, numImages = reader.getNumImages(); i < numImages; i++) {
             Info.Image image = new Info.Image();
-            image.setOrientation(orientation);
             image.setSize(reader.getSize(i));
             image.setTileSize(reader.getTileSize(i));
             // JP2 tile dimensions are inverted, so swap them
@@ -94,24 +90,19 @@ abstract class AbstractImageIOProcessor extends AbstractProcessor {
             }
             info.getImages().add(image);
         }
+
+        try {
+            final Metadata metadata = reader.getMetadata(0);
+            info.setMetadata(metadata);
+        } catch (IOException e) {
+            // Some Image I/O readers can be picky with some images (for
+            // example, JPEGImageReader with YCCK JPEGs). But an Info instance
+            // without metadata is still useful.
+            LOGGER.debug("readInfo(): {}", e.getMessage());
+        }
+
         LOGGER.trace("readInfo(): {}", info.toJSON());
         return info;
-    }
-
-    /**
-     * @return Effective orientation of the image, respecting the setting of
-     *         {@link Key#PROCESSOR_RESPECT_ORIENTATION}. Never null.
-     */
-    Orientation getEffectiveOrientation() throws IOException {
-        Orientation orientation = null;
-        if (Configuration.getInstance().
-                getBoolean(Key.PROCESSOR_RESPECT_ORIENTATION, false)) {
-            orientation = getReader().getMetadata(0).getOrientation();
-        }
-        if (orientation == null) {
-            orientation = Orientation.ROTATE_0;
-        }
-        return orientation;
     }
 
     /**

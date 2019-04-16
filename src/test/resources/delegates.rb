@@ -249,4 +249,13 @@ class CustomDelegate
     end
   end
 
+  def metadata(options = {})
+    case context['identifier']
+      when 'metadata'
+        return '<rdf:RDF>derivative metadata</rdf:RDF>'
+      else
+        return nil
+    end
+  end
+
 end

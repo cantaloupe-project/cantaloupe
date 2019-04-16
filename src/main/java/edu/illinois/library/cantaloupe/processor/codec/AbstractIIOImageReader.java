@@ -1,13 +1,10 @@
 package edu.illinois.library.cantaloupe.processor.codec;
 
-import edu.illinois.library.cantaloupe.config.Configuration;
-import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Dimension;
 import edu.illinois.library.cantaloupe.image.Rectangle;
 import edu.illinois.library.cantaloupe.image.ScaleConstraint;
 import edu.illinois.library.cantaloupe.operation.Crop;
 import edu.illinois.library.cantaloupe.image.Format;
-import edu.illinois.library.cantaloupe.image.Orientation;
 import edu.illinois.library.cantaloupe.operation.CropByPercent;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.operation.Scale;
@@ -36,7 +33,7 @@ import java.util.Set;
  * efficient with most formats. Format-specific readers may override what they
  * need to.
  */
-abstract class AbstractIIOImageReader {
+public abstract class AbstractIIOImageReader {
 
     private static final Set<Format> SELECTIVELY_READABLE_FORMATS =
             EnumSet.of(Format.JP2, Format.TIF);
@@ -44,17 +41,17 @@ abstract class AbstractIIOImageReader {
     /**
      * Assigned by {@link #createReader()}.
      */
-    javax.imageio.ImageReader iioReader;
+    protected javax.imageio.ImageReader iioReader;
 
     /**
      * Set by {@link #setSource}.
      */
-    ImageInputStream inputStream;
+    protected ImageInputStream inputStream;
 
     /**
      * Set by {@link #setSource}. May be {@literal null}.
      */
-    Object source;
+    protected Object source;
 
     private List<javax.imageio.ImageReader> availableIIOReaders() {
         final Iterator<javax.imageio.ImageReader> it;
@@ -72,18 +69,6 @@ abstract class AbstractIIOImageReader {
         return iioReaders;
     }
 
-    /**
-     * @return Whether metadata can be skipped when reading.
-     */
-    private boolean canIgnoreMetadata() {
-        final Configuration config = Configuration.getInstance();
-        final boolean preserveMetadata = config.getBoolean(
-                Key.PROCESSOR_PRESERVE_METADATA, false);
-        final boolean respectOrientation = config.getBoolean(
-                Key.PROCESSOR_RESPECT_ORIENTATION, false);
-        return (!preserveMetadata && !respectOrientation);
-    }
-
     private void createReader() throws IOException {
         if (inputStream == null) {
             throw new IOException("No source set.");
@@ -93,21 +78,7 @@ abstract class AbstractIIOImageReader {
 
         if (iioReader != null) {
             getLogger().debug("Using {}", iioReader.getClass().getName());
-
-            /*
-            http://docs.oracle.com/javase/8/docs/api/javax/imageio/ImageReader.html#setInput(java.lang.Object,%20boolean,%20boolean)
-            The ignoreMetadata parameter, if set to true, allows the reader
-            to disregard any metadata encountered during the read. Subsequent
-            calls to the getStreamMetadata and getImageMetadata methods may
-            return null, and an IIOImage returned from readAll may return null
-            from their getMetadata method. Setting this parameter may allow
-            the reader to work more efficiently. The reader may choose to
-            disregard this setting and return metadata normally.
-            */
-            final boolean ignoreMetadata = canIgnoreMetadata();
-            getLogger().debug("Ignoring metadata? {}", ignoreMetadata);
-
-            iioReader.setInput(inputStream, false, ignoreMetadata);
+            iioReader.setInput(inputStream, false, false);
         } else {
             throw new IOException("Unable to determine the format of the" +
                     "source image.");
@@ -135,11 +106,11 @@ abstract class AbstractIIOImageReader {
      *         of most to least preferred, or an empty array if there is no
      *         preference.
      */
-    abstract String[] getApplicationPreferredIIOImplementations();
+    abstract protected String[] getApplicationPreferredIIOImplementations();
 
-    abstract Format getFormat();
+    abstract protected Format getFormat();
 
-    abstract Logger getLogger();
+    abstract protected Logger getLogger();
 
     /**
      * @return Number of images contained inside the source image.
@@ -169,7 +140,7 @@ abstract class AbstractIIOImageReader {
      * @return Preferred reader implementation classes, in order of highest to
      *         lowest priority, or an empty array if there is no preference.
      */
-    String[] getPreferredIIOImplementations() {
+    public String[] getPreferredIIOImplementations() {
         final List<String> impls = new ArrayList<>();
 
         // Prefer a user-specified implementation.
@@ -188,7 +159,7 @@ abstract class AbstractIIOImageReader {
      * @return Pixel dimensions of the image at the given index.
      */
     public Dimension getSize(int imageIndex) throws IOException {
-        final int width = iioReader.getWidth(imageIndex);
+        final int width  = iioReader.getWidth(imageIndex);
         final int height = iioReader.getHeight(imageIndex);
         return new Dimension(width, height);
     }
@@ -220,7 +191,7 @@ abstract class AbstractIIOImageReader {
      * @return Preferred ImageIO implementation as specified by the user. May
      *         be {@literal null}.
      */
-    abstract String getUserPreferredIIOImplementation();
+    abstract protected String getUserPreferredIIOImplementation();
 
     /**
      * Chooses the most appropriate ImageIO reader to use based on the return
@@ -262,7 +233,7 @@ abstract class AbstractIIOImageReader {
      *
      * @throws UnsupportedOperationException if the instance is not reusable.
      */
-    void reset() throws IOException {
+    protected void reset() throws IOException {
         if (source == null) {
             throw new UnsupportedOperationException("Instance is not reusable");
         } else if (source instanceof Path) {
@@ -340,8 +311,6 @@ abstract class AbstractIIOImageReader {
      * the returned image will require cropping.</p>
      *
      * @param ops
-     * @param orientation     Orientation of the source image data as reported
-     *                        by e.g. embedded metadata.
      * @param reductionFactor The {@link ReductionFactor#factor} property will
      *                        be modified to reflect the reduction factor of the
      *                        returned image.
@@ -350,7 +319,6 @@ abstract class AbstractIIOImageReader {
      * @return                Image best matching the given arguments.
      */
     public BufferedImage read(final OperationList ops,
-                              final Orientation orientation,
                               final ReductionFactor reductionFactor,
                               final Set<ReaderHint> hints) throws IOException {
         BufferedImage image;
@@ -384,7 +352,7 @@ abstract class AbstractIIOImageReader {
      *                        reader.
      * @return                Smallest image fitting the requested operations.
      */
-    BufferedImage readSmallestUsableSubimage(
+    protected BufferedImage readSmallestUsableSubimage(
             final Crop crop,
             final Scale scale,
             final ScaleConstraint scaleConstraint,
@@ -517,7 +485,7 @@ abstract class AbstractIIOImageReader {
      * @deprecated Since version 4.0.
      */
     @Deprecated
-    RenderedImage readRendered() throws IOException {
+    public RenderedImage readRendered() throws IOException {
         return iioReader.readAsRenderedImage(0,
                 iioReader.getDefaultReadParam());
     }
@@ -527,8 +495,6 @@ abstract class AbstractIIOImageReader {
      * tile layout and/or subimages, if possible.</p>
      *
      * @param ops
-     * @param orientation     Orientation of the source image data, e.g. as
-     *                        reported by embedded metadata.
      * @param reductionFactor The {@link ReductionFactor#factor} property will
      *                        be modified to reflect the reduction factor of the
      *                        returned image.
@@ -540,7 +506,6 @@ abstract class AbstractIIOImageReader {
      */
     @Deprecated
     public RenderedImage readRendered(final OperationList ops,
-                                      final Orientation orientation,
                                       final ReductionFactor reductionFactor,
                                       final Set<ReaderHint> hints) throws IOException {
         Crop crop = (Crop) ops.getFirst(Crop.class);

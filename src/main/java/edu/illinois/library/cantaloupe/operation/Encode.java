@@ -3,7 +3,9 @@ package edu.illinois.library.cantaloupe.operation;
 import edu.illinois.library.cantaloupe.image.Compression;
 import edu.illinois.library.cantaloupe.image.Dimension;
 import edu.illinois.library.cantaloupe.image.Format;
+import edu.illinois.library.cantaloupe.image.Metadata;
 import edu.illinois.library.cantaloupe.image.ScaleConstraint;
+import edu.illinois.library.cantaloupe.util.StringUtils;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -22,11 +24,12 @@ public class Encode implements Operation {
 
     private Color backgroundColor;
     private Compression compression = Compression.UNDEFINED;
-    private Format format = Format.UNKNOWN;
+    private Format format           = Format.UNKNOWN;
     private boolean interlace;
     private boolean isFrozen;
-    private int maxComponentSize = 8;
-    private int quality = MAX_QUALITY;
+    private int maxComponentSize    = 8;
+    private int quality             = MAX_QUALITY;
+    private Metadata metadata;
 
     public Encode(Format format) {
         setFormat(format);
@@ -75,6 +78,13 @@ public class Encode implements Operation {
      */
     public int getQuality() {
         return quality;
+    }
+
+    /**
+     * @return Embeddable metadata.
+     */
+    public Metadata getMetadata() {
+        return metadata;
     }
 
     /**
@@ -161,6 +171,17 @@ public class Encode implements Operation {
     }
 
     /**
+     * @param metadata Metadata to embed. May be {@literal null}.
+     * @throws IllegalStateException if the instance is frozen.
+     */
+    public void setMetadata(Metadata metadata) {
+        if (isFrozen) {
+            throw new IllegalStateException("Instance is frozen.");
+        }
+        this.metadata = metadata;
+    }
+
+    /**
      * @param quality
      * @throws IllegalArgumentException if the given quality is outside the
      *         range of 1-{@link #MAX_QUALITY}.
@@ -187,7 +208,8 @@ public class Encode implements Operation {
      *     format: Media type string,
      *     interlace: Boolean,
      *     quality: Integer,
-     *     max_sample_size: Integer
+     *     max_sample_size: Integer,
+     *     metadata: See {@link Metadata#toMap()}
      * }</pre>
      *
      * @return Map representation of the instance.
@@ -195,7 +217,7 @@ public class Encode implements Operation {
     @Override
     public Map<String,Object> toMap(Dimension fullSize,
                                     ScaleConstraint scaleConstraint) {
-        final Map<String,Object> map = new HashMap<>();
+        final Map<String,Object> map = new HashMap<>(8);
         map.put("class", getClass().getSimpleName());
         if (getBackgroundColor() != null) {
             map.put("background_color", getBackgroundColor().toRGBHex());
@@ -205,6 +227,9 @@ public class Encode implements Operation {
         map.put("interlace", isInterlacing());
         map.put("quality", getQuality());
         map.put("max_sample_size", getMaxComponentSize());
+        if (getMetadata() != null) {
+            map.put("metadata", getMetadata().toMap());
+        }
         return Collections.unmodifiableMap(map);
     }
 
@@ -214,7 +239,7 @@ public class Encode implements Operation {
      */
     @Override
     public String toString() {
-        List<String> parts = new ArrayList<>();
+        final List<String> parts = new ArrayList<>(7);
         if (getFormat() != null) {
             parts.add(getFormat().getPreferredExtension());
         }
@@ -232,6 +257,9 @@ public class Encode implements Operation {
         }
         if (getMaxComponentSize() != Integer.MAX_VALUE) {
             parts.add(getMaxComponentSize() + "");
+        }
+        if (getMetadata() != null) {
+            parts.add(StringUtils.md5(Integer.toString(getMetadata().hashCode())));
         }
         return String.join("_", parts);
     }

@@ -291,11 +291,18 @@ class RedisCache implements DerivativeCache {
     }
 
     @Override
-    public void put(Identifier identifier, Info imageInfo) throws IOException {
+    public void put(Identifier identifier, Info info) throws IOException {
+        if (!info.isComplete()) {
+            LOGGER.debug("put(): info for {} is incomplete; ignoring",
+                    identifier);
+            return;
+        }
         LOGGER.debug("put(): caching info for {}", identifier);
         try {
-            getConnection().async().hset(INFO_HASH_KEY, infoKey(identifier),
-                    imageInfo.toJSON().getBytes(StandardCharsets.UTF_8));
+            getConnection().async().hset(
+                    INFO_HASH_KEY,
+                    infoKey(identifier),
+                    info.toJSON().getBytes(StandardCharsets.UTF_8));
         } catch (JsonProcessingException e) {
             LOGGER.error("put(): {}", e.getMessage());
             throw new IOException(e.getMessage(), e);

@@ -1,5 +1,9 @@
 package edu.illinois.library.cantaloupe.util;
 
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.Map;
+
 /**
  * Rational number class.
  */
@@ -74,6 +78,16 @@ public class Rational {
     @Override
     public int hashCode() {
         return toString().hashCode();
+    }
+
+    /**
+     * @return Map with {@literal numerator} and {@literal denominator} keys.
+     */
+    public Map<String,Long> toMap() {
+        final Map<String,Long> map = new LinkedHashMap<>(2);
+        map.put("numerator", getNumerator());
+        map.put("denominator", getDenominator());
+        return Collections.unmodifiableMap(map);
     }
 
     @Override

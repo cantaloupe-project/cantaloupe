@@ -35,13 +35,8 @@ public class ImageInfoFactoryTest extends BaseTest {
                 TestUtil.getImage("jpg-rgb-594x522x8-baseline.jpg"));
 
         Info info = processor.readInfo();
-        Info.Image infoImage = info.getImages().get(0);
         imageInfo = new ImageInfoFactory().newImageInfo(
-                imageUri,
-                processor,
-                infoImage,
-                info.getNumResolutions(),
-                new ScaleConstraint(1, 1));
+                imageUri, processor, info, 0, new ScaleConstraint(1, 1));
     }
 
     @Override
@@ -54,22 +49,14 @@ public class ImageInfoFactoryTest extends BaseTest {
     }
 
     private void setUpForRotatedImage() throws Exception {
-        Configuration config = Configuration.getInstance();
-        config.setProperty(Key.PROCESSOR_RESPECT_ORIENTATION, true);
-
         processor.close();
         processor = new ProcessorFactory().newProcessor(Format.JPG);
         ((FileProcessor) processor).setSourceFile(
-                TestUtil.getImage("jpg-rotated.jpg"));
+                TestUtil.getImage("jpg-xmp-orientation-90.jpg"));
 
         Info info = processor.readInfo();
-        Info.Image infoImage = info.getImages().get(0);
         imageInfo = new ImageInfoFactory().newImageInfo(
-                imageUri,
-                processor,
-                infoImage,
-                info.getNumResolutions(),
-                new ScaleConstraint(1, 1));
+                imageUri, processor, info, 0, new ScaleConstraint(1, 1));
     }
 
     private void setUpForScaleConstrainedImage() throws Exception {
@@ -79,13 +66,8 @@ public class ImageInfoFactoryTest extends BaseTest {
                 TestUtil.getImage("jpg-rgb-594x522x8-baseline.jpg"));
 
         Info info = processor.readInfo();
-        Info.Image infoImage = info.getImages().get(0);
         imageInfo = new ImageInfoFactory().newImageInfo(
-                imageUri,
-                processor,
-                infoImage,
-                info.getNumResolutions(),
-                new ScaleConstraint(1, 2));
+                imageUri, processor, info, 0, new ScaleConstraint(1, 2));
     }
 
     @Test
@@ -175,13 +157,8 @@ public class ImageInfoFactoryTest extends BaseTest {
         ((FileProcessor) processor).setSourceFile(
                 TestUtil.getImage("tif-rgb-1res-64x56x8-tiled-uncompressed.tif"));
         Info info = processor.readInfo();
-        Info.Image infoImage = info.getImages().get(0);
         imageInfo = new ImageInfoFactory().newImageInfo(
-                imageUri,
-                processor,
-                infoImage,
-                info.getNumResolutions(),
-                new ScaleConstraint(1, 1));
+                imageUri, processor, info, 0, new ScaleConstraint(1, 1));
 
         assertEquals(64, (long) imageInfo.tileWidth);
     }
@@ -210,13 +187,8 @@ public class ImageInfoFactoryTest extends BaseTest {
         ((FileProcessor) processor).setSourceFile(
                 TestUtil.getImage("tif-rgb-1res-64x56x8-tiled-uncompressed.tif"));
         Info info = processor.readInfo();
-        Info.Image infoImage = info.getImages().get(0);
         imageInfo = new ImageInfoFactory().newImageInfo(
-                imageUri,
-                processor,
-                infoImage,
-                info.getNumResolutions(),
-                new ScaleConstraint(1, 1));
+                imageUri, processor, info, 0, new ScaleConstraint(1, 1));
 
         assertEquals(64, (long) imageInfo.tileWidth);
         assertEquals(56, (long) imageInfo.tileHeight);

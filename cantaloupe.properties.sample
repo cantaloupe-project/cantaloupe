@@ -350,14 +350,6 @@ processor.upscale_filter = bicubic
 # Intensity of an unsharp mask from 0 to 1.
 processor.sharpen = 0
 
-# Attempts to copy source image metadata (EXIF, IPTC, XMP) into derivative
-# images. (This is not foolproof; see the user manual.)
-processor.metadata.preserve = false
-
-# Whether to auto-rotate images using the EXIF `Orientation` field.
-# The check for this field can impair performance slightly.
-processor.metadata.respect_orientation = false
-
 # Progressive JPEGs are usually more compact.
 processor.jpg.progressive = true
 

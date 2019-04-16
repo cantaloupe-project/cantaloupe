@@ -5,12 +5,17 @@ current version.
 
 ## 4.1.x → 5.0
 
-1. Remove the following configuration keys:
+1. Note that Java 11 is now required.
+2. Remove the following configuration keys:
     * `http.accept_queue_limit`
     * `endpoint.iiif.content_disposition`
-2. Note that Java 11 is now required.
+    * `processor.metadata.*`
 3. The `X-IIIF-ID` reverse proxy header is no longer supported. Use
    `X-Forwarded-ID` instead.
+4. If your `processor.metadata.preserve` key has been set to `true`, and you've
+   been using a derivative cache, you should purge it.
+5. If you were using the `processor.metadata.preserve` key, you will need to use
+   the new `metadata()` delegate method instead.
 
 ## 4.0.x → 4.1
 

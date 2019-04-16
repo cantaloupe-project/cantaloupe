@@ -4,6 +4,7 @@ import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Info;
+import edu.illinois.library.cantaloupe.image.Metadata;
 import edu.illinois.library.cantaloupe.image.Orientation;
 import edu.illinois.library.cantaloupe.image.ScaleConstraint;
 import edu.illinois.library.cantaloupe.resource.RequestContext;
@@ -77,7 +78,12 @@ public class ImageInfoFactoryTest extends BaseTest {
         final String imageURI = "http://example.org/bla";
         final Info info = Info.builder()
                 .withSize(1500, 1200)
-                .withOrientation(Orientation.ROTATE_90)
+                .withMetadata(new Metadata() {
+                    @Override
+                    public Orientation getOrientation() {
+                        return Orientation.ROTATE_90;
+                    }
+                })
                 .build();
         ImageInfo<String, Object> imageInfo = instance.newImageInfo(
                 imageURI, info, 0, new ScaleConstraint(1, 1));
@@ -108,7 +114,12 @@ public class ImageInfoFactoryTest extends BaseTest {
         final String imageURI = "http://example.org/bla";
         final Info info = Info.builder()
                 .withSize(1500, 1200)
-                .withOrientation(Orientation.ROTATE_90)
+                .withMetadata(new Metadata() {
+                    @Override
+                    public Orientation getOrientation() {
+                        return Orientation.ROTATE_90;
+                    }
+                })
                 .build();
         ImageInfo<String, Object> imageInfo = instance.newImageInfo(
                 imageURI, info, 0, new ScaleConstraint(1, 1));
@@ -181,7 +192,12 @@ public class ImageInfoFactoryTest extends BaseTest {
         final String imageURI = "http://example.org/bla";
         final Info info = Info.builder()
                 .withSize(1500, 1200)
-                .withOrientation(Orientation.ROTATE_90)
+                .withMetadata(new Metadata() {
+                    @Override
+                    public Orientation getOrientation() {
+                        return Orientation.ROTATE_90;
+                    }
+                })
                 .build();
         ImageInfo<String, Object> imageInfo = instance.newImageInfo(
                 imageURI, info, 0, new ScaleConstraint(1, 1));
@@ -293,7 +309,12 @@ public class ImageInfoFactoryTest extends BaseTest {
         final String imageURI = "http://example.org/bla";
         Info info = Info.builder()
                 .withSize(64, 56)
-                .withOrientation(Orientation.ROTATE_90)
+                .withMetadata(new Metadata() {
+                    @Override
+                    public Orientation getOrientation() {
+                        return Orientation.ROTATE_90;
+                    }
+                })
                 .withTileSize(64, 56)
                 .build();
         ImageInfo<String, Object> imageInfo = instance.newImageInfo(

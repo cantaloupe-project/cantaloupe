@@ -1,6 +1,5 @@
 package edu.illinois.library.cantaloupe.processor.codec;
 
-import edu.illinois.library.cantaloupe.image.Metadata;
 import edu.illinois.library.cantaloupe.operation.Encode;
 
 import java.awt.image.RenderedImage;
@@ -24,11 +23,6 @@ public interface ImageWriter {
      * @param encode Operation defining encoding parameters.
      */
     void setEncode(Encode encode);
-
-    /**
-     * @param metadata Source metadata.
-     */
-    void setMetadata(Metadata metadata);
 
     /**
      * Writes the given image to the given output stream.

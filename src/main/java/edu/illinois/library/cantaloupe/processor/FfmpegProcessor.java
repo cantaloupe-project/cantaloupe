@@ -57,7 +57,7 @@ class FfmpegProcessor extends AbstractProcessor implements FileProcessor {
     private Path sourceFile;
 
     private double durationSec = 0;
-    private Info imageInfo;
+    private Info info;
 
     /**
      * @param binaryName Name of one of the ffmpeg binaries.
@@ -85,7 +85,7 @@ class FfmpegProcessor extends AbstractProcessor implements FileProcessor {
         command.add(getPath(ffmpegBinary));
         pb.command(command);
         String commandString = String.join(" ", pb.command());
-        LOGGER.info("invoke(): {}", commandString);
+        LOGGER.trace("invoke(): {}", commandString);
         pb.start();
     }
 
@@ -156,7 +156,7 @@ class FfmpegProcessor extends AbstractProcessor implements FileProcessor {
         final ByteArrayOutputStream errorBucket = new ByteArrayOutputStream();
         try {
             final ProcessBuilder pb = getProcessBuilder(opList);
-            LOGGER.info("Invoking {}", String.join(" ", pb.command()));
+            LOGGER.trace("Invoking {}", String.join(" ", pb.command()));
             final Process process = pb.start();
 
             try (final InputStream processInputStream = process.getInputStream();
@@ -169,7 +169,7 @@ class FfmpegProcessor extends AbstractProcessor implements FileProcessor {
                 try {
                     BufferedImage image = reader.read();
                     Java2DPostProcessor.postProcess(image, null, opList,
-                            imageInfo, null, null, outputStream);
+                            imageInfo, null, outputStream);
                     final int code = process.waitFor();
                     if (code != 0) {
                         LOGGER.error("{} returned with code {}",
@@ -240,7 +240,7 @@ class FfmpegProcessor extends AbstractProcessor implements FileProcessor {
      */
     @Override
     public Info readInfo() throws IOException {
-        if (imageInfo == null) {
+        if (info == null) {
             final List<String> command = new ArrayList<>();
             command.add(getPath(FFPROBE_NAME));
             command.add("-v");
@@ -256,7 +256,7 @@ class FfmpegProcessor extends AbstractProcessor implements FileProcessor {
             ProcessBuilder pb = new ProcessBuilder(command);
             pb.redirectErrorStream(true);
 
-            LOGGER.info("Invoking {}", StringUtils.join(pb.command(), " "));
+            LOGGER.trace("Invoking {}", StringUtils.join(pb.command(), " "));
             Process process = pb.start();
 
             try (InputStream processInputStream = process.getInputStream();
@@ -270,20 +270,20 @@ class FfmpegProcessor extends AbstractProcessor implements FileProcessor {
                 } catch (NumberFormatException e) {
                     LOGGER.debug("readInfo(): {}", e.getMessage());
                 }
-                imageInfo = Info.builder()
+                info = Info.builder()
                         .withSize(width, height)
                         .withTileSize(width, height)
                         .withFormat(getSourceFormat())
                         .build();
-                imageInfo.setNumResolutions(1);
+                info.setNumResolutions(1);
             }
         }
-        return imageInfo;
+        return info;
     }
 
     private void reset() {
         durationSec = 0;
-        imageInfo = null;
+        info = null;
     }
 
     @Override

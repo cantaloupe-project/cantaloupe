@@ -7,6 +7,7 @@ import edu.illinois.library.cantaloupe.image.Dimension;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.Info;
+import edu.illinois.library.cantaloupe.image.Metadata;
 import edu.illinois.library.cantaloupe.image.Orientation;
 import edu.illinois.library.cantaloupe.image.ScaleConstraint;
 import edu.illinois.library.cantaloupe.operation.overlay.Overlay;
@@ -178,16 +179,16 @@ public final class OperationList implements Iterable<Operation> {
 
         // If the source image has a different orientation, adjust any Crop
         // and Rotate operations accordingly.
-        final Orientation sourceImageOrientation = info.getOrientation();
-        if (sourceImageOrientation != null) {
-            Crop crop = (Crop) getFirst(Crop.class);
+        final Metadata srcMetadata = info.getMetadata();
+        if (srcMetadata != null) {
+            final Orientation orientation = srcMetadata.getOrientation();
+            final Crop crop = (Crop) getFirst(Crop.class);
             if (crop != null) {
-                crop.setOrientation(sourceImageOrientation);
+                crop.setOrientation(orientation);
             }
-
-            Rotate rotate = (Rotate) getFirst(Rotate.class);
+            final Rotate rotate = (Rotate) getFirst(Rotate.class);
             if (rotate != null) {
-                rotate.addDegrees(sourceImageOrientation.getDegrees());
+                rotate.addDegrees(orientation.getDegrees());
             }
         }
 
@@ -253,12 +254,6 @@ public final class OperationList implements Iterable<Operation> {
             LOGGER.error(e.getMessage(), e);
         }
 
-        // Metadata copies
-        // TODO: consider making these a property of Encode
-        if (config.getBoolean(Key.PROCESSOR_PRESERVE_METADATA, false)) {
-            addBefore(new MetadataCopy(), Encode.class);
-        }
-
         // Encode customization
         final Encode encode = (Encode) getFirst(Encode.class);
         switch (encode.getFormat()) {
@@ -290,6 +285,33 @@ public final class OperationList implements Iterable<Operation> {
             if (bgColor != null) {
                 encode.setBackgroundColor(Color.fromString(bgColor));
             }
+        }
+
+        // Add metadata.
+        Metadata metadata = null;
+        // Add XMP metadata returned from a delegate method, if any.
+        if (delegateProxy != null) {
+            try {
+                final String xmp = delegateProxy.getMetadata();
+                if (xmp != null) {
+                    metadata = new Metadata();
+                    metadata.setXMP(xmp);
+                }
+            } catch (Exception e) {
+                LOGGER.error(e.getMessage(), e);
+            }
+        }
+        // Source metadata may contain important native information like
+        // e.g. delay time in the case of animated GIF, so that too must be
+        // copied over.
+        if (srcMetadata != null) {
+            if (metadata == null) {
+                metadata = new Metadata();
+            }
+            metadata.setNativeMetadata(srcMetadata.getNativeMetadata());
+        }
+        if (metadata != null) {
+            encode.setMetadata(metadata);
         }
     }
 
@@ -428,20 +450,15 @@ public final class OperationList implements Iterable<Operation> {
         }
         for (Operation op : this) {
             if (op.hasEffect(fullSize, this)) {
-                // 1. Ignore MetadataCopies. If the instance would otherwise be
-                //    a no-op, metadata will get passed through anyway, and if
-                //    it isn't, then this method will return false anyway.
-                // 2. Ignore overlays when the output format is PDF.
-                // 3. Ignore Encodes when the given output format is the same
+                // 1. Ignore overlays when the output format is PDF.
+                // 2. Ignore Encodes when the given output format is the same
                 //    as the instance's output format. (This helps enable
                 //    streaming source images without re-encoding them.)
-                if (op instanceof MetadataCopy) { // (1)
-                    continue;
-                } else if (op instanceof Overlay &&
-                        getOutputFormat().equals(Format.PDF)) { // (2)
+                if (op instanceof Overlay &&
+                        getOutputFormat().equals(Format.PDF)) { // (1)
                     continue;
                 } else if (op instanceof Encode &&
-                        format.equals(((Encode) op).getFormat())) { // (3)
+                        format.equals(((Encode) op).getFormat())) { // (2)
                     continue;
                 } else {
                     return true;

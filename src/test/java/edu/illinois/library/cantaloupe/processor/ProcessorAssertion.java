@@ -9,7 +9,7 @@ import java.util.Set;
 
 /**
  * Rather than using {@literal assert}-style methods, many processor tests use
- * instances of this class that can be run against many different fixtures.
+ * instances of this class in order to encapsulate more complex testing logic.
  */
 abstract class ProcessorAssertion implements Runnable {
 
@@ -22,6 +22,11 @@ abstract class ProcessorAssertion implements Runnable {
      * Resulting image.
      */
     BufferedImage resultingImage;
+
+    /**
+     * Raw resulting image bytes.
+     */
+    byte[] resultingRawImage;
 
     /**
      * Operation list used to process the image.
@@ -43,7 +48,8 @@ abstract class ProcessorAssertion implements Runnable {
     Dimension sourceSize;
 
     /**
-     * Tests whether the resulting image is as expected.
+     * Tests whether the resulting image is as expected, throwing an unchecked
+     * exception if not.
      */
     @Override
     public abstract void run();

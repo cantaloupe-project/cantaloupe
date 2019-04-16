@@ -2,6 +2,7 @@ package edu.illinois.library.cantaloupe.resource;
 
 import edu.illinois.library.cantaloupe.image.Dimension;
 import edu.illinois.library.cantaloupe.image.Identifier;
+import edu.illinois.library.cantaloupe.image.Metadata;
 import edu.illinois.library.cantaloupe.image.ScaleConstraint;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 
@@ -20,6 +21,7 @@ public final class RequestContext {
     static final String COOKIES_KEY          = "cookies";
     static final String FULL_SIZE_KEY        = "full_size";
     static final String IDENTIFIER_KEY       = "identifier";
+    static final String METADATA_KEY         = "metadata";
     static final String OPERATIONS_KEY       = "operations";
     static final String OUTPUT_FORMAT_KEY    = "output_format";
     static final String REQUEST_HEADERS_KEY  = "request_headers";
@@ -65,6 +67,19 @@ public final class RequestContext {
             backingMap.put(IDENTIFIER_KEY, identifier.toString());
         } else {
             backingMap.remove(IDENTIFIER_KEY);
+        }
+    }
+
+    /**
+     * Sets or clears {@link #METADATA_KEY}.
+     *
+     * @param metadata May be {@literal null}.
+     */
+    public void setMetadata(Metadata metadata) {
+        if (metadata != null) {
+            backingMap.put(METADATA_KEY, metadata.toMap());
+        } else {
+            backingMap.remove(METADATA_KEY);
         }
     }
 

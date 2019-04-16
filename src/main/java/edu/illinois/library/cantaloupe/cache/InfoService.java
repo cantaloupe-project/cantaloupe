@@ -54,9 +54,9 @@ public final class InfoService {
      *
      * <ol>
      *     <li>An internal {@link ObjectCache}, if enabled by the
-     *     {@link Key#INFO_CACHE_ENABLED} configuration key;</li>
+     *     {@link Key#INFO_CACHE_ENABLED} configuration key</li>
      *     <li>The derivative cache returned by
-     *     {@link CacheFactory#getDerivativeCache()};</li>
+     *     {@link CacheFactory#getDerivativeCache()}</li>
      * </ol>
      *
      * @param identifier   Identifier of the source image for which to retrieve
@@ -136,8 +136,9 @@ public final class InfoService {
             // Add it to the derivative and object caches.
             final DerivativeCache derivCache = CacheFactory.getDerivativeCache();
             putInCachesAsync(identifier, info, derivCache);
-            return Optional.of(info);
+            optInfo = Optional.of(info);
         }
+        LOGGER.trace("Info for {}: {}", identifier, optInfo.get().toJSON());
         return optInfo;
     }
 

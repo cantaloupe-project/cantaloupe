@@ -1,6 +1,5 @@
 package edu.illinois.library.cantaloupe.processor.codec;
 
-import edu.illinois.library.cantaloupe.image.Metadata;
 import edu.illinois.library.cantaloupe.operation.Encode;
 import org.slf4j.Logger;
 
@@ -16,21 +15,21 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-abstract class AbstractIIOImageWriter {
+public abstract class AbstractIIOImageWriter {
 
-    javax.imageio.ImageWriter iioWriter;
-    Encode encode;
-    Metadata sourceMetadata;
+    protected javax.imageio.ImageWriter iioWriter;
+    protected Encode encode;
 
     /**
-     * <p>Embeds metadata from {@link #sourceMetadata} into the given tree.</p>
+     * <p>Embeds metadata from {@link #encode} into the given tree.</p>
      *
      * <p>Writers for formats that don't support metadata may simply do
      * nothing.</p>
      *
      * @param baseTree Tree to embed the metadata into.
      */
-    abstract void addMetadata(IIOMetadataNode baseTree) throws IOException;
+    abstract protected void addMetadata(IIOMetadataNode baseTree)
+            throws IOException;
 
     private List<javax.imageio.ImageWriter> availableIIOWriters() {
         final Iterator<javax.imageio.ImageWriter> it =
@@ -67,9 +66,9 @@ abstract class AbstractIIOImageWriter {
      *         of most to least preferred, or an empty array if there is no
      *         preference.
      */
-    abstract String[] getApplicationPreferredIIOImplementations();
+    abstract protected String[] getApplicationPreferredIIOImplementations();
 
-    abstract Logger getLogger();
+    abstract protected Logger getLogger();
 
     /**
      * @param writeParam Write parameters on which to base the metadata.
@@ -77,8 +76,8 @@ abstract class AbstractIIOImageWriter {
      * @return           Image metadata with added metadata corresponding to
      *                   any writer-specific operations applied.
      */
-    IIOMetadata getMetadata(final ImageWriteParam writeParam,
-                            final RenderedImage image) throws IOException {
+    protected IIOMetadata getMetadata(final ImageWriteParam writeParam,
+                                      final RenderedImage image) throws IOException {
         final IIOMetadata derivativeMetadata = iioWriter.getDefaultImageMetadata(
                 ImageTypeSpecifier.createFromRenderedImage(image),
                 writeParam);
@@ -86,9 +85,9 @@ abstract class AbstractIIOImageWriter {
                 derivativeMetadata.getNativeMetadataFormatName();
         final IIOMetadataNode baseTree =
                 (IIOMetadataNode) derivativeMetadata.getAsTree(formatName);
-        if (sourceMetadata != null) {
-            addMetadata(baseTree);
-        }
+
+        addMetadata(baseTree);
+
         derivativeMetadata.mergeTree(formatName, baseTree);
         return derivativeMetadata;
     }
@@ -101,7 +100,7 @@ abstract class AbstractIIOImageWriter {
      * @return Preferred reader implementation classes, in order of highest to
      *         lowest priority, or an empty array if there is no preference.
      */
-    String[] getPreferredIIOImplementations() {
+    public String[] getPreferredIIOImplementations() {
         final List<String> impls = new ArrayList<>();
 
         // Prefer a user-specified implementation.
@@ -123,7 +122,7 @@ abstract class AbstractIIOImageWriter {
      * @return Preferred ImageIO implementation as specified by the user. May
      *         be {@literal null}.
      */
-    abstract String getUserPreferredIIOImplementation();
+    abstract protected String getUserPreferredIIOImplementation();
 
     private javax.imageio.ImageWriter negotiateImageWriter() {
         javax.imageio.ImageWriter negotiatedWriter = null;
@@ -158,10 +157,6 @@ abstract class AbstractIIOImageWriter {
     public void setEncode(Encode encode) {
         this.encode = encode;
         createWriter();
-    }
-
-    public void setMetadata(Metadata sourceMetadata) {
-        this.sourceMetadata = sourceMetadata;
     }
 
     /**

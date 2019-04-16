@@ -18,6 +18,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
@@ -180,7 +181,8 @@ public final class MediaType {
 
     @Override
     public int hashCode() {
-        return toString().hashCode();
+        String[] parts = { type, subtype };
+        return Arrays.hashCode(parts);
     }
 
     /**

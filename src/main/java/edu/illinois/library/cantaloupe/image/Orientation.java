@@ -4,12 +4,11 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 /**
- * <p>Signifies an image orientation.</p>
+ * <p>Image orientation.</p>
  *
- * <p>Mainly this is used in support of images whose orientation may be
- * different from that of their pixel data. It aligns with the EXIF {@literal
- * Orientation} tag, although it currently supports only rotation and not
- * flipping.
+ * <p>This is used to support images whose orientation may be different from
+ * that of their pixel data. It aligns with the EXIF {@literal Orientation}
+ * tag, but it currently supports only rotation and not flipping.
  */
 @JsonSerialize(using = OrientationSerializer.class)
 @JsonDeserialize(using = OrientationDeserializer.class)
@@ -43,7 +42,7 @@ public enum Orientation {
     /**
      * @param value EXIF Orientation tag value.
      * @return Orientation corresponding to the given tag value.
-     * @throws IllegalArgumentException If the value is not supported.
+     * @throws IllegalArgumentException if the value is not supported.
      */
     public static Orientation forEXIFOrientation(int value) {
         for (Orientation orientation : values()) {
@@ -58,6 +57,16 @@ public enum Orientation {
     Orientation(int exifValue, int degrees) {
         this.exifValue = exifValue;
         this.degrees = degrees;
+    }
+
+    /**
+     * @return Orientation-adjusted size.
+     */
+    public Dimension adjustedSize(Dimension size) {
+        if (ROTATE_90.equals(this) || ROTATE_270.equals(this)) {
+            return new Dimension(size.height(), size.width());
+        }
+        return size;
     }
 
     public int getDegrees() {

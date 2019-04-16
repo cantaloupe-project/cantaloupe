@@ -2,32 +2,23 @@ package edu.illinois.library.cantaloupe.processor;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
-import edu.illinois.library.cantaloupe.image.Dimension;
 import edu.illinois.library.cantaloupe.image.Format;
-import edu.illinois.library.cantaloupe.image.Identifier;
-import edu.illinois.library.cantaloupe.image.Info;
-import edu.illinois.library.cantaloupe.operation.Encode;
-import edu.illinois.library.cantaloupe.operation.OperationList;
-import edu.illinois.library.cantaloupe.operation.ValidationException;
 import edu.illinois.library.cantaloupe.operation.overlay.ImageOverlay;
 import edu.illinois.library.cantaloupe.operation.overlay.Position;
-import edu.illinois.library.cantaloupe.source.PathStreamFactory;
-import edu.illinois.library.cantaloupe.source.StreamFactory;
 import edu.illinois.library.cantaloupe.test.TestUtil;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.BufferedReader;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URI;
-import java.nio.file.Path;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 import static org.junit.Assert.*;
@@ -35,11 +26,9 @@ import static org.junit.Assert.*;
 /**
  * For this to work, the ImageMagick binaries must be on the PATH.
  */
-public class ImageMagickProcessorTest extends MagickProcessorTest {
+public class ImageMagickProcessorTest extends AbstractMagickProcessorTest {
 
-    private static final double DELTA = 0.00000001;
-
-    private static HashMap<Format, Set<Format>> supportedFormats;
+    private static Map<Format, Set<Format>> supportedFormats;
 
     private ImageMagickProcessor instance;
 
@@ -54,12 +43,17 @@ public class ImageMagickProcessorTest extends MagickProcessorTest {
         instance = newInstance();
     }
 
+    @After
+    public void tearDown() throws Exception {
+        super.tearDown();
+        instance.close();
+    }
+
     /**
      * @return Map of available output formats for all known source formats,
      * based on information reported by {@literal identify -list format}.
      */
-    protected HashMap<Format, Set<Format>> getAvailableOutputFormats()
-            throws IOException {
+    Map<Format, Set<Format>> getAvailableOutputFormats() throws IOException {
         if (supportedFormats == null) {
             final Set<Format> sourceFormats = new HashSet<>();
             final Set<Format> outputFormats = new HashSet<>();
@@ -252,38 +246,9 @@ public class ImageMagickProcessorTest extends MagickProcessorTest {
     /* process() */
 
     @Ignore // TODO: why does this fail?
+    @Override
     @Test
-    public void testProcessWithPageOption() throws Exception {
-        // Skip if ImageMagick does not support PDF.
-        try {
-            instance.setSourceFormat(Format.PDF);
-        } catch (UnsupportedSourceFormatException e) {
-            return;
-        }
-
-        final Path fixture = TestUtil.getImage("pdf-multipage.pdf");
-        byte[] page1, page2;
-        Info imageInfo;
-
-        // page option missing
-        instance.setStreamFactory(new PathStreamFactory(fixture));
-        imageInfo = instance.readInfo();
-
-        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        OperationList ops = new OperationList();
-        instance.process(ops, imageInfo, outputStream);
-        page1 = outputStream.toByteArray();
-
-        // page option present
-        instance.setStreamFactory(new PathStreamFactory(fixture));
-
-        ops = new OperationList();
-        ops.getOptions().put("page", "2");
-        outputStream = new ByteArrayOutputStream();
-        instance.process(ops, imageInfo, outputStream);
-        page2 = outputStream.toByteArray();
-
-        assertFalse(Arrays.equals(page1, page2));
+    public void testProcessWithPageOption() {
     }
 
     @Override
@@ -291,91 +256,6 @@ public class ImageMagickProcessorTest extends MagickProcessorTest {
     @Test
     public void testProcessWithAllSupportedOutputFormats() {
         // TODO: The parent fails on a lot of fixtures.
-    }
-
-    /* readInfo() */
-
-    @Test
-    public void testReadImageInfoOnAllFixtures() throws Exception {
-        final Processor proc = newInstance();
-
-        for (Format format : Format.values()) {
-            try {
-                // The processor will throw an exception if it doesn't support
-                // this format, which is fine. No processor supports all
-                // formats.
-                proc.setSourceFormat(format);
-
-                for (Path fixture : TestUtil.getImageFixtures(format)) {
-                    // TODO: address this
-                    if (fixture.getFileName().toString().contains("pdf")) {
-                        continue;
-                    }
-
-                    StreamProcessor sproc = (StreamProcessor) proc;
-                    StreamFactory streamFactory =
-                            new PathStreamFactory(fixture);
-                    sproc.setStreamFactory(streamFactory);
-
-                    try {
-                        // We don't know the dimensions of the source image and
-                        // we can't get them because that would require using
-                        // the method we are now testing, so the best we can do
-                        // is to assert that they are nonzero.
-                        final Info actualInfo = proc.readInfo();
-                        assertEquals(format, actualInfo.getSourceFormat());
-                        assertTrue(actualInfo.getSize().width() > DELTA);
-                        assertTrue(actualInfo.getSize().height() > DELTA);
-
-                        assertEquals(-1, actualInfo.getNumResolutions());
-                    } catch (Exception e) {
-                        System.err.println(format + " : " + fixture);
-                        throw e;
-                    }
-                }
-            } catch (UnsupportedSourceFormatException e) {
-                // OK, continue
-            }
-        }
-    }
-
-    /* validate() */
-
-    @Test
-    public void testValidate() throws Exception {
-        // Skip if ImageMagick does not support PDF.
-        try {
-            instance.setSourceFormat(Format.PDF);
-        } catch (UnsupportedSourceFormatException e) {
-            return;
-        }
-
-        instance.setStreamFactory(new PathStreamFactory(
-                TestUtil.getImage("pdf.pdf")));
-
-        OperationList ops = new OperationList(
-                new Identifier("cats"), new Encode(Format.JPG));
-        Dimension fullSize = new Dimension(1000, 1000);
-        instance.validate(ops, fullSize);
-
-        ops.getOptions().put("page", "1");
-        instance.validate(ops, fullSize);
-
-        ops.getOptions().put("page", "0");
-        try {
-            instance.validate(ops, fullSize);
-            fail("Expected exception");
-        } catch (ValidationException e) {
-            // pass
-        }
-
-        ops.getOptions().put("page", "-1");
-        try {
-            instance.validate(ops, fullSize);
-            fail("Expected exception");
-        } catch (ValidationException e) {
-            // pass
-        }
     }
 
 }

@@ -1,6 +1,11 @@
 package edu.illinois.library.cantaloupe.processor.codec;
 
 import edu.illinois.library.cantaloupe.image.Format;
+import edu.illinois.library.cantaloupe.processor.codec.bmp.BMPImageReader;
+import edu.illinois.library.cantaloupe.processor.codec.gif.GIFImageReader;
+import edu.illinois.library.cantaloupe.processor.codec.jpeg.JPEGImageReader;
+import edu.illinois.library.cantaloupe.processor.codec.png.PNGImageReader;
+import edu.illinois.library.cantaloupe.processor.codec.tiff.TIFFImageReader;
 import edu.illinois.library.cantaloupe.source.StreamFactory;
 import edu.illinois.library.cantaloupe.source.stream.ClosingMemoryCacheImageInputStream;
 
