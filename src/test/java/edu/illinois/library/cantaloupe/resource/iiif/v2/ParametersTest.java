@@ -9,12 +9,12 @@ import edu.illinois.library.cantaloupe.operation.Scale;
 import edu.illinois.library.cantaloupe.processor.UnsupportedOutputFormatException;
 import edu.illinois.library.cantaloupe.resource.IllegalClientArgumentException;
 import edu.illinois.library.cantaloupe.test.BaseTest;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.Iterator;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class ParametersTest extends BaseTest {
 
@@ -22,7 +22,7 @@ public class ParametersTest extends BaseTest {
 
     private Parameters instance;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         super.setUp();
         instance = new Parameters(
@@ -35,7 +35,7 @@ public class ParametersTest extends BaseTest {
     }
 
     @Test
-    public void testFromUri() {
+    void testFromUri() {
         instance = Parameters.fromUri("bla/20,20,50,50/pct:90/15/bitonal.jpg");
         assertEquals("bla", instance.getIdentifier().toString());
         assertEquals("20,20,50,50", instance.getRegion().toString());
@@ -45,24 +45,32 @@ public class ParametersTest extends BaseTest {
         assertEquals(OutputFormat.JPG, instance.getOutputFormat());
     }
 
-    @Test(expected = IllegalClientArgumentException.class)
-    public void testFromUriWithInvalidURI1() {
-        Parameters.fromUri("bla/20,20,50,50/15/bitonal.jpg");
-    }
-
-    @Test(expected = IllegalClientArgumentException.class)
-    public void testFromUriWithInvalidURI2() {
-        Parameters.fromUri("bla/20,20,50,50/pct:90/15/bitonal");
-    }
-
-    @Test(expected = UnsupportedOutputFormatException.class)
-    public void testConstructorThrowsUnsupportedOutputFormatException() {
-        new Parameters(new Identifier("identifier"), "0,0,200,200", "pct:50",
-                "5", "default", "bogus");
+    @Test
+    void testFromUriWithInvalidURI1() {
+        assertThrows(IllegalClientArgumentException.class,
+                () -> Parameters.fromUri("bla/20,20,50,50/15/bitonal.jpg"));
     }
 
     @Test
-    public void testToOperationList() {
+    void testFromUriWithInvalidURI2() {
+        assertThrows(IllegalClientArgumentException.class,
+                () -> Parameters.fromUri("bla/20,20,50,50/pct:90/15/bitonal"));
+    }
+
+    @Test
+    void testConstructorThrowsUnsupportedOutputFormatException() {
+        assertThrows(UnsupportedOutputFormatException.class,
+                () -> new Parameters(
+                        new Identifier("identifier"),
+                        "0,0,200,200",
+                        "pct:50",
+                        "5",
+                        "default",
+                        "bogus"));
+    }
+
+    @Test
+    void testToOperationList() {
         final OperationList opList = instance.toOperationList();
         Iterator<Operation> it = opList.iterator();
         assertTrue(it.next() instanceof Crop);

@@ -6,8 +6,8 @@ import edu.illinois.library.cantaloupe.source.PathStreamFactory;
 import edu.illinois.library.cantaloupe.source.StreamFactory;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import javax.imageio.ImageIO;
 import javax.imageio.stream.ImageInputStream;
@@ -16,20 +16,20 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.HashSet;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class ImageReaderFactoryTest extends BaseTest {
 
     private ImageReaderFactory instance;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         super.setUp();
         instance = new ImageReaderFactory();
     }
 
     @Test
-    public void testSupportedFormats() {
+    void testSupportedFormats() {
         final HashSet<Format> formats = new HashSet<>();
         for (String mediaTypeStr : ImageIO.getReaderMIMETypes()) {
             if (mediaTypeStr.length() < 1 || mediaTypeStr.equals("image/jp2")) {
@@ -43,32 +43,33 @@ public class ImageReaderFactoryTest extends BaseTest {
         assertEquals(formats, ImageReaderFactory.supportedFormats());
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void testNewImageReaderWithUnsupportedFormat() throws Exception {
-        instance.newImageReader(Paths.get("/dev/null"), Format.UNKNOWN);
+    @Test
+    void testNewImageReaderWithUnsupportedFormat() {
+        assertThrows(IllegalArgumentException.class,
+                () -> instance.newImageReader(Paths.get("/dev/null"), Format.UNKNOWN));
     }
 
     @Test
-    public void testNewImageReaderWithPath() throws Exception {
+    void testNewImageReaderWithPath() throws Exception {
         instance.newImageReader(Paths.get("/dev/null"), Format.JPG);
     }
 
     @Test
-    public void testNewImageReaderWithInputStream() throws Exception {
+    void testNewImageReaderWithInputStream() throws Exception {
         try (InputStream is = Files.newInputStream(TestUtil.getImage("jpg"))) {
             instance.newImageReader(is, Format.JPG);
         }
     }
 
     @Test
-    public void testNewImageReaderWithImageInputStream() throws Exception {
+    void testNewImageReaderWithImageInputStream() throws Exception {
         try (ImageInputStream iis = ImageIO.createImageInputStream(TestUtil.getImage("jpg").toFile())) {
             instance.newImageReader(iis, Format.JPG);
         }
     }
 
     @Test
-    public void testNewImageReaderWithStreamSource() throws Exception {
+    void testNewImageReaderWithStreamSource() throws Exception {
         StreamFactory source = new PathStreamFactory(Paths.get("/dev/null"));
         instance.newImageReader(source, Format.JPG);
     }

@@ -8,8 +8,8 @@ import edu.illinois.library.cantaloupe.script.DelegateProxy;
 import edu.illinois.library.cantaloupe.script.DelegateProxyService;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import static org.junit.Assert.assertTrue;
 
@@ -17,23 +17,24 @@ public class AuthorizerFactoryTest extends BaseTest {
 
     private AuthorizerFactory instance;
 
-    @Before
-    public void setUp() {
+    @BeforeEach
+    public void setUp() throws Exception {
+        super.setUp();
         instance = new AuthorizerFactory();
     }
 
     @Test
-    public void testNewAuthorizerWithNoArguments() {
+    void testNewAuthorizerWithNoArguments() {
         assertTrue(instance.newAuthorizer() instanceof PermissiveAuthorizer);
     }
 
     @Test
-    public void testNewAuthorizerWithNullArguments() {
+    void testNewAuthorizerWithNullArguments() {
         assertTrue(instance.newAuthorizer(null, null) instanceof PermissiveAuthorizer);
     }
 
     @Test
-    public void testNewAuthorizerWithArgument() throws Exception {
+    void testNewAuthorizerWithArgument() throws Exception {
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.DELEGATE_SCRIPT_ENABLED, true);
         config.setProperty(Key.DELEGATE_SCRIPT_PATHNAME,

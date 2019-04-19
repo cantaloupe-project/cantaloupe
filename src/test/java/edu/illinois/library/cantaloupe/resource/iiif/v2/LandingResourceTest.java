@@ -10,7 +10,7 @@ import edu.illinois.library.cantaloupe.http.Response;
 import edu.illinois.library.cantaloupe.resource.ResourceTest;
 import edu.illinois.library.cantaloupe.resource.Route;
 import org.apache.commons.lang3.StringUtils;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.net.URI;
 import java.util.List;
@@ -32,7 +32,7 @@ public class LandingResourceTest extends ResourceTest {
     }
 
     @Test
-    public void testGETWithEndpointEnabled() {
+    void testGETWithEndpointEnabled() {
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.IIIF_2_ENDPOINT_ENABLED, true);
         assertStatus(200, getHTTPURI(""));
@@ -40,20 +40,20 @@ public class LandingResourceTest extends ResourceTest {
     }
 
     @Test
-    public void testGETWithEndpointDisabled() {
+    void testGETWithEndpointDisabled() {
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.IIIF_2_ENDPOINT_ENABLED, false);
         assertStatus(403, getHTTPURI(""));
     }
 
     @Test
-    public void testGETWithTrailingSlashRedirectsToWithout() throws Exception {
+    void testGETWithTrailingSlashRedirectsToWithout() throws Exception {
         final URI uri = getHTTPURI("");
         assertRedirect(new URI(uri + "/"), uri, 301);
     }
 
     @Test
-    public void testGETResponseHeaders() throws Exception {
+    void testGETResponseHeaders() throws Exception {
         client = newClient("");
         Response response = client.send();
         Headers headers = response.getHeaders();
@@ -85,7 +85,7 @@ public class LandingResourceTest extends ResourceTest {
     }
 
     @Test
-    public void testOPTIONSWhenEnabled() throws Exception {
+    void testOPTIONSWhenEnabled() throws Exception {
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.IIIF_2_ENDPOINT_ENABLED, true);
 
@@ -103,7 +103,7 @@ public class LandingResourceTest extends ResourceTest {
     }
 
     @Test
-    public void testOPTIONSWhenDisabled() throws Exception {
+    void testOPTIONSWhenDisabled() throws Exception {
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.IIIF_2_ENDPOINT_ENABLED, false);
         try {

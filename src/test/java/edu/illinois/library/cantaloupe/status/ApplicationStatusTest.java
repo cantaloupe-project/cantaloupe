@@ -1,61 +1,63 @@
 package edu.illinois.library.cantaloupe.status;
 
-import org.junit.Before;
-import org.junit.Test;
+import edu.illinois.library.cantaloupe.test.BaseTest;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
-public class ApplicationStatusTest {
+public class ApplicationStatusTest extends BaseTest {
 
     private ApplicationStatus instance;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
+        super.setUp();
         instance = new ApplicationStatus();
     }
 
     @Test
-    public void testGetDMICMaxSize() {
+    void testGetDMICMaxSize() {
         assertTrue(instance.getDMICMaxSize() > 100);
     }
 
     @Test
-    public void testGetDMICSize() {
+    void testGetDMICSize() {
         assertEquals(0, instance.getDMICSize());
     }
 
     @Test
-    public void testGetInfoCacheMaxSize() {
+    void testGetInfoCacheMaxSize() {
         assertTrue(instance.getInfoCacheMaxSize() > 100);
     }
 
     @Test
-    public void testGetInfoCacheSize() {
+    void testGetInfoCacheSize() {
         assertEquals(0, instance.getInfoCacheSize());
     }
 
     @Test
-    public void testGetVMFreeHeap() {
+    void testGetVMFreeHeap() {
         assertTrue(instance.getVMFreeHeap() > 1000);
     }
 
     @Test
-    public void testGetVMMaxHeap() {
+    void testGetVMMaxHeap() {
         assertTrue(instance.getVMMaxHeap() > 1000);
     }
 
     @Test
-    public void testGetVMTotalHeap() {
+    void testGetVMTotalHeap() {
         assertTrue(instance.getVMTotalHeap() > 1000);
     }
 
     @Test
-    public void testGetVMUptime() {
+    void testGetVMUptime() {
         assertTrue(instance.getVMUptime() > 10);
     }
 
     @Test
-    public void testGetVMUsedHeap() {
+    void testGetVMUsedHeap() {
         assertTrue(instance.getVMUsedHeap() > 1000);
     }
 

@@ -28,7 +28,7 @@ import java.nio.file.Path;
 
 import static edu.illinois.library.cantaloupe.test.Assert.HTTPAssert.*;
 import static edu.illinois.library.cantaloupe.test.Assert.PathAssert.*;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Collection of tests shareable between major versions of IIIF Image and

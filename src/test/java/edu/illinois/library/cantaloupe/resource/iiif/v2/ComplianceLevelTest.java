@@ -3,17 +3,17 @@ package edu.illinois.library.cantaloupe.resource.iiif.v2;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
 import edu.illinois.library.cantaloupe.test.BaseTest;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.HashSet;
 import java.util.Set;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class ComplianceLevelTest extends BaseTest {
 
     @Test
-    public void testGetLevel() {
+    void testGetLevel() {
         Set<ServiceFeature> serviceFeatures = new HashSet<>();
         Set<ProcessorFeature> processorFeatures = new HashSet<>();
         Set<Quality> qualities = new HashSet<>();
@@ -52,7 +52,7 @@ public class ComplianceLevelTest extends BaseTest {
     }
 
     @Test
-    public void testGetUri() {
+    void testGetUri() {
         assertEquals("http://iiif.io/api/image/2/level0.json",
                 ComplianceLevel.LEVEL_0.getUri());
         assertEquals("http://iiif.io/api/image/2/level1.json",

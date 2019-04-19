@@ -4,15 +4,18 @@ import edu.illinois.library.cantaloupe.async.ThreadPool;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.config.Configuration;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.concurrent.CountDownLatch;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class CacheFactoryTest extends BaseTest {
 
-    public void setUp() {
+    @BeforeEach
+    public void setUp() throws Exception {
+        super.setUp();
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.DERIVATIVE_CACHE_ENABLED, true);
         config.setProperty(Key.DERIVATIVE_CACHE,
@@ -24,21 +27,21 @@ public class CacheFactoryTest extends BaseTest {
     /* getAllDerivativeCaches() */
 
     @Test
-    public void testGetAllDerivativeCaches() {
+    void testGetAllDerivativeCaches() {
         assertEquals(6, CacheFactory.getAllDerivativeCaches().size());
     }
 
     /* getAllSourceCaches() */
 
     @Test
-    public void testGetAllSourceCaches() {
+    void testGetAllSourceCaches() {
         assertEquals(1, CacheFactory.getAllSourceCaches().size());
     }
 
     /* getDerivativeCache() */
 
     @Test
-    public void testGetDerivativeCache() {
+    void testGetDerivativeCache() {
         Configuration config = Configuration.getInstance();
         final Key key = Key.DERIVATIVE_CACHE;
 
@@ -59,7 +62,7 @@ public class CacheFactoryTest extends BaseTest {
     }
 
     @Test
-    public void testGetDerivativeCacheWithFullyQualifiedClassName() {
+    void testGetDerivativeCacheWithFullyQualifiedClassName() {
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.DERIVATIVE_CACHE, HeapCache.class.getName());
 
@@ -67,7 +70,7 @@ public class CacheFactoryTest extends BaseTest {
     }
 
     @Test
-    public void testGetDerivativeCacheInitializesNewInstance() {
+    void testGetDerivativeCacheInitializesNewInstance() {
         Configuration config = Configuration.getInstance();
         final Key key = Key.DERIVATIVE_CACHE;
 
@@ -78,7 +81,7 @@ public class CacheFactoryTest extends BaseTest {
     }
 
     @Test
-    public void testGetDerivativeCacheShutsDownPreviousInstance() {
+    void testGetDerivativeCacheShutsDownPreviousInstance() {
         Configuration config = Configuration.getInstance();
         final Key key = Key.DERIVATIVE_CACHE;
 
@@ -92,7 +95,7 @@ public class CacheFactoryTest extends BaseTest {
     }
 
     @Test
-    public void testGetDerivativeCacheConcurrently() throws Exception {
+    void testGetDerivativeCacheConcurrently() throws Exception {
         final Configuration config = Configuration.getInstance();
         final int numThreads = 1000;
         final CountDownLatch latch = new CountDownLatch(numThreads);
@@ -119,7 +122,7 @@ public class CacheFactoryTest extends BaseTest {
     /* getSourceCache() */
 
     @Test
-    public void testGetSourceCache() {
+    void testGetSourceCache() {
         Configuration config = Configuration.getInstance();
         final Key key = Key.SOURCE_CACHE;
 
@@ -137,7 +140,7 @@ public class CacheFactoryTest extends BaseTest {
     }
 
     @Test
-    public void testGetSourceCacheWithFullyQualifiedClassName() {
+    void testGetSourceCacheWithFullyQualifiedClassName() {
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.SOURCE_CACHE, FilesystemCache.class.getName());
 
@@ -145,7 +148,7 @@ public class CacheFactoryTest extends BaseTest {
     }
 
     @Test
-    public void testGetSourceCacheInitializesNewInstance() {
+    void testGetSourceCacheInitializesNewInstance() {
         Configuration config = Configuration.getInstance();
         final Key key = Key.SOURCE_CACHE;
 
@@ -156,7 +159,7 @@ public class CacheFactoryTest extends BaseTest {
     }
 
     @Test
-    public void testGetSourceCacheShutsDownPreviousInstance() {
+    void testGetSourceCacheShutsDownPreviousInstance() {
         Configuration config = Configuration.getInstance();
         final Key key = Key.SOURCE_CACHE;
 
@@ -170,7 +173,7 @@ public class CacheFactoryTest extends BaseTest {
     }
 
     @Test
-    public void testGetSourceCacheConcurrently() throws Exception {
+    void testGetSourceCacheConcurrently() throws Exception {
         final Configuration config = Configuration.getInstance();
         final int numThreads = 1000;
         final CountDownLatch latch = new CountDownLatch(numThreads);

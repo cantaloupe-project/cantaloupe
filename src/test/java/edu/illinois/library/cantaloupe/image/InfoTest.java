@@ -1,8 +1,9 @@
 package edu.illinois.library.cantaloupe.image;
 
 import edu.illinois.library.cantaloupe.test.BaseTest;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -11,49 +12,50 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class InfoTest extends BaseTest {
 
     /*********************** Builder tests **************************/
 
-    public static class BuilderTest {
+    @Nested
+    public class BuilderTest {
 
         @Test
-        public void testWithFormat() {
+        void testWithFormat() {
             Info info = Info.builder().withFormat(Format.PNG).build();
             assertEquals(Format.PNG, info.getSourceFormat());
         }
 
         @Test
-        public void testWithIdentifier() {
+        void testWithIdentifier() {
             Identifier identifier = new Identifier("cats");
             Info info = Info.builder().withIdentifier(identifier).build();
             assertEquals(identifier, info.getIdentifier());
         }
 
         @Test
-        public void testWithMetadata() {
+        void testWithMetadata() {
             Metadata metadata = new Metadata();
             Info info = Info.builder().withMetadata(metadata).build();
             assertEquals(metadata, info.getMetadata());
         }
 
         @Test
-        public void testWithNumResolutions() {
+        void testWithNumResolutions() {
             Info info = Info.builder().withNumResolutions(5).build();
             assertEquals(5, info.getNumResolutions());
         }
 
         @Test
-        public void testWithSize1() {
+        void testWithSize1() {
             Dimension size = new Dimension(45, 50);
             Info info = Info.builder().withSize(size).build();
             assertEquals(size, info.getSize());
         }
 
         @Test
-        public void testWithSize2() {
+        void testWithSize2() {
             int width = 45;
             int height = 50;
             Info info = Info.builder().withSize(width, height).build();
@@ -61,14 +63,14 @@ public class InfoTest extends BaseTest {
         }
 
         @Test
-        public void testWithTileSize1() {
+        void testWithTileSize1() {
             Dimension size = new Dimension(45, 50);
             Info info = Info.builder().withTileSize(size).build();
             assertEquals(size, info.getImages().get(0).getTileSize());
         }
 
         @Test
-        public void testWithTileSize2() {
+        void testWithTileSize2() {
             int width = 45;
             int height = 50;
             Info info = Info.builder().withTileSize(width, height).build();
@@ -80,17 +82,18 @@ public class InfoTest extends BaseTest {
 
     /********************* Info.Image tests *************************/
 
-    public static class InfoImageTest {
+    @Nested
+    public class InfoImageTest {
 
         @Test
-        public void testConstructor() {
+        void testConstructor() {
             Info.Image image = new Info.Image();
             assertEquals(new Dimension(0, 0), image.getSize());
             assertEquals(new Dimension(0, 0), image.getTileSize());
         }
 
         @Test
-        public void testEqualsWithEqualInstances() {
+        void testEqualsWithEqualInstances() {
             Info.Image image1 = new Info.Image();
             image1.setSize(new Dimension(100, 50));
             image1.setTileSize(new Dimension(50, 25));
@@ -103,7 +106,7 @@ public class InfoTest extends BaseTest {
         }
 
         @Test
-        public void testEqualsWithUnequalSizes() {
+        void testEqualsWithUnequalSizes() {
             Info.Image image1 = new Info.Image();
             image1.setSize(new Dimension(100, 50));
             image1.setTileSize(new Dimension(50, 25));
@@ -116,7 +119,7 @@ public class InfoTest extends BaseTest {
         }
 
         @Test
-        public void testEqualsWithUnequalTileSizes() {
+        void testEqualsWithUnequalTileSizes() {
             Info.Image image1 = new Info.Image();
             image1.setSize(new Dimension(100, 50));
             image1.setTileSize(new Dimension(50, 25));
@@ -129,7 +132,7 @@ public class InfoTest extends BaseTest {
         }
 
         @Test
-        public void testHashCodeWithEqualInstances() {
+        void testHashCodeWithEqualInstances() {
             Info.Image image1 = new Info.Image();
             image1.setSize(new Dimension(100, 50));
             image1.setTileSize(new Dimension(50, 25));
@@ -142,7 +145,7 @@ public class InfoTest extends BaseTest {
         }
 
         @Test
-        public void testHashCodeWithUnequalSizes() {
+        void testHashCodeWithUnequalSizes() {
             Info.Image image1 = new Info.Image();
             image1.setSize(new Dimension(100, 50));
             image1.setTileSize(new Dimension(50, 25));
@@ -155,7 +158,7 @@ public class InfoTest extends BaseTest {
         }
 
         @Test
-        public void testHashCodeWithUnequalTileSizes() {
+        void testHashCodeWithUnequalTileSizes() {
             Info.Image image1 = new Info.Image();
             image1.setSize(new Dimension(100, 50));
             image1.setTileSize(new Dimension(50, 25));
@@ -171,7 +174,7 @@ public class InfoTest extends BaseTest {
 
     private Info instance;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         super.setUp();
 
@@ -193,7 +196,7 @@ public class InfoTest extends BaseTest {
     /* fromJSON(Path) */
 
     @Test
-    public void testFromJSONWithPath() throws Exception {
+    void testFromJSONWithPath() throws Exception {
         Path tempFile = null;
         try {
             tempFile = Files.createTempFile("test", "json");
@@ -214,7 +217,7 @@ public class InfoTest extends BaseTest {
     /* fromJSON(InputStream) */
 
     @Test
-    public void testFromJSONWithInputStream() throws Exception {
+    void testFromJSONWithInputStream() throws Exception {
         String json = instance.toJSON();
         InputStream inputStream = new ByteArrayInputStream(json.getBytes());
 
@@ -225,14 +228,14 @@ public class InfoTest extends BaseTest {
     /* fromJSON(String) */
 
     @Test
-    public void testFromJSONWithString() throws Exception {
+    void testFromJSONWithString() throws Exception {
         String json = instance.toJSON();
         Info info = Info.fromJSON(json);
         assertEquals(info.toString(), instance.toString());
     }
 
     @Test
-    public void testFromJSONWithVersion34Serialization() throws Exception {
+    void testFromJSONWithVersion34Serialization() throws Exception {
         String v4json = "{\n" +
                 "  \"mediaType\": \"image/jpeg\",\n" +
                 "  \"numResolutions\": 3,\n" +
@@ -258,7 +261,7 @@ public class InfoTest extends BaseTest {
     }
 
     @Test
-    public void testFromJSONWithVersion4Serialization() throws Exception {
+    void testFromJSONWithVersion4Serialization() throws Exception {
         String v4json = "{\n" +
                 "  \"identifier\": \"cats\",\n" +
                 "  \"mediaType\": \"image/jpeg\",\n" +
@@ -288,7 +291,7 @@ public class InfoTest extends BaseTest {
     /* Info() */
 
     @Test
-    public void testConstructor() {
+    void testConstructor() {
         instance = new Info();
         assertEquals(1, instance.getImages().size());
         assertNotNull(instance.getMetadata());
@@ -297,7 +300,7 @@ public class InfoTest extends BaseTest {
     /* equals() */
 
     @Test
-    public void testEqualsWithEqualInstances() {
+    void testEqualsWithEqualInstances() {
         Metadata metadata2 = new Metadata();
         metadata2.setXMP("<cats/>");
 
@@ -313,7 +316,7 @@ public class InfoTest extends BaseTest {
     }
 
     @Test
-    public void testEqualsWithDifferentIdentifiers() {
+    void testEqualsWithDifferentIdentifiers() {
         Info info2 = Info.builder()
                 .withIdentifier(new Identifier("dogs"))
                 .withSize(100, 80)
@@ -325,7 +328,7 @@ public class InfoTest extends BaseTest {
     }
 
     @Test
-    public void testEqualsWithDifferentWidths() {
+    void testEqualsWithDifferentWidths() {
         Info info2 = Info.builder()
                 .withSize(99, 80)
                 .withTileSize(50, 40)
@@ -336,7 +339,7 @@ public class InfoTest extends BaseTest {
     }
 
     @Test
-    public void testEqualsWithDifferentHeights() {
+    void testEqualsWithDifferentHeights() {
         Info info2 = Info.builder()
                 .withSize(100, 79)
                 .withTileSize(50, 40)
@@ -347,7 +350,7 @@ public class InfoTest extends BaseTest {
     }
 
     @Test
-    public void testEqualsWithDifferentTileWidths() {
+    void testEqualsWithDifferentTileWidths() {
         Info info2 = Info.builder()
                 .withSize(100, 80)
                 .withTileSize(49, 40)
@@ -358,7 +361,7 @@ public class InfoTest extends BaseTest {
     }
 
     @Test
-    public void testEqualsWithDifferentTileHeights() {
+    void testEqualsWithDifferentTileHeights() {
         Info info2 = Info.builder()
                 .withSize(100, 80)
                 .withTileSize(50, 39)
@@ -369,7 +372,7 @@ public class InfoTest extends BaseTest {
     }
 
     @Test
-    public void testEqualsWithDifferentMetadatas() {
+    void testEqualsWithDifferentMetadatas() {
         Metadata metadata2 = new Metadata();
         metadata2.setXMP("<dogs/>");
 
@@ -384,7 +387,7 @@ public class InfoTest extends BaseTest {
     }
 
     @Test
-    public void testEqualsWithDifferentNumResolutions() {
+    void testEqualsWithDifferentNumResolutions() {
         Info info2 = Info.builder()
                 .withSize(100, 80)
                 .withTileSize(50, 40)
@@ -395,7 +398,7 @@ public class InfoTest extends BaseTest {
     }
 
     @Test
-    public void testEqualsWithDifferentFormats() {
+    void testEqualsWithDifferentFormats() {
         Info info2 = Info.builder()
                 .withSize(100, 80)
                 .withTileSize(50, 40)
@@ -408,35 +411,35 @@ public class InfoTest extends BaseTest {
     /* getImages() */
 
     @Test
-    public void testGetImages() {
+    void testGetImages() {
         assertEquals(1, instance.getImages().size());
     }
 
     /* getMetadata() */
 
     @Test
-    public void testGetMetadata() {
+    void testGetMetadata() {
         assertEquals("<cats/>", instance.getMetadata().getXMP().orElseThrow());
     }
 
     /* getNumResolutions() */
 
     @Test
-    public void testGetNumResolutions() {
+    void testGetNumResolutions() {
         assertEquals(3, instance.getNumResolutions());
     }
 
     /* adjustedSize() */
 
     @Test
-    public void testGetSize() {
+    void testGetSize() {
         assertEquals(new Dimension(100, 80), instance.getSize());
     }
 
     /* adjustedSize(int) */
 
     @Test
-    public void testGetSizeWithIndex() {
+    void testGetSizeWithIndex() {
         Info.Image image = new Info.Image();
         image.width = 50;
         image.height = 40;
@@ -453,7 +456,7 @@ public class InfoTest extends BaseTest {
     /* getSourceFormat() */
 
     @Test
-    public void testGetSourceFormat() {
+    void testGetSourceFormat() {
         assertEquals(Format.JPG, instance.getSourceFormat());
 
         instance.setSourceFormat(null);
@@ -463,7 +466,7 @@ public class InfoTest extends BaseTest {
     /* hashCode() */
 
     @Test
-    public void testHashCodeWithEqualInstances() {
+    void testHashCodeWithEqualInstances() {
         Metadata metadata2 = new Metadata();
         metadata2.setXMP("<cats/>");
 
@@ -479,7 +482,7 @@ public class InfoTest extends BaseTest {
     }
 
     @Test
-    public void testHashCodeWithDifferentIdentifiers() {
+    void testHashCodeWithDifferentIdentifiers() {
         Info info2 = Info.builder()
                 .withIdentifier(new Identifier("dogs"))
                 .withSize(100, 80)
@@ -491,7 +494,7 @@ public class InfoTest extends BaseTest {
     }
 
     @Test
-    public void testHashCodeWithDifferentWidths() {
+    void testHashCodeWithDifferentWidths() {
         Info info2 = Info.builder()
                 .withSize(99, 80)
                 .withTileSize(50, 40)
@@ -502,7 +505,7 @@ public class InfoTest extends BaseTest {
     }
 
     @Test
-    public void testHashCodeWithDifferentHeights() {
+    void testHashCodeWithDifferentHeights() {
         Info info2 = Info.builder()
                 .withSize(100, 79)
                 .withTileSize(50, 40)
@@ -513,7 +516,7 @@ public class InfoTest extends BaseTest {
     }
 
     @Test
-    public void testHashCodeWithDifferentTileWidths() {
+    void testHashCodeWithDifferentTileWidths() {
         Info info2 = Info.builder()
                 .withSize(100, 80)
                 .withTileSize(49, 40)
@@ -524,7 +527,7 @@ public class InfoTest extends BaseTest {
     }
 
     @Test
-    public void testHashCodeWithDifferentTileHeights() {
+    void testHashCodeWithDifferentTileHeights() {
         Info info2 = Info.builder()
                 .withSize(100, 80)
                 .withTileSize(50, 39)
@@ -535,7 +538,7 @@ public class InfoTest extends BaseTest {
     }
 
     @Test
-    public void testHashCodeWithDifferentMetadatas() {
+    void testHashCodeWithDifferentMetadatas() {
         Metadata metadata2 = new Metadata();
         metadata2.setXMP("<dogs/>");
 
@@ -550,7 +553,7 @@ public class InfoTest extends BaseTest {
     }
 
     @Test
-    public void testHashCodeWithDifferentNumResolutions() {
+    void testHashCodeWithDifferentNumResolutions() {
         Info info2 = Info.builder()
                 .withSize(100, 80)
                 .withTileSize(50, 40)
@@ -561,7 +564,7 @@ public class InfoTest extends BaseTest {
     }
 
     @Test
-    public void testHashCodeWithDifferentFormats() {
+    void testHashCodeWithDifferentFormats() {
         Info info2 = Info.builder()
                 .withSize(100, 80)
                 .withTileSize(50, 40)
@@ -574,7 +577,7 @@ public class InfoTest extends BaseTest {
     /* toJSON() */
 
     @Test
-    public void testToJSONContents() throws Exception {
+    void testToJSONContents() throws Exception {
         assertEquals(
                 "{" +
                         "\"identifier\":\"cats\"," +
@@ -595,14 +598,14 @@ public class InfoTest extends BaseTest {
     }
 
     @Test
-    public void testToJSONRoundTrip() throws Exception {
+    void testToJSONRoundTrip() throws Exception {
         String json = instance.toJSON();
         Info info2 = Info.fromJSON(json);
         assertEquals(instance, info2);
     }
 
     @Test
-    public void testToJSONOmitsNullValues() throws Exception {
+    void testToJSONOmitsNullValues() throws Exception {
         String json = instance.toJSON();
         assertFalse(json.contains("null"));
     }
@@ -610,14 +613,14 @@ public class InfoTest extends BaseTest {
     /* toString() */
 
     @Test
-    public void testToString() throws Exception {
+    void testToString() throws Exception {
         assertEquals(instance.toJSON(), instance.toString());
     }
 
     /* writeAsJSON() */
 
     @Test
-    public void testWriteAsJSON() throws Exception {
+    void testWriteAsJSON() throws Exception {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         instance.writeAsJSON(baos);
         assertArrayEquals(baos.toByteArray(), instance.toJSON().getBytes());

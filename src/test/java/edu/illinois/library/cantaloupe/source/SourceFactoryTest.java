@@ -8,29 +8,28 @@ import edu.illinois.library.cantaloupe.script.DelegateProxy;
 import edu.illinois.library.cantaloupe.script.DelegateProxyService;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class SourceFactoryTest extends BaseTest {
 
     private SourceFactory instance;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         super.setUp();
         instance = new SourceFactory();
     }
 
     @Test
-    public void getAllSources() {
+    void getAllSources() {
         assertEquals(5, SourceFactory.getAllSources().size());
     }
 
     @Test
-    public void newSourceWithValidStaticResolverSimpleClassName()
-            throws Exception {
+    void newSourceWithValidStaticResolverSimpleClassName() throws Exception {
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.SOURCE_STATIC,
                 HttpSource.class.getSimpleName());
@@ -41,8 +40,7 @@ public class SourceFactoryTest extends BaseTest {
     }
 
     @Test
-    public void newSourceWithValidStaticResolverFullClassName()
-            throws Exception {
+    void newSourceWithValidStaticResolverFullClassName() throws Exception {
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.SOURCE_STATIC, HttpSource.class.getName());
 
@@ -52,17 +50,18 @@ public class SourceFactoryTest extends BaseTest {
         assertTrue(source instanceof HttpSource);
     }
 
-    @Test(expected = ClassNotFoundException.class)
-    public void newSourceWithInvalidStaticResolver() throws Exception {
+    @Test
+    void newSourceWithInvalidStaticResolver() {
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.SOURCE_STATIC, "BogusSource");
 
         Identifier identifier = new Identifier("cats");
-        instance.newSource(identifier, null);
+        assertThrows(ClassNotFoundException.class,
+                () -> instance.newSource(identifier, null));
     }
 
     @Test
-    public void newSourceUsingDelegateScript() throws Exception {
+    void newSourceUsingDelegateScript() throws Exception {
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.DELEGATE_SCRIPT_ENABLED, true);
         config.setProperty(Key.DELEGATE_SCRIPT_PATHNAME,
@@ -89,7 +88,7 @@ public class SourceFactoryTest extends BaseTest {
     }
 
     @Test
-    public void getSelectionStrategy() {
+    void getSelectionStrategy() {
         Configuration config = Configuration.getInstance();
 
         config.setProperty(Key.SOURCE_DELEGATE, "false");

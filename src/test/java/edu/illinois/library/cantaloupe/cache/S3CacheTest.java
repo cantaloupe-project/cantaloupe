@@ -10,16 +10,17 @@ import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.operation.Encode;
 import edu.illinois.library.cantaloupe.operation.OperationList;
+import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.ConfigurationConstants;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import edu.illinois.library.cantaloupe.util.AWSClientBuilder;
 import edu.illinois.library.cantaloupe.util.SocketUtils;
 import io.findify.s3mock.S3Mock;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.io.OutputStream;
 import java.net.URI;
@@ -28,8 +29,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
 
-import static org.junit.Assert.*;
-import static org.junit.Assume.*;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assumptions.assumeFalse;
 
 public class S3CacheTest extends AbstractCacheTest {
 
@@ -57,14 +58,16 @@ public class S3CacheTest extends AbstractCacheTest {
     private OperationList opList = new OperationList();
     private S3Cache instance;
 
-    @BeforeClass
-    public static void beforeClass() {
+    @BeforeAll
+    public static void beforeClass() throws Exception {
+        BaseTest.beforeClass();
         startServiceIfNecessary();
         createBucket();
     }
 
-    @AfterClass
-    public static void afterClass() {
+    @AfterAll
+    public static void afterClass() throws Exception {
+        BaseTest.afterClass();
         if (mockS3 != null) {
             mockS3.stop();
         }
@@ -149,7 +152,7 @@ public class S3CacheTest extends AbstractCacheTest {
         return Service.forKey(testConfig.getString(ConfigurationConstants.S3_SERVICE.getKey()));
     }
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         super.setUp();
 
@@ -157,7 +160,7 @@ public class S3CacheTest extends AbstractCacheTest {
         instance.initialize();
     }
 
-    @After
+    @AfterEach
     public void tearDown() throws Exception {
         instance.purge();
         instance.shutdown();
@@ -178,7 +181,7 @@ public class S3CacheTest extends AbstractCacheTest {
     /* getBucketName() */
 
     @Test
-    public void testGetBucketName() {
+    void testGetBucketName() {
         assertEquals(
                 Configuration.getInstance().getString(Key.S3CACHE_BUCKET_NAME),
                 instance.getBucketName());
@@ -188,14 +191,14 @@ public class S3CacheTest extends AbstractCacheTest {
 
     @Test
     @Override
-    public void testGetInfoWithExistingInvalidImage() throws Exception {
+    void testGetInfoWithExistingInvalidImage() throws Exception {
         assumeFalse(Service.S3MOCK.equals(getService()));
 
         super.testGetInfoWithExistingInvalidImage();
     }
 
     @Test
-    public void testGetImageInfoUpdatesLastModifiedTime() throws Exception {
+    void testGetImageInfoUpdatesLastModifiedTime() throws Exception {
         assumeFalse(Service.MINIO.equals(getService())); // this test fails in minio
 
         Configuration.getInstance().setProperty(Key.DERIVATIVE_CACHE_TTL, 1);
@@ -215,7 +218,7 @@ public class S3CacheTest extends AbstractCacheTest {
     /* getObjectKey(Identifier) */
 
     @Test
-    public void testGetObjectKeyWithIdentifier() {
+    void testGetObjectKeyWithIdentifier() {
         assertEquals(
                 "test/info/083425bc68eece64753ec83a25f87230.json",
                 instance.getObjectKey(identifier));
@@ -224,7 +227,7 @@ public class S3CacheTest extends AbstractCacheTest {
     /* getObjectKey(OperationList */
 
     @Test
-    public void testGetObjectKeyWithOperationList() {
+    void testGetObjectKeyWithOperationList() {
         opList.setIdentifier(new Identifier("cats"));
         assertEquals(
                 "test/image/0832c1202da8d382318e329a7c133ea0/4520700b2323f4d1e65e1b2074f43d47",
@@ -234,7 +237,7 @@ public class S3CacheTest extends AbstractCacheTest {
     /* getObjectKeyPrefix() */
 
     @Test
-    public void testGetObjectKeyPrefix() {
+    void testGetObjectKeyPrefix() {
         Configuration config = Configuration.getInstance();
 
         config.setProperty(Key.S3CACHE_OBJECT_KEY_PREFIX, "");
@@ -252,7 +255,7 @@ public class S3CacheTest extends AbstractCacheTest {
 
     @Test
     @Override
-    public void testNewDerivativeImageInputStreamWithNonzeroTTL() throws Exception {
+    void testNewDerivativeImageInputStreamWithNonzeroTTL() throws Exception {
         assumeFalse(Service.AWS.equals(getService()));  // this test fails in AWS
         assumeFalse(Service.S3MOCK.equals(getService()));  // this test fails in s3mock
 
@@ -260,7 +263,7 @@ public class S3CacheTest extends AbstractCacheTest {
     }
 
     @Test
-    public void testNewDerivativeImageInputStreamUpdatesLastModifiedTime()
+    void testNewDerivativeImageInputStreamUpdatesLastModifiedTime()
             throws Exception {
         assumeFalse(Service.MINIO.equals(getService())); // this test fails in minio
 

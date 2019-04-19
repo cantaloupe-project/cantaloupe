@@ -3,15 +3,15 @@ package edu.illinois.library.cantaloupe.image.exif;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import edu.illinois.library.cantaloupe.util.Rational;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import javax.imageio.stream.MemoryCacheImageInputStream;
 import java.io.InputStream;
 import java.nio.file.Files;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class ReaderTest extends BaseTest {
 
@@ -176,20 +176,20 @@ public class ReaderTest extends BaseTest {
         return ifd0;
     }
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         super.setUp();
         instance = new Reader();
     }
 
-    @After
+    @AfterEach
     public void tearDown() throws Exception {
         super.tearDown();
         instance.close();
     }
 
     @Test
-    public void testReadWithLittleEndian() throws Exception {
+    void testReadWithLittleEndian() throws Exception {
         // N.B.: convenient way of swapping byte order:
         // exiftool -all= -tagsfromfile bigendian.jpg -all:all -unsafe -exifbyteorder=little-endian bigendian.jpg
         byte[] exif = Files.readAllBytes(TestUtil.getImage("exif-intel.bin"));
@@ -201,7 +201,7 @@ public class ReaderTest extends BaseTest {
     }
 
     @Test
-    public void testReadWithBigEndian() throws Exception {
+    void testReadWithBigEndian() throws Exception {
         // N.B.: convenient way of swapping byte order:
         // exiftool -all= -tagsfromfile littleendian.jpg -all:all -unsafe -exifbyteorder=big-endian littleendian.jpg
         byte[] exif = Files.readAllBytes(TestUtil.getImage("exif-motorola.bin"));
@@ -212,28 +212,32 @@ public class ReaderTest extends BaseTest {
         assertEquals(expected, actual);
     }
 
-    @Test(expected = IllegalStateException.class)
-    public void testSetSourceCalledConsecutively1() {
+    @Test
+    void testSetSourceCalledConsecutively1() {
         instance.setSource(new byte[] {});
-        instance.setSource(new byte[] {});
+        assertThrows(IllegalStateException.class,
+                () -> instance.setSource(new byte[] {}));
     }
 
-    @Test(expected = IllegalStateException.class)
-    public void testSetSourceCalledConsecutively2() {
+    @Test
+    void testSetSourceCalledConsecutively2() {
         instance.setSource(new MemoryCacheImageInputStream(InputStream.nullInputStream()));
-        instance.setSource(new MemoryCacheImageInputStream(InputStream.nullInputStream()));
+        assertThrows(IllegalStateException.class,
+                () -> instance.setSource(new MemoryCacheImageInputStream(InputStream.nullInputStream())));
     }
 
-    @Test(expected = IllegalStateException.class)
-    public void testSetSourceCalledConsecutively3() {
+    @Test
+    void testSetSourceCalledConsecutively3() {
         instance.setSource(new byte[] {});
-        instance.setSource(new MemoryCacheImageInputStream(InputStream.nullInputStream()));
+        assertThrows(IllegalStateException.class,
+                () -> instance.setSource(new MemoryCacheImageInputStream(InputStream.nullInputStream())));
     }
 
-    @Test(expected = IllegalStateException.class)
-    public void testSetSourceCalledConsecutively4() {
+    @Test
+    void testSetSourceCalledConsecutively4() {
         instance.setSource(new MemoryCacheImageInputStream(InputStream.nullInputStream()));
-        instance.setSource(new byte[] {});
+        assertThrows(IllegalStateException.class,
+                () -> instance.setSource(new byte[] {}));
     }
 
 }

@@ -1,16 +1,17 @@
 package edu.illinois.library.cantaloupe.util;
 
-import org.junit.Test;
+import edu.illinois.library.cantaloupe.test.BaseTest;
+import org.junit.jupiter.api.Test;
 
 import java.util.LinkedList;
 import java.util.List;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
-public class ArrayUtilsTest {
+public class ArrayUtilsTest extends BaseTest {
 
     @Test
-    public void testMergeWithOneArray() {
+    void testMergeWithOneArray() {
         List<byte[]> arrays = new LinkedList<>();
         arrays.add(new byte[] { 0x32 });
 
@@ -18,7 +19,7 @@ public class ArrayUtilsTest {
     }
 
     @Test
-    public void testMergeWithMultipleArrays() {
+    void testMergeWithMultipleArrays() {
         List<byte[]> arrays = new LinkedList<>();
         arrays.add(new byte[] { 0x32, 0x38 });
         arrays.add(new byte[] { 0x1f });

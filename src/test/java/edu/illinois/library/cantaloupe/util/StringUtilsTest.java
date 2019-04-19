@@ -3,42 +3,36 @@ package edu.illinois.library.cantaloupe.util;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.test.BaseTest;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.regex.Pattern;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class StringUtilsTest extends BaseTest {
 
     @Test
-    public void testDecodeSlashes() {
+    void testDecodeSlashes() {
         Configuration.getInstance().setProperty(Key.SLASH_SUBSTITUTE, "$$");
         assertEquals("cats", StringUtils.decodeSlashes("cats"));
         assertEquals("ca/ts", StringUtils.decodeSlashes("ca$$ts"));
     }
 
     @Test
-    public void testEscapeHTML() {
+    void testEscapeHTML() {
         String html = "the quick brown <script type=\"text/javascript\">alert('hi');</script> fox";
         String expected = "the quick brown &#60;script type=&#34;text/javascript&#34;&#62;alert('hi');&#60;/script&#62; fox";
         assertEquals(expected, StringUtils.escapeHTML(html));
     }
 
     @Test
-    public void testMd5() {
+    void testMD5() {
         assertEquals("0832c1202da8d382318e329a7c133ea0",
                 StringUtils.md5("cats"));
     }
 
     @Test
-    public void testMD5() {
-        assertEquals("0832c1202da8d382318e329a7c133ea0",
-                StringUtils.md5("cats"));
-    }
-
-    @Test
-    public void testRemoveTrailingZeroes() {
+    void testRemoveTrailingZeroes() {
         // with floats
         assertEquals("0", StringUtils.removeTrailingZeroes(0.0f));
         assertEquals("0.5", StringUtils.removeTrailingZeroes(0.5f));
@@ -57,7 +51,7 @@ public class StringUtilsTest extends BaseTest {
     }
 
     @Test
-    public void testSanitizeWithStrings() {
+    void testSanitizeWithStrings() {
         assertEquals("", StringUtils.sanitize("dirt", "dirt"));
         assertEquals("y", StringUtils.sanitize("dirty", "dirt"));
         assertEquals("dirty", StringUtils.sanitize("dir1ty", "1"));
@@ -68,7 +62,7 @@ public class StringUtilsTest extends BaseTest {
     }
 
     @Test
-    public void testSanitizeWithPatterns() {
+    void testSanitizeWithPatterns() {
         assertEquals("", StringUtils.sanitize("dirt", Pattern.compile("dirt")));
         assertEquals("y", StringUtils.sanitize("dirty", Pattern.compile("dirt")));
         assertEquals("dirty", StringUtils.sanitize("dir1ty", Pattern.compile("1")));
@@ -81,14 +75,14 @@ public class StringUtilsTest extends BaseTest {
     }
 
     @Test
-    public void testStripEndWithMatch() {
+    void testStripEndWithMatch() {
         String str = "ababab";
         String toStrip = "ab";
         assertEquals("abab", StringUtils.stripEnd(str, toStrip));
     }
 
     @Test
-    public void testStripEndWithoutMatch() {
+    void testStripEndWithoutMatch() {
         String str = "ababab";
         String toStrip = "c";
         assertSame(str, StringUtils.stripEnd(str, toStrip));
@@ -98,14 +92,14 @@ public class StringUtilsTest extends BaseTest {
     }
 
     @Test
-    public void testStripStartWithMatch() {
+    void testStripStartWithMatch() {
         String str = "abcdefg";
         String toStrip = "ab";
         assertEquals("cdefg", StringUtils.stripStart(str, toStrip));
     }
 
     @Test
-    public void testStripStartWithoutMatch() {
+    void testStripStartWithoutMatch() {
         String str = "ababab";
         String toStrip = "c";
         assertSame(str, StringUtils.stripStart(str, toStrip));
@@ -114,32 +108,34 @@ public class StringUtilsTest extends BaseTest {
         assertSame(str, StringUtils.stripStart(str, toStrip));
     }
 
-    @Test(expected = NumberFormatException.class)
-    public void testToBooleanWithUnrecognizedValue() {
-        StringUtils.toBoolean("cats");
+    @Test
+    void testToBooleanWithUnrecognizedValue() {
+        assertThrows(NumberFormatException.class,
+                () -> StringUtils.toBoolean("cats"));
     }
 
     @Test
-    public void testToBooleanWithRecognizedValue() {
+    void testToBooleanWithRecognizedValue() {
         assertFalse(StringUtils.toBoolean("0"));
         assertFalse(StringUtils.toBoolean("false"));
         assertTrue(StringUtils.toBoolean("1"));
         assertTrue(StringUtils.toBoolean("true"));
     }
 
-    @Test(expected = NumberFormatException.class)
-    public void testToByteSizeWithIllegalArgument() {
-        StringUtils.toByteSize("cats");
+    @Test
+    void testToByteSizeWithIllegalArgument() {
+        assertThrows(NumberFormatException.class,
+                () -> StringUtils.toByteSize("cats"));
     }
 
     @Test
-    public void testToByteSizeWithNumber() {
+    void testToByteSizeWithNumber() {
         assertEquals(254254254, StringUtils.toByteSize("254254254"));
         assertEquals(255, StringUtils.toByteSize("254.9"));
     }
 
     @Test
-    public void testToByteSizeWithKB() {
+    void testToByteSizeWithKB() {
         long expected = 25 * 1024;
         assertEquals(expected, StringUtils.toByteSize("25K"));
         assertEquals(expected, StringUtils.toByteSize("25KB"));
@@ -152,7 +148,7 @@ public class StringUtilsTest extends BaseTest {
     }
 
     @Test
-    public void testToByteSizeWithMB() {
+    void testToByteSizeWithMB() {
         long expected = 25 * (long) Math.pow(1024, 2);
         assertEquals(expected, StringUtils.toByteSize("25M"));
         assertEquals(expected, StringUtils.toByteSize("25MB"));
@@ -165,7 +161,7 @@ public class StringUtilsTest extends BaseTest {
     }
 
     @Test
-    public void testToByteSizeWithGB() {
+    void testToByteSizeWithGB() {
         long expected = 25 * (long) Math.pow(1024, 3);
         assertEquals(expected, StringUtils.toByteSize("25G"));
         assertEquals(expected, StringUtils.toByteSize("25GB"));
@@ -178,7 +174,7 @@ public class StringUtilsTest extends BaseTest {
     }
 
     @Test
-    public void testToByteSizeWithTB() {
+    void testToByteSizeWithTB() {
         long expected = 25 * (long) Math.pow(1024, 4);
         assertEquals(expected, StringUtils.toByteSize("25T"));
         assertEquals(expected, StringUtils.toByteSize("25TB"));
@@ -191,7 +187,7 @@ public class StringUtilsTest extends BaseTest {
     }
 
     @Test
-    public void testToByteSizeWithPB() {
+    void testToByteSizeWithPB() {
         long expected = 25 * (long) Math.pow(1024, 5);
         assertEquals(expected, StringUtils.toByteSize("25P"));
         assertEquals(expected, StringUtils.toByteSize("25PB"));
@@ -204,7 +200,7 @@ public class StringUtilsTest extends BaseTest {
     }
 
     @Test
-    public void testTrimXMPWithTrimmableXMP() {
+    void testTrimXMPWithTrimmableXMP() {
         String xmp = "<?xpacket id=\"cats\"?>" +
                 "<x:xmpmeta bla=\"dogs\">" +
                 "<rdf:RDF foxes=\"bugs\">" +
@@ -216,16 +212,17 @@ public class StringUtilsTest extends BaseTest {
     }
 
     @Test
-    public void testTrimXMPWithNonTrimmableXMP() {
+    void testTrimXMPWithNonTrimmableXMP() {
         String xmp = "<rdf:RDF foxes=\"bugs\">" +
                 "</rdf:RDF>";
         String result = StringUtils.trimXMP(xmp);
         assertSame(xmp, result);
     }
 
-    @Test(expected = NullPointerException.class)
-    public void testTrimXMPWithNullArgument() {
-        StringUtils.trimXMP(null);
+    @Test
+    void testTrimXMPWithNullArgument() {
+        assertThrows(NullPointerException.class,
+                () -> StringUtils.trimXMP(null));
     }
 
 }

@@ -35,7 +35,7 @@ public class BMPImageReaderPerformance extends BMPImageReaderTest {
 
     @TearDown
     @Override
-    public void tearDown() {
+    public void tearDown() throws Exception {
         super.tearDown();
     }
 

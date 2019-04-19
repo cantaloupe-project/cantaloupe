@@ -2,35 +2,35 @@ package edu.illinois.library.cantaloupe.image.iptc;
 
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import javax.imageio.stream.MemoryCacheImageInputStream;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.util.List;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class ReaderTest extends BaseTest {
 
     private Reader instance;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         super.setUp();
         instance = new Reader();
     }
 
-    @After
+    @AfterEach
     public void tearDown() throws Exception {
         super.tearDown();
         instance.close();
     }
 
     @Test
-    public void testReadWithValidBytes() throws Exception {
+    void testReadWithValidBytes() throws Exception {
         byte[] iptc = Files.readAllBytes(TestUtil.getImage("iptc.bin"));
         instance.setSource(iptc);
 
@@ -61,34 +61,38 @@ public class ReaderTest extends BaseTest {
     }
 
     @Test
-    public void testReadWithInvalidBytes() throws Exception {
+    void testReadWithInvalidBytes() throws Exception {
         byte[] iptc = new byte[] { 0x02, 0x05, 0x09 }; // random bytes
         instance.setSource(iptc);
         assertEquals(0, instance.read().size());
     }
 
-    @Test(expected = IllegalStateException.class)
-    public void testSetSourceCalledConsecutively1() {
+    @Test
+    void testSetSourceCalledConsecutively1() {
         instance.setSource(new byte[] {});
-        instance.setSource(new byte[] {});
+        assertThrows(IllegalStateException.class,
+                () -> instance.setSource(new byte[] {}));
     }
 
-    @Test(expected = IllegalStateException.class)
-    public void testSetSourceCalledConsecutively2() {
+    @Test
+    void testSetSourceCalledConsecutively2() {
         instance.setSource(new MemoryCacheImageInputStream(InputStream.nullInputStream()));
-        instance.setSource(new MemoryCacheImageInputStream(InputStream.nullInputStream()));
+        assertThrows(IllegalStateException.class,
+                () -> instance.setSource(new MemoryCacheImageInputStream(InputStream.nullInputStream())));
     }
 
-    @Test(expected = IllegalStateException.class)
-    public void testSetSourceCalledConsecutively3() {
+    @Test
+    void testSetSourceCalledConsecutively3() {
         instance.setSource(new byte[] {});
-        instance.setSource(new MemoryCacheImageInputStream(InputStream.nullInputStream()));
+        assertThrows(IllegalStateException.class,
+                () -> instance.setSource(new MemoryCacheImageInputStream(InputStream.nullInputStream())));
     }
 
-    @Test(expected = IllegalStateException.class)
-    public void testSetSourceCalledConsecutively4() {
+    @Test
+    void testSetSourceCalledConsecutively4() {
         instance.setSource(new MemoryCacheImageInputStream(InputStream.nullInputStream()));
-        instance.setSource(new byte[] {});
+        assertThrows(IllegalStateException.class,
+                () -> instance.setSource(new byte[] {}));
     }
 
 }

@@ -9,8 +9,8 @@ import edu.illinois.library.cantaloupe.http.Client;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import edu.illinois.library.cantaloupe.util.SocketUtils;
-import org.junit.After;
-import org.junit.Before;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -36,7 +36,7 @@ public abstract class ResourceTest extends BaseTest {
     }
 
     @Override
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         super.setUp();
 
@@ -74,7 +74,7 @@ public abstract class ResourceTest extends BaseTest {
     }
 
     @Override
-    @After
+    @AfterEach
     public void tearDown() throws Exception {
         super.tearDown();
         appServer.stop();

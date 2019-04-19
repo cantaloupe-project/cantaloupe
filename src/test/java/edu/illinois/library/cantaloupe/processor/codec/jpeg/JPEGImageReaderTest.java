@@ -5,12 +5,12 @@ import edu.illinois.library.cantaloupe.image.Compression;
 import edu.illinois.library.cantaloupe.processor.codec.AbstractIIOImageReader;
 import edu.illinois.library.cantaloupe.processor.codec.AbstractImageReaderTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class JPEGImageReaderTest extends AbstractImageReaderTest {
 

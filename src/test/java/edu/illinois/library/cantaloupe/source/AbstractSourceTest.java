@@ -2,12 +2,14 @@ package edu.illinois.library.cantaloupe.source;
 
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.test.BaseTest;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.NoSuchFileException;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 abstract class AbstractSourceTest extends BaseTest {
 
@@ -17,7 +19,7 @@ abstract class AbstractSourceTest extends BaseTest {
     abstract void useBasicLookupStrategy();
     abstract void useScriptLookupStrategy();
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         super.setUp();
         useBasicLookupStrategy();
@@ -26,7 +28,7 @@ abstract class AbstractSourceTest extends BaseTest {
     /* checkAccess() */
 
     @Test
-    public void testCheckAccessUsingBasicLookupStrategyWithPresentReadableImage()
+    void testCheckAccessUsingBasicLookupStrategyWithPresentReadableImage()
             throws Exception {
         try {
             initializeEndpoint();
@@ -37,22 +39,22 @@ abstract class AbstractSourceTest extends BaseTest {
         }
     }
 
-    @Test(expected = NoSuchFileException.class)
-    public void testCheckAccessUsingBasicLookupStrategyWithMissingImage()
+    @Test
+    void testCheckAccessUsingBasicLookupStrategyWithMissingImage()
             throws Exception {
         try {
             initializeEndpoint();
 
             Source instance = newInstance();
             instance.setIdentifier(new Identifier("bogus"));
-            instance.checkAccess();
+            assertThrows(NoSuchFileException.class, instance::checkAccess);
         } finally {
             destroyEndpoint();
         }
     }
 
     @Test
-    public void testCheckAccessInvokedMultipleTimes() throws Exception {
+    void testCheckAccessInvokedMultipleTimes() throws Exception {
         try {
             initializeEndpoint();
 
@@ -68,7 +70,7 @@ abstract class AbstractSourceTest extends BaseTest {
     /* getFormat() */
 
     @Test
-    public void testGetFormatInvokedMultipleTimes() throws Exception {
+    void testGetFormatInvokedMultipleTimes() throws Exception {
         try {
             initializeEndpoint();
 
@@ -84,7 +86,7 @@ abstract class AbstractSourceTest extends BaseTest {
     /* newStreamFactory() */
 
     @Test
-    public void testNewStreamFactoryInvokedMultipleTimes() throws Exception {
+    void testNewStreamFactoryInvokedMultipleTimes() throws Exception {
         Source instance = newInstance();
         if (instance instanceof StreamSource) {
             try {
@@ -101,7 +103,7 @@ abstract class AbstractSourceTest extends BaseTest {
     }
 
     @Test
-    public void testNewStreamFactoryReturnedInstanceIsReusable()
+    void testNewStreamFactoryReturnedInstanceIsReusable()
             throws Exception {
         Source instance = newInstance();
         if (instance instanceof StreamSource) {

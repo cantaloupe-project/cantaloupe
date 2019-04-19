@@ -3,14 +3,14 @@ package edu.illinois.library.cantaloupe.source;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.test.BaseTest;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class LookupStrategyTest extends BaseTest {
 
     @Test
-    public void testFromWithBasicStrategy() {
+    void testFromWithBasicStrategy() {
         final Configuration config = Configuration.getInstance();
         final Key key = Key.FILESYSTEMSOURCE_LOOKUP_STRATEGY;
         config.setProperty(key, "BasicLookupStrategy");
@@ -20,7 +20,7 @@ public class LookupStrategyTest extends BaseTest {
     }
 
     @Test
-    public void testFromWithDelegateScriptStrategy() {
+    void testFromWithDelegateScriptStrategy() {
         final Configuration config = Configuration.getInstance();
         final Key key = Key.FILESYSTEMSOURCE_LOOKUP_STRATEGY;
         config.setProperty(key, "ScriptLookupStrategy");
@@ -30,7 +30,7 @@ public class LookupStrategyTest extends BaseTest {
     }
 
     @Test
-    public void testFromWithIllegalStrategy() {
+    void testFromWithIllegalStrategy() {
         final Configuration config = Configuration.getInstance();
         final Key key = Key.FILESYSTEMSOURCE_LOOKUP_STRATEGY;
         config.setProperty(key, "bogus");

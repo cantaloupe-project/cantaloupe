@@ -1,30 +1,31 @@
 package edu.illinois.library.cantaloupe.processor.codec.gif;
 
-import edu.illinois.library.cantaloupe.processor.codec.gif.GIFMetadataReader;
+import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import javax.imageio.ImageIO;
 import javax.imageio.stream.ImageInputStream;
 import java.io.IOException;
 import java.nio.file.Path;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
-public class GIFMetadataReaderTest {
+public class GIFMetadataReaderTest extends BaseTest {
 
     private GIFMetadataReader instance;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
+        super.setUp();
         instance = new GIFMetadataReader();
     }
 
     /* getDelayTime() */
 
     @Test
-    public void testGetDelayTime() throws Exception {
+    void testGetDelayTime() throws Exception {
         Path file = TestUtil.getImage("gif-animated-looping.gif");
         try (ImageInputStream is = ImageIO.createImageInputStream(file.toFile())) {
             instance.setSource(is);
@@ -35,7 +36,7 @@ public class GIFMetadataReaderTest {
     /* getHeight() */
 
     @Test
-    public void testGetHeightWithValidImage() throws Exception {
+    void testGetHeightWithValidImage() throws Exception {
         Path file = TestUtil.getImage("gif");
         try (ImageInputStream is = ImageIO.createImageInputStream(file.toFile())) {
             instance.setSource(is);
@@ -43,24 +44,24 @@ public class GIFMetadataReaderTest {
         }
     }
 
-    @Test(expected = IOException.class)
-    public void testGetHeightWithInvalidImage() throws Exception {
+    @Test
+    void testGetHeightWithInvalidImage() throws Exception {
         Path file = TestUtil.getImage("jpg");
         try (ImageInputStream is = ImageIO.createImageInputStream(file.toFile())) {
             instance.setSource(is);
-            instance.getHeight();
+            assertThrows(IOException.class, () -> instance.getHeight());
         }
     }
 
-    @Test(expected = IllegalStateException.class)
-    public void testGetHeightWithSourceNotSet() throws Exception {
-        instance.getHeight();
+    @Test
+    void testGetHeightWithSourceNotSet() {
+        assertThrows(IllegalStateException.class, () -> instance.getHeight());
     }
 
     /* getLoopCount() */
 
     @Test
-    public void testGetLoopCountWithLoopingImage() throws Exception {
+    void testGetLoopCountWithLoopingImage() throws Exception {
         Path file = TestUtil.getImage("gif-animated-looping.gif");
         try (ImageInputStream is = ImageIO.createImageInputStream(file.toFile())) {
             instance.setSource(is);
@@ -69,7 +70,7 @@ public class GIFMetadataReaderTest {
     }
 
     @Test
-    public void testGetLoopCountWithNonLoopingImage() throws Exception {
+    void testGetLoopCountWithNonLoopingImage() throws Exception {
         Path file = TestUtil.getImage("gif-animated-non-looping.gif");
         try (ImageInputStream is = ImageIO.createImageInputStream(file.toFile())) {
             instance.setSource(is);
@@ -80,7 +81,7 @@ public class GIFMetadataReaderTest {
     /* getWidth() */
 
     @Test
-    public void testGetWidthWithValidImage() throws Exception {
+    void testGetWidthWithValidImage() throws Exception {
         Path file = TestUtil.getImage("gif");
         try (ImageInputStream is = ImageIO.createImageInputStream(file.toFile())) {
             instance.setSource(is);
@@ -88,24 +89,24 @@ public class GIFMetadataReaderTest {
         }
     }
 
-    @Test(expected = IOException.class)
-    public void testGetWidthWithInvalidImage() throws Exception {
+    @Test
+    void testGetWidthWithInvalidImage() throws Exception {
         Path file = TestUtil.getImage("jpg");
         try (ImageInputStream is = ImageIO.createImageInputStream(file.toFile())) {
             instance.setSource(is);
-            instance.getWidth();
+            assertThrows(IOException.class, () -> instance.getWidth());
         }
     }
 
-    @Test(expected = IllegalStateException.class)
-    public void testGetWidthWithSourceNotSet() throws Exception {
-        instance.getWidth();
+    @Test
+    void testGetWidthWithSourceNotSet() {
+        assertThrows(IllegalStateException.class, () -> instance.getWidth());
     }
 
     /* getXMP() */
 
     @Test
-    public void testGetXMPWithValidImageContainingXMP() throws Exception {
+    void testGetXMPWithValidImageContainingXMP() throws Exception {
         Path file = TestUtil.getImage("gif-xmp.gif");
         try (ImageInputStream is = ImageIO.createImageInputStream(file.toFile())) {
             instance.setSource(is);
@@ -117,7 +118,7 @@ public class GIFMetadataReaderTest {
     }
 
     @Test
-    public void testGetXMPWithValidImageNotContainingXMP() throws Exception {
+    void testGetXMPWithValidImageNotContainingXMP() throws Exception {
         Path file = TestUtil.getImage("gif");
         try (ImageInputStream is = ImageIO.createImageInputStream(file.toFile())) {
             instance.setSource(is);
@@ -125,18 +126,18 @@ public class GIFMetadataReaderTest {
         }
     }
 
-    @Test(expected = IOException.class)
-    public void testGetXMPWithInvalidImage() throws Exception {
+    @Test
+    void testGetXMPWithInvalidImage() throws Exception {
         Path file = TestUtil.getImage("jpg");
         try (ImageInputStream is = ImageIO.createImageInputStream(file.toFile())) {
             instance.setSource(is);
-            instance.getXMP();
+            assertThrows(IOException.class, () -> instance.getXMP());
         }
     }
 
-    @Test(expected = IllegalStateException.class)
-    public void testGetXMPWithSourceNotSet() throws Exception {
-        instance.getXMP();
+    @Test
+    void testGetXMPWithSourceNotSet() {
+        assertThrows(IllegalStateException.class, () -> instance.getXMP());
     }
 
 }

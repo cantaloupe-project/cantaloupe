@@ -13,21 +13,21 @@ import edu.illinois.library.cantaloupe.script.DelegateProxy;
 import edu.illinois.library.cantaloupe.script.DelegateProxyService;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class ImageInfoFactoryTest extends BaseTest {
 
     private ImageInfoFactory instance;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         super.setUp();
 
@@ -49,32 +49,32 @@ public class ImageInfoFactoryTest extends BaseTest {
     }
 
     @Test
-    public void testNewImageInfoContext() {
+    void testNewImageInfoContext() {
         ImageInfo<String,Object> info = invokeNewImageInfo();
         assertEquals("http://iiif.io/api/image/2/context.json",
                 info.get("@context"));
     }
 
     @Test
-    public void testNewImageInfoID() {
+    void testNewImageInfoID() {
         ImageInfo<String,Object> info = invokeNewImageInfo();
         assertEquals("http://example.org/bla", info.get("@id"));
     }
 
     @Test
-    public void testNewImageInfoProtocol() {
+    void testNewImageInfoProtocol() {
         ImageInfo<String,Object> info = invokeNewImageInfo();
         assertEquals("http://iiif.io/api/image", info.get("protocol"));
     }
 
     @Test
-    public void testNewImageInfoWidth() {
+    void testNewImageInfoWidth() {
         ImageInfo<String,Object> info = invokeNewImageInfo();
         assertEquals(1500, info.get("width"));
     }
 
     @Test
-    public void testNewImageInfoWidthWithRotatedImage() {
+    void testNewImageInfoWidthWithRotatedImage() {
         final String imageURI = "http://example.org/bla";
         final Info info = Info.builder()
                 .withSize(1500, 1200)
@@ -92,7 +92,7 @@ public class ImageInfoFactoryTest extends BaseTest {
     }
 
     @Test
-    public void testNewImageInfoWidthWithScaleConstrainedImage() {
+    void testNewImageInfoWidthWithScaleConstrainedImage() {
         final String imageURI = "http://example.org/bla";
         final Info info = Info.builder()
                 .withSize(1499, 1199) // test rounding
@@ -104,13 +104,13 @@ public class ImageInfoFactoryTest extends BaseTest {
     }
 
     @Test
-    public void testNewImageInfoHeight() {
+    void testNewImageInfoHeight() {
         ImageInfo<String,Object> info = invokeNewImageInfo();
         assertEquals(1200, info.get("height"));
     }
 
     @Test
-    public void testNewImageInfoHeightWithRotatedImage() {
+    void testNewImageInfoHeightWithRotatedImage() {
         final String imageURI = "http://example.org/bla";
         final Info info = Info.builder()
                 .withSize(1500, 1200)
@@ -128,7 +128,7 @@ public class ImageInfoFactoryTest extends BaseTest {
     }
 
     @Test
-    public void testNewImageInfoHeightWithScaleConstrainedImage() {
+    void testNewImageInfoHeightWithScaleConstrainedImage() {
         final String imageURI = "http://example.org/bla";
         final Info info = Info.builder()
                 .withSize(1499, 1199) // test rounding
@@ -140,7 +140,7 @@ public class ImageInfoFactoryTest extends BaseTest {
     }
 
     @Test
-    public void testNewImageInfoSizes() {
+    void testNewImageInfoSizes() {
         ImageInfo<String, Object> imageInfo = invokeNewImageInfo();
 
         @SuppressWarnings("unchecked")
@@ -160,7 +160,7 @@ public class ImageInfoFactoryTest extends BaseTest {
     }
 
     @Test
-    public void testNewImageInfoSizesMinSize() {
+    void testNewImageInfoSizesMinSize() {
         instance.setMinSize(500);
         ImageInfo<String, Object> imageInfo = invokeNewImageInfo();
 
@@ -175,7 +175,7 @@ public class ImageInfoFactoryTest extends BaseTest {
     }
 
     @Test
-    public void testNewImageInfoSizesMaxSize() {
+    void testNewImageInfoSizesMaxSize() {
         instance.setMaxPixels(10000);
         ImageInfo<String, Object> imageInfo = invokeNewImageInfo();
 
@@ -188,7 +188,7 @@ public class ImageInfoFactoryTest extends BaseTest {
     }
 
     @Test
-    public void testNewImageInfoSizesWithRotatedImage() {
+    void testNewImageInfoSizesWithRotatedImage() {
         final String imageURI = "http://example.org/bla";
         final Info info = Info.builder()
                 .withSize(1500, 1200)
@@ -219,7 +219,7 @@ public class ImageInfoFactoryTest extends BaseTest {
     }
 
     @Test
-    public void testNewImageInfoSizesWithScaleConstrainedImage() {
+    void testNewImageInfoSizesWithScaleConstrainedImage() {
         final String imageURI = "http://example.org/bla";
         final Info info = Info.builder()
                 .withSize(1500, 1200)
@@ -242,7 +242,7 @@ public class ImageInfoFactoryTest extends BaseTest {
     }
 
     @Test
-    public void testNewImageInfoTilesWithUntiledMonoResolutionImage() {
+    void testNewImageInfoTilesWithUntiledMonoResolutionImage() {
         ImageInfo<String, Object> imageInfo = invokeNewImageInfo();
 
         @SuppressWarnings("unchecked")
@@ -261,7 +261,7 @@ public class ImageInfoFactoryTest extends BaseTest {
     }
 
     @Test
-    public void testNewImageInfoTilesWithUntiledMultiResolutionImage() {
+    void testNewImageInfoTilesWithUntiledMultiResolutionImage() {
         final String imageURI = "http://example.org/bla";
         final Info info = Info.builder()
                 .withSize(3000, 2000)
@@ -287,7 +287,7 @@ public class ImageInfoFactoryTest extends BaseTest {
 
 
     @Test
-    public void testNewImageInfoMinTileSize() {
+    void testNewImageInfoMinTileSize() {
         final String imageURI = "http://example.org/bla";
         Info info = Info.builder()
                 .withSize(2000, 2000)
@@ -305,7 +305,7 @@ public class ImageInfoFactoryTest extends BaseTest {
     }
 
     @Test
-    public void testNewImageInfoTilesWithRotatedImage() {
+    void testNewImageInfoTilesWithRotatedImage() {
         final String imageURI = "http://example.org/bla";
         Info info = Info.builder()
                 .withSize(64, 56)
@@ -328,7 +328,7 @@ public class ImageInfoFactoryTest extends BaseTest {
     }
 
     @Test
-    public void testNewImageInfoTilesWithScaleConstrainedImage() {
+    void testNewImageInfoTilesWithScaleConstrainedImage() {
         final String imageURI = "http://example.org/bla";
         Info info = Info.builder()
                 .withSize(64, 56)
@@ -345,7 +345,7 @@ public class ImageInfoFactoryTest extends BaseTest {
     }
 
     @Test
-    public void testNewImageInfoTilesWithTiledImage() {
+    void testNewImageInfoTilesWithTiledImage() {
         final String imageURI = "http://example.org/bla";
         Info info = Info.builder()
                 .withSize(64, 56)
@@ -366,14 +366,14 @@ public class ImageInfoFactoryTest extends BaseTest {
     }
 
     @Test
-    public void testNewImageInfoProfile() {
+    void testNewImageInfoProfile() {
         ImageInfo<String, Object> imageInfo = invokeNewImageInfo();
         List<?> profile = (List<?>) imageInfo.get("profile");
         assertEquals("http://iiif.io/api/image/2/level2.json", profile.get(0));
     }
 
     @Test
-    public void testNewImageInfoFormats() {
+    void testNewImageInfoFormats() {
         ImageInfo<String, Object> imageInfo = invokeNewImageInfo();
         List<?> profile = (List<?>) imageInfo.get("profile");
         // If some are present, we will assume the rest are. (The exact
@@ -382,7 +382,7 @@ public class ImageInfoFactoryTest extends BaseTest {
     }
 
     @Test
-    public void testNewImageInfoQualities() {
+    void testNewImageInfoQualities() {
         ImageInfo<String, Object> imageInfo = invokeNewImageInfo();
         List<?> profile = (List<?>) imageInfo.get("profile");
         // If some are present, we will assume the rest are. (The exact
@@ -391,7 +391,7 @@ public class ImageInfoFactoryTest extends BaseTest {
     }
 
     @Test
-    public void testNewImageInfoMaxAreaWithPositiveMaxPixels() {
+    void testNewImageInfoMaxAreaWithPositiveMaxPixels() {
         final int maxPixels = 100;
         instance.setMaxPixels(maxPixels);
 
@@ -401,7 +401,7 @@ public class ImageInfoFactoryTest extends BaseTest {
     }
 
     @Test
-    public void testNewImageInfoMaxAreaWithZeroMaxPixels() {
+    void testNewImageInfoMaxAreaWithZeroMaxPixels() {
         final int maxPixels = 0;
         instance.setMaxPixels(maxPixels);
 
@@ -411,7 +411,7 @@ public class ImageInfoFactoryTest extends BaseTest {
     }
 
     @Test
-    public void testNewImageInfoMaxAreaWithAllowUpscalingDisabled() {
+    void testNewImageInfoMaxAreaWithAllowUpscalingDisabled() {
         final int maxPixels = 2000000;
         instance.setMaxPixels(maxPixels);
         instance.setMaxScale(1.0);
@@ -422,7 +422,7 @@ public class ImageInfoFactoryTest extends BaseTest {
     }
 
     @Test
-    public void testNewImageInfoSupports() {
+    void testNewImageInfoSupports() {
         ImageInfo<String, Object> imageInfo = invokeNewImageInfo();
 
         List<?> profile = (List<?>) imageInfo.get("profile");
@@ -437,7 +437,7 @@ public class ImageInfoFactoryTest extends BaseTest {
     }
 
     @Test
-    public void testNewImageInfoSupportsWhenUpscalingIsAllowed() {
+    void testNewImageInfoSupportsWhenUpscalingIsAllowed() {
         instance.setMaxScale(9.0);
         ImageInfo<String, Object> imageInfo = invokeNewImageInfo();
 
@@ -447,7 +447,7 @@ public class ImageInfoFactoryTest extends BaseTest {
     }
 
     @Test
-    public void testNewImageInfoSupportsWhenUpscalingIsDisallowed() {
+    void testNewImageInfoSupportsWhenUpscalingIsDisallowed() {
         instance.setMaxScale(1.0);
         ImageInfo<String, Object> imageInfo = invokeNewImageInfo();
 
@@ -457,7 +457,7 @@ public class ImageInfoFactoryTest extends BaseTest {
     }
 
     @Test
-    public void testNewImageInfoSupportsWithScaleConstraint() {
+    void testNewImageInfoSupportsWithScaleConstraint() {
         final String imageURI = "http://example.org/bla";
         final Info info = Info.builder().withSize(1500, 1200).build();
         ImageInfo<String, Object> imageInfo = instance.newImageInfo(
@@ -469,7 +469,7 @@ public class ImageInfoFactoryTest extends BaseTest {
     }
 
     @Test
-    public void testNewImageInfoDelegateKeys() throws Exception {
+    void testNewImageInfoDelegateKeys() throws Exception {
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.DELEGATE_SCRIPT_ENABLED, true);
         config.setProperty(Key.DELEGATE_SCRIPT_PATHNAME,

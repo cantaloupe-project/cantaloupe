@@ -1,14 +1,14 @@
 package edu.illinois.library.cantaloupe.processor;
 
 import edu.illinois.library.cantaloupe.image.Format;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class UnsupportedSourceFormatExceptionTest {
 
     @Test
-    public void testConstructor4WithKnownFormat() {
+    void testConstructor4WithKnownFormat() {
         Exception e = new UnsupportedSourceFormatException(
                 new MockStreamProcessor(), Format.JPG);
         assertEquals(MockStreamProcessor.class.getSimpleName() + " does not support the JPEG source format",
@@ -16,7 +16,7 @@ public class UnsupportedSourceFormatExceptionTest {
     }
 
     @Test
-    public void testConstructor4WithUnknownFormat() {
+    void testConstructor4WithUnknownFormat() {
         Exception e = new UnsupportedSourceFormatException(
                 new MockStreamProcessor(), Format.UNKNOWN);
         assertEquals("Unknown source format", e.getMessage());

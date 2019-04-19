@@ -4,9 +4,8 @@ import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.http.Headers;
 import edu.illinois.library.cantaloupe.http.Method;
 import edu.illinois.library.cantaloupe.http.Response;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-import java.util.Arrays;
 import java.util.List;
 
 import static edu.illinois.library.cantaloupe.test.Assert.HTTPAssert.*;
@@ -25,17 +24,17 @@ public class LandingResourceTest extends ResourceTest {
     }
 
     @Test
-    public void testGET() {
+    void testGET() {
         assertStatus(200, getHTTPURI(""));
     }
 
     @Test
-    public void testGETResponseBody() {
+    void testGETResponseBody() {
         assertRepresentationContains("<body", getHTTPURI(""));
     }
 
     @Test
-    public void testGETResponseHeaders() throws Exception {
+    void testGETResponseHeaders() throws Exception {
         client = newClient("");
         Response response = client.send();
         Headers headers = response.getHeaders();
@@ -59,7 +58,7 @@ public class LandingResourceTest extends ResourceTest {
     }
 
     @Test
-    public void testOPTIONS() throws Exception {
+    void testOPTIONS() throws Exception {
         client = newClient("");
         client.setMethod(Method.OPTIONS);
         Response response = client.send();

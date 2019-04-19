@@ -3,16 +3,16 @@ package edu.illinois.library.cantaloupe.cache;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.test.BaseTest;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class InfoCacheTest extends BaseTest {
 
     private InfoCache instance;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         super.setUp();
 
@@ -22,7 +22,7 @@ public class InfoCacheTest extends BaseTest {
     /* get() */
 
     @Test
-    public void testGetWithHit() {
+    void testGetWithHit() {
         final Identifier identifier = new Identifier("jpg");
         final Info info = new Info();
 
@@ -33,7 +33,7 @@ public class InfoCacheTest extends BaseTest {
     }
 
     @Test
-    public void testGetWithMiss() {
+    void testGetWithMiss() {
         final Identifier identifier = new Identifier("jpg");
 
         Info actualInfo = instance.get(identifier);
@@ -43,14 +43,14 @@ public class InfoCacheTest extends BaseTest {
     /* maxSize() */
 
     @Test
-    public void testMaxSize() {
+    void testMaxSize() {
         assertTrue(instance.maxSize() > 1000);
     }
 
     /* purge() */
 
     @Test
-    public void testPurge() {
+    void testPurge() {
         final Identifier identifier = new Identifier("cats");
         final Info info = new Info();
         instance.put(identifier, info);
@@ -63,7 +63,7 @@ public class InfoCacheTest extends BaseTest {
     /* purge(Identifier) */
 
     @Test
-    public void testPurgeWithIdentifier() {
+    void testPurgeWithIdentifier() {
         final Identifier id1 = new Identifier("cats");
         final Identifier id2 = new Identifier("dogs");
         final Info info = new Info();
@@ -78,7 +78,7 @@ public class InfoCacheTest extends BaseTest {
     /* put() */
 
     @Test
-    public void testPut() {
+    void testPut() {
         assertEquals(0, instance.size());
 
         final Identifier identifier = new Identifier("cats");
@@ -90,7 +90,7 @@ public class InfoCacheTest extends BaseTest {
     /* size() */
 
     @Test
-    public void testSize() {
+    void testSize() {
         assertEquals(0, instance.size());
 
         final Identifier identifier = new Identifier("cats");

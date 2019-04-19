@@ -1,21 +1,23 @@
 package edu.illinois.library.cantaloupe.status;
 
-import org.junit.Before;
-import org.junit.Test;
+import edu.illinois.library.cantaloupe.test.BaseTest;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
-public class HealthTest {
+public class HealthTest extends BaseTest {
 
     private Health instance;
 
-    @Before
-    public void setUp() {
+    @BeforeEach
+    public void setUp() throws Exception {
+        super.setUp();
         instance = new Health();
     }
 
     @Test
-    public void testSetMinColor() {
+    void testSetMinColor() {
         assertEquals(Health.Color.GREEN, instance.getColor());
 
         instance.setMinColor(Health.Color.YELLOW);
@@ -29,7 +31,7 @@ public class HealthTest {
     }
 
     @Test
-    public void testToString() {
+    void testToString() {
         assertEquals("GREEN", instance.toString());
 
         instance.setMinColor(Health.Color.RED);

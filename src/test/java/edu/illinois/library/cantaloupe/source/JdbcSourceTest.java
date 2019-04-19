@@ -9,9 +9,9 @@ import edu.illinois.library.cantaloupe.script.DelegateProxy;
 import edu.illinois.library.cantaloupe.script.DelegateProxyService;
 import edu.illinois.library.cantaloupe.script.DisabledException;
 import edu.illinois.library.cantaloupe.test.TestUtil;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.io.InputStream;
 import java.nio.file.Files;
@@ -21,7 +21,7 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Types;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class JdbcSourceTest extends AbstractSourceTest {
 
@@ -32,7 +32,7 @@ public class JdbcSourceTest extends AbstractSourceTest {
 
     private JdbcSource instance;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         super.setUp();
 
@@ -50,7 +50,7 @@ public class JdbcSourceTest extends AbstractSourceTest {
         instance = newInstance();
     }
 
-    @After
+    @AfterEach
     public void tearDown() throws Exception {
         super.tearDown();
         destroyEndpoint();
@@ -137,8 +137,8 @@ public class JdbcSourceTest extends AbstractSourceTest {
     /* checkAccess() */
 
     @Override
-    @Test(expected = NoSuchFileException.class)
-    public void testCheckAccessUsingBasicLookupStrategyWithMissingImage()
+    @Test
+    void testCheckAccessUsingBasicLookupStrategyWithMissingImage()
             throws Exception {
         Identifier identifier = new Identifier("bogus");
         RequestContext context = new RequestContext();
@@ -148,19 +148,19 @@ public class JdbcSourceTest extends AbstractSourceTest {
         instance.setDelegateProxy(proxy);
         instance.setIdentifier(identifier);
 
-        instance.checkAccess();
+        assertThrows(NoSuchFileException.class, instance::checkAccess);
     }
 
     /* getFormat() */
 
     @Test
-    public void testGetSourceFormatWithExtensionInIdentifierWithMediaTypeInDB()
+    void testGetSourceFormatWithExtensionInIdentifierWithMediaTypeInDB()
             throws Exception {
         assertEquals(Format.JPG, instance.getFormat());
     }
 
     @Test
-    public void testGetSourceFormatWithExtensionInIdentifierWithoutMediaTypeInDB()
+    void testGetSourceFormatWithExtensionInIdentifierWithoutMediaTypeInDB()
             throws Exception {
         Identifier identifier = new Identifier(IMAGE_WITH_EXTENSION_WITHOUT_MEDIA_TYPE);
         RequestContext context = new RequestContext();
@@ -174,7 +174,7 @@ public class JdbcSourceTest extends AbstractSourceTest {
     }
 
     @Test
-    public void testGetSourceFormatWithoutExtensionInIdentifierWithMediaTypeInDB()
+    void testGetSourceFormatWithoutExtensionInIdentifierWithMediaTypeInDB()
             throws Exception {
         Identifier identifier = new Identifier(IMAGE_WITHOUT_EXTENSION_WITH_MEDIA_TYPE);
         RequestContext context = new RequestContext();
@@ -188,7 +188,7 @@ public class JdbcSourceTest extends AbstractSourceTest {
     }
 
     @Test
-    public void testGetSourceFormatWithoutExtensionInIdentifierWithoutMediaTypeInDB()
+    void testGetSourceFormatWithoutExtensionInIdentifierWithoutMediaTypeInDB()
             throws Exception {
         Identifier identifier = new Identifier(IMAGE_WITHOUT_EXTENSION_OR_MEDIA_TYPE);
         RequestContext context = new RequestContext();
@@ -202,7 +202,7 @@ public class JdbcSourceTest extends AbstractSourceTest {
     }
 
     @Test
-    public void testGetSourceFormatWithMissingImage() throws Exception {
+    void testGetSourceFormatWithMissingImage() throws Exception {
         Identifier identifier = new Identifier("bogus");
         RequestContext context = new RequestContext();
         context.setIdentifier(identifier);
@@ -217,7 +217,7 @@ public class JdbcSourceTest extends AbstractSourceTest {
     /* getDatabaseIdentifier() */
 
     @Test
-    public void testGetDatabaseIdentifier() throws Exception {
+    void testGetDatabaseIdentifier() throws Exception {
         Identifier identifier = new Identifier("cats.jpg");
         RequestContext context = new RequestContext();
         context.setIdentifier(identifier);
@@ -233,7 +233,7 @@ public class JdbcSourceTest extends AbstractSourceTest {
     /* getLookupSQL() */
 
     @Test
-    public void testGetLookupSQL() throws Exception {
+    void testGetLookupSQL() throws Exception {
         Identifier identifier = new Identifier("cats.jpg");
         RequestContext context = new RequestContext();
         context.setIdentifier(identifier);
@@ -249,7 +249,7 @@ public class JdbcSourceTest extends AbstractSourceTest {
     /* getMediaType() */
 
     @Test
-    public void testGetMediaType() throws Exception {
+    void testGetMediaType() throws Exception {
         instance.setIdentifier(new Identifier("cats.jpg"));
         String result = instance.getMediaType();
         assertEquals("SELECT media_type FROM items WHERE filename = ?", result);
@@ -258,7 +258,7 @@ public class JdbcSourceTest extends AbstractSourceTest {
     /* newStreamFactory() */
 
     @Test
-    public void testNewStreamFactoryWithPresentImage() throws Exception {
+    void testNewStreamFactoryWithPresentImage() throws Exception {
         assertNotNull(instance.newStreamFactory());
     }
 

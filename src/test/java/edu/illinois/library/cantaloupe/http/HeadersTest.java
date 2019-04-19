@@ -1,25 +1,26 @@
 package edu.illinois.library.cantaloupe.http;
 
-import org.junit.Before;
-import org.junit.Test;
+import edu.illinois.library.cantaloupe.test.BaseTest;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.Iterator;
 import java.util.Map;
-import java.util.stream.Collectors;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
-public class HeadersTest {
+public class HeadersTest extends BaseTest {
 
     private Headers instance;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
+        super.setUp();
         instance = new Headers();
     }
 
     @Test
-    public void testCopyConstructor() {
+    void testCopyConstructor() {
         instance.add("header1", "cats");
         instance.add("header1", "dogs");
         instance.add("header2", "foxes");
@@ -29,21 +30,21 @@ public class HeadersTest {
     }
 
     @Test
-    public void testAddWithHeader() {
+    void testAddWithHeader() {
         assertEquals(0, instance.size());
         instance.add(new Header("name", "value"));
         assertEquals(1, instance.size());
     }
 
     @Test
-    public void testAddWithStrings() {
+    void testAddWithStrings() {
         assertEquals(0, instance.size());
         instance.add("name", "value");
         assertEquals(1, instance.size());
     }
 
     @Test
-    public void testAddAll() {
+    void testAddAll() {
         instance.add("name", "value");
         assertEquals(1, instance.size());
 
@@ -56,7 +57,7 @@ public class HeadersTest {
     }
 
     @Test
-    public void testClear() {
+    void testClear() {
         instance.add("name", "value");
         instance.add("name", "value");
         instance.clear();
@@ -64,7 +65,7 @@ public class HeadersTest {
     }
 
     @Test
-    public void testEqualsWithEqualObjects() {
+    void testEqualsWithEqualObjects() {
         Headers h1 = new Headers();
         Headers h2 = new Headers();
         assertEquals(h1, h2);
@@ -77,7 +78,7 @@ public class HeadersTest {
     }
 
     @Test
-    public void testEqualsWithUnequalObjects() {
+    void testEqualsWithUnequalObjects() {
         Headers h1 = new Headers();
         Headers h2 = new Headers();
         h1.add("test", "cats1");
@@ -88,7 +89,7 @@ public class HeadersTest {
     }
 
     @Test
-    public void testGetAll() {
+    void testGetAll() {
         assertEquals(0, instance.getAll().size());
 
         instance.add("name", "value");
@@ -97,7 +98,7 @@ public class HeadersTest {
     }
 
     @Test
-    public void testGetAllWithString() {
+    void testGetAllWithString() {
         assertEquals(0, instance.getAll("name").size());
 
         instance.add("name", "value");
@@ -106,7 +107,7 @@ public class HeadersTest {
     }
 
     @Test
-    public void testGetFirstValue() {
+    void testGetFirstValue() {
         assertNull(instance.getFirstValue("name"));
 
         instance.add("name", "value1");
@@ -115,7 +116,7 @@ public class HeadersTest {
     }
 
     @Test
-    public void testGetFirstValueWithDefaultValue() {
+    void testGetFirstValueWithDefaultValue() {
         assertEquals("default value",
                 instance.getFirstValue("name", "default value"));
 
@@ -125,7 +126,7 @@ public class HeadersTest {
     }
 
     @Test
-    public void testHashCodeWithEqualObjects() {
+    void testHashCodeWithEqualObjects() {
         Headers h1 = new Headers();
         Headers h2 = new Headers();
         assertEquals(h1.hashCode(), h2.hashCode());
@@ -138,7 +139,7 @@ public class HeadersTest {
     }
 
     @Test
-    public void testHashCodeWithUnequalObjects() {
+    void testHashCodeWithUnequalObjects() {
         Headers h1 = new Headers();
         Headers h2 = new Headers();
         h1.add("test", "cats1");
@@ -149,7 +150,7 @@ public class HeadersTest {
     }
 
     @Test
-    public void testIterator() {
+    void testIterator() {
         instance.add("name", "value1");
         instance.add("name", "value2");
 
@@ -162,7 +163,7 @@ public class HeadersTest {
     }
 
     @Test
-    public void testRemoveAll() {
+    void testRemoveAll() {
         instance.add("name1", "value1");
         instance.add("name1", "value2");
         instance.add("name2", "value1");
@@ -172,7 +173,7 @@ public class HeadersTest {
     }
 
     @Test
-    public void testSet() {
+    void testSet() {
         instance.set("name1", "value1");
         instance.set("name2", "value1");
         instance.set("name2", "value2");
@@ -181,7 +182,7 @@ public class HeadersTest {
     }
 
     @Test
-    public void testSize() {
+    void testSize() {
         assertEquals(0, instance.size());
         instance.add("name", "value");
         instance.add("name", "value");
@@ -189,14 +190,14 @@ public class HeadersTest {
     }
 
     @Test
-    public void testStream() {
+    void testStream() {
         instance.add("name", "value");
         instance.add("name", "value");
-        assertEquals(2, instance.stream().collect(Collectors.toList()).size());
+        assertEquals(2, instance.stream().count());
     }
 
     @Test
-    public void testToMap() {
+    void testToMap() {
         instance.add("name1", "value1");
         instance.add("name1", "value2");
         instance.add("name2", "value1");
@@ -205,18 +206,18 @@ public class HeadersTest {
     }
 
     @Test
-    public void testToStringWithNoHeaders() {
+    void testToStringWithNoHeaders() {
         assertEquals("(none)", instance.toString());
     }
 
     @Test
-    public void testToStringWithOneHeader() {
+    void testToStringWithOneHeader() {
         instance.add("X-Cats", "yes");
         assertEquals("X-Cats: yes", instance.toString());
     }
 
     @Test
-    public void testToStringWithMultipleHeaders() {
+    void testToStringWithMultipleHeaders() {
         instance.add("X-Cats", "yes");
         instance.add("X-Dogs", "yes");
         assertEquals("X-Cats: yes | X-Dogs: yes", instance.toString());

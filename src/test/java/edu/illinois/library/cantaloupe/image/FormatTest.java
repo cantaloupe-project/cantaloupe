@@ -1,17 +1,16 @@
 package edu.illinois.library.cantaloupe.image;
 
 import edu.illinois.library.cantaloupe.test.BaseTest;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-import java.util.List;
 import java.util.Map;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class FormatTest extends BaseTest {
 
     @Test
-    public void inferFormatWithIdentifier() {
+    void inferFormatWithIdentifier() {
         // AVI
         assertEquals(Format.AVI,
                 Format.inferFormat(new Identifier("bla.avi")));
@@ -67,7 +66,7 @@ public class FormatTest extends BaseTest {
     }
 
     @Test
-    public void inferFormatWithString() {
+    void inferFormatWithString() {
         // AVI
         assertEquals(Format.AVI, Format.inferFormat("bla.avi"));
         assertEquals(Format.AVI, Format.inferFormat("bla.AVI"));
@@ -105,156 +104,7 @@ public class FormatTest extends BaseTest {
     }
 
     @Test
-    public void getExtensions() {
-        // AVI
-        assertEquals(List.of("avi"), Format.AVI.getExtensions());
-        // BMP
-        assertEquals(List.of("bmp", "dib"), Format.BMP.getExtensions());
-        // DCM
-        assertEquals(List.of("dcm", "dic"), Format.DCM.getExtensions());
-        // FLV
-        assertEquals(List.of("flv", "f4v"), Format.FLV.getExtensions());
-        // GIF
-        assertEquals(List.of("gif"), Format.GIF.getExtensions());
-        // JP2
-        assertEquals(List.of("jp2", "j2k", "jpx", "jpf"), Format.JP2.getExtensions());
-        // JPG
-        assertEquals(List.of("jpg", "jpeg"), Format.JPG.getExtensions());
-        // MOV
-        assertEquals(List.of("mov", "qt"), Format.MOV.getExtensions());
-        // MP4
-        assertEquals(List.of("mp4", "m4v"), Format.MP4.getExtensions());
-        // MPG
-        assertEquals(List.of("mpg"), Format.MPG.getExtensions());
-        // PDF
-        assertEquals(List.of("pdf"), Format.PDF.getExtensions());
-        // PNG
-        assertEquals(List.of("png"), Format.PNG.getExtensions());
-        // TIF
-        assertEquals(List.of("tif", "ptif", "tiff"),
-                Format.TIF.getExtensions());
-        // WEBM
-        assertEquals(List.of("webm"), Format.WEBM.getExtensions());
-        // WEBP
-        assertEquals(List.of("webp"), Format.WEBP.getExtensions());
-        // UNKNOWN
-        assertEquals(List.of("unknown"), Format.UNKNOWN.getExtensions());
-    }
-
-    @Test
-    public void getImageType() {
-        assertEquals(Format.ImageType.RASTER, Format.AVI.getImageType());
-        assertEquals(Format.ImageType.RASTER, Format.BMP.getImageType());
-        assertEquals(Format.ImageType.RASTER, Format.DCM.getImageType());
-        assertEquals(Format.ImageType.RASTER, Format.FLV.getImageType());
-        assertEquals(Format.ImageType.RASTER, Format.GIF.getImageType());
-        assertEquals(Format.ImageType.RASTER, Format.JP2.getImageType());
-        assertEquals(Format.ImageType.RASTER, Format.JPG.getImageType());
-        assertEquals(Format.ImageType.RASTER, Format.MOV.getImageType());
-        assertEquals(Format.ImageType.RASTER, Format.MP4.getImageType());
-        assertEquals(Format.ImageType.RASTER, Format.MPG.getImageType());
-        assertEquals(Format.ImageType.VECTOR, Format.PDF.getImageType());
-        assertEquals(Format.ImageType.RASTER, Format.PNG.getImageType());
-        assertEquals(Format.ImageType.RASTER, Format.TIF.getImageType());
-        assertEquals(Format.ImageType.RASTER, Format.WEBM.getImageType());
-        assertEquals(Format.ImageType.RASTER, Format.WEBP.getImageType());
-        assertEquals(Format.ImageType.UNKNOWN, Format.UNKNOWN.getImageType());
-    }
-
-    @Test
-    public void getMediaTypes() {
-        // AVI
-        assertEquals(List.of(
-                new MediaType("video/avi"),
-                new MediaType("video/msvideo"),
-                new MediaType("video/x-msvideo")),
-                Format.AVI.getMediaTypes());
-        // BMP
-        assertEquals(List.of(
-                new MediaType("image/bmp"),
-                new MediaType("image/x-bmp"),
-                new MediaType("image/x-ms-bmp")),
-                Format.BMP.getMediaTypes());
-        // DCM
-        assertEquals(List.of(
-                new MediaType("application/dicom")),
-                Format.DCM.getMediaTypes());
-        // FLV
-        assertEquals(List.of(
-                new MediaType("video/x-flv")),
-                Format.FLV.getMediaTypes());
-        // GIF
-        assertEquals(List.of(
-                new MediaType("image/gif")),
-                Format.GIF.getMediaTypes());
-        // JP2
-        assertEquals(List.of(
-                new MediaType("image/jp2")),
-                Format.JP2.getMediaTypes());
-        // JPG
-        assertEquals(List.of(
-                new MediaType("image/jpeg")),
-                Format.JPG.getMediaTypes());
-        // MOV
-        assertEquals(List.of(
-                new MediaType("video/quicktime"),
-                new MediaType("video/x-quicktime")),
-                Format.MOV.getMediaTypes());
-        // MP4
-        assertEquals(List.of(
-                new MediaType("video/mp4")),
-                Format.MP4.getMediaTypes());
-        // MPG
-        assertEquals(List.of(
-                new MediaType("video/mpeg")),
-                Format.MPG.getMediaTypes());
-        // PDF
-        assertEquals(List.of(
-                new MediaType("application/pdf")),
-                Format.PDF.getMediaTypes());
-        // PNG
-        assertEquals(List.of(
-                new MediaType("image/png")),
-                Format.PNG.getMediaTypes());
-        // TIF
-        assertEquals(List.of(
-                new MediaType("image/tiff")),
-                Format.TIF.getMediaTypes());
-        // WEBM
-        assertEquals(List.of(
-                new MediaType("video/webm")),
-                Format.WEBM.getMediaTypes());
-        // WEBP
-        assertEquals(List.of(
-                new MediaType("image/webp")),
-                Format.WEBP.getMediaTypes());
-        // UNKNOWN
-        assertEquals(List.of(
-                new MediaType("unknown/unknown")),
-                Format.UNKNOWN.getMediaTypes());
-    }
-
-    @Test
-    public void getName() {
-        assertEquals("AVI", Format.AVI.getName());
-        assertEquals("BMP", Format.BMP.getName());
-        assertEquals("DICOM", Format.DCM.getName());
-        assertEquals("GIF", Format.GIF.getName());
-        assertEquals("JPEG2000", Format.JP2.getName());
-        assertEquals("JPEG", Format.JPG.getName());
-        assertEquals("QuickTime", Format.MOV.getName());
-        assertEquals("MPEG-4", Format.MP4.getName());
-        assertEquals("MPEG", Format.MPG.getName());
-        assertEquals("PDF", Format.PDF.getName());
-        assertEquals("PNG", Format.PNG.getName());
-        assertEquals("TIFF", Format.TIF.getName());
-        assertEquals("WebM", Format.WEBM.getName());
-        assertEquals("WebP", Format.WEBP.getName());
-        assertEquals("Unknown", Format.UNKNOWN.getName());
-    }
-
-    @Test
-    public void getPreferredExtension() {
+    void getPreferredExtension() {
         assertEquals("avi", Format.AVI.getPreferredExtension());
         assertEquals("bmp", Format.BMP.getPreferredExtension());
         assertEquals("dcm", Format.DCM.getPreferredExtension());
@@ -274,7 +124,7 @@ public class FormatTest extends BaseTest {
     }
 
     @Test
-    public void getPreferredMediaType() {
+    void getPreferredMediaType() {
         assertEquals("video/avi",
                 Format.AVI.getPreferredMediaType().toString());
         assertEquals("image/bmp",
@@ -310,52 +160,14 @@ public class FormatTest extends BaseTest {
     }
 
     @Test
-    public void getType() {
-        assertEquals(Format.Type.VIDEO, Format.AVI.getType());
-        assertEquals(Format.Type.IMAGE, Format.BMP.getType());
-        assertEquals(Format.Type.IMAGE, Format.DCM.getType());
-        assertEquals(Format.Type.VIDEO, Format.FLV.getType());
-        assertEquals(Format.Type.IMAGE, Format.GIF.getType());
-        assertEquals(Format.Type.IMAGE, Format.JP2.getType());
-        assertEquals(Format.Type.IMAGE, Format.JPG.getType());
-        assertEquals(Format.Type.VIDEO, Format.MOV.getType());
-        assertEquals(Format.Type.VIDEO, Format.MP4.getType());
-        assertEquals(Format.Type.VIDEO, Format.MPG.getType());
-        assertEquals(Format.Type.IMAGE, Format.PDF.getType());
-        assertEquals(Format.Type.IMAGE, Format.PNG.getType());
-        assertEquals(Format.Type.IMAGE, Format.TIF.getType());
-        assertEquals(Format.Type.VIDEO, Format.WEBM.getType());
-        assertEquals(Format.Type.IMAGE, Format.WEBP.getType());
-        assertEquals(Format.Type.UNKNOWN, Format.UNKNOWN.getType());
-    }
-
-    @Test
-    public void supportsTransparency() {
-        assertFalse(Format.AVI.supportsTransparency());
-        assertTrue(Format.BMP.supportsTransparency());
-        assertFalse(Format.DCM.supportsTransparency());
-        assertFalse(Format.FLV.supportsTransparency());
-        assertTrue(Format.GIF.supportsTransparency());
-        assertTrue(Format.JP2.supportsTransparency());
-        assertFalse(Format.JPG.supportsTransparency());
-        assertFalse(Format.MP4.supportsTransparency());
-        assertFalse(Format.MPG.supportsTransparency());
-        assertFalse(Format.PDF.supportsTransparency());
-        assertTrue(Format.PNG.supportsTransparency());
-        assertTrue(Format.TIF.supportsTransparency());
-        assertFalse(Format.WEBM.supportsTransparency());
-        assertTrue(Format.WEBP.supportsTransparency());
-    }
-
-    @Test
-    public void toMap() {
+    void toMap() {
         Map<String,Object> map = Format.JPG.toMap();
         assertEquals("jpg", map.get("extension"));
         assertEquals("image/jpeg", map.get("media_type"));
     }
 
     @Test
-    public void testToString() {
+    void testToString() {
         for (Format format : Format.values()) {
             assertEquals(format.getPreferredExtension(),
                     format.toString());

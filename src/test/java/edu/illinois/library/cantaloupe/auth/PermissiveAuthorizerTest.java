@@ -1,16 +1,16 @@
 package edu.illinois.library.cantaloupe.auth;
 
 import edu.illinois.library.cantaloupe.test.BaseTest;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class PermissiveAuthorizerTest extends BaseTest {
 
     private PermissiveAuthorizer instance;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         super.setUp();
 
@@ -18,7 +18,7 @@ public class PermissiveAuthorizerTest extends BaseTest {
     }
 
     @Test
-    public void testAuthorize() {
+    void testAuthorize() {
         AuthInfo info = instance.authorize();
         assertEquals(200, info.getResponseStatus());
         assertNull(info.getRedirectURI());

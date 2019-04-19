@@ -5,8 +5,8 @@ import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import edu.illinois.library.cantaloupe.util.Rational;
 import it.geosolutions.imageio.plugins.tiff.TIFFDirectory;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
@@ -17,7 +17,7 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class DirectoryTest extends BaseTest {
 
@@ -42,7 +42,7 @@ public class DirectoryTest extends BaseTest {
         }
     }
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         super.setUp();
         instance = new Directory(TagSet.BASELINE_TIFF);
@@ -50,7 +50,7 @@ public class DirectoryTest extends BaseTest {
     }
 
     @Test
-    public void testJSONSerialization() throws Exception {
+    void testJSONSerialization() throws Exception {
         final Directory exifIFD = new Directory(TagSet.EXIF);
         exifIFD.put(Tag.EXPOSURE_TIME, DataType.RATIONAL, new Rational(1, 160));
         exifIFD.put(Tag.PHOTOGRAPHIC_SENSITIVITY, DataType.SHORT, 50);
@@ -139,7 +139,7 @@ public class DirectoryTest extends BaseTest {
     }
 
     @Test
-    public void testJSONDeserialization() throws Exception {
+    void testJSONDeserialization() throws Exception {
         final String json = "{\n" +
                 "  \"fields\" : [ {\n" +
                 "    \"tag\" : 256,\n" +
@@ -226,7 +226,7 @@ public class DirectoryTest extends BaseTest {
     }
 
     @Test
-    public void testFromTIFFDirectory() throws Exception {
+    void testFromTIFFDirectory() throws Exception {
         final Directory exifIFD = new Directory(TagSet.EXIF);
         exifIFD.put(Tag.EXPOSURE_TIME, DataType.RATIONAL, new Rational(1, 160));
         exifIFD.put(Tag.F_NUMBER, DataType.RATIONAL, new Rational(9, 1));
@@ -292,7 +292,7 @@ public class DirectoryTest extends BaseTest {
     }
 
     @Test
-    public void testEqualsWithEqualInstances() {
+    void testEqualsWithEqualInstances() {
         final Directory subIFD1 = new Directory(TagSet.EXIF);
         subIFD1.put(Tag.EXPOSURE_TIME, DataType.RATIONAL, new Rational(1, 160));
         subIFD1.put(Tag.PHOTOGRAPHIC_SENSITIVITY, DataType.SHORT, 50);
@@ -327,7 +327,7 @@ public class DirectoryTest extends BaseTest {
     }
 
     @Test
-    public void testEqualsWithUnequalInstances() {
+    void testEqualsWithUnequalInstances() {
         final Directory subIFD1 = new Directory(TagSet.EXIF);
         subIFD1.put(Tag.EXPOSURE_TIME, DataType.RATIONAL, new Rational(1, 160));
         subIFD1.put(Tag.PHOTOGRAPHIC_SENSITIVITY, DataType.SHORT, 50);
@@ -353,20 +353,20 @@ public class DirectoryTest extends BaseTest {
     }
 
     @Test
-    public void testGetValueWithMatchingValue() {
+    void testGetValueWithMatchingValue() {
         final Directory ifd = new Directory(TagSet.BASELINE_TIFF);
         ifd.put(Tag.MAKE, DataType.ASCII, "Cats");
         assertEquals("Cats", ifd.getValue(Tag.MAKE));
     }
 
     @Test
-    public void testGetValueWithoutMatchingValue() {
+    void testGetValueWithoutMatchingValue() {
         final Directory ifd = new Directory(TagSet.BASELINE_TIFF);
         assertNull(ifd.getValue(Tag.MAKE));
     }
 
     @Test
-    public void testHashCodeWithEqualInstances() {
+    void testHashCodeWithEqualInstances() {
         final Directory subIFD1 = new Directory(TagSet.EXIF);
         subIFD1.put(Tag.EXPOSURE_TIME, DataType.RATIONAL, new Rational(1, 160));
         subIFD1.put(Tag.PHOTOGRAPHIC_SENSITIVITY, DataType.SHORT, 50);
@@ -401,7 +401,7 @@ public class DirectoryTest extends BaseTest {
     }
 
     @Test
-    public void testHashCodeWithUnequalInstances() {
+    void testHashCodeWithUnequalInstances() {
         final Directory subIFD1 = new Directory(TagSet.EXIF);
         subIFD1.put(Tag.EXPOSURE_TIME, DataType.RATIONAL, new Rational(1, 160));
         subIFD1.put(Tag.PHOTOGRAPHIC_SENSITIVITY, DataType.SHORT, 50);
@@ -426,18 +426,20 @@ public class DirectoryTest extends BaseTest {
         assertNotEquals(rootIFD1.hashCode(), rootIFD2.hashCode());
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void testPut1WithIllegalTag() {
-        instance.put(new Field(Tag.F_NUMBER, DataType.ASCII), "cats");
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void testPut2WithIllegalTag() {
-        instance.put(Tag.F_NUMBER, DataType.ASCII, "cats");
+    @Test
+    void testPut1WithIllegalTag() {
+        assertThrows(IllegalArgumentException.class,
+                () -> instance.put(new Field(Tag.F_NUMBER, DataType.ASCII), "cats"));
     }
 
     @Test
-    public void testSize() {
+    void testPut2WithIllegalTag() {
+        assertThrows(IllegalArgumentException.class,
+                () -> instance.put(Tag.F_NUMBER, DataType.ASCII, "cats"));
+    }
+
+    @Test
+    void testSize() {
         final Directory exifIFD = new Directory(TagSet.EXIF);
         exifIFD.put(Tag.EXPOSURE_TIME, DataType.RATIONAL, new Rational(1, 160));
 
@@ -455,7 +457,7 @@ public class DirectoryTest extends BaseTest {
     }
 
     @Test
-    public void testToMap() {
+    void testToMap() {
         // assemble a reference Directory structure
         final Directory exifIFD = new Directory(TagSet.EXIF);
         exifIFD.put(Tag.EXPOSURE_TIME, DataType.RATIONAL, new Rational(1, 160));

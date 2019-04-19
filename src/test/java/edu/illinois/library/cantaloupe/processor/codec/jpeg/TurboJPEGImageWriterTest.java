@@ -5,8 +5,8 @@ import edu.illinois.library.cantaloupe.image.Rectangle;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import edu.illinois.library.cantaloupe.util.Rational;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import javax.imageio.ImageIO;
 import javax.imageio.stream.ImageInputStream;
@@ -22,8 +22,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
+@SuppressWarnings("WeakerAccess") // a JMH test extends this
 public class TurboJPEGImageWriterTest extends BaseTest {
 
     private TurboJPEGImageWriter instance;
@@ -40,7 +41,7 @@ public class TurboJPEGImageWriterTest extends BaseTest {
 
     }
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         super.setUp();
         Path image = TestUtil.getImage("jpg");

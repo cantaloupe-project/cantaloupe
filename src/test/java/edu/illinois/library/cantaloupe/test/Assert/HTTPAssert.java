@@ -7,7 +7,7 @@ import edu.illinois.library.cantaloupe.http.Response;
 import java.net.ConnectException;
 import java.net.URI;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public final class HTTPAssert {
 

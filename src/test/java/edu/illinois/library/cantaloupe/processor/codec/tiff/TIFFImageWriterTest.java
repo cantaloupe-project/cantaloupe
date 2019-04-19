@@ -10,7 +10,7 @@ import it.geosolutions.imageio.plugins.tiff.BaselineTIFFTagSet;
 import it.geosolutions.imageio.plugins.tiff.EXIFParentTIFFTagSet;
 import it.geosolutions.imageio.plugins.tiff.TIFFDirectory;
 import it.geosolutions.imageio.plugins.tiff.TIFFTag;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
@@ -22,7 +22,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.util.Iterator;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class TIFFImageWriterTest extends AbstractImageWriterTest {
 

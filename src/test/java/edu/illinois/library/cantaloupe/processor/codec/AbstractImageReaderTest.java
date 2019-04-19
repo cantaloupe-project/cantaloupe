@@ -7,9 +7,9 @@ import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.operation.ReductionFactor;
 import edu.illinois.library.cantaloupe.operation.Scale;
 import edu.illinois.library.cantaloupe.test.BaseTest;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.awt.image.BufferedImage;
 import java.awt.image.RenderedImage;
@@ -17,7 +17,7 @@ import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public abstract class AbstractImageReaderTest extends BaseTest {
 
@@ -26,14 +26,15 @@ public abstract class AbstractImageReaderTest extends BaseTest {
 
     protected ImageReader instance;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         super.setUp();
         instance = newInstance();
     }
 
-    @After
-    public void tearDown() {
+    @AfterEach
+    public void tearDown() throws Exception {
+        super.tearDown();
         if (instance != null) {
             instance.dispose();
         }
@@ -62,7 +63,7 @@ public abstract class AbstractImageReaderTest extends BaseTest {
     }
 
     @Test
-    public void testGetPreferredIIOImplementationsWithNoUserPreference() {
+    void testGetPreferredIIOImplementationsWithNoUserPreference() {
         String[] impls = ((AbstractIIOImageReader) instance).
                 getPreferredIIOImplementations();
         assertArrayEquals(((AbstractIIOImageReader) instance).
@@ -104,7 +105,7 @@ public abstract class AbstractImageReaderTest extends BaseTest {
     }
 
     @Test
-    public void testReadSmallestUsableSubimageReturningBufferedImage() {
+    void testReadSmallestUsableSubimageReturningBufferedImage() {
         // TODO: write this
     }
 
@@ -121,13 +122,14 @@ public abstract class AbstractImageReaderTest extends BaseTest {
     }
 
     @Test
-    public void testReadSmallestUsableSubimageReturningRenderedImage() {
+    void testReadSmallestUsableSubimageReturningRenderedImage() {
         // TODO: write this
     }
 
-    @Test(expected = UnsupportedOperationException.class)
-    public void testReadSequence() throws Exception {
-        instance.readSequence();
+    @Test
+    public void testReadSequence() {
+        assertThrows(UnsupportedOperationException.class,
+                () -> instance.readSequence());
     }
 
 }

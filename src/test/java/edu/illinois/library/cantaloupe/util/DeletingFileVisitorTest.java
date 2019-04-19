@@ -1,38 +1,41 @@
 package edu.illinois.library.cantaloupe.util;
 
-import edu.illinois.library.cantaloupe.test.TestUtil;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import edu.illinois.library.cantaloupe.test.BaseTest;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.FileTime;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
-public class DeletingFileVisitorTest {
+public class DeletingFileVisitorTest extends BaseTest {
 
     private DeletingFileVisitor instance;
     private Path tempPath;
 
-    @Before
-    public void setUp() throws IOException {
+    @BeforeEach
+    public void setUp() throws Exception {
+        super.setUp();
         tempPath = Files.createTempDirectory("test");
         instance = new DeletingFileVisitor();
         instance.setRootPathToExclude(tempPath);
     }
 
-    @After
-    public void tearDown() throws IOException {
+    @AfterEach
+    public void tearDown() throws Exception {
+        super.tearDown();
         Files.walkFileTree(tempPath, instance);
     }
 
     @Test
-    public void testGetDeletedFileCount() throws IOException {
+    void testGetDeletedFileCount() throws IOException {
         assertEquals(0, instance.getDeletedFileCount());
 
         Files.createDirectory(tempPath.resolve("cats"));
@@ -45,20 +48,20 @@ public class DeletingFileVisitorTest {
     }
 
     @Test
-    public void testGetDeletedFileSize() throws IOException {
+    void testGetDeletedFileSize() throws IOException {
         assertEquals(0, instance.getDeletedFileSize());
 
         Files.createDirectory(tempPath.resolve("cats"));
-        Files.write(tempPath.resolve("cats/file"), "bla".getBytes("UTF-8"));
+        Files.write(tempPath.resolve("cats/file"), "bla".getBytes(StandardCharsets.UTF_8));
         Files.createDirectory(tempPath.resolve("dogs"));
-        Files.write(tempPath.resolve("dogs/file"), "bla".getBytes("UTF-8"));
+        Files.write(tempPath.resolve("dogs/file"), "bla".getBytes(StandardCharsets.UTF_8));
         Files.walkFileTree(tempPath, instance);
 
         assertEquals(6, instance.getDeletedFileSize());
     }
 
     @Test
-    public void testVisitFile() throws IOException {
+    void testVisitFile() throws IOException {
         Path file = tempPath.resolve("file");
         Files.createFile(file);
 
@@ -67,7 +70,7 @@ public class DeletingFileVisitorTest {
     }
 
     @Test
-    public void testPostVisitDirectory() throws IOException {
+    void testPostVisitDirectory() throws IOException {
         Path dir = tempPath.resolve("dir");
         Files.createDirectory(dir);
 
@@ -78,7 +81,7 @@ public class DeletingFileVisitorTest {
     }
 
     @Test
-    public void testPostVisitDirectoryWithRootDirWhenExcludingRootDir()
+    void testPostVisitDirectoryWithRootDirWhenExcludingRootDir()
             throws IOException {
         instance.setRootPathToExclude(tempPath);
 

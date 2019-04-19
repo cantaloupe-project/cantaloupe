@@ -18,7 +18,7 @@
         <jackson.version>2.9.8</jackson.version>
         <jetty.version>9.4.12.v20180830</jetty.version>
         <jruby.version>9.1.17.0</jruby.version>
-        <surefire.version>2.21.0</surefire.version>
+        <surefire.version>3.0.0-M3</surefire.version>
     </properties>
 
     <developers>
@@ -26,9 +26,8 @@
             <id>alexd</id>
             <name>Alex Dolski</name>
             <email>alexd@n-ary.net</email>
-            <organization>University of Illinois at Urbana-Champaign Library
-            </organization>
-            <organizationUrl>http://www.library.illinois.edu/</organizationUrl>
+            <organization>University of Illinois at Urbana-Champaign Library</organization>
+            <organizationUrl>https://www.library.illinois.edu/</organizationUrl>
             <roles>
                 <role>founder</role>
                 <role>lead</role>
@@ -43,10 +42,8 @@
     </developers>
 
     <scm>
-        <connection>scm:git:git://github.com/medusa-project/cantaloupe
-        </connection>
-        <developerConnection>scm:git:git@github.com:medusa-project/cantaloupe
-        </developerConnection>
+        <connection>scm:git:git://github.com/medusa-project/cantaloupe</connection>
+        <developerConnection>scm:git:git@github.com:medusa-project/cantaloupe</developerConnection>
         <tag>HEAD</tag>
         <url>https://github.com/medusa-project/cantaloupe</url>
     </scm>
@@ -84,7 +81,7 @@
             <artifactId>aws-java-sdk-s3</artifactId>
             <version>${aws-sdk.version}</version>
         </dependency>
-        <!-- In-memory object cache: https://github.com/ben-manes/caffeine-->
+        <!-- Heap-based object cache: https://github.com/ben-manes/caffeine-->
         <dependency>
             <groupId>com.github.ben-manes.caffeine</groupId>
             <artifactId>caffeine</artifactId>
@@ -94,7 +91,7 @@
         <dependency>
             <groupId>com.github.stefanbirkner</groupId>
             <artifactId>system-rules</artifactId>
-            <version>1.15.1</version>
+            <version>1.19.0</version>
             <scope>test</scope>
         </dependency>
         <!-- Used by HeapCache -->
@@ -199,11 +196,11 @@
             <artifactId>jbig2-imageio</artifactId>
             <version>3.0.0</version>
         </dependency>
-        <!-- Unit tests -->
+        <!-- JUnit for unit tests. -->
         <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>4.12</version>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-engine</artifactId>
+            <version>5.4.2</version>
             <scope>test</scope>
         </dependency>
         <!-- Performance tests -->

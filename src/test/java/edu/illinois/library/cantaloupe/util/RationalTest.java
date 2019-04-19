@@ -1,13 +1,13 @@
 package edu.illinois.library.cantaloupe.util;
 
 import edu.illinois.library.cantaloupe.test.BaseTest;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class RationalTest extends BaseTest {
 
@@ -16,47 +16,47 @@ public class RationalTest extends BaseTest {
 
     private Rational instance;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         super.setUp();
         instance = new Rational(2, 3);
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void testConstructorWithZeroDenominator() {
-        new Rational(2, 0);
+    @Test
+    void testConstructorWithZeroDenominator() {
+        assertThrows(IllegalArgumentException.class, () -> new Rational(2, 0));
     }
 
     @Test
-    public void testDoubleValue() {
+    void testDoubleValue() {
         assertTrue(Math.abs((2 / 3.0) - instance.doubleValue()) < DOUBLE_DELTA);
     }
 
     @Test
-    public void testEquals() {
+    void testEquals() {
         assertEquals(instance, new Rational(2, 3));
         assertNotEquals(instance, new Rational(3, 4));
     }
 
     @Test
-    public void testFloatValue() {
+    void testFloatValue() {
         assertTrue(Math.abs((2 / 3.0) - instance.floatValue()) < FLOAT_DELTA);
     }
 
     @Test
-    public void testGetReduced() {
+    void testGetReduced() {
         assertSame(instance, instance.getReduced());
         assertEquals(new Rational(23, 27), new Rational(92, 108).getReduced());
     }
 
     @Test
-    public void testHashCode() {
+    void testHashCode() {
         assertEquals(instance.hashCode(), new Rational(2, 3).hashCode());
         assertNotEquals(instance.hashCode(), new Rational(3, 4).hashCode());
     }
 
     @Test
-    public void testToMap() {
+    void testToMap() {
         Map<String,Long> expected = new LinkedHashMap<>(2);
         expected.put("numerator", 2L);
         expected.put("denominator", 3L);
@@ -64,7 +64,7 @@ public class RationalTest extends BaseTest {
     }
 
     @Test
-    public void testToString() {
+    void testToString() {
         assertEquals("2:3", instance.toString());
     }
 

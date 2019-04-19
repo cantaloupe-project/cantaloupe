@@ -8,54 +8,56 @@ import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.test.TestUtil;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
 
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class HeapCacheTest extends AbstractCacheTest {
 
-    public static class KeyTest extends BaseTest {
+    @Nested
+    public class KeyTest extends BaseTest {
 
         @Test
-        public void testEqualsWithInfoKey() {
+        void testEqualsWithInfoKey() {
             // Equal
             HeapCache.Key k1 = new HeapCache.Key("cats");
             HeapCache.Key k2 = new HeapCache.Key("cats");
-            assertTrue(k1.equals(k2));
+            assertEquals(k1, k2);
 
             // Unequal
             k2 = new HeapCache.Key("dogs");
-            assertFalse(k1.equals(k2));
+            assertNotEquals(k1, k2);
         }
 
         @Test
-        public void testEqualsWithImageKey() {
+        void testEqualsWithImageKey() {
             // Equal
             HeapCache.Key k1 = new HeapCache.Key("cats", "birds");
             HeapCache.Key k2 = new HeapCache.Key("cats", "birds");
-            assertTrue(k1.equals(k2));
+            assertEquals(k1, k2);
 
             // Unequal op lists
             k1 = new HeapCache.Key("cats", "birds");
             k2 = new HeapCache.Key("cats", "goats");
-            assertFalse(k1.equals(k2));
+            assertNotEquals(k1, k2);
 
             // Unequal identifiers and op lists
             k1 = new HeapCache.Key("cats", "birds");
             k2 = new HeapCache.Key("dogs", "goats");
-            assertFalse(k1.equals(k2));
+            assertNotEquals(k1, k2);
         }
 
         @Test
-        public void testEqualsWithMixedKeys() {
+        void testEqualsWithMixedKeys() {
             HeapCache.Key k1 = new HeapCache.Key("cats", "birds");
             HeapCache.Key k2 = new HeapCache.Key("cats");
-            assertFalse(k1.equals(k2));
+            assertNotEquals(k1, k2);
         }
 
     }
@@ -64,7 +66,7 @@ public class HeapCacheTest extends AbstractCacheTest {
 
     private HeapCache instance;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         super.setUp();
 
@@ -83,7 +85,7 @@ public class HeapCacheTest extends AbstractCacheTest {
     /* dumpToPersistentStore() */
 
     @Test
-    public void testDumpToPersistentStore() throws Exception {
+    void testDumpToPersistentStore() throws Exception {
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.HEAPCACHE_PERSIST, true);
 
@@ -111,7 +113,7 @@ public class HeapCacheTest extends AbstractCacheTest {
     /* getByteSize() */
 
     @Test
-    public void testGetByteSize() throws Exception {
+    void testGetByteSize() throws Exception {
         // Initial size
         assertEquals(0, instance.getByteSize());
 
@@ -142,12 +144,12 @@ public class HeapCacheTest extends AbstractCacheTest {
      */
     @Test
     @Override
-    public void testGetInfoWithExistingInvalidImage() {}
+    void testGetInfoWithExistingInvalidImage() {}
 
     /* getTargetByteSize() */
 
     @Test
-    public void testGetTargetByteSizeWithInvalidValue() {
+    void testGetTargetByteSizeWithInvalidValue() {
         final Configuration config = Configuration.getInstance();
         config.setProperty(Key.HEAPCACHE_TARGET_SIZE, "");
         try {
@@ -159,14 +161,14 @@ public class HeapCacheTest extends AbstractCacheTest {
     }
 
     @Test
-    public void testGetTargetByteSizeWithNumber() throws Exception {
+    void testGetTargetByteSizeWithNumber() throws Exception {
         final Configuration config = Configuration.getInstance();
         config.setProperty(Key.HEAPCACHE_TARGET_SIZE, 1000);
         assertEquals(1000, instance.getTargetByteSize());
     }
 
     @Test
-    public void testGetTargetByteSizeWithUnitSuffix() throws Exception {
+    void testGetTargetByteSizeWithUnitSuffix() throws Exception {
         final Configuration config = Configuration.getInstance();
         final float base = 500.5f;
         final float delta = 0.0001f;
@@ -199,7 +201,7 @@ public class HeapCacheTest extends AbstractCacheTest {
     /* isPersistenceEnabled() */
 
     @Test
-    public void testIsPersistenceEnabled() {
+    void testIsPersistenceEnabled() {
         Configuration config = Configuration.getInstance();
 
         config.setProperty(Key.HEAPCACHE_PERSIST, true);
@@ -212,7 +214,7 @@ public class HeapCacheTest extends AbstractCacheTest {
     /* loadFromPersistentStore() */
 
     @Test
-    public void testLoadFromPersistentStore() throws Exception {
+    void testLoadFromPersistentStore() throws Exception {
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.HEAPCACHE_PERSIST, true);
 
@@ -247,12 +249,12 @@ public class HeapCacheTest extends AbstractCacheTest {
      */
     @Override
     @Test
-    public void testNewDerivativeImageInputStreamWithNonzeroTTL() {}
+    void testNewDerivativeImageInputStreamWithNonzeroTTL() {}
 
     /* newDerivativeImageOutputStream(OperationList) */
 
     @Test
-    public void testNewDerivativeImageOutputStreamSetsDirtyFlag() {
+    void testNewDerivativeImageOutputStreamSetsDirtyFlag() {
         OperationList ops = new OperationList(new Identifier("cats"));
 
         instance.newDerivativeImageOutputStream(ops);
@@ -262,7 +264,7 @@ public class HeapCacheTest extends AbstractCacheTest {
     /* purgeExcess() */
 
     @Test
-    public void testPurgeExcessWithExcess() throws Exception {
+    void testPurgeExcessWithExcess() throws Exception {
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.HEAPCACHE_TARGET_SIZE, 5000);
 
@@ -281,7 +283,7 @@ public class HeapCacheTest extends AbstractCacheTest {
     }
 
     @Test
-    public void testPurgeExcessWithNoExcess() throws Exception {
+    void testPurgeExcessWithNoExcess() throws Exception {
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.HEAPCACHE_TARGET_SIZE, 10000);
 
@@ -300,12 +302,12 @@ public class HeapCacheTest extends AbstractCacheTest {
         assertEquals(size, instance.getByteSize());
     }
 
-    @Test(expected = ConfigurationException.class)
-    public void testPurgeExcessThrowsConfigurationExceptionWhenMaxSizeIsInvalid()
-            throws Exception {
+    @Test
+    void testPurgeExcessThrowsConfigurationExceptionWhenMaxSizeIsInvalid() {
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.HEAPCACHE_TARGET_SIZE, 0);
-        instance.purgeExcess();
+
+        assertThrows(ConfigurationException.class, () -> instance.purgeExcess());
     }
 
     /* purgeInvalid() */
@@ -316,6 +318,6 @@ public class HeapCacheTest extends AbstractCacheTest {
      */
     @Override
     @Test
-    public void testPurgeInvalid() {}
+    void testPurgeInvalid() {}
 
 }

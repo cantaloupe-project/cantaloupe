@@ -4,12 +4,12 @@ import edu.illinois.library.cantaloupe.image.Dimension;
 import edu.illinois.library.cantaloupe.image.Orientation;
 import edu.illinois.library.cantaloupe.image.Rectangle;
 import edu.illinois.library.cantaloupe.image.ScaleConstraint;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.Map;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class CropByPixelsTest extends CropTest {
 
@@ -20,7 +20,7 @@ public class CropByPixelsTest extends CropTest {
         return new CropByPixels(0, 0, 1000, 1000);
     }
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         super.setUp();
         instance = newInstance();
@@ -260,20 +260,23 @@ public class CropByPixelsTest extends CropTest {
         assertEquals(height, instance.getHeight());
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void setHeightWithZeroHeight() {
-        instance.setHeight(0);
+        assertThrows(IllegalArgumentException.class,
+                () -> instance.setHeight(0));
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void setHeightWithNegativeHeight() {
-        instance.setHeight(-50);
+        assertThrows(IllegalArgumentException.class,
+                () -> instance.setHeight(-50));
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test
     public void setHeightThrowsExceptionWhenInstanceIsFrozen() {
         instance.freeze();
-        instance.setHeight(30);
+        assertThrows(IllegalStateException.class,
+                () -> instance.setHeight(30));
     }
 
     @Test
@@ -283,20 +286,22 @@ public class CropByPixelsTest extends CropTest {
         assertEquals(width, instance.getWidth());
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void setWidthWithZeroWidth() {
-        instance.setWidth(0);
+        assertThrows(IllegalArgumentException.class,
+                () -> instance.setWidth(0));
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void setWidthWithNegativeWidth() {
-        instance.setWidth(-13);
+        assertThrows(IllegalArgumentException.class,
+                () -> instance.setWidth(-13));
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test
     public void setWidthThrowsExceptionWhenInstanceIsFrozen() {
         instance.freeze();
-        instance.setWidth(30);
+        assertThrows(IllegalStateException.class, () -> instance.setWidth(0));
     }
 
     @Test
@@ -306,15 +311,16 @@ public class CropByPixelsTest extends CropTest {
         assertEquals(x, instance.getX());
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void setXWithNegativeX() {
-        instance.setX(-50);
+        assertThrows(IllegalArgumentException.class,
+                () -> instance.setX(-50));
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test
     public void setXThrowsExceptionWhenInstanceIsFrozen() {
         instance.freeze();
-        instance.setX(30);
+        assertThrows(IllegalStateException.class, () -> instance.setX(30));
     }
 
     @Test
@@ -324,15 +330,15 @@ public class CropByPixelsTest extends CropTest {
         assertEquals(y, instance.getY());
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void setYWithNegativeY() {
-        instance.setY(-10);
+        assertThrows(IllegalArgumentException.class, () -> instance.setY(-10));
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test
     public void setYThrowsExceptionWhenInstanceIsFrozen() {
         instance.freeze();
-        instance.setY(30);
+        assertThrows(IllegalStateException.class, () -> instance.setY(30));
     }
 
     @Test
@@ -349,12 +355,13 @@ public class CropByPixelsTest extends CropTest {
         assertEquals(50, map.get("height"));
     }
 
-    @Test(expected = UnsupportedOperationException.class)
+    @Test
     public void toMapReturnsUnmodifiableMap() {
         Dimension fullSize = new Dimension(100, 100);
         ScaleConstraint sc = new ScaleConstraint(1, 1);
         Map<String,Object> map = instance.toMap(fullSize, sc);
-        map.put("test", "test");
+        assertThrows(UnsupportedOperationException.class,
+                () -> map.put("test", "test"));
     }
 
     @Test
@@ -375,36 +382,40 @@ public class CropByPixelsTest extends CropTest {
         instance.validate(fullSize, sc);
     }
 
-    @Test(expected = ValidationException.class)
-    public void validateWithOutOfBoundsX() throws Exception {
+    @Test
+    public void validateWithOutOfBoundsX() {
         Dimension fullSize = new Dimension(1000, 1000);
         ScaleConstraint sc = new ScaleConstraint(1, 1);
         Crop crop          = new CropByPixels(1001, 0, 5, 5);
-        crop.validate(fullSize, sc);
+        assertThrows(ValidationException.class,
+                () -> crop.validate(fullSize, sc));
     }
 
-    @Test(expected = ValidationException.class)
-    public void validateWithOutOfBoundsY() throws Exception {
+    @Test
+    public void validateWithOutOfBoundsY() {
         Dimension fullSize = new Dimension(1000, 1000);
         ScaleConstraint sc = new ScaleConstraint(1, 1);
         Crop crop          = new CropByPixels(0, 1001, 5, 5);
-        crop.validate(fullSize, sc);
+        assertThrows(ValidationException.class,
+                () -> crop.validate(fullSize, sc));
     }
 
-    @Test(expected = ValidationException.class)
-    public void validateWithZeroDimensionX() throws Exception {
+    @Test
+    public void validateWithZeroDimensionX() {
         Dimension fullSize = new Dimension(1000, 1000);
         ScaleConstraint sc = new ScaleConstraint(1, 1);
         Crop crop          = new CropByPixels(1000, 0, 100, 100);
-        crop.validate(fullSize, sc);
+        assertThrows(ValidationException.class,
+                () -> crop.validate(fullSize, sc));
     }
 
-    @Test(expected = ValidationException.class)
-    public void validateWithZeroDimensions() throws Exception {
+    @Test
+    public void validateWithZeroDimensions() {
         Dimension fullSize = new Dimension(1000, 1000);
         ScaleConstraint sc = new ScaleConstraint(1, 1);
         Crop crop          = new CropByPixels(0, 1000, 100, 100);
-        crop.validate(fullSize, sc);
+        assertThrows(ValidationException.class,
+                () -> crop.validate(fullSize, sc));
     }
 
 }

@@ -1,8 +1,9 @@
 package edu.illinois.library.cantaloupe.processor.codec.jpeg;
 
+import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import javax.imageio.ImageIO;
 import javax.imageio.stream.ImageInputStream;
@@ -11,21 +12,22 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
-public class JPEGMetadataReaderTest {
+public class JPEGMetadataReaderTest extends BaseTest {
 
     private JPEGMetadataReader instance;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
+        super.setUp();
         instance = new JPEGMetadataReader();
     }
 
     /* getColorTransform() */
 
     @Test
-    public void testGetColorTransformWithNoColorTransform() throws Exception {
+    void testGetColorTransformWithNoColorTransform() throws Exception {
         Path file = TestUtil.getImage("jpg-exif.jpg");
         try (ImageInputStream is = ImageIO.createImageInputStream(file.toFile())) {
             instance.setSource(is);
@@ -34,7 +36,7 @@ public class JPEGMetadataReaderTest {
     }
 
     @Test
-    public void testGetColorTransformOnImageWithColorTransform() throws Exception {
+    void testGetColorTransformOnImageWithColorTransform() throws Exception {
         Path file = TestUtil.getImage("jpg-ycck.jpg");
         try (ImageInputStream is =
                      ImageIO.createImageInputStream(new BufferedInputStream(Files.newInputStream(file)))) {
@@ -44,19 +46,19 @@ public class JPEGMetadataReaderTest {
         }
     }
 
-    @Test(expected = IOException.class)
-    public void testGetColorTransformOnNonJPEGImage() throws Exception {
+    @Test
+    void testGetColorTransformOnNonJPEGImage() throws Exception {
         Path file = TestUtil.getImage("gif-xmp.gif");
         try (ImageInputStream is = ImageIO.createImageInputStream(file.toFile())) {
             instance.setSource(is);
-            instance.getColorTransform();
+            assertThrows(IOException.class, () -> instance.getColorTransform());
         }
     }
 
     /* getEXIF() */
 
     @Test
-    public void testGetEXIFWithEXIFImage() throws Exception {
+    void testGetEXIFWithEXIFImage() throws Exception {
         Path file = TestUtil.getImage("jpg-exif.jpg");
         try (ImageInputStream is = ImageIO.createImageInputStream(file.toFile())) {
             instance.setSource(is);
@@ -67,7 +69,7 @@ public class JPEGMetadataReaderTest {
     }
 
     @Test
-    public void testGetEXIFWithNonEXIFImage() throws Exception {
+    void testGetEXIFWithNonEXIFImage() throws Exception {
         Path file = TestUtil.getImage("jpg");
         try (ImageInputStream is = ImageIO.createImageInputStream(file.toFile())) {
             instance.setSource(is);
@@ -78,7 +80,7 @@ public class JPEGMetadataReaderTest {
     /* getICCProfile() */
 
     @Test
-    public void testGetICCProfileOnImageWithNoProfile() throws Exception {
+    void testGetICCProfileOnImageWithNoProfile() throws Exception {
         Path file = TestUtil.getImage("jpg-exif.jpg");
         try (ImageInputStream is = ImageIO.createImageInputStream(file.toFile())) {
             instance.setSource(is);
@@ -87,7 +89,7 @@ public class JPEGMetadataReaderTest {
     }
 
     @Test
-    public void testGetICCProfileOnImageWithSingleChunkProfile() throws Exception {
+    void testGetICCProfileOnImageWithSingleChunkProfile() throws Exception {
         Path file = TestUtil.getImage("jpg-icc.jpg");
         try (ImageInputStream is =
                      ImageIO.createImageInputStream(new BufferedInputStream(Files.newInputStream(file)))) {
@@ -97,7 +99,7 @@ public class JPEGMetadataReaderTest {
     }
 
     @Test
-    public void testGetICCProfileOnImageWithMultiChunkProfile() throws Exception {
+    void testGetICCProfileOnImageWithMultiChunkProfile() throws Exception {
         Path file = TestUtil.getImage("jpg-icc-chunked.jpg"); // 17 chunks
         try (ImageInputStream is =
                      ImageIO.createImageInputStream(new BufferedInputStream(Files.newInputStream(file)))) {
@@ -106,19 +108,19 @@ public class JPEGMetadataReaderTest {
         }
     }
 
-    @Test(expected = IOException.class)
-    public void testGetICCProfileOnNonJPEGImage() throws Exception {
+    @Test
+    void testGetICCProfileOnNonJPEGImage() throws Exception {
         Path file = TestUtil.getImage("gif-xmp.gif");
         try (ImageInputStream is = ImageIO.createImageInputStream(file.toFile())) {
             instance.setSource(is);
-            instance.getICCProfile();
+            assertThrows(IOException.class, () -> instance.getICCProfile());
         }
     }
 
     /* getIPTC() */
 
     @Test
-    public void testGetIPTCWithIPTCImage() throws Exception {
+    void testGetIPTCWithIPTCImage() throws Exception {
         Path file = TestUtil.getImage("jpg-iptc.jpg");
         try (ImageInputStream is = ImageIO.createImageInputStream(file.toFile())) {
             instance.setSource(is);
@@ -128,7 +130,7 @@ public class JPEGMetadataReaderTest {
     }
 
     @Test
-    public void testGetIPTCWithNonIPTCImage() throws Exception {
+    void testGetIPTCWithNonIPTCImage() throws Exception {
         Path file = TestUtil.getImage("jpg");
         try (ImageInputStream is = ImageIO.createImageInputStream(file.toFile())) {
             instance.setSource(is);
@@ -139,7 +141,7 @@ public class JPEGMetadataReaderTest {
     /* getWidth() */
 
     @Test
-    public void testGetWidth() throws Exception {
+    void testGetWidth() throws Exception {
         Path file = TestUtil.getImage("jpg");
         try (ImageInputStream is = ImageIO.createImageInputStream(file.toFile())) {
             instance.setSource(is);
@@ -150,7 +152,7 @@ public class JPEGMetadataReaderTest {
     /* getHeight() */
 
     @Test
-    public void testGetHeight() throws Exception {
+    void testGetHeight() throws Exception {
         Path file = TestUtil.getImage("jpg");
         try (ImageInputStream is = ImageIO.createImageInputStream(file.toFile())) {
             instance.setSource(is);
@@ -161,7 +163,7 @@ public class JPEGMetadataReaderTest {
     /* getXMP() */
 
     @Test
-    public void testGetXMPWithXMPImage() throws Exception {
+    void testGetXMPWithXMPImage() throws Exception {
         Path file = TestUtil.getImage("jpg-xmp.jpg");
         try (ImageInputStream is = ImageIO.createImageInputStream(file.toFile())) {
             instance.setSource(is);
@@ -171,7 +173,7 @@ public class JPEGMetadataReaderTest {
     }
 
     @Test
-    public void testGetXMPWithNonXMPImage() throws Exception {
+    void testGetXMPWithNonXMPImage() throws Exception {
         Path file = TestUtil.getImage("jpg");
         try (ImageInputStream is = ImageIO.createImageInputStream(file.toFile())) {
             instance.setSource(is);
@@ -182,7 +184,7 @@ public class JPEGMetadataReaderTest {
     /* hasAdobeSegment() */
 
     @Test
-    public void testHasAdobeSegmentOnImageWithNoAdobeSegment() throws Exception {
+    void testHasAdobeSegmentOnImageWithNoAdobeSegment() throws Exception {
         Path file = TestUtil.getImage("jpg-exif.jpg");
         try (ImageInputStream is = ImageIO.createImageInputStream(file.toFile())) {
             instance.setSource(is);
@@ -191,7 +193,7 @@ public class JPEGMetadataReaderTest {
     }
 
     @Test
-    public void testHasAdobeSegmentOnImageWithAdobeSegment() throws Exception {
+    void testHasAdobeSegmentOnImageWithAdobeSegment() throws Exception {
         Path file = TestUtil.getImage("jpg-ycck.jpg");
         try (ImageInputStream is = ImageIO.createImageInputStream(file.toFile())) {
             instance.setSource(is);
@@ -199,12 +201,12 @@ public class JPEGMetadataReaderTest {
         }
     }
 
-    @Test(expected = IOException.class)
-    public void testHasAdobeSegmentOnNonJPEGImage() throws Exception {
+    @Test
+    void testHasAdobeSegmentOnNonJPEGImage() throws Exception {
         Path file = TestUtil.getImage("gif-xmp.gif");
         try (ImageInputStream is = ImageIO.createImageInputStream(file.toFile())) {
             instance.setSource(is);
-            instance.hasAdobeSegment();
+            assertThrows(IOException.class, () -> instance.hasAdobeSegment());
         }
     }
 

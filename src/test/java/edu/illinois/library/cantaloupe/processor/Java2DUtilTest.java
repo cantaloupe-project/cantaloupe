@@ -21,8 +21,8 @@ import edu.illinois.library.cantaloupe.operation.overlay.Position;
 import edu.illinois.library.cantaloupe.operation.overlay.StringOverlay;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 import javax.imageio.ImageIO;
 import java.awt.Font;
@@ -41,7 +41,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import static edu.illinois.library.cantaloupe.test.Assert.ImageAssert.*;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class Java2DUtilTest extends BaseTest {
 
@@ -105,7 +105,7 @@ public class Java2DUtilTest extends BaseTest {
     /* applyRedactions() */
 
     @Test
-    public void testApplyRedactions() {
+    void testApplyRedactions() {
         final Dimension fullSize = new Dimension(64, 56);
         final BufferedImage image = newColorImage(
                 fullSize.intWidth(), fullSize.intHeight(), 8, false);
@@ -143,7 +143,7 @@ public class Java2DUtilTest extends BaseTest {
     /* applyOverlay() */
 
     @Test
-    public void testApplyOverlayWithImageOverlay() throws Exception {
+    void testApplyOverlayWithImageOverlay() throws Exception {
         final BufferedImage baseImage = newColorImage(8, false);
 
         // fill it with white
@@ -164,7 +164,7 @@ public class Java2DUtilTest extends BaseTest {
     }
 
     @Test
-    public void testApplyOverlayWithImageOverlayAndInset() throws Exception {
+    void testApplyOverlayWithImageOverlayAndInset() throws Exception {
         final BufferedImage baseImage = newColorImage(8, false);
 
         // fill it with white
@@ -190,7 +190,7 @@ public class Java2DUtilTest extends BaseTest {
     }
 
     @Test
-    public void testApplyOverlayWithMissingImageOverlay() throws Exception {
+    void testApplyOverlayWithMissingImageOverlay() throws Exception {
         final BufferedImage baseImage = newColorImage(8, false);
 
         // fill it with white
@@ -212,8 +212,8 @@ public class Java2DUtilTest extends BaseTest {
     }
 
     @Test
-    @Ignore // see inline todo
-    public void testApplyOverlayWithStringOverlay() {
+    @Disabled // see inline comment
+    void testApplyOverlayWithStringOverlay() {
         final BufferedImage baseImage = newColorImage(8, false);
 
         // create a StringOverlay
@@ -243,7 +243,7 @@ public class Java2DUtilTest extends BaseTest {
     /* convertIndexedTo8BitARGB() */
 
     @Test
-    public void testConvertIndexedTo8BitARGB() {
+    void testConvertIndexedTo8BitARGB() {
         BufferedImage inImage, outImage;
 
         // RGB image
@@ -265,7 +265,7 @@ public class Java2DUtilTest extends BaseTest {
     /* copyAndCrop(BufferedImage, Rectangle, boolean) */
 
     @Test
-    public void testCropPhysically() {
+    void testCropPhysically() {
         BufferedImage inImage  = newColorImage(200, 100, 8, false);
         Rectangle roi          = new Rectangle(20, 20, 80, 70);
         BufferedImage outImage = Java2DUtil.crop(inImage, roi, false);
@@ -274,7 +274,7 @@ public class Java2DUtilTest extends BaseTest {
     }
 
     @Test
-    public void testCropVirtually() {
+    void testCropVirtually() {
         BufferedImage inImage  = newColorImage(200, 100, 8, false);
         Rectangle roi          = new Rectangle(20, 20, 80, 70);
         BufferedImage outImage = Java2DUtil.crop(inImage, roi, true);
@@ -285,7 +285,7 @@ public class Java2DUtilTest extends BaseTest {
     /* crop(BufferedImage, Crop, ReductionFactor, ScaleConstraint) */
 
     @Test
-    public void testCropWithCropToSquare() {
+    void testCropWithCropToSquare() {
         Crop crop = new CropToSquare();
         final int width = 200, height = 100;
         BufferedImage inImage = newColorImage(width, height, 8, false);
@@ -307,7 +307,7 @@ public class Java2DUtilTest extends BaseTest {
     }
 
     @Test
-    public void testCropWithCropByPixels() {
+    void testCropWithCropByPixels() {
         CropByPixels crop = new CropByPixels(0, 0, 50, 50);
         final int width = 200, height = 100;
         BufferedImage inImage = newColorImage(width, height, 8, false);
@@ -329,7 +329,7 @@ public class Java2DUtilTest extends BaseTest {
     }
 
     @Test
-    public void testCropWithCropByPercent() {
+    void testCropWithCropByPercent() {
         CropByPercent crop = new CropByPercent(0.5, 0.5, 0.5, 0.5);
         final int width = 200, height = 100;
         BufferedImage inImage = newColorImage(width, height, 8, false);
@@ -353,7 +353,7 @@ public class Java2DUtilTest extends BaseTest {
     /* getOverlayImage() */
 
     @Test
-    public void testGetOverlayImage() throws Exception {
+    void testGetOverlayImage() throws Exception {
         ImageOverlay overlay = new ImageOverlay(
                 TestUtil.getImage("png").toUri(), Position.BOTTOM_RIGHT, 0);
         assertNotNull(Java2DUtil.getOverlayImage(overlay));
@@ -362,21 +362,21 @@ public class Java2DUtilTest extends BaseTest {
     /* reduceTo8Bits() */
 
     @Test
-    public void testReduceTo8BitsWith8BitGray() {
+    void testReduceTo8BitsWith8BitGray() {
         BufferedImage image = newGrayImage(8, false);
         BufferedImage result = Java2DUtil.reduceTo8Bits(image);
         assertSame(image, result);
     }
 
     @Test
-    public void testReduceTo8BitsWith8BitRGBA() {
+    void testReduceTo8BitsWith8BitRGBA() {
         BufferedImage image = newColorImage(8, true);
         BufferedImage result = Java2DUtil.reduceTo8Bits(image);
         assertSame(image, result);
     }
 
     @Test
-    public void testReduceTo8BitsWith16BitGray() {
+    void testReduceTo8BitsWith16BitGray() {
         BufferedImage image = newGrayImage(16, false);
         BufferedImage result = Java2DUtil.reduceTo8Bits(image);
         assertEquals(8, result.getColorModel().getComponentSize(0));
@@ -384,7 +384,7 @@ public class Java2DUtilTest extends BaseTest {
     }
 
     @Test
-    public void testReduceTo8BitsWith16BitRGBA() {
+    void testReduceTo8BitsWith16BitRGBA() {
         BufferedImage image = newColorImage(16, true);
         BufferedImage result = Java2DUtil.reduceTo8Bits(image);
         assertEquals(8, result.getColorModel().getComponentSize(0));
@@ -394,7 +394,7 @@ public class Java2DUtilTest extends BaseTest {
     /* removeAlpha(BufferedImage) */
 
     @Test
-    public void testRemoveAlphaOn8BitGrayImage() {
+    void testRemoveAlphaOn8BitGrayImage() {
         BufferedImage inImage = newGrayImage(8, false);
         assertFalse(inImage.getColorModel().hasAlpha());
 
@@ -403,7 +403,7 @@ public class Java2DUtilTest extends BaseTest {
     }
 
     @Test
-    public void testRemoveAlphaOn8BitGrayImageWithAlpha() {
+    void testRemoveAlphaOn8BitGrayImageWithAlpha() {
         BufferedImage inImage = newGrayImage(8, true);
         assertTrue(inImage.getColorModel().hasAlpha());
 
@@ -412,7 +412,7 @@ public class Java2DUtilTest extends BaseTest {
     }
 
     @Test
-    public void testRemoveAlphaOn8BitRGBImage() {
+    void testRemoveAlphaOn8BitRGBImage() {
         BufferedImage inImage = newColorImage(8, false);
         assertFalse(inImage.getColorModel().hasAlpha());
 
@@ -421,7 +421,7 @@ public class Java2DUtilTest extends BaseTest {
     }
 
     @Test
-    public void testRemoveAlphaOn8BitRGBAImage() {
+    void testRemoveAlphaOn8BitRGBAImage() {
         BufferedImage inImage = newColorImage(16, true);
         assertTrue(inImage.getColorModel().hasAlpha());
 
@@ -430,7 +430,7 @@ public class Java2DUtilTest extends BaseTest {
     }
 
     @Test
-    public void testRemoveAlphaOn16BitGrayImage() {
+    void testRemoveAlphaOn16BitGrayImage() {
         BufferedImage inImage = newGrayImage(16, false);
         assertFalse(inImage.getColorModel().hasAlpha());
 
@@ -439,7 +439,7 @@ public class Java2DUtilTest extends BaseTest {
     }
 
     @Test
-    public void testRemoveAlphaOn16BitGrayImageWithAlpha() {
+    void testRemoveAlphaOn16BitGrayImageWithAlpha() {
         BufferedImage inImage = newGrayImage(16, true);
         assertTrue(inImage.getColorModel().hasAlpha());
 
@@ -448,7 +448,7 @@ public class Java2DUtilTest extends BaseTest {
     }
 
     @Test
-    public void testRemoveAlphaOn16BitRGBImage() {
+    void testRemoveAlphaOn16BitRGBImage() {
         BufferedImage inImage = newColorImage(16, false);
         assertFalse(inImage.getColorModel().hasAlpha());
 
@@ -457,7 +457,7 @@ public class Java2DUtilTest extends BaseTest {
     }
 
     @Test
-    public void testRemoveAlphaOn16BitRGBAImage() {
+    void testRemoveAlphaOn16BitRGBAImage() {
         BufferedImage inImage = newColorImage(16, true);
         assertTrue(inImage.getColorModel().hasAlpha());
 
@@ -468,7 +468,7 @@ public class Java2DUtilTest extends BaseTest {
     /* removeAlpha(BufferedImage, Color) */
 
     @Test
-    public void testRemoveAlphaOnImageWithAlphaWithBackgroundColor()
+    void testRemoveAlphaOnImageWithAlphaWithBackgroundColor()
             throws IOException {
         Path file = TestUtil.getImage("png-rgba-64x56x8.png");
         BufferedImage inImage = ImageIO.read(file.toFile());
@@ -487,7 +487,7 @@ public class Java2DUtilTest extends BaseTest {
     /* rotate(BufferedImage, Orientation) */
 
     @Test
-    public void testRotateWithOrientation() {
+    void testRotateWithOrientation() {
         BufferedImage inImage = newColorImage(8, false);
         BufferedImage outImage = Java2DUtil.rotate(inImage, Orientation.ROTATE_0);
         assertSame(inImage, outImage);
@@ -508,7 +508,7 @@ public class Java2DUtilTest extends BaseTest {
     /* rotate(BufferedImage, Rotate) */
 
     @Test
-    public void testRotateDimensions() {
+    void testRotateDimensions() {
         BufferedImage inImage = newColorImage(8, false);
         final int sourceWidth = inImage.getWidth();
         final int sourceHeight = inImage.getHeight();
@@ -529,7 +529,7 @@ public class Java2DUtilTest extends BaseTest {
     }
 
     @Test
-    public void testRotateWith8BitGray() {
+    void testRotateWith8BitGray() {
         BufferedImage inImage = newGrayImage(8, false);
         Rotate rotate = new Rotate(15);
         BufferedImage outImage = Java2DUtil.rotate(inImage, rotate);
@@ -540,7 +540,7 @@ public class Java2DUtilTest extends BaseTest {
     }
 
     @Test
-    public void testRotateWith8BitGrayWithAlpha() {
+    void testRotateWith8BitGrayWithAlpha() {
         BufferedImage inImage = newGrayImage(8, true);
         Rotate rotate = new Rotate(15);
         BufferedImage outImage = Java2DUtil.rotate(inImage, rotate);
@@ -551,7 +551,7 @@ public class Java2DUtilTest extends BaseTest {
     }
 
     @Test
-    public void testRotateWith8BitRGB() {
+    void testRotateWith8BitRGB() {
         BufferedImage inImage = newColorImage(8, false);
         Rotate rotate = new Rotate(15);
         BufferedImage outImage = Java2DUtil.rotate(inImage, rotate);
@@ -562,7 +562,7 @@ public class Java2DUtilTest extends BaseTest {
     }
 
     @Test
-    public void testRotateWith8BitRGBA() {
+    void testRotateWith8BitRGBA() {
         BufferedImage inImage = newColorImage(8, true);
         Rotate rotate = new Rotate(15);
         BufferedImage outImage = Java2DUtil.rotate(inImage, rotate);
@@ -573,7 +573,7 @@ public class Java2DUtilTest extends BaseTest {
     }
 
     @Test
-    public void testRotateWith16BitGray() {
+    void testRotateWith16BitGray() {
         BufferedImage inImage = newGrayImage(16, false);
         Rotate rotate = new Rotate(15);
         BufferedImage outImage = Java2DUtil.rotate(inImage, rotate);
@@ -584,7 +584,7 @@ public class Java2DUtilTest extends BaseTest {
     }
 
     @Test
-    public void testRotateWith16BitGrayWithAlpha() {
+    void testRotateWith16BitGrayWithAlpha() {
         BufferedImage inImage = newGrayImage(16, true);
         Rotate rotate = new Rotate(15);
         BufferedImage outImage = Java2DUtil.rotate(inImage, rotate);
@@ -595,7 +595,7 @@ public class Java2DUtilTest extends BaseTest {
     }
 
     @Test
-    public void testRotateWith16BitRGB() {
+    void testRotateWith16BitRGB() {
         BufferedImage inImage = newColorImage(16, false);
         Rotate rotate = new Rotate(15);
         BufferedImage outImage = Java2DUtil.rotate(inImage, rotate);
@@ -606,7 +606,7 @@ public class Java2DUtilTest extends BaseTest {
     }
 
     @Test
-    public void testRotateWith16BitRGBA() {
+    void testRotateWith16BitRGBA() {
         BufferedImage inImage = newColorImage(16, true);
         Rotate rotate = new Rotate(15);
         BufferedImage outImage = Java2DUtil.rotate(inImage, rotate);
@@ -619,7 +619,7 @@ public class Java2DUtilTest extends BaseTest {
     /* scale */
 
     @Test
-    public void testScaleWithFull() {
+    void testScaleWithFull() {
         BufferedImage inImage = newColorImage(100, 100, 8, false);
 
         Scale scale = new Scale();
@@ -632,7 +632,7 @@ public class Java2DUtilTest extends BaseTest {
     }
 
     @Test
-    public void testScaleWithWithAspectFitWidth() {
+    void testScaleWithWithAspectFitWidth() {
         BufferedImage inImage = newColorImage(100, 100, 8, false);
 
         Scale scale = new Scale(50, null, Scale.Mode.ASPECT_FIT_WIDTH);
@@ -645,7 +645,7 @@ public class Java2DUtilTest extends BaseTest {
     }
 
     @Test
-    public void testScaleWithAspectFitHeight() {
+    void testScaleWithAspectFitHeight() {
         BufferedImage inImage = newColorImage(100, 100, 8, false);
 
         Scale scale = new Scale(null, 50, Scale.Mode.ASPECT_FIT_HEIGHT);
@@ -658,7 +658,7 @@ public class Java2DUtilTest extends BaseTest {
     }
 
     @Test
-    public void testScaleWithAspectFitInside() {
+    void testScaleWithAspectFitInside() {
         BufferedImage inImage = newColorImage(100, 100, 8, false);
 
         Scale scale = new Scale(50, 50, Scale.Mode.ASPECT_FIT_INSIDE);
@@ -671,7 +671,7 @@ public class Java2DUtilTest extends BaseTest {
     }
 
     @Test
-    public void testScaleWithNonAspectFill() {
+    void testScaleWithNonAspectFill() {
         BufferedImage inImage = newColorImage(100, 100, 8, false);
 
         Scale scale = new Scale();
@@ -687,7 +687,7 @@ public class Java2DUtilTest extends BaseTest {
     }
 
     @Test
-    public void testScaleWithWithScaleByPercent() {
+    void testScaleWithWithScaleByPercent() {
         BufferedImage inImage = newColorImage(100, 100, 8, false);
 
         Scale scale = new Scale(0.25f);
@@ -700,7 +700,7 @@ public class Java2DUtilTest extends BaseTest {
     }
 
     @Test
-    public void testScaleWithSub3PixelSourceDimension() {
+    void testScaleWithSub3PixelSourceDimension() {
         BufferedImage inImage = newColorImage(2, 1, 8, false);
 
         Scale scale = new Scale(200, 1000, Scale.Mode.ASPECT_FIT_INSIDE);
@@ -713,7 +713,7 @@ public class Java2DUtilTest extends BaseTest {
     }
 
     @Test
-    public void testScaleWithSub3PixelTargetDimension() {
+    void testScaleWithSub3PixelTargetDimension() {
         BufferedImage inImage = newColorImage(100, 100, 8, false);
 
         Scale scale = new Scale(2, 1, Scale.Mode.NON_ASPECT_FILL);
@@ -728,7 +728,7 @@ public class Java2DUtilTest extends BaseTest {
     /* sharpen() */
 
     @Test
-    public void testSharpen() {
+    void testSharpen() {
         BufferedImage inImage = newColorImage(20, 20, 8, false);
         Sharpen sharpen = new Sharpen(0.1f);
         BufferedImage outImage = Java2DUtil.sharpen(inImage, sharpen);
@@ -740,7 +740,7 @@ public class Java2DUtilTest extends BaseTest {
     /* transformColor() */
 
     @Test
-    public void testTransformColorFrom8BitRGBToBitonal() {
+    void testTransformColorFrom8BitRGBToBitonal() {
         BufferedImage inImage = newColorImage(100, 100, 8, false);
         BufferedImage outImage;
 
@@ -770,7 +770,7 @@ public class Java2DUtilTest extends BaseTest {
     }
 
     @Test
-    public void testTransformColorFrom16BitRGBAToBitonal() {
+    void testTransformColorFrom16BitRGBAToBitonal() {
         BufferedImage inImage = newColorImage(16, true);
 
         // Create a cyan image.
@@ -800,7 +800,7 @@ public class Java2DUtilTest extends BaseTest {
     }
 
     @Test
-    public void testTransformColorFrom8BitRGBToGray() {
+    void testTransformColorFrom8BitRGBToGray() {
         BufferedImage inImage = newColorImage(100, 100, 8, false);
 
         // Start with a red image.
@@ -818,7 +818,7 @@ public class Java2DUtilTest extends BaseTest {
     }
 
     @Test
-    public void testTransformColorFrom16BitRGBAToGray() {
+    void testTransformColorFrom16BitRGBAToGray() {
         BufferedImage inImage = newColorImage(100, 100, 16, true);
 
         // Start with a red image.
@@ -836,7 +836,7 @@ public class Java2DUtilTest extends BaseTest {
     }
 
     @Test
-    public void testTransformColorFromBitonalToBitonal() {
+    void testTransformColorFromBitonalToBitonal() {
         BufferedImage inImage = new BufferedImage(100, 100,
                 BufferedImage.TYPE_BYTE_BINARY);
         BufferedImage outImage = Java2DUtil.transformColor(inImage,
@@ -845,7 +845,7 @@ public class Java2DUtilTest extends BaseTest {
     }
 
     @Test
-    public void testTransformColorFromGrayToGray() {
+    void testTransformColorFromGrayToGray() {
         BufferedImage inImage = newGrayImage(100, 100, 8, false);
         BufferedImage outImage = Java2DUtil.transformColor(inImage,
                 ColorTransform.GRAY);
@@ -853,7 +853,7 @@ public class Java2DUtilTest extends BaseTest {
     }
 
     @Test
-    public void testTransformColorFromGrayAlphaToGray() {
+    void testTransformColorFromGrayAlphaToGray() {
         BufferedImage inImage = newGrayImage(100, 100, 8, true);
         BufferedImage outImage = Java2DUtil.transformColor(inImage,
                 ColorTransform.GRAY);
@@ -863,7 +863,7 @@ public class Java2DUtilTest extends BaseTest {
     /* transpose() */
 
     @Test
-    public void testTransposeImage() {
+    void testTransposeImage() {
         BufferedImage inImage = newColorImage(200, 100, 8, false);
         Transpose transpose = Transpose.HORIZONTAL;
         BufferedImage outImage = Java2DUtil.transpose(inImage, transpose);

@@ -8,10 +8,10 @@ import edu.illinois.library.cantaloupe.processor.codec.AbstractImageWriterTest;
 import edu.illinois.library.cantaloupe.processor.codec.BufferedImageSequence;
 import edu.illinois.library.cantaloupe.processor.codec.ImageReaderFactory;
 import edu.illinois.library.cantaloupe.test.TestUtil;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 
@@ -28,7 +28,7 @@ import java.io.FileOutputStream;
 import java.nio.file.Path;
 import java.util.Iterator;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class GIFImageWriterTest extends AbstractImageWriterTest {
 
@@ -38,7 +38,7 @@ public class GIFImageWriterTest extends AbstractImageWriterTest {
     private PlanarImage planarImage;
     private File tempFile;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         super.setUp();
 
@@ -62,7 +62,7 @@ public class GIFImageWriterTest extends AbstractImageWriterTest {
         reader.dispose();
     }
 
-    @After
+    @AfterEach
     public void tearDown() throws Exception {
         super.tearDown();
 
@@ -126,7 +126,7 @@ public class GIFImageWriterTest extends AbstractImageWriterTest {
     }
 
     @Test
-    @Ignore // this writer doesn't support XMP metadata.
+    @Disabled // this writer doesn't support XMP metadata.
     public void testWriteWithBufferedImageWritesXMPMetadata()  throws Exception {
         Encode encode = new Encode(Format.GIF);
         encode.setMetadata(metadata);
@@ -142,7 +142,7 @@ public class GIFImageWriterTest extends AbstractImageWriterTest {
     }
 
     @Test
-    @Ignore // this writer doesn't support XMP metadata.
+    @Disabled // this writer doesn't support XMP metadata.
     public void testWriteWithPlanarImageWritesXMPMetadata() throws Exception {
         Encode encode = new Encode(Format.GIF);
         encode.setMetadata(metadata);

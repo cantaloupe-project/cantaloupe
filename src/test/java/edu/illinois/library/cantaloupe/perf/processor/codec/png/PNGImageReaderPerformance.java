@@ -35,7 +35,7 @@ public class PNGImageReaderPerformance extends PNGImageReaderTest {
 
     @TearDown
     @Override
-    public void tearDown() {
+    public void tearDown() throws Exception {
         super.tearDown();
     }
 

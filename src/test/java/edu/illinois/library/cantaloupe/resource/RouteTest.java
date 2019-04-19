@@ -3,19 +3,15 @@ package edu.illinois.library.cantaloupe.resource;
 import edu.illinois.library.cantaloupe.resource.admin.AdminResource;
 import edu.illinois.library.cantaloupe.resource.api.TaskResource;
 import edu.illinois.library.cantaloupe.resource.api.TasksResource;
-import org.junit.Before;
-import org.junit.Test;
+import edu.illinois.library.cantaloupe.test.BaseTest;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
-public class RouteTest {
-
-    @Before
-    public void setUp() throws Exception {
-    }
+public class RouteTest extends BaseTest {
 
     @Test
-    public void testForPath() {
+    void testForPath() {
         Route route = Route.forPath("");
         assertEquals(LandingResource.class, route.getResource());
 

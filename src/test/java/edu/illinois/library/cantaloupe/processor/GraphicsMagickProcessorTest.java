@@ -3,10 +3,10 @@ package edu.illinois.library.cantaloupe.processor;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Format;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -16,7 +16,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * For this to work, the GraphicsMagick binary must be on the PATH.
@@ -27,7 +27,7 @@ public class GraphicsMagickProcessorTest extends AbstractMagickProcessorTest {
 
     private GraphicsMagickProcessor instance;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         super.setUp();
 
@@ -38,7 +38,7 @@ public class GraphicsMagickProcessorTest extends AbstractMagickProcessorTest {
         instance = newInstance();
     }
 
-    @After
+    @AfterEach
     public void tearDown() throws Exception {
         super.tearDown();
         instance.close();
@@ -116,12 +116,12 @@ public class GraphicsMagickProcessorTest extends AbstractMagickProcessorTest {
     }
 
     @Test
-    public void testGetInitializationErrorWithNoError() {
+    void testGetInitializationErrorWithNoError() {
         assertNull(instance.getInitializationError());
     }
 
     @Test
-    public void testGetInitializationErrorWithMissingBinaries() {
+    void testGetInitializationErrorWithMissingBinaries() {
         Configuration.getInstance().setProperty(
                 Key.GRAPHICSMAGICKPROCESSOR_PATH_TO_BINARIES,
                 "/bogus/bogus/bogus");
@@ -133,14 +133,14 @@ public class GraphicsMagickProcessorTest extends AbstractMagickProcessorTest {
     /* getWarnings() */
 
     @Test
-    public void testGetWarnings() {
+    void testGetWarnings() {
         assertEquals(0, instance.getWarnings().size());
     }
 
     /* process() */
 
     @Override
-    @Ignore
+    @Disabled
     @Test
     public void testProcessWithAllSupportedOutputFormats() {
         // TODO: The parent fails on a lot of fixtures.

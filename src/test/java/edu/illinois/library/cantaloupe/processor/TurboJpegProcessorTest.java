@@ -5,20 +5,20 @@ import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
 import edu.illinois.library.cantaloupe.source.PathStreamFactory;
 import edu.illinois.library.cantaloupe.test.TestUtil;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 import java.util.EnumSet;
 import java.util.Set;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class TurboJpegProcessorTest extends AbstractProcessorTest {
 
     private TurboJpegProcessor instance;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         super.setUp();
 
@@ -39,12 +39,12 @@ public class TurboJpegProcessorTest extends AbstractProcessorTest {
     }
 
     @Test
-    public void testGetInitializationErrorWithNoException() {
+    void testGetInitializationErrorWithNoException() {
         assertNull(instance.getInitializationError());
     }
 
     @Test
-    public void testGetSupportedFeatures() throws Exception {
+    void testGetSupportedFeatures() throws Exception {
         instance.setSourceFormat(getAnySupportedSourceFormat(instance));
 
         Set<ProcessorFeature> expectedFeatures = EnumSet.of(
@@ -66,35 +66,35 @@ public class TurboJpegProcessorTest extends AbstractProcessorTest {
     }
 
     @Override
-    @Ignore // This processor doesn't support this output format.
+    @Disabled // This processor doesn't support this output format.
     @Test
     public void testProcessWritesXMPMetadataIntoPNG() throws Exception {
         super.testProcessWritesXMPMetadataIntoPNG();
     }
 
     @Override
-    @Ignore // This processor doesn't support this output format.
+    @Disabled // This processor doesn't support this output format.
     @Test
     public void testProcessWritesXMPMetadataIntoTIFF() throws Exception {
         super.testProcessWritesXMPMetadataIntoTIFF();
     }
 
     @Test
-    public void testReadInfoEXIFAwareness() throws Exception {
+    void testReadInfoEXIFAwareness() throws Exception {
         instance.setStreamFactory(new PathStreamFactory(TestUtil.getImage("jpg-exif.jpg")));
         Info info = instance.readInfo();
         assertTrue(info.getMetadata().getEXIF().isPresent());
     }
 
     @Test
-    public void testReadInfoIPTCAwareness() throws Exception {
+    void testReadInfoIPTCAwareness() throws Exception {
         instance.setStreamFactory(new PathStreamFactory(TestUtil.getImage("jpg-iptc.jpg")));
         Info info = instance.readInfo();
         assertTrue(info.getMetadata().getIPTC().isPresent());
     }
 
     @Test
-    public void testReadInfoXMPAwareness() throws Exception {
+    void testReadInfoXMPAwareness() throws Exception {
         instance.setStreamFactory(new PathStreamFactory(TestUtil.getImage("jpg-xmp.jpg")));
         Info info = instance.readInfo();
         assertTrue(info.getMetadata().getXMP().isPresent());

@@ -7,33 +7,33 @@ import edu.illinois.library.cantaloupe.source.stream.ClosingMemoryCacheImageInpu
 import edu.illinois.library.cantaloupe.source.stream.HTTPImageInputStream;
 import edu.illinois.library.cantaloupe.test.AzureStorageTestUtil;
 import edu.illinois.library.cantaloupe.test.BaseTest;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import javax.imageio.stream.ImageInputStream;
 import java.io.InputStream;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class AzureStorageStreamFactoryTest extends BaseTest {
 
     private AzureStorageStreamFactory instance;
 
-    @BeforeClass
+    @BeforeAll
     public static void beforeClass() throws Exception {
         BaseTest.beforeClass();
         AzureStorageTestUtil.uploadFixtures();
     }
 
-    @AfterClass
+    @AfterAll
     public static void afterClass() throws Exception {
         BaseTest.afterClass();
         AzureStorageTestUtil.deleteFixtures();
     }
 
-    @Before
+    @BeforeEach
     @Override
     public void setUp() throws Exception {
         super.setUp();
@@ -45,7 +45,7 @@ public class AzureStorageStreamFactoryTest extends BaseTest {
     }
 
     @Test
-    public void testIsSeekingDirect() {
+    void testIsSeekingDirect() {
         final Configuration config = Configuration.getInstance();
         config.setProperty(Key.AZURESTORAGESOURCE_CHUNKING_ENABLED, false);
         assertFalse(instance.isSeekingDirect());
@@ -54,7 +54,7 @@ public class AzureStorageStreamFactoryTest extends BaseTest {
     }
 
     @Test
-    public void testNewInputStream() throws Exception {
+    void testNewInputStream() throws Exception {
         int length = 0;
         try (InputStream is = instance.newInputStream()) {
             while (is.read() != -1) {
@@ -65,7 +65,7 @@ public class AzureStorageStreamFactoryTest extends BaseTest {
     }
 
     @Test
-    public void testNewSeekableStreamTypeWithChunkingEnabled() throws Exception {
+    void testNewSeekableStreamTypeWithChunkingEnabled() throws Exception {
         final Configuration config = Configuration.getInstance();
         config.setProperty(Key.AZURESTORAGESOURCE_CHUNKING_ENABLED, true);
         config.setProperty(Key.AZURESTORAGESOURCE_CHUNK_SIZE, "777K");
@@ -77,7 +77,7 @@ public class AzureStorageStreamFactoryTest extends BaseTest {
     }
 
     @Test
-    public void testNewSeekableStreamLengthWithChunkingEnabled() throws Exception {
+    void testNewSeekableStreamLengthWithChunkingEnabled() throws Exception {
         final Configuration config = Configuration.getInstance();
         config.setProperty(Key.AZURESTORAGESOURCE_CHUNKING_ENABLED, true);
         config.setProperty(Key.AZURESTORAGESOURCE_CHUNK_SIZE, "1K");
@@ -92,7 +92,7 @@ public class AzureStorageStreamFactoryTest extends BaseTest {
     }
 
     @Test
-    public void testNewSeekableStreamTypeWithChunkingDisabled() throws Exception {
+    void testNewSeekableStreamTypeWithChunkingDisabled() throws Exception {
         final Configuration config = Configuration.getInstance();
         config.setProperty(Key.AZURESTORAGESOURCE_CHUNKING_ENABLED, false);
 
@@ -102,7 +102,7 @@ public class AzureStorageStreamFactoryTest extends BaseTest {
     }
 
     @Test
-    public void testNewSeekableStreamLengthWithChunkingDisabled() throws Exception {
+    void testNewSeekableStreamLengthWithChunkingDisabled() throws Exception {
         final Configuration config = Configuration.getInstance();
         config.setProperty(Key.AZURESTORAGESOURCE_CHUNKING_ENABLED, false);
 
@@ -116,7 +116,7 @@ public class AzureStorageStreamFactoryTest extends BaseTest {
     }
 
     @Test
-    public void testNewSeekableStreamWithChunkCacheEnabled() throws Exception {
+    void testNewSeekableStreamWithChunkCacheEnabled() throws Exception {
         final Configuration config = Configuration.getInstance();
         config.setProperty(Key.AZURESTORAGESOURCE_CHUNKING_ENABLED, true);
         config.setProperty(Key.AZURESTORAGESOURCE_CHUNK_SIZE, "777K");

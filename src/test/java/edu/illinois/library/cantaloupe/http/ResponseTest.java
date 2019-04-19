@@ -1,5 +1,6 @@
 package edu.illinois.library.cantaloupe.http;
 
+import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.WebServer;
 import org.eclipse.jetty.client.HttpClient;
 import org.eclipse.jetty.client.HttpClientTransport;
@@ -9,19 +10,22 @@ import org.eclipse.jetty.client.http.HttpClientTransportOverHTTP;
 import org.eclipse.jetty.http.HttpField;
 import org.eclipse.jetty.http.HttpMethod;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.*;
+import java.nio.charset.StandardCharsets;
 
-public class ResponseTest {
+import static org.junit.jupiter.api.Assertions.*;
+
+public class ResponseTest extends BaseTest {
 
     private HttpClient jettyClient;
     private WebServer server;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
+        super.setUp();
         server = new WebServer();
         server.start();
 
@@ -31,8 +35,9 @@ public class ResponseTest {
         jettyClient.setFollowRedirects(false);
     }
 
-    @After
+    @AfterEach
     public void tearDown() throws Exception {
+        super.tearDown();
         try {
             server.stop();
         } finally {
@@ -41,7 +46,7 @@ public class ResponseTest {
     }
 
     @Test
-    public void testFromJettyResponse() throws Exception {
+    void testFromJettyResponse() throws Exception {
         Request request = jettyClient.newRequest(
                 server.getHTTPURI().resolve("/jpg"));
         request.method(HttpMethod.GET);
@@ -63,12 +68,13 @@ public class ResponseTest {
     }
 
     @Test
-    public void testGetBodyAsString() throws Exception {
-        final byte[] body = "cats".getBytes("UTF-8");
+    void testGetBodyAsString() {
+        final byte[] body = "cats".getBytes(StandardCharsets.UTF_8);
 
         Response response = new Response();
         response.setBody(body);
-        assertEquals(new String(body, "UTF-8"), response.getBodyAsString());
+        assertEquals(new String(body, StandardCharsets.UTF_8),
+                response.getBodyAsString());
     }
 
 }

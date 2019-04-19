@@ -8,21 +8,21 @@ import edu.illinois.library.cantaloupe.processor.codec.ImageReader;
 import edu.illinois.library.cantaloupe.processor.codec.ImageReaderFactory;
 import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
 import edu.illinois.library.cantaloupe.test.TestUtil;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.nio.file.Path;
 import java.util.Set;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
-public class Java2dProcessorTest extends ImageIOProcessorTest {
+public class Java2dProcessorTest extends AbstractImageIOProcessorTest {
 
     private Java2dProcessor instance;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         super.setUp();
         instance = newInstance();
@@ -34,7 +34,7 @@ public class Java2dProcessorTest extends ImageIOProcessorTest {
     }
 
     @Test
-    public void testGetSupportedFeatures() throws Exception {
+    void testGetSupportedFeatures() throws Exception {
         instance.setSourceFormat(getAnySupportedSourceFormat(instance));
 
         Set<ProcessorFeature> expectedFeatures = Set.of(
@@ -56,7 +56,7 @@ public class Java2dProcessorTest extends ImageIOProcessorTest {
     }
 
     @Test
-    public void testProcessWithAnimatedGIF() throws Exception {
+    void testProcessWithAnimatedGIF() throws Exception {
         Path image = TestUtil.getImage("gif-animated-looping.gif");
         OperationList ops = new OperationList(new Encode(Format.GIF));
         Info info = Info.builder()

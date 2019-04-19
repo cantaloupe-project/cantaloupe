@@ -1,13 +1,13 @@
 package edu.illinois.library.cantaloupe.image;
 
 import edu.illinois.library.cantaloupe.test.BaseTest;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
 import java.util.Map;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class ScaleConstraintTest extends BaseTest {
 
@@ -15,61 +15,66 @@ public class ScaleConstraintTest extends BaseTest {
 
     private ScaleConstraint instance;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         super.setUp();
         instance = new ScaleConstraint(2, 3);
     }
 
     @Test
-    public void testFromIdentifierPathComponentWithNoConstraintPresent() {
+    void testFromIdentifierPathComponentWithNoConstraintPresent() {
         assertNull(ScaleConstraint.fromIdentifierPathComponent("cats"));
     }
 
     @Test
-    public void testFromIdentifierPathComponentWithConstraintPresent() {
+    void testFromIdentifierPathComponentWithConstraintPresent() {
         assertEquals(instance,
                 ScaleConstraint.fromIdentifierPathComponent("cats-2:3"));
     }
 
     @Test
-    public void testFromIdentifierPathComponentWithNullArgument() {
+    void testFromIdentifierPathComponentWithNullArgument() {
         assertNull(ScaleConstraint.fromIdentifierPathComponent(null));
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void testConstructorWithLargerNumeratorThanDenominator() {
-        new ScaleConstraint(3, 2);
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void testConstructorWithNegativeNumerator() {
-        new ScaleConstraint(-1, 2);
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void testConstructorWithNegativeDenominator() {
-        new ScaleConstraint(1, -2);
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void testConstructorWithZeroNumerator() {
-        new ScaleConstraint(0, 2);
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void testConstructorWithZeroDenominator() {
-        new ScaleConstraint(1, 0);
+    @Test
+    void testConstructorWithLargerNumeratorThanDenominator() {
+        assertThrows(IllegalArgumentException.class,
+                () -> new ScaleConstraint(3, 2));
     }
 
     @Test
-    public void testEquals() {
+    void testConstructorWithNegativeNumerator() {
+        assertThrows(IllegalArgumentException.class,
+                () -> new ScaleConstraint(-1, 2));
+    }
+
+    @Test
+    void testConstructorWithNegativeDenominator() {
+        assertThrows(IllegalArgumentException.class,
+                () -> new ScaleConstraint(1, -2));
+    }
+
+    @Test
+    void testConstructorWithZeroNumerator() {
+        assertThrows(IllegalArgumentException.class,
+                () -> new ScaleConstraint(0, 2));
+    }
+
+    @Test
+    void testConstructorWithZeroDenominator() {
+        assertThrows(IllegalArgumentException.class,
+                () -> new ScaleConstraint(1, 0));
+    }
+
+    @Test
+    void testEquals() {
         assertEquals(instance, new ScaleConstraint(2, 3));
         assertNotEquals(instance, new ScaleConstraint(3, 4));
     }
 
     @Test
-    public void testGetConstrainedSize() {
+    void testGetConstrainedSize() {
         Dimension fullSize = new Dimension(900, 600);
         Dimension actual = instance.getConstrainedSize(fullSize);
         assertEquals(600, actual.width(), DELTA);
@@ -77,40 +82,40 @@ public class ScaleConstraintTest extends BaseTest {
     }
 
     @Test
-    public void testGetReduced() {
+    void testGetReduced() {
         assertEquals(instance, instance.getReduced());
         assertEquals(new ScaleConstraint(23, 27),
                 new ScaleConstraint(92, 108).getReduced());
     }
 
     @Test
-    public void testGetResultingSize() {
+    void testGetResultingSize() {
         Dimension fullSize = new Dimension(1500, 1200);
         Dimension actual = instance.getResultingSize(fullSize);
         assertEquals(new Dimension(1000, 800), actual);
     }
 
     @Test
-    public void testHasEffect() {
+    void testHasEffect() {
         assertTrue(instance.hasEffect());
         instance = new ScaleConstraint(2, 2);
         assertFalse(instance.hasEffect());
     }
 
     @Test
-    public void testHashCode() {
+    void testHashCode() {
         double[] codes = { Long.hashCode(2), Long.hashCode(3) };
         int expected = Arrays.hashCode(codes);
         assertEquals(expected, instance.hashCode());
     }
 
     @Test
-    public void testToIdentifierSuffix() {
+    void testToIdentifierSuffix() {
         assertEquals("-2:3", instance.toIdentifierSuffix());
     }
 
     @Test
-    public void testToMap() {
+    void testToMap() {
         Map<String,Long> actual = instance.toMap();
         assertEquals(2, actual.size());
         assertEquals(2, (long) actual.get("numerator"));
@@ -118,7 +123,7 @@ public class ScaleConstraintTest extends BaseTest {
     }
 
     @Test
-    public void testToString() {
+    void testToString() {
         assertEquals("2:3", instance.toString());
     }
 

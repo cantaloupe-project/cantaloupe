@@ -1,41 +1,43 @@
 package edu.illinois.library.cantaloupe.http;
 
-import org.junit.Before;
-import org.junit.Test;
+import edu.illinois.library.cantaloupe.test.BaseTest;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
-public class StatusTest {
+public class StatusTest extends BaseTest {
 
     private Status instance;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
+        super.setUp();
         instance = new Status(200);
     }
 
     @Test
-    public void testEqualsWithEqualInstances() {
+    void testEqualsWithEqualInstances() {
         assertEquals(new Status(200), instance);
     }
 
     @Test
-    public void testEqualsWithUnequalCodes() {
+    void testEqualsWithUnequalCodes() {
         assertNotEquals(new Status(201), instance);
     }
 
     @Test
-    public void testEqualsWithUnequalDescriptions() {
+    void testEqualsWithUnequalDescriptions() {
         assertEquals(new Status(200, "Okey-Dokey"), instance);
     }
 
     @Test
-    public void testHashCode() {
+    void testHashCode() {
         assertEquals(Integer.hashCode(200), instance.hashCode());
     }
 
     @Test
-    public void testToString() {
+    void testToString() {
         assertEquals("200 OK", instance.toString());
     }
 

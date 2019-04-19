@@ -3,14 +3,14 @@ package edu.illinois.library.cantaloupe.processor;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.test.BaseTest;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class RetrievalStrategyTest extends BaseTest {
 
     @Test
-    public void testFromWithAbortStrategy() {
+    void testFromWithAbortStrategy() {
         final Configuration config = Configuration.getInstance();
         final Key key = Key.PROCESSOR_FALLBACK_RETRIEVAL_STRATEGY;
         config.setProperty(key, RetrievalStrategy.ABORT.getConfigValue());
@@ -19,7 +19,7 @@ public class RetrievalStrategyTest extends BaseTest {
     }
 
     @Test
-    public void testFromWithCacheStrategy() {
+    void testFromWithCacheStrategy() {
         final Configuration config = Configuration.getInstance();
         final Key key = Key.PROCESSOR_FALLBACK_RETRIEVAL_STRATEGY;
         config.setProperty(key, RetrievalStrategy.CACHE.getConfigValue());
@@ -28,7 +28,7 @@ public class RetrievalStrategyTest extends BaseTest {
     }
 
     @Test
-    public void testFromWithDownloadStrategy() {
+    void testFromWithDownloadStrategy() {
         final Configuration config = Configuration.getInstance();
         final Key key = Key.PROCESSOR_FALLBACK_RETRIEVAL_STRATEGY;
         config.setProperty(key, RetrievalStrategy.DOWNLOAD.getConfigValue());
@@ -37,7 +37,7 @@ public class RetrievalStrategyTest extends BaseTest {
     }
 
     @Test
-    public void testFromWithStreamStrategy() {
+    void testFromWithStreamStrategy() {
         final Configuration config = Configuration.getInstance();
         final Key key = Key.PROCESSOR_FALLBACK_RETRIEVAL_STRATEGY;
         config.setProperty(key, RetrievalStrategy.STREAM.getConfigValue());
@@ -46,7 +46,7 @@ public class RetrievalStrategyTest extends BaseTest {
     }
 
     @Test
-    public void testGetConfigValue() {
+    void testGetConfigValue() {
         assertEquals("AbortStrategy", RetrievalStrategy.ABORT.getConfigValue());
         assertEquals("CacheStrategy", RetrievalStrategy.CACHE.getConfigValue());
         assertEquals("DownloadStrategy", RetrievalStrategy.DOWNLOAD.getConfigValue());
@@ -54,7 +54,7 @@ public class RetrievalStrategyTest extends BaseTest {
     }
 
     @Test
-    public void testToString() {
+    void testToString() {
         assertEquals("AbortStrategy", RetrievalStrategy.ABORT.toString());
         assertEquals("CacheStrategy", RetrievalStrategy.CACHE.toString());
         assertEquals("DownloadStrategy", RetrievalStrategy.DOWNLOAD.toString());

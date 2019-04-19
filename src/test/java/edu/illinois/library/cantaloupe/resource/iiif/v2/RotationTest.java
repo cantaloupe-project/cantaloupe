@@ -3,10 +3,10 @@ package edu.illinois.library.cantaloupe.resource.iiif.v2;
 import edu.illinois.library.cantaloupe.operation.Transpose;
 import edu.illinois.library.cantaloupe.resource.IllegalClientArgumentException;
 import edu.illinois.library.cantaloupe.test.BaseTest;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class RotationTest extends BaseTest {
 
@@ -14,7 +14,7 @@ public class RotationTest extends BaseTest {
 
     private Rotation instance;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         super.setUp();
 
@@ -29,7 +29,7 @@ public class RotationTest extends BaseTest {
      * Tests fromUri(String) with a legal value.
      */
     @Test
-    public void testFromUri() {
+    void testFromUri() {
         Rotation r = Rotation.fromUri("35");
         assertEquals(35f, r.getDegrees(), DELTA);
         assertFalse(r.shouldMirror());
@@ -47,30 +47,24 @@ public class RotationTest extends BaseTest {
      * Tests fromUri(String) with a large value.
      */
     @Test
-    public void testFromUriWithLargeValue() {
-        try {
-            Rotation.fromUri("720");
-        } catch (IllegalClientArgumentException e) {
-            assertEquals("Degrees must be greater than or equal to 0 and less than 360",
-                    e.getMessage());
-        }
+    void testFromUriWithLargeValue() {
+        assertThrows(IllegalClientArgumentException.class,
+                () -> Rotation.fromUri("720"),
+                "Degrees must be between 0 and 360");
     }
 
     /**
      * Tests fromUri(String) with a negative value.
      */
     @Test
-    public void testFromUriWithNegativeValue() {
-        try {
-            Rotation.fromUri("-35");
-        } catch (IllegalClientArgumentException e) {
-            assertEquals("Degrees must be greater than or equal to 0 and less than 360",
-                    e.getMessage());
-        }
+    void testFromUriWithNegativeValue() {
+        assertThrows(IllegalClientArgumentException.class,
+                () -> Rotation.fromUri("-35"),
+                "Degrees must be between 0 and 360");
     }
 
     @Test
-    public void testCompareTo() {
+    void testCompareTo() {
         Rotation r2 = new Rotation();
         assertEquals(0, instance.compareTo(r2));
         r2.setDegrees(15);
@@ -81,54 +75,46 @@ public class RotationTest extends BaseTest {
     }
 
     @Test
-    public void testEquals() {
+    void testEquals() {
         Rotation r2 = new Rotation();
-        assertTrue(r2.equals(instance));
+        assertEquals(r2, instance);
         r2.setDegrees(15);
-        assertFalse(r2.equals(instance));
+        assertNotEquals(r2, instance);
         r2.setDegrees(0);
         r2.setMirror(true);
-        assertFalse(r2.equals(instance));
+        assertNotEquals(r2, instance);
     }
 
     /* setDegrees() */
 
     @Test
-    public void testSetDegrees() {
+    void testSetDegrees() {
         float degrees = 50.0f;
         instance.setDegrees(degrees);
         assertEquals(degrees, instance.getDegrees(), DELTA);
     }
 
     @Test
-    public void testSetLargeDegrees() {
-        float degrees = 530.0f;
-        try {
-            instance.setDegrees(degrees);
-        } catch (IllegalClientArgumentException e) {
-            assertEquals("Degrees must be greater than or equal to 0 and less than 360",
-                    e.getMessage());
-        }
+    void testSetLargeDegrees() {
+        assertThrows(IllegalClientArgumentException.class,
+                () -> instance.setDegrees(530),
+                "Degrees must be between 0 and 360");
     }
 
     @Test
-    public void testSetNegativeDegrees() {
-        float degrees = -50.0f;
-        try {
-            instance.setDegrees(degrees);
-        } catch (IllegalClientArgumentException e) {
-            assertEquals("Degrees must be greater than or equal to 0 and less than 360",
-                    e.getMessage());
-        }
+    void testSetNegativeDegrees() {
+        assertThrows(IllegalClientArgumentException.class,
+                () -> instance.setDegrees(-50),
+                "Degrees must be between 0 and 360");
     }
 
     @Test
-    public void testToRotate() {
-        assertTrue(instance.equals(instance.toRotate()));
+    void testToRotate() {
+        assertEquals(instance, instance.toRotate());
     }
 
     @Test
-    public void testToTranspose() {
+    void testToTranspose() {
         instance.setMirror(false);
         assertNull(instance.toTranspose());
         instance.setMirror(true);
@@ -136,7 +122,7 @@ public class RotationTest extends BaseTest {
     }
 
     @Test
-    public void testToString() {
+    void testToString() {
         Rotation r = Rotation.fromUri("50");
         assertEquals("50", r.toString());
 

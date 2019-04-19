@@ -1,81 +1,85 @@
 package edu.illinois.library.cantaloupe.image;
 
-import org.junit.Before;
-import org.junit.Test;
+import edu.illinois.library.cantaloupe.test.BaseTest;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
-public class DimensionTest {
+public class DimensionTest extends BaseTest {
 
     private static final double DELTA = 0.00000001;
 
     private Dimension instance;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
+        super.setUp();
         instance = new Dimension(1000, 800);
     }
 
     @Test
-    public void testDoubleConstructor() {
+    void testDoubleConstructor() {
         instance = new Dimension(5.5, 4.4);
         assertEquals(5.5, instance.width(), DELTA);
         assertEquals(4.4, instance.height(), DELTA);
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void testDoubleConstructorWithNegativeArgument() {
-        new Dimension(-5.5, -4.4);
+    @Test
+    void testDoubleConstructorWithNegativeArgument() {
+        assertThrows(IllegalArgumentException.class,
+                () -> new Dimension(-5.5, -4.4));
     }
 
     @Test
-    public void testIntegerConstructor() {
+    void testIntegerConstructor() {
         instance = new Dimension(5, 4);
         assertEquals(5, instance.width(), DELTA);
         assertEquals(4, instance.height(), DELTA);
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void testIntegerConstructorWithNegativeArgument() {
-        new Dimension(-5, -4);
+    @Test
+    void testIntegerConstructorWithNegativeArgument() {
+        assertThrows(IllegalArgumentException.class,
+                () -> new Dimension(-5, -4));
     }
 
     @Test
-    public void testCopyConstructor() {
+    void testCopyConstructor() {
         Dimension other = new Dimension(instance);
         assertEquals(other, instance);
     }
 
     @Test
-    public void testEqualsWithEqualInstances() {
+    void testEqualsWithEqualInstances() {
         assertEquals(instance, new Dimension(1000, 800));
     }
 
     @Test
-    public void testEqualsWithUnequalInstances() {
+    void testEqualsWithUnequalInstances() {
         assertNotEquals(instance, new Dimension(1001, 800));
         assertNotEquals(instance, new Dimension(1000, 801));
     }
 
     @Test
-    public void testHashCode() {
+    void testHashCode() {
         int expected = Long.hashCode(Double.hashCode(instance.width()) +
                 Double.hashCode(instance.height()));
         assertEquals(expected, instance.hashCode());
     }
 
     @Test
-    public void testWidth() {
+    void testWidth() {
         assertEquals(1000, instance.width(), DELTA);
     }
 
     @Test
-    public void testHeight() {
+    void testHeight() {
         assertEquals(800, instance.height(), DELTA);
     }
 
     @Test
-    public void testIntWidth() {
+    void testIntWidth() {
         instance.setWidth(45.2);
         assertEquals(45, instance.intWidth());
 
@@ -84,7 +88,7 @@ public class DimensionTest {
     }
 
     @Test
-    public void testIntHeight() {
+    void testIntHeight() {
         instance.setHeight(45.2);
         assertEquals(45, instance.intHeight());
 
@@ -93,14 +97,14 @@ public class DimensionTest {
     }
 
     @Test
-    public void testInvert() {
+    void testInvert() {
         instance.invert();
         assertEquals(800, instance.width(), DELTA);
         assertEquals(1000, instance.height(), DELTA);
     }
 
     @Test
-    public void testIsEmpty() {
+    void testIsEmpty() {
         // width > 0.5, height > 0.5
         assertFalse(instance.isEmpty());
 
@@ -118,91 +122,99 @@ public class DimensionTest {
     }
 
     @Test
-    public void testScale() {
+    void testScale() {
         instance.scale(1.5);
         assertEquals(1500, instance.width(), DELTA);
         assertEquals(1200, instance.height(), DELTA);
     }
 
     @Test
-    public void testScaleX() {
+    void testScaleX() {
         instance.scaleX(0.8);
         assertEquals(800, instance.width(), DELTA);
         assertEquals(800, instance.height(), DELTA);
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void testScaleXWithZeroArgument() {
-        instance.scaleX(0);
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void testScaleXWithNegativeArgument() {
-        instance.scaleX(-0.5);
+    @Test
+    void testScaleXWithZeroArgument() {
+        assertThrows(IllegalArgumentException.class,
+                () -> instance.scaleX(0));
     }
 
     @Test
-    public void testScaleY() {
+    void testScaleXWithNegativeArgument() {
+        assertThrows(IllegalArgumentException.class,
+                () -> instance.scaleX(-0.5));
+    }
+
+    @Test
+    void testScaleY() {
         instance.scaleY(0.8);
         assertEquals(1000, instance.width(), DELTA);
         assertEquals(640, instance.height(), DELTA);
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void testScaleYWithZeroArgument() {
-        instance.scaleY(0);
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void testScaleYWithNegativeArgument() {
-        instance.scaleY(-0.5);
+    @Test
+    void testScaleYWithZeroArgument() {
+        assertThrows(IllegalArgumentException.class,
+                () -> instance.scaleY(0));
     }
 
     @Test
-    public void testSetWidthWithDouble() {
+    void testScaleYWithNegativeArgument() {
+        assertThrows(IllegalArgumentException.class,
+                () -> instance.scaleY(-0.5));
+    }
+
+    @Test
+    void testSetWidthWithDouble() {
         instance.setWidth(2.0);
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void testSetWidthWithDoubleAndNegativeArgument() {
-        instance.setWidth(-1.0);
+    @Test
+    void testSetWidthWithDoubleAndNegativeArgument() {
+        assertThrows(IllegalArgumentException.class,
+                () -> instance.setWidth(-1.0));
     }
 
     @Test
-    public void testSetWidthWithInt() {
+    void testSetWidthWithInt() {
         instance.setWidth(5);
         assertEquals(5, instance.width(), DELTA);
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void testSetWidthWithIntAndNegativeArgument() {
-        instance.setWidth(-1);
+    @Test
+    void testSetWidthWithIntAndNegativeArgument() {
+        assertThrows(IllegalArgumentException.class,
+                () -> instance.setWidth(-1));
     }
 
     @Test
-    public void testSetHeightWithDouble() {
+    void testSetHeightWithDouble() {
         instance.setHeight(5.0);
         assertEquals(5.0, instance.height(), DELTA);
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void testSetHeightWithDoubleAndNegativeArgument() {
-        instance.setHeight(-2.0);
+    @Test
+    void testSetHeightWithDoubleAndNegativeArgument() {
+        assertThrows(IllegalArgumentException.class,
+                () -> instance.setHeight(-2.0));
     }
 
     @Test
-    public void testSetHeightWithInt() {
+    void testSetHeightWithInt() {
         instance.setHeight(5);
         assertEquals(5, instance.height(), DELTA);
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void testSetHeightWithIntAndNegativeArgument() {
-        instance.setHeight(-1);
+    @Test
+    void testSetHeightWithIntAndNegativeArgument() {
+        assertThrows(IllegalArgumentException.class,
+                () -> instance.setHeight(-1));
     }
 
     @Test
-    public void testToString() {
+    void testToString() {
         assertEquals("1000x800", instance.toString());
     }
 

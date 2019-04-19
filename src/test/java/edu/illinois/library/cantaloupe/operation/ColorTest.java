@@ -1,21 +1,21 @@
 package edu.illinois.library.cantaloupe.operation;
 
 import edu.illinois.library.cantaloupe.test.BaseTest;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class ColorTest extends BaseTest {
 
     /* fromString(String) */
 
     @Test
-    public void testFromStringWithNullArgument() {
+    void testFromStringWithNullArgument() {
         assertNull(Color.fromString(null));
     }
 
     @Test
-    public void testFromStringWithCSSLevel1ColorName() {
+    void testFromStringWithCSSLevel1ColorName() {
         assertEquals(new Color(0, 0, 0), Color.fromString("black"));
         assertEquals(new Color(192, 192, 192), Color.fromString("silver"));
         assertEquals(new Color(128, 128, 128), Color.fromString("gray"));
@@ -35,12 +35,12 @@ public class ColorTest extends BaseTest {
     }
 
     @Test
-    public void testFromStringWithCSSLevel2ColorName() {
+    void testFromStringWithCSSLevel2ColorName() {
         assertEquals(new Color(255, 165, 0), Color.fromString("orange"));
     }
 
     @Test
-    public void testFromStringWithCSSLevel3ColorName() {
+    void testFromStringWithCSSLevel3ColorName() {
         assertEquals(new Color(240, 248, 255), Color.fromString("aliceblue"));
         assertEquals(new Color(250, 235, 215), Color.fromString("antiquewhite"));
         assertEquals(new Color(127, 255, 212), Color.fromString("aquamarine"));
@@ -172,79 +172,86 @@ public class ColorTest extends BaseTest {
     }
 
     @Test
-    public void testFromStringWithCSSLevel4ColorName() {
+    void testFromStringWithCSSLevel4ColorName() {
         assertEquals(new Color(102, 51, 153), Color.fromString("rebeccapurple"));
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void testFromStringWithInvalidColorName() {
-        Color.fromString("bogus");
+    @Test
+    void testFromStringWithInvalidColorName() {
+        assertThrows(IllegalArgumentException.class,
+                () -> Color.fromString("bogus"));
     }
 
     @Test
-    public void testFromStringWithValidRGBHex() {
+    void testFromStringWithValidRGBHex() {
         assertEquals(new Color(192, 192, 192), Color.fromString("#ccc"));
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void testFromStringWithInvalidRGBHex() {
-        Color.fromString("#ggg");
+    @Test
+    void testFromStringWithInvalidRGBHex() {
+        assertThrows(IllegalArgumentException.class,
+                () -> Color.fromString("#ggg"));
     }
 
     @Test
-    public void testFromStringWithValidRGBAHex() {
+    void testFromStringWithValidRGBAHex() {
         assertEquals(new Color(192, 192, 192, 192), Color.fromString("#cccc"));
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void testFromStringWithInvalidRGBAHex() {
-        Color.fromString("#gggg");
+    @Test
+    void testFromStringWithInvalidRGBAHex() {
+        assertThrows(IllegalArgumentException.class,
+                () -> Color.fromString("#gggg"));
     }
 
     @Test
-    public void testFromStringWithRRGGBBHex() {
+    void testFromStringWithRRGGBBHex() {
         assertEquals(new Color(12, 23, 34), Color.fromString("#0c1722"));
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void testFromStringWithInvalidRRGGBBHex() {
-        Color.fromString("#fgfgfg");
+    @Test
+    void testFromStringWithInvalidRRGGBBHex() {
+        assertThrows(IllegalArgumentException.class,
+                () -> Color.fromString("#fgfgfg"));
     }
 
     @Test
-    public void testFromStringWithValidRRGGBBAAHex() {
+    void testFromStringWithValidRRGGBBAAHex() {
         assertEquals(new Color(12, 23, 34, 45), Color.fromString("#0c17222d"));
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void testFromStringWithInvalidRRGGBBAAHex() {
-        Color.fromString("#fgfgfgfg");
+    @Test
+    void testFromStringWithInvalidRRGGBBAAHex() {
+        assertThrows(IllegalArgumentException.class,
+                () -> Color.fromString("#fgfgfgfg"));
     }
 
     @Test
-    public void testFromStringWithValidRGBNotation() {
+    void testFromStringWithValidRGBNotation() {
         assertEquals(new Color(12, 23, 34),
                 Color.fromString("rgb(12, 23, 34)"));
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void testFromStringWithInvalidRGBNotation() {
-        Color.fromString("rgb(280, 280, 280)");
+    @Test
+    void testFromStringWithInvalidRGBNotation() {
+        assertThrows(IllegalArgumentException.class,
+                () -> Color.fromString("rgb(280, 280, 280)"));
     }
 
     @Test
-    public void testFromStringWithValidRGBANotation() {
+    void testFromStringWithValidRGBANotation() {
         assertEquals(new Color(12, 23, 34, 45),
                 Color.fromString("rgba(12, 23, 34, 45)"));
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void testFromStringWithInvalidRGBANotation() {
-        Color.fromString("rgb(280, 280, 280, 280)");
+    @Test
+    void testFromStringWithInvalidRGBANotation() {
+        assertThrows(IllegalArgumentException.class,
+                () -> Color.fromString("rgb(280, 280, 280, 280)"));
     }
 
     @Test
-    public void testEquals() {
+    void testEquals() {
         Color color = new Color(1, 2, 3, 4);
         assertEquals(new Color(1, 2, 3, 4), color);
         assertNotEquals(new Color(1, 2, 3), color);
@@ -256,7 +263,7 @@ public class ColorTest extends BaseTest {
     }
 
     @Test
-    public void testConstructor1() {
+    void testConstructor1() {
         Color instance = new Color(755818274);
         assertEquals(12, instance.getRed());
         assertEquals(223, instance.getGreen());
@@ -265,7 +272,7 @@ public class ColorTest extends BaseTest {
     }
 
     @Test
-    public void testConstructor2() {
+    void testConstructor2() {
         Color instance = new Color(150, 180, 220);
         assertEquals(150, instance.getRed());
         assertEquals(180, instance.getGreen());
@@ -273,7 +280,7 @@ public class ColorTest extends BaseTest {
     }
 
     @Test
-    public void testConstructor3() {
+    void testConstructor3() {
         Color instance = new Color(150, 180, 220, 240);
         assertEquals(150, instance.getRed());
         assertEquals(180, instance.getGreen());
@@ -282,28 +289,28 @@ public class ColorTest extends BaseTest {
     }
 
     @Test
-    public void testGetARGB() {
+    void testGetARGB() {
         assertEquals(755818274, new Color(12, 223, 34, 45).getARGB());
     }
 
     @Test
-    public void testToRGBHex() {
+    void testToRGBHex() {
         assertEquals("#C01722", new Color(12, 23, 34, 45).toRGBHex());
     }
 
     @Test
-    public void testToRGBAHex() {
+    void testToRGBAHex() {
         assertEquals("#C017222D", new Color(12, 23, 34, 45).toRGBAHex());
     }
 
     @Test
-    public void testToColor() {
+    void testToColor() {
         assertEquals(new java.awt.Color(1, 2, 3, 4),
                 new Color(1, 2, 3, 4).toColor());
     }
 
     @Test
-    public void testToString() {
+    void testToString() {
         assertEquals("[R: 45] [G: 50] [B: 55] [A: 60]",
                 new Color(45, 50, 55, 60).toString());
     }

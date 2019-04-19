@@ -1,14 +1,15 @@
 package edu.illinois.library.cantaloupe.processor;
 
 import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.EnumSet;
 import java.util.Set;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
-public class JaiProcessorTest extends ImageIOProcessorTest {
+@SuppressWarnings("deprecation")
+public class JaiProcessorTest extends AbstractImageIOProcessorTest {
 
     @Override
     protected JaiProcessor newInstance() {
@@ -16,7 +17,7 @@ public class JaiProcessorTest extends ImageIOProcessorTest {
     }
 
     @Test
-    public void testGetSupportedFeatures() throws Exception {
+    void testGetSupportedFeatures() throws Exception {
         try (Processor instance = newInstance()) {
             instance.setSourceFormat(getAnySupportedSourceFormat(instance));
 

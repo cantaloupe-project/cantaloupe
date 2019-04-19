@@ -14,19 +14,19 @@ import edu.illinois.library.cantaloupe.script.DelegateProxyService;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.apache.commons.lang3.SystemUtils;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.awt.font.TextAttribute;
 import java.net.URI;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class DelegateOverlayServiceTest extends BaseTest {
 
     private DelegateOverlayService instance;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         super.setUp();
 
@@ -39,7 +39,7 @@ public class DelegateOverlayServiceTest extends BaseTest {
     }
 
     @Test
-    public void testGetOverlayReturningImageOverlay() throws Exception {
+    void testGetOverlayReturningImageOverlay() throws Exception {
         final Identifier identifier = new Identifier("image");
         final Dimension fullSize = new Dimension(500, 500);
         final OperationList opList = new OperationList(
@@ -62,7 +62,7 @@ public class DelegateOverlayServiceTest extends BaseTest {
     }
 
     @Test
-    public void testGetOverlayReturningStringOverlay() throws Exception {
+    void testGetOverlayReturningStringOverlay() throws Exception {
         final Identifier identifier = new Identifier("string");
         final Dimension fullSize = new Dimension(500, 500);
         final OperationList opList = new OperationList(
@@ -91,7 +91,7 @@ public class DelegateOverlayServiceTest extends BaseTest {
     }
 
     @Test
-    public void testGetOverlayReturningNull() throws Exception {
+    void testGetOverlayReturningNull() throws Exception {
         final RequestContext context = new RequestContext();
         DelegateProxyService service = DelegateProxyService.getInstance();
         DelegateProxy proxy = service.newDelegateProxy(context);

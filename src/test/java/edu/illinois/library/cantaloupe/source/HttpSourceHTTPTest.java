@@ -3,13 +3,13 @@ package edu.illinois.library.cantaloupe.source;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.test.WebServer;
-import org.junit.Before;
+import org.junit.jupiter.api.BeforeEach;
 
 import java.net.URI;
 
 public class HttpSourceHTTPTest extends HttpSourceTest {
 
-    @Before
+    @BeforeEach
     @Override
     public void setUp() throws Exception {
         super.setUp();

@@ -6,7 +6,7 @@ import edu.illinois.library.cantaloupe.image.Metadata;
 import edu.illinois.library.cantaloupe.operation.Encode;
 import edu.illinois.library.cantaloupe.processor.codec.AbstractImageWriterTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
@@ -21,7 +21,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.util.Iterator;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class PNGImageWriterTest extends AbstractImageWriterTest {
 

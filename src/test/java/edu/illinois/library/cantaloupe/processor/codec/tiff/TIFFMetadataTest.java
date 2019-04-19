@@ -4,10 +4,9 @@ import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
-import org.apache.jena.riot.RIOT;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
@@ -19,13 +18,13 @@ import java.io.StringReader;
 import java.nio.file.Path;
 import java.util.Iterator;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class TIFFMetadataTest extends BaseTest {
 
     private ImageReader reader;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         super.setUp();
         final Iterator<ImageReader> it = ImageIO.getImageReadersByFormatName("TIFF");
@@ -38,7 +37,7 @@ public class TIFFMetadataTest extends BaseTest {
         }
     }
 
-    @After
+    @AfterEach
     public void tearDown() throws Exception {
         super.tearDown();
         reader.dispose();
@@ -52,7 +51,7 @@ public class TIFFMetadataTest extends BaseTest {
     }
 
     @Test
-    public void testGetEXIF() throws IOException {
+    void testGetEXIF() throws IOException {
         final Path srcFile = TestUtil.getImage("tif-exif.tif");
         try (ImageInputStream is = ImageIO.createImageInputStream(srcFile.toFile())) {
             assertTrue(newInstance(is).getEXIF().isPresent());
@@ -60,7 +59,7 @@ public class TIFFMetadataTest extends BaseTest {
     }
 
     @Test
-    public void testGetIPTC() throws IOException {
+    void testGetIPTC() throws IOException {
         final Path srcFile = TestUtil.getImage("tif-iptc.tif");
         try (ImageInputStream is = ImageIO.createImageInputStream(srcFile.toFile())) {
             assertTrue(newInstance(is).getIPTC().isPresent());
@@ -68,7 +67,7 @@ public class TIFFMetadataTest extends BaseTest {
     }
 
     @Test
-    public void testGetNativeMetadata() throws IOException {
+    void testGetNativeMetadata() throws IOException {
         final Path srcFile = TestUtil.getImage("tif-xmp.tif");
         try (ImageInputStream is = ImageIO.createImageInputStream(srcFile.toFile())) {
             assertFalse(newInstance(is).getNativeMetadata().isPresent());
@@ -76,9 +75,7 @@ public class TIFFMetadataTest extends BaseTest {
     }
 
     @Test
-    public void testGetXMP() throws IOException {
-        RIOT.init();
-
+    void testGetXMP() throws IOException {
         final Path srcFile = TestUtil.getImage("tif-xmp.tif");
         try (ImageInputStream is = ImageIO.createImageInputStream(srcFile.toFile())) {
             final String rdf = newInstance(is).getXMP().orElseThrow();

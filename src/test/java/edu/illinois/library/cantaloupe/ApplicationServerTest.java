@@ -3,15 +3,15 @@ package edu.illinois.library.cantaloupe;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import edu.illinois.library.cantaloupe.util.SocketUtils;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 
 import static edu.illinois.library.cantaloupe.test.Assert.HTTPAssert.*;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class ApplicationServerTest extends BaseTest {
 
@@ -19,7 +19,7 @@ public class ApplicationServerTest extends BaseTest {
 
     private ApplicationServer instance;
 
-    @BeforeClass
+    @BeforeAll
     public static void beforeClass() throws Exception {
         BaseTest.beforeClass();
         int[] ports = SocketUtils.getOpenPorts(2);
@@ -27,19 +27,19 @@ public class ApplicationServerTest extends BaseTest {
         HTTPS_PORT = ports[1];
     }
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         super.setUp();
         instance = new ApplicationServer();
     }
 
-    @After
+    @AfterEach
     public void tearDown() throws Exception {
         instance.stop();
     }
 
     @Test
-    public void getHTTPHost() {
+    void getHTTPHost() {
         // default
         assertEquals(ApplicationServer.DEFAULT_HTTP_HOST,
                 instance.getHTTPHost());
@@ -49,7 +49,7 @@ public class ApplicationServerTest extends BaseTest {
     }
 
     @Test
-    public void getHTTPPort() {
+    void getHTTPPort() {
         // default
         assertEquals(ApplicationServer.DEFAULT_HTTP_PORT,
                 instance.getHTTPPort());
@@ -59,7 +59,7 @@ public class ApplicationServerTest extends BaseTest {
     }
 
     @Test
-    public void getHTTPSHost() {
+    void getHTTPSHost() {
         // default
         assertEquals(ApplicationServer.DEFAULT_HTTPS_HOST,
                 instance.getHTTPSHost());
@@ -69,7 +69,7 @@ public class ApplicationServerTest extends BaseTest {
     }
 
     @Test
-    public void getHTTPSKeyPassword() {
+    void getHTTPSKeyPassword() {
         // default
         assertNull(instance.getHTTPSKeyPassword());
         // explicitly set
@@ -78,7 +78,7 @@ public class ApplicationServerTest extends BaseTest {
     }
 
     @Test
-    public void getHTTPSKeyStorePassword() {
+    void getHTTPSKeyStorePassword() {
         // default
         assertNull(instance.getHTTPSKeyStorePassword());
         // explicitly set
@@ -87,7 +87,7 @@ public class ApplicationServerTest extends BaseTest {
     }
 
     @Test
-    public void getHTTPSKeyStorePath() {
+    void getHTTPSKeyStorePath() {
         // default
         assertNull(instance.getHTTPSKeyStorePath());
         // explicitly set
@@ -96,7 +96,7 @@ public class ApplicationServerTest extends BaseTest {
     }
 
     @Test
-    public void getHTTPSKeyStoreType() {
+    void getHTTPSKeyStoreType() {
         // default
         assertNull(instance.getHTTPSKeyStoreType());
         // explicitly set
@@ -105,7 +105,7 @@ public class ApplicationServerTest extends BaseTest {
     }
 
     @Test
-    public void getHTTPSPort() {
+    void getHTTPSPort() {
         // default
         assertEquals(ApplicationServer.DEFAULT_HTTPS_PORT,
                 instance.getHTTPSPort());
@@ -115,7 +115,7 @@ public class ApplicationServerTest extends BaseTest {
     }
 
     @Test
-    public void isHTTPEnabled() {
+    void isHTTPEnabled() {
         // default
         assertFalse(instance.isHTTPEnabled());
         // explicitly set
@@ -124,7 +124,7 @@ public class ApplicationServerTest extends BaseTest {
     }
 
     @Test
-    public void isHTTPSEnabled() {
+    void isHTTPSEnabled() {
         // default
         assertFalse(instance.isHTTPSEnabled());
         // explicitly set
@@ -133,7 +133,7 @@ public class ApplicationServerTest extends BaseTest {
     }
 
     @Test
-    public void isInsecureHTTP2Enabled() {
+    void isInsecureHTTP2Enabled() {
         // default
         assertFalse(instance.isInsecureHTTP2Enabled());
         // explicitly set
@@ -142,7 +142,7 @@ public class ApplicationServerTest extends BaseTest {
     }
 
     @Test
-    public void isSecureHTTP2Enabled() {
+    void isSecureHTTP2Enabled() {
         // default
         assertFalse(instance.isSecureHTTP2Enabled());
         // explicitly set
@@ -151,7 +151,7 @@ public class ApplicationServerTest extends BaseTest {
     }
 
     @Test
-    public void isStarted() throws Exception {
+    void isStarted() throws Exception {
         assertFalse(instance.isStarted());
         assertTrue(instance.isStopped());
         instance.start();
@@ -160,12 +160,12 @@ public class ApplicationServerTest extends BaseTest {
     }
 
     @Test
-    public void isStopped() throws Exception {
+    void isStopped() throws Exception {
         isStarted();
     }
 
     @Test
-    public void startStartsHTTPServer() throws Exception {
+    void startStartsHTTPServer() throws Exception {
         initializeHTTP();
         instance.start();
 
@@ -173,7 +173,7 @@ public class ApplicationServerTest extends BaseTest {
     }
 
     @Test
-    public void startStartsHTTPSServer() throws Exception {
+    void startStartsHTTPSServer() throws Exception {
         initializeHTTPS();
         instance.setHTTPEnabled(false);
         instance.start();
@@ -182,17 +182,17 @@ public class ApplicationServerTest extends BaseTest {
     }
 
     @Test
-    public void startStartsInsecureHTTP2Server() {
+    void startStartsInsecureHTTP2Server() {
         // TODO: write this
     }
 
     @Test
-    public void startStartsSecureHTTP2Server() {
+    void startStartsSecureHTTP2Server() {
         // TODO: write this
     }
 
     @Test
-    public void stopStopsHTTPServer() throws Exception {
+    void stopStopsHTTPServer() throws Exception {
         initializeHTTP();
         try {
             instance.start();
@@ -203,7 +203,7 @@ public class ApplicationServerTest extends BaseTest {
     }
 
     @Test
-    public void stopStopsHTTPSServer() throws Exception {
+    void stopStopsHTTPSServer() throws Exception {
         initializeHTTPS();
         try {
             instance.start();

@@ -6,12 +6,11 @@ import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.test.ConfigurationConstants;
 import edu.illinois.library.cantaloupe.test.TestUtil;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class AzureStorageCacheTest extends AbstractCacheTest {
 
@@ -37,15 +36,16 @@ public class AzureStorageCacheTest extends AbstractCacheTest {
         return testConfig.getString(ConfigurationConstants.AZURE_CONTAINER.getKey());
     }
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         super.setUp();
 
         instance = newInstance();
     }
 
-    @After
+    @AfterEach
     public void tearDown() throws Exception {
+        super.tearDown();
         instance.purge();
     }
 
@@ -63,7 +63,7 @@ public class AzureStorageCacheTest extends AbstractCacheTest {
     /* getContainerName() */
 
     @Test
-    public void testGetContainerName() {
+    void testGetContainerName() {
         assertEquals(
                 Configuration.getInstance().getString(Key.AZURESTORAGECACHE_CONTAINER_NAME),
                 AzureStorageCache.getContainerName());
@@ -72,7 +72,7 @@ public class AzureStorageCacheTest extends AbstractCacheTest {
     /* getObjectKey(Identifier) */
 
     @Test
-    public void testGetObjectKeyWithIdentifier() {
+    void testGetObjectKeyWithIdentifier() {
         assertEquals(
                 "test/info/083425bc68eece64753ec83a25f87230.json",
                 instance.getObjectKey(identifier));
@@ -81,7 +81,7 @@ public class AzureStorageCacheTest extends AbstractCacheTest {
     /* getObjectKey(OperationList */
 
     @Test
-    public void testGetObjectKeyWithOperationList() {
+    void testGetObjectKeyWithOperationList() {
         opList.setIdentifier(new Identifier("cats"));
         assertEquals(
                 "test/image/0832c1202da8d382318e329a7c133ea0/4520700b2323f4d1e65e1b2074f43d47",
@@ -91,7 +91,7 @@ public class AzureStorageCacheTest extends AbstractCacheTest {
     /* getObjectKeyPrefix() */
 
     @Test
-    public void testGetObjectKeyPrefix() {
+    void testGetObjectKeyPrefix() {
         Configuration config = Configuration.getInstance();
 
         config.setProperty(Key.AZURESTORAGECACHE_OBJECT_KEY_PREFIX, "");
@@ -109,9 +109,8 @@ public class AzureStorageCacheTest extends AbstractCacheTest {
 
     /* put(Identifier, Info) */
 
-    @Ignore // TODO: this fails sometimes
     @Override
     @Test
-    public void testPutConcurrently() {}
+    void testPutConcurrently() {}
 
 }

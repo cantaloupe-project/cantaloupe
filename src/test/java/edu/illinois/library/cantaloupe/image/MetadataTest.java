@@ -11,8 +11,8 @@ import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import edu.illinois.library.cantaloupe.util.Rational;
 import org.apache.jena.rdf.model.Model;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.nio.file.Path;
 import java.util.HashMap;
@@ -20,20 +20,20 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class MetadataTest extends BaseTest {
 
     private Metadata instance;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         super.setUp();
         instance = new Metadata();
     }
 
     @Test
-    public void testEncapsulateXMP() {
+    void testEncapsulateXMP() {
         final String xmp = "<rdf:RDF></rdf:RDF>";
         String actual = Metadata.encapsulateXMP(xmp);
         assertTrue(actual.startsWith("<?xpacket"));
@@ -41,7 +41,7 @@ public class MetadataTest extends BaseTest {
     }
 
     @Test
-    public void testEqualsWithEqualInstances() {
+    void testEqualsWithEqualInstances() {
         Directory exif = new Directory(TagSet.EXIF);
         List<DataSet> iptc = List.of(new DataSet(
                 edu.illinois.library.cantaloupe.image.iptc.Tag.CITY,
@@ -64,7 +64,7 @@ public class MetadataTest extends BaseTest {
     }
 
     @Test
-    public void testEqualsWithDifferentEXIF() {
+    void testEqualsWithDifferentEXIF() {
         Directory exif1 = new Directory(TagSet.EXIF);
         exif1.put(Tag.LENS_MODEL, DataType.ASCII, "cats");
         Metadata m1 = new Metadata();
@@ -79,7 +79,7 @@ public class MetadataTest extends BaseTest {
     }
 
     @Test
-    public void testEqualsWithDifferentIPTC() {
+    void testEqualsWithDifferentIPTC() {
         List<DataSet> iptc1 = List.of(new DataSet(
                 edu.illinois.library.cantaloupe.image.iptc.Tag.CITY,
                 "Urbana".getBytes()));
@@ -96,7 +96,7 @@ public class MetadataTest extends BaseTest {
     }
 
     @Test
-    public void testEqualsWithDifferentNativeMetadata() {
+    void testEqualsWithDifferentNativeMetadata() {
         Metadata m1 = new Metadata();
         m1.setNativeMetadata("cats");
 
@@ -107,7 +107,7 @@ public class MetadataTest extends BaseTest {
     }
 
     @Test
-    public void testEqualsWithDifferentXMP() {
+    void testEqualsWithDifferentXMP() {
         Metadata m1 = new Metadata();
         m1.setXMP("<rdf:RDF>cats</rdf:RDF>");
 
@@ -118,7 +118,7 @@ public class MetadataTest extends BaseTest {
     }
 
     @Test
-    public void testGetEXIFWithPresentEXIFData() throws Exception {
+    void testGetEXIFWithPresentEXIFData() throws Exception {
         Path fixture = TestUtil.getImage("jpg-exif.jpg");
         ImageReader reader = new ImageReaderFactory()
                 .newImageReader(fixture, Format.JPG);
@@ -131,7 +131,7 @@ public class MetadataTest extends BaseTest {
     }
 
     @Test
-    public void testGetEXIFWithNoEXIFData() throws Exception {
+    void testGetEXIFWithNoEXIFData() throws Exception {
         Path fixture = TestUtil.getImage("jpg");
         ImageReader reader = new ImageReaderFactory()
                 .newImageReader(fixture, Format.JPG);
@@ -144,7 +144,7 @@ public class MetadataTest extends BaseTest {
     }
 
     @Test
-    public void testGetIPTCWithPresentIPTCData() throws Exception {
+    void testGetIPTCWithPresentIPTCData() throws Exception {
         Path fixture = TestUtil.getImage("jpg-iptc.jpg");
         ImageReader reader = new ImageReaderFactory()
                 .newImageReader(fixture, Format.JPG);
@@ -157,7 +157,7 @@ public class MetadataTest extends BaseTest {
     }
 
     @Test
-    public void testGetIPTCWithNoIPTCData() throws Exception {
+    void testGetIPTCWithNoIPTCData() throws Exception {
         Path fixture = TestUtil.getImage("jpg");
         ImageReader reader = new ImageReaderFactory()
                 .newImageReader(fixture, Format.JPG);
@@ -170,7 +170,7 @@ public class MetadataTest extends BaseTest {
     }
 
     @Test
-    public void testGetNativeMetadataWithPresentData() throws Exception {
+    void testGetNativeMetadataWithPresentData() throws Exception {
         Path fixture = TestUtil.getImage("png-nativemetadata.png");
         ImageReader reader = new ImageReaderFactory()
                 .newImageReader(fixture, Format.PNG);
@@ -183,7 +183,7 @@ public class MetadataTest extends BaseTest {
     }
 
     @Test
-    public void testGetNativeMetadataWithNoData() throws Exception {
+    void testGetNativeMetadataWithNoData() throws Exception {
         Path fixture = TestUtil.getImage("png-rgb-1x1x8.png");
         ImageReader reader = new ImageReaderFactory()
                 .newImageReader(fixture, Format.PNG);
@@ -196,12 +196,12 @@ public class MetadataTest extends BaseTest {
     }
 
     @Test
-    public void testGetOrientationWithNoOrientation() {
+    void testGetOrientationWithNoOrientation() {
         assertEquals(Orientation.ROTATE_0, instance.getOrientation());
     }
 
     @Test
-    public void testGetOrientationWithOnlyEXIFOrientation() throws Exception {
+    void testGetOrientationWithOnlyEXIFOrientation() throws Exception {
         Path fixture = TestUtil.getImage("jpg-exif-orientation-270.jpg");
         ImageReader reader = new ImageReaderFactory()
                 .newImageReader(fixture, Format.JPG);
@@ -214,7 +214,7 @@ public class MetadataTest extends BaseTest {
     }
 
     @Test
-    public void testGetOrientationWithOnlyXMPOrientation() throws Exception {
+    void testGetOrientationWithOnlyXMPOrientation() throws Exception {
         Path fixture = TestUtil.getImage("jpg-xmp-orientation-90.jpg");
         ImageReader reader = new ImageReaderFactory()
                 .newImageReader(fixture, Format.JPG);
@@ -227,13 +227,13 @@ public class MetadataTest extends BaseTest {
     }
 
     @Test
-    public void testGetOrientationWithMalformedXMP() {
+    void testGetOrientationWithMalformedXMP() {
         instance.setXMP("����\u0000\u0010JFIF\u0000\u0001\u0001\u0001\u0000H\u0000H\u0000\u0000��\u0000C\u0000\b\u0006\u0006\u0007\u0006\u0005\b\u0007\u0007\u0007");
         assertEquals(Orientation.ROTATE_0, instance.getOrientation());
     }
 
     @Test
-    public void testGetXMPModelWithPresentXMPData() throws Exception {
+    void testGetXMPModelWithPresentXMPData() throws Exception {
         Path fixture = TestUtil.getImage("jpg-xmp.jpg");
         ImageReader reader = new ImageReaderFactory()
                 .newImageReader(fixture, Format.JPG);
@@ -247,7 +247,7 @@ public class MetadataTest extends BaseTest {
     }
 
     @Test
-    public void testGetXMPModelWithNoXMPData() throws Exception {
+    void testGetXMPModelWithNoXMPData() throws Exception {
         Path fixture = TestUtil.getImage("jpg");
         ImageReader reader = new ImageReaderFactory()
                 .newImageReader(fixture, Format.JPG);
@@ -260,7 +260,7 @@ public class MetadataTest extends BaseTest {
     }
 
     @Test
-    public void testHashCodeWithEqualInstances() {
+    void testHashCodeWithEqualInstances() {
         Directory exif = new Directory(TagSet.EXIF);
         String xmp = "<rdf:RDF>cats</rdf:RDF>";
 
@@ -278,7 +278,7 @@ public class MetadataTest extends BaseTest {
     }
 
     @Test
-    public void testHashCodeWithDifferentEXIF() {
+    void testHashCodeWithDifferentEXIF() {
         Directory exif1 = new Directory(TagSet.EXIF);
         exif1.put(Tag.LENS_MODEL, DataType.ASCII, "cats");
         Metadata m1 = new Metadata();
@@ -293,7 +293,7 @@ public class MetadataTest extends BaseTest {
     }
 
     @Test
-    public void testHashCodeWithDifferentIPTC() {
+    void testHashCodeWithDifferentIPTC() {
         List<DataSet> iptc1 = List.of(new DataSet(
                 edu.illinois.library.cantaloupe.image.iptc.Tag.CITY,
                 "Urbana".getBytes()));
@@ -310,7 +310,7 @@ public class MetadataTest extends BaseTest {
     }
 
     @Test
-    public void testHashCodeWithDifferentNativeMetadata() {
+    void testHashCodeWithDifferentNativeMetadata() {
         Metadata m1 = new Metadata();
         m1.setNativeMetadata("cats");
 
@@ -321,7 +321,7 @@ public class MetadataTest extends BaseTest {
     }
 
     @Test
-    public void testHashCodeWithDifferentXMP() {
+    void testHashCodeWithDifferentXMP() {
         Metadata m1 = new Metadata();
         m1.setXMP("<rdf:RDF>cats</rdf:RDF>");
 
@@ -332,31 +332,31 @@ public class MetadataTest extends BaseTest {
     }
 
     @Test
-    public void testSetEXIFWithNullArgument() {
+    void testSetEXIFWithNullArgument() {
         instance.setEXIF(null);
         assertFalse(instance.getEXIF().isPresent());
     }
 
     @Test
-    public void testSetIPTCWithNullArgument() {
+    void testSetIPTCWithNullArgument() {
         instance.setIPTC(null);
         assertFalse(instance.getIPTC().isPresent());
     }
 
     @Test
-    public void testSetXMPWithNullByteArrayArgument() {
+    void testSetXMPWithNullByteArrayArgument() {
         instance.setXMP((byte[]) null);
         assertFalse(instance.getXMP().isPresent());
     }
 
     @Test
-    public void testSetXMPWithNullStringArgument() {
+    void testSetXMPWithNullStringArgument() {
         instance.setXMP((String) null);
         assertFalse(instance.getXMP().isPresent());
     }
 
     @Test
-    public void testSetXMPTrimsData() {
+    void testSetXMPTrimsData() {
         instance.setXMP("<??><rdf:RDF></rdf:RDF> <??>");
         String xmp = instance.getXMP().orElseThrow();
         assertTrue(xmp.startsWith("<rdf:RDF"));
@@ -364,7 +364,7 @@ public class MetadataTest extends BaseTest {
     }
 
     @Test
-    public void testToMap() {
+    void testToMap() {
         // assemble the expected map structure
         final Map<String,Object> expectedMap = new HashMap<>(2);
 

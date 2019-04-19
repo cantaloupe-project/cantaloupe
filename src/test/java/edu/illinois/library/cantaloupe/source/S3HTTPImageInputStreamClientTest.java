@@ -6,12 +6,12 @@ import edu.illinois.library.cantaloupe.http.Range;
 import edu.illinois.library.cantaloupe.http.Response;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.S3Server;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class S3HTTPImageInputStreamClientTest extends BaseTest {
 
@@ -19,13 +19,13 @@ public class S3HTTPImageInputStreamClientTest extends BaseTest {
 
     private S3HTTPImageInputStreamClient instance;
 
-    @BeforeClass
+    @BeforeAll
     public static void beforeClass() throws Exception {
         BaseTest.beforeClass();
         S3_SERVER.start();
     }
 
-    @AfterClass
+    @AfterAll
     public static void afterClass() throws Exception {
         BaseTest.afterClass();
         S3_SERVER.stop();
@@ -38,7 +38,7 @@ public class S3HTTPImageInputStreamClientTest extends BaseTest {
         config.setProperty(Key.S3SOURCE_SECRET_KEY, S3Server.SECRET_KEY);
     }
 
-    @Before
+    @BeforeEach
     @Override
     public void setUp() throws Exception {
         super.setUp();
@@ -52,7 +52,7 @@ public class S3HTTPImageInputStreamClientTest extends BaseTest {
     }
 
     @Test
-    public void testSendHEADRequest() throws Exception {
+    void testSendHEADRequest() throws Exception {
         Response actual = instance.sendHEADRequest();
         assertEquals(200, actual.getStatus());
         assertEquals("bytes", actual.getHeaders().getFirstValue("Accept-Ranges"));
@@ -60,7 +60,7 @@ public class S3HTTPImageInputStreamClientTest extends BaseTest {
     }
 
     @Test
-    public void testSendGETRequest() throws Exception {
+    void testSendGETRequest() throws Exception {
         Response actual = instance.sendGETRequest(new Range(10, 50, 1584));
         assertEquals(206, actual.getStatus());
         assertEquals(41, actual.getBody().length);

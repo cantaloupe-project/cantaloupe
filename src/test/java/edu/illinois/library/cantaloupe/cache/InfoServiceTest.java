@@ -10,14 +10,14 @@ import edu.illinois.library.cantaloupe.processor.MockFileProcessor;
 import edu.illinois.library.cantaloupe.processor.ProcessorFactory;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.Optional;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class InfoServiceTest extends BaseTest {
 
@@ -25,7 +25,7 @@ public class InfoServiceTest extends BaseTest {
 
     private InfoService instance;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         super.setUp();
 
@@ -72,7 +72,7 @@ public class InfoServiceTest extends BaseTest {
     /* getInfo() */
 
     @Test
-    public void testGetInfoWithHitInMemoryCache() throws Exception {
+    void testGetInfoWithHitInMemoryCache() throws Exception {
         final Identifier identifier = new Identifier("jpg");
         final Info info = new Info();
         instance.putInObjectCache(identifier, info);
@@ -82,7 +82,7 @@ public class InfoServiceTest extends BaseTest {
     }
 
     @Test
-    public void testGetInfoWithHitInDerivativeCache() throws Exception {
+    void testGetInfoWithHitInDerivativeCache() throws Exception {
         useFilesystemCache();
 
         final Identifier identifier = new Identifier("jpg");
@@ -96,7 +96,7 @@ public class InfoServiceTest extends BaseTest {
     }
 
     @Test
-    public void testGetInfoWithMissEverywhere() throws Exception {
+    void testGetInfoWithMissEverywhere() throws Exception {
         final Identifier identifier = new Identifier("jpg");
 
         Optional<Info> info = instance.getInfo(identifier);
@@ -106,7 +106,7 @@ public class InfoServiceTest extends BaseTest {
     /* getOrReadInfo() */
 
     @Test
-    public void testGetOrReadInfoWithHitInMemoryCache() throws Exception {
+    void testGetOrReadInfoWithHitInMemoryCache() throws Exception {
         final Identifier identifier = new Identifier("jpg");
         final Info info = new Info();
         instance.putInObjectCache(identifier, info);
@@ -116,7 +116,7 @@ public class InfoServiceTest extends BaseTest {
     }
 
     @Test
-    public void testGetOrReadInfoWithHitInDerivativeCache() throws Exception {
+    void testGetOrReadInfoWithHitInDerivativeCache() throws Exception {
         useFilesystemCache();
 
         final Identifier identifier = new Identifier("jpg");
@@ -130,7 +130,7 @@ public class InfoServiceTest extends BaseTest {
     }
 
     @Test
-    public void testGetOrReadInfoWithHitInProcessor() throws Exception {
+    void testGetOrReadInfoWithHitInProcessor() throws Exception {
         final Identifier identifier = new Identifier("jpg");
 
         Optional<Info> info = instance.getOrReadInfo(identifier, newFileProcessor());
@@ -141,7 +141,7 @@ public class InfoServiceTest extends BaseTest {
     /* isObjectCacheEnabled() */
 
     @Test
-    public void testIsObjectCacheEnabled() {
+    void testIsObjectCacheEnabled() {
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.INFO_CACHE_ENABLED, true);
         assertTrue(instance.isObjectCacheEnabled());
@@ -153,7 +153,7 @@ public class InfoServiceTest extends BaseTest {
     /* purgeObjectCache() */
 
     @Test
-    public void testPurgeObjectCache() {
+    void testPurgeObjectCache() {
         final Identifier identifier = new Identifier("cats");
         final Info info = new Info();
         instance.putInObjectCache(identifier, info);
@@ -166,7 +166,7 @@ public class InfoServiceTest extends BaseTest {
     /* purgeObjectCache(Identifier) */
 
     @Test
-    public void testPurgeObjectCacheWithIdentifier() {
+    void testPurgeObjectCacheWithIdentifier() {
         final Identifier id1 = new Identifier("cats");
         final Identifier id2 = new Identifier("dogs");
         final Info info = new Info();

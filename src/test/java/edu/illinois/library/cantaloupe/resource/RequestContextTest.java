@@ -7,8 +7,9 @@ import edu.illinois.library.cantaloupe.image.Metadata;
 import edu.illinois.library.cantaloupe.image.ScaleConstraint;
 import edu.illinois.library.cantaloupe.operation.Encode;
 import edu.illinois.library.cantaloupe.operation.OperationList;
-import org.junit.Before;
-import org.junit.Test;
+import edu.illinois.library.cantaloupe.test.BaseTest;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.net.URI;
 import java.util.Collections;
@@ -26,14 +27,16 @@ import static edu.illinois.library.cantaloupe.resource.RequestContext.REQUEST_HE
 import static edu.illinois.library.cantaloupe.resource.RequestContext.REQUEST_URI_KEY;
 import static edu.illinois.library.cantaloupe.resource.RequestContext.RESULTING_SIZE_KEY;
 import static edu.illinois.library.cantaloupe.resource.RequestContext.SCALE_CONSTRAINT_KEY;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
-public class RequestContextTest {
+public class RequestContextTest extends BaseTest {
 
     private RequestContext instance;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
+        super.setUp();
+
         instance = new RequestContext();
 
         // client IP
@@ -61,7 +64,7 @@ public class RequestContextTest {
     }
 
     @Test
-    public void testSetClientIP() {
+    void testSetClientIP() {
         instance.setClientIP("3.4.5.6");
         assertEquals("3.4.5.6", instance.toMap().get(CLIENT_IP_KEY));
         instance.setClientIP(null);
@@ -69,7 +72,7 @@ public class RequestContextTest {
     }
 
     @Test
-    public void testSetCookies() {
+    void testSetCookies() {
         instance.setCookies(Collections.emptyMap());
         assertNotNull(instance.toMap().get(COOKIES_KEY));
         instance.setCookies(null);
@@ -77,7 +80,7 @@ public class RequestContextTest {
     }
 
     @Test
-    public void testSetIdentifier() {
+    void testSetIdentifier() {
         instance.setIdentifier(new Identifier("cats"));
         assertEquals("cats", instance.toMap().get(IDENTIFIER_KEY));
         instance.setIdentifier(null);
@@ -85,7 +88,7 @@ public class RequestContextTest {
     }
 
     @Test
-    public void testSetMetadata() {
+    void testSetMetadata() {
         instance.setMetadata(new Metadata());
         assertNotNull(instance.toMap().get(METADATA_KEY));
         instance.setMetadata(null);
@@ -93,7 +96,7 @@ public class RequestContextTest {
     }
 
     @Test
-    public void testSetOperationList() {
+    void testSetOperationList() {
         OperationList opList = new OperationList(
                 new Identifier("cats"), new Encode(Format.JPG));
         instance.setOperationList(opList, new Dimension(5, 5));
@@ -112,7 +115,7 @@ public class RequestContextTest {
     }
 
     @Test
-    public void testSetRequestHeaders() {
+    void testSetRequestHeaders() {
         instance.setRequestHeaders(Collections.emptyMap());
         assertNotNull(instance.toMap().get(REQUEST_HEADERS_KEY));
         instance.setRequestHeaders(null);
@@ -120,7 +123,7 @@ public class RequestContextTest {
     }
 
     @Test
-    public void testSetRequestURI() throws Exception {
+    void testSetRequestURI() throws Exception {
         instance.setRequestURI(new URI("http://example.org/"));
         assertNotNull(instance.toMap().get(REQUEST_URI_KEY));
         instance.setRequestURI(null);
@@ -128,7 +131,7 @@ public class RequestContextTest {
     }
 
     @Test
-    public void testSetScaleConstraint() {
+    void testSetScaleConstraint() {
         instance.setScaleConstraint(new ScaleConstraint(1, 2));
         assertNotNull(instance.toMap().get(SCALE_CONSTRAINT_KEY));
         instance.setScaleConstraint(null);
@@ -136,7 +139,7 @@ public class RequestContextTest {
     }
 
     @Test
-    public void testToMap() {
+    void testToMap() {
         Map<String,Object> actual = instance.toMap();
         // client IP
         assertEquals("1.2.3.4", actual.get(CLIENT_IP_KEY));
@@ -160,7 +163,7 @@ public class RequestContextTest {
     }
 
     @Test
-    public void testToMapLiveView() {
+    void testToMapLiveView() {
         instance.setClientIP("2.3.4.5");
         Map<String,Object> actual = instance.toMap();
         assertEquals("2.3.4.5", actual.get(CLIENT_IP_KEY));

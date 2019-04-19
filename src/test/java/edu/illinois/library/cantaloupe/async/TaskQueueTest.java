@@ -1,19 +1,20 @@
 package edu.illinois.library.cantaloupe.async;
 
 import edu.illinois.library.cantaloupe.test.BaseTest;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.concurrent.FutureTask;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class TaskQueueTest extends BaseTest {
 
     private TaskQueue instance;
 
-    @Before
-    public void setUp() {
+    @BeforeEach
+    public void setUp() throws Exception {
+        super.setUp();
         TaskQueue.clearInstance();
         instance = TaskQueue.getInstance();
     }
@@ -21,7 +22,7 @@ public class TaskQueueTest extends BaseTest {
     /* queuedTasks() */
 
     @Test
-    public void testQueuedTasks() throws Exception {
+    void testQueuedTasks() throws Exception {
         MockCallable<?> task1 = new MockCallable();
         MockCallable<?> task2 = new MockCallable();
         MockCallable<?> task3 = new MockCallable();
@@ -41,7 +42,7 @@ public class TaskQueueTest extends BaseTest {
     /* submit(Callable<?>) */
 
     @Test
-    public void testSubmitCallable() throws Exception {
+    void testSubmitCallable() throws Exception {
         MockCallable<?> callable1 = new MockCallable();
         MockCallable<?> callable2 = new MockCallable();
         MockCallable<?> callable3 = new MockCallable();
@@ -64,7 +65,7 @@ public class TaskQueueTest extends BaseTest {
     /* submit(Runnable) */
 
     @Test
-    public void testSubmitRunnable() throws Exception {
+    void testSubmitRunnable() throws Exception {
         MockRunnable runnable1 = new MockRunnable();
         MockRunnable runnable2 = new MockRunnable();
         MockRunnable runnable3 = new MockRunnable();
@@ -87,8 +88,7 @@ public class TaskQueueTest extends BaseTest {
     /* submit(Runnable) with AuditableFutureTask */
 
     @Test
-    public void testSubmitAuditableFutureTaskSetsQueuedTaskStatus()
-            throws Exception {
+    void testSubmitAuditableFutureTaskSetsQueuedTaskStatus() throws Exception {
         AuditableFutureTask<?> future1 =
                 new AuditableFutureTask<>(new MockCallable<>());
         assertEquals(TaskStatus.NEW, future1.getStatus());
@@ -105,8 +105,7 @@ public class TaskQueueTest extends BaseTest {
     }
 
     @Test
-    public void testSubmitAuditableFutureTaskSetsRunningTaskStatus()
-            throws Exception {
+    void testSubmitAuditableFutureTaskSetsRunningTaskStatus() throws Exception {
         MockCallable<?> task = new MockCallable();
         AuditableFutureTask<?> future = new AuditableFutureTask<>(task);
         assertEquals(TaskStatus.NEW, future.getStatus());
@@ -117,8 +116,7 @@ public class TaskQueueTest extends BaseTest {
     }
 
     @Test
-    public void testSubmitAuditableFutureTaskSetsInstantQueued()
-            throws Exception {
+    void testSubmitAuditableFutureTaskSetsInstantQueued() {
         MockCallable<?> task = new MockCallable();
         AuditableFutureTask<?> future = new AuditableFutureTask<>(task);
         instance.submit(future);
@@ -126,8 +124,7 @@ public class TaskQueueTest extends BaseTest {
     }
 
     @Test
-    public void testSubmitAuditableFutureTaskSetsInstantStarted()
-            throws Exception {
+    void testSubmitAuditableFutureTaskSetsInstantStarted() throws Exception {
         MockCallable<?> task = new MockCallable();
         AuditableFutureTask<?> future = new AuditableFutureTask<>(task);
         instance.submit(future);
@@ -136,8 +133,7 @@ public class TaskQueueTest extends BaseTest {
     }
 
     @Test
-    public void testSubmitAuditableFutureTaskSetsInstantStopped()
-            throws Exception {
+    void testSubmitAuditableFutureTaskSetsInstantStopped() throws Exception {
         MockCallable<?> task = new MockCallable();
         AuditableFutureTask<?> future = new AuditableFutureTask<>(task);
         instance.submit(future);
@@ -146,7 +142,7 @@ public class TaskQueueTest extends BaseTest {
     }
 
     @Test
-    public void testSubmitAuditableFutureTaskSetsSuccessfulTaskStatus()
+    void testSubmitAuditableFutureTaskSetsSuccessfulTaskStatus()
             throws Exception {
         MockCallable<?> task = new MockCallable();
         AuditableFutureTask<?> future = new AuditableFutureTask<>(task);
@@ -158,8 +154,7 @@ public class TaskQueueTest extends BaseTest {
     }
 
     @Test
-    public void testSubmitAuditableFutureTaskSetsFailedTaskStatus()
-            throws Exception {
+    void testSubmitAuditableFutureTaskSetsFailedTaskStatus() throws Exception {
         MockFailingCallable<?> task = new MockFailingCallable();
         AuditableFutureTask<?> future = new AuditableFutureTask<>(task);
         assertEquals(TaskStatus.NEW, future.getStatus());

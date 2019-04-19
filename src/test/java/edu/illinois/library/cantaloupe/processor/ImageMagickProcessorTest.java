@@ -6,10 +6,10 @@ import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.operation.overlay.ImageOverlay;
 import edu.illinois.library.cantaloupe.operation.overlay.Position;
 import edu.illinois.library.cantaloupe.test.TestUtil;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -21,7 +21,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * For this to work, the ImageMagick binaries must be on the PATH.
@@ -32,7 +32,7 @@ public class ImageMagickProcessorTest extends AbstractMagickProcessorTest {
 
     private ImageMagickProcessor instance;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         super.setUp();
 
@@ -43,7 +43,7 @@ public class ImageMagickProcessorTest extends AbstractMagickProcessorTest {
         instance = newInstance();
     }
 
-    @After
+    @AfterEach
     public void tearDown() throws Exception {
         super.tearDown();
         instance.close();
@@ -140,7 +140,7 @@ public class ImageMagickProcessorTest extends AbstractMagickProcessorTest {
     }
 
     @Test
-    public void testGetIMOverlayGeometry() throws Exception {
+    void testGetIMOverlayGeometry() throws Exception {
         ImageMagickProcessor instance = newInstance();
         URI uri = new URI("http://example.org/cats");
 
@@ -174,7 +174,7 @@ public class ImageMagickProcessorTest extends AbstractMagickProcessorTest {
     }
 
     @Test
-    public void testGetIMOverlayGravity() {
+    void testGetIMOverlayGravity() {
         ImageMagickProcessor instance = newInstance();
 
         assertEquals("northwest",
@@ -200,12 +200,12 @@ public class ImageMagickProcessorTest extends AbstractMagickProcessorTest {
     /* getInitializationError() */
 
     @Test
-    public void testGetInitializationErrorWithNoException() {
+    void testGetInitializationErrorWithNoException() {
         assertNull(instance.getInitializationError());
     }
 
     @Test
-    public void testGetInitializationErrorWithMissingBinaries() {
+    void testGetInitializationErrorWithMissingBinaries() {
         Configuration.getInstance().setProperty(
                 Key.IMAGEMAGICKPROCESSOR_PATH_TO_BINARIES,
                 "/bogus/bogus/bogus");
@@ -217,7 +217,7 @@ public class ImageMagickProcessorTest extends AbstractMagickProcessorTest {
     /* getOverlayTempFile() */
 
     @Test
-    public void testGetOverlayTempFile() throws Exception {
+    void testGetOverlayTempFile() throws Exception {
         URI uri = TestUtil.getImage("jpg").toUri();
         ImageOverlay overlay = new ImageOverlay(uri, Position.TOP_LEFT, 2);
 
@@ -230,14 +230,14 @@ public class ImageMagickProcessorTest extends AbstractMagickProcessorTest {
     /* getWarnings() */
 
     @Test
-    public void testGetWarningsWithNoWarnings() {
+    void testGetWarningsWithNoWarnings() {
         ImageMagickProcessor.setIMVersion(
                 ImageMagickProcessor.IMVersion.VERSION_7);
         assertEquals(0, instance.getWarnings().size());
     }
 
     @Test
-    public void testGetWarningsWithDeprecationWarning() {
+    void testGetWarningsWithDeprecationWarning() {
         ImageMagickProcessor.setIMVersion(
                 ImageMagickProcessor.IMVersion.VERSION_PRE_7);
         assertEquals(1, instance.getWarnings().size());
@@ -245,14 +245,14 @@ public class ImageMagickProcessorTest extends AbstractMagickProcessorTest {
 
     /* process() */
 
-    @Ignore // TODO: why does this fail?
+    @Disabled // TODO: why does this fail?
     @Override
     @Test
     public void testProcessWithPageOption() {
     }
 
     @Override
-    @Ignore
+    @Disabled
     @Test
     public void testProcessWithAllSupportedOutputFormats() {
         // TODO: The parent fails on a lot of fixtures.

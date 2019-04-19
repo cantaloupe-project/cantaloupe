@@ -1,17 +1,17 @@
 package edu.illinois.library.cantaloupe.resource;
 
 import edu.illinois.library.cantaloupe.http.ResourceException;
-import org.junit.After;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Functional test of error responses.
  */
 public class ErrorResourceTest extends ResourceTest {
 
-    @After
+    @AfterEach
     public void tearDown() throws Exception {
         if (client != null) {
             client.stop();
@@ -24,7 +24,7 @@ public class ErrorResourceTest extends ResourceTest {
     }
 
     @Test
-    public void testErrorResponseContentTypeWithHTMLPreference()
+    void testErrorResponseContentTypeWithHTMLPreference()
             throws Exception {
         client = newClient("/bogus");
         client.getHeaders().add("Accept",
@@ -40,7 +40,7 @@ public class ErrorResourceTest extends ResourceTest {
     }
 
     @Test
-    public void testErrorResponseContentTypeWithXHTMLPreference()
+    void testErrorResponseContentTypeWithXHTMLPreference()
             throws Exception {
         client = newClient("/bogus");
         client.getHeaders().add("Accept", "application/xhtml+xml;q=0.9");
@@ -55,7 +55,7 @@ public class ErrorResourceTest extends ResourceTest {
     }
 
     @Test
-    public void testErrorResponseContentTypeWithXMLPreference()
+    void testErrorResponseContentTypeWithXMLPreference()
             throws Exception {
         client = newClient("/bogus");
         client.getHeaders().add("Accept", "application/xml;q=0.9");
@@ -70,7 +70,7 @@ public class ErrorResourceTest extends ResourceTest {
     }
 
     @Test
-    public void testErrorResponseContentTypeWithTextPreference()
+    void testErrorResponseContentTypeWithTextPreference()
             throws Exception {
         client = newClient("/bogus");
         client.getHeaders().add("Accept", "text/plain");
@@ -85,7 +85,7 @@ public class ErrorResourceTest extends ResourceTest {
     }
 
     @Test
-    public void testErrorResponseContentTypeWithNoPreference()
+    void testErrorResponseContentTypeWithNoPreference()
             throws Exception {
         client = newClient("/bogus");
         client.getHeaders().add("Accept", "*/*");

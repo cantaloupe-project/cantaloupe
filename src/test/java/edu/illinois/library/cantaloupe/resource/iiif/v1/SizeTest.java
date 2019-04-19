@@ -2,10 +2,10 @@ package edu.illinois.library.cantaloupe.resource.iiif.v1;
 
 import edu.illinois.library.cantaloupe.resource.IllegalClientArgumentException;
 import edu.illinois.library.cantaloupe.test.BaseTest;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class SizeTest extends BaseTest {
 
@@ -13,10 +13,10 @@ public class SizeTest extends BaseTest {
 
     private Size instance;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         super.setUp();
-        this.instance = new Size();
+        instance = new Size();
     }
 
     /* fromUri(String) */
@@ -25,7 +25,7 @@ public class SizeTest extends BaseTest {
      * Tests fromUri(String) with a value of "full".
      */
     @Test
-    public void testFromUriFull() {
+    void testFromUriFull() {
         Size s = Size.fromUri("full");
         assertEquals(Size.ScaleMode.FULL, s.getScaleMode());
     }
@@ -34,7 +34,7 @@ public class SizeTest extends BaseTest {
      * Tests fromUri(String) with width scaling.
      */
     @Test
-    public void testFromUriWidthScaled() {
+    void testFromUriWidthScaled() {
         Size s = Size.fromUri("50,");
         assertEquals(Integer.valueOf(50), s.getWidth());
         assertEquals(Size.ScaleMode.ASPECT_FIT_WIDTH, s.getScaleMode());
@@ -44,7 +44,7 @@ public class SizeTest extends BaseTest {
      * Tests fromUri(String) with height scaling.
      */
     @Test
-    public void testFromUriHeightScaled() {
+    void testFromUriHeightScaled() {
         Size s = Size.fromUri(",50");
         assertEquals(Integer.valueOf(50), s.getHeight());
         assertEquals(Size.ScaleMode.ASPECT_FIT_HEIGHT, s.getScaleMode());
@@ -54,7 +54,7 @@ public class SizeTest extends BaseTest {
      * Tests fromUri(String) with percentage scaling.
      */
     @Test
-    public void testFromUriPercentageScaled() {
+    void testFromUriPercentageScaled() {
         Size s = Size.fromUri("pct:50");
         assertEquals(Float.valueOf(50), s.getPercent());
     }
@@ -63,7 +63,7 @@ public class SizeTest extends BaseTest {
      * Tests fromUri(String) with absolute width and height.
      */
     @Test
-    public void testFromUriAbsoluteScaled() {
+    void testFromUriAbsoluteScaled() {
         Size s = Size.fromUri("50,40");
         assertEquals(Integer.valueOf(50), s.getWidth());
         assertEquals(Integer.valueOf(40), s.getHeight());
@@ -74,52 +74,59 @@ public class SizeTest extends BaseTest {
      * Tests fromUri(String) with scale-to-fit width and height.
      */
     @Test
-    public void testFromUriScaleToFit() {
+    void testFromUriScaleToFit() {
         Size s = Size.fromUri("!50,40");
         assertEquals(Integer.valueOf(50), s.getWidth());
         assertEquals(Integer.valueOf(40), s.getHeight());
         assertEquals(Size.ScaleMode.ASPECT_FIT_INSIDE, s.getScaleMode());
     }
 
-    @Test(expected = IllegalClientArgumentException.class)
-    public void testFromUriWithInvalidArgument1() {
-        Size.fromUri("cats");
+    @Test
+    void testFromUriWithInvalidArgument1() {
+        assertThrows(IllegalClientArgumentException.class,
+                () -> Size.fromUri("cats"));
     }
 
-    @Test(expected = IllegalClientArgumentException.class)
-    public void testFromUriWithInvalidArgument2() {
-        Size.fromUri("pct:cats");
+    @Test
+    void testFromUriWithInvalidArgument2() {
+        assertThrows(IllegalClientArgumentException.class,
+                () -> Size.fromUri("pct:cats"));
     }
 
-    @Test(expected = IllegalClientArgumentException.class)
-    public void testFromUriWithInvalidArgument3() {
-        Size.fromUri("pct:50,30");
+    @Test
+    void testFromUriWithInvalidArgument3() {
+        assertThrows(IllegalClientArgumentException.class,
+                () -> Size.fromUri("pct:50,30"));
     }
 
-    @Test(expected = IllegalClientArgumentException.class)
-    public void testFromUriWithInvalidArgument4() {
-        Size.fromUri("120,cats");
+    @Test
+    void testFromUriWithInvalidArgument4() {
+        assertThrows(IllegalClientArgumentException.class,
+                () -> Size.fromUri("120,cats"));
     }
 
-    @Test(expected = IllegalClientArgumentException.class)
-    public void testFromUriWithInvalidArgument5() {
-        Size.fromUri("cats,120");
+    @Test
+    void testFromUriWithInvalidArgument5() {
+        assertThrows(IllegalClientArgumentException.class,
+                () -> Size.fromUri("cats,120"));
     }
 
-    @Test(expected = IllegalClientArgumentException.class)
-    public void testFromUriWithInvalidArgument6() {
-        Size.fromUri("!cats,120");
+    @Test
+    void testFromUriWithInvalidArgument6() {
+        assertThrows(IllegalClientArgumentException.class,
+                () -> Size.fromUri("!cats,120"));
     }
 
-    @Test(expected = IllegalClientArgumentException.class)
-    public void testFromUriWithInvalidArgument7() {
-        Size.fromUri("!120,");
+    @Test
+    void testFromUriWithInvalidArgument7() {
+        assertThrows(IllegalClientArgumentException.class,
+                () -> Size.fromUri("!120,"));
     }
 
     /* equals() */
 
     @Test
-    public void testEquals() {
+    void testEquals() {
         instance.setScaleMode(Size.ScaleMode.ASPECT_FIT_INSIDE);
         instance.setWidth(300);
         instance.setHeight(200);
@@ -156,94 +163,76 @@ public class SizeTest extends BaseTest {
     /* setHeight() */
 
     @Test
-    public void testSetHeight() {
+    void testSetHeight() {
         Integer height = 50;
-        this.instance.setHeight(height);
-        assertEquals(height, this.instance.getHeight());
+        instance.setHeight(height);
+        assertEquals(height, instance.getHeight());
     }
 
     @Test
-    public void testSetNegativeHeight() {
-        try {
-            this.instance.setHeight(-1);
-            fail("Expected exception");
-        } catch (IllegalClientArgumentException e) {
-            assertEquals("Height must be a positive integer", e.getMessage());
-        }
+    void testSetNegativeHeight() {
+        assertThrows(IllegalClientArgumentException.class,
+                () -> instance.setHeight(-1),
+                "Height must be a positive integer");
     }
 
     @Test
-    public void testSetZeroHeight() {
-        try {
-            this.instance.setHeight(0);
-            fail("Expected exception");
-        } catch (IllegalClientArgumentException e) {
-            assertEquals("Height must be a positive integer", e.getMessage());
-        }
+    void testSetZeroHeight() {
+        assertThrows(IllegalClientArgumentException.class,
+                () -> instance.setHeight(0),
+                "Height must be a positive integer");
     }
 
     /* setPercent() */
 
     @Test
-    public void testSetPercent() {
+    void testSetPercent() {
         float percent = 50f;
-        this.instance.setPercent(percent);
-        assertEquals(percent, this.instance.getPercent(), DELTA);
+        instance.setPercent(percent);
+        assertEquals(percent, instance.getPercent(), DELTA);
     }
 
     @Test
-    public void testSetNegativePercent() {
-        try {
-            this.instance.setPercent(-1.0f);
-            fail("Expected exception");
-        } catch (IllegalClientArgumentException e) {
-            assertEquals("Percent must be positive", e.getMessage());
-        }
+    void testSetNegativePercent() {
+        assertThrows(IllegalClientArgumentException.class,
+                () -> instance.setPercent(-1.0f),
+                "Percent must be positive");
     }
 
     @Test
-    public void testSetZeroPercent() {
-        try {
-            this.instance.setPercent(0f);
-            fail("Expected exception");
-        } catch (IllegalClientArgumentException e) {
-            assertEquals("Percent must be positive", e.getMessage());
-        }
+    void testSetZeroPercent() {
+        assertThrows(IllegalClientArgumentException.class,
+                () -> instance.setPercent(0f),
+                "Percent must be positive");
     }
 
     /* setWidth() */
 
     @Test
-    public void testSetWidth() {
+    void testSetWidth() {
         Integer width = 50;
-        this.instance.setWidth(width);
-        assertEquals(width, this.instance.getWidth());
+        instance.setWidth(width);
+        assertEquals(width, instance.getWidth());
     }
 
     @Test
-    public void testSetNegativeWidth() {
-        try {
-            this.instance.setWidth(-1);
-            fail("Expected exception");
-        } catch (IllegalClientArgumentException e) {
-            assertEquals("Width must be a positive integer", e.getMessage());
-        }
+    void testSetNegativeWidth() {
+        assertThrows(IllegalClientArgumentException.class,
+                () -> instance.setWidth(-1),
+                "Width must be a positive integer");
     }
 
     @Test
-    public void testSetZeroWidth() {
-        try {
-            this.instance.setWidth(0);
-            fail("Expected exception");
-        } catch (IllegalClientArgumentException e) {
-            assertEquals("Width must be a positive integer", e.getMessage());
-        }
+    void testSetZeroWidth() {
+        assertThrows(IllegalClientArgumentException.class,
+                () -> instance.setWidth(0),
+                "Width must be a positive integer");
     }
 
     /* toString() */
 
     @Test
-    public void testToString() {
+    void testToString() {
         Size s = Size.fromUri("full");
         assertEquals("full", s.toString());
 

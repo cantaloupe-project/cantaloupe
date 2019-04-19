@@ -5,30 +5,30 @@ import edu.illinois.library.cantaloupe.http.Range;
 import edu.illinois.library.cantaloupe.http.Response;
 import edu.illinois.library.cantaloupe.test.AzureStorageTestUtil;
 import edu.illinois.library.cantaloupe.test.BaseTest;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class AzureStorageHTTPImageInputStreamClientTest extends BaseTest {
 
     private AzureStorageHTTPImageInputStreamClient instance;
 
-    @BeforeClass
+    @BeforeAll
     public static void beforeClass() throws Exception {
         BaseTest.beforeClass();
         AzureStorageTestUtil.uploadFixtures();
     }
 
-    @AfterClass
+    @AfterAll
     public static void afterClass() throws Exception {
         BaseTest.afterClass();
         AzureStorageTestUtil.deleteFixtures();
     }
 
-    @Before
+    @BeforeEach
     @Override
     public void setUp() throws Exception {
         super.setUp();
@@ -40,7 +40,7 @@ public class AzureStorageHTTPImageInputStreamClientTest extends BaseTest {
     }
 
     @Test
-    public void testSendHEADRequest() throws Exception {
+    void testSendHEADRequest() throws Exception {
         Response actual = instance.sendHEADRequest();
         assertEquals(200, actual.getStatus());
         assertEquals("bytes", actual.getHeaders().getFirstValue("Accept-Ranges"));
@@ -48,7 +48,7 @@ public class AzureStorageHTTPImageInputStreamClientTest extends BaseTest {
     }
 
     @Test
-    public void testSendGETRequest() throws Exception {
+    void testSendGETRequest() throws Exception {
         Response actual = instance.sendGETRequest(new Range(10, 50, 5439));
         assertEquals(206, actual.getStatus());
         assertEquals(41, actual.getBody().length);

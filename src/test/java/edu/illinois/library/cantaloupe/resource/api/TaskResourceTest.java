@@ -8,11 +8,11 @@ import edu.illinois.library.cantaloupe.http.ResourceException;
 import edu.illinois.library.cantaloupe.http.Response;
 import edu.illinois.library.cantaloupe.image.MediaType;
 import edu.illinois.library.cantaloupe.resource.Route;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.net.URI;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Functional test of TaskResource.
@@ -25,7 +25,7 @@ public class TaskResourceTest extends AbstractAPIResourceTest {
     }
 
     @Test
-    public void testGETWithInvalidID() throws Exception {
+    void testGETWithInvalidID() throws Exception {
         try {
             client.setMethod(Method.GET);
             client.send();
@@ -35,7 +35,7 @@ public class TaskResourceTest extends AbstractAPIResourceTest {
     }
 
     @Test
-    public void testGETWithValidID() throws Exception {
+    void testGETWithValidID() throws Exception {
         Response response = createTask();
 
         assertEquals(200, response.getStatus());
@@ -45,7 +45,7 @@ public class TaskResourceTest extends AbstractAPIResourceTest {
     }
 
     @Test
-    public void testGETResponseHeaders() throws Exception {
+    void testGETResponseHeaders() throws Exception {
         Response response = createTask();
 
         Headers headers = response.getHeaders();

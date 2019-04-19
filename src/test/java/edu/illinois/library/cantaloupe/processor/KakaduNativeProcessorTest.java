@@ -4,20 +4,20 @@ import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
 import edu.illinois.library.cantaloupe.test.TestUtil;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.EnumSet;
 import java.util.Set;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class KakaduNativeProcessorTest extends AbstractProcessorTest {
 
     private KakaduNativeProcessor instance;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         super.setUp();
 
@@ -26,7 +26,7 @@ public class KakaduNativeProcessorTest extends AbstractProcessorTest {
         instance = newInstance();
     }
 
-    @After
+    @AfterEach
     public void tearDown() throws Exception {
         super.tearDown();
         instance.close();
@@ -44,12 +44,12 @@ public class KakaduNativeProcessorTest extends AbstractProcessorTest {
     }
 
     @Test
-    public void testGetInitializationErrorWithNoException() {
+    void testGetInitializationErrorWithNoException() {
         assertNull(instance.getInitializationError());
     }
 
     @Test
-    public void testReadInfoWithUntiledImage() throws Exception {
+    void testReadInfoWithUntiledImage() throws Exception {
         instance.setSourceFile(TestUtil.getImage("jp2-5res-rgb-64x56x8-monotiled-lossy.jp2"));
         Info expectedInfo = Info.builder()
                 .withSize(64, 56)
@@ -61,7 +61,7 @@ public class KakaduNativeProcessorTest extends AbstractProcessorTest {
     }
 
     @Test
-    public void testReadInfoWithTiledImage() throws Exception {
+    void testReadInfoWithTiledImage() throws Exception {
         instance.setSourceFile(TestUtil.getImage("jp2-6res-rgb-64x56x8-multitiled-lossy.jp2"));
         Info expectedInfo = Info.builder()
                 .withSize(64, 56)
@@ -73,21 +73,21 @@ public class KakaduNativeProcessorTest extends AbstractProcessorTest {
     }
 
     @Test
-    public void testReadInfoIPTCAwareness() throws Exception {
+    void testReadInfoIPTCAwareness() throws Exception {
         instance.setSourceFile(TestUtil.getImage("jp2-iptc.jp2"));
         Info info = instance.readInfo();
         assertTrue(info.getMetadata().getIPTC().isPresent());
     }
 
     @Test
-    public void testReadInfoXMPAwareness() throws Exception {
+    void testReadInfoXMPAwareness() throws Exception {
         instance.setSourceFile(TestUtil.getImage("jp2-xmp.jp2"));
         Info info = instance.readInfo();
         assertTrue(info.getMetadata().getXMP().isPresent());
     }
 
     @Test
-    public void testGetSupportedFeatures() throws Exception {
+    void testGetSupportedFeatures() throws Exception {
         instance.setSourceFormat(getAnySupportedSourceFormat(instance));
 
         Set<ProcessorFeature> expectedFeatures = EnumSet.of(

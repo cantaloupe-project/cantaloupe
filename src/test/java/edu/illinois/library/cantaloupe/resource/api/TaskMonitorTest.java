@@ -1,25 +1,27 @@
 package edu.illinois.library.cantaloupe.resource.api;
 
 import edu.illinois.library.cantaloupe.test.BaseTest;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.concurrent.Callable;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class TaskMonitorTest extends BaseTest {
 
     private TaskMonitor instance;
 
-    @Before
-    public void setUp() {
+    @BeforeEach
+    public void setUp() throws Exception {
+        super.setUp();
         instance = TaskMonitor.getInstance();
     }
 
-    @After
-    public void tearDown() {
+    @AfterEach
+    public void tearDown() throws Exception {
+        super.setUp();
         instance = null;
         TaskMonitor.clearInstance();
     }
@@ -27,7 +29,7 @@ public class TaskMonitorTest extends BaseTest {
     /* add() */
 
     @Test
-    public void testAdd() {
+    void testAdd() {
         Callable<?> callable = new PurgeDelegateMethodInvocationCacheCommand();
         APITask<?> message = new APITask<>(callable);
         assertNull(instance.get(message.getUUID()));
@@ -38,7 +40,7 @@ public class TaskMonitorTest extends BaseTest {
     /* get() */
 
     @Test
-    public void testGet() {
+    void testGet() {
         Callable<?> callable = new PurgeDelegateMethodInvocationCacheCommand();
         APITask<?> message = new APITask<>(callable);
         instance.add(message);
@@ -48,7 +50,7 @@ public class TaskMonitorTest extends BaseTest {
     /* getAll() */
 
     @Test
-    public void testGetAll() {
+    void testGetAll() {
         Callable<?> callable = new PurgeDelegateMethodInvocationCacheCommand();
         APITask<?> message = new APITask<>(callable);
         instance.add(message);

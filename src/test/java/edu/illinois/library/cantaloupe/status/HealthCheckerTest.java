@@ -17,33 +17,33 @@ import edu.illinois.library.cantaloupe.source.MockStreamSource;
 import edu.illinois.library.cantaloupe.source.Source;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.nio.file.Path;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class HealthCheckerTest extends BaseTest {
 
     private HealthChecker instance;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         super.setUp();
         instance = new HealthChecker();
     }
 
-    @After
+    @AfterEach
     public void tearDown() throws Exception {
         super.tearDown();
         HealthChecker.getSourceProcessorPairs().clear();
     }
 
     @Test
-    public void testAddSourceProcessorPair() {
+    void testAddSourceProcessorPair() {
         assertTrue(HealthChecker.getSourceProcessorPairs().isEmpty());
 
         Source source = new MockStreamSource();
@@ -71,14 +71,14 @@ public class HealthCheckerTest extends BaseTest {
     }
 
     @Test
-    public void testCheckSuccessfully() {
+    void testCheckSuccessfully() {
         Health health = instance.check();
         assertEquals(Health.Color.GREEN, health.getColor());
         assertNull(health.getMessage());
     }
 
     @Test
-    public void testCheckWithProcessorFailure() throws IOException {
+    void testCheckWithProcessorFailure() throws IOException {
         Identifier identifier = new Identifier("cats");
         Path file = TestUtil.getImage("jpg");
 
@@ -97,7 +97,7 @@ public class HealthCheckerTest extends BaseTest {
     }
 
     @Test
-    public void testCheckWithSourceCacheFailure() {
+    void testCheckWithSourceCacheFailure() {
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.SOURCE_CACHE,
                 MockBrokenSourceCache.class.getName());
@@ -109,7 +109,7 @@ public class HealthCheckerTest extends BaseTest {
     }
 
     @Test
-    public void testCheckWithDerivativeCacheFailure() {
+    void testCheckWithDerivativeCacheFailure() {
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.DERIVATIVE_CACHE_ENABLED, "true");
         config.setProperty(Key.DERIVATIVE_CACHE,

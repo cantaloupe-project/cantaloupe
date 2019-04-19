@@ -1,16 +1,16 @@
 package edu.illinois.library.cantaloupe.http;
 
 import edu.illinois.library.cantaloupe.test.BaseTest;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class RangeTest extends BaseTest {
 
     private Range instance;
 
-    @Before
+    @BeforeEach
     @Override
     public void setUp() throws Exception {
         super.setUp();
@@ -18,13 +18,13 @@ public class RangeTest extends BaseTest {
     }
 
     @Test
-    public void testEqualsWithEqualInstances() {
+    void testEqualsWithEqualInstances() {
         Range other = new Range(0, 100, 500);
         assertEquals(instance, other);
     }
 
     @Test
-    public void testEqualsWithUnequalInstances() {
+    void testEqualsWithUnequalInstances() {
         Range other = new Range(1, 100, 500);
         assertNotEquals(instance, other);
 
@@ -36,13 +36,13 @@ public class RangeTest extends BaseTest {
     }
 
     @Test
-    public void testHashCodeWithEqualInstances() {
+    void testHashCodeWithEqualInstances() {
         Range other = new Range(0, 100, 500);
         assertEquals(instance.hashCode(), other.hashCode());
     }
 
     @Test
-    public void testHashCodeWithUnequalInstances() {
+    void testHashCodeWithUnequalInstances() {
         Range other = new Range(1, 100, 500);
         assertNotEquals(instance.hashCode(), other.hashCode());
 

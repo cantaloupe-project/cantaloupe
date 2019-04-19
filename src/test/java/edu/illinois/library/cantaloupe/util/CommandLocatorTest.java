@@ -1,15 +1,15 @@
 package edu.illinois.library.cantaloupe.util;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.io.File;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class CommandLocatorTest {
 
     @Test
-    public void locate() {
+    void locate() {
         // unix path, no trailing slash
         assertEquals("/opt/bin" + File.separator + "bin1",
                 CommandLocator.locate("bin1", "/opt/bin"));

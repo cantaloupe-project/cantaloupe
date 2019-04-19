@@ -19,8 +19,8 @@ import edu.illinois.library.cantaloupe.source.PathStreamFactory;
 import edu.illinois.library.cantaloupe.source.StreamFactory;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -39,7 +39,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static edu.illinois.library.cantaloupe.test.Assert.ImageAssert.*;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * <p>Contains tests common to all {@link Processor}s.</p>
@@ -545,7 +545,7 @@ abstract class AbstractProcessorTest extends BaseTest {
     }
 
     @Test
-    @Ignore // see comment in GIFImageWriter, which most processors use to write GIFs
+    @Disabled // see comment in GIFImageWriter, which most processors use to write GIFs
     public void testProcessWritesXMPMetadataIntoGIF() throws Exception {
         testProcessWritesXMPMetadata(Format.GIF);
     }

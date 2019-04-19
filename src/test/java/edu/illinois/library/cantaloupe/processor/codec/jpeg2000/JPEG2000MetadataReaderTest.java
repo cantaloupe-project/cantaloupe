@@ -1,31 +1,32 @@
 package edu.illinois.library.cantaloupe.processor.codec.jpeg2000;
 
 import edu.illinois.library.cantaloupe.image.iptc.Reader;
-import edu.illinois.library.cantaloupe.processor.codec.jpeg2000.JPEG2000MetadataReader;
+import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import javax.imageio.ImageIO;
 import javax.imageio.stream.ImageInputStream;
 import java.io.IOException;
 import java.nio.file.Path;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
-public class JPEG2000MetadataReaderTest {
+public class JPEG2000MetadataReaderTest extends BaseTest {
 
     private JPEG2000MetadataReader instance;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
+        super.setUp();
         instance = new JPEG2000MetadataReader();
     }
 
     /* getComponentSize() */
 
     @Test
-    public void testGetComponentSizeWithValidImage() throws Exception {
+    void testGetComponentSizeWithValidImage() throws Exception {
         Path file = TestUtil.getImage("jp2");
         try (ImageInputStream is = ImageIO.createImageInputStream(file.toFile())) {
             instance.setSource(is);
@@ -33,24 +34,25 @@ public class JPEG2000MetadataReaderTest {
         }
     }
 
-    @Test(expected = IOException.class)
-    public void testGetComponentSizeWithInvalidImage() throws Exception {
+    @Test
+    void testGetComponentSizeWithInvalidImage() throws Exception {
         Path file = TestUtil.getImage("jpg");
         try (ImageInputStream is = ImageIO.createImageInputStream(file.toFile())) {
             instance.setSource(is);
-            instance.getComponentSize();
+            assertThrows(IOException.class, () -> instance.getComponentSize());
         }
     }
 
-    @Test(expected = IllegalStateException.class)
-    public void testGetComponentSizeWithSourceNotSet() throws Exception {
-        instance.getComponentSize();
+    @Test
+    void testGetComponentSizeWithSourceNotSet() {
+        assertThrows(IllegalStateException.class,
+                () -> instance.getComponentSize());
     }
 
     /* getHeight() */
 
     @Test
-    public void testGetHeightWithValidImage() throws Exception {
+    void testGetHeightWithValidImage() throws Exception {
         Path file = TestUtil.getImage("jp2");
         try (ImageInputStream is = ImageIO.createImageInputStream(file.toFile())) {
             instance.setSource(is);
@@ -58,24 +60,24 @@ public class JPEG2000MetadataReaderTest {
         }
     }
 
-    @Test(expected = IOException.class)
-    public void testGetHeightWithInvalidImage() throws Exception {
+    @Test
+    void testGetHeightWithInvalidImage() throws Exception {
         Path file = TestUtil.getImage("jpg");
         try (ImageInputStream is = ImageIO.createImageInputStream(file.toFile())) {
             instance.setSource(is);
-            instance.getHeight();
+            assertThrows(IOException.class, () -> instance.getHeight());
         }
     }
 
-    @Test(expected = IllegalStateException.class)
-    public void testGetHeightWithSourceNotSet() throws Exception {
-        instance.getHeight();
+    @Test
+    void testGetHeightWithSourceNotSet() {
+        assertThrows(IllegalStateException.class, () -> instance.getHeight());
     }
 
     /* getIPTC() */
 
     @Test
-    public void testGetIPTCWithValidImageContainingIPTC() throws Exception {
+    void testGetIPTCWithValidImageContainingIPTC() throws Exception {
         Path file = TestUtil.getImage("jp2-iptc.jp2");
         try (ImageInputStream is = ImageIO.createImageInputStream(file.toFile())) {
             instance.setSource(is);
@@ -87,7 +89,7 @@ public class JPEG2000MetadataReaderTest {
     }
 
     @Test
-    public void testGetIPTCWithValidImageNotContainingIPTC() throws Exception {
+    void testGetIPTCWithValidImageNotContainingIPTC() throws Exception {
         Path file = TestUtil.getImage("jp2");
         try (ImageInputStream is = ImageIO.createImageInputStream(file.toFile())) {
             instance.setSource(is);
@@ -95,24 +97,24 @@ public class JPEG2000MetadataReaderTest {
         }
     }
 
-    @Test(expected = IOException.class)
-    public void testGetIPTCWithInvalidImage() throws Exception {
+    @Test
+    void testGetIPTCWithInvalidImage() throws Exception {
         Path file = TestUtil.getImage("jpg");
         try (ImageInputStream is = ImageIO.createImageInputStream(file.toFile())) {
             instance.setSource(is);
-            instance.getIPTC();
+            assertThrows(IOException.class, () -> instance.getIPTC());
         }
     }
 
-    @Test(expected = IllegalStateException.class)
-    public void testGetIPTCWithSourceNotSet() throws Exception {
-        instance.getIPTC();
+    @Test
+    void testGetIPTCWithSourceNotSet() {
+        assertThrows(IllegalStateException.class, () -> instance.getIPTC());
     }
 
     /* getNumComponents() */
 
     @Test
-    public void testGetNumComponentsWithValidImage() throws Exception {
+    void testGetNumComponentsWithValidImage() throws Exception {
         Path file = TestUtil.getImage("jp2-5res-rgb-64x56x8-monotiled-lossy.jp2");
         try (ImageInputStream is = ImageIO.createImageInputStream(file.toFile())) {
             instance.setSource(is);
@@ -120,24 +122,25 @@ public class JPEG2000MetadataReaderTest {
         }
     }
 
-    @Test(expected = IOException.class)
-    public void testGetNumComponentsWithInvalidImage() throws Exception {
+    @Test
+    void testGetNumComponentsWithInvalidImage() throws Exception {
         Path file = TestUtil.getImage("jpg");
         try (ImageInputStream is = ImageIO.createImageInputStream(file.toFile())) {
             instance.setSource(is);
-            instance.getNumComponents();
+            assertThrows(IOException.class, () -> instance.getNumComponents());
         }
     }
 
-    @Test(expected = IllegalStateException.class)
-    public void testGetNumComponentsWithSourceNotSet() throws Exception {
-        instance.getNumComponents();
+    @Test
+    void testGetNumComponentsWithSourceNotSet() {
+        assertThrows(IllegalStateException.class,
+                () -> instance.getNumComponents());
     }
 
     /* getNumDecompositionLevels() */
 
     @Test
-    public void testGetNumDecompositionLevelsWithValidImage() throws Exception {
+    void testGetNumDecompositionLevelsWithValidImage() throws Exception {
         Path file = TestUtil.getImage("jp2");
         try (ImageInputStream is = ImageIO.createImageInputStream(file.toFile())) {
             instance.setSource(is);
@@ -145,24 +148,26 @@ public class JPEG2000MetadataReaderTest {
         }
     }
 
-    @Test(expected = IOException.class)
-    public void testGetNumDecompositionLevelsWithInvalidImage() throws Exception {
+    @Test
+    void testGetNumDecompositionLevelsWithInvalidImage() throws Exception {
         Path file = TestUtil.getImage("jpg");
         try (ImageInputStream is = ImageIO.createImageInputStream(file.toFile())) {
             instance.setSource(is);
-            instance.getNumDecompositionLevels();
+            assertThrows(IOException.class,
+                    () -> instance.getNumDecompositionLevels());
         }
     }
 
-    @Test(expected = IllegalStateException.class)
-    public void testGetNumDecompositionLevelsWithSourceNotSet() throws Exception {
-        instance.getNumDecompositionLevels();
+    @Test
+    void testGetNumDecompositionLevelsWithSourceNotSet() {
+        assertThrows(IllegalStateException.class,
+                () -> instance.getNumDecompositionLevels());
     }
 
     /* getTileHeight() */
 
     @Test
-    public void testGetTileHeightWithValidImage() throws Exception {
+    void testGetTileHeightWithValidImage() throws Exception {
         Path file = TestUtil.getImage("jp2");
         try (ImageInputStream is = ImageIO.createImageInputStream(file.toFile())) {
             instance.setSource(is);
@@ -170,24 +175,25 @@ public class JPEG2000MetadataReaderTest {
         }
     }
 
-    @Test(expected = IOException.class)
-    public void testGetTileHeightWithInvalidImage() throws Exception {
+    @Test
+    void testGetTileHeightWithInvalidImage() throws Exception {
         Path file = TestUtil.getImage("jpg");
         try (ImageInputStream is = ImageIO.createImageInputStream(file.toFile())) {
             instance.setSource(is);
-            instance.getTileHeight();
+            assertThrows(IOException.class, () -> instance.getTileHeight());
         }
     }
 
-    @Test(expected = IllegalStateException.class)
-    public void testGetTileHeightWithSourceNotSet() throws Exception {
-        instance.getTileHeight();
+    @Test
+    void testGetTileHeightWithSourceNotSet() {
+        assertThrows(IllegalStateException.class,
+                () -> instance.getTileHeight());
     }
 
     /* getTileWidth() */
 
     @Test
-    public void testGetTileWidthWithValidImage() throws Exception {
+    void testGetTileWidthWithValidImage() throws Exception {
         Path file = TestUtil.getImage("jp2");
         try (ImageInputStream is = ImageIO.createImageInputStream(file.toFile())) {
             instance.setSource(is);
@@ -195,24 +201,24 @@ public class JPEG2000MetadataReaderTest {
         }
     }
 
-    @Test(expected = IOException.class)
-    public void testGetTileWidthWithInvalidImage() throws Exception {
+    @Test
+    void testGetTileWidthWithInvalidImage() throws Exception {
         Path file = TestUtil.getImage("jpg");
         try (ImageInputStream is = ImageIO.createImageInputStream(file.toFile())) {
             instance.setSource(is);
-            instance.getTileWidth();
+            assertThrows(IOException.class, () -> instance.getTileWidth());
         }
     }
 
-    @Test(expected = IllegalStateException.class)
-    public void testGetTileWidthWithSourceNotSet() throws Exception {
-        instance.getTileWidth();
+    @Test
+    void testGetTileWidthWithSourceNotSet() {
+        assertThrows(IllegalStateException.class, () -> instance.getTileWidth());
     }
 
     /* getWidth() */
 
     @Test
-    public void testGetWidthWithValidImage() throws Exception {
+    void testGetWidthWithValidImage() throws Exception {
         Path file = TestUtil.getImage("jp2");
         try (ImageInputStream is = ImageIO.createImageInputStream(file.toFile())) {
             instance.setSource(is);
@@ -220,24 +226,24 @@ public class JPEG2000MetadataReaderTest {
         }
     }
 
-    @Test(expected = IOException.class)
-    public void testGetWidthWithInvalidImage() throws Exception {
+    @Test
+    void testGetWidthWithInvalidImage() throws Exception {
         Path file = TestUtil.getImage("jpg");
         try (ImageInputStream is = ImageIO.createImageInputStream(file.toFile())) {
             instance.setSource(is);
-            instance.getWidth();
+            assertThrows(IOException.class, () -> instance.getWidth());
         }
     }
 
-    @Test(expected = IllegalStateException.class)
-    public void testGetWidthWithSourceNotSet() throws Exception {
-        instance.getWidth();
+    @Test
+    void testGetWidthWithSourceNotSet() {
+        assertThrows(IllegalStateException.class, () -> instance.getWidth());
     }
 
     /* getXMP() */
 
     @Test
-    public void testGetXMPWithValidImageContainingXMP() throws Exception {
+    void testGetXMPWithValidImageContainingXMP() throws Exception {
         Path file = TestUtil.getImage("jp2-xmp.jp2");
         try (ImageInputStream is = ImageIO.createImageInputStream(file.toFile())) {
             instance.setSource(is);
@@ -249,7 +255,7 @@ public class JPEG2000MetadataReaderTest {
     }
 
     @Test
-    public void testGetXMPWithValidImageNotContainingXMP() throws Exception {
+    void testGetXMPWithValidImageNotContainingXMP() throws Exception {
         Path file = TestUtil.getImage("jp2");
         try (ImageInputStream is = ImageIO.createImageInputStream(file.toFile())) {
             instance.setSource(is);
@@ -257,18 +263,18 @@ public class JPEG2000MetadataReaderTest {
         }
     }
 
-    @Test(expected = IOException.class)
-    public void testGetXMPWithInvalidImage() throws Exception {
+    @Test
+    void testGetXMPWithInvalidImage() throws Exception {
         Path file = TestUtil.getImage("jpg");
         try (ImageInputStream is = ImageIO.createImageInputStream(file.toFile())) {
             instance.setSource(is);
-            instance.getXMP();
+            assertThrows(IOException.class, () -> instance.getXMP());
         }
     }
 
-    @Test(expected = IllegalStateException.class)
-    public void testGetXMPWithSourceNotSet() throws Exception {
-        instance.getXMP();
+    @Test
+    void testGetXMPWithSourceNotSet() {
+        assertThrows(IllegalStateException.class, () -> instance.getXMP());
     }
 
 }

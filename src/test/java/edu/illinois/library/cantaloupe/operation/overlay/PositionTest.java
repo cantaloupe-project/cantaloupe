@@ -1,14 +1,14 @@
 package edu.illinois.library.cantaloupe.operation.overlay;
 
 import edu.illinois.library.cantaloupe.test.BaseTest;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class PositionTest extends BaseTest {
 
     @Test
-    public void testFromString() {
+    void testFromString() {
         assertEquals(Position.TOP_LEFT, Position.fromString("top left"));
         assertEquals(Position.TOP_CENTER, Position.fromString("top center"));
         assertEquals(Position.TOP_RIGHT, Position.fromString("top right"));
@@ -25,7 +25,7 @@ public class PositionTest extends BaseTest {
     }
 
     @Test
-    public void testToString() {
+    void testToString() {
         assertEquals("N", Position.TOP_CENTER.toString());
         assertEquals("NE", Position.TOP_RIGHT.toString());
         assertEquals("E", Position.RIGHT_CENTER.toString());

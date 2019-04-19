@@ -6,10 +6,10 @@ import edu.illinois.library.cantaloupe.image.Dimension;
 import edu.illinois.library.cantaloupe.image.ScaleConstraint;
 import edu.illinois.library.cantaloupe.operation.Scale;
 import edu.illinois.library.cantaloupe.test.BaseTest;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class RasterizationHelperTest extends BaseTest {
 
@@ -17,21 +17,22 @@ public class RasterizationHelperTest extends BaseTest {
 
     private RasterizationHelper instance;
 
-    @Before
-    public void setUp() {
+    @BeforeEach
+    public void setUp() throws Exception {
+        super.setUp();
         instance = new RasterizationHelper();
         instance.setBaseDPI(150);
     }
 
     @Test
-    public void testConstructor() {
+    void testConstructor() {
         final int baseDPI = 200;
         Configuration.getInstance().setProperty(Key.PROCESSOR_DPI, baseDPI);
         instance = new RasterizationHelper();
     }
 
     @Test
-    public void testGetDPI1WithLargerScaleConstraint() {
+    void testGetDPI1WithLargerScaleConstraint() {
         assertEquals(instance.getBaseDPI() / 2.0,
                 instance.getDPI(1, new ScaleConstraint(1, 1)), DELTA);
         assertEquals(instance.getBaseDPI() / 4.0,
@@ -39,7 +40,7 @@ public class RasterizationHelperTest extends BaseTest {
     }
 
     @Test
-    public void testGetDPI1WithSmallerScaleConstraint() {
+    void testGetDPI1WithSmallerScaleConstraint() {
         assertEquals(instance.getBaseDPI(),
                 instance.getDPI(-1, new ScaleConstraint(1, 1)), DELTA);
         assertEquals(instance.getBaseDPI() / 2.0,
@@ -51,7 +52,7 @@ public class RasterizationHelperTest extends BaseTest {
     }
 
     @Test
-    public void testGetDPI2WithHalfScale() {
+    void testGetDPI2WithHalfScale() {
         final Dimension fullSize = new Dimension(1000, 1000);
         final ScaleConstraint scaleConstraint = new ScaleConstraint(1, 1);
         final Scale scale = new Scale(0.5f);
@@ -60,7 +61,7 @@ public class RasterizationHelperTest extends BaseTest {
     }
 
     @Test
-    public void testGetDPI2With1xScale() {
+    void testGetDPI2With1xScale() {
         final Dimension fullSize = new Dimension(1000, 1000);
         final ScaleConstraint scaleConstraint = new ScaleConstraint(1, 1);
         final Scale scale = new Scale(1);
@@ -69,7 +70,7 @@ public class RasterizationHelperTest extends BaseTest {
     }
 
     @Test
-    public void testGetDPI2With2xScale() {
+    void testGetDPI2With2xScale() {
         final Dimension fullSize = new Dimension(1000, 1000);
         final ScaleConstraint scaleConstraint = new ScaleConstraint(1, 1);
         final Scale scale = new Scale(2);
@@ -78,7 +79,7 @@ public class RasterizationHelperTest extends BaseTest {
     }
 
     @Test
-    public void testGetDPI2With3xScale() {
+    void testGetDPI2With3xScale() {
         final Dimension fullSize = new Dimension(1000, 1000);
         final ScaleConstraint scaleConstraint = new ScaleConstraint(1, 1);
         final Scale scale = new Scale(3);
@@ -87,7 +88,7 @@ public class RasterizationHelperTest extends BaseTest {
     }
 
     @Test
-    public void testGetDPI2With4xScale() {
+    void testGetDPI2With4xScale() {
         final Dimension fullSize = new Dimension(1000, 1000);
         final ScaleConstraint scaleConstraint = new ScaleConstraint(1, 1);
         final Scale scale = new Scale(4);

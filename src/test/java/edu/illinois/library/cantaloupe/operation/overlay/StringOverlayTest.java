@@ -4,15 +4,15 @@ import edu.illinois.library.cantaloupe.image.Dimension;
 import edu.illinois.library.cantaloupe.image.ScaleConstraint;
 import edu.illinois.library.cantaloupe.operation.Color;
 import edu.illinois.library.cantaloupe.test.BaseTest;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.awt.Font;
 import java.awt.font.TextAttribute;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class StringOverlayTest extends BaseTest {
 
@@ -27,7 +27,7 @@ public class StringOverlayTest extends BaseTest {
         return Font.getFont(attributes);
     }
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         super.setUp();
 
@@ -36,56 +36,61 @@ public class StringOverlayTest extends BaseTest {
     }
 
     @Test
-    public void hasEffect() {
+    void hasEffect() {
         assertTrue(instance.hasEffect());
         instance.setString("");
         assertFalse(instance.hasEffect());
     }
 
-    @Test(expected = IllegalStateException.class)
-    public void setBackgroundColorThrowsExceptionWhenFrozen() {
+    @Test
+    void setBackgroundColorThrowsExceptionWhenFrozen() {
         instance.freeze();
-        instance.setBackgroundColor(Color.RED);
-    }
-
-    @Test(expected = IllegalStateException.class)
-    public void setColorThrowsExceptionWhenFrozen() {
-        instance.freeze();
-        instance.setColor(Color.RED);
-    }
-
-    @Test(expected = IllegalStateException.class)
-    public void setFontThrowsExceptionWhenFrozen() {
-        instance.freeze();
-        instance.setFont(newFont());
-    }
-
-    @Test(expected = IllegalStateException.class)
-    public void setMinSizeThrowsExceptionWhenFrozen() {
-        instance.freeze();
-        instance.setMinSize(1);
-    }
-
-    @Test(expected = IllegalStateException.class)
-    public void setStringThrowsExceptionWhenFrozen() {
-        instance.freeze();
-        instance.setString("");
-    }
-
-    @Test(expected = IllegalStateException.class)
-    public void setStrokeColorThrowsExceptionWhenFrozen() {
-        instance.freeze();
-        instance.setStrokeColor(Color.RED);
-    }
-
-    @Test(expected = IllegalStateException.class)
-    public void setStrokeWidthThrowsExceptionWhenFrozen() {
-        instance.freeze();
-        instance.setStrokeWidth(3);
+        assertThrows(IllegalStateException.class,
+                () -> instance.setBackgroundColor(Color.RED));
     }
 
     @Test
-    public void toMap() {
+    void setColorThrowsExceptionWhenFrozen() {
+        instance.freeze();
+        assertThrows(IllegalStateException.class,
+                () -> instance.setColor(Color.RED));
+    }
+
+    @Test
+    void setFontThrowsExceptionWhenFrozen() {
+        instance.freeze();
+        assertThrows(IllegalStateException.class,
+                () -> instance.setFont(newFont()));
+    }
+
+    @Test
+    void setMinSizeThrowsExceptionWhenFrozen() {
+        instance.freeze();
+        assertThrows(IllegalStateException.class, () -> instance.setMinSize(1));
+    }
+
+    @Test
+    void setStringThrowsExceptionWhenFrozen() {
+        instance.freeze();
+        assertThrows(IllegalStateException.class, () -> instance.setString(""));
+    }
+
+    @Test
+    void setStrokeColorThrowsExceptionWhenFrozen() {
+        instance.freeze();
+        assertThrows(IllegalStateException.class,
+                () -> instance.setStrokeColor(Color.RED));
+    }
+
+    @Test
+    void setStrokeWidthThrowsExceptionWhenFrozen() {
+        instance.freeze();
+        assertThrows(IllegalStateException.class,
+                () -> instance.setStrokeWidth(3));
+    }
+
+    @Test
+    void toMap() {
         Dimension fullSize = new Dimension(100, 100);
         ScaleConstraint scaleConstraint = new ScaleConstraint(1, 1);
         Map<String,Object> map = instance.toMap(fullSize, scaleConstraint);
@@ -107,16 +112,17 @@ public class StringOverlayTest extends BaseTest {
         assertEquals(5f, map.get("stroke_width"));
     }
 
-    @Test(expected = UnsupportedOperationException.class)
-    public void toMapReturnsUnmodifiableMap() {
+    @Test
+    void toMapReturnsUnmodifiableMap() {
         Dimension fullSize = new Dimension(100, 100);
         ScaleConstraint scaleConstraint = new ScaleConstraint(1, 1);
         Map<String,Object> map = instance.toMap(fullSize, scaleConstraint);
-        map.put("test", "test");
+        assertThrows(UnsupportedOperationException.class,
+                () -> map.put("test", "test"));
     }
 
     @Test
-    public void testToString() {
+    void testToString() {
         instance.setString("DOGSdogs123!@#$%\n%^&*()");
         assertEquals("801774c691b35cbd89e3bd8cb6803681_SE_5_SansSerif_12_2.0_0.1_#0000FFFF_#FFA500FF_#FF0000FF_5.0",
                 instance.toString());

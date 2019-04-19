@@ -3,10 +3,10 @@ package edu.illinois.library.cantaloupe.test;
 import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.cache.CacheFacade;
 import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 
 /**
  * Base class for all tests.
@@ -21,16 +21,16 @@ public abstract class BaseTest {
         System.setProperty("com.sun.media.jai.disableMediaLib", "true");
     }
 
-    @BeforeClass
+    @BeforeAll
     public static void beforeClass() throws Exception {
         ConfigurationFactory.clearInstance();
         System.setProperty(ConfigurationFactory.CONFIG_VM_ARGUMENT, "memory");
     }
 
-    @AfterClass
+    @AfterAll
     public static void afterClass() throws Exception {}
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         ConfigurationFactory.clearInstance();
         System.setProperty(ConfigurationFactory.CONFIG_VM_ARGUMENT, "memory");
@@ -42,7 +42,7 @@ public abstract class BaseTest {
         new CacheFacade().purge();
     }
 
-    @After
+    @AfterEach
     public void tearDown() throws Exception {}
 
 }

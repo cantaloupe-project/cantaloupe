@@ -4,7 +4,7 @@ import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.test.ConfigurationConstants;
 import edu.illinois.library.cantaloupe.test.TestUtil;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class RedisCacheTest extends AbstractCacheTest {
 
@@ -35,7 +35,7 @@ public class RedisCacheTest extends AbstractCacheTest {
      */
     @Override
     @Test
-    public void testGetInfoWithExistingInvalidImage() {}
+    void testGetInfoWithExistingInvalidImage() {}
 
     /* newDerivativeImageInputStream(OperationList) */
 
@@ -44,7 +44,7 @@ public class RedisCacheTest extends AbstractCacheTest {
      */
     @Override
     @Test
-    public void testNewDerivativeImageInputStreamWithNonzeroTTL() {}
+    void testNewDerivativeImageInputStreamWithNonzeroTTL() {}
 
     /* purgeInvalid() */
 
@@ -53,6 +53,6 @@ public class RedisCacheTest extends AbstractCacheTest {
      */
     @Test
     @Override
-    public void testPurgeInvalid() {}
+    void testPurgeInvalid() {}
 
 }

@@ -3,17 +3,18 @@ package edu.illinois.library.cantaloupe.processor;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.source.MockStreamSource;
 import edu.illinois.library.cantaloupe.source.Source;
-import org.junit.Test;
+import edu.illinois.library.cantaloupe.test.BaseTest;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
-public class IncompatibleSourceExceptionTest {
+public class IncompatibleSourceExceptionTest extends BaseTest {
 
     @Test
-    public void testConstructor() {
-        final Source source = new MockStreamSource();
-        final Processor processor = new MockFileProcessor();
-        Exception e = new IncompatibleSourceException(source, processor);
+    void testConstructor() {
+        Source source       = new MockStreamSource();
+        Processor processor = new MockFileProcessor();
+        Exception e         = new IncompatibleSourceException(source, processor);
 
         String expected = String.format(
                 "%s and %s are not compatible using %s = %s. Either use a " +

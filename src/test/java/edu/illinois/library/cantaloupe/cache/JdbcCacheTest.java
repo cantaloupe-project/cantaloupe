@@ -10,10 +10,10 @@ import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.operation.Rotate;
 import edu.illinois.library.cantaloupe.operation.Scale;
 import edu.illinois.library.cantaloupe.test.TestUtil;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 import java.io.OutputStream;
 import java.nio.file.Files;
@@ -26,7 +26,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class JdbcCacheTest extends AbstractCacheTest {
 
@@ -34,7 +34,7 @@ public class JdbcCacheTest extends AbstractCacheTest {
 
     private JdbcCache instance;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         super.setUp();
 
@@ -47,7 +47,7 @@ public class JdbcCacheTest extends AbstractCacheTest {
         }
     }
 
-    @After
+    @AfterEach
     public void tearDown() throws Exception {
         instance.purge();
     }
@@ -154,7 +154,7 @@ public class JdbcCacheTest extends AbstractCacheTest {
     /* earliestValidDate() */
 
     @Test
-    public void testEarliestValidDate() {
+    void testEarliestValidDate() {
         final Configuration config = Configuration.getInstance();
 
         // ttl = 0
@@ -173,7 +173,7 @@ public class JdbcCacheTest extends AbstractCacheTest {
     /* getInfo(Identifier) */
 
     @Test
-    public void testGetImageInfoUpdatesLastAccessedTime() throws Exception {
+    void testGetImageInfoUpdatesLastAccessedTime() throws Exception {
         final Configuration config = Configuration.getInstance();
 
         final Identifier identifier = new Identifier("cats");
@@ -210,18 +210,18 @@ public class JdbcCacheTest extends AbstractCacheTest {
 
     /* newDerivativeImageInputStream(OperationList) */
 
-    @Ignore // TODO: why does this fail?
+    @Disabled // TODO: why does this fail?
     @Override
     @Test
-    public void testNewDerivativeImageInputStreamWithZeroTTL() {}
+    void testNewDerivativeImageInputStreamWithZeroTTL() {}
 
-    @Ignore // TODO: why does this fail?
+    @Disabled // TODO: why does this fail?
     @Override
     @Test
-    public void testNewDerivativeImageInputStreamWithNonzeroTTL() {}
+    void testNewDerivativeImageInputStreamWithNonzeroTTL() {}
 
     @Test
-    public void testNewDerivativeImageInputStreamUpdatesLastAccessedTime()
+    void testNewDerivativeImageInputStreamUpdatesLastAccessedTime()
             throws Exception {
         final Configuration config = Configuration.getInstance();
 
@@ -261,15 +261,15 @@ public class JdbcCacheTest extends AbstractCacheTest {
 
     /* newDerivativeImageOutputStream() */
 
-    @Ignore // TODO: why does this fail?
+    @Disabled // TODO: why does this fail?
     @Override
     @Test
-    public void testNewDerivativeImageOutputStream() {}
+    void testNewDerivativeImageOutputStream() {}
 
     /* put(Identifier, Info) */
 
     @Test
-    public void testPutSetsLastAccessedTime() throws Exception {
+    void testPutSetsLastAccessedTime() throws Exception {
         final Configuration config = Configuration.getInstance();
 
         Identifier identifier = new Identifier("birds");

@@ -1,21 +1,22 @@
 package edu.illinois.library.cantaloupe.image.exif;
 
+import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.util.Rational;
 import it.geosolutions.imageio.plugins.tiff.TIFFTag;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
-public class DataTypeTest {
+public class DataTypeTest extends BaseTest {
 
     private static final float DELTA_F  = 0.00001f;
     private static final double DELTA_L = 0.0000000001;
 
     @Test
-    public void testForTIFFTagType() {
+    void testForTIFFTagType() {
         assertEquals(DataType.BYTE, DataType.forTIFFTagType(TIFFTag.TIFF_BYTE));
         assertEquals(DataType.ASCII, DataType.forTIFFTagType(TIFFTag.TIFF_ASCII));
         assertEquals(DataType.SHORT, DataType.forTIFFTagType(TIFFTag.TIFF_SHORT));
@@ -30,7 +31,7 @@ public class DataTypeTest {
     }
 
     @Test
-    public void testForValue() {
+    void testForValue() {
         assertEquals(DataType.BYTE, DataType.forValue(1));
         assertEquals(DataType.ASCII, DataType.forValue(2));
         assertEquals(DataType.SHORT, DataType.forValue(3));
@@ -46,49 +47,49 @@ public class DataTypeTest {
     }
 
     @Test
-    public void testDecodeWithByte() {
+    void testDecodeWithByte() {
         byte[] bytes = new byte[] { 0x79 };
         assertEquals((byte) 0x79, DataType.BYTE.decode(bytes));
     }
 
     @Test
-    public void testDecodeWithASCII() {
+    void testDecodeWithASCII() {
         byte[] bytes = "cats\u0000".getBytes(StandardCharsets.US_ASCII);
         assertEquals("cats", DataType.ASCII.decode(bytes));
     }
 
     @Test
-    public void testDecodeWithShort() {
+    void testDecodeWithShort() {
         byte[] bytes = new byte[] { 0x12, 0x79 };
         assertEquals((short) 4729, DataType.SHORT.decode(bytes));
     }
 
     @Test
-    public void testDecodeWithLong() {
+    void testDecodeWithLong() {
         byte[] bytes = new byte[] { 0x00, 0x00, 0x03, 0x04, 0x05, 0x08, 0x12, 0x33 };
         assertEquals(3315799167539L, DataType.LONG.decode(bytes));
     }
 
     @Test
-    public void testDecodeWithRational() {
+    void testDecodeWithRational() {
         byte[] bytes = new byte[] { 0x00, 0x00, 0x03, 0x04, 0x05, 0x08, 0x12, 0x33 };
         assertEquals(new Rational(772, 84415027), DataType.RATIONAL.decode(bytes));
     }
 
     @Test
-    public void testDecodeWithSignedByte() {
+    void testDecodeWithSignedByte() {
         byte[] bytes = new byte[] { 0x79 };
         assertEquals((byte) 0x79, DataType.SBYTE.decode(bytes));
     }
 
     @Test
-    public void testDecodeWithSignedShort() {
+    void testDecodeWithSignedShort() {
         byte[] bytes = new byte[] { 0x12, 0x79 };
         assertEquals((short) 4729, DataType.SSHORT.decode(bytes));
     }
 
     @Test
-    public void testDecodeWithSignedLong() {
+    void testDecodeWithSignedLong() {
         final long value = 395834590832L;
         byte[] bytes = new byte[8];
         ByteBuffer.wrap(bytes).putLong(value);
@@ -96,13 +97,13 @@ public class DataTypeTest {
     }
 
     @Test
-    public void testDecodeWithSignedRational() {
+    void testDecodeWithSignedRational() {
         byte[] bytes = new byte[] { 0x00, 0x00, 0x03, 0x04, 0x05, 0x08, 0x12, 0x33 };
         assertEquals(new Rational(772, 84415027), DataType.SRATIONAL.decode(bytes));
     }
 
     @Test
-    public void testDecodeWithFloat() {
+    void testDecodeWithFloat() {
         final float value = 342.234232f;
         byte[] bytes = new byte[4];
         ByteBuffer.wrap(bytes).putFloat(value);
@@ -110,7 +111,7 @@ public class DataTypeTest {
     }
 
     @Test
-    public void testDecodeWithDouble() {
+    void testDecodeWithDouble() {
         final double value = 342.234202;
         byte[] bytes = new byte[8];
         ByteBuffer.wrap(bytes).putDouble(value);

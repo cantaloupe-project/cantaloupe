@@ -1,20 +1,21 @@
 package edu.illinois.library.cantaloupe.config;
 
 import edu.illinois.library.cantaloupe.test.BaseTest;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class ConfigurationFactoryTest extends BaseTest {
 
-    @Before
-    public void setUp() {
+    @BeforeEach
+    public void setUp() throws Exception {
+        super.setUp();
         ConfigurationFactory.clearInstance();
     }
 
     @Test
-    public void testGetInstanceInTesting() {
+    void testGetInstanceInTesting() {
         System.setProperty(ConfigurationFactory.CONFIG_VM_ARGUMENT, "memory");
 
         ConfigurationProvider provider =
@@ -23,7 +24,7 @@ public class ConfigurationFactoryTest extends BaseTest {
     }
 
     @Test
-    public void testGetInstanceInProduction() {
+    void testGetInstanceInProduction() {
         System.setProperty(ConfigurationFactory.CONFIG_VM_ARGUMENT, "bogus");
 
         ConfigurationProvider provider =

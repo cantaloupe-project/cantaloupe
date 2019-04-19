@@ -10,18 +10,18 @@ import edu.illinois.library.cantaloupe.script.DelegateProxyService;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.apache.commons.lang3.SystemUtils;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.net.URI;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class OverlayServiceTest extends BaseTest {
 
     private OverlayService instance;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         super.setUp();
 
@@ -40,13 +40,13 @@ public class OverlayServiceTest extends BaseTest {
     }
 
     @Test
-    public void testConstructor() {
+    void testConstructor() {
         assertTrue(instance.isEnabled());
         assertEquals(OverlayService.Strategy.BASIC, instance.getStrategy());
     }
 
     @Test
-    public void testNewOverlayWithBasicImageStrategy() throws Exception {
+    void testNewOverlayWithBasicImageStrategy() throws Exception {
         ImageOverlay overlay = (ImageOverlay) instance.newOverlay(null);
         if (SystemUtils.IS_OS_WINDOWS) {
             assertEquals(new URI("file:///C:/dev/null"), overlay.getURI());
@@ -58,7 +58,7 @@ public class OverlayServiceTest extends BaseTest {
     }
 
     @Test
-    public void testNewOverlayWithBasicStringStrategy() throws Exception {
+    void testNewOverlayWithBasicStringStrategy() throws Exception {
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.OVERLAY_TYPE, "string");
         config.setProperty(Key.OVERLAY_STRING_STRING, "cats");
@@ -73,7 +73,7 @@ public class OverlayServiceTest extends BaseTest {
     }
 
     @Test
-    public void testNewOverlayWithScriptStrategyReturningImageOverlay()
+    void testNewOverlayWithScriptStrategyReturningImageOverlay()
             throws Exception {
         instance.setStrategy(OverlayService.Strategy.DELEGATE_METHOD);
 
@@ -94,7 +94,7 @@ public class OverlayServiceTest extends BaseTest {
     }
 
     @Test
-    public void testNewOverlayWithScriptStrategyReturningStringOverlay()
+    void testNewOverlayWithScriptStrategyReturningStringOverlay()
             throws Exception {
         instance.setStrategy(OverlayService.Strategy.DELEGATE_METHOD);
 
@@ -111,8 +111,7 @@ public class OverlayServiceTest extends BaseTest {
     }
 
     @Test
-    public void testNewOverlayWithScriptStrategyReturningNil()
-            throws Exception {
+    void testNewOverlayWithScriptStrategyReturningNil() throws Exception {
         instance.setStrategy(OverlayService.Strategy.DELEGATE_METHOD);
 
         final Identifier identifier = new Identifier("bogus");

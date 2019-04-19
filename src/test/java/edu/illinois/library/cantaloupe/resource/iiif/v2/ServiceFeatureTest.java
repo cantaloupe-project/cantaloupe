@@ -1,24 +1,14 @@
 package edu.illinois.library.cantaloupe.resource.iiif.v2;
 
 import edu.illinois.library.cantaloupe.test.BaseTest;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class ServiceFeatureTest extends BaseTest {
 
     @Test
-    public void testValues() {
-        ServiceFeature f = ServiceFeature.BASE_URI_REDIRECT;
-        f = ServiceFeature.CANONICAL_LINK_HEADER;
-        f = ServiceFeature.CORS;
-        f = ServiceFeature.JSON_LD_MEDIA_TYPE;
-        f = ServiceFeature.PROFILE_LINK_HEADER;
-        f = ServiceFeature.SIZE_BY_WHITELISTED;
-    }
-
-    @Test
-    public void testGetName() {
+    void testGetName() {
         assertEquals("baseUriRedirect", ServiceFeature.BASE_URI_REDIRECT.getName());
         assertEquals("canonicalLinkHeader", ServiceFeature.CANONICAL_LINK_HEADER.getName());
         assertEquals("cors", ServiceFeature.CORS.getName());
@@ -28,7 +18,7 @@ public class ServiceFeatureTest extends BaseTest {
     }
 
     @Test
-    public void testToString() {
+    void testToString() {
         assertEquals("baseUriRedirect", ServiceFeature.BASE_URI_REDIRECT.toString());
         assertEquals("canonicalLinkHeader", ServiceFeature.CANONICAL_LINK_HEADER.toString());
         assertEquals("cors", ServiceFeature.CORS.toString());

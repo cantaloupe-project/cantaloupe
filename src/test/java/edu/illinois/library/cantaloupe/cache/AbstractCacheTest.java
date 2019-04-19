@@ -10,8 +10,8 @@ import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.ConcurrentReaderWriter;
 import edu.illinois.library.cantaloupe.test.TestUtil;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -21,7 +21,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Optional;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 abstract class AbstractCacheTest extends BaseTest {
 
@@ -48,7 +48,7 @@ abstract class AbstractCacheTest extends BaseTest {
         }
     }
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         super.setUp();
         Configuration.getInstance().setProperty(Key.DERIVATIVE_CACHE_TTL, 300);
@@ -57,7 +57,7 @@ abstract class AbstractCacheTest extends BaseTest {
     /* getInfo(Identifier) */
 
     @Test
-    public void testGetInfoWithExistingValidImage() throws Exception {
+    void testGetInfoWithExistingValidImage() throws Exception {
         final DerivativeCache instance = newInstance();
 
         Identifier identifier = new Identifier("cats");
@@ -69,7 +69,7 @@ abstract class AbstractCacheTest extends BaseTest {
     }
 
     @Test
-    public void testGetInfoWithExistingInvalidImage() throws Exception {
+    void testGetInfoWithExistingInvalidImage() throws Exception {
         final DerivativeCache instance = newInstance();
         Configuration.getInstance().setProperty(Key.DERIVATIVE_CACHE_TTL, 1);
 
@@ -83,20 +83,20 @@ abstract class AbstractCacheTest extends BaseTest {
     }
 
     @Test
-    public void testGetInfoWithNonexistentImage() throws Exception {
+    void testGetInfoWithNonexistentImage() throws Exception {
         final DerivativeCache instance = newInstance();
         assertFalse(instance.getInfo(new Identifier("bogus")).isPresent());
     }
 
     @Test
-    public void testGetInfoConcurrently() {
+    void testGetInfoConcurrently() {
         // This is tested in testPutConcurrently()
     }
 
     /* newDerivativeImageInputStream(OperationList) */
 
     @Test
-    public void testNewDerivativeImageInputStreamWithZeroTTL()
+    void testNewDerivativeImageInputStreamWithZeroTTL()
             throws Exception {
         final DerivativeCache instance = newInstance();
         Configuration.getInstance().setProperty(Key.DERIVATIVE_CACHE_TTL, 0);
@@ -123,7 +123,7 @@ abstract class AbstractCacheTest extends BaseTest {
     }
 
     @Test
-    public void testNewDerivativeImageInputStreamWithNonzeroTTL()
+    void testNewDerivativeImageInputStreamWithNonzeroTTL()
             throws Exception {
         final DerivativeCache instance = newInstance();
         Configuration.getInstance().setProperty(Key.DERIVATIVE_CACHE_TTL, 3);
@@ -153,7 +153,7 @@ abstract class AbstractCacheTest extends BaseTest {
     }
 
     @Test
-    public void testNewDerivativeImageInputStreamWithNonexistentImage()
+    void testNewDerivativeImageInputStreamWithNonexistentImage()
             throws Exception {
         final DerivativeCache instance = newInstance();
         final OperationList ops = new OperationList(new Identifier("cats"));
@@ -163,7 +163,7 @@ abstract class AbstractCacheTest extends BaseTest {
     }
 
     @Test
-    public void testNewDerivativeImageInputStreamConcurrently()
+    void testNewDerivativeImageInputStreamConcurrently()
             throws Exception {
         final DerivativeCache instance = newInstance();
         final OperationList ops = new OperationList(
@@ -178,6 +178,7 @@ abstract class AbstractCacheTest extends BaseTest {
         }, () -> {
             try (InputStream is = instance.newDerivativeImageInputStream(ops)) {
                 if (is != null) {
+                    //noinspection StatementWithEmptyBody
                     while (is.read() != -1) {
                         // consume the stream fully
                     }
@@ -190,7 +191,7 @@ abstract class AbstractCacheTest extends BaseTest {
     /* newDerivativeImageOutputStream() */
 
     @Test
-    public void testNewDerivativeImageOutputStream() throws Exception {
+    void testNewDerivativeImageOutputStream() throws Exception {
         final DerivativeCache instance = newInstance();
         final OperationList ops = new OperationList(
                 new Identifier("cats"), new Encode(Format.JPG));
@@ -218,14 +219,14 @@ abstract class AbstractCacheTest extends BaseTest {
     }
 
     @Test
-    public void testNewDerivativeImageOutputStreamConcurrently() {
+    void testNewDerivativeImageOutputStreamConcurrently() {
         // This is tested in testNewDerivativeImageInputStreamConcurrently()
     }
 
     /* purge() */
 
     @Test
-    public void testPurge() throws Exception {
+    void testPurge() throws Exception {
         DerivativeCache instance = newInstance();
         Identifier identifier = new Identifier(IMAGE);
         OperationList opList = new OperationList(
@@ -269,7 +270,7 @@ abstract class AbstractCacheTest extends BaseTest {
     /* purge(Identifier) */
 
     @Test
-    public void testPurgeWithIdentifier() throws Exception {
+    void testPurgeWithIdentifier() throws Exception {
         DerivativeCache instance = newInstance();
         Identifier id1 = new Identifier(IMAGE);
         OperationList opList = new OperationList(
@@ -302,7 +303,7 @@ abstract class AbstractCacheTest extends BaseTest {
     /* purge(OperationList) */
 
     @Test
-    public void testPurgeWithOperationList() throws Exception {
+    void testPurgeWithOperationList() throws Exception {
         final DerivativeCache instance = newInstance();
 
         // Seed a derivative image
@@ -334,7 +335,7 @@ abstract class AbstractCacheTest extends BaseTest {
     /* purgeInvalid() */
 
     @Test
-    public void testPurgeInvalid() throws Exception {
+    void testPurgeInvalid() throws Exception {
         DerivativeCache instance = newInstance();
         Identifier id1 = new Identifier(IMAGE);
         OperationList ops1 = new OperationList(id1, new Encode(Format.JPG));
@@ -389,7 +390,7 @@ abstract class AbstractCacheTest extends BaseTest {
     /* put(Identifier, Info) */
 
     @Test
-    public void testPut() throws Exception {
+    void testPut() throws Exception {
         final DerivativeCache instance = newInstance();
         final Identifier identifier = new Identifier("cats");
         final Info info = new Info();
@@ -406,7 +407,7 @@ abstract class AbstractCacheTest extends BaseTest {
      * DerivativeCache#getInfo(Identifier)} don't conflict.
      */
     @Test
-    public void testPutConcurrently() throws Exception {
+    void testPutConcurrently() throws Exception {
         final DerivativeCache instance = newInstance();
         final Identifier identifier = new Identifier("monkeys");
         final Info info = new Info();
@@ -424,7 +425,7 @@ abstract class AbstractCacheTest extends BaseTest {
     }
 
     @Test
-    public void testPutWithIncompleteInstance() throws Exception {
+    void testPutWithIncompleteInstance() throws Exception {
         final DerivativeCache instance = newInstance();
         final Identifier identifier = new Identifier("incomplete");
         final Info info = new Info();

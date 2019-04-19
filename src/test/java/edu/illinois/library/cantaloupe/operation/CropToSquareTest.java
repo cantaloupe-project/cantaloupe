@@ -3,12 +3,12 @@ package edu.illinois.library.cantaloupe.operation;
 import edu.illinois.library.cantaloupe.image.Dimension;
 import edu.illinois.library.cantaloupe.image.Rectangle;
 import edu.illinois.library.cantaloupe.image.ScaleConstraint;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.Map;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class CropToSquareTest extends CropTest {
 
@@ -19,26 +19,26 @@ public class CropToSquareTest extends CropTest {
         return new CropToSquare();
     }
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         super.setUp();
         instance = newInstance();
     }
 
     @Test
-    public void equalsWithEqualInstances() {
+    void testEqualsWithEqualInstances() {
         CropToSquare crop1 = new CropToSquare();
         CropToSquare crop2 = new CropToSquare();
         assertEquals(crop1, crop2);
     }
 
     @Test
-    public void equalsWithUnequalInstances() {
+    void testEqualsWithUnequalInstances() {
         // All instances are equal.
     }
 
     @Test
-    public void getRectangle1() {
+    void testGetRectangle1() {
         final Dimension fullSize = new Dimension(300, 200);
         final CropToSquare crop = new CropToSquare();
         assertEquals(new Rectangle(50, 0, 200, 200),
@@ -46,7 +46,7 @@ public class CropToSquareTest extends CropTest {
     }
 
     @Test
-    public void getRectangle2() {
+    void testGetRectangle2() {
         final Dimension fullSize = new Dimension(300, 200);
         final CropToSquare crop = new CropToSquare();
 
@@ -62,7 +62,7 @@ public class CropToSquareTest extends CropTest {
     }
 
     @Test
-    public void getRectangle3() {
+    void testGetRectangle3() {
         final ReductionFactor rf = new ReductionFactor(2);
         final Dimension reducedSize = new Dimension(300, 200);
         final ScaleConstraint scaleConstraint = new ScaleConstraint(1, 2);
@@ -72,7 +72,7 @@ public class CropToSquareTest extends CropTest {
     }
 
     @Test
-    public void getResultingSize() {
+    void testGetResultingSize() {
         final Dimension fullSize = new Dimension(300, 200);
         final CropToSquare crop = new CropToSquare();
 
@@ -88,13 +88,13 @@ public class CropToSquareTest extends CropTest {
     }
 
     @Test
-    public void hasEffect() {
+    void testHasEffect() {
         CropToSquare crop = new CropToSquare();
         assertTrue(crop.hasEffect());
     }
 
     @Test
-    public void hasEffectWithArguments() {
+    void testHasEffectWithArguments() {
         // very different width & height
         Dimension fullSize = new Dimension(600, 400);
         OperationList opList = new OperationList();
@@ -112,12 +112,12 @@ public class CropToSquareTest extends CropTest {
     }
 
     @Test
-    public void testHashCode() {
+    void testHashCode() {
         assertEquals(instance.toString().hashCode(), instance.hashCode());
     }
 
     @Test
-    public void testToMap() {
+    void testToMap() {
         final CropToSquare crop = new CropToSquare();
         final Dimension fullSize = new Dimension(150, 100);
         final ScaleConstraint scaleConstraint = new ScaleConstraint(1, 1);
@@ -130,21 +130,22 @@ public class CropToSquareTest extends CropTest {
         assertEquals(100, map.get("height"));
     }
 
-    @Test(expected = UnsupportedOperationException.class)
-    public void toMapReturnsUnmodifiableMap() {
+    @Test
+    void testToMapReturnsUnmodifiableMap() {
         Dimension fullSize = new Dimension(100, 100);
         ScaleConstraint scaleConstraint = new ScaleConstraint(1, 1);
         Map<String,Object> map = instance.toMap(fullSize, scaleConstraint);
-        map.put("test", "test");
+        assertThrows(UnsupportedOperationException.class,
+                () -> map.put("test", "test"));
     }
 
     @Test
-    public void testToString() {
+    void testToString() {
         assertEquals("square", instance.toString());
     }
 
     @Test
-    public void validate() throws Exception {
+    void testValidate() throws Exception {
         // All instances are valid.
         Dimension fullSize = new Dimension(1000, 1000);
         ScaleConstraint scaleConstraint = new ScaleConstraint(1, 1);

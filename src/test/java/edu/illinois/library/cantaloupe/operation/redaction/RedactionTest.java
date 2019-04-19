@@ -8,29 +8,30 @@ import edu.illinois.library.cantaloupe.operation.CropByPixels;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.operation.Scale;
 import edu.illinois.library.cantaloupe.test.BaseTest;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.Map;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class RedactionTest extends BaseTest {
 
     private Redaction instance;
 
-    @Before
-    public void setUp() {
+    @BeforeEach
+    public void setUp() throws Exception {
+        super.setUp();
         instance = new Redaction(new Rectangle(50, 60, 200, 100));
     }
 
     @Test
-    public void equalsWithEqualInstances() {
+    void equalsWithEqualInstances() {
         assertEquals(instance, new Redaction(new Rectangle(50, 60, 200, 100)));
     }
 
     @Test
-    public void equalsWithUnequalInstances() {
+    void equalsWithUnequalInstances() {
         assertNotEquals(instance, new Redaction(new Rectangle(51, 60, 200, 100)));
         assertNotEquals(instance, new Redaction(new Rectangle(50, 61, 200, 100)));
         assertNotEquals(instance, new Redaction(new Rectangle(50, 60, 201, 100)));
@@ -38,7 +39,7 @@ public class RedactionTest extends BaseTest {
     }
 
     @Test
-    public void getResultingRegion() {
+    void getResultingRegion() {
         Dimension sourceSize = new Dimension(500, 500);
         ScaleConstraint scaleConstraint = new ScaleConstraint(1, 1);
 
@@ -62,7 +63,7 @@ public class RedactionTest extends BaseTest {
     }
 
     @Test
-    public void getResultingRegionWithScaleConstraint() {
+    void getResultingRegionWithScaleConstraint() {
         Dimension sourceSize = new Dimension(1000, 1000);
         ScaleConstraint scaleConstraint = new ScaleConstraint(1, 2);
 
@@ -86,7 +87,7 @@ public class RedactionTest extends BaseTest {
     }
 
     @Test
-    public void getResultingSize() {
+    void getResultingSize() {
         Dimension fullSize = new Dimension(500, 500);
 
         // scale constraint 1:1
@@ -101,7 +102,7 @@ public class RedactionTest extends BaseTest {
     }
 
     @Test
-    public void hasEffect() {
+    void hasEffect() {
         assertTrue(instance.hasEffect());
 
         // zero width
@@ -118,7 +119,7 @@ public class RedactionTest extends BaseTest {
     }
 
     @Test
-    public void hasEffectWithArguments() {
+    void hasEffectWithArguments() {
         final Dimension fullSize = new Dimension(600, 400);
 
         // N.B.: hasEffect() shouldn't be looking at the Scales. They are
@@ -141,14 +142,15 @@ public class RedactionTest extends BaseTest {
         assertFalse(instance.hasEffect(fullSize, opList));
     }
 
-    @Test(expected = IllegalStateException.class)
-    public void setRegionWhenInstanceIsFrozen() {
+    @Test
+    void setRegionWhenInstanceIsFrozen() {
         instance.freeze();
-        instance.setRegion(new Rectangle(0, 0, 10, 10));
+        assertThrows(IllegalStateException.class,
+                () -> instance.setRegion(new Rectangle(0, 0, 10, 10)));
     }
 
     @Test
-    public void toMap() {
+    void toMap() {
         Dimension fullSize = new Dimension(500, 500);
         ScaleConstraint scaleConstraint = new ScaleConstraint(1, 1);
 
@@ -160,16 +162,17 @@ public class RedactionTest extends BaseTest {
         assertEquals(100, map.get("height"));
     }
 
-    @Test(expected = UnsupportedOperationException.class)
-    public void toMapReturnsUnmodifiableMap() {
+    @Test
+    void toMapReturnsUnmodifiableMap() {
         Dimension fullSize = new Dimension(100, 100);
         ScaleConstraint scaleConstraint = new ScaleConstraint(1, 1);
         Map<String,Object> map = instance.toMap(fullSize, scaleConstraint);
-        map.put("test", "test");
+        assertThrows(UnsupportedOperationException.class,
+                () -> map.put("test", "test"));
     }
 
     @Test
-    public void testToString() {
+    void testToString() {
         assertEquals("50,60/200x100", instance.toString());
     }
 

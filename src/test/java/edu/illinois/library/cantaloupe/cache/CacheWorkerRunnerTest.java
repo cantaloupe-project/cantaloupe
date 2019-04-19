@@ -1,19 +1,21 @@
 package edu.illinois.library.cantaloupe.cache;
 
-import org.junit.Before;
-import org.junit.Test;
+import edu.illinois.library.cantaloupe.test.BaseTest;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
-public class CacheWorkerRunnerTest {
+public class CacheWorkerRunnerTest extends BaseTest {
 
-    @Before
-    public void setUp() {
+    @BeforeEach
+    public void setUp() throws Exception {
+        super.setUp();
         CacheWorkerRunner.clearInstance();
     }
 
     @Test
-    public void testGetInstance() {
+    void testGetInstance() {
         assertNotNull(CacheWorkerRunner.getInstance());
     }
 

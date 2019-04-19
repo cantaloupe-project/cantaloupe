@@ -2,14 +2,14 @@ package edu.illinois.library.cantaloupe.processor;
 
 import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
 import edu.illinois.library.cantaloupe.test.BaseTest;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class ProcessorFeatureTest extends BaseTest {
 
     @Test
-    public void testValues() {
+    void testValues() {
         assertNotNull(ProcessorFeature.valueOf("MIRRORING"));
         assertNotNull(ProcessorFeature.valueOf("REGION_BY_PERCENT"));
         assertNotNull(ProcessorFeature.valueOf("REGION_BY_PIXELS"));
@@ -26,7 +26,7 @@ public class ProcessorFeatureTest extends BaseTest {
     }
 
     @Test
-    public void testGetName() {
+    void testGetName() {
         assertEquals("mirroring", ProcessorFeature.MIRRORING.getName());
         assertEquals("regionByPct", ProcessorFeature.REGION_BY_PERCENT.getName());
         assertEquals("regionByPx", ProcessorFeature.REGION_BY_PIXELS.getName());
@@ -43,7 +43,7 @@ public class ProcessorFeatureTest extends BaseTest {
     }
 
     @Test
-    public void testToString() {
+    void testToString() {
         assertEquals("mirroring", ProcessorFeature.MIRRORING.toString());
         assertEquals("regionByPct", ProcessorFeature.REGION_BY_PERCENT.toString());
         assertEquals("regionByPx", ProcessorFeature.REGION_BY_PIXELS.toString());

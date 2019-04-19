@@ -1,6 +1,6 @@
 package edu.illinois.library.cantaloupe.source;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.junit.Assume.assumeTrue;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
@@ -11,8 +11,8 @@ import edu.illinois.library.cantaloupe.resource.RequestContext;
 import edu.illinois.library.cantaloupe.script.DelegateProxy;
 import edu.illinois.library.cantaloupe.script.DelegateProxyService;
 import edu.illinois.library.cantaloupe.test.TestUtil;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.io.File;
 import java.io.IOException;
@@ -29,7 +29,7 @@ public class FilesystemSourceTest extends AbstractSourceTest {
 
     private FilesystemSource instance;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         super.setUp();
         instance = newInstance();
@@ -84,20 +84,20 @@ public class FilesystemSourceTest extends AbstractSourceTest {
 
     /* checkAccess() */
 
-    @Test(expected = AccessDeniedException.class)
-    public void testCheckAccessUsingBasicLookupStrategyWithPresentUnreadableFile()
+    @Test
+    void testCheckAccessUsingBasicLookupStrategyWithPresentUnreadableFile()
             throws Exception {
         Path path = instance.getPath();
         try {
             assumeTrue(path.toFile().setReadable(false));
-            instance.checkAccess();
+            assertThrows(AccessDeniedException.class, instance::checkAccess);
         } finally {
             path.toFile().setReadable(true);
         }
     }
 
     @Test
-    public void testCheckAccessUsingScriptLookupStrategyWithPresentReadableFile()
+    void testCheckAccessUsingScriptLookupStrategyWithPresentReadableFile()
             throws Exception {
         useScriptLookupStrategy();
 
@@ -113,8 +113,8 @@ public class FilesystemSourceTest extends AbstractSourceTest {
         instance.checkAccess();
     }
 
-    @Test(expected = AccessDeniedException.class)
-    public void testCheckAccessUsingScriptLookupStrategyWithPresentUnreadableFile()
+    @Test
+    void testCheckAccessUsingScriptLookupStrategyWithPresentUnreadableFile()
             throws Exception {
         useScriptLookupStrategy();
 
@@ -131,14 +131,14 @@ public class FilesystemSourceTest extends AbstractSourceTest {
         try {
             assumeTrue(path.toFile().setReadable(false));
             Files.setPosixFilePermissions(path, Collections.emptySet());
-            instance.checkAccess();
+            assertThrows(AccessDeniedException.class, instance::checkAccess);
         } finally {
             path.toFile().setReadable(true);
         }
     }
 
-    @Test(expected = NoSuchFileException.class)
-    public void testCheckAccessUsingScriptLookupStrategyWithMissingFile()
+    @Test
+    void testCheckAccessUsingScriptLookupStrategyWithMissingFile()
             throws Exception {
         useScriptLookupStrategy();
 
@@ -150,19 +150,18 @@ public class FilesystemSourceTest extends AbstractSourceTest {
         instance.setDelegateProxy(proxy);
 
         instance.setIdentifier(identifier);
-        instance.checkAccess();
+        assertThrows(NoSuchFileException.class, instance::checkAccess);
     }
 
     /* getPath() */
 
     @Test
-    public void testGetPath() throws Exception {
+    void testGetPath() throws Exception {
         assertNotNull(instance.getPath());
     }
 
     @Test
-    public void testGetPathUsingBasicLookupStrategyWithPrefix()
-            throws Exception {
+    void testGetPathUsingBasicLookupStrategyWithPrefix() throws Exception {
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.FILESYSTEMSOURCE_PATH_PREFIX, "/prefix/");
         config.setProperty(Key.FILESYSTEMSOURCE_PATH_SUFFIX, "");
@@ -173,8 +172,7 @@ public class FilesystemSourceTest extends AbstractSourceTest {
     }
 
     @Test
-    public void testGetPathUsingBasicLookupStrategyWithSuffix()
-            throws Exception {
+    void testGetPathUsingBasicLookupStrategyWithSuffix() throws Exception {
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.FILESYSTEMSOURCE_PATH_PREFIX, "/prefix/");
         config.setProperty(Key.FILESYSTEMSOURCE_PATH_SUFFIX, "/suffix");
@@ -186,7 +184,7 @@ public class FilesystemSourceTest extends AbstractSourceTest {
     }
 
     @Test
-    public void testGetPathUsingBasicLookupStrategyWithoutPrefixOrSuffix()
+    void testGetPathUsingBasicLookupStrategyWithoutPrefixOrSuffix()
             throws Exception {
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.FILESYSTEMSOURCE_PATH_PREFIX, "");
@@ -201,7 +199,7 @@ public class FilesystemSourceTest extends AbstractSourceTest {
      * to disallow ascending up the directory tree.
      */
     @Test
-    public void testGetPathSanitization() throws Exception {
+    void testGetPathSanitization() throws Exception {
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.FILESYSTEMSOURCE_PATH_PREFIX, "/prefix/");
         config.setProperty(Key.FILESYSTEMSOURCE_PATH_SUFFIX, "/suffix");
@@ -236,7 +234,7 @@ public class FilesystemSourceTest extends AbstractSourceTest {
     }
 
     @Test
-    public void testGetPathWithScriptLookupStrategy() throws Exception {
+    void testGetPathWithScriptLookupStrategy() throws Exception {
         useScriptLookupStrategy();
 
         RequestContext context = new RequestContext();
@@ -251,7 +249,7 @@ public class FilesystemSourceTest extends AbstractSourceTest {
     /* getFormat() */
 
     @Test
-    public void testGetFormatWithFilenameExtension() throws Exception {
+    void testGetFormatWithFilenameExtension() throws Exception {
         instance.setIdentifier(new Identifier("bmp-rgb-64x56x8.bmp"));
         assertEquals(Format.BMP, instance.getFormat());
 
@@ -275,7 +273,7 @@ public class FilesystemSourceTest extends AbstractSourceTest {
     }
 
     @Test
-    public void testGetFormatWithIdentifierExtension() throws Exception {
+    void testGetFormatWithIdentifierExtension() throws Exception {
         useScriptLookupStrategy();
 
         Identifier identifier = new Identifier("FilesystemSourceTest-" +
@@ -291,7 +289,7 @@ public class FilesystemSourceTest extends AbstractSourceTest {
     }
 
     @Test
-    public void testGetFormatByDetection() throws Exception {
+    void testGetFormatByDetection() throws Exception {
         instance.setIdentifier(new Identifier("bmp"));
         assertEquals(Format.BMP, instance.getFormat());
 
@@ -320,7 +318,7 @@ public class FilesystemSourceTest extends AbstractSourceTest {
     /* newStreamFactory() */
 
     @Test
-    public void testNewStreamFactoryWithPresentReadableFile() throws Exception {
+    void testNewStreamFactoryWithPresentReadableFile() throws Exception {
         assertNotNull(instance.newStreamFactory());
     }
 

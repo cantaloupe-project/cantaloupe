@@ -5,19 +5,19 @@ import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.resource.RequestContext;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class DelegateProxyServiceTest extends BaseTest {
 
     private DelegateProxyService instance;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         super.setUp();
 
@@ -34,13 +34,13 @@ public class DelegateProxyServiceTest extends BaseTest {
     /* getScriptFile() */
 
     @Test
-    public void testGetScriptFileWithPresentValidScript() throws Exception {
+    void testGetScriptFileWithPresentValidScript() throws Exception {
         Path file = DelegateProxyService.getScriptFile();
         assertNotNull(file);
     }
 
     @Test
-    public void testGetScriptFileWithPresentInvalidScript() throws Exception {
+    void testGetScriptFileWithPresentInvalidScript() throws Exception {
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.DELEGATE_SCRIPT_PATHNAME,
                 TestUtil.getImage("txt").toString());
@@ -50,26 +50,27 @@ public class DelegateProxyServiceTest extends BaseTest {
     }
 
     @Test
-    public void testGetScriptFileWithNoScript() throws Exception {
+    void testGetScriptFileWithNoScript() throws Exception {
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.DELEGATE_SCRIPT_PATHNAME, "");
 
         assertNull(DelegateProxyService.getScriptFile());
     }
 
-    @Test(expected = NoSuchFileException.class)
-    public void testGetScriptFileWithBogusScript() throws Exception {
+    @Test
+    void testGetScriptFileWithBogusScript() {
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.DELEGATE_SCRIPT_PATHNAME,
                 "/bla/bla/blaasdfasdfasfd");
 
-        DelegateProxyService.getScriptFile();
+        assertThrows(NoSuchFileException.class,
+                DelegateProxyService::getScriptFile);
     }
 
     /* isEnabled() */
 
     @Test
-    public void testIsEnabled() {
+    void testIsEnabled() {
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.DELEGATE_SCRIPT_ENABLED, false);
         assertFalse(DelegateProxyService.isEnabled());
@@ -81,18 +82,19 @@ public class DelegateProxyServiceTest extends BaseTest {
     /* newDelegateProxy() */
 
     @Test
-    public void testNewDelegateProxy() throws Exception {
+    void testNewDelegateProxy() throws Exception {
         RequestContext context = new RequestContext();
         assertNotNull(instance.newDelegateProxy(context));
     }
 
-    @Test(expected = DisabledException.class)
-    public void newDelegateProxyWithDelegateScriptDisabled() throws Exception {
+    @Test
+    void newDelegateProxyWithDelegateScriptDisabled() {
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.DELEGATE_SCRIPT_ENABLED, false);
 
         RequestContext context = new RequestContext();
-        instance.newDelegateProxy(context);
+        assertThrows(DisabledException.class,
+                () -> instance.newDelegateProxy(context));
     }
 
 }

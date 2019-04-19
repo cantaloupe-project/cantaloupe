@@ -2,15 +2,15 @@ package edu.illinois.library.cantaloupe.config;
 
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Iterator;
 import java.util.List;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class PropertiesDocumentTest extends BaseTest {
 
@@ -18,21 +18,22 @@ public class PropertiesDocumentTest extends BaseTest {
 
     private PropertiesDocument instance;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
+        super.setUp();
         instance = new PropertiesDocument();
         FIXTURE = TestUtil.getFixture("config.properties");
         instance.load(FIXTURE);
     }
 
     @Test
-    public void testClear() {
+    void testClear() {
         instance.clear();
         assertEquals(0, instance.size());
     }
 
     @Test
-    public void testClearKey() {
+    void testClearKey() {
         assertEquals(9, instance.size());
         instance.clearKey("bogus");
         assertEquals(9, instance.size());
@@ -42,13 +43,13 @@ public class PropertiesDocumentTest extends BaseTest {
     }
 
     @Test
-    public void testContainsKey() {
+    void testContainsKey() {
         assertFalse(instance.containsKey("bogus"));
         assertTrue(instance.containsKey("key1"));
     }
 
     @Test
-    public void testGet() {
+    void testGet() {
         assertNull(instance.get("bogus"));
         assertEquals("value", instance.get("key1"));
         assertEquals("value=value", instance.get("key2"));
@@ -58,7 +59,7 @@ public class PropertiesDocumentTest extends BaseTest {
     }
 
     @Test
-    public void testGetKeys() {
+    void testGetKeys() {
         Iterator<String> it = instance.getKeys();
         assertEquals("key1", it.next());
         assertEquals("key2", it.next());
@@ -69,7 +70,7 @@ public class PropertiesDocumentTest extends BaseTest {
     }
 
     @Test
-    public void testLoad() {
+    void testLoad() {
         List<PropertiesDocument.Item> items = instance.items();
         assertEquals(9, items.size());
 
@@ -117,16 +118,13 @@ public class PropertiesDocumentTest extends BaseTest {
     }
 
     @Test
-    public void testSave() throws Exception {
+    void testSave() throws Exception {
         Path tempFile = Files.createTempFile("test", "tmp");
         try {
             instance.save(tempFile);
 
             byte[] bytes = Files.readAllBytes(FIXTURE);
             byte[] bytes2 = Files.readAllBytes(tempFile);
-
-            String s1 = new String(bytes);
-            String s2 = new String(bytes2);
 
             assertArrayEquals(bytes, bytes2);
         } finally {
@@ -135,7 +133,7 @@ public class PropertiesDocumentTest extends BaseTest {
     }
 
     @Test
-    public void testSetWithExistingKey() {
+    void testSetWithExistingKey() {
         instance.set("key1", "new value");
 
         assertEquals(9, instance.size());
@@ -146,7 +144,7 @@ public class PropertiesDocumentTest extends BaseTest {
     }
 
     @Test
-    public void testSetWithNewKey() {
+    void testSetWithNewKey() {
         instance.set("newKey", "value");
 
         assertEquals(10, instance.size());
@@ -157,14 +155,14 @@ public class PropertiesDocumentTest extends BaseTest {
     }
 
     @Test
-    public void testSize() {
+    void testSize() {
         assertEquals(9, instance.size());
         instance.clear();
         assertEquals(0, instance.size());
     }
 
     @Test
-    public void functionalTestOfLoadEditSave() throws Exception {
+    void functionalTestOfLoadEditSave() throws Exception {
         instance.set("key1", "newValue");
         instance.set("key4", "newValue");
         instance.set("newKey", "value");

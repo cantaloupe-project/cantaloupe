@@ -20,14 +20,14 @@ import edu.illinois.library.cantaloupe.script.DelegateProxy;
 import edu.illinois.library.cantaloupe.script.DelegateProxyService;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class OperationListTest extends BaseTest {
 
@@ -35,7 +35,7 @@ public class OperationListTest extends BaseTest {
 
     private OperationList instance;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         super.setUp();
 
@@ -50,7 +50,7 @@ public class OperationListTest extends BaseTest {
     }
 
     @Test
-    public void add() {
+    void add() {
         instance = new OperationList();
         assertFalse(instance.iterator().hasNext());
 
@@ -58,16 +58,16 @@ public class OperationListTest extends BaseTest {
         assertTrue(instance.iterator().hasNext());
     }
 
-    @Test(expected = IllegalStateException.class)
-    public void addWhileFrozen() {
+    @Test
+    void addWhileFrozen() {
         instance = new OperationList();
         instance.freeze();
-
-        instance.add(new Rotate());
+        assertThrows(IllegalStateException.class,
+                () -> instance.add(new Rotate()));
     }
 
     @Test
-    public void addAfterWithExistingClass() {
+    void addAfterWithExistingClass() {
         instance = new OperationList(new Rotate());
         instance.addAfter(new Scale(), Rotate.class);
         Iterator<Operation> it = instance.iterator();
@@ -77,7 +77,7 @@ public class OperationListTest extends BaseTest {
     }
 
     @Test
-    public void addAfterWithExistingSuperclass() {
+    void addAfterWithExistingSuperclass() {
         instance = new OperationList();
         instance.add(new MockOverlay());
 
@@ -90,7 +90,7 @@ public class OperationListTest extends BaseTest {
     }
 
     @Test
-    public void addAfterWithoutExistingClass() {
+    void addAfterWithoutExistingClass() {
         instance = new OperationList();
         instance.add(new Rotate());
         instance.addAfter(new Scale(), Crop.class);
@@ -99,15 +99,16 @@ public class OperationListTest extends BaseTest {
         assertTrue(it.next() instanceof Scale);
     }
 
-    @Test(expected = IllegalStateException.class)
-    public void addAfterWhileFrozen() {
+    @Test
+    void addAfterWhileFrozen() {
         instance = new OperationList();
         instance.freeze();
-        instance.addAfter(new Rotate(), Crop.class);
+        assertThrows(IllegalStateException.class,
+                () -> instance.addAfter(new Rotate(), Crop.class));
     }
 
     @Test
-    public void addBeforeWithExistingClass() {
+    void addBeforeWithExistingClass() {
         instance = new OperationList();
         instance.add(new Rotate());
         instance.addBefore(new Scale(), Rotate.class);
@@ -115,7 +116,7 @@ public class OperationListTest extends BaseTest {
     }
 
     @Test
-    public void addBeforeWithExistingSuperclass() {
+    void addBeforeWithExistingSuperclass() {
         class SubMockOverlay extends MockOverlay {}
 
         instance = new OperationList();
@@ -125,7 +126,7 @@ public class OperationListTest extends BaseTest {
     }
 
     @Test
-    public void addBeforeWithoutExistingClass() {
+    void addBeforeWithoutExistingClass() {
         instance = new OperationList();
         instance.add(new Rotate());
         instance.addBefore(new Scale(), Crop.class);
@@ -134,15 +135,16 @@ public class OperationListTest extends BaseTest {
         assertTrue(it.next() instanceof Scale);
     }
 
-    @Test(expected = IllegalStateException.class)
-    public void addBeforeWhileFrozen() {
+    @Test
+    void addBeforeWhileFrozen() {
         instance = new OperationList();
         instance.freeze();
-        instance.addBefore(new Rotate(), Crop.class);
+        assertThrows(IllegalStateException.class,
+                () -> instance.addBefore(new Rotate(), Crop.class));
     }
 
     @Test
-    public void applyNonEndpointMutationsWithScaleConstraintAndNoScaleOperationAddsOne()
+    void applyNonEndpointMutationsWithScaleConstraintAndNoScaleOperationAddsOne()
             throws Exception {
         final Dimension fullSize = new Dimension(2000, 1000);
         final Info info = Info.builder()
@@ -167,7 +169,7 @@ public class OperationListTest extends BaseTest {
     }
 
     @Test
-    public void applyNonEndpointMutationsWithOrientationMutatesCrop()
+    void applyNonEndpointMutationsWithOrientationMutatesCrop()
             throws Exception {
         final Dimension fullSize = new Dimension(2000, 1000);
         final Info info = Info.builder()
@@ -198,7 +200,7 @@ public class OperationListTest extends BaseTest {
     }
 
     @Test
-    public void applyNonEndpointMutationsWithOrientationMutatesRotate()
+    void applyNonEndpointMutationsWithOrientationMutatesRotate()
             throws Exception {
         final Dimension fullSize = new Dimension(2000, 1000);
         final Info info = Info.builder()
@@ -230,8 +232,7 @@ public class OperationListTest extends BaseTest {
     }
 
     @Test
-    public void applyNonEndpointMutationsWithBackgroundColor()
-            throws Exception {
+    void applyNonEndpointMutationsWithBackgroundColor() throws Exception {
         final Configuration config = Configuration.getInstance();
         config.setProperty(Key.PROCESSOR_BACKGROUND_COLOR, "white");
 
@@ -254,8 +255,7 @@ public class OperationListTest extends BaseTest {
     }
 
     @Test
-    public void applyNonEndpointMutationsWithJPEGOutputFormat()
-            throws Exception {
+    void applyNonEndpointMutationsWithJPEGOutputFormat() throws Exception {
         final Configuration config = Configuration.getInstance();
         config.setProperty(Key.PROCESSOR_JPG_QUALITY, 50);
         config.setProperty(Key.PROCESSOR_JPG_PROGRESSIVE, true);
@@ -281,7 +281,7 @@ public class OperationListTest extends BaseTest {
     }
 
     @Test
-    public void applyNonEndpointMutationsWithOverlay() throws Exception {
+    void applyNonEndpointMutationsWithOverlay() throws Exception {
         BasicStringOverlayServiceTest.setUpConfiguration();
 
         final Dimension fullSize = new Dimension(2000, 1000);
@@ -301,7 +301,7 @@ public class OperationListTest extends BaseTest {
     }
 
     @Test
-    public void applyNonEndpointMutationsWithRedactions() throws Exception {
+    void applyNonEndpointMutationsWithRedactions() throws Exception {
         RedactionServiceTest.setUpConfiguration();
 
         final Dimension fullSize = new Dimension(2000, 1000);
@@ -321,7 +321,7 @@ public class OperationListTest extends BaseTest {
     }
 
     @Test
-    public void applyNonEndpointMutationsWithMaxScale() throws Exception {
+    void applyNonEndpointMutationsWithMaxScale() throws Exception {
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.MAX_SCALE, 1);
 
@@ -343,7 +343,7 @@ public class OperationListTest extends BaseTest {
     }
 
     @Test
-    public void applyNonEndpointMutationsWithDownscaleFilter() throws Exception {
+    void applyNonEndpointMutationsWithDownscaleFilter() throws Exception {
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.PROCESSOR_DOWNSCALE_FILTER, "bicubic");
 
@@ -365,7 +365,7 @@ public class OperationListTest extends BaseTest {
     }
 
     @Test
-    public void applyNonEndpointMutationsWithUpscaleFilter() throws Exception {
+    void applyNonEndpointMutationsWithUpscaleFilter() throws Exception {
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.PROCESSOR_UPSCALE_FILTER, "triangle");
 
@@ -387,7 +387,7 @@ public class OperationListTest extends BaseTest {
     }
 
     @Test
-    public void applyNonEndpointMutationsWithSharpening() throws Exception {
+    void applyNonEndpointMutationsWithSharpening() throws Exception {
         final Configuration config = Configuration.getInstance();
         config.setProperty(Key.PROCESSOR_SHARPEN, 0.2f);
 
@@ -411,8 +411,7 @@ public class OperationListTest extends BaseTest {
     }
 
     @Test
-    public void applyNonEndpointMutationsWithTIFFOutputFormat()
-            throws Exception {
+    void applyNonEndpointMutationsWithTIFFOutputFormat() throws Exception {
         final Configuration config = Configuration.getInstance();
         config.setProperty(Key.PROCESSOR_TIF_COMPRESSION, "LZW");
 
@@ -435,7 +434,7 @@ public class OperationListTest extends BaseTest {
     }
 
     @Test
-    public void applyNonEndpointMutationsWithMetadata() throws Exception {
+    void applyNonEndpointMutationsWithMetadata() throws Exception {
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.DELEGATE_SCRIPT_ENABLED, true);
         config.setProperty(Key.DELEGATE_SCRIPT_PATHNAME,
@@ -461,8 +460,8 @@ public class OperationListTest extends BaseTest {
                 encode.getMetadata().getXMP().orElseThrow());
     }
 
-    @Test(expected = IllegalStateException.class)
-    public void applyNonEndpointMutationsWhileFrozen() throws Exception {
+    @Test
+    void applyNonEndpointMutationsWhileFrozen() throws Exception {
         final Dimension fullSize   = new Dimension(2000, 1000);
         final Info info            = Info.builder().withSize(fullSize).build();
         final OperationList opList = new OperationList(new CropByPixels(0, 0, 70, 30));
@@ -473,11 +472,12 @@ public class OperationListTest extends BaseTest {
         DelegateProxyService service = DelegateProxyService.getInstance();
         DelegateProxy proxy          = service.newDelegateProxy(context);
 
-        opList.applyNonEndpointMutations(info, proxy);
+        assertThrows(IllegalStateException.class,
+                () -> opList.applyNonEndpointMutations(info, proxy));
     }
 
     @Test
-    public void clear() {
+    void clear() {
         instance.add(new CropByPixels(10, 10, 10, 10));
         instance.add(new Scale(0.5));
 
@@ -499,35 +499,36 @@ public class OperationListTest extends BaseTest {
         assertEquals(0, opCount);
     }
 
-    @Test(expected = IllegalStateException.class)
-    public void clearWhileFrozen() {
+    @Test
+    void clearWhileFrozen() {
         instance.freeze();
-        instance.clear();
+        assertThrows(IllegalStateException.class, () -> instance.clear());
     }
 
     @Test
-    public void equalsWithEqualOperationList() {
+    void equalsWithEqualOperationList() {
         OperationList ops1 = new OperationList(new Rotate(1));
         OperationList ops2 = new OperationList(new Rotate(1));
         assertEquals(ops1, ops2);
     }
 
     @Test
-    public void equalsWithUnequalOperationList() {
+    void equalsWithUnequalOperationList() {
         OperationList ops1 = new OperationList();
         OperationList ops2 = new OperationList(new Rotate(1));
         assertNotEquals(ops1, ops2);
     }
 
-    @Test(expected = IllegalStateException.class)
-    public void freezeFreezesOperations() {
+    @Test
+    void freezeFreezesOperations() {
         instance.add(new CropByPixels(0, 0, 10, 10));
         instance.freeze();
-        ((CropByPixels) instance.getFirst(CropByPixels.class)).setHeight(300);
+        assertThrows(IllegalStateException.class,
+                () -> ((CropByPixels) instance.getFirst(CropByPixels.class)).setHeight(300));
     }
 
     @Test
-    public void getFirst() {
+    void getFirst() {
         instance.add(new Scale(0.5));
 
         assertNull(instance.getFirst(Crop.class));
@@ -535,7 +536,7 @@ public class OperationListTest extends BaseTest {
     }
 
     @Test
-    public void getFirstWithSuperclass() {
+    void getFirstWithSuperclass() {
         instance.add(new MockOverlay());
 
         Overlay overlay = (Overlay) instance.getFirst(Overlay.class);
@@ -544,18 +545,19 @@ public class OperationListTest extends BaseTest {
     }
 
     @Test
-    public void getOptions() {
+    void getOptions() {
         assertNotNull(instance.getOptions());
     }
 
-    @Test(expected = UnsupportedOperationException.class)
-    public void getOptionsWhenFrozen() {
+    @Test
+    void getOptionsWhenFrozen() {
         instance.freeze();
-        instance.getOptions().put("test", "test");
+        assertThrows(UnsupportedOperationException.class,
+                () -> instance.getOptions().put("test", "test"));
     }
 
     @Test
-    public void getResultingSize() {
+    void getResultingSize() {
         Dimension fullSize = new Dimension(300, 200);
         Scale scale        = new Scale();
         Rotate rotate      = new Rotate();
@@ -572,7 +574,7 @@ public class OperationListTest extends BaseTest {
     }
 
     @Test
-    public void hasEffectWithScaleConstraint() {
+    void hasEffectWithScaleConstraint() {
         instance = new OperationList(new Encode(Format.GIF));
         Dimension fullSize = new Dimension(100, 100);
         assertFalse(instance.hasEffect(fullSize, Format.GIF));
@@ -581,31 +583,31 @@ public class OperationListTest extends BaseTest {
     }
 
     @Test
-    public void hasEffectWithSameFormat() {
+    void hasEffectWithSameFormat() {
         instance = new OperationList(new Encode(Format.GIF));
         assertFalse(instance.hasEffect(new Dimension(100, 100), Format.GIF));
     }
 
     @Test
-    public void hasEffectWithDifferentFormats() {
+    void hasEffectWithDifferentFormats() {
         instance = new OperationList(new Encode(Format.GIF));
         assertTrue(instance.hasEffect(new Dimension(100, 100), Format.JPG));
     }
 
     @Test
-    public void hasEffectWithPDFSourceAndPDFOutputAndOverlay() {
+    void hasEffectWithPDFSourceAndPDFOutputAndOverlay() {
         instance = new OperationList(new Encode(Format.PDF));
         assertFalse(instance.hasEffect(new Dimension(100, 100), Format.PDF));
     }
 
     @Test
-    public void hasEffectWithEncodeAndSameOutputFormat() {
+    void hasEffectWithEncodeAndSameOutputFormat() {
         instance = new OperationList(new Encode(Format.JPG));
         assertFalse(instance.hasEffect(new Dimension(100, 100), Format.JPG));
     }
 
     @Test
-    public void iterator() {
+    void iterator() {
         instance.add(new CropByPixels(10, 10, 10, 10));
         instance.add(new Scale(0.5));
 
@@ -619,23 +621,24 @@ public class OperationListTest extends BaseTest {
         assertEquals(2, count);
     }
 
-    @Test(expected = UnsupportedOperationException.class)
-    public void iteratorCannotRemoveWhileFrozen() {
+    @Test
+    void iteratorCannotRemoveWhileFrozen() {
         instance.add(new Scale(50.5));
         instance.freeze();
         Iterator<Operation> it = instance.iterator();
         it.next();
-        it.remove();
-    }
-
-    @Test(expected = IllegalStateException.class)
-    public void setIdentifierWhileFrozen() {
-        instance.freeze();
-        instance.setIdentifier(new Identifier("alpaca"));
+        assertThrows(UnsupportedOperationException.class, it::remove);
     }
 
     @Test
-    public void setScaleConstraint() {
+    void setIdentifierWhileFrozen() {
+        instance.freeze();
+        assertThrows(IllegalStateException.class,
+                () -> instance.setIdentifier(new Identifier("alpaca")));
+    }
+
+    @Test
+    void setScaleConstraint() {
         instance.setScaleConstraint(new ScaleConstraint(1, 3));
         assertEquals(1, instance.getScaleConstraint().getRational().getNumerator());
         assertEquals(3, instance.getScaleConstraint().getRational().getDenominator());
@@ -645,14 +648,15 @@ public class OperationListTest extends BaseTest {
         assertEquals(1, instance.getScaleConstraint().getRational().getDenominator());
     }
 
-    @Test(expected = IllegalStateException.class)
-    public void setScaleConstraintWhileFrozen() {
+    @Test
+    void setScaleConstraintWhileFrozen() {
         instance.freeze();
-        instance.setScaleConstraint(new ScaleConstraint(1, 2));
+        assertThrows(IllegalStateException.class,
+                () -> instance.setScaleConstraint(new ScaleConstraint(1, 2)));
     }
 
     @Test
-    public void toFilename() {
+    void toFilename() {
         instance = new OperationList(new Identifier("identifier.jpg"));
         CropByPixels crop = new CropByPixels(5, 6, 20, 22);
         instance.add(crop);
@@ -679,7 +683,7 @@ public class OperationListTest extends BaseTest {
 
     @Test
     @SuppressWarnings("unchecked")
-    public void toMap() {
+    void toMap() {
         instance = new OperationList(new Identifier("identifier.jpg"));
         // crop
         Crop crop = new CropByPixels(2, 4, 50, 50);
@@ -704,15 +708,16 @@ public class OperationListTest extends BaseTest {
         assertEquals(2, (long) ((Map<String,Long>) map.get("scale_constraint")).get("denominator"));
     }
 
-    @Test(expected = UnsupportedOperationException.class)
-    public void toMapReturnsUnmodifiableMap() {
+    @Test
+    void toMapReturnsUnmodifiableMap() {
         Dimension fullSize = new Dimension(100, 100);
         Map<String,Object> map = instance.toMap(fullSize);
-        map.put("test", "test");
+        assertThrows(UnsupportedOperationException.class,
+                () -> map.put("test", "test"));
     }
 
     @Test
-    public void testToString() {
+    void testToString() {
         instance = new OperationList(new Identifier("identifier.jpg"));
         Crop crop = new CropByPixels(5, 6, 20, 22);
         instance.add(crop);
@@ -729,44 +734,47 @@ public class OperationListTest extends BaseTest {
     }
 
     @Test
-    public void validateWithValidInstance() throws Exception {
+    void validateWithValidInstance() throws Exception {
         Dimension fullSize = new Dimension(1000, 1000);
         OperationList ops = new OperationList(
                 new Identifier("cats"),
                 new CropByPixels(0, 0, 100, 100),
-                new Encode(Format.JPG));
-        ops.validate(fullSize, Format.PNG);
-    }
-
-    @Test(expected = ValidationException.class)
-    public void validateWithMissingIdentifier() throws Exception {
-        Dimension fullSize = new Dimension(1000, 1000);
-        OperationList ops = new OperationList(
-                new CropByPixels(0, 0, 100, 100),
-                new Encode(Format.JPG));
-        ops.validate(fullSize, Format.PNG);
-    }
-
-    @Test(expected = ValidationException.class)
-    public void validateWithMissingEncodeOperation() throws Exception {
-        Dimension fullSize = new Dimension(1000, 1000);
-        OperationList ops = new OperationList(
-                new Identifier("cats"),
-                new CropByPixels(0, 0, 100, 100));
-        ops.validate(fullSize, Format.PNG);
-    }
-
-    @Test(expected = ValidationException.class)
-    public void validateWithOutOfBoundsCrop() throws Exception {
-        Dimension fullSize = new Dimension(1000, 1000);
-        OperationList ops = new OperationList(
-                new CropByPixels(1001, 1001, 100, 100),
                 new Encode(Format.JPG));
         ops.validate(fullSize, Format.PNG);
     }
 
     @Test
-    public void validateWithValidPageArgument() throws Exception {
+    void validateWithMissingIdentifier() {
+        Dimension fullSize = new Dimension(1000, 1000);
+        OperationList ops = new OperationList(
+                new CropByPixels(0, 0, 100, 100),
+                new Encode(Format.JPG));
+        assertThrows(ValidationException.class,
+                () -> ops.validate(fullSize, Format.PNG));
+    }
+
+    @Test
+    void validateWithMissingEncodeOperation() {
+        Dimension fullSize = new Dimension(1000, 1000);
+        OperationList ops = new OperationList(
+                new Identifier("cats"),
+                new CropByPixels(0, 0, 100, 100));
+        assertThrows(ValidationException.class,
+                () -> ops.validate(fullSize, Format.PNG));
+    }
+
+    @Test
+    void validateWithOutOfBoundsCrop() {
+        Dimension fullSize = new Dimension(1000, 1000);
+        OperationList ops = new OperationList(
+                new CropByPixels(1001, 1001, 100, 100),
+                new Encode(Format.JPG));
+        assertThrows(ValidationException.class,
+                () -> ops.validate(fullSize, Format.PNG));
+    }
+
+    @Test
+    void validateWithValidPageArgument() throws Exception {
         OperationList ops = new OperationList(
                 new Identifier("cats"),
                 new Encode(Format.JPG));
@@ -774,53 +782,58 @@ public class OperationListTest extends BaseTest {
         ops.validate(new Dimension(100, 88), Format.PNG);
     }
 
-    @Test(expected = ValidationException.class)
-    public void validateWithZeroPageArgument() throws Exception {
+    @Test
+    void validateWithZeroPageArgument() {
         OperationList ops = new OperationList(
                 new Identifier("cats"),
                 new Encode(Format.JPG));
         ops.getOptions().put("page", "0");
-        ops.validate(new Dimension(100, 88), Format.PNG);
+        assertThrows(ValidationException.class,
+                () -> ops.validate(new Dimension(100, 88), Format.PNG));
     }
 
-    @Test(expected = ValidationException.class)
-    public void validateWithNegativePageArgument() throws Exception {
+    @Test
+    void validateWithNegativePageArgument() {
         OperationList ops = new OperationList(
                 new Identifier("cats"), new Encode(Format.JPG));
         ops.getOptions().put("page", "-1");
-        ops.validate(new Dimension(100, 88), Format.PNG);
+        assertThrows(ValidationException.class,
+                () -> ops.validate(new Dimension(100, 88), Format.PNG));
     }
 
-    @Test(expected = ValidationException.class)
-    public void validateWithZeroResultingArea() throws Exception {
+    @Test
+    void validateWithZeroResultingArea() {
         Dimension fullSize = new Dimension(1000, 1000);
         OperationList ops = new OperationList(
                 new Identifier("cats"),
                 new CropByPixels(0, 0, 10, 10),
                 new Scale(0.0001),
                 new Encode(Format.JPG));
-        ops.validate(fullSize, Format.PNG);
+        assertThrows(ValidationException.class,
+                () -> ops.validate(fullSize, Format.PNG));
     }
 
-    @Test(expected = IllegalScaleException.class)
-    public void validateWithScaleGreaterThanMaxAllowed() throws Exception {
+    @Test
+    void validateWithScaleGreaterThanMaxAllowed() {
         Dimension fullSize = new Dimension(1000, 1000);
         OperationList ops = new OperationList(
                 new Identifier("cats"),
                 new Scale(4),
                 new Encode(Format.JPG));
         ops.setScaleConstraint(new ScaleConstraint(1, 8));
-        ops.validate(fullSize, Format.PNG);
+        assertThrows(IllegalScaleException.class,
+                () -> ops.validate(fullSize, Format.PNG));
     }
 
-    @Test(expected = IllegalSizeException.class)
-    public void validateWithAreaGreaterThanMaxAllowed() throws Exception {
+    @Test
+    void validateWithAreaGreaterThanMaxAllowed() {
         Configuration.getInstance().setProperty(Key.MAX_PIXELS, 100);
         Dimension fullSize = new Dimension(1000, 1000);
         OperationList ops = new OperationList(
                 new Identifier("cats"),
                 new Encode(Format.JPG));
-        ops.validate(fullSize, Format.PNG);
+        assertThrows(IllegalSizeException.class,
+                () -> ops.validate(fullSize, Format.PNG));
     }
 
 }

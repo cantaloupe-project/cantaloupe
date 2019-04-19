@@ -11,7 +11,7 @@ import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.resource.ResourceTest;
 import edu.illinois.library.cantaloupe.resource.Route;
 import org.apache.commons.lang3.StringUtils;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -23,7 +23,7 @@ import java.nio.file.Paths;
 import java.util.Set;
 
 import static edu.illinois.library.cantaloupe.test.Assert.HTTPAssert.*;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * <p>Functional test of conformance to the IIIF Image API 1.1 spec. Methods
@@ -48,7 +48,7 @@ public class Version1_1ConformanceTest extends ResourceTest {
      * a 303 status code (see Section 6.1), or return the same result."
      */
     @Test
-    public void testBaseURIReturnsImageInfoViaHttp303() throws Exception {
+    void testBaseURIReturnsImageInfoViaHttp303() throws Exception {
         client = newClient("/" + IMAGE);
         Response response = client.send();
 
@@ -65,7 +65,7 @@ public class Version1_1ConformanceTest extends ResourceTest {
      * replace / with %2F )."
      */
     @Test
-    public void testIdentifierWithEncodedCharacters() throws Exception {
+    void testIdentifierWithEncodedCharacters() throws Exception {
         // override the filesystem prefix to one folder level up so we can use
         // a slash in the identifier
         File directory = new File(".");
@@ -87,7 +87,7 @@ public class Version1_1ConformanceTest extends ResourceTest {
      * 4.1
      */
     @Test
-    public void testFullRegion() throws Exception {
+    void testFullRegion() throws Exception {
         client = newClient("/" + IMAGE + "/full/full/0/native.jpg");
         Response response = client.send();
 
@@ -104,7 +104,7 @@ public class Version1_1ConformanceTest extends ResourceTest {
      * 4.1
      */
     @Test
-    public void testAbsolutePixelRegion() throws Exception {
+    void testAbsolutePixelRegion() throws Exception {
         client = newClient("/" + IMAGE + "/20,20,100,100/full/0/color.jpg");
         Response response = client.send();
 
@@ -121,7 +121,7 @@ public class Version1_1ConformanceTest extends ResourceTest {
      * 4.1
      */
     @Test
-    public void testPercentageRegionWithIntegers() throws Exception {
+    void testPercentageRegionWithIntegers() throws Exception {
         client = newClient("/" + IMAGE + "/pct:20,20,50,50/full/0/color.jpg");
         Response response = client.send();
         assertEquals(200, response.getStatus());
@@ -137,7 +137,7 @@ public class Version1_1ConformanceTest extends ResourceTest {
      * 4.1
      */
     @Test
-    public void testPercentageRegionWithFloats() throws Exception {
+    void testPercentageRegionWithFloats() throws Exception {
         client = newClient("/" + IMAGE + "/pct:20.2,20.6,50.2,50.6/full/0/color.jpg");
         Response response = client.send();
         assertEquals(200, response.getStatus());
@@ -155,7 +155,7 @@ public class Version1_1ConformanceTest extends ResourceTest {
      * cropped at the boundary of the source image."
      */
     @Test
-    public void testAbsolutePixelRegionLargerThanSource() throws Exception {
+    void testAbsolutePixelRegionLargerThanSource() throws Exception {
         client = newClient("/" + IMAGE + "/0,0,99999,99999/full/0/color.jpg");
         Response response = client.send();
 
@@ -173,7 +173,7 @@ public class Version1_1ConformanceTest extends ResourceTest {
      * server MUST return a 400 (bad request) status code."
      */
     @Test
-    public void testZeroRegion() throws Exception {
+    void testZeroRegion() throws Exception {
         client = newClient("/" + IMAGE + "/0,0,0,0/full/0/native.jpg");
         try {
             client.send();
@@ -188,7 +188,7 @@ public class Version1_1ConformanceTest extends ResourceTest {
      * then the server MUST return a 400 (bad request) status code."
      */
     @Test
-    public void testXYRegionOutOfBounds() throws Exception {
+    void testXYRegionOutOfBounds() throws Exception {
         client = newClient("/" + IMAGE + "/99999,99999,50,50/full/0/native.jpg");
         try {
             client.send();
@@ -202,7 +202,7 @@ public class Version1_1ConformanceTest extends ResourceTest {
      * 4.2
      */
     @Test
-    public void testFullSize() throws Exception {
+    void testFullSize() throws Exception {
         client = newClient("/" + IMAGE + "/full/full/0/color.jpg");
         Response response = client.send();
 
@@ -221,7 +221,7 @@ public class Version1_1ConformanceTest extends ResourceTest {
      * maintains the aspect ratio of the requested region."
      */
     @Test
-    public void testSizeScaledToFitWidth() throws Exception {
+    void testSizeScaledToFitWidth() throws Exception {
         client = newClient("/" + IMAGE + "/full/50,/0/color.jpg");
         Response response = client.send();
 
@@ -240,7 +240,7 @@ public class Version1_1ConformanceTest extends ResourceTest {
      * maintains the aspect ratio of the requested region."
      */
     @Test
-    public void testSizeScaledToFitHeight() throws Exception {
+    void testSizeScaledToFitHeight() throws Exception {
         client = newClient("/" + IMAGE + "/full/,50/0/color.jpg");
         Response response = client.send();
 
@@ -259,7 +259,7 @@ public class Version1_1ConformanceTest extends ResourceTest {
      * returned image is the same as that of the extracted region."
      */
     @Test
-    public void testSizeScaledToPercent() throws Exception {
+    void testSizeScaledToPercent() throws Exception {
         client = newClient("/" + IMAGE + "/full/pct:50/0/color.jpg");
         Response response = client.send();
 
@@ -278,7 +278,7 @@ public class Version1_1ConformanceTest extends ResourceTest {
      * extracted region, resulting in a distorted image."
      */
     @Test
-    public void testAbsoluteWidthAndHeight() throws Exception {
+    void testAbsoluteWidthAndHeight() throws Exception {
         client = newClient("/" + IMAGE + "/full/50,50/0/color.jpg");
         Response response = client.send();
 
@@ -300,7 +300,7 @@ public class Version1_1ConformanceTest extends ResourceTest {
      * the aspect ratio of the extracted region."
      */
     @Test
-    public void testSizeScaledToFitInside() throws Exception {
+    void testSizeScaledToFitInside() throws Exception {
         client = newClient("/" + IMAGE + "/full/20,20/0/native.jpg");
         Response response = client.send();
 
@@ -316,7 +316,7 @@ public class Version1_1ConformanceTest extends ResourceTest {
      * return a 400 (bad request) status code."
      */
     @Test
-    public void testResultingWidthOrHeightIsZero() {
+    void testResultingWidthOrHeightIsZero() {
         assertStatus(400, getHTTPURI("/" + IMAGE + "/full/pct:0/15/color.jpg"));
         assertStatus(400, getHTTPURI("/wide.jpg/full/3,0/15/color.jpg"));
     }
@@ -326,7 +326,7 @@ public class Version1_1ConformanceTest extends ResourceTest {
      * parameter, so we will check for an HTTP 400.
      */
     @Test
-    public void testInvalidSize() {
+    void testInvalidSize() {
         assertStatus(400, getHTTPURI("/" + IMAGE + "/full/cats/0/native.jpg"));
         assertStatus(400, getHTTPURI("/" + IMAGE + "/full/cats,50/0/native.jpg"));
         assertStatus(400, getHTTPURI("/" + IMAGE + "/full/50,cats/0/native.jpg"));
@@ -342,7 +342,7 @@ public class Version1_1ConformanceTest extends ResourceTest {
      * valid values."
      */
     @Test
-    public void testRotation() {
+    void testRotation() {
         assertStatus(200, getHTTPURI("/" + IMAGE + "/full/full/15.5/color.jpg"));
     }
 
@@ -351,7 +351,7 @@ public class Version1_1ConformanceTest extends ResourceTest {
      * parameter, so we will check for an HTTP 400.
      */
     @Test
-    public void testNegativeRotation() {
+    void testNegativeRotation() {
         assertStatus(400, getHTTPURI("/" + IMAGE + "/full/full/-15/native.jpg"));
     }
 
@@ -360,7 +360,7 @@ public class Version1_1ConformanceTest extends ResourceTest {
      * parameter, so we will check for an HTTP 400.
      */
     @Test
-    public void testGreaterThanFullRotation() {
+    void testGreaterThanFullRotation() {
         assertStatus(400, getHTTPURI("/" + IMAGE + "/full/full/4855/native.jpg"));
     }
 
@@ -368,7 +368,7 @@ public class Version1_1ConformanceTest extends ResourceTest {
      * 4.4. "The image is returned at an unspecified bit-depth."
      */
     @Test
-    public void testNativeQuality() {
+    void testNativeQuality() {
         assertStatus(200, getHTTPURI("/" + IMAGE + "/full/full/0/native.jpg"));
     }
 
@@ -377,7 +377,7 @@ public class Version1_1ConformanceTest extends ResourceTest {
      * pixel."
      */
     @Test
-    public void testColorQuality() {
+    void testColorQuality() {
         assertStatus(200, getHTTPURI("/" + IMAGE + "/full/full/0/color.jpg"));
     }
 
@@ -387,7 +387,7 @@ public class Version1_1ConformanceTest extends ResourceTest {
      * pixel."
      */
     @Test
-    public void testGreyQuality() {
+    void testGreyQuality() {
         assertStatus(200, getHTTPURI("/" + IMAGE + "/full/full/0/grey.jpg"));
     }
 
@@ -396,7 +396,7 @@ public class Version1_1ConformanceTest extends ResourceTest {
      * white, using 1 bit per pixel when the format permits."
      */
     @Test
-    public void testBitonalQuality() {
+    void testBitonalQuality() {
         assertStatus(200, getHTTPURI("/" + IMAGE + "/full/full/0/bitonal.jpg"));
     }
 
@@ -405,7 +405,7 @@ public class Version1_1ConformanceTest extends ResourceTest {
      * so we will check for an HTTP 400.
      */
     @Test
-    public void testUnsupportedQuality() {
+    void testUnsupportedQuality() {
         assertStatus(400, getHTTPURI("/" + IMAGE + "/full/full/0/bogus.jpg"));
     }
 
@@ -413,7 +413,7 @@ public class Version1_1ConformanceTest extends ResourceTest {
      * 4.5
      */
     @Test
-    public void testFormats() throws Exception {
+    void testFormats() throws Exception {
         testFormat(Format.JPG);
         testFormat(Format.TIF);
         testFormat(Format.PNG);
@@ -461,7 +461,7 @@ public class Version1_1ConformanceTest extends ResourceTest {
      * 4.5
      */
     @Test
-    public void testUnsupportedFormat() {
+    void testUnsupportedFormat() {
         assertStatus(415, getHTTPURI("/" + IMAGE + "/full/full/0/native.bogus"));
     }
 
@@ -473,7 +473,7 @@ public class Version1_1ConformanceTest extends ResourceTest {
      * style content negotiation."
      */
     @Test
-    public void testFormatInAcceptHeader() throws Exception {
+    void testFormatInAcceptHeader() throws Exception {
         client = newClient("/" + IMAGE + "/full/full/0/native");
         client.getHeaders().set("Accept", "image/png");
         Response response = client.send();
@@ -488,7 +488,7 @@ public class Version1_1ConformanceTest extends ResourceTest {
      * server should use a default format of its own choosing."
      */
     @Test
-    public void testNoFormat() throws Exception {
+    void testNoFormat() throws Exception {
         client = newClient("/" + IMAGE + "/full/full/0/native");
         client.getHeaders().set("Accept", "*/*");
         Response response = client.send();
@@ -503,7 +503,7 @@ public class Version1_1ConformanceTest extends ResourceTest {
      * image in the JSON format."
      */
     @Test
-    public void testInformationRequest() {
+    void testInformationRequest() {
         assertStatus(200, getHTTPURI("/" + IMAGE + "/info.json"));
     }
 
@@ -512,7 +512,7 @@ public class Version1_1ConformanceTest extends ResourceTest {
      * (regular JSON), or “application/ld+json” (JSON-LD)."
      */
     @Test
-    public void testInformationRequestContentType() throws Exception {
+    void testInformationRequestContentType() throws Exception {
         client = newClient("/" + IMAGE + "/info.json");
         Response response = client.send();
 
@@ -525,7 +525,7 @@ public class Version1_1ConformanceTest extends ResourceTest {
      * 5.
      */
     @Test
-    public void testInformationRequestJSON() {
+    void testInformationRequestJSON() {
         // this will be tested in ImageInfoFactoryTest
     }
 
@@ -533,7 +533,7 @@ public class Version1_1ConformanceTest extends ResourceTest {
      * 6.2 "Requests are limited to 1024 characters."
      */
     @Test
-    public void testURITooLong() {
+    void testURITooLong() {
         // information endpoint
         String uriStr = "/" + IMAGE + "/info.json?bogus=";
         uriStr = StringUtils.rightPad(uriStr, 1025, "a");
@@ -552,7 +552,7 @@ public class Version1_1ConformanceTest extends ResourceTest {
      * conformance of which ALL of the requirements are met."
      */
     @Test
-    public void testComplianceLevelLinkHeaderInInformationResponse()
+    void testComplianceLevelLinkHeaderInInformationResponse()
             throws Exception {
         client = newClient("/" + IMAGE + "/info.json");
         Response response = client.send();
@@ -567,7 +567,7 @@ public class Version1_1ConformanceTest extends ResourceTest {
      * conformance of which ALL of the requirements are met."
      */
     @Test
-    public void testComplianceLevelLinkHeaderInImageResponse()
+    void testComplianceLevelLinkHeaderInImageResponse()
             throws Exception {
         client = newClient("/" + IMAGE + "/full/full/0/native.jpg");
         Response response = client.send();

@@ -35,7 +35,7 @@ public class JPEGImageReaderPerformance extends JPEGImageReaderTest {
 
     @TearDown
     @Override
-    public void tearDown() {
+    public void tearDown() throws Exception {
         super.tearDown();
     }
 

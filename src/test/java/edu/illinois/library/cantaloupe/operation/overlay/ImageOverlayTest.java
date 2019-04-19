@@ -4,8 +4,8 @@ import edu.illinois.library.cantaloupe.image.Dimension;
 import edu.illinois.library.cantaloupe.image.ScaleConstraint;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -14,20 +14,20 @@ import java.io.InputStream;
 import java.net.URI;
 import java.util.Map;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class ImageOverlayTest extends BaseTest {
 
     private ImageOverlay instance;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         URI imageURI = TestUtil.getImage("jpg").toUri();
         instance = new ImageOverlay(imageURI, Position.BOTTOM_RIGHT, 5);
     }
 
     @Test
-    public void testOpenStream() throws Exception {
+    void testOpenStream() throws Exception {
         try (InputStream is = instance.openStream();
              ByteArrayOutputStream os = new ByteArrayOutputStream()) {
             is.transferTo(os);
@@ -35,22 +35,25 @@ public class ImageOverlayTest extends BaseTest {
         }
     }
 
-    @Test(expected = IOException.class)
-    public void testOpenStreamWithNonexistentImage() throws Exception {
+    @Test
+    void testOpenStreamWithNonexistentImage() {
         instance = new ImageOverlay(new File("/dev/cats").toURI(),
                 Position.BOTTOM_RIGHT, 5);
-        try (InputStream is = instance.openStream()) {
-        }
-    }
-
-    @Test(expected = IllegalStateException.class)
-    public void testSetURIThrowsExceptionWhenFrozen() throws Exception {
-        instance.freeze();
-        instance.setURI(new URI("http://example.org/cats"));
+        assertThrows(IOException.class, () -> {
+            try (InputStream is = instance.openStream()) {
+            }
+        });
     }
 
     @Test
-    public void testToMap() {
+    void testSetURIThrowsExceptionWhenFrozen() {
+        instance.freeze();
+        assertThrows(IllegalStateException.class,
+                () -> instance.setURI(new URI("http://example.org/cats")));
+    }
+
+    @Test
+    void testToMap() {
         Dimension fullSize = new Dimension(100, 100);
         ScaleConstraint scaleConstraint = new ScaleConstraint(1, 1);
 
@@ -61,16 +64,17 @@ public class ImageOverlayTest extends BaseTest {
         assertEquals(instance.getPosition().toString(), map.get("position"));
     }
 
-    @Test(expected = UnsupportedOperationException.class)
-    public void testToMapReturnsUnmodifiableMap() {
+    @Test
+    void testToMapReturnsUnmodifiableMap() {
         Dimension fullSize = new Dimension(100, 100);
         ScaleConstraint scaleConstraint = new ScaleConstraint(1, 1);
         Map<String,Object> map = instance.toMap(fullSize, scaleConstraint);
-        map.put("test", "test");
+        assertThrows(UnsupportedOperationException.class,
+                () -> map.put("test", "test"));
     }
 
     @Test
-    public void testToString() throws IOException {
+    void testToString() throws IOException {
         URI uri = TestUtil.getImage("jpg").toUri();
         instance.setURI(uri);
         assertEquals(uri.toString() + "_SE_5", instance.toString());

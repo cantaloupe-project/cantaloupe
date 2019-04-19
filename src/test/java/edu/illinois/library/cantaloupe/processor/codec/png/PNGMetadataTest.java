@@ -4,8 +4,7 @@ import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
-import org.apache.jena.riot.RIOT;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
@@ -18,7 +17,7 @@ import java.nio.file.Path;
 import java.util.Iterator;
 import java.util.Map;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class PNGMetadataTest extends BaseTest {
 
@@ -37,7 +36,7 @@ public class PNGMetadataTest extends BaseTest {
     }
 
     @Test
-    public void testGetNativeMetadata() throws IOException {
+    void testGetNativeMetadata() throws IOException {
         final Map<String,String> metadata =
                 getInstance("png-nativemetadata.png").getNativeMetadata().orElseThrow();
         assertEquals(1, metadata.size());
@@ -45,8 +44,7 @@ public class PNGMetadataTest extends BaseTest {
     }
 
     @Test
-    public void testGetXMP() throws IOException {
-        RIOT.init();
+    void testGetXMP() throws IOException {
         final String rdf = getInstance("png-xmp.png").getXMP().orElseThrow();
         final Model model = ModelFactory.createDefaultModel();
         model.read(new StringReader(rdf), null, "RDF/XML");

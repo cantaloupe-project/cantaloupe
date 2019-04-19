@@ -3,9 +3,9 @@ package edu.illinois.library.cantaloupe.resource;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.http.Response;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class TrailingSlashRemovingResourceTest extends ResourceTest {
 
@@ -15,7 +15,7 @@ public class TrailingSlashRemovingResourceTest extends ResourceTest {
     }
 
     @Test
-    public void testDoGet() throws Exception {
+    void testDoGet() throws Exception {
         client = newClient("/");
         Response response = client.send();
 
@@ -25,7 +25,7 @@ public class TrailingSlashRemovingResourceTest extends ResourceTest {
     }
 
     @Test
-    public void testDoGetRespectsBaseURIConfigKey() throws Exception {
+    void testDoGetRespectsBaseURIConfigKey() throws Exception {
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.BASE_URI, "http://example.org/cats");
 
@@ -39,7 +39,7 @@ public class TrailingSlashRemovingResourceTest extends ResourceTest {
     }
 
     @Test
-    public void testDoGetRespectsXForwardedHeaders() throws Exception {
+    void testDoGetRespectsXForwardedHeaders() throws Exception {
         client = newClient("/");
         client.getHeaders().set("X-Forwarded-Host", "example.org");
         client.getHeaders().set("X-Forwarded-Proto", "HTTP");

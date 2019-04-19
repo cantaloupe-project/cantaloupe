@@ -11,22 +11,22 @@ import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.operation.ValidationException;
 import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
 import edu.illinois.library.cantaloupe.test.TestUtil;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;
 import java.util.Arrays;
 import java.util.Set;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class PdfBoxProcessorTest extends AbstractProcessorTest {
 
     private PdfBoxProcessor instance;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         super.setUp();
         Configuration config = Configuration.getInstance();
@@ -34,7 +34,7 @@ public class PdfBoxProcessorTest extends AbstractProcessorTest {
         instance = newInstance();
     }
 
-    @After
+    @AfterEach
     public void tearDown() throws Exception {
         super.tearDown();
         instance.close();
@@ -52,7 +52,7 @@ public class PdfBoxProcessorTest extends AbstractProcessorTest {
     }
 
     @Test
-    public void testGetSupportedFeatures() throws Exception {
+    void testGetSupportedFeatures() throws Exception {
         instance.setSourceFormat(getAnySupportedSourceFormat(instance));
 
         Set<ProcessorFeature> expectedFeatures = Set.of(
@@ -74,7 +74,7 @@ public class PdfBoxProcessorTest extends AbstractProcessorTest {
     }
 
     @Test
-    public void testProcessWithPageOption() throws Exception {
+    void testProcessWithPageOption() throws Exception {
         instance.setSourceFile(TestUtil.getImage("pdf-multipage.pdf"));
         final Info imageInfo = instance.readInfo();
 
@@ -93,9 +93,8 @@ public class PdfBoxProcessorTest extends AbstractProcessorTest {
         assertFalse(Arrays.equals(page1, page2));
     }
 
-    @Test(expected = ProcessorException.class)
-    public void testProcessWithIllegalPageOptionThrowsException()
-            throws Exception {
+    @Test
+    void testProcessWithIllegalPageOptionThrowsException() throws Exception {
         instance.setSourceFile(TestUtil.getImage("pdf-multipage.pdf"));
         final Info imageInfo = instance.readInfo();
 
@@ -104,18 +103,19 @@ public class PdfBoxProcessorTest extends AbstractProcessorTest {
         ops.getOptions().put("page", "35");
         OutputStream outputStream = OutputStream.nullOutputStream();
 
-        instance.process(ops, imageInfo, outputStream);
+        assertThrows(ProcessorException.class,
+                () -> instance.process(ops, imageInfo, outputStream));
     }
 
     @Test
-    public void testReadInfoXMPAwareness() throws Exception {
+    void testReadInfoXMPAwareness() throws Exception {
         instance.setSourceFile(TestUtil.getImage("pdf-xmp.pdf"));
         Info info = instance.readInfo();
         assertTrue(info.getMetadata().getXMP().isPresent());
     }
 
     @Test
-    public void testReadInfoWithMultiPagePDF() throws Exception {
+    void testReadInfoWithMultiPagePDF() throws Exception {
         instance.close();
         instance.setSourceFile(TestUtil.getImage("pdf-multipage.pdf"));
         final Info info = instance.readInfo();
@@ -125,7 +125,7 @@ public class PdfBoxProcessorTest extends AbstractProcessorTest {
     }
 
     @Test
-    public void testValidateWithNoPageArgument() throws Exception {
+    void testValidateWithNoPageArgument() throws Exception {
         instance.setSourceFile(TestUtil.getImage("pdf.pdf"));
 
         OperationList ops = new OperationList(
@@ -135,7 +135,7 @@ public class PdfBoxProcessorTest extends AbstractProcessorTest {
     }
 
     @Test
-    public void testValidateWithValidPageArgument() throws Exception {
+    void testValidateWithValidPageArgument() throws Exception {
         instance.setSourceFile(TestUtil.getImage("pdf.pdf"));
 
         OperationList ops = new OperationList(
@@ -146,8 +146,8 @@ public class PdfBoxProcessorTest extends AbstractProcessorTest {
         instance.validate(ops, fullSize);
     }
 
-    @Test(expected = ValidationException.class)
-    public void testValidateWithZeroPageArgument() throws Exception {
+    @Test
+    void testValidateWithZeroPageArgument() throws Exception {
         instance.setSourceFile(TestUtil.getImage("pdf.pdf"));
 
         OperationList ops = new OperationList(
@@ -155,11 +155,12 @@ public class PdfBoxProcessorTest extends AbstractProcessorTest {
         ops.getOptions().put("page", "0");
         Dimension fullSize = new Dimension(100, 88);
 
-        instance.validate(ops, fullSize);
+        assertThrows(ValidationException.class,
+                () -> instance.validate(ops, fullSize));
     }
 
-    @Test(expected = ValidationException.class)
-    public void testValidateWithNegativePageArgument() throws Exception {
+    @Test
+    void testValidateWithNegativePageArgument() throws Exception {
         instance.setSourceFile(TestUtil.getImage("pdf.pdf"));
 
         OperationList ops = new OperationList(
@@ -167,11 +168,12 @@ public class PdfBoxProcessorTest extends AbstractProcessorTest {
         ops.getOptions().put("page", "-1");
         Dimension fullSize = new Dimension(100, 88);
 
-        instance.validate(ops, fullSize);
+        assertThrows(ValidationException.class,
+                () -> instance.validate(ops, fullSize));
     }
 
-    @Test(expected = ValidationException.class)
-    public void testValidateWithExcessivePageArgument() throws Exception {
+    @Test
+    void testValidateWithExcessivePageArgument() throws Exception {
         instance.setSourceFile(TestUtil.getImage("pdf.pdf"));
 
         OperationList ops = new OperationList(
@@ -179,7 +181,8 @@ public class PdfBoxProcessorTest extends AbstractProcessorTest {
         ops.getOptions().put("page", "3");
         Dimension fullSize = new Dimension(100, 88);
 
-        instance.validate(ops, fullSize);
+        assertThrows(ValidationException.class,
+                () -> instance.validate(ops, fullSize));
     }
 
 }

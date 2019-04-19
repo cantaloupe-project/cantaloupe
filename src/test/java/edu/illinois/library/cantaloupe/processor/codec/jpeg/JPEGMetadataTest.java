@@ -6,8 +6,7 @@ import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
-import org.apache.jena.riot.RIOT;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
@@ -15,12 +14,13 @@ import javax.imageio.metadata.IIOMetadata;
 import javax.imageio.stream.ImageInputStream;
 
 import java.io.IOException;
+import java.io.Reader;
 import java.io.StringReader;
 import java.nio.file.Path;
 import java.util.Iterator;
 import java.util.List;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class JPEGMetadataTest extends BaseTest {
 
@@ -48,12 +48,12 @@ public class JPEGMetadataTest extends BaseTest {
     }
 
     @Test
-    public void testGetEXIF() throws IOException {
+    void testGetEXIF() throws IOException {
         assertTrue(getInstance("jpg-exif.jpg").getEXIF().isPresent());
     }
 
     @Test
-    public void testGetIPTC() throws IOException {
+    void testGetIPTC() throws IOException {
         List<DataSet> dataSets = getInstance("jpg-iptc.jpg").getIPTC().orElseThrow();
         assertEquals(2, dataSets.size());
         assertEquals(new DataSet(
@@ -65,11 +65,12 @@ public class JPEGMetadataTest extends BaseTest {
     }
 
     @Test
-    public void testGetXMP() throws IOException {
-        RIOT.init();
+    void testGetXMP() throws IOException {
         final String rdf = getInstance("jpg-xmp.jpg").getXMP().orElseThrow();
         final Model model = ModelFactory.createDefaultModel();
-        model.read(new StringReader(rdf), null, "RDF/XML");
+        try (Reader reader = new StringReader(rdf)) {
+            model.read(reader, null, "RDF/XML");
+        }
     }
 
 }

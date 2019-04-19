@@ -16,8 +16,8 @@ import edu.illinois.library.cantaloupe.source.StreamFactory;
 import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.apache.commons.io.output.ByteArrayOutputStream;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -30,7 +30,7 @@ import java.util.Map;
 import java.util.Set;
 
 import static edu.illinois.library.cantaloupe.test.Assert.ImageAssert.*;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 abstract class AbstractMagickProcessorTest extends AbstractProcessorTest {
 
@@ -174,28 +174,28 @@ abstract class AbstractMagickProcessorTest extends AbstractProcessorTest {
     }
 
     @Override
-    @Ignore // This processor doesn't support XMP writing.
+    @Disabled // This processor doesn't support XMP writing.
     @Test
     public void testProcessWritesXMPMetadataIntoGIF() throws Exception {
         super.testProcessWritesXMPMetadataIntoGIF();
     }
 
     @Override
-    @Ignore // This processor doesn't support XMP writing.
+    @Disabled // This processor doesn't support XMP writing.
     @Test
     public void testProcessWritesXMPMetadataIntoJPEG() throws Exception {
         super.testProcessWritesXMPMetadataIntoJPEG();
     }
 
     @Override
-    @Ignore // This processor doesn't support XMP writing.
+    @Disabled // This processor doesn't support XMP writing.
     @Test
     public void testProcessWritesXMPMetadataIntoPNG() throws Exception {
         super.testProcessWritesXMPMetadataIntoPNG();
     }
 
     @Override
-    @Ignore // This processor doesn't support XMP writing.
+    @Disabled // This processor doesn't support XMP writing.
     @Test
     public void testProcessWritesXMPMetadataIntoTIFF() throws Exception {
         super.testProcessWritesXMPMetadataIntoTIFF();

@@ -2,16 +2,16 @@ package edu.illinois.library.cantaloupe.auth;
 
 import edu.illinois.library.cantaloupe.image.ScaleConstraint;
 import edu.illinois.library.cantaloupe.test.BaseTest;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class AuthInfoTest extends BaseTest {
 
     // N.B.: inner classes are tested in separate test classes
 
     @Test
-    public void testIsAuthorized() {
+    void testIsAuthorized() {
         AuthInfo info = new AuthInfo.RestrictiveBuilder()
                 .withResponseStatus(200)
                 .build();
@@ -25,7 +25,7 @@ public class AuthInfoTest extends BaseTest {
     }
 
     @Test
-    public void testGetScaleConstraint() {
+    void testGetScaleConstraint() {
         AuthInfo info = new AuthInfo.RestrictiveBuilder()
                 .withResponseStatus(302)
                 .withRedirectScaleConstraint(2L, 3L)

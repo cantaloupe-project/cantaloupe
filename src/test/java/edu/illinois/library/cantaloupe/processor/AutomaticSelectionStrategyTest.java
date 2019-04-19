@@ -2,25 +2,25 @@ package edu.illinois.library.cantaloupe.processor;
 
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.test.BaseTest;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class AutomaticSelectionStrategyTest extends BaseTest {
 
     private AutomaticSelectionStrategy instance;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         super.setUp();
         instance = new AutomaticSelectionStrategy();
     }
 
     @Test
-    public void getPreferredProcessorsWithJP2() {
+    void getPreferredProcessorsWithJP2() {
         List<?> expected = List.of(
                 KakaduNativeProcessor.class,
                 OpenJpegProcessor.class,
@@ -30,7 +30,7 @@ public class AutomaticSelectionStrategyTest extends BaseTest {
     }
 
     @Test
-    public void getPreferredProcessorsWithJPG() {
+    void getPreferredProcessorsWithJPG() {
         List<?> expected = List.of(
                 TurboJpegProcessor.class,
                 Java2dProcessor.class,
@@ -40,7 +40,7 @@ public class AutomaticSelectionStrategyTest extends BaseTest {
     }
 
     @Test
-    public void getPreferredProcessorsWithPDF() {
+    void getPreferredProcessorsWithPDF() {
         List<?> expected = List.of(
                 PdfBoxProcessor.class,
                 GraphicsMagickProcessor.class,
@@ -49,13 +49,13 @@ public class AutomaticSelectionStrategyTest extends BaseTest {
     }
 
     @Test
-    public void getPreferredProcessorsWithVideo() {
+    void getPreferredProcessorsWithVideo() {
         List<?> expected = List.of(FfmpegProcessor.class);
         assertEquals(expected, instance.getPreferredProcessors(Format.MPG));
     }
 
     @Test
-    public void getPreferredProcessorsWithOther() {
+    void getPreferredProcessorsWithOther() {
         List<?> expected = List.of(
                 Java2dProcessor.class,
                 GraphicsMagickProcessor.class,
@@ -67,7 +67,7 @@ public class AutomaticSelectionStrategyTest extends BaseTest {
     }
 
     @Test
-    public void testToString() {
+    void testToString() {
         assertEquals("AutomaticSelectionStrategy", instance.toString());
     }
 

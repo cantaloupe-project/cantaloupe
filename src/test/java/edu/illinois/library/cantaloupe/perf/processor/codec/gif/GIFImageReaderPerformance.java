@@ -36,7 +36,7 @@ public class GIFImageReaderPerformance extends GIFImageReaderTest {
 
     @TearDown
     @Override
-    public void tearDown() {
+    public void tearDown() throws Exception {
         super.tearDown();
     }
 

@@ -19,11 +19,11 @@ import edu.illinois.library.cantaloupe.test.ConfigurationConstants;
 import edu.illinois.library.cantaloupe.test.S3Server;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import edu.illinois.library.cantaloupe.util.AWSClientBuilder;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -34,7 +34,7 @@ import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class S3SourceTest extends AbstractSourceTest {
 
@@ -50,14 +50,14 @@ public class S3SourceTest extends AbstractSourceTest {
 
     private S3Source instance;
 
-    @BeforeClass
+    @BeforeAll
     public static void beforeClass() throws Exception {
         BaseTest.beforeClass();
         startS3ServerIfNecessary();
         createBucket();
     }
 
-    @AfterClass
+    @AfterAll
     public static void afterClass() throws Exception {
         BaseTest.afterClass();
         deleteBucket();
@@ -203,7 +203,7 @@ public class S3SourceTest extends AbstractSourceTest {
         return testConfig.getString(ConfigurationConstants.S3_SECRET_KEY.getKey());
     }
 
-    @Before
+    @BeforeEach
     @Override
     public void setUp() throws Exception {
         super.setUp();
@@ -211,7 +211,7 @@ public class S3SourceTest extends AbstractSourceTest {
         instance = newInstance();
     }
 
-    @After
+    @AfterEach
     @Override
     public void tearDown() throws Exception {
         super.tearDown();
@@ -220,12 +220,12 @@ public class S3SourceTest extends AbstractSourceTest {
 
     @Override
     void destroyEndpoint() {
-        // will be done in @AfterClass
+        // will be done in @AfterAll
     }
 
     @Override
     void initializeEndpoint() {
-        // will be done in @BeforeClass
+        // will be done in @BeforeAll
     }
 
     @Override
@@ -271,7 +271,7 @@ public class S3SourceTest extends AbstractSourceTest {
     /* awsRegionFromURL() */
 
     @Test
-    public void testAWSRegionFromURLWithAPSouth1() {
+    void testAWSRegionFromURLWithAPSouth1() {
         assertEquals("ap-south-1", S3Source.awsRegionFromURL("s3.ap-south-1.amazonaws.com"));
         assertEquals("ap-south-1", S3Source.awsRegionFromURL("s3-ap-south-1.amazonaws.com"));
         assertEquals("ap-south-1", S3Source.awsRegionFromURL("s3.dualstack.ap-south-1.amazonaws.com"));
@@ -280,7 +280,7 @@ public class S3SourceTest extends AbstractSourceTest {
     }
 
     @Test
-    public void testAWSRegionFromURLWithAPNortheast1() {
+    void testAWSRegionFromURLWithAPNortheast1() {
         assertEquals("ap-northeast-1", S3Source.awsRegionFromURL("s3.ap-northeast-1.amazonaws.com"));
         assertEquals("ap-northeast-1", S3Source.awsRegionFromURL("s3-ap-northeast-1.amazonaws.com"));
         assertEquals("ap-northeast-1", S3Source.awsRegionFromURL("s3.dualstack.ap-northeast-1.amazonaws.com"));
@@ -289,7 +289,7 @@ public class S3SourceTest extends AbstractSourceTest {
     }
 
     @Test
-    public void testAWSRegionFromURLWithAPNortheast2() {
+    void testAWSRegionFromURLWithAPNortheast2() {
         assertEquals("ap-northeast-2", S3Source.awsRegionFromURL("s3.ap-northeast-2.amazonaws.com"));
         assertEquals("ap-northeast-2", S3Source.awsRegionFromURL("s3-ap-northeast-2.amazonaws.com"));
         assertEquals("ap-northeast-2", S3Source.awsRegionFromURL("s3.dualstack.ap-northeast-2.amazonaws.com"));
@@ -298,7 +298,7 @@ public class S3SourceTest extends AbstractSourceTest {
     }
 
     @Test
-    public void testAWSRegionFromURLWithAPNortheast3() {
+    void testAWSRegionFromURLWithAPNortheast3() {
         assertEquals("ap-northeast-3", S3Source.awsRegionFromURL("s3.ap-northeast-3.amazonaws.com"));
         assertEquals("ap-northeast-3", S3Source.awsRegionFromURL("s3-ap-northeast-3.amazonaws.com"));
         assertEquals("ap-northeast-3", S3Source.awsRegionFromURL("s3.dualstack.ap-northeast-3.amazonaws.com"));
@@ -307,7 +307,7 @@ public class S3SourceTest extends AbstractSourceTest {
     }
 
     @Test
-    public void testAWSRegionFromURLWithAPSoutheast1() {
+    void testAWSRegionFromURLWithAPSoutheast1() {
         assertEquals("ap-southeast-1", S3Source.awsRegionFromURL("s3.ap-southeast-1.amazonaws.com"));
         assertEquals("ap-southeast-1", S3Source.awsRegionFromURL("s3-ap-southeast-1.amazonaws.com"));
         assertEquals("ap-southeast-1", S3Source.awsRegionFromURL("s3.dualstack.ap-southeast-1.amazonaws.com"));
@@ -316,7 +316,7 @@ public class S3SourceTest extends AbstractSourceTest {
     }
 
     @Test
-    public void testAWSRegionFromURLWithAPSoutheast2() {
+    void testAWSRegionFromURLWithAPSoutheast2() {
         assertEquals("ap-southeast-2", S3Source.awsRegionFromURL("s3.ap-southeast-2.amazonaws.com"));
         assertEquals("ap-southeast-2", S3Source.awsRegionFromURL("s3-ap-southeast-2.amazonaws.com"));
         assertEquals("ap-southeast-2", S3Source.awsRegionFromURL("s3.dualstack.ap-southeast-2.amazonaws.com"));
@@ -325,7 +325,7 @@ public class S3SourceTest extends AbstractSourceTest {
     }
 
     @Test
-    public void testAWSRegionFromURLWithCACentral1() {
+    void testAWSRegionFromURLWithCACentral1() {
         assertEquals("ca-central-1", S3Source.awsRegionFromURL("s3.ca-central-1.amazonaws.com"));
         assertEquals("ca-central-1", S3Source.awsRegionFromURL("s3-ca-central-1.amazonaws.com"));
         assertEquals("ca-central-1", S3Source.awsRegionFromURL("s3.dualstack.ca-central-1.amazonaws.com"));
@@ -334,7 +334,7 @@ public class S3SourceTest extends AbstractSourceTest {
     }
 
     @Test
-    public void testAWSRegionFromURLWithCNNorth1() {
+    void testAWSRegionFromURLWithCNNorth1() {
         assertEquals("cn-north-1", S3Source.awsRegionFromURL("s3.cn-north-1.amazonaws.com"));
         assertEquals("cn-north-1", S3Source.awsRegionFromURL("s3-cn-north-1.amazonaws.com"));
         assertEquals("cn-north-1", S3Source.awsRegionFromURL("s3.dualstack.cn-north-1.amazonaws.com"));
@@ -343,7 +343,7 @@ public class S3SourceTest extends AbstractSourceTest {
     }
 
     @Test
-    public void testAWSRegionFromURLWithCNNorthwest1() {
+    void testAWSRegionFromURLWithCNNorthwest1() {
         assertEquals("cn-northwest-1", S3Source.awsRegionFromURL("s3.cn-northwest-1.amazonaws.com"));
         assertEquals("cn-northwest-1", S3Source.awsRegionFromURL("s3-cn-northwest-1.amazonaws.com"));
         assertEquals("cn-northwest-1", S3Source.awsRegionFromURL("s3.dualstack.cn-northwest-1.amazonaws.com"));
@@ -352,7 +352,7 @@ public class S3SourceTest extends AbstractSourceTest {
     }
 
     @Test
-    public void testAWSRegionFromURLWithEUCentral1() {
+    void testAWSRegionFromURLWithEUCentral1() {
         assertEquals("eu-central-1", S3Source.awsRegionFromURL("s3.eu-central-1.amazonaws.com"));
         assertEquals("eu-central-1", S3Source.awsRegionFromURL("s3-eu-central-1.amazonaws.com"));
         assertEquals("eu-central-1", S3Source.awsRegionFromURL("s3.dualstack.eu-central-1.amazonaws.com"));
@@ -361,7 +361,7 @@ public class S3SourceTest extends AbstractSourceTest {
     }
 
     @Test
-    public void testAWSRegionFromURLWithEUWest1() {
+    void testAWSRegionFromURLWithEUWest1() {
         assertEquals("eu-west-1", S3Source.awsRegionFromURL("s3.eu-west-1.amazonaws.com"));
         assertEquals("eu-west-1", S3Source.awsRegionFromURL("s3-eu-west-1.amazonaws.com"));
         assertEquals("eu-west-1", S3Source.awsRegionFromURL("s3.dualstack.eu-west-1.amazonaws.com"));
@@ -370,7 +370,7 @@ public class S3SourceTest extends AbstractSourceTest {
     }
 
     @Test
-    public void testAWSRegionFromURLWithEUWest2() {
+    void testAWSRegionFromURLWithEUWest2() {
         assertEquals("eu-west-2", S3Source.awsRegionFromURL("s3.eu-west-2.amazonaws.com"));
         assertEquals("eu-west-2", S3Source.awsRegionFromURL("s3-eu-west-2.amazonaws.com"));
         assertEquals("eu-west-2", S3Source.awsRegionFromURL("s3.dualstack.eu-west-2.amazonaws.com"));
@@ -379,7 +379,7 @@ public class S3SourceTest extends AbstractSourceTest {
     }
 
     @Test
-    public void testAWSRegionFromURLWithEUWest3() {
+    void testAWSRegionFromURLWithEUWest3() {
         assertEquals("eu-west-3", S3Source.awsRegionFromURL("s3.eu-west-3.amazonaws.com"));
         assertEquals("eu-west-3", S3Source.awsRegionFromURL("s3-eu-west-3.amazonaws.com"));
         assertEquals("eu-west-3", S3Source.awsRegionFromURL("s3.dualstack.eu-west-3.amazonaws.com"));
@@ -388,7 +388,7 @@ public class S3SourceTest extends AbstractSourceTest {
     }
 
     @Test
-    public void testAWSRegionFromURLWithEUNorth1() {
+    void testAWSRegionFromURLWithEUNorth1() {
         assertEquals("eu-north-1", S3Source.awsRegionFromURL("s3.eu-north-1.amazonaws.com"));
         assertEquals("eu-north-1", S3Source.awsRegionFromURL("s3-eu-north-1.amazonaws.com"));
         assertEquals("eu-north-1", S3Source.awsRegionFromURL("s3.dualstack.eu-north-1.amazonaws.com"));
@@ -397,7 +397,7 @@ public class S3SourceTest extends AbstractSourceTest {
     }
 
     @Test
-    public void testAWSRegionFromURLWithSAEast1() {
+    void testAWSRegionFromURLWithSAEast1() {
         assertEquals("sa-east-1", S3Source.awsRegionFromURL("s3.sa-east-1.amazonaws.com"));
         assertEquals("sa-east-1", S3Source.awsRegionFromURL("s3-sa-east-1.amazonaws.com"));
         assertEquals("sa-east-1", S3Source.awsRegionFromURL("s3.dualstack.sa-east-1.amazonaws.com"));
@@ -406,7 +406,7 @@ public class S3SourceTest extends AbstractSourceTest {
     }
 
     @Test
-    public void testAWSRegionFromURLWithUSEast1() {
+    void testAWSRegionFromURLWithUSEast1() {
         assertEquals("us-east-1", S3Source.awsRegionFromURL("s3.amazonaws.com"));
         assertEquals("us-east-1", S3Source.awsRegionFromURL("s3.us-east-1.amazonaws.com"));
         assertEquals("us-east-1", S3Source.awsRegionFromURL("s3-external-1.amazonaws.com"));
@@ -416,7 +416,7 @@ public class S3SourceTest extends AbstractSourceTest {
     }
 
     @Test
-    public void testAWSRegionFromURLWithUSEast2() {
+    void testAWSRegionFromURLWithUSEast2() {
         assertEquals("us-east-2", S3Source.awsRegionFromURL("s3.us-east-2.amazonaws.com"));
         assertEquals("us-east-2", S3Source.awsRegionFromURL("s3-us-east-2.amazonaws.com"));
         assertEquals("us-east-2", S3Source.awsRegionFromURL("s3.dualstack.us-east-2.amazonaws.com"));
@@ -425,7 +425,7 @@ public class S3SourceTest extends AbstractSourceTest {
     }
 
     @Test
-    public void testAWSRegionFromURLWithUSWest1() {
+    void testAWSRegionFromURLWithUSWest1() {
         assertEquals("us-west-1", S3Source.awsRegionFromURL("s3.us-west-1.amazonaws.com"));
         assertEquals("us-west-1", S3Source.awsRegionFromURL("s3-us-west-1.amazonaws.com"));
         assertEquals("us-west-1", S3Source.awsRegionFromURL("s3.dualstack.us-west-1.amazonaws.com"));
@@ -434,7 +434,7 @@ public class S3SourceTest extends AbstractSourceTest {
     }
 
     @Test
-    public void testAWSRegionFromURLWithUSWest2() {
+    void testAWSRegionFromURLWithUSWest2() {
         assertEquals("us-west-2", S3Source.awsRegionFromURL("s3.us-west-2.amazonaws.com"));
         assertEquals("us-west-2", S3Source.awsRegionFromURL("s3-us-west-2.amazonaws.com"));
         assertEquals("us-west-2", S3Source.awsRegionFromURL("s3.dualstack.us-west-2.amazonaws.com"));
@@ -445,24 +445,24 @@ public class S3SourceTest extends AbstractSourceTest {
     /* checkAccess() */
 
     @Test
-    public void testCheckAccessUsingBasicLookupStrategyWithPresentUnreadableImage() {
+    void testCheckAccessUsingBasicLookupStrategyWithPresentUnreadableImage() {
         // TODO: write this
     }
 
     @Test
-    public void testCheckAccessUsingScriptLookupStrategyWithPresentReadableImage()
+    void testCheckAccessUsingScriptLookupStrategyWithPresentReadableImage()
             throws Exception {
         useScriptLookupStrategy();
         instance.checkAccess();
     }
 
     @Test
-    public void testCheckAccessUsingScriptLookupStrategyWithPresentUnreadableImage() {
+    void testCheckAccessUsingScriptLookupStrategyWithPresentUnreadableImage() {
         // TODO: write this
     }
 
-    @Test(expected = NoSuchFileException.class)
-    public void testCheckAccessUsingScriptLookupStrategyWithMissingImage()
+    @Test
+    void testCheckAccessUsingScriptLookupStrategyWithMissingImage()
             throws Exception {
         useScriptLookupStrategy();
 
@@ -474,11 +474,11 @@ public class S3SourceTest extends AbstractSourceTest {
         instance.setDelegateProxy(proxy);
         instance.setIdentifier(identifier);
 
-        instance.checkAccess();
+        assertThrows(NoSuchFileException.class, () -> instance.checkAccess());
     }
 
     @Test
-    public void testCheckAccessUsingScriptLookupStrategyReturningHash()
+    void testCheckAccessUsingScriptLookupStrategyReturningHash()
             throws Exception {
         useScriptLookupStrategy();
 
@@ -495,8 +495,8 @@ public class S3SourceTest extends AbstractSourceTest {
         instance.checkAccess();
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void testCheckAccessUsingScriptLookupStrategyWithMissingKeyInReturnedHash()
+    @Test
+    void testCheckAccessUsingScriptLookupStrategyWithMissingKeyInReturnedHash()
             throws Exception {
         useScriptLookupStrategy();
 
@@ -508,18 +508,18 @@ public class S3SourceTest extends AbstractSourceTest {
         instance.setDelegateProxy(proxy);
         instance.setIdentifier(identifier);
 
-        instance.checkAccess();
+        assertThrows(IllegalArgumentException.class, () -> instance.checkAccess());
     }
 
     /* getObjectInfo() */
 
     @Test
-    public void testGetObjectInfo() throws Exception {
+    void testGetObjectInfo() throws Exception {
         assertNotNull(instance.getObjectInfo());
     }
 
     @Test
-    public void testGetObjectInfoUsingBasicLookupStrategyWithPrefixAndSuffix()
+    void testGetObjectInfoUsingBasicLookupStrategyWithPrefixAndSuffix()
             throws Exception {
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.S3SOURCE_PATH_PREFIX, "/prefix/");
@@ -530,7 +530,7 @@ public class S3SourceTest extends AbstractSourceTest {
     }
 
     @Test
-    public void testGetObjectInfoUsingBasicLookupStrategyWithoutPrefixOrSuffix()
+    void testGetObjectInfoUsingBasicLookupStrategyWithoutPrefixOrSuffix()
             throws Exception {
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.S3SOURCE_PATH_PREFIX, "");
@@ -543,62 +543,62 @@ public class S3SourceTest extends AbstractSourceTest {
     /* getFormat() */
 
     @Test
-    public void testGetSourceFormatUsingBasicLookupStrategy()
+    void testGetSourceFormatUsingBasicLookupStrategy()
             throws IOException {
         assertEquals(Format.JPG, instance.getFormat());
     }
 
     @Test
-    public void testGetSourceFormatUsingScriptLookupStrategy()
+    void testGetSourceFormatUsingScriptLookupStrategy()
             throws IOException {
         useScriptLookupStrategy();
         assertEquals(Format.JPG, instance.getFormat());
     }
 
     @Test
-    public void testGetSourceFormatWithContentTypeAndRecognizedExtensionInObjectKey()
+    void testGetSourceFormatWithContentTypeAndRecognizedExtensionInObjectKey()
             throws IOException {
         instance.setIdentifier(new Identifier(OBJECT_KEY_WITH_CONTENT_TYPE_AND_RECOGNIZED_EXTENSION));
         assertEquals(Format.JPG, instance.getFormat());
     }
 
     @Test
-    public void testGetSourceFormatWithContentTypeAndUnrecognizedExtensionInObjectKey()
+    void testGetSourceFormatWithContentTypeAndUnrecognizedExtensionInObjectKey()
             throws IOException {
         instance.setIdentifier(new Identifier(OBJECT_KEY_WITH_CONTENT_TYPE_AND_UNRECOGNIZED_EXTENSION));
         assertEquals(Format.JPG, instance.getFormat());
     }
 
     @Test
-    public void testGetSourceFormatWithContentTypeAndNoExtensionInObjectKey()
+    void testGetSourceFormatWithContentTypeAndNoExtensionInObjectKey()
             throws IOException {
         instance.setIdentifier(new Identifier(OBJECT_KEY_WITH_CONTENT_TYPE_BUT_NO_EXTENSION));
         assertEquals(Format.JPG, instance.getFormat());
     }
 
     @Test
-    public void testGetSourceFormatWithNoContentTypeButRecognizedExtensionInObjectKey()
+    void testGetSourceFormatWithNoContentTypeButRecognizedExtensionInObjectKey()
             throws IOException {
         instance.setIdentifier(new Identifier(OBJECT_KEY_WITH_NO_CONTENT_TYPE_AND_RECOGNIZED_EXTENSION));
         assertEquals(Format.JPG, instance.getFormat());
     }
 
     @Test
-    public void testGetSourceFormatWithNoContentTypeAndUnrecognizedExtensionInObjectKey()
+    void testGetSourceFormatWithNoContentTypeAndUnrecognizedExtensionInObjectKey()
             throws IOException {
         instance.setIdentifier(new Identifier(OBJECT_KEY_WITH_NO_CONTENT_TYPE_AND_UNRECOGNIZED_EXTENSION));
         assertEquals(Format.JPG, instance.getFormat());
     }
 
     @Test
-    public void testGetSourceFormatWithNoContentTypeOrExtensionInObjectKey()
+    void testGetSourceFormatWithNoContentTypeOrExtensionInObjectKey()
             throws IOException {
         instance.setIdentifier(new Identifier(OBJECT_KEY_WITH_NO_CONTENT_TYPE_OR_EXTENSION));
         assertEquals(Format.JPG, instance.getFormat());
     }
 
     @Test
-    public void testGetSourceFormatWithNonImage() throws IOException {
+    void testGetSourceFormatWithNonImage() throws IOException {
         instance.setIdentifier(new Identifier(NON_IMAGE_KEY));
         assertEquals(Format.UNKNOWN, instance.getFormat());
     }
@@ -606,12 +606,12 @@ public class S3SourceTest extends AbstractSourceTest {
     /* newStreamFactory() */
 
     @Test
-    public void testNewStreamFactoryUsingBasicLookupStrategy() throws Exception {
+    void testNewStreamFactoryUsingBasicLookupStrategy() throws Exception {
         assertNotNull(instance.newStreamFactory());
     }
 
     @Test
-    public void testNewStreamFactoryUsingScriptLookupStrategy()
+    void testNewStreamFactoryUsingScriptLookupStrategy()
             throws Exception {
         useScriptLookupStrategy();
         assertNotNull(instance.newStreamFactory());

@@ -8,29 +8,30 @@ import edu.illinois.library.cantaloupe.operation.ReductionFactor;
 import edu.illinois.library.cantaloupe.operation.Scale;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.awt.image.BufferedImage;
 import java.util.List;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
+@SuppressWarnings("WeakerAccess") // a JMH test extends this
 public class JPEG2000KakaduImageReaderTest extends BaseTest {
 
     private static final double DELTA = 0.0000001;
 
     private JPEG2000KakaduImageReader instance;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         super.setUp();
         instance = new JPEG2000KakaduImageReader();
         instance.setSource(TestUtil.getImage("jp2"));
     }
 
-    @After
+    @AfterEach
     public void tearDown() throws Exception {
         super.tearDown();
         instance.close();

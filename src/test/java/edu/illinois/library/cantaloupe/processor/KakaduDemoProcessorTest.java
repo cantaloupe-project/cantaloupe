@@ -10,20 +10,21 @@ import edu.illinois.library.cantaloupe.operation.Encode;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
 import edu.illinois.library.cantaloupe.test.TestUtil;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.EnumSet;
 import java.util.Set;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
+@SuppressWarnings("deprecation")
 public class KakaduDemoProcessorTest extends AbstractProcessorTest {
 
     private KakaduDemoProcessor instance;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         super.setUp();
 
@@ -34,7 +35,7 @@ public class KakaduDemoProcessorTest extends AbstractProcessorTest {
         instance = newInstance();
     }
 
-    @After
+    @AfterEach
     public void tearDown() throws Exception {
         super.tearDown();
         instance.close();
@@ -52,12 +53,12 @@ public class KakaduDemoProcessorTest extends AbstractProcessorTest {
     }
 
     @Test
-    public void testGetInitializationErrorWithNoException() {
+    void testGetInitializationErrorWithNoException() {
         assertNull(instance.getInitializationError());
     }
 
     @Test
-    public void testGetInitializationErrorWithMissingBinaries() {
+    void testGetInitializationErrorWithMissingBinaries() {
         Configuration.getInstance().setProperty(
                 Key.KAKADUDEMOPROCESSOR_PATH_TO_BINARIES,
                 "/bogus/bogus/bogus");
@@ -68,7 +69,7 @@ public class KakaduDemoProcessorTest extends AbstractProcessorTest {
     /**
      * The behavior of kdu_expand's -region argument changed sometime between
      * v7.6 and v7.10.4, and it's no longer possible to make it pixel-perfect,
-     * AFAICT. This is terrible but better than @Ignore.
+     * AFAICT. This is terrible but better than @Disabled.
      */
     @Override
     @Test
@@ -92,7 +93,7 @@ public class KakaduDemoProcessorTest extends AbstractProcessorTest {
     /**
      * The behavior of kdu_expand's -region argument changed sometime between
      * v7.6 and v7.10.4, and it's no longer possible to make it pixel-perfect,
-     * AFAICT. This is terrible but better than @Ignore.
+     * AFAICT. This is terrible but better than @Disabled.
      */
     @Override
     @Test
@@ -111,21 +112,21 @@ public class KakaduDemoProcessorTest extends AbstractProcessorTest {
     }
 
     @Test
-    public void testReadInfoIPTCAwareness() throws Exception {
+    void testReadInfoIPTCAwareness() throws Exception {
         instance.setSourceFile(TestUtil.getImage("jp2-iptc.jp2"));
         Info info = instance.readInfo();
         assertTrue(info.getMetadata().getIPTC().isPresent());
     }
 
     @Test
-    public void testReadInfoXMPAwareness() throws Exception {
+    void testReadInfoXMPAwareness() throws Exception {
         instance.setSourceFile(TestUtil.getImage("jp2-xmp.jp2"));
         Info info = instance.readInfo();
         assertTrue(info.getMetadata().getXMP().isPresent());
     }
 
     @Test
-    public void testReadInfoTileAwareness() throws Exception {
+    void testReadInfoTileAwareness() throws Exception {
         // untiled image
         instance.setSourceFile(TestUtil.getImage("jp2-5res-rgb-64x56x8-monotiled-lossy.jp2"));
         Info expectedInfo = Info.builder()
@@ -148,7 +149,7 @@ public class KakaduDemoProcessorTest extends AbstractProcessorTest {
     }
 
     @Test
-    public void testGetSupportedFeatures() throws Exception {
+    void testGetSupportedFeatures() throws Exception {
         instance.setSourceFormat(getAnySupportedSourceFormat(instance));
 
         Set<ProcessorFeature> expectedFeatures = EnumSet.of(

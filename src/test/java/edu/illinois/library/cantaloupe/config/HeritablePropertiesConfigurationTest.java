@@ -1,7 +1,7 @@
 package edu.illinois.library.cantaloupe.config;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.io.File;
 import java.nio.file.Path;
@@ -9,13 +9,13 @@ import java.nio.file.Paths;
 import java.util.Iterator;
 import java.util.List;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class HeritablePropertiesConfigurationTest extends AbstractFileConfigurationTest {
 
     private HeritablePropertiesConfiguration instance;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         super.setUp();
 
@@ -39,14 +39,14 @@ public class HeritablePropertiesConfigurationTest extends AbstractFileConfigurat
     /* getFiles() */
 
     @Test
-    public void testGetFilesReturnsAllFiles() {
+    void testGetFilesReturnsAllFiles() {
         assertEquals(3, instance.getFiles().size());
     }
 
     /* getKeys() */
 
     @Test
-    public void testGetKeysReturnsKeysFromAllAllFiles() throws Exception {
+    void testGetKeysReturnsKeysFromAllAllFiles() {
         instance.reload();
 
         Iterator<String> it = instance.getKeys();
@@ -65,7 +65,7 @@ public class HeritablePropertiesConfigurationTest extends AbstractFileConfigurat
      */
     @Override
     @Test
-    public void testGetPropertyWithKeyWithPresentProperty() {
+    void testGetPropertyWithKeyWithPresentProperty() {
         final Configuration instance = getInstance();
         instance.setProperty(Key.IIIF_1_ENDPOINT_ENABLED, "1");
         instance.setProperty(Key.IIIF_2_ENDPOINT_ENABLED, 2);
@@ -81,7 +81,7 @@ public class HeritablePropertiesConfigurationTest extends AbstractFileConfigurat
      */
     @Override
     @Test
-    public void testGetPropertyWithStringWithPresentProperty() {
+    void testGetPropertyWithStringWithPresentProperty() {
         final Configuration instance = getInstance();
         instance.setProperty("cats", "1");
         instance.setProperty("dogs", 2);
@@ -91,14 +91,13 @@ public class HeritablePropertiesConfigurationTest extends AbstractFileConfigurat
     }
 
     @Test
-    public void testGetPropertyUsesChildmostProperty() throws Exception {
+    void testGetPropertyUsesChildmostProperty() {
         instance.reload();
         assertEquals("birds", instance.getProperty("common_key"));
     }
 
     @Test
-    public void testGetPropertyFallsBackToParentFileIfUndefinedInChildFile()
-            throws Exception {
+    void testGetPropertyFallsBackToParentFileIfUndefinedInChildFile() {
         instance.reload();
         assertEquals("dogs", instance.getProperty("level2_key"));
     }
@@ -106,8 +105,7 @@ public class HeritablePropertiesConfigurationTest extends AbstractFileConfigurat
     /* setProperty() */
 
     @Test
-    public void testSetPropertySetsExistingPropertiesInSameFile()
-            throws Exception {
+    void testSetPropertySetsExistingPropertiesInSameFile() {
         instance.reload();
         List<PropertiesDocument> docs = instance.getConfigurationTree();
         instance.setProperty("level2_key", "bears");
@@ -117,8 +115,7 @@ public class HeritablePropertiesConfigurationTest extends AbstractFileConfigurat
     }
 
     @Test
-    public void testSetPropertySetsNewPropertiesInChildmostFile()
-            throws Exception {
+    void testSetPropertySetsNewPropertiesInChildmostFile() {
         instance.reload();
         List<PropertiesDocument> docs = instance.getConfigurationTree();
         instance.setProperty("newkey", "bears");

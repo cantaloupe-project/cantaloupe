@@ -11,9 +11,9 @@ import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.processor.codec.ImageWriterFactory;
 import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
 import edu.illinois.library.cantaloupe.test.TestUtil;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -24,7 +24,7 @@ import java.util.EnumSet;
 
 import java.util.Set;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * For this to work, the ffmpeg and ffprobe binaries must be on the PATH.
@@ -33,7 +33,7 @@ public class FfmpegProcessorTest extends AbstractProcessorTest {
 
     private FfmpegProcessor instance;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         super.setUp();
 
@@ -44,7 +44,7 @@ public class FfmpegProcessorTest extends AbstractProcessorTest {
         instance = newInstance();
     }
 
-    @After
+    @AfterEach
     public void tearDown() throws Exception {
         super.tearDown();
         instance.close();
@@ -66,7 +66,7 @@ public class FfmpegProcessorTest extends AbstractProcessorTest {
     }
 
     @Test
-    public void testGetAvailableOutputFormats() {
+    void testGetAvailableOutputFormats() {
         for (Format format : Format.values()) {
             try {
                 instance = newInstance();
@@ -84,12 +84,12 @@ public class FfmpegProcessorTest extends AbstractProcessorTest {
     }
 
     @Test
-    public void testGetInitializationErrorWithNoError() {
+    void testGetInitializationErrorWithNoError() {
         assertNull(instance.getInitializationError());
     }
 
     @Test
-    public void testGetInitializationErrorWithMissingBinaries() {
+    void testGetInitializationErrorWithMissingBinaries() {
         Configuration.getInstance().setProperty(
                 Key.FFMPEGPROCESSOR_PATH_TO_BINARIES,
                 "/bogus/bogus/bogus");
@@ -98,7 +98,7 @@ public class FfmpegProcessorTest extends AbstractProcessorTest {
     }
 
     @Test
-    public void testGetSupportedFeatures() throws Exception {
+    void testGetSupportedFeatures() throws Exception {
         instance.setSourceFormat(getAnySupportedSourceFormat(instance));
         Set<ProcessorFeature> expectedFeatures = EnumSet.of(
                 ProcessorFeature.MIRRORING,
@@ -145,7 +145,7 @@ public class FfmpegProcessorTest extends AbstractProcessorTest {
     }
 
     @Test
-    public void testProcessWithTimeOption() throws Exception {
+    void testProcessWithTimeOption() throws Exception {
         final Info imageInfo = instance.readInfo();
 
         // time option missing
@@ -163,20 +163,20 @@ public class FfmpegProcessorTest extends AbstractProcessorTest {
         assertFalse(Arrays.equals(frame1, frame2));
     }
 
-    @Test(expected = ProcessorException.class)
-    public void testProcessWithInvalidFrameOptionThrowsException()
-            throws Exception {
+    @Test
+    void testProcessWithInvalidFrameOptionThrowsException() throws Exception {
         final Info imageInfo = instance.readInfo();
 
         OperationList ops = new OperationList(new Encode(Format.JPG));
         ops.getOptions().put("time", "cats");
         OutputStream outputStream = OutputStream.nullOutputStream();
 
-        instance.process(ops, imageInfo, outputStream);
+        assertThrows(ProcessorException.class, () ->
+                instance.process(ops, imageInfo, outputStream));
     }
 
     @Test
-    public void testValidateWithValidTime() throws Exception {
+    void testValidateWithValidTime() throws Exception {
         OperationList ops = new OperationList(
                 new Identifier("cats"), new Encode(Format.JPG));
         Dimension fullSize = new Dimension(1000, 1000);
@@ -185,24 +185,26 @@ public class FfmpegProcessorTest extends AbstractProcessorTest {
         instance.validate(ops, fullSize);
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void testValidateWithInvalidTimeFormat() throws Exception {
+    @Test
+    void testValidateWithInvalidTimeFormat() {
         OperationList ops = new OperationList(
                 new Identifier("cats"), new Encode(Format.JPG));
         Dimension fullSize = new Dimension(1000, 1000);
         ops.getOptions().put("time", "000012");
 
-        instance.validate(ops, fullSize);
+        assertThrows(IllegalArgumentException.class,
+                () -> instance.validate(ops, fullSize));
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void testValidateWithOutOfBoundsTime() throws Exception {
+    @Test
+    void testValidateWithOutOfBoundsTime() {
         OperationList ops = new OperationList(
                 new Identifier("cats"), new Encode(Format.JPG));
         Dimension fullSize = new Dimension(1000, 1000);
         ops.getOptions().put("time", "00:38:06");
 
-        instance.validate(ops, fullSize);
+        assertThrows(IllegalArgumentException.class,
+                () -> instance.validate(ops, fullSize));
     }
 
 }

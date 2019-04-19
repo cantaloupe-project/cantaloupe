@@ -1,19 +1,19 @@
 package edu.illinois.library.cantaloupe.async;
 
 import edu.illinois.library.cantaloupe.test.BaseTest;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.time.Instant;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class AuditableFutureTaskTest extends BaseTest {
 
     private AuditableFutureTask<?> instance;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         instance = new AuditableFutureTask<>(new MockCallable<>());
         assertNotNull(instance.getUUID());
@@ -21,7 +21,7 @@ public class AuditableFutureTaskTest extends BaseTest {
     }
 
     @Test
-    public void testGetException() {
+    void testGetException() {
         AuditableFutureTask<?> task = new AuditableFutureTask<>(() -> {
             throw new Exception("fail");
         });
@@ -30,19 +30,19 @@ public class AuditableFutureTaskTest extends BaseTest {
     }
 
     @Test
-    public void testGetInstantQueued() {
+    void testGetInstantQueued() {
         AuditableFutureTask<?> task = new AuditableFutureTask<>(() -> "");
         task.setInstantQueued(Instant.now());
         assertNotNull(task.getInstantQueued());
     }
 
     @Test
-    public void testGetStatus() {
+    void testGetStatus() {
         // This will be tested in other test methods.
     }
 
     @Test
-    public void testRun() {
+    void testRun() {
         // Assert that this gets incremented.
         final AtomicInteger integer = new AtomicInteger(0);
         AuditableFutureTask<?> task =
@@ -52,7 +52,7 @@ public class AuditableFutureTaskTest extends BaseTest {
     }
 
     @Test
-    public void testRunSetsInstantStarted() {
+    void testRunSetsInstantStarted() {
         AuditableFutureTask<?> task = new AuditableFutureTask<>(() -> "");
         task.run();
 
@@ -62,7 +62,7 @@ public class AuditableFutureTaskTest extends BaseTest {
     }
 
     @Test
-    public void testRunSetsInstantStoppedUponSuccess() {
+    void testRunSetsInstantStoppedUponSuccess() {
         AuditableFutureTask<?> task = new AuditableFutureTask<>(() -> "");
         task.run();
 
@@ -72,7 +72,7 @@ public class AuditableFutureTaskTest extends BaseTest {
     }
 
     @Test
-    public void testRunSetsInstantStoppedUponFailure() {
+    void testRunSetsInstantStoppedUponFailure() {
         AuditableFutureTask<?> task = new AuditableFutureTask<>(() -> {
             throw new Exception("fail");
         });
@@ -84,7 +84,7 @@ public class AuditableFutureTaskTest extends BaseTest {
     }
 
     @Test
-    public void testRunSetsStatusWhenStarted() throws Exception {
+    void testRunSetsStatusWhenStarted() throws Exception {
         AuditableFutureTask<?> task = new AuditableFutureTask<Void>(() -> {
             Thread.sleep(50);
             return null;
@@ -95,7 +95,7 @@ public class AuditableFutureTaskTest extends BaseTest {
     }
 
     @Test
-    public void testRunSetsStatusUponSuccess() {
+    void testRunSetsStatusUponSuccess() {
         AuditableFutureTask<?> task = new AuditableFutureTask<>(() -> "");
         task.run();
 
@@ -103,7 +103,7 @@ public class AuditableFutureTaskTest extends BaseTest {
     }
 
     @Test
-    public void testRunSetsStatusUponFailure() {
+    void testRunSetsStatusUponFailure() {
         AuditableFutureTask<?> task = new AuditableFutureTask<>(() -> {
             throw new Exception("fail");
         });
@@ -112,7 +112,7 @@ public class AuditableFutureTaskTest extends BaseTest {
     }
 
     @Test
-    public void testToString() {
+    void testToString() {
         assertEquals(instance.getUUID().toString(), instance.toString());
     }
 

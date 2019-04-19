@@ -38,7 +38,7 @@ public class TIFFImageReaderPerformance extends TIFFImageReaderTest {
 
     @TearDown
     @Override
-    public void tearDown() {
+    public void tearDown() throws Exception {
         super.tearDown();
     }
 

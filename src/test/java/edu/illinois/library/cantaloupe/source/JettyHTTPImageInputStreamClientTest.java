@@ -8,33 +8,33 @@ import edu.illinois.library.cantaloupe.test.WebServer;
 import org.eclipse.jetty.client.HttpClient;
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.handler.DefaultHandler;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class JettyHTTPImageInputStreamClientTest extends BaseTest {
 
     private WebServer server;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         super.setUp();
         server = new WebServer();
     }
 
-    @After
+    @AfterEach
     public void tearDown() throws Exception {
         super.tearDown();
         server.stop();
     }
 
     @Test
-    public void testSendHEADRequest() throws Exception {
+    void testSendHEADRequest() throws Exception {
         server.setHandler(new DefaultHandler() {
             @Override
             public void handle(String target,
@@ -59,7 +59,7 @@ public class JettyHTTPImageInputStreamClientTest extends BaseTest {
     }
 
     @Test
-    public void testSendHEADRequestSendsExtraHeaders() throws Exception {
+    void testSendHEADRequestSendsExtraHeaders() throws Exception {
         server.setHandler(new DefaultHandler() {
             @Override
             public void handle(String target,
@@ -86,7 +86,7 @@ public class JettyHTTPImageInputStreamClientTest extends BaseTest {
     }
 
     @Test
-    public void testSendGETRequest() throws Exception {
+    void testSendGETRequest() throws Exception {
         server.start();
 
         final String uri = server.getHTTPURI().toString() + "/jpg";
@@ -103,7 +103,7 @@ public class JettyHTTPImageInputStreamClientTest extends BaseTest {
     }
 
     @Test
-    public void testSendGETRequestSendsExtraHeaders() throws Exception {
+    void testSendGETRequestSendsExtraHeaders() throws Exception {
         server.setHandler(new DefaultHandler() {
             @Override
             public void handle(String target,

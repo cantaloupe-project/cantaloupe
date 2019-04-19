@@ -3,22 +3,22 @@ package edu.illinois.library.cantaloupe.http;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.WebServer;
 import edu.illinois.library.cantaloupe.util.SocketUtils;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 import java.net.ConnectException;
 import java.net.URI;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class ClientTest extends BaseTest {
 
     private Client instance;
     private WebServer webServer;
 
-    @Before
+    @BeforeEach
     @Override
     public void setUp() throws Exception {
         super.setUp();
@@ -31,7 +31,7 @@ public class ClientTest extends BaseTest {
         assertEquals(Transport.HTTP1_1, instance.getTransport());
     }
 
-    @After
+    @AfterEach
     @Override
     public void tearDown() throws Exception {
         super.tearDown();
@@ -52,7 +52,7 @@ public class ClientTest extends BaseTest {
     /* builder() */
 
     @Test
-    public void testBuilder() throws Exception {
+    void testBuilder() throws Exception {
         URI uri = new URI("http://example.org/cats");
         instance.builder().uri(uri);
         assertEquals(uri, instance.getURI());
@@ -60,22 +60,20 @@ public class ClientTest extends BaseTest {
 
     /* send() */
 
-    @Test(expected = ConnectException.class)
-    public void testSendWithConnectionFailureThrowsException()
-            throws Exception {
+    @Test
+    void testSendWithConnectionFailureThrowsException() throws Exception {
         instance.setURI(new URI("http://localhost:" + SocketUtils.getOpenPort()));
-        instance.send();
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void testSendWithInvalidPortThrowsException()
-            throws Exception {
-        instance.setURI(new URI("http://localhost:9999999"));
-        instance.send();
+        assertThrows(ConnectException.class, () -> instance.send());
     }
 
     @Test
-    public void testSendWithValidBasicAuthCredentialsAndCorrectRealm()
+    void testSendWithInvalidPortThrowsException() throws Exception {
+        instance.setURI(new URI("http://localhost:9999999"));
+        assertThrows(IllegalArgumentException.class, () -> instance.send());
+    }
+
+    @Test
+    void testSendWithValidBasicAuthCredentialsAndCorrectRealm()
             throws Exception {
         instance.setURI(getValidHTTPURI());
         instance.setRealm(WebServer.BASIC_REALM);
@@ -89,9 +87,9 @@ public class ClientTest extends BaseTest {
         assertEquals(200, response.getStatus());
     }
 
-    @Ignore // this test used to be used, but we're now sending credentials preemptively so the realm doesn't matter
+    @Disabled // this test used to be used, but we're now sending credentials preemptively so the realm doesn't matter
     @Test
-    public void testSendWithValidBasicAuthCredentialsAndIncorrectRealm()
+    void testSendWithValidBasicAuthCredentialsAndIncorrectRealm()
             throws Exception {
         instance.setURI(getValidHTTPURI());
         instance.setRealm("bogus");
@@ -110,7 +108,7 @@ public class ClientTest extends BaseTest {
     }
 
     @Test
-    public void testSendWithInvalidBasicAuthCredentialsAndCorrectRealm()
+    void testSendWithInvalidBasicAuthCredentialsAndCorrectRealm()
             throws Exception {
         instance.setURI(getValidHTTPURI());
         instance.setRealm(WebServer.BASIC_REALM);
@@ -129,7 +127,7 @@ public class ClientTest extends BaseTest {
     }
 
     @Test
-    public void testSendWithInvalidBasicAuthCredentialsAndIncorrectRealm()
+    void testSendWithInvalidBasicAuthCredentialsAndIncorrectRealm()
             throws Exception {
         instance.setURI(getValidHTTPURI());
         instance.setRealm("bogus");
@@ -148,7 +146,7 @@ public class ClientTest extends BaseTest {
     }
 
     @Test
-    public void testSendWorksWithInsecureHTTP1_1() throws Exception {
+    void testSendWorksWithInsecureHTTP1_1() throws Exception {
         webServer.start();
 
         instance.setTransport(Transport.HTTP1_1);
@@ -160,7 +158,7 @@ public class ClientTest extends BaseTest {
     }
 
     @Test
-    public void testSendWorksWithInsecureHTTP2() throws Exception {
+    void testSendWorksWithInsecureHTTP2() throws Exception {
         webServer.start();
 
         instance.setTransport(Transport.HTTP2_0);
@@ -172,7 +170,7 @@ public class ClientTest extends BaseTest {
     }
 
     @Test
-    public void testSendWorksWithSecureHTTP1_1() throws Exception {
+    void testSendWorksWithSecureHTTP1_1() throws Exception {
         webServer.start();
 
         instance.setTransport(Transport.HTTP1_1);
@@ -184,7 +182,7 @@ public class ClientTest extends BaseTest {
     }
 
     @Test
-    public void testSendWorksWithSecureHTTP2() throws Exception {
+    void testSendWorksWithSecureHTTP2() throws Exception {
         webServer.start();
 
         instance.setTransport(Transport.HTTP2_0);

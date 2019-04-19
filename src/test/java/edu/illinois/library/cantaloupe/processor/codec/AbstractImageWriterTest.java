@@ -1,26 +1,27 @@
 package edu.illinois.library.cantaloupe.processor.codec;
 
 import edu.illinois.library.cantaloupe.test.BaseTest;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public abstract class AbstractImageWriterTest extends BaseTest {
 
     protected ImageWriter instance;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         super.setUp();
         instance = newInstance();
     }
 
-    @After
+    @AfterEach
     public void tearDown() throws Exception {
+        super.tearDown();
         if (instance != null) {
             instance.dispose();
         }
@@ -29,7 +30,7 @@ public abstract class AbstractImageWriterTest extends BaseTest {
     abstract protected ImageWriter newInstance() throws IOException;
 
     @Test
-    public void testGetPreferredIIOImplementationsWithNoUserPreference() {
+    void testGetPreferredIIOImplementationsWithNoUserPreference() {
         String[] impls = ((AbstractIIOImageWriter) instance).
                 getPreferredIIOImplementations();
         assertArrayEquals(((AbstractIIOImageWriter) instance).

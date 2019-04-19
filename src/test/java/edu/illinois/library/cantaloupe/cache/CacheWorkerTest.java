@@ -6,15 +6,15 @@ import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.test.TestUtil;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class CacheWorkerTest extends BaseTest {
 
@@ -22,7 +22,7 @@ public class CacheWorkerTest extends BaseTest {
 
     private CacheWorker instance;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         super.setUp();
 
@@ -43,13 +43,13 @@ public class CacheWorkerTest extends BaseTest {
         instance = new CacheWorker(-1); // we aren't using the interval
     }
 
-    @Ignore // this is currently too hard to test
+    @Disabled // this is currently too hard to test
     @Test
-    public void testRunCleansUpContent() {
+    void testRunCleansUpContent() {
     }
 
     @Test
-    public void testRunPurgesInvalidDerivativeContent() throws Exception {
+    void testRunPurgesInvalidDerivativeContent() throws Exception {
         DerivativeCache cache = CacheFactory.getDerivativeCache();
         Identifier identifier = new Identifier("cats");
         cache.put(identifier, new Info());
@@ -64,7 +64,7 @@ public class CacheWorkerTest extends BaseTest {
     }
 
     @Test
-    public void testRunPurgesInvalidSourceContent() throws Exception {
+    void testRunPurgesInvalidSourceContent() throws Exception {
         SourceCache cache = CacheFactory.getSourceCache();
         Identifier identifier = new Identifier("cats");
 
@@ -82,7 +82,7 @@ public class CacheWorkerTest extends BaseTest {
     }
 
     @Test
-    public void testRunDumpsHeapCache() throws Exception {
+    void testRunDumpsHeapCache() throws Exception {
         Path dir = Files.createTempDirectory("test");
         Path file = dir.resolve("dump");
         Configuration config = Configuration.getInstance();

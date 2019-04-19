@@ -5,12 +5,12 @@ import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Dimension;
 import edu.illinois.library.cantaloupe.operation.Color;
 import edu.illinois.library.cantaloupe.test.BaseTest;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.awt.font.TextAttribute;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class BasicStringOverlayServiceTest extends BaseTest {
 
@@ -35,7 +35,7 @@ public class BasicStringOverlayServiceTest extends BaseTest {
         config.setProperty(Key.OVERLAY_STRING_STROKE_WIDTH, 3);
     }
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         super.setUp();
 
@@ -45,7 +45,7 @@ public class BasicStringOverlayServiceTest extends BaseTest {
     }
 
     @Test
-    public void testGetOverlay() {
+    void testGetOverlay() {
         final StringOverlay overlay = instance.getOverlay();
         assertEquals("cats", overlay.getString());
         assertEquals(new Color(12, 23, 34, 45), overlay.getBackgroundColor());
@@ -62,7 +62,7 @@ public class BasicStringOverlayServiceTest extends BaseTest {
     }
 
     @Test
-    public void testShouldApplyToImage() {
+    void testShouldApplyToImage() {
         Configuration config = Configuration.getInstance();
         config.clear();
 

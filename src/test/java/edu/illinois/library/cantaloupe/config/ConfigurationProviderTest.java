@@ -1,14 +1,14 @@
 package edu.illinois.library.cantaloupe.config;
 
 import edu.illinois.library.cantaloupe.test.BaseTest;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class ConfigurationProviderTest extends BaseTest {
 
@@ -18,13 +18,14 @@ public class ConfigurationProviderTest extends BaseTest {
     private Configuration config1 = new MapConfiguration();
     private Configuration config2 = new MapConfiguration();
 
-    @Before
-    public void setUp() {
+    @BeforeEach
+    public void setUp() throws Exception {
+        super.setUp();
         instance = new ConfigurationProvider(List.of(config1, config2));
     }
 
     @Test
-    public void testClear() {
+    void testClear() {
         config1.setProperty("key", "value");
         config2.setProperty("key", "value");
 
@@ -35,7 +36,7 @@ public class ConfigurationProviderTest extends BaseTest {
     }
 
     @Test
-    public void testClearProperty() {
+    void testClearProperty() {
         config1.setProperty("key1", "value");
         config1.setProperty("key2", "value");
         config2.setProperty("key1", "value");
@@ -50,7 +51,7 @@ public class ConfigurationProviderTest extends BaseTest {
     }
 
     @Test
-    public void testGetBoolean1() {
+    void testGetBoolean1() {
         // true in config1
         config1.setProperty("key", true);
         assertTrue(instance.getBoolean("key"));
@@ -76,7 +77,7 @@ public class ConfigurationProviderTest extends BaseTest {
     }
 
     @Test
-    public void testGetBoolean2() {
+    void testGetBoolean2() {
         // true in config1
         config1.setProperty("key", true);
         assertTrue(instance.getBoolean("key", false));
@@ -93,7 +94,7 @@ public class ConfigurationProviderTest extends BaseTest {
     }
 
     @Test
-    public void testGetDouble1() {
+    void testGetDouble1() {
         // set in config1
         config1.setProperty("key", 1.0);
         assertEquals(1.0, instance.getDouble("key"), DELTA);
@@ -115,7 +116,7 @@ public class ConfigurationProviderTest extends BaseTest {
     }
 
     @Test
-    public void testGetDouble2() {
+    void testGetDouble2() {
         // set in config1
         config1.setProperty("key", 1.0);
         assertEquals(1.0, instance.getDouble("key", 2.0), DELTA);
@@ -132,7 +133,7 @@ public class ConfigurationProviderTest extends BaseTest {
     }
 
     @Test
-    public void testGetFloat1() {
+    void testGetFloat1() {
         // set in config1
         config1.setProperty("key", 1f);
         assertEquals(1f, instance.getFloat("key"), DELTA);
@@ -154,7 +155,7 @@ public class ConfigurationProviderTest extends BaseTest {
     }
 
     @Test
-    public void testGetFloat2() {
+    void testGetFloat2() {
         // set in config1
         config1.setProperty("key", 1f);
         assertEquals(1f, instance.getFloat("key", 2f), DELTA);
@@ -171,7 +172,7 @@ public class ConfigurationProviderTest extends BaseTest {
     }
 
     @Test
-    public void testGetInt1() {
+    void testGetInt1() {
         // set in config1
         config1.setProperty("key", 1);
         assertEquals(1, instance.getInt("key"));
@@ -193,7 +194,7 @@ public class ConfigurationProviderTest extends BaseTest {
     }
 
     @Test
-    public void testGetInt2() {
+    void testGetInt2() {
         // set in config1
         config1.setProperty("key", 1);
         assertEquals(1, instance.getInt("key", 2), DELTA);
@@ -210,7 +211,7 @@ public class ConfigurationProviderTest extends BaseTest {
     }
 
     @Test
-    public void testGetKeys() {
+    void testGetKeys() {
         Iterator<String> it = instance.getKeys();
         int count = 0;
         while (it.hasNext()) {
@@ -231,7 +232,7 @@ public class ConfigurationProviderTest extends BaseTest {
     }
 
     @Test
-    public void testGetLong1() {
+    void testGetLong1() {
         // set in config1
         config1.setProperty("key", 1);
         assertEquals(1, instance.getLong("key"));
@@ -253,7 +254,7 @@ public class ConfigurationProviderTest extends BaseTest {
     }
 
     @Test
-    public void testGetLong2() {
+    void testGetLong2() {
         // set in config1
         config1.setProperty("key", 1);
         assertEquals(1, instance.getLong("key", 2), DELTA);
@@ -270,7 +271,7 @@ public class ConfigurationProviderTest extends BaseTest {
     }
 
     @Test
-    public void testGetProperty() {
+    void testGetProperty() {
         // set in config1
         config1.setProperty("key", "value");
         assertEquals("value", instance.getProperty("key"));
@@ -287,7 +288,7 @@ public class ConfigurationProviderTest extends BaseTest {
     }
 
     @Test
-    public void testGetString1() {
+    void testGetString1() {
         // set in config1
         config1.setProperty("key", "value");
         assertEquals("value", instance.getString("key"));
@@ -304,7 +305,7 @@ public class ConfigurationProviderTest extends BaseTest {
     }
 
     @Test
-    public void testGetString2() {
+    void testGetString2() {
         // set in config1
         config1.setProperty("key", "value");
         assertEquals("value", instance.getString("key", "default"));
@@ -321,22 +322,22 @@ public class ConfigurationProviderTest extends BaseTest {
     }
 
     @Test
-    public void testGetWrappedConfigurations() {
+    void testGetWrappedConfigurations() {
         assertEquals(2, instance.getWrappedConfigurations().size());
     }
 
     @Test
-    public void testReload() {
+    void testReload() {
         // TODO: write this
     }
 
     @Test
-    public void testSave() {
+    void testSave() {
         // TODO: write this
     }
 
     @Test
-    public void testSetProperty() {
+    void testSetProperty() {
         instance.setProperty("key", "cats");
         assertEquals("cats", config1.getProperty("key"));
         assertEquals("cats", config2.getProperty("key"));

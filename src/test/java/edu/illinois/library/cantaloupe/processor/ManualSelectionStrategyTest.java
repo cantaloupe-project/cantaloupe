@@ -4,27 +4,26 @@ import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.test.BaseTest;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class ManualSelectionStrategyTest extends BaseTest {
 
     private ManualSelectionStrategy instance;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         super.setUp();
         instance = new ManualSelectionStrategy();
     }
 
     @Test
-    public void getPreferredProcessorsWhenOnlyAssignedIsSet() {
+    void getPreferredProcessorsWhenOnlyAssignedIsSet() {
         Configuration config = Configuration.getInstance();
         config.setProperty("processor.ManualSelectionStrategy.pdf",
                 PdfBoxProcessor.class.getSimpleName());
@@ -35,7 +34,7 @@ public class ManualSelectionStrategyTest extends BaseTest {
     }
 
     @Test
-    public void getPreferredProcessorsWhenOnlyFallbackIsSet() {
+    void getPreferredProcessorsWhenOnlyFallbackIsSet() {
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.PROCESSOR_FALLBACK, ImageMagickProcessor.class.getSimpleName());
 
@@ -45,7 +44,7 @@ public class ManualSelectionStrategyTest extends BaseTest {
     }
 
     @Test
-    public void getPreferredProcessorsWhenAssignedAndFallbackAreSet() {
+    void getPreferredProcessorsWhenAssignedAndFallbackAreSet() {
         Configuration config = Configuration.getInstance();
         config.setProperty("processor.ManualSelectionStrategy.jpg",
                 GraphicsMagickProcessor.class.getSimpleName());
@@ -58,22 +57,24 @@ public class ManualSelectionStrategyTest extends BaseTest {
         assertEquals(expected, instance.getPreferredProcessors(Format.JPG));
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void getPreferredProcessorsWithIllegalAssignedName() {
+    @Test
+    void getPreferredProcessorsWithIllegalAssignedName() {
         Configuration config = Configuration.getInstance();
         config.setProperty("processor.ManualSelectionStrategy.jpg", "bogus");
-        instance.getPreferredProcessors(Format.JPG);
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void getPreferredProcessorsWithIllegalFallbackName() {
-        Configuration config = Configuration.getInstance();
-        config.setProperty(Key.PROCESSOR_FALLBACK, "bogus");
-        instance.getPreferredProcessors(Format.JPG);
+        assertThrows(IllegalArgumentException.class,
+                () -> instance.getPreferredProcessors(Format.JPG));
     }
 
     @Test
-    public void getPreferredProcessorsWithFullyQualifiedNames() {
+    void getPreferredProcessorsWithIllegalFallbackName() {
+        Configuration config = Configuration.getInstance();
+        config.setProperty(Key.PROCESSOR_FALLBACK, "bogus");
+        assertThrows(IllegalArgumentException.class,
+                () -> instance.getPreferredProcessors(Format.JPG));
+    }
+
+    @Test
+    void getPreferredProcessorsWithFullyQualifiedNames() {
         Configuration config = Configuration.getInstance();
         config.setProperty("processor.ManualSelectionStrategy.jpg",
                 GraphicsMagickProcessor.class.getName());
@@ -86,7 +87,7 @@ public class ManualSelectionStrategyTest extends BaseTest {
     }
 
     @Test
-    public void testToString() {
+    void testToString() {
         assertEquals("ManualSelectionStrategy", instance.toString());
     }
 

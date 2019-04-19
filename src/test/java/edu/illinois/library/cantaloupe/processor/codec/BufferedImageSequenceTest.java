@@ -1,19 +1,21 @@
 package edu.illinois.library.cantaloupe.processor.codec;
 
-import org.junit.Before;
-import org.junit.Test;
+import edu.illinois.library.cantaloupe.test.BaseTest;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.awt.image.BufferedImage;
 import java.util.Iterator;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
-public class BufferedImageSequenceTest {
+public class BufferedImageSequenceTest extends BaseTest {
 
     private BufferedImageSequence instance;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
+        super.setUp();
         instance = new BufferedImageSequence();
     }
 
@@ -24,7 +26,7 @@ public class BufferedImageSequenceTest {
     /* add() */
 
     @Test
-    public void testAdd() {
+    void testAdd() {
         assertEquals(0, instance.length());
         instance.add(mockImage());
         assertEquals(1, instance.length());
@@ -33,21 +35,21 @@ public class BufferedImageSequenceTest {
     /* get() */
 
     @Test
-    public void testGetWithExistingIndex() {
+    void testGetWithExistingIndex() {
         BufferedImage image = mockImage();
         instance.add(image);
         assertSame(image, instance.get(0));
     }
 
-    @Test(expected = IndexOutOfBoundsException.class)
-    public void testGetWithNonexistingIndex() {
-        instance.get(0);
+    @Test
+    void testGetWithNonexistingIndex() {
+        assertThrows(IndexOutOfBoundsException.class, () -> instance.get(0));
     }
 
     /* iterator() */
 
     @Test
-    public void testIterator() {
+    void testIterator() {
         assertFalse(instance.iterator().hasNext());
 
         BufferedImage image = mockImage();
@@ -60,7 +62,7 @@ public class BufferedImageSequenceTest {
     /* length() */
 
     @Test
-    public void testLength() {
+    void testLength() {
         assertEquals(0, instance.length());
         instance.add(mockImage());
         assertEquals(1, instance.length());
@@ -69,7 +71,7 @@ public class BufferedImageSequenceTest {
     /* set() */
 
     @Test
-    public void testSet() {
+    void testSet() {
         BufferedImage image1 = mockImage();
         BufferedImage image2 = mockImage();
         instance.add(image1);

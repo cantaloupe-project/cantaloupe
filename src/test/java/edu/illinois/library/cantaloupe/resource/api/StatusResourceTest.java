@@ -7,9 +7,9 @@ import edu.illinois.library.cantaloupe.http.Headers;
 import edu.illinois.library.cantaloupe.http.ResourceException;
 import edu.illinois.library.cantaloupe.http.Response;
 import edu.illinois.library.cantaloupe.resource.Route;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class StatusResourceTest extends AbstractAPIResourceTest {
 
@@ -19,7 +19,7 @@ public class StatusResourceTest extends AbstractAPIResourceTest {
     }
 
     @Test
-    public void testGETWithEndpointEnabled() throws Exception {
+    void testGETWithEndpointEnabled() throws Exception {
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.API_ENABLED, true);
 
@@ -28,7 +28,7 @@ public class StatusResourceTest extends AbstractAPIResourceTest {
     }
 
     @Test
-    public void testGETWithEndpointDisabled() throws Exception {
+    void testGETWithEndpointDisabled() throws Exception {
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.API_ENABLED, false);
         try {
@@ -40,13 +40,13 @@ public class StatusResourceTest extends AbstractAPIResourceTest {
     }
 
     @Test
-    public void testGETResponseBody() throws Exception {
+    void testGETResponseBody() throws Exception {
         Response response = client.send();
         assertTrue(response.getBodyAsString().contains("\"infoCache\":"));
     }
 
     @Test
-    public void testGETResponseHeaders() throws Exception {
+    void testGETResponseHeaders() throws Exception {
         Response response = client.send();
         Headers headers = response.getHeaders();
         assertEquals(6, headers.size());

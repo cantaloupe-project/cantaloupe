@@ -9,9 +9,9 @@ import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.WebServer;
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.handler.DefaultHandler;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import javax.imageio.stream.ImageInputStream;
 import javax.servlet.http.HttpServletRequest;
@@ -20,7 +20,7 @@ import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class HTTPStreamFactoryTest extends BaseTest {
 
@@ -29,7 +29,7 @@ public class HTTPStreamFactoryTest extends BaseTest {
 
     private WebServer server;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         super.setUp();
 
@@ -37,7 +37,7 @@ public class HTTPStreamFactoryTest extends BaseTest {
         server.setHTTP1Enabled(true);
     }
 
-    @After
+    @AfterEach
     public void tearDown() throws Exception {
         super.tearDown();
         server.stop();
@@ -62,7 +62,7 @@ public class HTTPStreamFactoryTest extends BaseTest {
     }
 
     @Test
-    public void testIsSeekingDirect() {
+    void testIsSeekingDirect() {
         final HTTPStreamFactory instance = newInstance();
         final Configuration config = Configuration.getInstance();
         config.setProperty(Key.HTTPSOURCE_CHUNKING_ENABLED, false);
@@ -72,7 +72,7 @@ public class HTTPStreamFactoryTest extends BaseTest {
     }
 
     @Test
-    public void testNewInputStreamSendsCustomHeaders() throws Exception {
+    void testNewInputStreamSendsCustomHeaders() throws Exception {
         server.setHandler(new DefaultHandler() {
             @Override
             public void handle(String target,
@@ -89,7 +89,7 @@ public class HTTPStreamFactoryTest extends BaseTest {
     }
 
     @Test
-    public void testNewInputStreamReturnsContent() throws Exception {
+    void testNewInputStreamReturnsContent() throws Exception {
         server.start();
 
         int length = 0;
@@ -102,7 +102,7 @@ public class HTTPStreamFactoryTest extends BaseTest {
     }
 
     @Test
-    public void testNewSeekableStreamWhenChunkingIsEnabledAndServerAcceptsRanges()
+    void testNewSeekableStreamWhenChunkingIsEnabledAndServerAcceptsRanges()
             throws Exception {
         server.start();
 
@@ -117,7 +117,7 @@ public class HTTPStreamFactoryTest extends BaseTest {
     }
 
     @Test
-    public void testNewSeekableStreamWhenChunkingIsEnabledButServerDoesNotAcceptRanges()
+    void testNewSeekableStreamWhenChunkingIsEnabledButServerDoesNotAcceptRanges()
             throws Exception {
         server.setAcceptingRanges(false);
         server.start();
@@ -129,7 +129,7 @@ public class HTTPStreamFactoryTest extends BaseTest {
     }
 
     @Test
-    public void testNewSeekableStreamWhenChunkingIsDisabled() throws Exception {
+    void testNewSeekableStreamWhenChunkingIsDisabled() throws Exception {
         server.start();
 
         Configuration.getInstance().setProperty(Key.HTTPSOURCE_CHUNKING_ENABLED, false);
@@ -139,7 +139,7 @@ public class HTTPStreamFactoryTest extends BaseTest {
     }
 
     @Test
-    public void testNewSeekableStreamSendsCustomHeaders() throws Exception {
+    void testNewSeekableStreamSendsCustomHeaders() throws Exception {
         server.setHandler(new DefaultHandler() {
             @Override
             public void handle(String target,
@@ -156,7 +156,7 @@ public class HTTPStreamFactoryTest extends BaseTest {
     }
 
     @Test
-    public void testNewSeekableStreamReturnsContent() throws Exception {
+    void testNewSeekableStreamReturnsContent() throws Exception {
         server.start();
 
         int length = 0;
@@ -169,7 +169,7 @@ public class HTTPStreamFactoryTest extends BaseTest {
     }
 
     @Test
-    public void testNewSeekableStreamWithChunkCacheEnabled() throws Exception {
+    void testNewSeekableStreamWithChunkCacheEnabled() throws Exception {
         final Configuration config = Configuration.getInstance();
         config.setProperty(Key.HTTPSOURCE_CHUNKING_ENABLED, true);
         config.setProperty(Key.HTTPSOURCE_CHUNK_SIZE, "777K");

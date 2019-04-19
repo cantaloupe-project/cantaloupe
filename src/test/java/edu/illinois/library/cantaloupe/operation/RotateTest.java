@@ -3,12 +3,12 @@ package edu.illinois.library.cantaloupe.operation;
 import edu.illinois.library.cantaloupe.image.Dimension;
 import edu.illinois.library.cantaloupe.image.ScaleConstraint;
 import edu.illinois.library.cantaloupe.test.BaseTest;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.Map;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class RotateTest extends BaseTest {
 
@@ -16,7 +16,7 @@ public class RotateTest extends BaseTest {
 
     private Rotate instance;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         super.setUp();
 
@@ -25,7 +25,7 @@ public class RotateTest extends BaseTest {
     }
 
     @Test
-    public void addDegrees() {
+    void addDegrees() {
         instance.addDegrees(45);
         assertEquals(45, instance.getDegrees(), DELTA);
         instance.addDegrees(340.5);
@@ -34,21 +34,21 @@ public class RotateTest extends BaseTest {
         assertEquals(25.5, instance.getDegrees(), DELTA);
     }
 
-    @Test(expected = IllegalStateException.class)
-    public void addDegreesWhenFrozenThrowsException() {
+    @Test
+    void addDegreesWhenFrozenThrowsException() {
         instance.freeze();
-        instance.addDegrees(15);
+        assertThrows(IllegalStateException.class, () -> instance.addDegrees(15));
     }
 
     @Test
-    public void equals() {
+    void equals() {
         assertEquals(instance, new Rotate());
         assertNotEquals(instance, new Rotate(1));
         assertNotEquals(instance, new Object());
     }
 
     @Test
-    public void getResultingSizeWithNoRotation() {
+    void getResultingSizeWithNoRotation() {
         Dimension fullSize = new Dimension(300, 200);
         ScaleConstraint scaleConstraint = new ScaleConstraint(1, 1);
         assertEquals(fullSize,
@@ -56,7 +56,7 @@ public class RotateTest extends BaseTest {
     }
 
     @Test
-    public void getResultingSizeWithRotation() {
+    void getResultingSizeWithRotation() {
         Dimension fullSize = new Dimension(300, 200);
         final int degrees = 30;
         instance.setDegrees(degrees);
@@ -69,7 +69,7 @@ public class RotateTest extends BaseTest {
     }
 
     @Test
-    public void getResultingSizeWithScaleConstraint() {
+    void getResultingSizeWithScaleConstraint() {
         Dimension fullSize = new Dimension(300, 200);
         final int degrees = 30;
         instance.setDegrees(degrees);
@@ -82,7 +82,7 @@ public class RotateTest extends BaseTest {
     }
 
     @Test
-    public void hasEffect() {
+    void hasEffect() {
         assertFalse(instance.hasEffect());
         instance.setDegrees(30);
         assertTrue(instance.hasEffect());
@@ -93,7 +93,7 @@ public class RotateTest extends BaseTest {
     }
 
     @Test
-    public void hasEffectWithArguments() {
+    void hasEffectWithArguments() {
         Dimension fullSize = new Dimension(600, 400);
         OperationList opList = new OperationList();
         opList.add(new CropByPixels(0, 0, 300, 200));
@@ -108,50 +108,42 @@ public class RotateTest extends BaseTest {
     }
 
     @Test
-    public void setDegrees() {
+    void setDegrees() {
         double degrees = 50;
         instance.setDegrees(degrees);
         assertEquals(degrees, instance.getDegrees(), 0.000001);
     }
 
     @Test
-    public void setDegreesWith360Degrees() {
-        double degrees = 360;
-        try {
-            instance.setDegrees(degrees);
-        } catch (IllegalArgumentException e) {
-            assertEquals("Degrees must be between 0 and 360", e.getMessage());
-        }
+    void setDegreesWith360Degrees() {
+        assertThrows(IllegalArgumentException.class,
+                () -> instance.setDegrees(360),
+                "Degrees must be between 0 and 360");
     }
 
     @Test
-    public void setDegreesWithLargeDegrees() {
-        double degrees = 530;
-        try {
-            instance.setDegrees(degrees);
-        } catch (IllegalArgumentException e) {
-            assertEquals("Degrees must be between 0 and 360", e.getMessage());
-        }
+    void setDegreesWithLargeDegrees() {
+        assertThrows(IllegalArgumentException.class,
+                () -> instance.setDegrees(530),
+                "Degrees must be between 0 and 360");
     }
 
     @Test
-    public void setDegreesWithNegativeDegrees() {
-        double degrees = -50;
-        try {
-            instance.setDegrees(degrees);
-        } catch (IllegalArgumentException e) {
-            assertEquals("Degrees must be between 0 and 360", e.getMessage());
-        }
+    void setDegreesWithNegativeDegrees() {
+        assertThrows(IllegalArgumentException.class,
+                () -> instance.setDegrees(-50),
+                "Degrees must be between 0 and 360");
     }
 
-    @Test(expected = IllegalStateException.class)
-    public void setDegreesWhenFrozenThrowsException() {
+    @Test
+    void setDegreesWhenFrozenThrowsException() {
         instance.freeze();
-        instance.setDegrees(15);
+        assertThrows(IllegalStateException.class,
+                () -> instance.setDegrees(15));
     }
 
     @Test
-    public void toMap() {
+    void toMap() {
         instance.setDegrees(15);
         Dimension size = new Dimension(0, 0);
         ScaleConstraint scaleConstraint = new ScaleConstraint(1, 1);
@@ -160,16 +152,17 @@ public class RotateTest extends BaseTest {
         assertEquals(15.0, map.get("degrees"));
     }
 
-    @Test(expected = UnsupportedOperationException.class)
-    public void toMapReturnsUnmodifiableMap() {
+    @Test
+    void toMapReturnsUnmodifiableMap() {
         Dimension fullSize = new Dimension(100, 100);
         ScaleConstraint scaleConstraint = new ScaleConstraint(1, 1);
         Map<String,Object> map = instance.toMap(fullSize, scaleConstraint);
-        map.put("test", "test");
+        assertThrows(UnsupportedOperationException.class,
+                () -> map.put("test", "test"));
     }
 
     @Test
-    public void testToString() {
+    void testToString() {
         Rotate r = new Rotate(50);
         assertEquals("50", r.toString());
         r = new Rotate(50.5);

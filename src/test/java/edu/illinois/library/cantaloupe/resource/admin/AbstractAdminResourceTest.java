@@ -8,8 +8,8 @@ import edu.illinois.library.cantaloupe.http.ResourceException;
 import edu.illinois.library.cantaloupe.http.Response;
 import edu.illinois.library.cantaloupe.resource.ResourceTest;
 import org.apache.commons.lang3.StringUtils;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
@@ -22,7 +22,7 @@ abstract class AbstractAdminResourceTest extends ResourceTest {
     private static final String USERNAME = "admin";
     private static final String SECRET = "secret";
 
-    @Before
+    @BeforeEach
     @Override
     public void setUp() throws Exception {
         super.setUp();

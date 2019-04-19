@@ -8,18 +8,18 @@ import edu.illinois.library.cantaloupe.processor.codec.ImageWriterFactory;
 import edu.illinois.library.cantaloupe.source.PathStreamFactory;
 import edu.illinois.library.cantaloupe.source.StreamFactory;
 import edu.illinois.library.cantaloupe.test.TestUtil;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Set;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
-abstract class ImageIOProcessorTest extends AbstractProcessorTest {
+abstract class AbstractImageIOProcessorTest extends AbstractProcessorTest {
 
     @Test
-    public void testGetAvailableOutputFormats() throws Exception {
+    void testGetAvailableOutputFormats() throws Exception {
         final HashMap<Format,Set<Format>> formats = new HashMap<>();
         for (Format format : ImageReaderFactory.supportedFormats()) {
             formats.put(format, ImageWriterFactory.supportedFormats());
@@ -33,7 +33,7 @@ abstract class ImageIOProcessorTest extends AbstractProcessorTest {
     }
 
     @Test
-    public void testReadInfoEXIFAwareness() throws Exception {
+    void testReadInfoEXIFAwareness() throws Exception {
         final Path fixture = TestUtil.getImage("jpg-exif.jpg");
 
         try (FileProcessor fproc = (FileProcessor) newInstance()) {
@@ -46,7 +46,7 @@ abstract class ImageIOProcessorTest extends AbstractProcessorTest {
     }
 
     @Test
-    public void testReadInfoIPTCAwareness() throws Exception {
+    void testReadInfoIPTCAwareness() throws Exception {
         final Path fixture = TestUtil.getImage("jpg-iptc.jpg");
 
         try (FileProcessor fproc = (FileProcessor) newInstance()) {
@@ -59,7 +59,7 @@ abstract class ImageIOProcessorTest extends AbstractProcessorTest {
     }
 
     @Test
-    public void testReadInfoXMPAwareness() throws Exception {
+    void testReadInfoXMPAwareness() throws Exception {
         final Path fixture = TestUtil.getImage("jpg-xmp.jpg");
 
         try (FileProcessor fproc = (FileProcessor) newInstance()) {
@@ -72,7 +72,7 @@ abstract class ImageIOProcessorTest extends AbstractProcessorTest {
     }
 
     @Test
-    public void testReadInfoTileAwareness() throws Exception {
+    void testReadInfoTileAwareness() throws Exception {
         Info expectedInfo = Info.builder()
                 .withSize(64, 56)
                 .withTileSize(16, 16)

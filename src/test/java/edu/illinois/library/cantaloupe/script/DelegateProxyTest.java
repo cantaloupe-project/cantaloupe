@@ -4,21 +4,21 @@ import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.resource.RequestContext;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class DelegateProxyTest extends BaseTest {
 
     private DelegateProxy instance;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         super.setUp();
 
@@ -35,7 +35,7 @@ public class DelegateProxyTest extends BaseTest {
     /* authorize() */
 
     @Test
-    public void testAuthorizeReturningTrue() throws Exception {
+    void testAuthorizeReturningTrue() throws Exception {
         RequestContext context = new RequestContext();
         context.setIdentifier(new Identifier("whatever"));
         instance.setRequestContext(context);
@@ -44,7 +44,7 @@ public class DelegateProxyTest extends BaseTest {
     }
 
     @Test
-    public void testAuthorizeReturningFalse() throws Exception {
+    void testAuthorizeReturningFalse() throws Exception {
         RequestContext context = new RequestContext();
         context.setIdentifier(new Identifier("forbidden-boolean.jpg"));
         instance.setRequestContext(context);
@@ -53,7 +53,7 @@ public class DelegateProxyTest extends BaseTest {
     }
 
     @Test
-    public void testAuthorizeReturningMap() throws Exception {
+    void testAuthorizeReturningMap() throws Exception {
         RequestContext context = new RequestContext();
         context.setIdentifier(new Identifier("redirect.jpg"));
         instance.setRequestContext(context);
@@ -67,14 +67,14 @@ public class DelegateProxyTest extends BaseTest {
     /* getAzureStorageSourceBlobKey() */
 
     @Test
-    public void testGetAzureStorageSourceBlobKeyReturningString()
+    void testGetAzureStorageSourceBlobKeyReturningString()
             throws Exception {
         String result = instance.getAzureStorageSourceBlobKey();
         assertEquals("cats", result);
     }
 
     @Test
-    public void testGetAzureStorageSourceBlobKeyReturningNil()
+    void testGetAzureStorageSourceBlobKeyReturningNil()
             throws Exception {
         RequestContext context = new RequestContext();
         context.setIdentifier(new Identifier("missing"));
@@ -86,14 +86,14 @@ public class DelegateProxyTest extends BaseTest {
     /* getExtraIIIFInformationResponseKeys() */
 
     @Test
-    public void testGetExtraIIIFInformationResponseKeys() throws Exception {
+    void testGetExtraIIIFInformationResponseKeys() throws Exception {
         Map<String, Object> result =
                 instance.getExtraIIIFInformationResponseKeys();
         assertEquals(3, result.size());
     }
 
     @Test
-    public void testGetExtraIIIFInformationResponseKeysReturningEmptyHash()
+    void testGetExtraIIIFInformationResponseKeysReturningEmptyHash()
             throws Exception {
         RequestContext context = new RequestContext();
         context.setIdentifier(new Identifier("empty"));
@@ -105,7 +105,7 @@ public class DelegateProxyTest extends BaseTest {
     }
 
     @Test
-    public void testGetExtraIIIFInformationResponseKeysReturningNil()
+    void testGetExtraIIIFInformationResponseKeysReturningNil()
             throws Exception {
         RequestContext context = new RequestContext();
         context.setIdentifier(new Identifier("bogus"));
@@ -119,14 +119,14 @@ public class DelegateProxyTest extends BaseTest {
     /* getFilesystemSourcePathname() */
 
     @Test
-    public void testGetFilesystemSourcePathnameReturningString()
+    void testGetFilesystemSourcePathnameReturningString()
             throws Exception {
         String result = instance.getFilesystemSourcePathname();
         assertEquals("cats", result);
     }
 
     @Test
-    public void testGetFilesystemSourcePathnameReturningNil()
+    void testGetFilesystemSourcePathnameReturningNil()
             throws Exception {
         RequestContext context = new RequestContext();
         context.setIdentifier(new Identifier("missing"));
@@ -138,7 +138,7 @@ public class DelegateProxyTest extends BaseTest {
     /* getHttpSourceResourceInfo() */
 
     @Test
-    public void testGetHttpSourceResourceInfoReturningString()
+    void testGetHttpSourceResourceInfoReturningString()
             throws Exception {
         RequestContext context = new RequestContext();
         context.setIdentifier(new Identifier("DelegateProxyTest-String"));
@@ -150,7 +150,7 @@ public class DelegateProxyTest extends BaseTest {
     }
 
     @Test
-    public void testGetHttpSourceResourceInfoReturningHash()
+    void testGetHttpSourceResourceInfoReturningHash()
             throws Exception {
         RequestContext context = new RequestContext();
         context.setIdentifier(new Identifier("DelegateProxyTest-Hash"));
@@ -162,7 +162,7 @@ public class DelegateProxyTest extends BaseTest {
     }
 
     @Test
-    public void testGetHttpSourceResourceInfoReturningNil() throws Exception {
+    void testGetHttpSourceResourceInfoReturningNil() throws Exception {
         Map<String,?> result = instance.getHttpSourceResourceInfo();
         assertTrue(result.isEmpty());
     }
@@ -170,7 +170,7 @@ public class DelegateProxyTest extends BaseTest {
     /* getMetadata() */
 
     @Test
-    public void testGetMetadata() throws Exception {
+    void testGetMetadata() throws Exception {
         RequestContext context = new RequestContext();
         context.setIdentifier(new Identifier("metadata"));
         instance.setRequestContext(context);
@@ -182,7 +182,7 @@ public class DelegateProxyTest extends BaseTest {
     /* getJdbcSourceDatabaseIdentifier() */
 
     @Test
-    public void testGetJdbcSourceDatabaseIdentifier() throws Exception {
+    void testGetJdbcSourceDatabaseIdentifier() throws Exception {
         String result = instance.getJdbcSourceDatabaseIdentifier();
         assertEquals("cats", result);
     }
@@ -190,7 +190,7 @@ public class DelegateProxyTest extends BaseTest {
     /* getJdbcSourceMediaType() */
 
     @Test
-    public void testGetJdbcSourceMediaType() throws Exception {
+    void testGetJdbcSourceMediaType() throws Exception {
         String result = instance.getJdbcSourceMediaType();
         assertEquals("SELECT media_type FROM items WHERE filename = ?", result);
     }
@@ -198,7 +198,7 @@ public class DelegateProxyTest extends BaseTest {
     /* getJdbcSourceLookupSQL() */
 
     @Test
-    public void testGetJdbcSourceLookupSQL() throws Exception {
+    void testGetJdbcSourceLookupSQL() throws Exception {
         String result = instance.getJdbcSourceLookupSQL();
         assertEquals("SELECT image FROM items WHERE filename = ?", result);
     }
@@ -206,7 +206,7 @@ public class DelegateProxyTest extends BaseTest {
     /* getOverlayProperties() */
 
     @Test
-    public void testGetOverlayPropertiesReturningHash() throws Exception {
+    void testGetOverlayPropertiesReturningHash() throws Exception {
         RequestContext context = new RequestContext();
         context.setIdentifier(new Identifier("image"));
         instance.setRequestContext(context);
@@ -216,20 +216,20 @@ public class DelegateProxyTest extends BaseTest {
     }
 
     @Test
-    public void testGetOverlayPropertiesReturningNil() throws Exception {
+    void testGetOverlayPropertiesReturningNil() throws Exception {
         assertEquals(0, instance.getOverlayProperties().size());
     }
 
     /* getRedactions() */
 
     @Test
-    public void testGetRedactions() throws Exception {
+    void testGetRedactions() throws Exception {
         List<Map<String,Long>> result = instance.getRedactions();
         assertEquals(1, result.size());
     }
 
     @Test
-    public void testGetRedactionsReturningEmptyArray() throws Exception {
+    void testGetRedactionsReturningEmptyArray() throws Exception {
         RequestContext context = new RequestContext();
         context.setIdentifier(new Identifier("empty"));
         instance.setRequestContext(context);
@@ -239,7 +239,7 @@ public class DelegateProxyTest extends BaseTest {
     }
 
     @Test
-    public void testGetRedactionsReturningNil() throws Exception {
+    void testGetRedactionsReturningNil() throws Exception {
         RequestContext context = new RequestContext();
         context.setIdentifier(new Identifier("bogus"));
         instance.setRequestContext(context);
@@ -251,12 +251,12 @@ public class DelegateProxyTest extends BaseTest {
     /* getSource() */
 
     @Test
-    public void testGetSource() throws Exception {
+    void testGetSource() throws Exception {
         assertEquals("FilesystemSource", instance.getSource());
     }
 
     @Test
-    public void testGetSourceReturningNil() throws Exception {
+    void testGetSourceReturningNil() throws Exception {
         RequestContext context = new RequestContext();
         context.setIdentifier(new Identifier("bogus"));
         instance.setRequestContext(context);
@@ -267,7 +267,7 @@ public class DelegateProxyTest extends BaseTest {
     /* getS3SourceObjectInfo() */
 
     @Test
-    public void testGetS3SourceObjectInfo() throws Exception {
+    void testGetS3SourceObjectInfo() throws Exception {
         Map<String,String> result = instance.getS3SourceObjectInfo();
         assertEquals("cats", result.get("key"));
         assertEquals("test.cantaloupe.library.illinois.edu",
@@ -275,7 +275,7 @@ public class DelegateProxyTest extends BaseTest {
     }
 
     @Test
-    public void testGetS3SourceObjectInfoReturningNil() throws Exception {
+    void testGetS3SourceObjectInfoReturningNil() throws Exception {
         RequestContext context = new RequestContext();
         context.setIdentifier(new Identifier("bogus"));
         instance.setRequestContext(context);

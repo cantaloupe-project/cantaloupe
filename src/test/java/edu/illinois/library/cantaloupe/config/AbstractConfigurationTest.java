@@ -2,13 +2,13 @@ package edu.illinois.library.cantaloupe.config;
 
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.ConcurrentReaderWriter;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public abstract class AbstractConfigurationTest extends BaseTest {
 
@@ -19,7 +19,7 @@ public abstract class AbstractConfigurationTest extends BaseTest {
     /* clear() */
 
     @Test
-    public void testClear() {
+    void testClear() {
         final Configuration instance = getInstance();
         instance.setProperty("cats", "yes");
         instance.clear();
@@ -27,7 +27,7 @@ public abstract class AbstractConfigurationTest extends BaseTest {
     }
 
     @Test
-    public void testClearConcurrently() throws Exception {
+    void testClearConcurrently() throws Exception {
         final Configuration instance = getInstance();
         final String key = "cats";
 
@@ -43,7 +43,7 @@ public abstract class AbstractConfigurationTest extends BaseTest {
     /* clearProperty(Key) */
 
     @Test
-    public void testClearPropertyWithKey() {
+    void testClearPropertyWithKey() {
         final Configuration instance = getInstance();
         instance.setProperty(Key.MAX_PIXELS, 123);
         instance.setProperty(Key.SLASH_SUBSTITUTE, "cats");
@@ -55,7 +55,7 @@ public abstract class AbstractConfigurationTest extends BaseTest {
     /* clearProperty(String) */
 
     @Test
-    public void testClearPropertyWithString() {
+    void testClearPropertyWithString() {
         final Configuration instance = getInstance();
         instance.setProperty("cats", "yes");
         instance.setProperty("dogs", "yes");
@@ -65,7 +65,7 @@ public abstract class AbstractConfigurationTest extends BaseTest {
     }
 
     @Test
-    public void testClearPropertyWithStringConcurrently() throws Exception {
+    void testClearPropertyWithStringConcurrently() throws Exception {
         final Configuration instance = getInstance();
         final String key = "cats";
 
@@ -81,7 +81,7 @@ public abstract class AbstractConfigurationTest extends BaseTest {
     /* getBoolean(Key) */
 
     @Test
-    public void testGetBooleanWithKeyWithValidProperty() {
+    void testGetBooleanWithKeyWithValidProperty() {
         final Configuration instance = getInstance();
         instance.setProperty(Key.IIIF_1_ENDPOINT_ENABLED, true);
         instance.setProperty(Key.IIIF_2_ENDPOINT_ENABLED, false);
@@ -89,23 +89,25 @@ public abstract class AbstractConfigurationTest extends BaseTest {
         assertFalse(instance.getBoolean(Key.IIIF_2_ENDPOINT_ENABLED));
     }
 
-    @Test(expected = NumberFormatException.class)
-    public void testGetBooleanWithKeyWithInvalidProperty() {
+    @Test
+    void testGetBooleanWithKeyWithInvalidProperty() {
         final Configuration instance = getInstance();
         instance.setProperty(Key.SLASH_SUBSTITUTE, "cats");
-        instance.getBoolean(Key.SLASH_SUBSTITUTE);
+        assertThrows(NumberFormatException.class,
+                () -> instance.getBoolean(Key.SLASH_SUBSTITUTE));
     }
 
-    @Test(expected = NoSuchElementException.class)
-    public void testGetBooleanWithKeyWithMissingProperty() {
+    @Test
+    void testGetBooleanWithKeyWithMissingProperty() {
         final Configuration instance = getInstance();
-        instance.getBoolean(Key.SLASH_SUBSTITUTE);
+        assertThrows(NoSuchElementException.class,
+                () -> instance.getBoolean(Key.SLASH_SUBSTITUTE));
     }
 
     /* getBoolean(String) */
 
     @Test
-    public void testGetBooleanWithStringWithValidProperty() {
+    void testGetBooleanWithStringWithValidProperty() {
         final Configuration instance = getInstance();
         instance.setProperty("test1", true);
         instance.setProperty("test2", false);
@@ -113,21 +115,23 @@ public abstract class AbstractConfigurationTest extends BaseTest {
         assertFalse(instance.getBoolean("test2"));
     }
 
-    @Test(expected = NumberFormatException.class)
-    public void testGetBooleanWithStringWithInvalidProperty() {
+    @Test
+    void testGetBooleanWithStringWithInvalidProperty() {
         final Configuration instance = getInstance();
         instance.setProperty("test1", "cats");
-        instance.getBoolean("test1");
-    }
-
-    @Test(expected = NoSuchElementException.class)
-    public void testGetBooleanWithStringWithMissingProperty() {
-        final Configuration instance = getInstance();
-        instance.getBoolean("test3");
+        assertThrows(NumberFormatException.class,
+                () -> instance.getBoolean("test1"));
     }
 
     @Test
-    public void testGetBooleanWithStringConcurrently() throws Exception {
+    void testGetBooleanWithStringWithMissingProperty() {
+        final Configuration instance = getInstance();
+        assertThrows(NoSuchElementException.class,
+                () -> instance.getBoolean("test3"));
+    }
+
+    @Test
+    void testGetBooleanWithStringConcurrently() throws Exception {
         final Configuration instance = getInstance();
         final String key = "cats";
 
@@ -143,7 +147,7 @@ public abstract class AbstractConfigurationTest extends BaseTest {
     /* getBoolean(Key, boolean) */
 
     @Test
-    public void testGetBooleanWithKeyWithDefaultWithValidProperty() {
+    void testGetBooleanWithKeyWithDefaultWithValidProperty() {
         final Configuration instance = getInstance();
         instance.setProperty(Key.IIIF_1_ENDPOINT_ENABLED, true);
         assertTrue(instance.getBoolean(Key.IIIF_1_ENDPOINT_ENABLED, true));
@@ -155,7 +159,7 @@ public abstract class AbstractConfigurationTest extends BaseTest {
     }
 
     @Test
-    public void testGetBooleanWithKeyWithDefaultWithInvalidProperty() {
+    void testGetBooleanWithKeyWithDefaultWithInvalidProperty() {
         final Key key = Key.IIIF_1_ENDPOINT_ENABLED;
         final Configuration instance = getInstance();
         instance.setProperty(key, "");
@@ -168,7 +172,7 @@ public abstract class AbstractConfigurationTest extends BaseTest {
     }
 
     @Test
-    public void testGetBooleanWithKeyWithDefaultWithMissingProperty() {
+    void testGetBooleanWithKeyWithDefaultWithMissingProperty() {
         final Configuration instance = getInstance();
         assertTrue(instance.getBoolean(Key.IIIF_1_ENDPOINT_ENABLED, true));
         assertFalse(instance.getBoolean(Key.IIIF_1_ENDPOINT_ENABLED, false));
@@ -177,7 +181,7 @@ public abstract class AbstractConfigurationTest extends BaseTest {
     /* getBoolean(String, boolean) */
 
     @Test
-    public void testGetBooleanWithStringWithDefaultWithValidProperty() {
+    void testGetBooleanWithStringWithDefaultWithValidProperty() {
         final Configuration instance = getInstance();
         instance.setProperty("test1", true);
         assertTrue(instance.getBoolean("test1", true));
@@ -189,7 +193,7 @@ public abstract class AbstractConfigurationTest extends BaseTest {
     }
 
     @Test
-    public void testGetBooleanWithStringWithDefaultWithInvalidProperty() {
+    void testGetBooleanWithStringWithDefaultWithInvalidProperty() {
         final Configuration instance = getInstance();
         instance.setProperty("test3", "");
         assertFalse(instance.getBoolean("test3", false));
@@ -201,7 +205,7 @@ public abstract class AbstractConfigurationTest extends BaseTest {
     }
 
     @Test
-    public void testGetBooleanWithStringWithDefaultWithMissingProperty() {
+    void testGetBooleanWithStringWithDefaultWithMissingProperty() {
         final Configuration instance = getInstance();
         assertTrue(instance.getBoolean("test3", true));
         assertFalse(instance.getBoolean("test3", false));
@@ -210,7 +214,7 @@ public abstract class AbstractConfigurationTest extends BaseTest {
     /* getDouble(Key) */
 
     @Test
-    public void testGetDoubleWithKeyWithValidProperty() {
+    void testGetDoubleWithKeyWithValidProperty() {
         final Configuration instance = getInstance();
         final double delta = 0.0000001f;
         instance.setProperty(Key.IIIF_1_ENDPOINT_ENABLED, 0.25f);
@@ -219,23 +223,25 @@ public abstract class AbstractConfigurationTest extends BaseTest {
         assertEquals(0.55f, instance.getDouble(Key.IIIF_2_ENDPOINT_ENABLED), delta);
     }
 
-    @Test(expected = NumberFormatException.class)
-    public void testGetDoubleWithKeyWithInvalidProperty() {
+    @Test
+    void testGetDoubleWithKeyWithInvalidProperty() {
         final Configuration instance = getInstance();
         instance.setProperty(Key.IIIF_1_ENDPOINT_ENABLED, "cats");
-        instance.getDouble(Key.IIIF_1_ENDPOINT_ENABLED);
+        assertThrows(NumberFormatException.class,
+                () -> instance.getDouble(Key.IIIF_1_ENDPOINT_ENABLED));
     }
 
-    @Test(expected = NoSuchElementException.class)
-    public void testGetDoubleWithKeyWithMissingProperty() {
+    @Test
+    void testGetDoubleWithKeyWithMissingProperty() {
         final Configuration instance = getInstance();
-        instance.getDouble(Key.IIIF_1_ENDPOINT_ENABLED);
+        assertThrows(NoSuchElementException.class,
+                () -> instance.getDouble(Key.IIIF_1_ENDPOINT_ENABLED));
     }
 
     /* getDouble(String) */
 
     @Test
-    public void testGetDoubleWithStringWithValidProperty() {
+    void testGetDoubleWithStringWithValidProperty() {
         final Configuration instance = getInstance();
         final double delta = 0.0000001;
         instance.setProperty("test1", 0.25);
@@ -244,21 +250,23 @@ public abstract class AbstractConfigurationTest extends BaseTest {
         assertEquals(0.55, instance.getDouble("test2"), delta);
     }
 
-    @Test(expected = NumberFormatException.class)
-    public void testGetDoubleWithStringWithInvalidProperty() {
+    @Test
+    void testGetDoubleWithStringWithInvalidProperty() {
         final Configuration instance = getInstance();
         instance.setProperty("test1", "cats");
-        instance.getDouble("test1");
-    }
-
-    @Test(expected = NoSuchElementException.class)
-    public void testGetDoubleWithStringWithMissingProperty() {
-        final Configuration instance = getInstance();
-        instance.getDouble("test3");
+        assertThrows(NumberFormatException.class,
+                () -> instance.getDouble("test1"));
     }
 
     @Test
-    public void testGetDoubleWithStringConcurrently() throws Exception {
+    void testGetDoubleWithStringWithMissingProperty() {
+        final Configuration instance = getInstance();
+        assertThrows(NoSuchElementException.class,
+                () -> instance.getDouble("test3"));
+    }
+
+    @Test
+    void testGetDoubleWithStringConcurrently() throws Exception {
         final Configuration instance = getInstance();
         final String key = "cats";
 
@@ -274,7 +282,7 @@ public abstract class AbstractConfigurationTest extends BaseTest {
     /* getDouble(Key, double) */
 
     @Test
-    public void testGetDoubleWithKeyWithDefaultWithValidProperty() {
+    void testGetDoubleWithKeyWithDefaultWithValidProperty() {
         final Configuration instance = getInstance();
         final float delta = 0.0000001f;
         instance.setProperty(Key.IIIF_1_ENDPOINT_ENABLED, 0.5f);
@@ -282,7 +290,7 @@ public abstract class AbstractConfigurationTest extends BaseTest {
     }
 
     @Test
-    public void testGetDoubleWithKeyWithDefaultWithInvalidProperty() {
+    void testGetDoubleWithKeyWithDefaultWithInvalidProperty() {
         final Configuration instance = getInstance();
         final float delta = 0.0000001f;
         instance.setProperty(Key.IIIF_1_ENDPOINT_ENABLED, "cats");
@@ -290,7 +298,7 @@ public abstract class AbstractConfigurationTest extends BaseTest {
     }
 
     @Test
-    public void testGetDoubleWithKeyWithDefaultWithMissingProperty() {
+    void testGetDoubleWithKeyWithDefaultWithMissingProperty() {
         final Configuration instance = getInstance();
         final float delta = 0.0000001f;
         assertEquals(0.65f, instance.getDouble(Key.IIIF_1_ENDPOINT_ENABLED, 0.65f), delta);
@@ -299,7 +307,7 @@ public abstract class AbstractConfigurationTest extends BaseTest {
     /* getDouble(String, double) */
 
     @Test
-    public void testGetDoubleWithStringWithDefaultWithValidProperty() {
+    void testGetDoubleWithStringWithDefaultWithValidProperty() {
         final Configuration instance = getInstance();
         final float delta = 0.0000001f;
         instance.setProperty("test1", 0.5f);
@@ -307,7 +315,7 @@ public abstract class AbstractConfigurationTest extends BaseTest {
     }
 
     @Test
-    public void testGetDoubleWithStringWithDefaultWithInvalidProperty() {
+    void testGetDoubleWithStringWithDefaultWithInvalidProperty() {
         final Configuration instance = getInstance();
         final float delta = 0.0000001f;
         instance.setProperty("test1", "cats");
@@ -315,7 +323,7 @@ public abstract class AbstractConfigurationTest extends BaseTest {
     }
 
     @Test
-    public void testGetDoubleWithStringWithDefaultWithMissingProperty() {
+    void testGetDoubleWithStringWithDefaultWithMissingProperty() {
         final Configuration instance = getInstance();
         final float delta = 0.0000001f;
         assertEquals(0.65f, instance.getDouble("test1", 0.65f), delta);
@@ -324,7 +332,7 @@ public abstract class AbstractConfigurationTest extends BaseTest {
     /* getFloat(Key) */
 
     @Test
-    public void testGetFloatWithKeyWithValidProperty() {
+    void testGetFloatWithKeyWithValidProperty() {
         final Configuration instance = getInstance();
         final float delta = 0.0000001f;
         instance.setProperty(Key.IIIF_1_ENDPOINT_ENABLED, 0.25f);
@@ -333,23 +341,25 @@ public abstract class AbstractConfigurationTest extends BaseTest {
         assertEquals(0.55f, instance.getFloat(Key.IIIF_2_ENDPOINT_ENABLED), delta);
     }
 
-    @Test(expected = NumberFormatException.class)
-    public void testGetFloatWithKeyWithInvalidProperty() {
+    @Test
+    void testGetFloatWithKeyWithInvalidProperty() {
         final Configuration instance = getInstance();
         instance.setProperty(Key.MAX_PIXELS, "cats");
-        instance.getFloat(Key.MAX_PIXELS);
+        assertThrows(NumberFormatException.class,
+                () -> instance.getFloat(Key.MAX_PIXELS));
     }
 
-    @Test(expected = NoSuchElementException.class)
-    public void testGetFloatWithKeyWithMissingProperty() {
+    @Test
+    void testGetFloatWithKeyWithMissingProperty() {
         final Configuration instance = getInstance();
-        instance.getFloat(Key.MAX_PIXELS);
+        assertThrows(NoSuchElementException.class,
+                () -> instance.getFloat(Key.MAX_PIXELS));
     }
 
     /* getFloat(String) */
 
     @Test
-    public void testGetFloatWithValidProperty() {
+    void testGetFloatWithValidProperty() {
         final Configuration instance = getInstance();
         final float delta = 0.0000001f;
         instance.setProperty("test1", 0.25f);
@@ -358,21 +368,23 @@ public abstract class AbstractConfigurationTest extends BaseTest {
         assertEquals(0.55f, instance.getFloat("test2"), delta);
     }
 
-    @Test(expected = NumberFormatException.class)
-    public void testGetFloatWithInvalidProperty() {
+    @Test
+    void testGetFloatWithInvalidProperty() {
         final Configuration instance = getInstance();
         instance.setProperty("test1", "cats");
-        instance.getFloat("test1");
-    }
-
-    @Test(expected = NoSuchElementException.class)
-    public void testGetFloatWithMissingProperty() {
-        final Configuration instance = getInstance();
-        instance.getFloat("test3");
+        assertThrows(NumberFormatException.class,
+                () -> instance.getFloat("test1"));
     }
 
     @Test
-    public void testGetFloatWithStringConcurrently() throws Exception {
+    void testGetFloatWithMissingProperty() {
+        final Configuration instance = getInstance();
+        assertThrows(NoSuchElementException.class,
+                () -> instance.getFloat("test3"));
+    }
+
+    @Test
+    void testGetFloatWithStringConcurrently() throws Exception {
         final Configuration instance = getInstance();
         final String key = "cats";
 
@@ -388,7 +400,7 @@ public abstract class AbstractConfigurationTest extends BaseTest {
     /* getFloat(Key, float) */
 
     @Test
-    public void testGetFloatWithKeyWithDefaultWithValidProperty() {
+    void testGetFloatWithKeyWithDefaultWithValidProperty() {
         final Configuration instance = getInstance();
         final float delta = 0.0000001f;
         instance.setProperty(Key.MAX_PIXELS, 0.5f);
@@ -396,7 +408,7 @@ public abstract class AbstractConfigurationTest extends BaseTest {
     }
 
     @Test
-    public void testGetFloatWithKeyWithDefaultWithInvalidProperty() {
+    void testGetFloatWithKeyWithDefaultWithInvalidProperty() {
         final Configuration instance = getInstance();
         final float delta = 0.0000001f;
         instance.setProperty(Key.MAX_PIXELS, "cats");
@@ -404,7 +416,7 @@ public abstract class AbstractConfigurationTest extends BaseTest {
     }
 
     @Test
-    public void testGetFloatWithKeyWithDefaultWithMissingProperty() {
+    void testGetFloatWithKeyWithDefaultWithMissingProperty() {
         final Configuration instance = getInstance();
         final float delta = 0.0000001f;
         assertEquals(0.65f, instance.getFloat(Key.MAX_PIXELS, 0.65f), delta);
@@ -413,7 +425,7 @@ public abstract class AbstractConfigurationTest extends BaseTest {
     /* getFloat(String, float) */
 
     @Test
-    public void testGetFloatWithStringWithDefaultWithValidProperty() {
+    void testGetFloatWithStringWithDefaultWithValidProperty() {
         final Configuration instance = getInstance();
         final float delta = 0.0000001f;
         instance.setProperty("test1", 0.5f);
@@ -421,7 +433,7 @@ public abstract class AbstractConfigurationTest extends BaseTest {
     }
 
     @Test
-    public void testGetFloatWithStringWithDefaultWithInvalidProperty() {
+    void testGetFloatWithStringWithDefaultWithInvalidProperty() {
         final Configuration instance = getInstance();
         final float delta = 0.0000001f;
         instance.setProperty("test1", "cats");
@@ -429,7 +441,7 @@ public abstract class AbstractConfigurationTest extends BaseTest {
     }
 
     @Test
-    public void testGetFloatWithStringWithDefaultWithMissingProperty() {
+    void testGetFloatWithStringWithDefaultWithMissingProperty() {
         final Configuration instance = getInstance();
         final float delta = 0.0000001f;
         assertEquals(0.65f, instance.getFloat("test1", 0.65f), delta);
@@ -438,7 +450,7 @@ public abstract class AbstractConfigurationTest extends BaseTest {
     /* getInt(Key) */
 
     @Test
-    public void testGetIntWithKeyWithValidProperty() {
+    void testGetIntWithKeyWithValidProperty() {
         final Configuration instance = getInstance();
         instance.setProperty(Key.IIIF_1_ENDPOINT_ENABLED, 25);
         instance.setProperty(Key.IIIF_2_ENDPOINT_ENABLED, "55");
@@ -446,23 +458,25 @@ public abstract class AbstractConfigurationTest extends BaseTest {
         assertEquals(55, instance.getInt(Key.IIIF_2_ENDPOINT_ENABLED));
     }
 
-    @Test(expected = NumberFormatException.class)
-    public void testGetIntWithKeyWithInvalidProperty() {
+    @Test
+    void testGetIntWithKeyWithInvalidProperty() {
         final Configuration instance = getInstance();
         instance.setProperty(Key.MAX_PIXELS, "cats");
-        instance.getInt(Key.MAX_PIXELS);
+        assertThrows(NumberFormatException.class,
+                () -> instance.getInt(Key.MAX_PIXELS));
     }
 
-    @Test(expected = NoSuchElementException.class)
-    public void testGetIntWithKeyWithMissingProperty() {
+    @Test
+    void testGetIntWithKeyWithMissingProperty() {
         final Configuration instance = getInstance();
-        instance.getInt(Key.MAX_PIXELS);
+        assertThrows(NoSuchElementException.class,
+                () -> instance.getInt(Key.MAX_PIXELS));
     }
 
     /* getInt(String) */
 
     @Test
-    public void testGetIntWithStringWithValidProperty() {
+    void testGetIntWithStringWithValidProperty() {
         final Configuration instance = getInstance();
         instance.setProperty("test1", 25);
         instance.setProperty("test2", "55");
@@ -470,21 +484,23 @@ public abstract class AbstractConfigurationTest extends BaseTest {
         assertEquals(55, instance.getInt("test2"));
     }
 
-    @Test(expected = NumberFormatException.class)
-    public void testGetIntWithStringWithInvalidProperty() {
+    @Test
+    void testGetIntWithStringWithInvalidProperty() {
         final Configuration instance = getInstance();
         instance.setProperty("test1", "cats");
-        instance.getInt("test1");
-    }
-
-    @Test(expected = NoSuchElementException.class)
-    public void testGetIntWithStringWithMissingProperty() {
-        final Configuration instance = getInstance();
-        instance.getInt("test3");
+        assertThrows(NumberFormatException.class,
+                () -> instance.getInt("test1"));
     }
 
     @Test
-    public void testGetIntWithStringConcurrently() throws Exception {
+    void testGetIntWithStringWithMissingProperty() {
+        final Configuration instance = getInstance();
+        assertThrows(NoSuchElementException.class,
+                () -> instance.getInt("test3"));
+    }
+
+    @Test
+    void testGetIntWithStringConcurrently() throws Exception {
         final Configuration instance = getInstance();
         final String key = "cats";
 
@@ -500,21 +516,21 @@ public abstract class AbstractConfigurationTest extends BaseTest {
     /* getInt(Key, int) */
 
     @Test
-    public void testGetIntWithKeyWithDefaultWithValidProperty() {
+    void testGetIntWithKeyWithDefaultWithValidProperty() {
         final Configuration instance = getInstance();
         instance.setProperty(Key.MAX_PIXELS, 5);
         assertEquals(5, instance.getInt(Key.MAX_PIXELS, 6));
     }
 
     @Test
-    public void testGetIntWithKeyWithDefaultWithInvalidProperty() {
+    void testGetIntWithKeyWithDefaultWithInvalidProperty() {
         final Configuration instance = getInstance();
         instance.setProperty(Key.MAX_PIXELS, "cats");
         assertEquals(5, instance.getInt(Key.MAX_PIXELS, 5));
     }
 
     @Test
-    public void testGetIntWithKeyWithDefaultWithMissingProperty() {
+    void testGetIntWithKeyWithDefaultWithMissingProperty() {
         final Configuration instance = getInstance();
         assertEquals(6, instance.getInt(Key.MAX_PIXELS, 6));
     }
@@ -522,21 +538,21 @@ public abstract class AbstractConfigurationTest extends BaseTest {
     /* getInt(String, int) */
 
     @Test
-    public void testGetIntWithStringWithDefaultWithValidProperty() {
+    void testGetIntWithStringWithDefaultWithValidProperty() {
         final Configuration instance = getInstance();
         instance.setProperty("test1", 5);
         assertEquals(5, instance.getInt("test1", 6));
     }
 
     @Test
-    public void testGetIntWithStringWithDefaultWithInvalidProperty() {
+    void testGetIntWithStringWithDefaultWithInvalidProperty() {
         final Configuration instance = getInstance();
         instance.setProperty("test1", "cats");
         assertEquals(5, instance.getInt("test1", 5));
     }
 
     @Test
-    public void testGetIntWithStringWithDefaultWithMissingProperty() {
+    void testGetIntWithStringWithDefaultWithMissingProperty() {
         final Configuration instance = getInstance();
         assertEquals(6, instance.getInt("test1", 6));
     }
@@ -544,7 +560,7 @@ public abstract class AbstractConfigurationTest extends BaseTest {
     /* getKeys() */
 
     @Test
-    public void testGetKeys() {
+    void testGetKeys() {
         final Configuration instance = getInstance();
         instance.setProperty("test1", "cats");
         instance.setProperty("test2", "cats");
@@ -560,7 +576,7 @@ public abstract class AbstractConfigurationTest extends BaseTest {
     }
 
     @Test
-    public void testGetKeysConcurrently() throws Exception {
+    void testGetKeysConcurrently() throws Exception {
         final Configuration instance = getInstance();
         final AtomicInteger id = new AtomicInteger();
 
@@ -576,7 +592,7 @@ public abstract class AbstractConfigurationTest extends BaseTest {
     /* getLong(Key) */
 
     @Test
-    public void testGetLongWithKeyWithValidProperty() {
+    void testGetLongWithKeyWithValidProperty() {
         final Configuration instance = getInstance();
         instance.setProperty(Key.IIIF_1_ENDPOINT_ENABLED, 25);
         instance.setProperty(Key.IIIF_2_ENDPOINT_ENABLED, "55");
@@ -584,23 +600,25 @@ public abstract class AbstractConfigurationTest extends BaseTest {
         assertEquals(55, instance.getLong(Key.IIIF_2_ENDPOINT_ENABLED));
     }
 
-    @Test(expected = NumberFormatException.class)
-    public void testGetLongWithKeyWithInvalidProperty() {
+    @Test
+    void testGetLongWithKeyWithInvalidProperty() {
         final Configuration instance = getInstance();
         instance.setProperty(Key.MAX_PIXELS, "cats");
-        instance.getLong(Key.MAX_PIXELS);
+        assertThrows(NumberFormatException.class,
+                () -> instance.getLong(Key.MAX_PIXELS));
     }
 
-    @Test(expected = NoSuchElementException.class)
-    public void testGetLongWithKeyWithMissingProperty() {
+    @Test
+    void testGetLongWithKeyWithMissingProperty() {
         final Configuration instance = getInstance();
-        instance.getLong(Key.MAX_PIXELS);
+        assertThrows(NoSuchElementException.class,
+                () -> instance.getLong(Key.MAX_PIXELS));
     }
 
     /* getLong(String) */
 
     @Test
-    public void testGetLongWithStringWithValidProperty() {
+    void testGetLongWithStringWithValidProperty() {
         final Configuration instance = getInstance();
         instance.setProperty("test1", 25);
         instance.setProperty("test2", "55");
@@ -608,21 +626,23 @@ public abstract class AbstractConfigurationTest extends BaseTest {
         assertEquals(55, instance.getLong("test2"));
     }
 
-    @Test(expected = NumberFormatException.class)
-    public void testGetLongWithStringWithInvalidProperty() {
+    @Test
+    void testGetLongWithStringWithInvalidProperty() {
         final Configuration instance = getInstance();
         instance.setProperty("test1", "cats");
-        instance.getLong("test1");
-    }
-
-    @Test(expected = NoSuchElementException.class)
-    public void testGetLongWithStringWithMissingProperty() {
-        final Configuration instance = getInstance();
-        instance.getLong("test3");
+        assertThrows(NumberFormatException.class,
+                () -> instance.getLong("test1"));
     }
 
     @Test
-    public void testGetLongWithStringConcurrently() throws Exception {
+    void testGetLongWithStringWithMissingProperty() {
+        final Configuration instance = getInstance();
+        assertThrows(NoSuchElementException.class,
+                () -> instance.getLong("test3"));
+    }
+
+    @Test
+    void testGetLongWithStringConcurrently() throws Exception {
         final Configuration instance = getInstance();
         final String key = "cats";
 
@@ -638,21 +658,21 @@ public abstract class AbstractConfigurationTest extends BaseTest {
     /* getLong(Key, int) */
 
     @Test
-    public void testGetLongWithKeyWithDefaultWithValidProperty() {
+    void testGetLongWithKeyWithDefaultWithValidProperty() {
         final Configuration instance = getInstance();
         instance.setProperty(Key.MAX_PIXELS, 5);
         assertEquals(5, instance.getLong(Key.MAX_PIXELS, 6));
     }
 
     @Test
-    public void testGetLongWithKeyWithDefaultWithInvalidProperty() {
+    void testGetLongWithKeyWithDefaultWithInvalidProperty() {
         final Configuration instance = getInstance();
         instance.setProperty(Key.MAX_PIXELS, "cats");
         assertEquals(5, instance.getLong(Key.MAX_PIXELS, 5));
     }
 
     @Test
-    public void testGetLongWithKeyWithDefaultWithMissingProperty() {
+    void testGetLongWithKeyWithDefaultWithMissingProperty() {
         final Configuration instance = getInstance();
         assertEquals(6, instance.getLong(Key.MAX_PIXELS, 6));
     }
@@ -660,21 +680,21 @@ public abstract class AbstractConfigurationTest extends BaseTest {
     /* getLong(String, int) */
 
     @Test
-    public void testGetLongWithStringWithDefaultWithValidProperty() {
+    void testGetLongWithStringWithDefaultWithValidProperty() {
         final Configuration instance = getInstance();
         instance.setProperty("test1", 5);
         assertEquals(5, instance.getLong("test1", 6));
     }
 
     @Test
-    public void testGetLongWithStringWithDefaultWithInvalidProperty() {
+    void testGetLongWithStringWithDefaultWithInvalidProperty() {
         final Configuration instance = getInstance();
         instance.setProperty("test1", "cats");
         assertEquals(5, instance.getLong("test1", 5));
     }
 
     @Test
-    public void testGetLongWithStringWithDefaultWithMissingProperty() {
+    void testGetLongWithStringWithDefaultWithMissingProperty() {
         final Configuration instance = getInstance();
         assertEquals(6, instance.getLong("test1", 6));
     }
@@ -682,49 +702,53 @@ public abstract class AbstractConfigurationTest extends BaseTest {
     /* getLongBytes(Key) */
 
     @Test
-    public void testGetLongBytesWithKeyWithValidProperty() {
+    void testGetLongBytesWithKeyWithValidProperty() {
         final Configuration instance = getInstance();
         instance.setProperty(Key.IIIF_2_ENDPOINT_ENABLED, "55K");
         assertEquals(55 * 1024, instance.getLongBytes(Key.IIIF_2_ENDPOINT_ENABLED));
     }
 
-    @Test(expected = NumberFormatException.class)
-    public void testGetLongBytesWithKeyWithInvalidProperty() {
+    @Test
+    void testGetLongBytesWithKeyWithInvalidProperty() {
         final Configuration instance = getInstance();
         instance.setProperty(Key.MAX_PIXELS, "cats");
-        instance.getLongBytes(Key.MAX_PIXELS);
+        assertThrows(NumberFormatException.class,
+                () -> instance.getLongBytes(Key.MAX_PIXELS));
     }
 
-    @Test(expected = NoSuchElementException.class)
-    public void testGetLongBytesWithKeyWithMissingProperty() {
+    @Test
+    void testGetLongBytesWithKeyWithMissingProperty() {
         final Configuration instance = getInstance();
-        instance.getLongBytes(Key.MAX_PIXELS);
+        assertThrows(NoSuchElementException.class,
+                () -> instance.getLongBytes(Key.MAX_PIXELS));
     }
 
     /* getLongBytes(String) */
 
     @Test
-    public void testGetLongBytesWithStringWithValidProperty() {
+    void testGetLongBytesWithStringWithValidProperty() {
         final Configuration instance = getInstance();
         instance.setProperty("test", "55K");
         assertEquals(55 * 1024, instance.getLongBytes("test"));
     }
 
-    @Test(expected = NumberFormatException.class)
-    public void testGetLongBytesWithStringWithInvalidProperty() {
+    @Test
+    void testGetLongBytesWithStringWithInvalidProperty() {
         final Configuration instance = getInstance();
         instance.setProperty("test", "cats");
-        instance.getLongBytes("test");
-    }
-
-    @Test(expected = NoSuchElementException.class)
-    public void testGetLongBytesWithStringWithMissingProperty() {
-        final Configuration instance = getInstance();
-        instance.getLongBytes("test3");
+        assertThrows(NumberFormatException.class,
+                () -> instance.getLongBytes("test"));
     }
 
     @Test
-    public void testGetLongBytesWithStringConcurrently() throws Exception {
+    void testGetLongBytesWithStringWithMissingProperty() {
+        final Configuration instance = getInstance();
+        assertThrows(NoSuchElementException.class,
+                () -> instance.getLongBytes("test3"));
+    }
+
+    @Test
+    void testGetLongBytesWithStringConcurrently() throws Exception {
         final Configuration instance = getInstance();
         final String key = "cats";
         instance.setProperty(key, "32234");
@@ -741,21 +765,21 @@ public abstract class AbstractConfigurationTest extends BaseTest {
     /* getLongBytes(Key, int) */
 
     @Test
-    public void testGetLongBytesWithKeyWithDefaultWithValidProperty() {
+    void testGetLongBytesWithKeyWithDefaultWithValidProperty() {
         final Configuration instance = getInstance();
         instance.setProperty(Key.MAX_PIXELS, "5K");
         assertEquals(5 * 1024, instance.getLongBytes(Key.MAX_PIXELS, 6));
     }
 
     @Test
-    public void testGetLongBytesWithKeyWithDefaultWithInvalidProperty() {
+    void testGetLongBytesWithKeyWithDefaultWithInvalidProperty() {
         final Configuration instance = getInstance();
         instance.setProperty(Key.MAX_PIXELS, "cats");
         assertEquals(5, instance.getLongBytes(Key.MAX_PIXELS, 5));
     }
 
     @Test
-    public void testGetLongBytesWithKeyWithDefaultWithMissingProperty() {
+    void testGetLongBytesWithKeyWithDefaultWithMissingProperty() {
         final Configuration instance = getInstance();
         assertEquals(6, instance.getLongBytes(Key.MAX_PIXELS, 6));
     }
@@ -763,21 +787,21 @@ public abstract class AbstractConfigurationTest extends BaseTest {
     /* getLongBytes(String, int) */
 
     @Test
-    public void testGetLongBytesWithStringWithDefaultWithValidProperty() {
+    void testGetLongBytesWithStringWithDefaultWithValidProperty() {
         final Configuration instance = getInstance();
         instance.setProperty("test1", "5K");
         assertEquals(5 * 1024, instance.getLongBytes("test1", 6));
     }
 
     @Test
-    public void testGetLongBytesWithStringWithDefaultWithInvalidProperty() {
+    void testGetLongBytesWithStringWithDefaultWithInvalidProperty() {
         final Configuration instance = getInstance();
         instance.setProperty("test1", "cats");
         assertEquals(5, instance.getLongBytes("test1", 5));
     }
 
     @Test
-    public void testGetLongBytesWithStringWithDefaultWithMissingProperty() {
+    void testGetLongBytesWithStringWithDefaultWithMissingProperty() {
         final Configuration instance = getInstance();
         assertEquals(6, instance.getLongBytes("test1", 6));
     }
@@ -785,7 +809,7 @@ public abstract class AbstractConfigurationTest extends BaseTest {
     /* getProperty(Key) */
 
     @Test
-    public void testGetPropertyWithKeyWithPresentProperty() {
+    void testGetPropertyWithKeyWithPresentProperty() {
         final Configuration instance = getInstance();
         instance.setProperty(Key.IIIF_1_ENDPOINT_ENABLED, "1");
         instance.setProperty(Key.IIIF_2_ENDPOINT_ENABLED, 2);
@@ -795,7 +819,7 @@ public abstract class AbstractConfigurationTest extends BaseTest {
     }
 
     @Test
-    public void testGetPropertyWithKeyWithMissingProperty() {
+    void testGetPropertyWithKeyWithMissingProperty() {
         final Configuration instance = getInstance();
         assertNull(instance.getProperty(Key.MAX_PIXELS));
     }
@@ -803,7 +827,7 @@ public abstract class AbstractConfigurationTest extends BaseTest {
     /* getProperty(String) */
 
     @Test
-    public void testGetPropertyWithStringWithPresentProperty() {
+    void testGetPropertyWithStringWithPresentProperty() {
         final Configuration instance = getInstance();
         instance.setProperty("cats", "1");
         instance.setProperty("dogs", 2);
@@ -813,13 +837,13 @@ public abstract class AbstractConfigurationTest extends BaseTest {
     }
 
     @Test
-    public void testGetPropertyWithStringWithMissingProperty() {
+    void testGetPropertyWithStringWithMissingProperty() {
         final Configuration instance = getInstance();
         assertNull(instance.getProperty("cats"));
     }
 
     @Test
-    public void testGetPropertyWithStringConcurrently() throws Exception {
+    void testGetPropertyWithStringConcurrently() throws Exception {
         final Configuration instance = getInstance();
         final String key = "cats";
 
@@ -835,14 +859,14 @@ public abstract class AbstractConfigurationTest extends BaseTest {
     /* getString(Key) */
 
     @Test
-    public void testGetStringWithKeyWithValidProperty() {
+    void testGetStringWithKeyWithValidProperty() {
         final Configuration instance = getInstance();
         instance.setProperty(Key.MAX_PIXELS, "cats");
         assertEquals("cats", instance.getString(Key.MAX_PIXELS));
     }
 
     @Test
-    public void testGetStringWithKeyWithMissingProperty() {
+    void testGetStringWithKeyWithMissingProperty() {
         final Configuration instance = getInstance();
         assertNull(instance.getString(Key.MAX_PIXELS));
     }
@@ -850,20 +874,20 @@ public abstract class AbstractConfigurationTest extends BaseTest {
     /* getString(String) */
 
     @Test
-    public void testGetStringWithValidProperty() {
+    void testGetStringWithValidProperty() {
         final Configuration instance = getInstance();
         instance.setProperty("test1", "cats");
         assertEquals("cats", instance.getString("test1"));
     }
 
     @Test
-    public void testGetStringWithMissingProperty() {
+    void testGetStringWithMissingProperty() {
         final Configuration instance = getInstance();
         assertNull(instance.getString("bogus"));
     }
 
     @Test
-    public void testGetStringWithStringConcurrently() throws Exception {
+    void testGetStringWithStringConcurrently() throws Exception {
         final Configuration instance = getInstance();
         final String key = "cats";
 
@@ -879,14 +903,14 @@ public abstract class AbstractConfigurationTest extends BaseTest {
     /* getString(Key, String) */
 
     @Test
-    public void testGetStringWithKeyWithDefaultWithValidProperty() {
+    void testGetStringWithKeyWithDefaultWithValidProperty() {
         final Configuration instance = getInstance();
         instance.setProperty(Key.MAX_PIXELS, "cats");
         assertEquals("cats", instance.getString(Key.MAX_PIXELS, "dogs"));
     }
 
     @Test
-    public void testGetStringWithKeyWithDefaultWithMissingProperty() {
+    void testGetStringWithKeyWithDefaultWithMissingProperty() {
         final Configuration instance = getInstance();
         assertEquals("cats", instance.getString(Key.MAX_PIXELS, "cats"));
     }
@@ -894,14 +918,14 @@ public abstract class AbstractConfigurationTest extends BaseTest {
     /* getString(String, String) */
 
     @Test
-    public void testGetStringWithStringWithDefaultWithValidProperty() {
+    void testGetStringWithStringWithDefaultWithValidProperty() {
         final Configuration instance = getInstance();
         instance.setProperty("test1", "cats");
         assertEquals("cats", instance.getString("test1", "dogs"));
     }
 
     @Test
-    public void testGetStringWithStringWithDefaultWithMissingProperty() {
+    void testGetStringWithStringWithDefaultWithMissingProperty() {
         final Configuration instance = getInstance();
         assertEquals("cats", instance.getString("test1", "cats"));
     }

@@ -4,23 +4,24 @@ import edu.illinois.library.cantaloupe.image.Rectangle;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import edu.illinois.library.cantaloupe.util.Rational;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 import java.awt.image.BufferedImage;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
+@SuppressWarnings("WeakerAccess") // a JMH test extends this
 public class TurboJPEGImageReaderTest extends BaseTest {
 
     private TurboJPEGImageReader instance;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         super.setUp();
         instance = new TurboJPEGImageReader();
@@ -33,7 +34,7 @@ public class TurboJPEGImageReaderTest extends BaseTest {
         assertEquals(16, instance.getBlockHeight());
     }
 
-    @After
+    @AfterEach
     public void tearDown() throws Exception {
         super.tearDown();
         instance.close();
@@ -145,7 +146,7 @@ public class TurboJPEGImageReaderTest extends BaseTest {
     }
 
     @Test
-    @Ignore // rotation doesn't work yet
+    @Disabled // rotation doesn't work yet
     public void testReadWithRotate90() throws Exception {
         instance.close();
 
@@ -161,7 +162,7 @@ public class TurboJPEGImageReaderTest extends BaseTest {
     }
 
     @Test
-    @Ignore // rotation doesn't work yet
+    @Disabled // rotation doesn't work yet
     public void testReadWithRotate180() throws Exception {
         instance.close();
 
@@ -177,7 +178,7 @@ public class TurboJPEGImageReaderTest extends BaseTest {
     }
 
     @Test
-    @Ignore // rotation doesn't work yet
+    @Disabled // rotation doesn't work yet
     public void testReadWithRotate270() throws Exception {
         instance.close();
 
@@ -190,21 +191,6 @@ public class TurboJPEGImageReaderTest extends BaseTest {
         TurboJPEGImage image = instance.read();
         assertEquals(48, image.getScaledWidth());
         assertEquals(64, image.getScaledHeight());
-    }
-
-    @Test
-    public void testReadWithSupportedScale() throws Exception {
-        instance.setScale(new Rational(1, 4));
-
-        TurboJPEGImage image = instance.read();
-        assertEquals(16, image.getScaledWidth());
-        assertEquals(14, image.getScaledHeight());
-    }
-
-    @Test(expected = TransformationNotSupportedException.class)
-    public void testReadWithUnsupportedScale() throws Exception {
-        instance.setScale(new Rational(31, 33));
-        instance.read();
     }
 
     @Test
@@ -245,16 +231,8 @@ public class TurboJPEGImageReaderTest extends BaseTest {
         assertEquals(14, image.getHeight());
     }
 
-    @Test(expected = TransformationNotSupportedException.class)
-    public void testReadAsBufferedImageWithUnsupportedScale() throws Exception {
-        instance.setScale(new Rational(31, 33));
-
-        final Rectangle margin = new Rectangle();
-        instance.readAsBufferedImage(margin);
-    }
-
     @Test
-    @Ignore // rotation doesn't work yet
+    @Disabled // rotation doesn't work yet
     public void testReadAsBufferedImageWithRotate90() throws Exception {
         instance.close();
 
@@ -271,8 +249,8 @@ public class TurboJPEGImageReaderTest extends BaseTest {
     }
 
     @Test
-    @Ignore // rotation doesn't work yet
-    public void testReadAsBufferedImageWithRotate180() throws Exception {
+    @Disabled // rotation doesn't work yet
+    void testReadAsBufferedImageWithRotate180() throws Exception {
         instance.close();
 
         instance = new TurboJPEGImageReader();
@@ -288,7 +266,7 @@ public class TurboJPEGImageReaderTest extends BaseTest {
     }
 
     @Test
-    @Ignore // rotation doesn't work yet
+    @Disabled // rotation doesn't work yet
     public void testReadAsBufferedImageWithRotate270() throws Exception {
         instance.close();
 
@@ -309,9 +287,10 @@ public class TurboJPEGImageReaderTest extends BaseTest {
         instance.setScale(new Rational(1, 2));
     }
 
-    @Test(expected = TransformationNotSupportedException.class)
-    public void testSetScaleWithUnsupportedScale() throws Exception {
-        instance.setScale(new Rational(1, 341));
+    @Test
+    public void testSetScaleWithUnsupportedScale() {
+        assertThrows(TransformationNotSupportedException.class,
+                () -> instance.setScale(new Rational(1, 341)));
     }
 
     @Test
@@ -326,9 +305,10 @@ public class TurboJPEGImageReaderTest extends BaseTest {
         instance.setTransform(TurboJPEGImageReader.Transform.ROTATE_90);
     }
 
-    @Test(expected = TransformationNotSupportedException.class)
-    public void testSetTransformWithUnsupportedRotation() throws Exception {
-        instance.setTransform(TurboJPEGImageReader.Transform.ROTATE_90);
+    @Test
+    public void testSetTransformWithUnsupportedRotation() {
+        assertThrows(TransformationNotSupportedException.class,
+                () -> instance.setTransform(TurboJPEGImageReader.Transform.ROTATE_90));
     }
 
     @Test
@@ -343,9 +323,10 @@ public class TurboJPEGImageReaderTest extends BaseTest {
         instance.setUseGrayscaleConversion(true);
     }
 
-    @Test(expected = TransformationNotSupportedException.class)
-    public void testSetUseGrayscaleConversionWhenNotSupported() throws Exception {
-        instance.setUseGrayscaleConversion(true);
+    @Test
+    public void testSetUseGrayscaleConversionWhenNotSupported() {
+        assertThrows(TransformationNotSupportedException.class,
+                () -> instance.setUseGrayscaleConversion(true));
     }
 
 }

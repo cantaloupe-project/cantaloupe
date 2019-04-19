@@ -1,27 +1,29 @@
 package edu.illinois.library.cantaloupe.util;
 
-import org.junit.Before;
-import org.junit.Test;
+import edu.illinois.library.cantaloupe.test.BaseTest;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
-public class StopwatchTest {
+public class StopwatchTest extends BaseTest {
 
     private Stopwatch instance;
 
-    @Before
-    public void setUp() {
+    @BeforeEach
+    public void setUp() throws Exception {
+        super.setUp();
         instance = new Stopwatch();
     }
 
     @Test
-    public void testTimeElapsed() throws Exception {
+    void testTimeElapsed() throws Exception {
         Thread.sleep(2);
         assertTrue(instance.timeElapsed() > 1);
     }
 
     @Test
-    public void testToString() {
+    void testToString() {
         assertTrue(instance.toString().matches("\\d+ msec"));
     }
 

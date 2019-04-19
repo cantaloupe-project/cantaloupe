@@ -2,7 +2,7 @@ package edu.illinois.library.cantaloupe.processor.codec.gif;
 
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import javax.imageio.ImageIO;
 import javax.imageio.stream.ImageInputStream;
@@ -10,7 +10,7 @@ import javax.imageio.stream.ImageInputStream;
 import java.io.IOException;
 import java.nio.file.Path;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class GIFMetadataTest extends BaseTest {
 
@@ -21,7 +21,7 @@ public class GIFMetadataTest extends BaseTest {
     }
 
     @Test
-    public void testGetMetadataWithStaticImage() throws Exception {
+    void testGetMetadataWithStaticImage() throws Exception {
         try (GIFMetadataReader reader = new GIFMetadataReader()) {
             reader.setSource(newImageInputStream("gif"));
             GIFMetadata metadata = new GIFMetadata(reader);
@@ -31,7 +31,7 @@ public class GIFMetadataTest extends BaseTest {
     }
 
     @Test
-    public void testGetMetadataWithAnimatedImage() throws Exception {
+    void testGetMetadataWithAnimatedImage() throws Exception {
         try (GIFMetadataReader reader = new GIFMetadataReader()) {
             reader.setSource(newImageInputStream("gif-animated-looping.gif"));
             GIFMetadata metadata = new GIFMetadata(reader);
@@ -41,7 +41,7 @@ public class GIFMetadataTest extends BaseTest {
     }
 
     @Test
-    public void testGetMetadataWithAnimatedNonLoopingImage() throws Exception {
+    void testGetMetadataWithAnimatedNonLoopingImage() throws Exception {
         try (GIFMetadataReader reader = new GIFMetadataReader()) {
             reader.setSource(newImageInputStream("gif-animated-non-looping.gif"));
             GIFMetadata metadata = new GIFMetadata(reader);
@@ -51,7 +51,7 @@ public class GIFMetadataTest extends BaseTest {
     }
 
     @Test
-    public void testGetXMP() throws Exception {
+    void testGetXMP() throws Exception {
         try (GIFMetadataReader reader = new GIFMetadataReader()) {
             reader.setSource(newImageInputStream("gif-xmp.gif"));
             GIFMetadata metadata = new GIFMetadata(reader);

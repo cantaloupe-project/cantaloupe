@@ -1,54 +1,58 @@
 package edu.illinois.library.cantaloupe.http;
 
-import org.junit.Before;
-import org.junit.Test;
+import edu.illinois.library.cantaloupe.test.BaseTest;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
-public class KeyValuePairTest {
+public class KeyValuePairTest extends BaseTest {
 
     private KeyValuePair instance;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
+        super.setUp();
         instance = new KeyValuePair("key", "value");
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void testConstructorWithNullKey() {
-        new KeyValuePair(null, "value");
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void testConstructorWithEmptyKey() {
-        new KeyValuePair("", "value");
+    @Test
+    void testConstructorWithNullKey() {
+        assertThrows(IllegalArgumentException.class,
+                () -> new KeyValuePair(null, "value"));
     }
 
     @Test
-    public void testEqualsWithEqualObjects() {
+    void testConstructorWithEmptyKey() {
+        assertThrows(IllegalArgumentException.class,
+                () -> new KeyValuePair("", "value"));
+    }
+
+    @Test
+    void testEqualsWithEqualObjects() {
         KeyValuePair instance2 = new KeyValuePair("key", "value");
         assertEquals(instance, instance2);
     }
 
     @Test
-    public void testEqualsWithUnequalKeys() {
+    void testEqualsWithUnequalKeys() {
         KeyValuePair instance2 = new KeyValuePair("cats", "value");
         assertNotEquals(instance, instance2);
     }
 
     @Test
-    public void testEqualsWithUnequalValues() {
+    void testEqualsWithUnequalValues() {
         KeyValuePair instance2 = new KeyValuePair("key", "cats");
         assertNotEquals(instance, instance2);
     }
 
     @Test
-    public void testHashCode() {
+    void testHashCode() {
         assertEquals(instance.toString().hashCode(), instance.hashCode());
     }
 
     @Test
-    public void testToString() {
+    void testToString() {
         assertEquals("key=value", instance.toString());
     }
 

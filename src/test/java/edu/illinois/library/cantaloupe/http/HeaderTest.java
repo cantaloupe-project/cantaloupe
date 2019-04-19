@@ -1,86 +1,92 @@
 package edu.illinois.library.cantaloupe.http;
 
-import org.junit.Before;
-import org.junit.Test;
+import edu.illinois.library.cantaloupe.test.BaseTest;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
-public class HeaderTest {
+public class HeaderTest extends BaseTest {
 
     private Header instance;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
+        super.setUp();
         instance = new Header("name", "value");
     }
 
     @Test
-    public void testConstructor() {
+    void testConstructor() {
         assertEquals("name", instance.getName());
         assertEquals("value", instance.getValue());
     }
 
     @Test
-    public void testCopyConstructor() {
+    void testCopyConstructor() {
         Header other = new Header(instance);
         assertEquals("name", other.getName());
         assertEquals("value", other.getValue());
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void testConstructorWithNullNameArgument() {
-        new Header(null, "value");
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void testConstructorWithNullValueArgument() {
-        new Header("name", null);
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void testConstructorWithZeroLengthNameArgument() {
-        new Header("", "value");
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void testConstructorWithZeroLengthValueArgument() {
-        new Header("name", "");
+    @Test
+    void testConstructorWithNullNameArgument() {
+        assertThrows(IllegalArgumentException.class,
+                () -> new Header(null, "value"));
     }
 
     @Test
-    public void testEqualsWhenEqual() {
+    void testConstructorWithNullValueArgument() {
+        assertThrows(IllegalArgumentException.class,
+                () -> new Header("name", null));
+    }
+
+    @Test
+    void testConstructorWithZeroLengthNameArgument() {
+        assertThrows(IllegalArgumentException.class,
+                () -> new Header("", "value"));
+    }
+
+    @Test
+    void testConstructorWithZeroLengthValueArgument() {
+        assertThrows(IllegalArgumentException.class,
+                () -> new Header("name", ""));
+    }
+
+    @Test
+    void testEqualsWhenEqual() {
         Header h1 = new Header("1", "2");
         Header h2 = new Header("1", "2");
         assertEquals(h1, h2);
     }
 
     @Test
-    public void testEqualsWithDifferentNames() {
+    void testEqualsWithDifferentNames() {
         Header h1 = new Header("1", "2");
         Header h2 = new Header("3", "2");
         assertNotEquals(h1, h2);
     }
 
     @Test
-    public void testEqualsWithDifferentValues() {
+    void testEqualsWithDifferentValues() {
         Header h1 = new Header("1", "5");
         Header h2 = new Header("1", "2");
         assertNotEquals(h1, h2);
     }
 
     @Test
-    public void testEqualsWithDifferentClasses() {
+    void testEqualsWithDifferentClasses() {
         Header h1 = new Header("1", "2");
         assertNotEquals(h1, "1: 2");
     }
 
     @Test
-    public void testHashCode() {
+    void testHashCode() {
         assertEquals(instance.toString().hashCode(), instance.hashCode());
     }
 
     @Test
-    public void testToString() {
+    void testToString() {
         assertEquals(instance.getName() + ": " + instance.getValue(),
                 instance.toString());
     }

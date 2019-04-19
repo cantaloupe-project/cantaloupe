@@ -1,13 +1,14 @@
 package edu.illinois.library.cantaloupe.util;
 
-import org.junit.Test;
+import edu.illinois.library.cantaloupe.test.BaseTest;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
-public class TimeUtilsTest {
+public class TimeUtilsTest extends BaseTest {
 
     @Test
-    public void testMillisecondsToHumanTime() {
+    void testMillisecondsToHumanTime() {
         // seconds
         assertEquals("0 seconds", TimeUtils.millisecondsToHumanTime(50));
         assertEquals("1 second", TimeUtils.millisecondsToHumanTime(1000));

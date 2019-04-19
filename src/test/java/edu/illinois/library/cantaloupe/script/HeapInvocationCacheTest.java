@@ -1,21 +1,23 @@
 package edu.illinois.library.cantaloupe.script;
 
-import org.junit.Before;
-import org.junit.Test;
+import edu.illinois.library.cantaloupe.test.BaseTest;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
-public class HeapInvocationCacheTest {
+public class HeapInvocationCacheTest extends BaseTest {
 
     private HeapInvocationCache instance;
 
-    @Before
-    public void setUp() {
+    @BeforeEach
+    public void setUp() throws Exception {
+        super.setUp();
         instance = new HeapInvocationCache();
     }
 
     @Test
-    public void testGet() {
+    void testGet() {
         assertNull(instance.get("bogus"));
         String key = "key";
         String value = "value";
@@ -24,12 +26,12 @@ public class HeapInvocationCacheTest {
     }
 
     @Test
-    public void testMaxSize() {
+    void testMaxSize() {
         assertTrue(instance.maxSize() > 100);
     }
 
     @Test
-    public void testPurge() {
+    void testPurge() {
         instance.put("key", "value");
         assertEquals(1, instance.size());
         instance.purge();
@@ -37,7 +39,7 @@ public class HeapInvocationCacheTest {
     }
 
     @Test
-    public void testPut() {
+    void testPut() {
         String key = "key";
         String value = "value";
         instance.put(key, value);
@@ -45,7 +47,7 @@ public class HeapInvocationCacheTest {
     }
 
     @Test
-    public void testSize() {
+    void testSize() {
         assertEquals(0, instance.size());
         instance.put("key", "value");
         assertEquals(1, instance.size());

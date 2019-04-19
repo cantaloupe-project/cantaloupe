@@ -10,10 +10,10 @@ import edu.illinois.library.cantaloupe.processor.Processor;
 import edu.illinois.library.cantaloupe.processor.ProcessorFactory;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class ImageInfoFactoryTest extends BaseTest {
 
@@ -21,7 +21,7 @@ public class ImageInfoFactoryTest extends BaseTest {
     private ImageInfo imageInfo;
     private Processor processor;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         super.setUp();
 
@@ -71,52 +71,52 @@ public class ImageInfoFactoryTest extends BaseTest {
     }
 
     @Test
-    public void newImageInfoContext() {
+    void newImageInfoContext() {
         assertEquals("http://library.stanford.edu/iiif/image-api/1.1/context.json",
                 imageInfo.context);
     }
 
     @Test
-    public void newImageInfoId() {
+    void newImageInfoId() {
         assertEquals("http://example.org/bla", imageInfo.id);
     }
 
     @Test
-    public void newImageInfoWidth() {
+    void newImageInfoWidth() {
         assertEquals(594, (long) imageInfo.width);
     }
 
     @Test
-    public void newImageInfoWidthWithRotatedImage() throws Exception {
+    void newImageInfoWidthWithRotatedImage() throws Exception {
         setUpForRotatedImage();
         assertEquals(64, (long) imageInfo.width);
     }
 
     @Test
-    public void newImageInfoWidthWithScaleConstraint() throws Exception {
+    void newImageInfoWidthWithScaleConstraint() throws Exception {
         setUpForScaleConstrainedImage();
         assertEquals(297, (long) imageInfo.width);
     }
 
     @Test
-    public void newImageInfoHeight() {
+    void newImageInfoHeight() {
         assertEquals(522, (long) imageInfo.height);
     }
 
     @Test
-    public void newImageInfoHeightWithRotatedImage() throws Exception {
+    void newImageInfoHeightWithRotatedImage() throws Exception {
         setUpForRotatedImage();
         assertEquals(56, (long) imageInfo.height);
     }
 
     @Test
-    public void newImageInfoHeightWithScaleConstraint() throws Exception {
+    void newImageInfoHeightWithScaleConstraint() throws Exception {
         setUpForScaleConstrainedImage();
         assertEquals(261, (long) imageInfo.height);
     }
 
     @Test
-    public void newImageInfoScaleFactors() {
+    void newImageInfoScaleFactors() {
         assertEquals(4, imageInfo.scaleFactors.size());
         assertEquals(1, (long) imageInfo.scaleFactors.get(0));
         assertEquals(2, (long) imageInfo.scaleFactors.get(1));
@@ -125,7 +125,7 @@ public class ImageInfoFactoryTest extends BaseTest {
     }
 
     @Test
-    public void newImageInfoScaleFactorsWithScaleConstrainedImage() throws Exception {
+    void newImageInfoScaleFactorsWithScaleConstrainedImage() throws Exception {
         setUpForScaleConstrainedImage();
         assertEquals(3, imageInfo.scaleFactors.size());
         assertEquals(1, (long) imageInfo.scaleFactors.get(0));
@@ -134,25 +134,25 @@ public class ImageInfoFactoryTest extends BaseTest {
     }
 
     @Test
-    public void newImageInfoTileWidthWithUntiledImage() {
+    void newImageInfoTileWidthWithUntiledImage() {
         assertEquals(594, (long) imageInfo.tileWidth);
     }
 
     @Test
-    public void newImageInfoTileWidthWithRotatedImage() throws Exception {
+    void newImageInfoTileWidthWithRotatedImage() throws Exception {
         setUpForRotatedImage();
         assertEquals(64, (long) imageInfo.tileWidth);
     }
 
     @Test
-    public void newImageInfoTileWidthWithUntiledImageWithScaleConstraint()
+    void newImageInfoTileWidthWithUntiledImageWithScaleConstraint()
             throws Exception {
         setUpForScaleConstrainedImage();
         assertEquals(297, (long) imageInfo.tileWidth);
     }
 
     @Test
-    public void newImageInfoTileWidthWithTiledImage() throws Exception {
+    void newImageInfoTileWidthWithTiledImage() throws Exception {
         processor.setSourceFormat(Format.TIF);
         ((FileProcessor) processor).setSourceFile(
                 TestUtil.getImage("tif-rgb-1res-64x56x8-tiled-uncompressed.tif"));
@@ -164,25 +164,25 @@ public class ImageInfoFactoryTest extends BaseTest {
     }
 
     @Test
-    public void newImageInfoTileHeightWithUntiledImage() {
+    void newImageInfoTileHeightWithUntiledImage() {
         assertEquals(522, (long) imageInfo.tileHeight);
     }
 
     @Test
-    public void newImageInfoTileHeightWithRotatedImage() throws Exception {
+    void newImageInfoTileHeightWithRotatedImage() throws Exception {
         setUpForRotatedImage();
         assertEquals(56, (long) imageInfo.tileHeight);
     }
 
     @Test
-    public void newImageInfoTileHeightWithUntiledImageWithScaleConstraint()
+    void newImageInfoTileHeightWithUntiledImageWithScaleConstraint()
             throws Exception {
         setUpForScaleConstrainedImage();
         assertEquals(261, (long) imageInfo.tileHeight);
     }
 
     @Test
-    public void newImageInfoTileHeightWithTiledImage() throws Exception {
+    void newImageInfoTileHeightWithTiledImage() throws Exception {
         processor.setSourceFormat(Format.TIF);
         ((FileProcessor) processor).setSourceFile(
                 TestUtil.getImage("tif-rgb-1res-64x56x8-tiled-uncompressed.tif"));
@@ -195,17 +195,17 @@ public class ImageInfoFactoryTest extends BaseTest {
     }
 
     @Test
-    public void newImageInfoFormats() {
+    void newImageInfoFormats() {
         assertTrue(imageInfo.formats.contains("jpg"));
     }
 
     @Test
-    public void newImageInfoQualities() {
+    void newImageInfoQualities() {
         assertTrue(imageInfo.qualities.contains("color"));
     }
 
     @Test
-    public void newImageInfoProfile() {
+    void newImageInfoProfile() {
         assertEquals("http://library.stanford.edu/iiif/image-api/1.1/compliance.html#level2",
                 imageInfo.profile);
     }

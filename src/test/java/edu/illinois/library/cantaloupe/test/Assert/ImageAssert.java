@@ -8,7 +8,7 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.util.Iterator;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public final class ImageAssert {
 

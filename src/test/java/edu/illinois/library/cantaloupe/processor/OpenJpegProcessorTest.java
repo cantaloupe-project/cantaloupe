@@ -6,20 +6,20 @@ import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
 import edu.illinois.library.cantaloupe.test.TestUtil;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.EnumSet;
 import java.util.Set;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class OpenJpegProcessorTest extends AbstractProcessorTest {
 
     private OpenJpegProcessor instance;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         super.setUp();
 
@@ -30,7 +30,7 @@ public class OpenJpegProcessorTest extends AbstractProcessorTest {
         instance = newInstance();
     }
 
-    @After
+    @AfterEach
     public void tearDown() throws Exception {
         super.tearDown();
         instance.close();
@@ -48,12 +48,12 @@ public class OpenJpegProcessorTest extends AbstractProcessorTest {
     }
 
     @Test
-    public void testGetInitializationErrorWithNoException() {
+    void testGetInitializationErrorWithNoException() {
         assertNull(instance.getInitializationError());
     }
 
     @Test
-    public void testGetInitializationErrorWithMissingBinaries() {
+    void testGetInitializationErrorWithMissingBinaries() {
         Configuration.getInstance().setProperty(
                 Key.OPENJPEGPROCESSOR_PATH_TO_BINARIES,
                 "/bogus/bogus/bogus");
@@ -62,7 +62,7 @@ public class OpenJpegProcessorTest extends AbstractProcessorTest {
     }
 
     @Test
-    public void testGetSupportedFeatures() {
+    void testGetSupportedFeatures() {
         Set<ProcessorFeature> expectedFeatures = EnumSet.of(
                 ProcessorFeature.MIRRORING,
                 ProcessorFeature.REGION_BY_PERCENT,
@@ -82,7 +82,7 @@ public class OpenJpegProcessorTest extends AbstractProcessorTest {
     }
 
     @Test
-    public void testGetWarningsWithNoWarnings() {
+    void testGetWarningsWithNoWarnings() {
         boolean initialValue = OpenJpegProcessor.isQuietModeSupported();
         try {
             OpenJpegProcessor.setQuietModeSupported(true);
@@ -93,7 +93,7 @@ public class OpenJpegProcessorTest extends AbstractProcessorTest {
     }
 
     @Test
-    public void testGetWarningsWithWarnings() {
+    void testGetWarningsWithWarnings() {
         boolean initialValue = OpenJpegProcessor.isQuietModeSupported();
         try {
             OpenJpegProcessor.setQuietModeSupported(false);
@@ -104,21 +104,21 @@ public class OpenJpegProcessorTest extends AbstractProcessorTest {
     }
 
     @Test
-    public void testReadInfoIPTCAwareness() throws Exception {
+    void testReadInfoIPTCAwareness() throws Exception {
         instance.setSourceFile(TestUtil.getImage("jp2-iptc.jp2"));
         Info info = instance.readInfo();
         assertTrue(info.getMetadata().getIPTC().isPresent());
     }
 
     @Test
-    public void testReadInfoXMPAwareness() throws Exception {
+    void testReadInfoXMPAwareness() throws Exception {
         instance.setSourceFile(TestUtil.getImage("jp2-xmp.jp2"));
         Info info = instance.readInfo();
         assertTrue(info.getMetadata().getXMP().isPresent());
     }
 
     @Test
-    public void testReadInfoTileAwareness() throws Exception {
+    void testReadInfoTileAwareness() throws Exception {
         // untiled image
         instance.setSourceFile(TestUtil.getImage("jp2-5res-rgb-64x56x8-monotiled-lossy.jp2"));
         Info expectedInfo = Info.builder()

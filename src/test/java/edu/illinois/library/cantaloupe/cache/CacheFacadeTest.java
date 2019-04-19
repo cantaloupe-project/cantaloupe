@@ -10,8 +10,8 @@ import edu.illinois.library.cantaloupe.processor.ProcessorFactory;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.test.TestUtil;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -20,13 +20,13 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Optional;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class CacheFacadeTest extends BaseTest {
 
     private CacheFacade instance;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         instance = new CacheFacade();
 
@@ -64,13 +64,13 @@ public class CacheFacadeTest extends BaseTest {
     /* getDerivativeCache() */
 
     @Test
-    public void testGetDerivativeCacheWhenEnabled() {
+    void testGetDerivativeCacheWhenEnabled() {
         enableDerivativeCache();
         assertTrue(instance.getDerivativeCache().isPresent());
     }
 
     @Test
-    public void testGetDerivativeCacheWhenDisabled() {
+    void testGetDerivativeCacheWhenDisabled() {
         disableDerivativeCache();
         assertFalse(instance.getDerivativeCache().isPresent());
     }
@@ -78,7 +78,7 @@ public class CacheFacadeTest extends BaseTest {
     /* getInfo() */
 
     @Test
-    public void testGetInfo() throws Exception {
+    void testGetInfo() throws Exception {
         final Identifier identifier = new Identifier("jpg");
 
         Optional<Info> expected = InfoService.getInstance().getInfo(identifier);
@@ -89,7 +89,7 @@ public class CacheFacadeTest extends BaseTest {
     /* getOrReadInfo() */
 
     @Test
-    public void testGetOrReadInfo() throws Exception {
+    void testGetOrReadInfo() throws Exception {
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.PROCESSOR_SELECTION_STRATEGY,
                 "ManualSelectionStrategy");
@@ -110,14 +110,14 @@ public class CacheFacadeTest extends BaseTest {
     /* getSourceCache() */
 
     @Test
-    public void testGetSourceCache() {
+    void testGetSourceCache() {
         assertTrue(instance.getSourceCache().isPresent());
     }
 
     /* getSourceCacheFile() */
 
     @Test
-    public void testGetSourceCacheFileWithSourceCacheHit() throws Exception {
+    void testGetSourceCacheFileWithSourceCacheHit() throws Exception {
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.SOURCE_CACHE, FilesystemCache.class.getSimpleName());
 
@@ -133,7 +133,7 @@ public class CacheFacadeTest extends BaseTest {
     }
 
     @Test
-    public void testGetSourceCacheFileWithSourceCacheMiss() throws Exception {
+    void testGetSourceCacheFileWithSourceCacheMiss() throws Exception {
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.SOURCE_CACHE, FilesystemCache.class.getSimpleName());
 
@@ -143,7 +143,7 @@ public class CacheFacadeTest extends BaseTest {
     }
 
     @Test
-    public void testGetSourceCacheFileWithInvalidSourceCache()
+    void testGetSourceCacheFileWithInvalidSourceCache()
             throws Exception {
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.SOURCE_CACHE, "BogusCache");
@@ -156,7 +156,7 @@ public class CacheFacadeTest extends BaseTest {
     /* isDerivativeCacheAvailable() */
 
     @Test
-    public void testIsDerivativeCacheAvailable() {
+    void testIsDerivativeCacheAvailable() {
         enableDerivativeCache();
         assertTrue(instance.isDerivativeCacheAvailable());
 
@@ -167,7 +167,7 @@ public class CacheFacadeTest extends BaseTest {
     /* isInfoCacheAvailable() */
 
     @Test
-    public void testIsInfoCacheAvailable() {
+    void testIsInfoCacheAvailable() {
         enableInfoCache();
         assertTrue(instance.isInfoCacheAvailable());
 
@@ -178,7 +178,7 @@ public class CacheFacadeTest extends BaseTest {
     /* newDerivativeImageInputStream() */
 
     @Test
-    public void testNewDerivativeImageInputStreamWhenDerivativeCacheIsEnabled()
+    void testNewDerivativeImageInputStreamWhenDerivativeCacheIsEnabled()
             throws Exception {
         enableDerivativeCache();
         OperationList opList = new OperationList(new Identifier("jpg"));
@@ -193,7 +193,7 @@ public class CacheFacadeTest extends BaseTest {
     }
 
     @Test
-    public void testNewDerivativeImageInputStreamWhenDerivativeCacheIsDisabled()
+    void testNewDerivativeImageInputStreamWhenDerivativeCacheIsDisabled()
             throws Exception {
         disableDerivativeCache();
         OperationList opList = new OperationList();
@@ -205,7 +205,7 @@ public class CacheFacadeTest extends BaseTest {
     /* newDerivativeImageOutputStream() */
 
     @Test
-    public void testNewDerivativeImageOutputStreamWhenDerivativeCacheIsEnabled()
+    void testNewDerivativeImageOutputStreamWhenDerivativeCacheIsEnabled()
             throws Exception {
         enableDerivativeCache();
         OperationList opList = new OperationList(new Identifier("jpg"));
@@ -215,7 +215,7 @@ public class CacheFacadeTest extends BaseTest {
     }
 
     @Test
-    public void testNewDerivativeImageOutputStreamWhenDerivativeCacheIsDisabled()
+    void testNewDerivativeImageOutputStreamWhenDerivativeCacheIsDisabled()
             throws Exception {
         disableDerivativeCache();
         OperationList opList = new OperationList();
@@ -227,7 +227,7 @@ public class CacheFacadeTest extends BaseTest {
     /* purge() */
 
     @Test
-    public void testPurge() throws Exception {
+    void testPurge() throws Exception {
         enableDerivativeCache();
         SourceCache sourceCache = CacheFactory.getSourceCache();
         DerivativeCache derivCache = CacheFactory.getDerivativeCache();
@@ -270,7 +270,7 @@ public class CacheFacadeTest extends BaseTest {
     /* purge(Identifier) */
 
     @Test
-    public void testPurgeWithIdentifier() throws Exception {
+    void testPurgeWithIdentifier() throws Exception {
         enableDerivativeCache();
         SourceCache sourceCache = CacheFactory.getSourceCache();
         DerivativeCache derivCache = CacheFactory.getDerivativeCache();
@@ -312,7 +312,7 @@ public class CacheFacadeTest extends BaseTest {
     /* purgeAsync(Identifier) */
 
     @Test
-    public void testPurgeAsyncWithIdentifier() throws Exception {
+    void testPurgeAsyncWithIdentifier() throws Exception {
         enableDerivativeCache();
         SourceCache sourceCache = CacheFactory.getSourceCache();
         DerivativeCache derivCache = CacheFactory.getDerivativeCache();
@@ -356,7 +356,7 @@ public class CacheFacadeTest extends BaseTest {
     /* purge(OperationList) */
 
     @Test
-    public void testPurgeWithOperationList() throws Exception {
+    void testPurgeWithOperationList() throws Exception {
         enableDerivativeCache();
         OperationList opList = new OperationList(new Identifier("cats"));
 
@@ -378,7 +378,7 @@ public class CacheFacadeTest extends BaseTest {
     /* purgeInvalid() */
 
     @Test
-    public void testPurgeExpired() throws Exception {
+    void testPurgeExpired() throws Exception {
         final Configuration config = Configuration.getInstance();
         config.setProperty(Key.SOURCE_CACHE_TTL, 1);
         config.setProperty(Key.DERIVATIVE_CACHE_TTL, 1);

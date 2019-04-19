@@ -9,13 +9,13 @@ import edu.illinois.library.cantaloupe.script.DelegateProxy;
 import edu.illinois.library.cantaloupe.script.DelegateProxyService;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.util.List;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class RedactionServiceTest extends BaseTest {
 
@@ -29,7 +29,7 @@ public class RedactionServiceTest extends BaseTest {
         config.setProperty(Key.REDACTION_ENABLED, true);
     }
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         super.setUp();
         setUpConfiguration();
@@ -37,7 +37,7 @@ public class RedactionServiceTest extends BaseTest {
     }
 
     @Test
-    public void testIsEnabledWhenEnabled() {
+    void testIsEnabledWhenEnabled() {
         Configuration config = Configuration.getInstance();
         config.clear();
         config.setProperty(Key.REDACTION_ENABLED, true);
@@ -45,7 +45,7 @@ public class RedactionServiceTest extends BaseTest {
     }
 
     @Test
-    public void testIsEnabledWhenDisabled() {
+    void testIsEnabledWhenDisabled() {
         Configuration config = Configuration.getInstance();
         config.clear();
         config.setProperty(Key.REDACTION_ENABLED, false);
@@ -53,7 +53,7 @@ public class RedactionServiceTest extends BaseTest {
     }
 
     @Test
-    public void testRedactionsForWithRedactions() throws Exception {
+    void testRedactionsForWithRedactions() throws Exception {
         RequestContext context = new RequestContext();
         DelegateProxyService service = DelegateProxyService.getInstance();
         DelegateProxy proxy = service.newDelegateProxy(context);
@@ -66,7 +66,7 @@ public class RedactionServiceTest extends BaseTest {
     }
 
     @Test
-    public void testRedactionsForWithNoRedactions() throws Exception {
+    void testRedactionsForWithNoRedactions() throws Exception {
         RequestContext context = new RequestContext();
         context.setIdentifier(new Identifier("bogus"));
         DelegateProxyService service = DelegateProxyService.getInstance();

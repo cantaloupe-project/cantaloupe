@@ -15,9 +15,9 @@ import edu.illinois.library.cantaloupe.test.ConcurrentReaderWriter;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import edu.illinois.library.cantaloupe.util.DeletingFileVisitor;
 import edu.illinois.library.cantaloupe.util.StringUtils;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.io.File;
 import java.io.IOException;
@@ -30,7 +30,7 @@ import java.nio.file.Paths;
 
 import static edu.illinois.library.cantaloupe.cache.FilesystemCache.*;
 import static edu.illinois.library.cantaloupe.test.Assert.PathAssert.assertRecursiveFileCount;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class FilesystemCacheTest extends AbstractCacheTest {
 
@@ -40,7 +40,7 @@ public class FilesystemCacheTest extends AbstractCacheTest {
     private Path derivativeImagePath;
     private FilesystemCache instance;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         super.setUp();
 
@@ -52,7 +52,7 @@ public class FilesystemCacheTest extends AbstractCacheTest {
         instance = newInstance();
     }
 
-    @After
+    @AfterEach
     public void tearDown() throws IOException {
         try {
             Files.walkFileTree(fixturePath, new DeletingFileVisitor());
@@ -86,7 +86,7 @@ public class FilesystemCacheTest extends AbstractCacheTest {
     }
 
     @Test
-    public void testHashedPathFragment() {
+    void testHashedPathFragment() {
         // depth = 2, length = 3
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.FILESYSTEMCACHE_DIRECTORY_DEPTH, 2);
@@ -101,7 +101,7 @@ public class FilesystemCacheTest extends AbstractCacheTest {
     }
 
     @Test
-    public void testDerivativeImageFile() {
+    void testDerivativeImageFile() {
         String pathname = Configuration.getInstance().
                 getString(Key.FILESYSTEMCACHE_PATHNAME);
 
@@ -122,7 +122,7 @@ public class FilesystemCacheTest extends AbstractCacheTest {
     }
 
     @Test
-    public void testDerivativeImageTempFile() {
+    void testDerivativeImageTempFile() {
         String pathname = Configuration.getInstance().
                 getString(Key.FILESYSTEMCACHE_PATHNAME);
 
@@ -147,7 +147,7 @@ public class FilesystemCacheTest extends AbstractCacheTest {
     }
 
     @Test
-    public void testInfoFile() {
+    void testInfoFile() {
         final String pathname = Configuration.getInstance().
                 getString(Key.FILESYSTEMCACHE_PATHNAME);
         final Identifier identifier = new Identifier("cats_~!@#$%^&*()");
@@ -160,7 +160,7 @@ public class FilesystemCacheTest extends AbstractCacheTest {
     }
 
     @Test
-    public void testInfoTempFile() {
+    void testInfoTempFile() {
         final String pathname = Configuration.getInstance().
                 getString(Key.FILESYSTEMCACHE_PATHNAME);
         final Identifier identifier = new Identifier("cats_~!@#$%^&*()");
@@ -174,7 +174,7 @@ public class FilesystemCacheTest extends AbstractCacheTest {
     }
 
     @Test
-    public void testSourceImageFile() {
+    void testSourceImageFile() {
         final String pathname = Configuration.getInstance().
                 getString(Key.FILESYSTEMCACHE_PATHNAME);
         final Identifier identifier = new Identifier("cats_~!@#$%^&*()");
@@ -187,7 +187,7 @@ public class FilesystemCacheTest extends AbstractCacheTest {
     }
 
     @Test
-    public void testSourceImageTempFile() {
+    void testSourceImageTempFile() {
         final String pathname = Configuration.getInstance().
                 getString(Key.FILESYSTEMCACHE_PATHNAME);
         final Identifier identifier = new Identifier("cats_~!@#$%^&*()");
@@ -201,7 +201,7 @@ public class FilesystemCacheTest extends AbstractCacheTest {
     }
 
     @Test
-    public void testTempFileSuffix() {
+    void testTempFileSuffix() {
         assertEquals("_" + Thread.currentThread().getName() + ".tmp",
                 FilesystemCache.tempFileSuffix());
     }
@@ -209,7 +209,7 @@ public class FilesystemCacheTest extends AbstractCacheTest {
     /* cleanUp() */
 
     @Test
-    public void testCleanUpDoesNotDeleteValidFiles() throws Exception {
+    void testCleanUpDoesNotDeleteValidFiles() throws Exception {
         OperationList ops = new OperationList(new Identifier("cats"));
 
         // create a new source image file
@@ -262,7 +262,7 @@ public class FilesystemCacheTest extends AbstractCacheTest {
     }
 
     @Test
-    public void testCleanUpDeletesInvalidFiles() throws Exception {
+    void testCleanUpDeletesInvalidFiles() throws Exception {
         OperationList ops = new OperationList(new Identifier("cats"));
 
         // create a new source image file
@@ -316,7 +316,7 @@ public class FilesystemCacheTest extends AbstractCacheTest {
     }
 
     @Test
-    public void testGetDerivativeImageFiles() throws Exception {
+    void testGetDerivativeImageFiles() throws Exception {
         Identifier identifier = new Identifier("dogs");
         OperationList ops = new OperationList(identifier);
 
@@ -337,7 +337,7 @@ public class FilesystemCacheTest extends AbstractCacheTest {
     /* getSourceImageFile(Identifier) */
 
     @Test
-    public void testGetSourceImageFileWithZeroTTL() throws Exception {
+    void testGetSourceImageFileWithZeroTTL() throws Exception {
         Configuration.getInstance().setProperty(Key.SOURCE_CACHE_TTL, 0);
 
         Identifier identifier = new Identifier("cats");
@@ -350,7 +350,7 @@ public class FilesystemCacheTest extends AbstractCacheTest {
     }
 
     @Test
-    public void testGetSourceImageFileWithNonzeroTTL() throws Exception {
+    void testGetSourceImageFileWithNonzeroTTL() throws Exception {
         Configuration.getInstance().setProperty(Key.SOURCE_CACHE_TTL, 1);
 
         Identifier identifier = new Identifier("cats");
@@ -369,7 +369,7 @@ public class FilesystemCacheTest extends AbstractCacheTest {
     }
 
     @Test
-    public void testGetSourceImageFileConcurrently() throws Exception {
+    void testGetSourceImageFileConcurrently() throws Exception {
         final Identifier identifier = new Identifier("monkeys");
 
         new ConcurrentReaderWriter(() -> {
@@ -387,14 +387,14 @@ public class FilesystemCacheTest extends AbstractCacheTest {
     /* newSourceImageOutputStream(Identifier) */
 
     @Test
-    public void testNewSourceImageOutputStream() throws Exception {
+    void testNewSourceImageOutputStream() throws Exception {
         try (OutputStream os = instance.newSourceImageOutputStream(new Identifier("cats"))) {
             assertNotNull(os);
         }
     }
 
     @Test
-    public void testNewSourceImageOutputStreamCreatesFolder() throws Exception {
+    void testNewSourceImageOutputStreamCreatesFolder() throws Exception {
         Files.walkFileTree(sourceImagePath, new DeletingFileVisitor());
         assertFalse(Files.exists(sourceImagePath));
 
@@ -405,7 +405,7 @@ public class FilesystemCacheTest extends AbstractCacheTest {
     }
 
     @Test
-    public void testNewSourceImageOutputStreamConcurrently() {
+    void testNewSourceImageOutputStreamConcurrently() {
         // Tested in testGetSourceImageFileConcurrently()
     }
 
@@ -414,7 +414,7 @@ public class FilesystemCacheTest extends AbstractCacheTest {
      */
     @Override
     @Test
-    public void testPurge() throws Exception {
+    void testPurge() throws Exception {
         OperationList ops = new OperationList(new Identifier("cats"));
 
         // create a new source image file
@@ -447,7 +447,7 @@ public class FilesystemCacheTest extends AbstractCacheTest {
      */
     @Override
     @Test
-    public void testPurgeWithIdentifier() throws Exception {
+    void testPurgeWithIdentifier() throws Exception {
         OperationList ops = new OperationList();
 
         Identifier id1 = new Identifier("dogs");
@@ -496,7 +496,7 @@ public class FilesystemCacheTest extends AbstractCacheTest {
      */
     @Override
     @Test
-    public void testPurgeInvalid() throws Exception {
+    void testPurgeInvalid() throws Exception {
         final Configuration config = Configuration.getInstance();
         config.setProperty(Key.SOURCE_CACHE_TTL, 1);
         config.setProperty(Key.DERIVATIVE_CACHE_TTL, 1);

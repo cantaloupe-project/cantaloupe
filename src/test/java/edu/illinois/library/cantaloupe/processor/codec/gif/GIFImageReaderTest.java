@@ -11,14 +11,14 @@ import edu.illinois.library.cantaloupe.processor.codec.AbstractImageReaderTest;
 import edu.illinois.library.cantaloupe.processor.codec.BufferedImageSequence;
 import edu.illinois.library.cantaloupe.processor.codec.ReaderHint;
 import edu.illinois.library.cantaloupe.test.TestUtil;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class GIFImageReaderTest extends AbstractImageReaderTest {
 

@@ -3,21 +3,23 @@ package edu.illinois.library.cantaloupe.processor;
 import edu.illinois.library.cantaloupe.source.PathStreamFactory;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;
-import org.junit.After;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class TempFileDownloadTest extends BaseTest {
 
     private TempFileDownload instance;
     private Path tempFile;
 
-    @Test
+    @BeforeEach
     public void setUp() throws Exception {
+        super.setUp();
         tempFile = Files.createTempFile("test", "tmp");
         Files.delete(tempFile);
 
@@ -26,45 +28,45 @@ public class TempFileDownloadTest extends BaseTest {
                 tempFile);
     }
 
-    @After
+    @AfterEach
     public void tearDown() throws Exception {
+        super.tearDown();
         Files.deleteIfExists(tempFile);
     }
 
     @Test
-    public void testCancelWithTrueArgument() {
+    void testCancelWithTrueArgument() {
         assertFalse(instance.isCancelled());
         instance.cancel(true);
         assertTrue(instance.isCancelled());
     }
 
     @Test
-    public void testCancelWithFalseArgument() {
+    void testCancelWithFalseArgument() {
         assertFalse(instance.isCancelled());
         instance.cancel(false);
         assertTrue(instance.isCancelled());
     }
 
     @Test
-    public void testGet() throws Exception {
+    void testGet() throws Exception {
         instance.downloadAsync();
 
         Path actualFile = instance.get();
         assertEquals(tempFile, actualFile);
         assertEquals(Files.size(TestUtil.getImage("jpg")),
                 Files.size(actualFile));
-
     }
 
     @Test
-    public void testIsCancelled() {
+    void testIsCancelled() {
         assertFalse(instance.isCancelled());
         instance.cancel(true);
         assertTrue(instance.isCancelled());
     }
 
     @Test
-    public void testIsDone() throws Exception {
+    void testIsDone() throws Exception {
         assertFalse(instance.isDone());
         instance.downloadAsync();
         instance.get();

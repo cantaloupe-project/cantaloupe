@@ -3,9 +3,9 @@ package edu.illinois.library.cantaloupe.resource.admin;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.resource.Route;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
@@ -16,7 +16,7 @@ import org.openqa.selenium.support.ui.Select;
 import java.net.URI;
 import java.net.URISyntaxException;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Functional test of the Control Panel using Selenium.
@@ -31,7 +31,7 @@ public class AdminResourceUITest extends AbstractAdminResourceTest {
     private static WebDriver webDriver;
 
     @Override
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         super.setUp();
         Configuration config = Configuration.getInstance();
@@ -50,7 +50,7 @@ public class AdminResourceUITest extends AbstractAdminResourceTest {
     }
 
     @Override
-    @After
+    @AfterEach
     public void tearDown() throws Exception {
         super.tearDown();
         webDriver.close();
@@ -93,7 +93,7 @@ public class AdminResourceUITest extends AbstractAdminResourceTest {
     }
 
     @Test
-    public void testApplicationSection() throws Exception {
+    void testApplicationSection() throws Exception {
         css("#cl-application-button > a").click();
 
         // Fill in the form
@@ -228,7 +228,7 @@ public class AdminResourceUITest extends AbstractAdminResourceTest {
     }
 
     @Test
-    public void testServerSection() throws Exception {
+    void testServerSection() throws Exception {
         css("#cl-http-button > a").click();
 
         // Fill in the form
@@ -271,7 +271,7 @@ public class AdminResourceUITest extends AbstractAdminResourceTest {
     }
 
     @Test
-    public void testEndpointsSection() throws Exception {
+    void testEndpointsSection() throws Exception {
         css("#cl-endpoints-button > a").click();
 
         // Fill in the form
@@ -306,7 +306,7 @@ public class AdminResourceUITest extends AbstractAdminResourceTest {
     }
 
     @Test
-    public void testSourceSection() throws Exception {
+    void testSourceSection() throws Exception {
         css("#cl-source-button > a").click();
 
         // Fill in the form
@@ -457,7 +457,7 @@ public class AdminResourceUITest extends AbstractAdminResourceTest {
     }
 
     @Test
-    public void testProcessorsSection() throws Exception {
+    void testProcessorsSection() throws Exception {
         css("#cl-processors-button > a").click();
 
         // Fill in the form
@@ -547,7 +547,7 @@ public class AdminResourceUITest extends AbstractAdminResourceTest {
     }
 
     @Test
-    public void testCachesSection() throws Exception {
+    void testCachesSection() throws Exception {
         css("#cl-caches-button > a").click();
 
         // Fill in the form
@@ -674,7 +674,7 @@ public class AdminResourceUITest extends AbstractAdminResourceTest {
     }
 
     @Test
-    public void testOverlaysSection() throws Exception {
+    void testOverlaysSection() throws Exception {
         css("#cl-overlays-button > a").click();
 
         // Fill in the form
