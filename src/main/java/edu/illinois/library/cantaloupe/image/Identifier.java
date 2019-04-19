@@ -155,8 +155,6 @@ public class Identifier implements Comparable<Identifier> {
             return true;
         } else if (obj instanceof Identifier) {
             return toString().equals(obj.toString());
-        } else if (obj instanceof String) {
-            return toString().equals(obj);
         }
         return super.equals(obj);
     }

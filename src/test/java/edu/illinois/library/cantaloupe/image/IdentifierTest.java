@@ -69,18 +69,13 @@ public class IdentifierTest extends BaseTest {
     }
 
     @Test
-    void testEqualsWithIdentifier() {
-        Identifier id1 = new Identifier("cats");
-        Identifier id2 = new Identifier("cats");
-        Identifier id3 = new Identifier("dogs");
-        assertEquals(id1, id2);
-        assertNotEquals(id2, id3);
+    void testEqualsWithEqualInstances() {
+        assertEquals(new Identifier("cats"), new Identifier("cats"));
     }
 
     @Test
-    void testEqualsWithString() {
-        assertTrue(instance.equals("cats"));
-        assertFalse(instance.equals("dogs"));
+    void testEqualsWithUnequalInstances() {
+        assertNotEquals(new Identifier("cats"), new Identifier("dogs"));
     }
 
     @Test
