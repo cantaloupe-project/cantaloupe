@@ -3,14 +3,13 @@ package edu.illinois.library.cantaloupe.processor.codec.jpeg;
 import edu.illinois.library.cantaloupe.image.exif.Directory;
 import edu.illinois.library.cantaloupe.image.iptc.DataSet;
 import edu.illinois.library.cantaloupe.processor.codec.IIOMetadata;
-import edu.illinois.library.cantaloupe.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.NodeList;
 
 import javax.imageio.metadata.IIOMetadataNode;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -97,24 +96,31 @@ class JPEGMetadata extends IIOMetadata {
     public Optional<String> getXMP() {
         if (!checkedForXMP) {
             checkedForXMP = true;
+            final List<byte[]> xmpChunks = new ArrayList<>();
+
             // EXIF and XMP metadata both appear in the IIOMetadataNode tree as
             // identical nodes at /markerSequence/unknown[@MarkerTag=225].
-            // There may be multiple XMP nodes. (See the Adobe XMP
-            // Specification Part 3.)
+            // There may be multiple XMP nodes, in which case the first one
+            // (the "StandardXMP") will contain a fully formed XML tree, and
+            // the rest (the "ExtendedXMP") will be split across however many
+            // more segments. (See the Adobe XMP Specification Part 3.)
             final IIOMetadataNode markerSequence = (IIOMetadataNode) getAsTree().
                     getElementsByTagName("markerSequence").item(0);
             final NodeList unknowns = markerSequence.getElementsByTagName("unknown");
             for (int i = 0; i < unknowns.getLength(); i++) {
                 final IIOMetadataNode marker = (IIOMetadataNode) unknowns.item(i);
-                if ("225".equals(marker.getAttribute("MarkerTag"))) {
-                    byte[] data = (byte[]) marker.getUserObject();
-                    // Check the first byte to see whether it's EXIF or XMP.
-                    if (data[0] == 104) {
-                        xmp = new String(data, StandardCharsets.UTF_8);
-                        xmp = StringUtils.trimXMP(xmp);
-                        break;
+                if ("225".equals(marker.getAttribute("MarkerTag"))) { // APP1
+                    byte[] segment = (byte[]) marker.getUserObject();
+                    if (Util.isStandardXMPSegment(segment) ||
+                            Util.isExtendedXMPSegment(segment)) {
+                        xmpChunks.add(Util.readAPP1Segment(segment));
                     }
                 }
+            }
+            try {
+                xmp = Util.assembleXMP(xmpChunks);
+            } catch (IOException e) {
+                LOGGER.info("getXMP(): {}", e.getMessage());
             }
         }
         return Optional.ofNullable(xmp);

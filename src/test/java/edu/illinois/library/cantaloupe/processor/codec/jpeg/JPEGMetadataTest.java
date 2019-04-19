@@ -4,8 +4,6 @@ import edu.illinois.library.cantaloupe.image.iptc.DataSet;
 import edu.illinois.library.cantaloupe.image.iptc.Tag;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;
-import org.apache.jena.rdf.model.Model;
-import org.apache.jena.rdf.model.ModelFactory;
 import org.junit.jupiter.api.Test;
 
 import javax.imageio.ImageIO;
@@ -14,8 +12,6 @@ import javax.imageio.metadata.IIOMetadata;
 import javax.imageio.stream.ImageInputStream;
 
 import java.io.IOException;
-import java.io.Reader;
-import java.io.StringReader;
 import java.nio.file.Path;
 import java.util.Iterator;
 import java.util.List;
@@ -65,12 +61,19 @@ public class JPEGMetadataTest extends BaseTest {
     }
 
     @Test
-    void testGetXMP() throws IOException {
-        final String rdf = getInstance("jpg-xmp.jpg").getXMP().orElseThrow();
-        final Model model = ModelFactory.createDefaultModel();
-        try (Reader reader = new StringReader(rdf)) {
-            model.read(reader, null, "RDF/XML");
-        }
+    void testGetXMPWithStandardXMP() throws Exception {
+        final String xmp = getInstance("jpg-xmp.jpg").getXMP().orElseThrow();
+        assertTrue(xmp.startsWith("<rdf:RDF"));
+        assertTrue(xmp.endsWith("</rdf:RDF>"));
+    }
+
+    @Test
+    void testGetXMPWithExtendedXMP() throws Exception {
+        final String xmp = getInstance("jpg-xmp-extended.jpg").getXMP().orElseThrow();
+        assertTrue(xmp.length() > 65502);
+        assertTrue(xmp.startsWith("<rdf:RDF"));
+        assertTrue(xmp.endsWith("</rdf:RDF>\n"));
+        assertFalse(xmp.contains("HasExtendedXMP"));
     }
 
 }

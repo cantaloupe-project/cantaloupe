@@ -7,8 +7,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import static edu.illinois.library.cantaloupe.processor.codec.jpeg.Constants.*;
-
 /**
  * <p>Reads various metadata from a JPEG image.</p>
  *
@@ -59,8 +57,11 @@ public final class JPEGMetadataReader {
     private boolean hasAdobeSegment;
 
     private final List<byte[]> iccProfileChunks = new ArrayList<>();
-    private byte[] exif, iptc, xmp;
+    private final List<byte[]> xmpChunks        = new ArrayList<>();
+    private byte[] exif, iptc;
     private int width, height;
+
+    private transient String xmp;
 
     /**
      * @return Color transform from the {@literal APP14} segment.
@@ -119,11 +120,15 @@ public final class JPEGMetadataReader {
     }
 
     /**
-     * @return XMP data from the {@literal APP1} segment. This does not include
-     *         ExtendedXMP data which this reader doesn't currently support.
+     * @return Fully formed XMP tree from one or more {@literal APP1} segments.
+     *         {@code rdf:RDF} is the outermost element and some properties
+     *         (especially large ones) may be removed.
      */
-    public byte[] getXMP() throws IOException {
+    public String getXMP() throws IOException {
         readImage();
+        if (xmp == null) {
+            xmp = Util.assembleXMP(xmpChunks);
+        }
         return xmp;
     }
 
@@ -137,6 +142,7 @@ public final class JPEGMetadataReader {
      */
     public void setSource(ImageInputStream inputStream) {
         this.inputStream     = inputStream;
+        this.xmp             = null;
         this.isReadAttempted = false;
     }
 
@@ -171,41 +177,17 @@ public final class JPEGMetadataReader {
     private int readSegment() throws IOException {
         switch (Marker.forBytes(inputStream.read(), inputStream.read())) {
             case SOF0:
-                readSOFSegment();
-                break;
             case SOF1:
-                readSOFSegment();
-                break;
             case SOF2:
-                readSOFSegment();
-                break;
             case SOF3:
-                readSOFSegment();
-                break;
             case SOF5:
-                readSOFSegment();
-                break;
             case SOF6:
-                readSOFSegment();
-                break;
             case SOF7:
-                readSOFSegment();
-                break;
             case SOF9:
-                readSOFSegment();
-                break;
             case SOF10:
-                readSOFSegment();
-                break;
             case SOF11:
-                readSOFSegment();
-                break;
             case SOF13:
-                readSOFSegment();
-                break;
             case SOF14:
-                readSOFSegment();
-                break;
             case SOF15:
                 readSOFSegment();
                 break;
@@ -254,19 +236,14 @@ public final class JPEGMetadataReader {
      */
     private void readAPP1Segment() throws IOException {
         int segmentLength = readSegmentLength();
-        byte[] data = read(segmentLength);
+        byte[] segment = read(segmentLength);
+        byte[] data = Util.readAPP1Segment(segment);
 
-        // Check for EXIF.
-        if (Util.isEXIFSegment(data)) {
-            final int exifLength = data.length - EXIF_SEGMENT_HEADER.length;
-            exif = new byte[exifLength];
-            System.arraycopy(data, EXIF_SEGMENT_HEADER.length,
-                    exif, 0, exifLength);
-        } else if (Util.isStandardXMPSegment(data)) {
-            final int xmpLength = data.length - STANDARD_XMP_SEGMENT_HEADER.length;
-            xmp = new byte[xmpLength];
-            System.arraycopy(data, STANDARD_XMP_SEGMENT_HEADER.length,
-                    xmp, 0, xmpLength);
+        if (Util.isEXIFSegment(segment)) {
+            exif = data;
+        } else if (Util.isStandardXMPSegment(segment) ||
+                Util.isExtendedXMPSegment(segment)) {
+            xmpChunks.add(data);
         }
     }
 

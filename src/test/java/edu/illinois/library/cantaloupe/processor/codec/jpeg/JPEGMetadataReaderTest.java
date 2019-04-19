@@ -163,12 +163,28 @@ public class JPEGMetadataReaderTest extends BaseTest {
     /* getXMP() */
 
     @Test
-    void testGetXMPWithXMPImage() throws Exception {
+    void testGetXMPWithStandardXMPImage() throws Exception {
         Path file = TestUtil.getImage("jpg-xmp.jpg");
         try (ImageInputStream is = ImageIO.createImageInputStream(file.toFile())) {
             instance.setSource(is);
-            byte[] xmp = instance.getXMP();
-            assertNotNull(xmp);
+            String xmp = instance.getXMP();
+            assertTrue(xmp.startsWith("<rdf:RDF"));
+            assertTrue(xmp.endsWith("</rdf:RDF>"));
+        }
+    }
+
+    @Test
+    void testGetXMPWithExtendedXMPImage() throws Exception {
+        // N.B.: easy XMP embed:
+        // exiftool -tagsfromfile file.xmp -all:all jpg.jpg
+        Path file = TestUtil.getImage("jpg-xmp-extended.jpg");
+        try (ImageInputStream is = ImageIO.createImageInputStream(file.toFile())) {
+            instance.setSource(is);
+            String xmp = instance.getXMP();
+            assertTrue(xmp.length() > 65502);
+            assertTrue(xmp.startsWith("<rdf:RDF"));
+            assertTrue(xmp.endsWith("</rdf:RDF>\n"));
+            assertFalse(xmp.contains("HasExtendedXMP"));
         }
     }
 
