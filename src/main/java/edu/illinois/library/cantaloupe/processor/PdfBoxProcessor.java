@@ -6,6 +6,7 @@ import edu.illinois.library.cantaloupe.image.Dimension;
 import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.image.Metadata;
 import edu.illinois.library.cantaloupe.image.ScaleConstraint;
+import edu.illinois.library.cantaloupe.operation.Encode;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.operation.ReductionFactor;
 import edu.illinois.library.cantaloupe.operation.Scale;
@@ -133,8 +134,10 @@ class PdfBoxProcessor extends AbstractProcessor
 
             BufferedImage image = readImage(
                     page - 1, reductionFactor, scaleConstraint);
-            Java2DPostProcessor.postProcess(
-                    image, hints, opList, imageInfo, reductionFactor,
+            image = Java2DPostProcessor.postProcess(
+                    image, hints, opList, imageInfo, reductionFactor);
+            WriterFacade.write(image,
+                    (Encode) opList.getFirst(Encode.class),
                     outputStream);
         } catch (IOException | IndexOutOfBoundsException e) {
             throw new ProcessorException(e.getMessage(), e);

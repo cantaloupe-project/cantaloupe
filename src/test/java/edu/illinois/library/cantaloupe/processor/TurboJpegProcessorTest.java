@@ -66,17 +66,27 @@ public class TurboJpegProcessorTest extends AbstractProcessorTest {
     }
 
     @Override
-    @Disabled // This processor doesn't support this output format.
     @Test
-    public void testProcessWritesXMPMetadataIntoPNG() throws Exception {
-        super.testProcessWritesXMPMetadataIntoPNG();
+    public void testProcessWithTurboJPEGAvailable() {
+        // This processor always uses TurboJPEG.
     }
 
     @Override
-    @Disabled // This processor doesn't support this output format.
     @Test
-    public void testProcessWritesXMPMetadataIntoTIFF() throws Exception {
-        super.testProcessWritesXMPMetadataIntoTIFF();
+    public void testProcessWithTurboJPEGNotAvailable() {
+        // This processor always uses TurboJPEG.
+    }
+
+    @Override
+    @Test
+    public void testProcessWritesXMPMetadataIntoPNG() {
+        // This processor doesn't support this output format.
+    }
+
+    @Override
+    @Test
+    public void testProcessWritesXMPMetadataIntoTIFF() {
+        // This processor doesn't support this output format.
     }
 
     @Test

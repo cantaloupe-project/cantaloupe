@@ -6,6 +6,7 @@ import org.libjpegturbo.turbojpeg.TJCompressor;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * @see org.libjpegturbo.turbojpeg for libjpeg-turbo setup.
@@ -20,11 +21,36 @@ public final class TurboJPEGImageWriter {
     private static final int DEFAULT_QUALITY     = 80;
     private static final int DEFAULT_SUBSAMPLING = TJ.SAMP_444;
 
+    private static final AtomicBoolean HAVE_CHECKED_FOR_TURBOJPEG = new AtomicBoolean();
+    private static final AtomicBoolean TURBOJPEG_AVAILABLE        = new AtomicBoolean();
+
     private int quality     = DEFAULT_QUALITY;
     private int subsampling = DEFAULT_SUBSAMPLING;
     private boolean useFastDCT, useAccurateDCT;
     private boolean isProgressive;
     private String xmp;
+
+    public static boolean isTurboJPEGAvailable() {
+        if (!HAVE_CHECKED_FOR_TURBOJPEG.get()) {
+            HAVE_CHECKED_FOR_TURBOJPEG.set(true);
+            try {
+                TJ.getScalingFactors();
+                TURBOJPEG_AVAILABLE.set(true);
+            } catch (UnsatisfiedLinkError e) {
+                TURBOJPEG_AVAILABLE.set(false);
+            }
+        }
+        return TURBOJPEG_AVAILABLE.get();
+    }
+
+    /**
+     * Overrides the check used by {@link #isTurboJPEGAvailable()}. For
+     * testing only!
+     */
+    public static void setTurboJPEGAvailable(boolean isAvailable) {
+        HAVE_CHECKED_FOR_TURBOJPEG.set(true);
+        TURBOJPEG_AVAILABLE.set(isAvailable);
+    }
 
     public void setProgressive(boolean isProgressive) {
         this.isProgressive = isProgressive;

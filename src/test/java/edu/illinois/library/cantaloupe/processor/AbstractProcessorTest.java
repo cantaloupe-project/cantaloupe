@@ -15,6 +15,7 @@ import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.operation.Rotate;
 import edu.illinois.library.cantaloupe.operation.Scale;
 import edu.illinois.library.cantaloupe.operation.Transpose;
+import edu.illinois.library.cantaloupe.processor.codec.jpeg.TurboJPEGImageWriter;
 import edu.illinois.library.cantaloupe.source.PathStreamFactory;
 import edu.illinois.library.cantaloupe.source.StreamFactory;
 import edu.illinois.library.cantaloupe.test.BaseTest;
@@ -34,12 +35,16 @@ import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static edu.illinois.library.cantaloupe.test.Assert.ImageAssert.*;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assumptions.*;
 
 /**
  * <p>Contains tests common to all {@link Processor}s.</p>
@@ -83,8 +88,7 @@ abstract class AbstractProcessorTest extends BaseTest {
             try {
                 processor.setSourceFormat(format);
                 formats.add(format);
-            } catch (UnsupportedSourceFormatException e) {
-                // continue
+            } catch (UnsupportedSourceFormatException ignore) {
             }
         }
         return formats;
@@ -151,10 +155,8 @@ abstract class AbstractProcessorTest extends BaseTest {
 
     @Test
     public void testProcessWithOnlyNoOpOperations() throws Exception {
-        Scale scale = new Scale();
-        Rotate rotate = new Rotate(0);
         OperationList ops = new OperationList(
-                scale, rotate, new Encode(Format.JPG));
+                new Scale(), new Rotate(0), new Encode(Format.JPG));
 
         forEachFixture(ops, new ProcessorAssertion() {
             @Override
@@ -545,6 +547,46 @@ abstract class AbstractProcessorTest extends BaseTest {
     }
 
     @Test
+    public void testProcessWithTurboJPEGAvailable() throws Exception {
+        TurboJPEGImageWriter.setTurboJPEGAvailable(true);
+        // We don't want a failure if TurboJPEG is not actually available.
+        assumeTrue(TurboJPEGImageWriter.isTurboJPEGAvailable());
+
+        OperationList ops = new OperationList(new Encode(Format.JPG));
+
+        forAnyFixture(ops, new ProcessorAssertion() {
+            @Override
+            public void run() {
+                if (this.sourceSize != null) {
+                    assertEquals(this.resultingImage.getWidth(),
+                            this.resultingImage.getWidth());
+                    assertEquals(this.sourceSize.height(),
+                            this.resultingImage.getHeight());
+                }
+            }
+        });
+    }
+
+    @Test
+    public void testProcessWithTurboJPEGNotAvailable() throws Exception {
+        TurboJPEGImageWriter.setTurboJPEGAvailable(false);
+
+        OperationList ops = new OperationList(new Encode(Format.JPG));
+
+        forAnyFixture(ops, new ProcessorAssertion() {
+            @Override
+            public void run() {
+                if (this.sourceSize != null) {
+                    assertEquals(this.resultingImage.getWidth(),
+                            this.resultingImage.getWidth());
+                    assertEquals(this.sourceSize.height(),
+                            this.resultingImage.getHeight());
+                }
+            }
+        });
+    }
+
+    @Test
     @Disabled // see comment in GIFImageWriter, which most processors use to write GIFs
     public void testProcessWritesXMPMetadataIntoGIF() throws Exception {
         testProcessWritesXMPMetadata(Format.GIF);
@@ -674,62 +716,11 @@ abstract class AbstractProcessorTest extends BaseTest {
                     return FileVisitResult.CONTINUE;
                 }
 
-                Set<Format> supportedFormats =
-                        getSupportedSourceFormats(newInstance());
+                Set<Format> supportedFormats = getSupportedSourceFormats(newInstance());
                 for (Format sourceFormat : supportedFormats) {
-                    final String fixtureName = file.getFileName().toString();
-
-                    Processor proc = newInstance();
-
-                    // These are used in other tests, but ImageIO doesn't like
-                    // them.
-                    if (Set.of("jpg-ycck.jpg", "jpg-icc-chunked.jpg").contains(fixtureName)) {
-                        continue;
-                    }
-
-                    // TODO: address these
-                    if (proc instanceof Java2dProcessor || proc instanceof JaiProcessor) {
-                        if (fixtureName.equals("tif-rgba-1res-64x56x8-tiled-jpeg.tif") ||
-                                fixtureName.equals("tif-rgba-1res-64x56x8-striped-jpeg.tif")) {
-                            continue;
-                        }
-                    } else if (proc instanceof GraphicsMagickProcessor) {
-                        if (fixtureName.equals("jpg-rgb-594x522x8-baseline.jpg")) {
-                            continue;
-                        }
-                    } else if (proc instanceof ImageMagickProcessor) {
-                        if (fixtureName.contains("pdf")) {
-                            continue;
-                        }
-                    }
-
-                    // Don't test 1x1 images as they are problematic with
-                    // cropping & scaling.
-                    if (fixtureName.startsWith(sourceFormat.name().toLowerCase()) &&
-                            !fixtureName.contains("-1x1")) {
-                        // Extract the dimensions and sample size from the
-                        // fixture name to use in the assertion.
-                        Pattern pattern = Pattern.compile("\\d+x\\d+x\\d+");
-                        Matcher matcher = pattern.matcher(fixtureName);
-                        if (matcher.find()) {
-                            String match = matcher.group();
-                            String[] parts = match.split("x");
-                            if (parts.length > 1) {
-                                assertion.sourceSize = new Dimension(
-                                        Integer.parseInt(parts[0]),
-                                        Integer.parseInt(parts[1]));
-                            }
-                            if (parts.length > 2) {
-                                assertion.sourceSampleSize =
-                                        Integer.parseInt(parts[2]);
-                            }
-                        } else {
-                            assertion.sourceSize = null;
-                            assertion.sourceSampleSize = 0;
-                        }
-
+                    if (shouldTestAgainst(file, sourceFormat)) {
                         try {
-                            doProcessTest(file, sourceFormat, ops, assertion);
+                            forFixture(file, sourceFormat, ops, assertion);
                         } catch (Exception | AssertionError e) {
                             System.err.println("FAILED: " + file);
                             throw new IOException(e.getMessage(), e);
@@ -739,6 +730,119 @@ abstract class AbstractProcessorTest extends BaseTest {
                 return FileVisitResult.CONTINUE;
             }
         });
+    }
+
+    /**
+     * Tests {@link Processor#process} with any one of the fixtures for any
+     * source format the processor supports.
+     */
+    void forAnyFixture(final OperationList ops,
+                       final ProcessorAssertion assertion) throws Exception {
+        final Map<Path,Format> fixtures = new HashMap<>();
+
+        Files.walkFileTree(TestUtil.getFixture("images"), new SimpleFileVisitor<>() {
+            @Override
+            public FileVisitResult visitFile(Path file,
+                                             BasicFileAttributes attrs) {
+                if (assertion.skippedFixtures.contains(file.getFileName().toString())) {
+                    return FileVisitResult.CONTINUE;
+                }
+
+                Set<Format> supportedFormats =
+                        getSupportedSourceFormats(newInstance());
+                for (Format sourceFormat : supportedFormats) {
+                    if (shouldTestAgainst(file, sourceFormat)) {
+                        fixtures.put(file, sourceFormat);
+                    }
+                }
+                return FileVisitResult.CONTINUE;
+            }
+        });
+
+        Iterator<Path> it = fixtures.keySet().iterator();
+        if (it.hasNext()) {
+            Path path = it.next();
+            Format sourceFormat = fixtures.get(path);
+            try {
+                forFixture(it.next(), sourceFormat, ops, assertion);
+            } catch (Exception | AssertionError e) {
+                System.err.println("FAILED: " + path);
+                throw new IOException(e.getMessage(), e);
+            }
+        }
+    }
+
+    private boolean shouldTestAgainst(Path fixture, Format sourceFormat) {
+        final String fixtureName = fixture.getFileName().toString();
+
+        // Skip other formats.
+        if (!fixtureName.startsWith(sourceFormat.name().toLowerCase())) {
+            return false;
+        }
+
+        // Don't test 1x1 images as they are problematic with
+        // cropping & scaling.
+        if (fixtureName.contains("-1x1")) {
+            return false;
+        }
+
+        // TODO: address some of these exclusions, perhaps move them into ProcessorAssertion.skippedFixtures
+        // These are used in other tests, but Image I/O doesn't like them.
+        if (Set.of("jpg-ycck.jpg", "jpg-icc-chunked.jpg").contains(fixtureName)) {
+            return false;
+        }
+
+        Processor proc = newInstance();
+        if (proc instanceof Java2dProcessor || proc instanceof JaiProcessor) {
+            if (fixtureName.equals("tif-rgba-1res-64x56x8-tiled-jpeg.tif") ||
+                    fixtureName.equals("tif-rgba-1res-64x56x8-striped-jpeg.tif")) {
+                return false;
+            }
+        } else if (proc instanceof GraphicsMagickProcessor) {
+            if (fixtureName.equals("jpg-rgb-594x522x8-baseline.jpg")) {
+                return false;
+            }
+        } else if (proc instanceof ImageMagickProcessor) {
+            if (fixtureName.contains("pdf")) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Tests {@link Processor#process} with the given fixture.
+     */
+    void forFixture(final Path fixture,
+                    final Format sourceFormat,
+                    final OperationList ops,
+                    final ProcessorAssertion assertion) throws Exception {
+        // Extract the dimensions and sample size from the fixture name to use
+        // in the assertion.
+        Pattern pattern = Pattern.compile("\\d+x\\d+x\\d+");
+        Matcher matcher = pattern.matcher(fixture.getFileName().toString());
+        if (matcher.find()) {
+            String match = matcher.group();
+            String[] parts = match.split("x");
+            if (parts.length > 1) {
+                assertion.sourceSize = new Dimension(
+                        Integer.parseInt(parts[0]),
+                        Integer.parseInt(parts[1]));
+            }
+            if (parts.length > 2) {
+                assertion.sourceSampleSize = Integer.parseInt(parts[2]);
+            }
+        } else {
+            assertion.sourceSize = null;
+            assertion.sourceSampleSize = 0;
+        }
+
+        try {
+            doProcessTest(fixture, sourceFormat, ops, assertion);
+        } catch (Exception | AssertionError e) {
+            System.err.println("FAILED: " + fixture);
+            throw new IOException(e.getMessage(), e);
+        }
     }
 
     /**

@@ -173,6 +173,18 @@ abstract class AbstractMagickProcessorTest extends AbstractProcessorTest {
         assertTrue(blue > 230);
     }
 
+    @Test
+    @Override
+    public void testProcessWithTurboJPEGAvailable() {
+        // This processor doesn't use TurboJPEG ever.
+    }
+
+    @Test
+    @Override
+    public void testProcessWithTurboJPEGNotAvailable() {
+        // This processor doesn't use TurboJPEG ever.
+    }
+
     @Override
     @Disabled // This processor doesn't support XMP writing.
     @Test

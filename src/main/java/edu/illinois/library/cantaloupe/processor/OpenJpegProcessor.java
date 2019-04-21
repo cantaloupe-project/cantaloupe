@@ -11,6 +11,7 @@ import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.image.Metadata;
 import edu.illinois.library.cantaloupe.image.Rectangle;
 import edu.illinois.library.cantaloupe.image.iptc.Reader;
+import edu.illinois.library.cantaloupe.operation.Encode;
 import edu.illinois.library.cantaloupe.operation.Operation;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.operation.ReductionFactor;
@@ -535,8 +536,12 @@ class OpenJpegProcessor extends AbstractProcessor implements FileProcessor {
                 final Set<ReaderHint> hints =
                         EnumSet.of(ReaderHint.ALREADY_CROPPED);
 
-                Java2DPostProcessor.postProcess(image, hints, opList, info,
-                        reductionFactor, outputStream);
+                Java2DPostProcessor.postProcess(
+                        image, hints, opList, info, reductionFactor);
+
+                WriterFacade.write(image,
+                        (Encode) opList.getFirst(Encode.class),
+                        outputStream);
             } finally {
                 reader.dispose();
             }
@@ -572,12 +577,16 @@ class OpenJpegProcessor extends AbstractProcessor implements FileProcessor {
             final ImageReader reader = new ImageReaderFactory().newImageReader(
                     processInputStream, Format.BMP);
             try {
-                final BufferedImage image = reader.read();
                 final Set<ReaderHint> hints =
                         EnumSet.of(ReaderHint.ALREADY_CROPPED);
 
-                Java2DPostProcessor.postProcess(image, hints, opList, info,
-                        reductionFactor, outputStream);
+                BufferedImage image = reader.read();
+                image = Java2DPostProcessor.postProcess(
+                        image, hints, opList, info, reductionFactor);
+
+                WriterFacade.write(image,
+                        (Encode) opList.getFirst(Encode.class),
+                        outputStream);
 
                 final int code = process.waitFor();
                 if (code != 0) {

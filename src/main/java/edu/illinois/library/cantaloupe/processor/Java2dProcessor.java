@@ -2,10 +2,13 @@ package edu.illinois.library.cantaloupe.processor;
 
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Info;
+import edu.illinois.library.cantaloupe.operation.Encode;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.operation.ReductionFactor;
 import edu.illinois.library.cantaloupe.processor.codec.BufferedImageSequence;
 import edu.illinois.library.cantaloupe.processor.codec.ImageReader;
+import edu.illinois.library.cantaloupe.processor.codec.ImageWriter;
+import edu.illinois.library.cantaloupe.processor.codec.ImageWriterFactory;
 import edu.illinois.library.cantaloupe.processor.codec.ReaderHint;
 import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
 
@@ -53,14 +56,19 @@ class Java2dProcessor extends AbstractImageIOProcessor
             // contain multiple frames, in which case the post-processing steps
             // will have to be different. (No problem if it only contains one
             // frame, though.)
+            final Encode encode = (Encode) ops.getFirst(Encode.class);
+            final ImageWriter writer = new ImageWriterFactory()
+                    .newImageWriter(encode);
             if (Format.GIF.equals(info.getSourceFormat()) &&
                     Format.GIF.equals(ops.getOutputFormat())) {
                 BufferedImageSequence seq = reader.readSequence();
-                Java2DPostProcessor.postProcess(seq, ops, info, outputStream);
+                Java2DPostProcessor.postProcess(seq, ops, info);
+                writer.write(seq, outputStream);
             } else {
                 BufferedImage image = reader.read(ops, rf, hints);
-                Java2DPostProcessor.postProcess(
-                        image, hints, ops, info, rf, outputStream);
+                image = Java2DPostProcessor.postProcess(
+                        image, hints, ops, info, rf);
+                writer.write(image, outputStream);
             }
         } catch (IOException e) {
             throw new ProcessorException(e.getMessage(), e);

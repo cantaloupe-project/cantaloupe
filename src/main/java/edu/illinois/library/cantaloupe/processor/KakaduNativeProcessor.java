@@ -20,6 +20,7 @@ import edu.illinois.library.cantaloupe.operation.Transpose;
 import edu.illinois.library.cantaloupe.operation.overlay.Overlay;
 import edu.illinois.library.cantaloupe.operation.redaction.Redaction;
 import edu.illinois.library.cantaloupe.processor.codec.ImageWriterFactory;
+import edu.illinois.library.cantaloupe.processor.codec.jpeg.TurboJPEGImageWriter;
 import edu.illinois.library.cantaloupe.processor.codec.jpeg2000.JPEG2000KakaduImageReader;
 import edu.illinois.library.cantaloupe.source.StreamFactory;
 import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
@@ -45,28 +46,9 @@ import java.util.stream.Collectors;
  *
  * <p>{@link JPEG2000KakaduImageReader} is used to acquire a scaled region of
  * interest that is {@link BufferedImage buffered in memory}, and Java 2D is
- * used for all post-scale processing steps.</p>
- *
- * <h1>Comparison with {@link KakaduDemoProcessor}</h1>
- *
- * <p>Compared to {@link KakaduDemoProcessor}, this one offers a number of
- * advantages:</p>
- *
- * <ul>
- *     <li>It doesn't need to invoke a process.</li>
- *     <li>It doesn't have to do intermediary conversions to and from TIFF.</li>
- *     <li>It doesn't do differential scaling in Java, and instead uses the
- *     high-quality optimized scaler built into {@link
- *     kdu_jni.Kdu_region_decompressor}.</li>
- *     <li>It doesn't have to open the same source image twice.</li>
- *     <li>Thanks to all of the above, it's significantly faster.</li>
- *     <li>It can read from both {@link FileProcessor files} and {@link
- *     StreamProcessor streams}.</li>
- *     <li>It can copy source XMP metadata into derivatives.</li>
- *     <li>It works equally efficiently in Windows.</li>
- *     <li>It doesn't have to resort to silly tricks involving symlinks and
- *     {@literal /dev/stdout}.</li>
- * </ul>
+ * used for all post-scale processing steps. If libjpeg-turbo is {@link
+ * TurboJPEGImageWriter#isTurboJPEGAvailable() available}, that is used to
+ * write the result, otherwise Image I/O is used.</p>
  *
  * <h1>Usage</h1>
  *
@@ -334,9 +316,9 @@ class KakaduNativeProcessor implements FileProcessor, StreamProcessor {
             }
         }
 
-        new ImageWriterFactory()
-                .newImageWriter((Encode) opList.getFirst(Encode.class))
-                .write(image, outputStream);
+        // Write the result.
+        final Encode encode = (Encode) opList.getFirst(Encode.class);
+        WriterFacade.write(image, encode, outputStream);
     }
 
     @Override

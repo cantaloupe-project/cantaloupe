@@ -2,10 +2,15 @@
 
 ## 5.0
 
+### Endpoints
+
 * The `X-IIIF-ID` reverse proxy header is no longer supported. `X-Forwarded-ID`
   should be used instead.
 * The `endpoint.iiif.content_disposition` configuration key has been removed.
   The `?response-content-disposition` query argument should be used instead.
+
+### Processors
+
 * The metadata-handling system has been redesigned:
     * Source image metadata is cached in derivative caches.
     * XMP metadata can be copied or edited using a delegate method.
@@ -16,6 +21,11 @@
 * KakaduNativeProcessor, KakaduDemoProcessor, and OpenJpegProcessor support
   IPTC and XMP metadata.
 * TurboJpegProcessor supports EXIF, IPTC, and XMP metadata.
+* FfmpegProcessor, KakaduNativeProcessor, OpenJpegProcessor, and
+  PdfBoxProcessor use libjpeg-turbo to write JPEGs if it is available.
+
+### Other
+
 * Java 11 is required.
 
 ## 4.1.1

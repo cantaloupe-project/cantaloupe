@@ -112,6 +112,18 @@ public class KakaduDemoProcessorTest extends AbstractProcessorTest {
     }
 
     @Test
+    @Override
+    public void testProcessWithTurboJPEGAvailable() {
+        // This processor doesn't use TurboJPEG ever.
+    }
+
+    @Test
+    @Override
+    public void testProcessWithTurboJPEGNotAvailable() {
+        // This processor doesn't use TurboJPEG ever.
+    }
+
+    @Test
     void testReadInfoIPTCAwareness() throws Exception {
         instance.setSourceFile(TestUtil.getImage("jp2-iptc.jp2"));
         Info info = instance.readInfo();

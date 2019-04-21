@@ -8,7 +8,6 @@ import edu.illinois.library.cantaloupe.image.Orientation;
 import edu.illinois.library.cantaloupe.operation.ColorTransform;
 import edu.illinois.library.cantaloupe.operation.Crop;
 import edu.illinois.library.cantaloupe.operation.CropByPercent;
-import edu.illinois.library.cantaloupe.operation.Encode;
 import edu.illinois.library.cantaloupe.operation.Operation;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.operation.ReductionFactor;
@@ -19,8 +18,6 @@ import edu.illinois.library.cantaloupe.operation.Transpose;
 import edu.illinois.library.cantaloupe.operation.overlay.Overlay;
 import edu.illinois.library.cantaloupe.operation.redaction.Redaction;
 import edu.illinois.library.cantaloupe.processor.codec.BufferedImageSequence;
-import edu.illinois.library.cantaloupe.processor.codec.ImageWriter;
-import edu.illinois.library.cantaloupe.processor.codec.ImageWriterFactory;
 import edu.illinois.library.cantaloupe.processor.codec.ReaderHint;
 import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
 import org.slf4j.Logger;
@@ -28,7 +25,6 @@ import org.slf4j.LoggerFactory;
 
 import java.awt.image.BufferedImage;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
@@ -88,7 +84,7 @@ final class Java2DPostProcessor {
     /**
      * Can be used for all images but not {@link BufferedImageSequence image
      * sequences}; for those, use {@link #postProcess(BufferedImageSequence,
-     * OperationList, Info, OutputStream)}.
+     * OperationList, Info)}.
      *
      * @param image           Image to process.
      * @param readerHints     Hints from the image reader. May be
@@ -96,123 +92,12 @@ final class Java2DPostProcessor {
      * @param opList          Operations to apply to the image.
      * @param info            Information about the source image.
      * @param reductionFactor May be {@literal null}.
-     * @param outputStream    Output stream to write the resulting image to.
      */
-    static void postProcess(BufferedImage image,
-                            final Set<ReaderHint> readerHints,
-                            final OperationList opList,
-                            final Info info,
-                            final ReductionFactor reductionFactor,
-                            final OutputStream outputStream) throws IOException {
-        image = doPostProcess(image, readerHints, opList, info,
-                reductionFactor);
-
-        new ImageWriterFactory()
-                .newImageWriter((Encode) opList.getFirst(Encode.class))
-                .write(image, outputStream);
-    }
-
-    /**
-     * Variant for processing {@link BufferedImageSequence image sequences},
-     * such as to support animated GIFs.
-     *
-     * @param sequence     Sequence containing one or more images, which will
-     *                     be replaced with the post-processed versions.
-     * @param opList       Operations to apply to each image in the sequence.
-     * @param info         Information about the source image.
-     * @param outputStream Stream to write the resulting image to.
-     * @throws IllegalArgumentException if the sequence is empty.
-     */
-    static void postProcess(final BufferedImageSequence sequence,
-                            final OperationList opList,
-                            final Info info,
-                            final OutputStream outputStream) throws IOException {
-        final int numFrames = sequence.length();
-
-        // 1. If the sequence contains no frames, throw an exception.
-        // 2. If it contains only one frame, process the frame in the current
-        //    thread.
-        // 3. If it contains more than one frame, spread the work across one
-        //    thread per CPU.
-        if (numFrames < 1) {
-            throw new IllegalArgumentException("Empty sequence");
-        } else if (numFrames == 1) {
-            BufferedImage image = sequence.get(0);
-            image = processFrame(image, opList, info);
-            sequence.set(0, image);
-        } else {
-            final int numThreads = Math.min(
-                    numFrames, Runtime.getRuntime().availableProcessors());
-            final int framesPerThread =
-                    (int) Math.ceil(numFrames / (float) numThreads);
-            final CountDownLatch latch = new CountDownLatch(numFrames);
-
-            LOGGER.debug("Processing {} frames in {} threads ({} frames per thread)",
-                    numFrames, numThreads, framesPerThread);
-
-            // Create a list containing numThreads queues. Each map will
-            // contain { "frame": int, "image": BufferedImage }.
-            final List<Queue<Map<String,Object>>> processingQueues =
-                    new ArrayList<>(numThreads);
-            for (short thread = 0; thread < numThreads; thread++) {
-                final Queue<Map<String,Object>> queue = new LinkedList<>();
-                processingQueues.add(queue);
-
-                final int startFrame = thread * framesPerThread;
-                final int endFrame = Math.min(startFrame + framesPerThread,
-                        numFrames);
-                for (int frameNum = startFrame; frameNum < endFrame; frameNum++) {
-                    Map<String,Object> map = new HashMap<>();
-                    map.put("frame", frameNum);
-                    map.put("image", sequence.get(frameNum));
-                    queue.add(map);
-                }
-            }
-
-            // Process each queue in a separate thread.
-            int i = 0;
-            for (Queue<Map<String,Object>> queue : processingQueues) {
-                final int queueNum = i;
-                ThreadPool.getInstance().submit(() -> {
-                    Map<String,Object> dict;
-                    while ((dict = queue.poll()) != null) {
-                        int frameNum = (int) dict.get("frame");
-                        LOGGER.trace("Thread {}: processing frame {} (latch count: {})",
-                                queueNum, frameNum, latch.getCount());
-                        BufferedImage image = (BufferedImage) dict.get("image");
-                        image = processFrame(image, opList, info);
-                        sequence.set(frameNum, image);
-                        latch.countDown();
-                    }
-                    return null;
-                });
-                i++;
-            }
-
-            // Wait for all threads to finish.
-            try {
-                latch.await(5, TimeUnit.MINUTES); // hopefully not this long...
-            } catch (InterruptedException e) {
-                throw new IOException(e);
-            }
-        }
-
-        new ImageWriterFactory()
-                .newImageWriter((Encode) opList.getFirst(Encode.class))
-                .write(sequence, outputStream);
-    }
-
-    private static BufferedImage processFrame(BufferedImage image,
-                                              OperationList opList,
-                                              Info info) {
-        return doPostProcess(image, null, opList, info, null);
-    }
-
-    private static BufferedImage doPostProcess(BufferedImage image,
-                                               Set<ReaderHint> readerHints,
-                                               final OperationList opList,
-                                               final Info info,
-                                               ReductionFactor reductionFactor) {
+    static BufferedImage postProcess(BufferedImage image,
+                                     Set<ReaderHint> readerHints,
+                                     OperationList opList,
+                                     Info info,
+                                     ReductionFactor reductionFactor) {
         if (reductionFactor == null) {
             reductionFactor = new ReductionFactor();
         }
@@ -284,8 +169,91 @@ final class Java2DPostProcessor {
                 }
             }
         }
-
         return image;
+    }
+
+    /**
+     * For processing {@link BufferedImageSequence image sequences}, such as to
+     * support animated GIFs.
+     *
+     * @param sequence Sequence containing one or more images, which will be
+     *                 replaced with the post-processed variants.
+     * @param opList   Operations to apply to each image in the sequence.
+     * @param info     Information about the source image.
+     * @throws IllegalArgumentException if the sequence is empty.
+     */
+    static void postProcess(final BufferedImageSequence sequence,
+                            final OperationList opList,
+                            final Info info) throws IOException {
+        final int numFrames = sequence.length();
+
+        // 1. If the sequence contains no frames, throw an exception.
+        // 2. If it contains only one frame, process the frame in the current
+        //    thread.
+        // 3. If it contains more than one frame, spread the work across one
+        //    thread per CPU.
+        if (numFrames < 1) {
+            throw new IllegalArgumentException("Empty sequence");
+        } else if (numFrames == 1) {
+            BufferedImage image = sequence.get(0);
+            image = postProcess(image, null, opList, info, null);
+            sequence.set(0, image);
+        } else {
+            final int numThreads = Math.min(
+                    numFrames, Runtime.getRuntime().availableProcessors());
+            final int framesPerThread =
+                    (int) Math.ceil(numFrames / (float) numThreads);
+            final CountDownLatch latch = new CountDownLatch(numFrames);
+
+            LOGGER.debug("Processing {} frames in {} threads ({} frames/thread)",
+                    numFrames, numThreads, framesPerThread);
+
+            // Create a list containing numThreads queues. Each map will
+            // contain { "frame": int, "image": BufferedImage }.
+            final List<Queue<Map<String,Object>>> processingQueues =
+                    new ArrayList<>(numThreads);
+            for (short thread = 0; thread < numThreads; thread++) {
+                final Queue<Map<String,Object>> queue = new LinkedList<>();
+                processingQueues.add(queue);
+
+                final int startFrame = thread * framesPerThread;
+                final int endFrame = Math.min(startFrame + framesPerThread,
+                        numFrames);
+                for (int frameNum = startFrame; frameNum < endFrame; frameNum++) {
+                    Map<String,Object> map = new HashMap<>();
+                    map.put("frame", frameNum);
+                    map.put("image", sequence.get(frameNum));
+                    queue.add(map);
+                }
+            }
+
+            // Process each queue in a separate thread.
+            int i = 0;
+            for (Queue<Map<String,Object>> queue : processingQueues) {
+                final int queueNum = i;
+                ThreadPool.getInstance().submit(() -> {
+                    Map<String,Object> dict;
+                    while ((dict = queue.poll()) != null) {
+                        int frameNum = (int) dict.get("frame");
+                        LOGGER.trace("Thread {}: processing frame {} (latch count: {})",
+                                queueNum, frameNum, latch.getCount());
+                        BufferedImage image = (BufferedImage) dict.get("image");
+                        image = postProcess(image, null, opList, info, null);
+                        sequence.set(frameNum, image);
+                        latch.countDown();
+                    }
+                    return null;
+                });
+                i++;
+            }
+
+            // Wait for all threads to finish.
+            try {
+                latch.await(5, TimeUnit.MINUTES); // hopefully not this long...
+            } catch (InterruptedException e) {
+                throw new IOException(e);
+            }
+        }
     }
 
     private Java2DPostProcessor() {}

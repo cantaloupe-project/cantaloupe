@@ -6,6 +6,7 @@ import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Dimension;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Info;
+import edu.illinois.library.cantaloupe.operation.Encode;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.operation.ValidationException;
 import edu.illinois.library.cantaloupe.processor.codec.ImageReader;
@@ -24,7 +25,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -168,14 +168,18 @@ class FfmpegProcessor extends AbstractProcessor implements FileProcessor {
                         processInputStream, Format.BMP);
                 try {
                     BufferedImage image = reader.read();
-                    Java2DPostProcessor.postProcess(image, null, opList,
-                            imageInfo, null, outputStream);
+                    image = Java2DPostProcessor.postProcess(
+                            image, null, opList, imageInfo, null);
+                    WriterFacade.write(
+                            image,
+                            (Encode) opList.getFirst(Encode.class),
+                            outputStream);
                     final int code = process.waitFor();
                     if (code != 0) {
                         LOGGER.error("{} returned with code {}",
                                 FFMPEG_NAME, code);
-                        final String errorStr = errorBucket.toString("UTF-8");
-                        if (errorStr != null && errorStr.length() > 0) {
+                        final String errorStr = errorBucket.toString(StandardCharsets.UTF_8);
+                        if (errorStr != null && errorStr.isBlank()) {
                             throw new ProcessorException(errorStr);
                         }
                     }
@@ -187,20 +191,15 @@ class FfmpegProcessor extends AbstractProcessor implements FileProcessor {
             }
         } catch (Exception e) {
             String msg = e.getMessage();
-            try {
-                final String errorStr = errorBucket.toString("UTF-8");
-                if (errorStr != null && errorStr.length() > 0) {
-                    msg += " (command output: " + msg + ")";
-                }
-            } catch (UnsupportedEncodingException e2) {
-                LOGGER.error("process(): {}", e2.getMessage());
+            final String errorStr = errorBucket.toString(StandardCharsets.UTF_8);
+            if (errorStr != null && !errorStr.isBlank()) {
+                msg += " (command output: " + msg + ")";
             }
             throw new ProcessorException(msg, e);
         }
     }
 
     /**
-     * @param opList
      * @return Command string corresponding to the given operation list.
      */
     private ProcessBuilder getProcessBuilder(OperationList opList) {
