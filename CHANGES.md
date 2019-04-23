@@ -1,5 +1,9 @@
 # Change Log
 
+## 4.1.2
+
+* Updated the Jetty dependency to address the following security vulnerability:
+  CVE-2019-10247.
 ## 4.1.1
 
 * Fixed `NoSuchMethodError`s from various processors when running in Java 8.
