@@ -4,6 +4,9 @@
 
 * Updated the Jetty dependency to address the following security vulnerability:
   CVE-2019-10247.
+* Updated the PDFBox dependency to address the following security
+  vulnerability: CVE-2019-0228.
+
 ## 4.1.1
 
 * Fixed `NoSuchMethodError`s from various processors when running in Java 8.
