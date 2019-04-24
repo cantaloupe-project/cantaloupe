@@ -84,4 +84,16 @@ public class Java2dProcessorTest extends AbstractImageIOProcessorTest {
         }
     }
 
+    @Test
+    @Override
+    public void testProcessWithTurboJPEGAvailable() {
+        // This processor doesn't use TurboJPEG ever.
+    }
+
+    @Test
+    @Override
+    public void testProcessWithTurboJPEGNotAvailable() {
+        // This processor doesn't use TurboJPEG ever.
+    }
+
 }
