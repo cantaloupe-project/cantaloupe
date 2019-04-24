@@ -56,13 +56,7 @@ public final class Rectangle {
 
     @Override
     public int hashCode() {
-        int[] codes = {
-                Double.hashCode(x()),
-                Double.hashCode(y()),
-                Double.hashCode(width()),
-                Double.hashCode(height())
-        };
-        return Arrays.hashCode(codes);
+        return Arrays.hashCode(new double[] { x(), y(), width(), height() });
     }
 
     public double x() {
