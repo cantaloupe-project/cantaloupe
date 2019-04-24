@@ -40,6 +40,34 @@ public class RectangleTest {
     }
 
     @Test
+    public void testContainsAgainstSmallerInstance() {
+        assertTrue(instance.contains(new Rectangle(11, 6, 998, 798)));
+    }
+
+    @Test
+    public void testContainsAgainstEqualInstance() {
+        assertTrue(instance.contains(new Rectangle(10, 5, 1000, 800)));
+    }
+
+    @Test
+    public void testContainsAgainstOutOfBoundsOrigins() {
+        // X
+        assertFalse(instance.contains(new Rectangle(9, 5, 1000, 800)));
+        // Y
+        assertFalse(instance.contains(new Rectangle(10, 4, 1000, 800)));
+    }
+
+    @Test
+    public void testContainsAgainstOutOfBoundsDimensions() {
+        // X
+        assertFalse(instance.contains(new Rectangle(10, 5, 1001, 800)));
+        assertFalse(instance.contains(new Rectangle(500, 5, 511, 800)));
+        // Y
+        assertFalse(instance.contains(new Rectangle(10, 5, 1000, 801)));
+        assertFalse(instance.contains(new Rectangle(10, 400, 1000, 406)));
+    }
+
+    @Test
     public void testEqualsWithEqualInstances() {
         assertEquals(instance, new Rectangle(10, 5, 1000, 800));
     }
