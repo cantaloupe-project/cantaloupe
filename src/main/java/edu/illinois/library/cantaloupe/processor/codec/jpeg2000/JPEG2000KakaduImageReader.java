@@ -1,6 +1,5 @@
 package edu.illinois.library.cantaloupe.processor.codec.jpeg2000;
 
-import edu.illinois.library.cantaloupe.image.Dimension;
 import edu.illinois.library.cantaloupe.image.Rectangle;
 import edu.illinois.library.cantaloupe.image.ScaleConstraint;
 import edu.illinois.library.cantaloupe.operation.ReductionFactor;
@@ -483,6 +482,13 @@ public final class JPEG2000KakaduImageReader implements AutoCloseable {
                                     final ScaleConstraint scaleConstraint,
                                     final ReductionFactor reductionFactor,
                                     final double[] diffScales) throws IOException {
+        // Note: Kdu_dims and Kdu_coords are integer-based, and this can lead
+        // to precision loss when Rectangles and Dimensions are converted
+        // back-and-forth... and precision loss can cause crashes in
+        // Kdu_region_decompressor. Try to stay in the Rectangle/Dimension
+        // space and convert into the libkdu equivalent objects only when
+        // necessary.
+
         // Find the best resolution level to read.
         if (scaleOp != null) {
             final double[] scales = scaleOp.getResultingScales(
@@ -509,11 +515,6 @@ public final class JPEG2000KakaduImageReader implements AutoCloseable {
             final int referenceComponent = channels.Get_source_component(0);
             final int accessMode = Kdu_global.KDU_WANT_OUTPUT_COMPONENTS;
 
-            // Get the ROI coordinates relative to the source image.
-            final Kdu_dims regionDims   = toKduDims(roi);
-            final Kdu_coords regionPos  = regionDims.Access_pos();
-            final Kdu_coords regionSize = regionDims.Access_size();
-
             limiter.Set_display_resolution(600f, 600f);
 
             // The expand numerator & denominator here tell
@@ -523,11 +524,9 @@ public final class JPEG2000KakaduImageReader implements AutoCloseable {
             final Kdu_coords expandNumerator = determineReferenceExpansion(
                     referenceComponent, channels, codestream,
                     threadEnv, limiter);
-            final Dimension regionArea = new Dimension(
-                    regionSize.Get_x(), regionSize.Get_y());
             if (scaleOp != null) {
                 double[] tmp = scaleOp.getDifferentialScales(
-                        regionArea, reductionFactor, scaleConstraint);
+                        roi.size(), reductionFactor, scaleConstraint);
                 System.arraycopy(tmp, 0, diffScales, 0, 2);
             }
             expandNumerator.Set_x((int) Math.round(
@@ -542,44 +541,41 @@ public final class JPEG2000KakaduImageReader implements AutoCloseable {
                     codestream, channels, -1, reductionFactor.factor,
                     expandNumerator, expandDenominator, accessMode);
             final Kdu_coords sourcePos  = sourceDims.Access_pos();
-            final Kdu_coords sourceSize = sourceDims.Access_size();
+
+            final Rectangle regionRect = new Rectangle(roi);
 
             // Adjust the ROI coordinates for the selected decomposition level.
             // Note that some wacky source images have a non-0,0 origin,
             // in which case the ROI origin must be shifted to match.
             final double reducedScale = reductionFactor.getScale();
-            regionPos.Set_x(sourcePos.Get_x() +
-                    (int) Math.floor(regionPos.Get_x() * diffScales[0] * reducedScale));
-            regionPos.Set_y(sourcePos.Get_y() +
-                    (int) Math.floor(regionPos.Get_y() * diffScales[1] * reducedScale));
-            regionSize.Set_x((int) Math.floor(regionSize.Get_x() * diffScales[0] * reducedScale));
-            regionSize.Set_y((int) Math.floor(regionSize.Get_y() * diffScales[1] * reducedScale));
+            regionRect.setX(sourcePos.Get_x() + regionRect.x());
+            regionRect.setY(sourcePos.Get_y() + regionRect.y());
+            regionRect.scaleX(diffScales[0] * reducedScale);
+            regionRect.scaleY(diffScales[1] * reducedScale);
 
             // N.B.: if the region is not entirely within the source image
             // coordinates, either kdu_region_decompressor::start() or
             // process() will crash the JVM (which may be a bug in Kakadu
             // or its Java binding). This should never be the case, but we
             // check anyway to be extra safe.
-            if (!sourceDims.Contains(regionDims)) {
+            Rectangle sourceRect = toRectangle(sourceDims);
+            sourceRect.scaleX(reducedScale);
+            sourceRect.scaleY(reducedScale);
+            if (!sourceRect.contains(regionRect)) {
                 throw new IllegalArgumentException(String.format(
-                        "Rendered region is not entirely within the full " +
-                                "image on the canvas. This is probably a bug. " +
-                                "(Region: %d,%d/%dx%d; image: %d,%d/%dx%d)",
-                        regionPos.Get_x(), regionPos.Get_y(),
-                        regionSize.Get_x(), regionSize.Get_y(),
-                        sourcePos.Get_x(), sourcePos.Get_y(),
-                        sourceSize.Get_x(), sourceSize.Get_y()));
+                        "Rendered region is not entirely within the image " +
+                                "on the canvas. This might be a bug. " +
+                                "[region: %s] [image: %s]",
+                        regionRect, sourceRect));
             }
 
-            LOGGER.debug("Rendered region {},{}/{}x{}; " +
-                            "source {},{}/{}x{}; {}x reduction factor; " +
-                            "differential scale {}/{}",
-                    regionPos.Get_x(), regionPos.Get_y(),
-                    regionSize.Get_x(), regionSize.Get_y(),
-                    sourcePos.Get_x(), sourcePos.Get_y(),
-                    sourceSize.Get_x(), sourceSize.Get_y(),
+            LOGGER.debug("Rendered region {}; source {}; " +
+                            "{}x reduction factor; differential scale {}/{}",
+                    regionRect, sourceRect,
                     reductionFactor.factor,
                     expandNumerator.Get_x(), expandDenominator.Get_x()); // y should == x
+
+            final Kdu_dims regionDims = toKduDims(regionRect);
 
             final Stopwatch watch = new Stopwatch();
 
@@ -595,10 +591,11 @@ public final class JPEG2000KakaduImageReader implements AutoCloseable {
             incompleteRegion.Assign(regionDims);
 
             image = new BufferedImage(
-                    regionSize.Get_x(), regionSize.Get_y(),
+                    regionDims.Access_size().Get_x(),
+                    regionDims.Access_size().Get_y(),
                     BufferedImage.TYPE_INT_ARGB);
 
-            final int regionBufferSize = regionSize.Get_x() * 128;
+            final int regionBufferSize = regionDims.Access_size().Get_x() * 128;
             final int[] regionBuffer   = new int[regionBufferSize];
 
             while (decompressor.Process(regionBuffer, regionDims.Access_pos(),
@@ -643,6 +640,14 @@ public final class JPEG2000KakaduImageReader implements AutoCloseable {
         return regionDims;
     }
 
+    private static Rectangle toRectangle(Kdu_dims dims) throws KduException {
+        return new Rectangle(
+                dims.Access_pos().Get_x(),
+                dims.Access_pos().Get_y(),
+                dims.Access_size().Get_x(),
+                dims.Access_size().Get_y());
+    }
+
     /**
      * <p>This method is largely lifted from the {@literal KduRender.java} file
      * in the Kakadu SDK. The author's documentation follows:</p>
@@ -684,8 +689,8 @@ public final class JPEG2000KakaduImageReader implements AutoCloseable {
         }
 
         Kdu_coords expansion = new Kdu_coords();
-        expansion.Set_x(ref_subs.Get_x() / min_subs.Get_x());
-        expansion.Set_y(ref_subs.Get_y() / min_subs.Get_y());
+        expansion.Set_x((int) Math.round(ref_subs.Get_x() / (double) min_subs.Get_x()));
+        expansion.Set_y((int) Math.round(ref_subs.Get_y() / (double) min_subs.Get_y()));
 
         for (c = 0; c < channels.Get_num_channels(); c++) {
             codestream.Get_subsampling(channels.Get_source_component(c),subs);

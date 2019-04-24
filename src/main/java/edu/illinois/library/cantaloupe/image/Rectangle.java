@@ -40,6 +40,19 @@ public final class Rectangle {
         this(other.x(), other.y(), other.width(), other.height());
     }
 
+    /**
+     * @return Whether the given rectangle is entirely contained within the
+     *         instance.
+     */
+    public boolean contains(Rectangle other) {
+        return (other.x() > x || x - other.x() < DELTA) &&
+                (other.y() > y || y - other.y() < DELTA) &&
+                ((other.x() + other.width() <= x + width()) ||
+                        (other.x() + other.width() - x - width() < DELTA)) &&
+                ((other.y() + other.height() <= y + height()) ||
+                        (other.y() + other.height() - y - height() < DELTA));
+    }
+
     @Override
     public boolean equals(Object obj) {
         if (obj == this) {
