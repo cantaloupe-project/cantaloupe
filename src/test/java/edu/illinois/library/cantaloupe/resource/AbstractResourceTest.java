@@ -174,6 +174,19 @@ public class AbstractResourceTest extends BaseTest {
         assertEquals(resourceURI, ref.toString());
     }
 
+    @Test
+    public void testGetPublicReferenceOmitsQuery() {
+        String resourceURI = "https://example.net/cats/dogs?arg=value";
+        String expected = "https://example.net/cats/dogs";
+
+        MockHttpServletRequest servletRequest =
+                (MockHttpServletRequest) instance.getRequest().getServletRequest();
+        servletRequest.setContextPath("/cats");
+        servletRequest.setRequestURL(resourceURI);
+        Reference ref = instance.getPublicReference();
+        assertEquals(expected, ref.toString());
+    }
+
     /* getRepresentationDisposition() */
 
     @Test

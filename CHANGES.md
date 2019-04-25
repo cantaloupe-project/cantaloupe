@@ -2,6 +2,8 @@
 
 ## 4.1.2
 
+* Fixed incorrect `@id` values in information responses when a query argument
+  is present in the URI.
 * Updated the Jetty dependency to address the following security vulnerability:
   CVE-2019-10247.
 * Updated the PDFBox dependency to address the following security
