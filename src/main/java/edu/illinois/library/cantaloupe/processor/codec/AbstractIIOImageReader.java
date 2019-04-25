@@ -626,7 +626,7 @@ public abstract class AbstractIIOImageReader {
         if (scale instanceof ScaleByPercent) {
             return fits((ScaleByPercent) scale, scaleConstraint, reducedScale);
         }
-        return fits(regionSize, (ScaleByPixels) scale, scaleConstraint, reducedScale);
+        return fits(regionSize, (ScaleByPixels) scale, reducedScale);
     }
 
     private boolean fits(final ScaleByPercent scale,
@@ -639,12 +639,8 @@ public abstract class AbstractIIOImageReader {
 
     private boolean fits(final Dimension regionSize,
                          final ScaleByPixels scale,
-                         final ScaleConstraint scaleConstraint,
                          final double reducedScale) {
-        final double scScale = scaleConstraint.getRational().doubleValue();
         switch (scale.getMode()) {
-            case FULL:
-                return (scScale <= reducedScale);
             case ASPECT_FIT_WIDTH:
                 double cappedWidth = (scale.getWidth() > regionSize.width()) ?
                         regionSize.width() : scale.getWidth();

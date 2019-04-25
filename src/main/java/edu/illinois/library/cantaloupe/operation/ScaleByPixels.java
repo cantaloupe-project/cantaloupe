@@ -30,12 +30,7 @@ public class ScaleByPixels extends Scale implements Operation {
         /**
          * Fill an arbitrary rectangle without regard to aspect ratio.
          */
-        NON_ASPECT_FILL,
-
-        /**
-         * Full scale.
-         */
-        FULL
+        NON_ASPECT_FILL
     }
 
     /**
@@ -43,27 +38,12 @@ public class ScaleByPixels extends Scale implements Operation {
      */
     private Integer width, height;
 
-    private Mode scaleMode = Mode.FULL;
+    private Mode scaleMode;
 
     /**
      * No-op constructor.
      */
     public ScaleByPixels() {
-    }
-
-    /**
-     * Pixel-based constructor.
-     *
-     * @param width  May be {@code null} if {@literal mode} is {@link
-     *               Mode#ASPECT_FIT_HEIGHT}.
-     * @param height May be {@code null} if {@literal mode} is {@link
-     *               Mode#ASPECT_FIT_WIDTH}.
-     */
-    public ScaleByPixels(Integer width, Integer height) {
-        this();
-        setWidth(width);
-        setHeight(height);
-        setMode(null);
     }
 
     /**
@@ -74,7 +54,9 @@ public class ScaleByPixels extends Scale implements Operation {
      * @param mode   Scale mode.
      */
     public ScaleByPixels(Integer width, Integer height, Mode mode) {
-        this(width, height);
+        this();
+        setWidth(width);
+        setHeight(height);
         setMode(mode);
     }
 
@@ -90,24 +72,6 @@ public class ScaleByPixels extends Scale implements Operation {
                     Objects.equals(other.getFilter(), getFilter());
         }
         return super.equals(obj);
-    }
-
-    @Override
-    public double[] getDifferentialScales(final Dimension reducedSize,
-                                          final ReductionFactor reductionFactor,
-                                          final ScaleConstraint scaleConstraint) {
-        final double[] result = new double[2];
-
-        if (Mode.FULL.equals(getMode())) {
-            result[0] = result[1] = 1.0;
-        } else {
-            final double[] scales = getResultingScales(
-                    reducedSize, scaleConstraint);
-            final double rfScale = reductionFactor.getScale();
-            result[0] = scales[0] / rfScale;
-            result[1] = scales[1] / rfScale;
-        }
-        return result;
     }
 
     /**
@@ -133,9 +97,6 @@ public class ScaleByPixels extends Scale implements Operation {
         ReductionFactor rf   = new ReductionFactor();
 
         switch (getMode()) {
-            case FULL:
-                rf = ReductionFactor.forScale(scScale);
-                break;
             case ASPECT_FIT_WIDTH:
                 double hvScale = getWidth() / reducedSize.width() * scScale;
                 rf = ReductionFactor.forScale(hvScale);
@@ -162,9 +123,6 @@ public class ScaleByPixels extends Scale implements Operation {
         final double[] result = new double[2];
 
         switch (getMode()) {
-            case FULL:
-                result[0] = result[1] = scaleConstraint.getRational().doubleValue();
-                break;
             case ASPECT_FIT_HEIGHT:
                 result[0] = result[1] = getHeight() / fullSize.height();
                 break;
@@ -202,17 +160,10 @@ public class ScaleByPixels extends Scale implements Operation {
                                       ReductionFactor reductionFactor,
                                       ScaleConstraint scaleConstraint) {
         final Dimension size = new Dimension(imageSize);
-        final double rfScale = reductionFactor.getScale();
-        final double scScale = scaleConstraint.getRational().doubleValue();
 
         switch (getMode()) {
-            case FULL:
-                double scalePct = scScale / rfScale;
-                size.setWidth(size.width() * scalePct);
-                size.setHeight(size.height() * scalePct);
-                break;
             case ASPECT_FIT_HEIGHT:
-                scalePct = getHeight() / size.height();
+                double scalePct = getHeight() / size.height();
                 size.setWidth(size.width() * scalePct);
                 size.setHeight(size.height() * scalePct);
                 break;
@@ -254,8 +205,7 @@ public class ScaleByPixels extends Scale implements Operation {
 
     @Override
     public boolean hasEffect() {
-        return !Mode.FULL.equals(getMode()) &&
-                (getHeight() != null || getWidth() != null);
+        return getHeight() != null || getWidth() != null;
     }
 
     @Override
@@ -273,8 +223,6 @@ public class ScaleByPixels extends Scale implements Operation {
         }
 
         switch (getMode()) {
-            case FULL:
-                return false;
             case ASPECT_FIT_WIDTH:
                 return (Math.abs(getWidth() - cropSize.width()) > DELTA);
             case ASPECT_FIT_HEIGHT:

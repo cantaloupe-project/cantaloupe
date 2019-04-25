@@ -620,19 +620,6 @@ class Java2DUtilTest extends BaseTest {
     /* scale */
 
     @Test
-    void testScaleWithFull() {
-        BufferedImage inImage = newColorImage(100, 100, 8, false);
-
-        ScaleByPixels scale = new ScaleByPixels();
-        scale.setMode(ScaleByPixels.Mode.FULL);
-        ScaleConstraint sc = new ScaleConstraint(1, 1);
-        ReductionFactor rf = new ReductionFactor(0);
-
-        BufferedImage outImage = Java2DUtil.scale(inImage, scale, sc, rf);
-        assertSame(inImage, outImage);
-    }
-
-    @Test
     void testScaleWithWithAspectFitWidth() {
         BufferedImage inImage = newColorImage(100, 100, 8, false);
 

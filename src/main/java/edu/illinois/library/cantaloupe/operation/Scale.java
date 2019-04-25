@@ -139,9 +139,16 @@ public abstract class Scale implements Operation {
      *                        given reduced size with the given reduction
      *                        factor. {@literal 1} indicates no scaling needed.
      */
-    public abstract double[] getDifferentialScales(Dimension reducedSize,
-                                                   ReductionFactor reductionFactor,
-                                                   ScaleConstraint scaleConstraint);
+    public double[] getDifferentialScales(final Dimension reducedSize,
+                                          final ReductionFactor reductionFactor,
+                                          final ScaleConstraint scaleConstraint) {
+        final double[] scales = getResultingScales(reducedSize, scaleConstraint);
+        final double rfScale  = reductionFactor.getScale();
+        return new double[] {
+                scales[0] / rfScale,
+                scales[1] / rfScale
+        };
+    }
 
     double getMaxScale() {
         return maxScale;

@@ -1,5 +1,7 @@
 package edu.illinois.library.cantaloupe.resource.iiif.v2;
 
+import edu.illinois.library.cantaloupe.operation.ScaleByPercent;
+import edu.illinois.library.cantaloupe.operation.ScaleByPixels;
 import edu.illinois.library.cantaloupe.resource.IllegalClientArgumentException;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import org.junit.jupiter.api.BeforeEach;
@@ -179,16 +181,16 @@ public class SizeTest extends BaseTest {
     }
 
     @Test
-    void testSetNegativeHeight() {
+    void testSetZeroHeight() {
         assertThrows(IllegalClientArgumentException.class,
-                () -> instance.setHeight(-1),
+                () -> instance.setHeight(0),
                 "Height must be a positive integer");
     }
 
     @Test
-    void testSetZeroHeight() {
+    void testSetNegativeHeight() {
         assertThrows(IllegalClientArgumentException.class,
-                () -> instance.setHeight(0),
+                () -> instance.setHeight(-1),
                 "Height must be a positive integer");
     }
 
@@ -202,16 +204,16 @@ public class SizeTest extends BaseTest {
     }
 
     @Test
-    void testSetNegativePercent() {
+    void testSetZeroPercent() {
         assertThrows(IllegalClientArgumentException.class,
-                () -> instance.setPercent(-1f),
+                () -> instance.setPercent(0f),
                 "Percent must be positive");
     }
 
     @Test
-    void testSetZeroPercent() {
+    void testSetNegativePercent() {
         assertThrows(IllegalClientArgumentException.class,
-                () -> instance.setPercent(0f),
+                () -> instance.setPercent(-1f),
                 "Percent must be positive");
     }
 
@@ -225,17 +227,69 @@ public class SizeTest extends BaseTest {
     }
 
     @Test
+    void testSetZeroWidth() {
+        assertThrows(IllegalClientArgumentException.class,
+                () -> instance.setWidth(0),
+                "Width must be positive");
+    }
+
+    @Test
     void testSetNegativeWidth() {
         assertThrows(IllegalClientArgumentException.class,
                 () -> instance.setWidth(-1),
                 "Width must be positive");
     }
 
+    /* toScale() */
+
     @Test
-    void testSetZeroWidth() {
-        assertThrows(IllegalClientArgumentException.class,
-                () -> instance.setWidth(0),
-                "Width must be positive");
+    void testToScaleWithPercent() {
+        instance.setPercent(50f);
+        assertEquals(new ScaleByPercent(0.5), instance.toScale());
+    }
+
+    @Test
+    void testToScaleWithMax() {
+        instance.setScaleMode(Size.ScaleMode.MAX);
+        assertEquals(new ScaleByPercent(), instance.toScale());
+    }
+
+    @Test
+    void testToScaleWithAspectFitWidth() {
+        instance.setScaleMode(Size.ScaleMode.ASPECT_FIT_WIDTH);
+        instance.setWidth(300);
+        assertEquals(
+                new ScaleByPixels(300, null, ScaleByPixels.Mode.ASPECT_FIT_WIDTH),
+                instance.toScale());
+    }
+
+    @Test
+    void testToScaleWithAspectFitHeight() {
+        instance.setScaleMode(Size.ScaleMode.ASPECT_FIT_HEIGHT);
+        instance.setHeight(300);
+        assertEquals(
+                new ScaleByPixels(null, 300, ScaleByPixels.Mode.ASPECT_FIT_HEIGHT),
+                instance.toScale());
+    }
+
+    @Test
+    void testToScaleWithAspectFitInside() {
+        instance.setScaleMode(Size.ScaleMode.ASPECT_FIT_INSIDE);
+        instance.setWidth(300);
+        instance.setHeight(200);
+        assertEquals(
+                new ScaleByPixels(300, 200, ScaleByPixels.Mode.ASPECT_FIT_INSIDE),
+                instance.toScale());
+    }
+
+    @Test
+    void testToScaleWithNonAspectFill() {
+        instance.setScaleMode(Size.ScaleMode.NON_ASPECT_FILL);
+        instance.setWidth(300);
+        instance.setHeight(200);
+        assertEquals(
+                new ScaleByPixels(300, 200, ScaleByPixels.Mode.NON_ASPECT_FILL),
+                instance.toScale());
     }
 
     /* toString */

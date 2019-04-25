@@ -46,37 +46,6 @@ public class ScaleByPercent extends Scale implements Operation {
     }
 
     /**
-     * <p>Finds the required additional differential scaling of an image at a
-     * reduced resolution level.</p>
-     *
-     * <p>For example, the client has requested a scale of 45%, and the reader
-     * has returned an image with a {@link ReductionFactor#factor} of
-     * {@literal 1} (50%). The amount that that intermediate image must be
-     * further downscaled will be returned.</p>
-     *
-     * @param reducedSize     Image dimensions, which have been reduced {@link
-     *                        ReductionFactor#factor} times.
-     * @param reductionFactor Reduction factor that has reduced a source image
-     *                        to {@literal reducedSize}.
-     * @param scaleConstraint Scale constraint relative to the full source
-     *                        image dimensions.
-     * @return                Two-element array containing the X and Y scales
-     *                        yet to be applied to an intermediate image of the
-     *                        given reduced size with the given reduction
-     *                        factor. {@literal 1} indicates no scaling needed.
-     */
-    public double[] getDifferentialScales(final Dimension reducedSize,
-                                          final ReductionFactor reductionFactor,
-                                          final ScaleConstraint scaleConstraint) {
-        final double[] scales = getResultingScales(reducedSize, scaleConstraint);
-        final double rfScale  = reductionFactor.getScale();
-        return new double[] {
-                scales[0] / rfScale,
-                scales[1] / rfScale
-        };
-    }
-
-    /**
      * @return Double from 0 to 1. May be null.
      */
     public double getPercent() {

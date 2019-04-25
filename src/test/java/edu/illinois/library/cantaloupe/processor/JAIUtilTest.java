@@ -184,22 +184,6 @@ class JAIUtilTest extends BaseTest {
     /* scaleImage() */
 
     @Test
-    void scaleImageWithFullMode() throws Exception {
-        RenderedOp image = readImage(IMAGE);
-        final Interpolation interpolation =
-                Interpolation.getInstance(Interpolation.INTERP_BILINEAR);
-        final ReductionFactor rf = new ReductionFactor();
-        final ScaleConstraint scaleConstraint = new ScaleConstraint(1, 1);
-
-        // test with Mode.FULL
-        ScaleByPixels scale = new ScaleByPixels();
-        scale.setMode(ScaleByPixels.Mode.FULL);
-        RenderedOp scaledImage = JAIUtil.scaleImage(
-                image, scale, scaleConstraint, interpolation, rf);
-        assertSame(image, scaledImage);
-    }
-
-    @Test
     void scaleImageWithAspectFitWidthMode() throws Exception {
         RenderedOp image = readImage(IMAGE);
         final Interpolation interpolation =
@@ -351,19 +335,6 @@ class JAIUtilTest extends BaseTest {
     }
 
     /* scaleImageUsingSubsampleAverage() */
-
-    @Test
-    void scaleImageUsingSubsampleAverageWithFullMode() throws Exception {
-        RenderedOp image = readImage(IMAGE);
-        final ReductionFactor rf = new ReductionFactor();
-        final ScaleConstraint scaleConstraint = new ScaleConstraint(1, 1);
-
-        ScaleByPixels scale = new ScaleByPixels();
-        scale.setMode(ScaleByPixels.Mode.FULL);
-        RenderedOp scaledImage = JAIUtil.scaleImageUsingSubsampleAverage(
-                image, scale, scaleConstraint, rf);
-        assertSame(image, scaledImage);
-    }
 
     @Test
     void scaleImageUsingSubsampleAverageWithAspectFitWidthMode() throws Exception {

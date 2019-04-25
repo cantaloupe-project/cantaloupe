@@ -278,11 +278,6 @@ class GraphicsMagickProcessor extends AbstractMagickProcessor
                     } else {
                         ScaleByPixels spix = (ScaleByPixels) scale;
                         switch (spix.getMode()) {
-                            case FULL:
-                                args.add(String.format("%dx%d",
-                                        Math.round(fullSize.width() * scScale),
-                                        Math.round(fullSize.height() * scScale)));
-                                break;
                             case ASPECT_FIT_WIDTH:
                                 args.add(spix.getWidth() + "x");
                                 break;
