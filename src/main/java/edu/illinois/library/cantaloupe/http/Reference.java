@@ -20,7 +20,7 @@ public final class Reference {
 
     private String scheme, user, secret, host, path, fragment;
     private int port = -1;
-    private Query query = new Query();
+    private Query query;
 
     public static String decode(String encoded) {
         try {
@@ -311,7 +311,7 @@ public final class Reference {
             builder.append(getPort());
         }
         builder.append(getPath());
-        if (!getQuery().isEmpty()) {
+        if (getQuery() != null && !getQuery().isEmpty()) {
             builder.append("?");
             builder.append(getQuery().toString());
         }
