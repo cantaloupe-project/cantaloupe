@@ -164,7 +164,7 @@ public final class OperationList implements Iterable<Operation> {
         if (getScaleConstraint().hasEffect()) {
             Scale scale = (Scale) getFirst(Scale.class);
             if (scale == null) {
-                scale = new Scale();
+                scale = new ScaleByPercent();
                 int index = firstIndexOf(Crop.class);
                 if (index == -1) {
                     operations.add(0, scale);
@@ -694,7 +694,7 @@ public final class OperationList implements Iterable<Operation> {
         if (scaleConstraint.hasEffect()) {
             Scale scale = (Scale) getFirst(Scale.class);
             if (scale == null) {
-                scale = new Scale(1.0);
+                scale = new ScaleByPercent();
             }
 
             double[] scales = scale.getResultingScales(fullSize, scaleConstraint);

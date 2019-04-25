@@ -18,6 +18,8 @@ import edu.illinois.library.cantaloupe.operation.Operation;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.operation.Rotate;
 import edu.illinois.library.cantaloupe.operation.Scale;
+import edu.illinois.library.cantaloupe.operation.ScaleByPercent;
+import edu.illinois.library.cantaloupe.operation.ScaleByPixels;
 import edu.illinois.library.cantaloupe.operation.Sharpen;
 import edu.illinois.library.cantaloupe.operation.Transpose;
 import edu.illinois.library.cantaloupe.operation.overlay.ImageOverlay;
@@ -323,7 +325,7 @@ class ImageMagickProcessor extends AbstractMagickProcessor
         if (Format.ImageType.VECTOR.equals(imageInfo.getSourceFormat().getImageType())) {
             Scale scale = (Scale) ops.getFirst(Scale.class);
             if (scale == null) {
-                scale = new Scale();
+                scale = new ScaleByPercent();
             }
             args.add("-density");
             args.add("" + new RasterizationHelper().getDPI(
@@ -384,28 +386,29 @@ class ImageMagickProcessor extends AbstractMagickProcessor
                     final double scScale =
                             ops.getScaleConstraint().getRational().doubleValue();
                     args.add("-resize");
-                    if (scale.getPercent() != null) {
-                        args.add(scale.getPercent() * scScale * 100 + "%");
+                    if (scale instanceof ScaleByPercent) {
+                        args.add(((ScaleByPercent) scale).getPercent() * scScale * 100 + "%");
                     } else {
-                        switch (scale.getMode()) {
+                        ScaleByPixels spix = (ScaleByPixels) scale;
+                        switch (spix.getMode()) {
                             case FULL:
                                 args.add(String.format("%dx%d",
                                         Math.round(fullSize.width() * scScale),
                                         Math.round(fullSize.height() * scScale)));
                                 break;
                             case ASPECT_FIT_WIDTH:
-                                args.add(scale.getWidth() + "x");
+                                args.add(spix.getWidth() + "x");
                                 break;
                             case ASPECT_FIT_HEIGHT:
-                                args.add("x" + scale.getHeight());
+                                args.add("x" + spix.getHeight());
                                 break;
                             case NON_ASPECT_FILL:
                                 args.add(String.format("%dx%d!",
-                                        scale.getWidth(), scale.getHeight()));
+                                        spix.getWidth(), spix.getHeight()));
                                 break;
                             case ASPECT_FIT_INSIDE:
                                 args.add(String.format("%dx%d",
-                                        scale.getWidth(), scale.getHeight()));
+                                        spix.getWidth(), spix.getHeight()));
                                 break;
                         }
                     }

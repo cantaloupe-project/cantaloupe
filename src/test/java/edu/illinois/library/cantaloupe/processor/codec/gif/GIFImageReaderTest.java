@@ -5,7 +5,7 @@ import edu.illinois.library.cantaloupe.image.Compression;
 import edu.illinois.library.cantaloupe.operation.CropByPixels;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.operation.ReductionFactor;
-import edu.illinois.library.cantaloupe.operation.Scale;
+import edu.illinois.library.cantaloupe.operation.ScaleByPixels;
 import edu.illinois.library.cantaloupe.processor.codec.AbstractIIOImageReader;
 import edu.illinois.library.cantaloupe.processor.codec.AbstractImageReaderTest;
 import edu.illinois.library.cantaloupe.processor.codec.BufferedImageSequence;
@@ -79,7 +79,7 @@ public class GIFImageReaderTest extends AbstractImageReaderTest {
     public void testReadWithArguments() throws Exception {
         OperationList ops = new OperationList(
                 new CropByPixels(10, 10, 40, 40),
-                new Scale(35, 35, Scale.Mode.ASPECT_FIT_INSIDE));
+                new ScaleByPixels(35, 35, ScaleByPixels.Mode.ASPECT_FIT_INSIDE));
 
         ReductionFactor rf = new ReductionFactor();
         Set<ReaderHint> hints = new HashSet<>();

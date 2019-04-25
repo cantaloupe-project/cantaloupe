@@ -6,7 +6,7 @@ import edu.illinois.library.cantaloupe.image.ScaleConstraint;
 import edu.illinois.library.cantaloupe.operation.Crop;
 import edu.illinois.library.cantaloupe.operation.CropByPixels;
 import edu.illinois.library.cantaloupe.operation.OperationList;
-import edu.illinois.library.cantaloupe.operation.Scale;
+import edu.illinois.library.cantaloupe.operation.ScaleByPercent;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -127,17 +127,17 @@ public class RedactionTest extends BaseTest {
 
         // in bounds
         OperationList opList = new OperationList(
-                new CropByPixels(0, 0, 400, 300), new Scale(0.25));
+                new CropByPixels(0, 0, 400, 300), new ScaleByPercent(0.25));
         assertTrue(instance.hasEffect(fullSize, opList));
 
         // partially in bounds
         opList = new OperationList(
-                new CropByPixels(100, 100, 100, 100), new Scale(0.25));
+                new CropByPixels(100, 100, 100, 100), new ScaleByPercent(0.25));
         assertTrue(instance.hasEffect(fullSize, opList));
 
         // out of bounds
         opList = new OperationList(
-                new CropByPixels(0, 0, 400, 300), new Scale(0.25));
+                new CropByPixels(0, 0, 400, 300), new ScaleByPercent(0.25));
         instance = new Redaction(new Rectangle(420, 305, 20, 20));
         assertFalse(instance.hasEffect(fullSize, opList));
     }

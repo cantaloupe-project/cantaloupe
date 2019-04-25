@@ -69,7 +69,7 @@ public class OperationListTest extends BaseTest {
     @Test
     void addAfterWithExistingClass() {
         instance = new OperationList(new Rotate());
-        instance.addAfter(new Scale(), Rotate.class);
+        instance.addAfter(new ScaleByPercent(), Rotate.class);
         Iterator<Operation> it = instance.iterator();
 
         assertTrue(it.next() instanceof Rotate);
@@ -93,7 +93,7 @@ public class OperationListTest extends BaseTest {
     void addAfterWithoutExistingClass() {
         instance = new OperationList();
         instance.add(new Rotate());
-        instance.addAfter(new Scale(), Crop.class);
+        instance.addAfter(new ScaleByPercent(), Crop.class);
         Iterator<Operation> it = instance.iterator();
         assertTrue(it.next() instanceof Rotate);
         assertTrue(it.next() instanceof Scale);
@@ -111,7 +111,7 @@ public class OperationListTest extends BaseTest {
     void addBeforeWithExistingClass() {
         instance = new OperationList();
         instance.add(new Rotate());
-        instance.addBefore(new Scale(), Rotate.class);
+        instance.addBefore(new ScaleByPercent(), Rotate.class);
         assertTrue(instance.iterator().next() instanceof Scale);
     }
 
@@ -129,7 +129,7 @@ public class OperationListTest extends BaseTest {
     void addBeforeWithoutExistingClass() {
         instance = new OperationList();
         instance.add(new Rotate());
-        instance.addBefore(new Scale(), Crop.class);
+        instance.addBefore(new ScaleByPercent(), Crop.class);
         Iterator<Operation> it = instance.iterator();
         assertTrue(it.next() instanceof Rotate);
         assertTrue(it.next() instanceof Scale);
@@ -163,7 +163,7 @@ public class OperationListTest extends BaseTest {
 
         opList.applyNonEndpointMutations(info, proxy);
 
-        Scale expectedScale = new Scale();
+        Scale expectedScale = new ScaleByPercent();
         Scale actualScale = (Scale) opList.getFirst(Scale.class);
         assertEquals(expectedScale, actualScale);
     }
@@ -329,7 +329,7 @@ public class OperationListTest extends BaseTest {
         final Info info = Info.builder().withSize(fullSize).build();
         final OperationList opList = new OperationList(
                 new Identifier("cats"),
-                new Scale(1.5),
+                new ScaleByPercent(1.5),
                 new Encode(Format.JPG));
         final RequestContext context = new RequestContext();
         context.setOperationList(opList, fullSize);
@@ -351,7 +351,7 @@ public class OperationListTest extends BaseTest {
         final Info info = Info.builder().withSize(fullSize).build();
         final OperationList opList = new OperationList(
                 new Identifier("cats"),
-                new Scale(0.5),
+                new ScaleByPercent(0.5),
                 new Encode(Format.JPG));
         final RequestContext context = new RequestContext();
         context.setOperationList(opList, fullSize);
@@ -373,7 +373,7 @@ public class OperationListTest extends BaseTest {
         final Info info = Info.builder().withSize(fullSize).build();
         final OperationList opList = new OperationList(
                 new Identifier("cats"),
-                new Scale(1.5),
+                new ScaleByPercent(1.5),
                 new Encode(Format.JPG));
         final RequestContext context = new RequestContext();
         context.setOperationList(opList, fullSize);
@@ -479,7 +479,7 @@ public class OperationListTest extends BaseTest {
     @Test
     void clear() {
         instance.add(new CropByPixels(10, 10, 10, 10));
-        instance.add(new Scale(0.5));
+        instance.add(new ScaleByPercent(0.5));
 
         int opCount = 0;
         Iterator<Operation> it = instance.iterator();
@@ -529,7 +529,7 @@ public class OperationListTest extends BaseTest {
 
     @Test
     void getFirst() {
-        instance.add(new Scale(0.5));
+        instance.add(new ScaleByPercent(0.5));
 
         assertNull(instance.getFirst(Crop.class));
         assertNotNull(instance.getFirst(Scale.class));
@@ -558,16 +558,16 @@ public class OperationListTest extends BaseTest {
 
     @Test
     void getResultingSize() {
-        Dimension fullSize = new Dimension(300, 200);
-        Scale scale        = new Scale();
-        Rotate rotate      = new Rotate();
+        Dimension fullSize   = new Dimension(300, 200);
+        ScaleByPercent scale = new ScaleByPercent();
+        Rotate rotate        = new Rotate();
         instance.add(scale);
         instance.add(rotate);
         assertEquals(fullSize, instance.getResultingSize(fullSize));
 
         instance  = new OperationList();
         Crop crop = new CropByPercent(0, 0, 0.5, 0.5);
-        scale     = new Scale(0.5);
+        scale     = new ScaleByPercent(0.5);
         instance.add(crop);
         instance.add(scale);
         assertEquals(new Dimension(75, 50), instance.getResultingSize(fullSize));
@@ -609,7 +609,7 @@ public class OperationListTest extends BaseTest {
     @Test
     void iterator() {
         instance.add(new CropByPixels(10, 10, 10, 10));
-        instance.add(new Scale(0.5));
+        instance.add(new ScaleByPercent(0.5));
 
         int count = 0;
         Iterator<Operation> it = instance.iterator();
@@ -623,7 +623,7 @@ public class OperationListTest extends BaseTest {
 
     @Test
     void iteratorCannotRemoveWhileFrozen() {
-        instance.add(new Scale(50.5));
+        instance.add(new ScaleByPercent(50.5));
         instance.freeze();
         Iterator<Operation> it = instance.iterator();
         it.next();
@@ -660,7 +660,7 @@ public class OperationListTest extends BaseTest {
         instance = new OperationList(new Identifier("identifier.jpg"));
         CropByPixels crop = new CropByPixels(5, 6, 20, 22);
         instance.add(crop);
-        Scale scale = new Scale(0.4f);
+        Scale scale = new ScaleByPercent(0.4);
         instance.add(scale);
         instance.add(new Rotate(15));
         instance.add(ColorTransform.BITONAL);
@@ -689,7 +689,7 @@ public class OperationListTest extends BaseTest {
         Crop crop = new CropByPixels(2, 4, 50, 50);
         instance.add(crop);
         // no-op scale
-        Scale scale = new Scale();
+        Scale scale = new ScaleByPercent();
         instance.add(scale);
         // rotate
         instance.add(new Rotate(0));
@@ -721,7 +721,7 @@ public class OperationListTest extends BaseTest {
         instance = new OperationList(new Identifier("identifier.jpg"));
         Crop crop = new CropByPixels(5, 6, 20, 22);
         instance.add(crop);
-        Scale scale = new Scale(0.4);
+        Scale scale = new ScaleByPercent(0.4);
         instance.add(scale);
         instance.add(new Rotate(15));
         instance.add(ColorTransform.BITONAL);
@@ -729,7 +729,7 @@ public class OperationListTest extends BaseTest {
         instance.getOptions().put("animal", "cat");
         instance.setScaleConstraint(new ScaleConstraint(1, 2));
 
-        String expected = "identifier.jpg_1:2_cropbypixels:5,6,20,22_scale:40%_rotate:15_colortransform:bitonal_encode:jpg_UNDEFINED_8_animal:cat";
+        String expected = "identifier.jpg_1:2_cropbypixels:5,6,20,22_scalebypercent:40%_rotate:15_colortransform:bitonal_encode:jpg_UNDEFINED_8_animal:cat";
         assertEquals(expected, instance.toString());
     }
 
@@ -807,7 +807,7 @@ public class OperationListTest extends BaseTest {
         OperationList ops = new OperationList(
                 new Identifier("cats"),
                 new CropByPixels(0, 0, 10, 10),
-                new Scale(0.0001),
+                new ScaleByPercent(0.0001),
                 new Encode(Format.JPG));
         assertThrows(ValidationException.class,
                 () -> ops.validate(fullSize, Format.PNG));
@@ -818,7 +818,7 @@ public class OperationListTest extends BaseTest {
         Dimension fullSize = new Dimension(1000, 1000);
         OperationList ops = new OperationList(
                 new Identifier("cats"),
-                new Scale(4),
+                new ScaleByPercent(4),
                 new Encode(Format.JPG));
         ops.setScaleConstraint(new ScaleConstraint(1, 8));
         assertThrows(IllegalScaleException.class,

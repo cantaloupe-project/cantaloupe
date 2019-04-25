@@ -9,6 +9,7 @@ import edu.illinois.library.cantaloupe.operation.CropByPercent;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.operation.Scale;
 import edu.illinois.library.cantaloupe.operation.ReductionFactor;
+import edu.illinois.library.cantaloupe.operation.ScaleByPercent;
 import edu.illinois.library.cantaloupe.processor.UnsupportedSourceFormatException;
 import edu.illinois.library.cantaloupe.processor.codec.AbstractIIOImageReader;
 import edu.illinois.library.cantaloupe.processor.codec.ImageReader;
@@ -137,7 +138,7 @@ public final class TIFFImageReader extends AbstractIIOImageReader
 
         Scale scale = (Scale) ops.getFirst(Scale.class);
         if (scale == null) {
-            scale = new Scale();
+            scale = new ScaleByPercent();
         }
 
         BufferedImage image;

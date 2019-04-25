@@ -9,6 +9,8 @@ import edu.illinois.library.cantaloupe.operation.CropByPercent;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.operation.Scale;
 import edu.illinois.library.cantaloupe.operation.ReductionFactor;
+import edu.illinois.library.cantaloupe.operation.ScaleByPercent;
+import edu.illinois.library.cantaloupe.operation.ScaleByPixels;
 import edu.illinois.library.cantaloupe.processor.UnsupportedSourceFormatException;
 import edu.illinois.library.cantaloupe.source.StreamFactory;
 import edu.illinois.library.cantaloupe.source.stream.ClosingMemoryCacheImageInputStream;
@@ -515,7 +517,7 @@ public abstract class AbstractIIOImageReader {
 
         Scale scale = (Scale) ops.getFirst(Scale.class);
         if (scale == null) {
-            scale = new Scale();
+            scale = new ScaleByPercent();
         }
 
         RenderedImage image;
@@ -621,32 +623,43 @@ public abstract class AbstractIIOImageReader {
                          final Scale scale,
                          final ScaleConstraint scaleConstraint,
                          final double reducedScale) {
-        final double scScale = scaleConstraint.getRational().doubleValue();
+        if (scale instanceof ScaleByPercent) {
+            return fits((ScaleByPercent) scale, scaleConstraint, reducedScale);
+        }
+        return fits(regionSize, (ScaleByPixels) scale, scaleConstraint, reducedScale);
+    }
 
-        if (scale.getPercent() != null) {
-            double cappedScale = (scale.getPercent() > 1) ?
-                    1 : scale.getPercent();
-            return (cappedScale * scScale <= reducedScale);
-        } else {
-            switch (scale.getMode()) {
-                case FULL:
-                    return (scScale <= reducedScale);
-                case ASPECT_FIT_WIDTH:
-                    double cappedWidth = (scale.getWidth() > regionSize.width()) ?
+    private boolean fits(final ScaleByPercent scale,
+                         final ScaleConstraint scaleConstraint,
+                         final double reducedScale) {
+        final double scScale = scaleConstraint.getRational().doubleValue();
+        double cappedScale = (scale.getPercent() > 1) ? 1 : scale.getPercent();
+        return (cappedScale * scScale <= reducedScale);
+    }
+
+    private boolean fits(final Dimension regionSize,
+                         final ScaleByPixels scale,
+                         final ScaleConstraint scaleConstraint,
+                         final double reducedScale) {
+        final double scScale = scaleConstraint.getRational().doubleValue();
+        switch (scale.getMode()) {
+            case FULL:
+                return (scScale <= reducedScale);
+            case ASPECT_FIT_WIDTH:
+                double cappedWidth = (scale.getWidth() > regionSize.width()) ?
                         regionSize.width() : scale.getWidth();
-                    return (cappedWidth / regionSize.width() <= reducedScale);
-                case ASPECT_FIT_HEIGHT:
-                    double cappedHeight = (scale.getHeight() > regionSize.height()) ?
-                            regionSize.height() : scale.getHeight();
-                    return (cappedHeight / regionSize.height() <= reducedScale);
-                default:
-                    cappedWidth = (scale.getWidth() > regionSize.width()) ?
-                            regionSize.width() : scale.getWidth();
-                    cappedHeight = (scale.getHeight() > regionSize.height()) ?
-                            regionSize.height() : scale.getHeight();
-                    return (cappedWidth / regionSize.width() <= reducedScale &&
-                            cappedHeight / regionSize.height() <= reducedScale);
-            }
+                return (cappedWidth / regionSize.width() <= reducedScale);
+            case ASPECT_FIT_HEIGHT:
+                double cappedHeight = (scale.getHeight() > regionSize.height()) ?
+                        regionSize.height() : scale.getHeight();
+                return (cappedHeight / regionSize.height() <= reducedScale);
+            default:
+                cappedWidth = (scale.getWidth() > regionSize.width()) ?
+                        regionSize.width() : scale.getWidth();
+                cappedHeight = (scale.getHeight() > regionSize.height()) ?
+                        regionSize.height() : scale.getHeight();
+                return (cappedWidth / regionSize.width() <= reducedScale &&
+                        cappedHeight / regionSize.height() <= reducedScale);
         }
     }
 

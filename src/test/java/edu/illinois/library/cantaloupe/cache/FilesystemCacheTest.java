@@ -11,6 +11,7 @@ import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.operation.Rotate;
 import edu.illinois.library.cantaloupe.operation.Scale;
 import edu.illinois.library.cantaloupe.image.Identifier;
+import edu.illinois.library.cantaloupe.operation.ScaleByPercent;
 import edu.illinois.library.cantaloupe.test.ConcurrentReaderWriter;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import edu.illinois.library.cantaloupe.util.DeletingFileVisitor;
@@ -106,12 +107,11 @@ public class FilesystemCacheTest extends AbstractCacheTest {
                 getString(Key.FILESYSTEMCACHE_PATHNAME);
 
         Identifier identifier = new Identifier("cats_~!@#$%^&*()");
-        Scale scale = new Scale();
-        scale.setMode(Scale.Mode.ASPECT_FIT_INSIDE);
-        scale.setPercent(0.905);
 
         OperationList ops = new OperationList(
-                identifier, scale, new Encode(Format.TIF));
+                identifier,
+                new ScaleByPercent(0.905),
+                new Encode(Format.TIF));
 
         final Path expected = Paths.get(
                 pathname,
@@ -126,14 +126,12 @@ public class FilesystemCacheTest extends AbstractCacheTest {
         String pathname = Configuration.getInstance().
                 getString(Key.FILESYSTEMCACHE_PATHNAME);
 
-        Identifier identifier = new Identifier("cats_~!@#$%^&*()");
-        Crop crop = new CropToSquare();
-        Scale scale = new Scale();
-        scale.setMode(Scale.Mode.ASPECT_FIT_INSIDE);
-        scale.setPercent(0.905);
-        Rotate rotate = new Rotate(10);
+        Identifier identifier    = new Identifier("cats_~!@#$%^&*()");
+        Crop crop                = new CropToSquare();
+        Scale scale              = new ScaleByPercent(0.905);
+        Rotate rotate            = new Rotate(10);
         ColorTransform transform = ColorTransform.BITONAL;
-        Encode encode = new Encode(Format.TIF);
+        Encode encode            = new Encode(Format.TIF);
 
         OperationList ops = new OperationList(
                 identifier, crop, scale, rotate, transform, encode);

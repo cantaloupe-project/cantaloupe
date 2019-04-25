@@ -6,6 +6,7 @@ import edu.illinois.library.cantaloupe.image.iptc.DataSet;
 import edu.illinois.library.cantaloupe.image.iptc.Reader;
 import edu.illinois.library.cantaloupe.operation.ReductionFactor;
 import edu.illinois.library.cantaloupe.operation.Scale;
+import edu.illinois.library.cantaloupe.operation.ScaleByPercent;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.junit.jupiter.api.AfterEach;
@@ -83,7 +84,7 @@ public class JPEG2000KakaduImageReaderTest extends BaseTest {
     @Test
     public void testReadRegion() throws Exception {
         final Rectangle roi = new Rectangle(0, 0, 32, 28);
-        final Scale scale = new Scale(0.45);
+        final Scale scale = new ScaleByPercent(0.45);
         final ScaleConstraint scaleConstraint = new ScaleConstraint(1, 2);
         final ReductionFactor reductionFactor = new ReductionFactor();
         final double[] diffScales = new double[2];

@@ -1,6 +1,8 @@
 package edu.illinois.library.cantaloupe.resource.iiif.v1;
 
 import edu.illinois.library.cantaloupe.operation.Scale;
+import edu.illinois.library.cantaloupe.operation.ScaleByPercent;
+import edu.illinois.library.cantaloupe.operation.ScaleByPixels;
 import edu.illinois.library.cantaloupe.resource.IllegalClientArgumentException;
 import edu.illinois.library.cantaloupe.util.StringUtils;
 
@@ -39,8 +41,8 @@ class Size {
          */
         FULL;
 
-        public edu.illinois.library.cantaloupe.operation.Scale.Mode toMode() {
-            return edu.illinois.library.cantaloupe.operation.Scale.Mode.
+        public edu.illinois.library.cantaloupe.operation.ScaleByPixels.Mode toMode() {
+            return edu.illinois.library.cantaloupe.operation.ScaleByPixels.Mode.
                     valueOf(this.toString());
         }
 
@@ -149,7 +151,7 @@ class Size {
         this.percent = percent;
     }
 
-    public void setScaleMode(ScaleMode scaleMode) {
+    void setScaleMode(ScaleMode scaleMode) {
         this.scaleMode = scaleMode;
     }
 
@@ -160,16 +162,17 @@ class Size {
         this.width = width;
     }
 
-    public Scale toScale() {
-        Scale scale = new Scale();
-        if (getHeight() != null) {
-            scale.setHeight(this.getHeight());
-        }
-        if (getWidth() != null) {
-            scale.setWidth(this.getWidth());
-        }
+    Scale toScale() {
         if (getPercent() != null) {
-            scale.setPercent(getPercent() / 100.0);
+            return new ScaleByPercent(getPercent() / 100.0);
+        }
+
+        ScaleByPixels scale = new ScaleByPixels();
+        if (getWidth() != null) {
+            scale.setWidth(getWidth());
+        }
+        if (getHeight() != null) {
+            scale.setHeight(getHeight());
         }
         if (getScaleMode() != null) {
             scale.setMode(getScaleMode().toMode());

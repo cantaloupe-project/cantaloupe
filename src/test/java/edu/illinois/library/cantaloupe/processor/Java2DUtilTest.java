@@ -12,7 +12,8 @@ import edu.illinois.library.cantaloupe.operation.CropByPixels;
 import edu.illinois.library.cantaloupe.operation.CropToSquare;
 import edu.illinois.library.cantaloupe.operation.ReductionFactor;
 import edu.illinois.library.cantaloupe.operation.Rotate;
-import edu.illinois.library.cantaloupe.operation.Scale;
+import edu.illinois.library.cantaloupe.operation.ScaleByPercent;
+import edu.illinois.library.cantaloupe.operation.ScaleByPixels;
 import edu.illinois.library.cantaloupe.operation.Sharpen;
 import edu.illinois.library.cantaloupe.operation.Transpose;
 import edu.illinois.library.cantaloupe.operation.redaction.Redaction;
@@ -43,7 +44,7 @@ import java.util.Set;
 import static edu.illinois.library.cantaloupe.test.Assert.ImageAssert.*;
 import static org.junit.jupiter.api.Assertions.*;
 
-public class Java2DUtilTest extends BaseTest {
+class Java2DUtilTest extends BaseTest {
 
     private static final double DELTA = 0.0000001;
 
@@ -622,8 +623,8 @@ public class Java2DUtilTest extends BaseTest {
     void testScaleWithFull() {
         BufferedImage inImage = newColorImage(100, 100, 8, false);
 
-        Scale scale = new Scale();
-        scale.setMode(Scale.Mode.FULL);
+        ScaleByPixels scale = new ScaleByPixels();
+        scale.setMode(ScaleByPixels.Mode.FULL);
         ScaleConstraint sc = new ScaleConstraint(1, 1);
         ReductionFactor rf = new ReductionFactor(0);
 
@@ -635,7 +636,8 @@ public class Java2DUtilTest extends BaseTest {
     void testScaleWithWithAspectFitWidth() {
         BufferedImage inImage = newColorImage(100, 100, 8, false);
 
-        Scale scale = new Scale(50, null, Scale.Mode.ASPECT_FIT_WIDTH);
+        ScaleByPixels scale = new ScaleByPixels(
+                50, null, ScaleByPixels.Mode.ASPECT_FIT_WIDTH);
         ScaleConstraint sc = new ScaleConstraint(1, 1);
         ReductionFactor rf = new ReductionFactor(1);
 
@@ -648,7 +650,8 @@ public class Java2DUtilTest extends BaseTest {
     void testScaleWithAspectFitHeight() {
         BufferedImage inImage = newColorImage(100, 100, 8, false);
 
-        Scale scale = new Scale(null, 50, Scale.Mode.ASPECT_FIT_HEIGHT);
+        ScaleByPixels scale = new ScaleByPixels(
+                null, 50, ScaleByPixels.Mode.ASPECT_FIT_HEIGHT);
         ScaleConstraint sc = new ScaleConstraint(1, 1);
         ReductionFactor rf = new ReductionFactor(1);
 
@@ -661,7 +664,8 @@ public class Java2DUtilTest extends BaseTest {
     void testScaleWithAspectFitInside() {
         BufferedImage inImage = newColorImage(100, 100, 8, false);
 
-        Scale scale = new Scale(50, 50, Scale.Mode.ASPECT_FIT_INSIDE);
+        ScaleByPixels scale = new ScaleByPixels(
+                50, 50, ScaleByPixels.Mode.ASPECT_FIT_INSIDE);
         ScaleConstraint sc = new ScaleConstraint(1, 1);
         ReductionFactor rf = new ReductionFactor(1);
 
@@ -674,8 +678,8 @@ public class Java2DUtilTest extends BaseTest {
     void testScaleWithNonAspectFill() {
         BufferedImage inImage = newColorImage(100, 100, 8, false);
 
-        Scale scale = new Scale();
-        scale.setMode(Scale.Mode.NON_ASPECT_FILL);
+        ScaleByPixels scale = new ScaleByPixels();
+        scale.setMode(ScaleByPixels.Mode.NON_ASPECT_FILL);
         scale.setWidth(80);
         scale.setHeight(50);
         ScaleConstraint sc = new ScaleConstraint(1, 1);
@@ -690,7 +694,7 @@ public class Java2DUtilTest extends BaseTest {
     void testScaleWithWithScaleByPercent() {
         BufferedImage inImage = newColorImage(100, 100, 8, false);
 
-        Scale scale = new Scale(0.25f);
+        ScaleByPercent scale = new ScaleByPercent(0.25);
         ScaleConstraint sc = new ScaleConstraint(1, 1);
         ReductionFactor rf = new ReductionFactor(2);
 
@@ -703,7 +707,8 @@ public class Java2DUtilTest extends BaseTest {
     void testScaleWithSub3PixelSourceDimension() {
         BufferedImage inImage = newColorImage(2, 1, 8, false);
 
-        Scale scale = new Scale(200, 1000, Scale.Mode.ASPECT_FIT_INSIDE);
+        ScaleByPixels scale = new ScaleByPixels(
+                200, 1000, ScaleByPixels.Mode.ASPECT_FIT_INSIDE);
         ScaleConstraint sc = new ScaleConstraint(1, 1);
         ReductionFactor rf = new ReductionFactor(2);
 
@@ -716,7 +721,8 @@ public class Java2DUtilTest extends BaseTest {
     void testScaleWithSub3PixelTargetDimension() {
         BufferedImage inImage = newColorImage(100, 100, 8, false);
 
-        Scale scale = new Scale(2, 1, Scale.Mode.NON_ASPECT_FILL);
+        ScaleByPixels scale = new ScaleByPixels(
+                2, 1, ScaleByPixels.Mode.NON_ASPECT_FILL);
         ScaleConstraint sc = new ScaleConstraint(1, 1);
         ReductionFactor rf = new ReductionFactor(1);
 

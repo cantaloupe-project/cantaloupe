@@ -10,7 +10,8 @@ import edu.illinois.library.cantaloupe.operation.CropToSquare;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.operation.ReductionFactor;
 import edu.illinois.library.cantaloupe.operation.Rotate;
-import edu.illinois.library.cantaloupe.operation.Scale;
+import edu.illinois.library.cantaloupe.operation.ScaleByPercent;
+import edu.illinois.library.cantaloupe.operation.ScaleByPixels;
 import edu.illinois.library.cantaloupe.operation.Sharpen;
 import edu.illinois.library.cantaloupe.operation.Transpose;
 import edu.illinois.library.cantaloupe.processor.codec.ImageReader;
@@ -29,7 +30,7 @@ import static edu.illinois.library.cantaloupe.test.Assert.ImageAssert.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 @SuppressWarnings("deprecation")
-public class JAIUtilTest extends BaseTest {
+class JAIUtilTest extends BaseTest {
 
     private static final double DELTA = 0.00000001;
     private static final String IMAGE = "png-rgb-64x56x8.png";
@@ -191,8 +192,8 @@ public class JAIUtilTest extends BaseTest {
         final ScaleConstraint scaleConstraint = new ScaleConstraint(1, 1);
 
         // test with Mode.FULL
-        Scale scale = new Scale();
-        scale.setMode(Scale.Mode.FULL);
+        ScaleByPixels scale = new ScaleByPixels();
+        scale.setMode(ScaleByPixels.Mode.FULL);
         RenderedOp scaledImage = JAIUtil.scaleImage(
                 image, scale, scaleConstraint, interpolation, rf);
         assertSame(image, scaledImage);
@@ -206,8 +207,8 @@ public class JAIUtilTest extends BaseTest {
         final ReductionFactor rf = new ReductionFactor();
         final ScaleConstraint scaleConstraint = new ScaleConstraint(1, 1);
 
-        Scale scale = new Scale();
-        scale.setMode(Scale.Mode.ASPECT_FIT_WIDTH);
+        ScaleByPixels scale = new ScaleByPixels();
+        scale.setMode(ScaleByPixels.Mode.ASPECT_FIT_WIDTH);
         // down
         int width = 50;
         scale.setWidth(width);
@@ -236,8 +237,8 @@ public class JAIUtilTest extends BaseTest {
         final ReductionFactor rf = new ReductionFactor();
         final ScaleConstraint scaleConstraint = new ScaleConstraint(1, 1);
 
-        Scale scale = new Scale();
-        scale.setMode(Scale.Mode.ASPECT_FIT_HEIGHT);
+        ScaleByPixels scale = new ScaleByPixels();
+        scale.setMode(ScaleByPixels.Mode.ASPECT_FIT_HEIGHT);
         // down
         int height = 25;
         scale.setHeight(height);
@@ -266,8 +267,8 @@ public class JAIUtilTest extends BaseTest {
         final ReductionFactor rf = new ReductionFactor();
         final ScaleConstraint scaleConstraint = new ScaleConstraint(1, 1);
 
-        Scale scale = new Scale();
-        scale.setMode(Scale.Mode.ASPECT_FIT_INSIDE);
+        ScaleByPixels scale = new ScaleByPixels();
+        scale.setMode(ScaleByPixels.Mode.ASPECT_FIT_INSIDE);
         // down
         int width = 40;
         int height = 38;
@@ -300,8 +301,8 @@ public class JAIUtilTest extends BaseTest {
         final ReductionFactor rf = new ReductionFactor();
         final ScaleConstraint scaleConstraint = new ScaleConstraint(1, 1);
 
-        Scale scale = new Scale();
-        scale.setMode(Scale.Mode.NON_ASPECT_FILL);
+        ScaleByPixels scale = new ScaleByPixels();
+        scale.setMode(ScaleByPixels.Mode.NON_ASPECT_FILL);
         // down
         int width = 45;
         int height = 42;
@@ -330,7 +331,7 @@ public class JAIUtilTest extends BaseTest {
         final ReductionFactor rf = new ReductionFactor();
         final ScaleConstraint scaleConstraint = new ScaleConstraint(1, 1);
 
-        Scale scale = new Scale();
+        ScaleByPercent scale = new ScaleByPercent();
         // down
         double percent = 0.5;
         scale.setPercent(percent);
@@ -357,8 +358,8 @@ public class JAIUtilTest extends BaseTest {
         final ReductionFactor rf = new ReductionFactor();
         final ScaleConstraint scaleConstraint = new ScaleConstraint(1, 1);
 
-        Scale scale = new Scale();
-        scale.setMode(Scale.Mode.FULL);
+        ScaleByPixels scale = new ScaleByPixels();
+        scale.setMode(ScaleByPixels.Mode.FULL);
         RenderedOp scaledImage = JAIUtil.scaleImageUsingSubsampleAverage(
                 image, scale, scaleConstraint, rf);
         assertSame(image, scaledImage);
@@ -370,8 +371,8 @@ public class JAIUtilTest extends BaseTest {
         final ReductionFactor rf = new ReductionFactor();
         final ScaleConstraint scaleConstraint = new ScaleConstraint(1, 1);
 
-        Scale scale = new Scale();
-        scale.setMode(Scale.Mode.ASPECT_FIT_WIDTH);
+        ScaleByPixels scale = new ScaleByPixels();
+        scale.setMode(ScaleByPixels.Mode.ASPECT_FIT_WIDTH);
         // down
         int width = 50;
         scale.setWidth(width);
@@ -398,8 +399,8 @@ public class JAIUtilTest extends BaseTest {
         final ReductionFactor rf = new ReductionFactor();
         final ScaleConstraint scaleConstraint = new ScaleConstraint(1, 1);
 
-        Scale scale = new Scale();
-        scale.setMode(Scale.Mode.ASPECT_FIT_HEIGHT);
+        ScaleByPixels scale = new ScaleByPixels();
+        scale.setMode(ScaleByPixels.Mode.ASPECT_FIT_HEIGHT);
         // down
         int height = 36;
         scale.setHeight(height);
@@ -426,8 +427,8 @@ public class JAIUtilTest extends BaseTest {
         final ReductionFactor rf = new ReductionFactor();
         final ScaleConstraint scaleConstraint = new ScaleConstraint(1, 1);
 
-        Scale scale = new Scale();
-        scale.setMode(Scale.Mode.ASPECT_FIT_INSIDE);
+        ScaleByPixels scale = new ScaleByPixels();
+        scale.setMode(ScaleByPixels.Mode.ASPECT_FIT_INSIDE);
         // down
         int width = 40;
         int height = 40;
@@ -458,8 +459,8 @@ public class JAIUtilTest extends BaseTest {
         final ReductionFactor rf = new ReductionFactor();
         final ScaleConstraint scaleConstraint = new ScaleConstraint(1, 1);
 
-        Scale scale = new Scale();
-        scale.setMode(Scale.Mode.NON_ASPECT_FILL);
+        ScaleByPixels scale = new ScaleByPixels();
+        scale.setMode(ScaleByPixels.Mode.NON_ASPECT_FILL);
         // down
         int width = 45;
         int height = 42;
@@ -486,7 +487,7 @@ public class JAIUtilTest extends BaseTest {
         final ReductionFactor rf = new ReductionFactor();
         final ScaleConstraint scaleConstraint = new ScaleConstraint(1, 1);
 
-        Scale scale = new Scale();
+        ScaleByPercent scale = new ScaleByPercent();
         // down
         double percent = 0.5;
         scale.setPercent(percent);

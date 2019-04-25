@@ -5,7 +5,7 @@ import edu.illinois.library.cantaloupe.image.Dimension;
 import edu.illinois.library.cantaloupe.operation.CropByPixels;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.operation.ReductionFactor;
-import edu.illinois.library.cantaloupe.operation.Scale;
+import edu.illinois.library.cantaloupe.operation.ScaleByPixels;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -91,7 +91,7 @@ public abstract class AbstractImageReaderTest extends BaseTest {
     public void testReadWithArguments() throws Exception {
         OperationList ops = new OperationList(
                 new CropByPixels(10, 10, 40, 40),
-                new Scale(35, 35, Scale.Mode.ASPECT_FIT_INSIDE));
+                new ScaleByPixels(35, 35, ScaleByPixels.Mode.ASPECT_FIT_INSIDE));
 
         ReductionFactor rf = new ReductionFactor();
         Set<ReaderHint> hints = new HashSet<>();

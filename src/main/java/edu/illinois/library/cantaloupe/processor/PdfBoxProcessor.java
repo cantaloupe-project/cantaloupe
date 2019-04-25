@@ -9,8 +9,8 @@ import edu.illinois.library.cantaloupe.image.ScaleConstraint;
 import edu.illinois.library.cantaloupe.operation.Encode;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.operation.ReductionFactor;
-import edu.illinois.library.cantaloupe.operation.Scale;
 import edu.illinois.library.cantaloupe.image.Format;
+import edu.illinois.library.cantaloupe.operation.ScaleByPercent;
 import edu.illinois.library.cantaloupe.operation.ValidationException;
 import edu.illinois.library.cantaloupe.processor.codec.ImageWriterFactory;
 import edu.illinois.library.cantaloupe.processor.codec.ReaderHint;
@@ -118,16 +118,13 @@ class PdfBoxProcessor extends AbstractProcessor
             final ScaleConstraint scaleConstraint = opList.getScaleConstraint();
 
             final Set<ReaderHint> hints = EnumSet.noneOf(ReaderHint.class);
-            Scale scale = (Scale) opList.getFirst(Scale.class);
+            ScaleByPercent scale = (ScaleByPercent) opList.getFirst(ScaleByPercent.class);
             if (scale == null) {
-                scale = new Scale();
+                scale = new ScaleByPercent();
             }
 
-            Double pct = scale.getPercent();
-            ReductionFactor reductionFactor = new ReductionFactor();
-            if (pct != null) {
-                reductionFactor = ReductionFactor.forScale(pct);
-            }
+            double pct = scale.getPercent();
+            ReductionFactor reductionFactor = ReductionFactor.forScale(pct);
 
             // This processor supports a "page" URI query argument.
             int page = getPageNumber(opList.getOptions());
@@ -148,7 +145,7 @@ class PdfBoxProcessor extends AbstractProcessor
 
     /**
      * @param options Operation list options map.
-     * @return Page number from the given options map, or {@literal 1} if not
+     * @return Page number from the given options map, or {@code 1} if not
      *         found.
      */
     private int getPageNumber(Map<String,Object> options) {

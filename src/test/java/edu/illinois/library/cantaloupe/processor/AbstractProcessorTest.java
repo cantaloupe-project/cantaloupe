@@ -14,6 +14,8 @@ import edu.illinois.library.cantaloupe.operation.Encode;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.operation.Rotate;
 import edu.illinois.library.cantaloupe.operation.Scale;
+import edu.illinois.library.cantaloupe.operation.ScaleByPercent;
+import edu.illinois.library.cantaloupe.operation.ScaleByPixels;
 import edu.illinois.library.cantaloupe.operation.Transpose;
 import edu.illinois.library.cantaloupe.processor.codec.jpeg.TurboJPEGImageWriter;
 import edu.illinois.library.cantaloupe.source.PathStreamFactory;
@@ -156,7 +158,7 @@ abstract class AbstractProcessorTest extends BaseTest {
     @Test
     public void testProcessWithOnlyNoOpOperations() throws Exception {
         OperationList ops = new OperationList(
-                new Scale(), new Rotate(0), new Encode(Format.JPG));
+                new ScaleByPercent(), new Rotate(0), new Encode(Format.JPG));
 
         forEachFixture(ops, new ProcessorAssertion() {
             @Override
@@ -174,7 +176,7 @@ abstract class AbstractProcessorTest extends BaseTest {
     @Test
     public void testProcessWithScaleConstraint() throws Exception {
         OperationList ops = new OperationList(
-                new Scale(),
+                new ScaleByPercent(),
                 new Encode(Format.JPG));
         ops.setScaleConstraint(new ScaleConstraint(1, 2));
 
@@ -268,7 +270,7 @@ abstract class AbstractProcessorTest extends BaseTest {
     @Test
     public void testProcessWithNullScaleOperation() throws Exception {
         OperationList ops = new OperationList(
-                new Scale(), new Encode(Format.JPG));
+                new ScaleByPercent(), new Encode(Format.JPG));
 
         forEachFixture(ops, new ProcessorAssertion() {
             @Override
@@ -286,7 +288,7 @@ abstract class AbstractProcessorTest extends BaseTest {
     @Test
     public void testProcessWithScaleAspectFitWidthOperation() throws Exception {
         OperationList ops = new OperationList(
-                new Scale(20, null, Scale.Mode.ASPECT_FIT_WIDTH),
+                new ScaleByPixels(20, null, ScaleByPixels.Mode.ASPECT_FIT_WIDTH),
                 new Encode(Format.JPG));
 
         forEachFixture(ops, new ProcessorAssertion() {
@@ -305,7 +307,7 @@ abstract class AbstractProcessorTest extends BaseTest {
     @Test
     public void testProcessWithScaleAspectFitHeightOperation() throws Exception {
         OperationList ops = new OperationList(
-                new Scale(null, 20, Scale.Mode.ASPECT_FIT_HEIGHT),
+                new ScaleByPixels(null, 20, ScaleByPixels.Mode.ASPECT_FIT_HEIGHT),
                 new Encode(Format.JPG));
 
         forEachFixture(ops, new ProcessorAssertion() {
@@ -324,7 +326,7 @@ abstract class AbstractProcessorTest extends BaseTest {
     @Test
     public void testProcessWithDownscaleByPercentageOperation() throws Exception {
         OperationList ops = new OperationList(
-                new Scale(0.5),
+                new ScaleByPercent(0.5),
                 new Encode(Format.JPG));
 
         forEachFixture(ops, new ProcessorAssertion() {
@@ -343,7 +345,7 @@ abstract class AbstractProcessorTest extends BaseTest {
     @Test
     public void testProcessWithUpscaleByPercentageOperation() throws Exception {
         OperationList ops = new OperationList(
-                new Scale(1.5),
+                new ScaleByPercent(1.5),
                 new Encode(Format.JPG));
 
         forEachFixture(ops, new ProcessorAssertion() {
@@ -362,7 +364,7 @@ abstract class AbstractProcessorTest extends BaseTest {
     @Test
     public void testProcessWithAspectFitInsideScaleOperation() throws Exception {
         OperationList ops = new OperationList(
-                new Scale(20, 20, Scale.Mode.ASPECT_FIT_INSIDE),
+                new ScaleByPixels(20, 20, ScaleByPixels.Mode.ASPECT_FIT_INSIDE),
                 new Encode(Format.JPG));
 
         forEachFixture(ops, new ProcessorAssertion() {
@@ -385,7 +387,7 @@ abstract class AbstractProcessorTest extends BaseTest {
     @Test
     public void testProcessWithNonAspectFillScaleOperation() throws Exception {
         OperationList ops = new OperationList(
-                new Scale(20, 20, Scale.Mode.NON_ASPECT_FILL),
+                new ScaleByPixels(20, 20, ScaleByPixels.Mode.NON_ASPECT_FILL),
                 new Encode(Format.JPG));
 
         forEachFixture(ops, new ProcessorAssertion() {

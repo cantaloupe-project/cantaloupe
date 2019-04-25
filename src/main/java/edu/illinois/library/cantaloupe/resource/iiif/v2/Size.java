@@ -1,6 +1,8 @@
 package edu.illinois.library.cantaloupe.resource.iiif.v2;
 
 import edu.illinois.library.cantaloupe.operation.Scale;
+import edu.illinois.library.cantaloupe.operation.ScaleByPercent;
+import edu.illinois.library.cantaloupe.operation.ScaleByPixels;
 import edu.illinois.library.cantaloupe.resource.IllegalClientArgumentException;
 import edu.illinois.library.cantaloupe.util.StringUtils;
 
@@ -17,36 +19,36 @@ class Size {
         /**
          * Represents a size argument in {@literal ,h} format.
          */
-        ASPECT_FIT_HEIGHT(Scale.Mode.ASPECT_FIT_HEIGHT),
+        ASPECT_FIT_HEIGHT(ScaleByPixels.Mode.ASPECT_FIT_HEIGHT),
 
         /**
          * Represents a size argument in {@literal w,} format.
          */
-        ASPECT_FIT_WIDTH(Scale.Mode.ASPECT_FIT_WIDTH),
+        ASPECT_FIT_WIDTH(ScaleByPixels.Mode.ASPECT_FIT_WIDTH),
 
         /**
          * Represents a size argument in {@literal !w,h} format.
          */
-        ASPECT_FIT_INSIDE(Scale.Mode.ASPECT_FIT_INSIDE),
+        ASPECT_FIT_INSIDE(ScaleByPixels.Mode.ASPECT_FIT_INSIDE),
 
         /**
          * Represents a {@literal full} (Image API 2.0 & 2.1) or {@literal max}
          * (Image API 2.1) size argument.
          */
-        MAX(Scale.Mode.FULL),
+        MAX(ScaleByPixels.Mode.FULL),
 
         /**
          * Represents a size argument in {@literal w,h} format.
          */
-        NON_ASPECT_FILL(Scale.Mode.NON_ASPECT_FILL);
+        NON_ASPECT_FILL(ScaleByPixels.Mode.NON_ASPECT_FILL);
 
-        private Scale.Mode equivalentScaleMode;
+        private ScaleByPixels.Mode equivalentScaleMode;
 
-        ScaleMode(Scale.Mode equivalentScaleMode) {
+        ScaleMode(ScaleByPixels.Mode equivalentScaleMode) {
             this.equivalentScaleMode = equivalentScaleMode;
         }
 
-        public edu.illinois.library.cantaloupe.operation.Scale.Mode toMode() {
+        public edu.illinois.library.cantaloupe.operation.ScaleByPixels.Mode toMode() {
             return this.equivalentScaleMode;
         }
 
@@ -125,7 +127,7 @@ class Size {
         return percent;
     }
 
-    public ScaleMode getScaleMode() {
+    ScaleMode getScaleMode() {
         return scaleMode;
     }
 
@@ -169,16 +171,17 @@ class Size {
         this.width = width;
     }
 
-    public Scale toScale() {
-        Scale scale = new Scale();
-        if (getHeight() != null) {
-            scale.setHeight(getHeight());
+    Scale toScale() {
+        if (getPercent() != null) {
+            return new ScaleByPercent(getPercent() / 100.0);
         }
+
+        ScaleByPixels scale = new ScaleByPixels();
         if (getWidth() != null) {
             scale.setWidth(getWidth());
         }
-        if (getPercent() != null) {
-            scale.setPercent(getPercent() / 100.0);
+        if (getHeight() != null) {
+            scale.setHeight(getHeight());
         }
         if (getScaleMode() != null) {
             scale.setMode(getScaleMode().toMode());
