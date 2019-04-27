@@ -24,6 +24,10 @@
 * FfmpegProcessor, KakaduNativeProcessor, OpenJpegProcessor, and
   PdfBoxProcessor use libjpeg-turbo to write JPEGs if it is available.
 
+### Caches
+
+* Added DynamoDBCache.
+
 ### Other
 
 * Java 11 is required.

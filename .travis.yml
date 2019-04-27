@@ -4,9 +4,11 @@ services:
   - docker
 
 before_install:
+  - docker pull amazon/dynamodb-local
   - docker build -f docker/test/Dockerfile -t cantaloupe/tests .
   - docker run --name cantaloupe-minio -d -p 7229:7229 cantaloupe/tests /bin/sh -c "./minio server --address :7229 /home/cantaloupe/s3"
   - docker run --name cantaloupe-redis -d -p 7230:7230 cantaloupe/tests /bin/sh -c "redis-server --port 7230 --protected-mode no"
+  - docker run -d -p 8000:8000 amazon/dynamodb-local
   - docker run --net host --user cantaloupe cantaloupe/tests /bin/sh -c "cd /home/cantaloupe; mvn clean test -Pfreedeps"
 
 script:

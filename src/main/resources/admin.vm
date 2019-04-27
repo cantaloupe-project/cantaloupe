@@ -2721,9 +2721,8 @@
                                                 <a tabindex="0" class="btn btn-sm cl-help"
                                                    role="button" data-toggle="popover"
                                                    data-trigger="focus"
-                                                   data-content="See: &lt;a href=&quot;http://docs.aws.amazon.com/general/latest/gr/rande.html#s3_region&quot;&gt;
-                                                   http://docs.aws.amazon.com/general/latest/gr/rande.html#s3_region&lt;/a&gt;
-                                                   for a list of AWS endpoints.">?</a>
+                                                   data-content="See &lt;a href=&quot;https://docs.aws.amazon.com/general/latest/gr/rande.html#s3_region&quot;&gt;
+                                                   here&lt;/a&gt; for a list of AWS endpoints.">?</a>
                                             </td>
                                             <td>
                                                 <input type="text" class="form-control"
@@ -2815,6 +2814,74 @@
                                             <td>
                                                 <input type="text" class="form-control"
                                                        name="AzureStorageCache.object_key_prefix"
+                                                       data-requires-restart="true">
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </div>
+
+                                <div role="tabpanel" class="tab-pane" id="DynamoDBCache">
+                                    <table class="table table-striped">
+                                        <tr>
+                                            <td>Endpoint
+                                                <a tabindex="0" class="btn btn-sm cl-help"
+                                                   role="button" data-toggle="popover"
+                                                   data-trigger="focus"
+                                                   data-content="See &lt;a href=&quot;https://docs.aws.amazon.com/general/latest/gr/rande.html#ddb_region&quot;&gt;
+                                                   here&lt;/a&gt; for a list of AWS endpoints.">?</a>
+                                            </td>
+                                            <td>
+                                                <input type="text" class="form-control"
+                                                       name="DynamoDBCache.endpoint"
+                                                       data-requires-restart="true">
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Table
+                                                <a tabindex="0" class="btn btn-sm cl-help"
+                                                   role="button" data-toggle="popover"
+                                                   data-trigger="focus"
+                                                   data-content="This table must be created manually. See the user manual.">?</a>
+                                            </td>
+                                            <td>
+                                                <input type="text" class="form-control"
+                                                       name="DynamoDBCache.table.name"
+                                                       data-requires-restart="true">
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Access Key ID
+                                                <a tabindex="0" class="btn btn-sm cl-help"
+                                                   role="button" data-toggle="popover"
+                                                   data-trigger="focus"
+                                                   data-content="Access key ID associated with your AWS
+                                                   account. See: &lt;a href=&quot;https://aws.amazon.com/security-credentials&quot; target=&quot;_blank&quot;&gt;
+                                                   https://aws.amazon.com/security-credentials&lt;/a&gt;
+                                                   &lt;br&gt;&lt;br&gt;
+                                                   Note that credentials can be obtained from elsewhere rather than setting
+                                                   them here; see the user manual.">?</a>
+                                            </td>
+                                            <td>
+                                                <input type="text" class="form-control"
+                                                       name="DynamoDBCache.access_key_id"
+                                                       data-requires-restart="true">
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Secret Key
+                                                <a tabindex="0" class="btn btn-sm cl-help"
+                                                   role="button" data-toggle="popover"
+                                                   data-trigger="focus"
+                                                   data-content="Secret key associated with your AWS
+                                                   account. See: &lt;a href=&quot;https://aws.amazon.com/security-credentials&quot; target=&quot;_blank&quot;&gt;
+                                                   https://aws.amazon.com/security-credentials&lt;/a&gt;
+                                                   &lt;br&gt;&lt;br&gt;
+                                                   Note that credentials can be obtained from elsewhere rather than setting
+                                                   them here; see the user manual.">?</a>
+                                            </td>
+                                            <td>
+                                                <input type="text" class="form-control"
+                                                       name="DynamoDBCache.secret_key"
                                                        data-requires-restart="true">
                                             </td>
                                         </tr>

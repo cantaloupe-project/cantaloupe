@@ -610,6 +610,12 @@ public class AdminResourceUITest extends AbstractAdminResourceTest {
         inputNamed(Key.REDISCACHE_PASSWORD).sendKeys("redispass");
         inputNamed(Key.REDISCACHE_SSL).click();
         inputNamed(Key.REDISCACHE_DATABASE).sendKeys("5");
+        // DynamoDBCache
+        css("#cl-caches li > a[href=\"#DynamoDBCache\"]").click();
+        inputNamed(Key.DYNAMODBCACHE_ENDPOINT).sendKeys("http://example.org/");
+        inputNamed(Key.DYNAMODBCACHE_TABLE_NAME).sendKeys("MyTable");
+        inputNamed(Key.DYNAMODBCACHE_ACCESS_KEY_ID).sendKeys("me");
+        inputNamed(Key.DYNAMODBCACHE_SECRET_KEY).sendKeys("secret");
 
         // Submit the form
         css("#cl-caches input[type=\"submit\"]").click();
@@ -671,6 +677,11 @@ public class AdminResourceUITest extends AbstractAdminResourceTest {
         assertEquals("redispass", config.getString(Key.REDISCACHE_PASSWORD));
         assertTrue(config.getBoolean(Key.REDISCACHE_SSL));
         assertEquals("5", config.getString(Key.REDISCACHE_DATABASE));
+        // DynamoDBCache
+        assertEquals("http://example.org/", config.getString(Key.DYNAMODBCACHE_ENDPOINT));
+        assertEquals("MyTable", config.getString(Key.DYNAMODBCACHE_TABLE_NAME));
+        assertEquals("me", config.getString(Key.DYNAMODBCACHE_ACCESS_KEY_ID));
+        assertEquals("secret", config.getString(Key.DYNAMODBCACHE_SECRET_KEY));
     }
 
     @Test

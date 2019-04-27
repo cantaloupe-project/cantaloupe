@@ -19,6 +19,7 @@ public final class CacheFactory {
 
     private static final Set<DerivativeCache> ALL_DERIVATIVE_CACHES = Set.of(
             new AzureStorageCache(),
+            new DynamoDBCache(),
             new FilesystemCache(),
             new HeapCache(),
             new JdbcCache(),

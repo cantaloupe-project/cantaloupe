@@ -25,8 +25,8 @@ import static org.junit.jupiter.api.Assertions.*;
 
 abstract class AbstractCacheTest extends BaseTest {
 
-    private static final int ASYNC_WAIT = 3000;
-    static final String IMAGE = "jpg";
+    static final int ASYNC_WAIT = 3000;
+    static final String IMAGE   = "jpg";
 
     abstract DerivativeCache newInstance();
 
@@ -48,6 +48,7 @@ abstract class AbstractCacheTest extends BaseTest {
         }
     }
 
+    @Override
     @BeforeEach
     public void setUp() throws Exception {
         super.setUp();
@@ -96,8 +97,7 @@ abstract class AbstractCacheTest extends BaseTest {
     /* newDerivativeImageInputStream(OperationList) */
 
     @Test
-    void testNewDerivativeImageInputStreamWithZeroTTL()
-            throws Exception {
+    void testNewDerivativeImageInputStreamWithZeroTTL() throws Exception {
         final DerivativeCache instance = newInstance();
         Configuration.getInstance().setProperty(Key.DERIVATIVE_CACHE_TTL, 0);
 
@@ -123,8 +123,7 @@ abstract class AbstractCacheTest extends BaseTest {
     }
 
     @Test
-    void testNewDerivativeImageInputStreamWithNonzeroTTL()
-            throws Exception {
+    void testNewDerivativeImageInputStreamWithNonzeroTTL() throws Exception {
         final DerivativeCache instance = newInstance();
         Configuration.getInstance().setProperty(Key.DERIVATIVE_CACHE_TTL, 3);
 
@@ -133,8 +132,8 @@ abstract class AbstractCacheTest extends BaseTest {
         Path fixture = TestUtil.getImage(IMAGE);
 
         // Add an image.
-        // N.B.: This method may return before data is fully (or even
-        // partially) written to the cache.
+        // This method may return before data is fully (or even partially)
+        // written to the cache.
         try (OutputStream os = instance.newDerivativeImageOutputStream(ops)) {
             Files.copy(fixture, os);
         }
@@ -146,7 +145,7 @@ abstract class AbstractCacheTest extends BaseTest {
         assertExists(instance, ops);
 
         // Wait for it to invalidate.
-        Thread.sleep(3000);
+        Thread.sleep(4000);
 
         // Assert that it has been purged.
         assertNotExists(instance, ops);
@@ -163,8 +162,7 @@ abstract class AbstractCacheTest extends BaseTest {
     }
 
     @Test
-    void testNewDerivativeImageInputStreamConcurrently()
-            throws Exception {
+    void testNewDerivativeImageInputStreamConcurrently() throws Exception {
         final DerivativeCache instance = newInstance();
         final OperationList ops = new OperationList(
                 new Identifier("cats"), new Encode(Format.JPG));
