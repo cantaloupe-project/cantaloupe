@@ -12,8 +12,13 @@ import java.util.Optional;
 
 class MockCache implements DerivativeCache, SourceCache {
 
-    private boolean initializeCalled = false;
-    private boolean shutdownCalled = false;
+    private boolean isCleanUpCalled, isInitializeCalled, isOnCacheWorkerCalled,
+            isPurgeInvalidCalled, isShutdownCalled;
+
+    @Override
+    public void cleanUp() {
+        isCleanUpCalled = true;
+    }
 
     @Override
     public Optional<Info> getInfo(Identifier identifier) {
@@ -28,15 +33,27 @@ class MockCache implements DerivativeCache, SourceCache {
 
     @Override
     public void initialize() {
-        initializeCalled = true;
+        isInitializeCalled = true;
+    }
+
+    boolean isCleanUpCalled() {
+        return isCleanUpCalled;
     }
 
     boolean isInitializeCalled() {
-        return initializeCalled;
+        return isInitializeCalled;
+    }
+
+    boolean isOnCacheWorkerCalled() {
+        return isOnCacheWorkerCalled;
+    }
+
+    boolean isPurgeInvalidCalled() {
+        return isPurgeInvalidCalled;
     }
 
     boolean isShutdownCalled() {
-        return shutdownCalled;
+        return isShutdownCalled;
     }
 
     @Override
@@ -58,6 +75,12 @@ class MockCache implements DerivativeCache, SourceCache {
     }
 
     @Override
+    public void onCacheWorker() {
+        DerivativeCache.super.onCacheWorker();
+        isOnCacheWorkerCalled = true;
+    }
+
+    @Override
     public void purge() {}
 
     @Override
@@ -67,14 +90,16 @@ class MockCache implements DerivativeCache, SourceCache {
     public void purge(OperationList opList) {}
 
     @Override
-    public void purgeInvalid() {}
+    public void purgeInvalid() {
+        isPurgeInvalidCalled = true;
+    }
 
     @Override
     public void put(Identifier identifier, Info imageInfo) {}
 
     @Override
     public void shutdown() {
-        shutdownCalled = true;
+        isShutdownCalled = true;
     }
 
 }

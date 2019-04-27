@@ -3,6 +3,8 @@ package edu.illinois.library.cantaloupe.cache;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.operation.OperationList;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 
@@ -14,6 +16,8 @@ import java.io.IOException;
  * <p>Implementations must be thread-safe.</p>
  */
 public interface Cache {
+
+    Logger LOGGER = LoggerFactory.getLogger(Cache.class);
 
     /**
      * <p>Cleans up the cache.</p>
@@ -41,6 +45,30 @@ public interface Cache {
      * <p>The default implementation does nothing.</p>
      */
     default void initialize() {}
+
+    /**
+     * Called by {@link CacheWorker} during its shifts. This default
+     * implementation calls {@link #purgeInvalid()} and {@link #cleanUp()}.
+     * If an implementation has anything else to do, it should override and
+     * call {@code super}.
+     */
+    default void onCacheWorker() {
+        CacheFacade cacheFacade = new CacheFacade();
+
+        // Purge invalid content.
+        try {
+            cacheFacade.purgeExpired();
+        } catch (IOException e) {
+            LOGGER.error("onCacheWorker: {}", e.getMessage(), e);
+        }
+
+        // Clean up.
+        try {
+            cacheFacade.cleanUp();
+        } catch (IOException e) {
+            LOGGER.error("onCacheWorker: {}", e.getMessage(), e);
+        }
+    }
 
     /**
      * Deletes the entire cache contents.

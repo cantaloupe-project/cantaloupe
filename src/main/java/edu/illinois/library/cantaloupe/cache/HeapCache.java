@@ -523,6 +523,20 @@ class HeapCache implements DerivativeCache {
     }
 
     @Override
+    public void onCacheWorker() {
+        DerivativeCache.super.onCacheWorker();
+
+        if (isPersistenceEnabled()) {
+            try {
+                dumpToPersistentStore();
+            } catch (IOException e) {
+                LOGGER.error("onCacheWorker(): {}", e.getMessage(), e);
+            }
+        }
+
+    }
+
+    @Override
     public void purge() {
         LOGGER.info("purge(): purging {} items", cache.size());
         cache.clear();

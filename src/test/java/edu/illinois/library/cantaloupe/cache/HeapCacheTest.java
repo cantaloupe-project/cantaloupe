@@ -21,7 +21,7 @@ import static org.junit.jupiter.api.Assertions.*;
 public class HeapCacheTest extends AbstractCacheTest {
 
     @Nested
-    public class KeyTest extends BaseTest {
+    class KeyTest extends BaseTest {
 
         @Test
         void testEqualsWithInfoKey() {
@@ -259,6 +259,24 @@ public class HeapCacheTest extends AbstractCacheTest {
 
         instance.newDerivativeImageOutputStream(ops);
         assertTrue(instance.isDirty());
+    }
+
+    @Test
+    void testOnCacheWorker() throws Exception {
+        Path dir = Files.createTempDirectory("test");
+        Path file = dir.resolve("dump");
+
+        Configuration config = Configuration.getInstance();
+        config.setProperty(Key.HEAPCACHE_PERSIST, true);
+        config.setProperty(Key.HEAPCACHE_PATHNAME, file);
+
+        instance.put(new Identifier("cats"), new Info());
+
+        assertFalse(Files.exists(file));
+
+        instance.onCacheWorker();
+
+        assertTrue(Files.exists(file));
     }
 
     /* purgeExcess() */
