@@ -7,7 +7,7 @@ import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class FormatTest extends BaseTest {
+class FormatTest extends BaseTest {
 
     @Test
     void inferFormatWithIdentifier() {
@@ -161,9 +161,13 @@ public class FormatTest extends BaseTest {
 
     @Test
     void toMap() {
-        Map<String,Object> map = Format.JPG.toMap();
+        Map<String, Object> map = Format.JPG.toMap();
         assertEquals("jpg", map.get("extension"));
         assertEquals("image/jpeg", map.get("media_type"));
+
+        //noinspection ConstantConditions
+        assertThrows(UnsupportedOperationException.class,
+                () -> map.put("cats", "cats"));
     }
 
     @Test

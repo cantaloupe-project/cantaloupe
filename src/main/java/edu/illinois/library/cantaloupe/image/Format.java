@@ -2,7 +2,6 @@ package edu.illinois.library.cantaloupe.image;
 
 import edu.illinois.library.cantaloupe.source.Source;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -300,14 +299,13 @@ public enum Format {
     }
 
     /**
-     * @return Map serialization with <code>extension</code> and
-     * <code>media_type</code> keys corresponding to string values.
+     * @return Unmodifiable map with {@code extension} and {@code media_type}
+     *         keys corresponding to string values.
      */
     public Map<String,Object> toMap() {
-        Map<String,Object> map = new HashMap<>();
-        map.put("extension", getPreferredExtension());
-        map.put("media_type", getPreferredMediaType().toString());
-        return map;
+        return Map.of(
+                "extension", getPreferredExtension(),
+                "media_type", getPreferredMediaType().toString());
     }
 
     /**
