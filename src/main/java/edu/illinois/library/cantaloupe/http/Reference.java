@@ -20,7 +20,7 @@ public final class Reference {
 
     private String scheme, user, secret, host, path, fragment;
     private int port = -1;
-    private Query query;
+    private Query query = new Query();
 
     public static String decode(String encoded) {
         try {
@@ -264,7 +264,13 @@ public final class Reference {
         this.port = port;
     }
 
+    /**
+     * @param query Cannot be {@code null}.
+     */
     public void setQuery(Query query) {
+        if (query == null) {
+            throw new NullPointerException("Argument cannot be null");
+        }
         this.query = query;
     }
 
@@ -311,7 +317,7 @@ public final class Reference {
             builder.append(getPort());
         }
         builder.append(getPath());
-        if (getQuery() != null && !getQuery().isEmpty()) {
+        if (!getQuery().isEmpty()) {
             builder.append("?");
             builder.append(getQuery().toString());
         }

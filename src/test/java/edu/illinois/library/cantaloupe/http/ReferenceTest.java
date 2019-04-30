@@ -333,6 +333,11 @@ public class ReferenceTest {
         instance.setPathComponent(2, "new");
     }
 
+    @Test(expected = NullPointerException.class)
+    public void testSetQueryWithNullArgument() {
+        instance.setQuery(null);
+    }
+
     @Test
     public void testToURI() throws Exception {
         URI expected = new URI(instance.toString());
