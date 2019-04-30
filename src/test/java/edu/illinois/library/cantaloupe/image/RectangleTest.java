@@ -40,17 +40,17 @@ public class RectangleTest {
     }
 
     @Test
-    public void testContainsAgainstSmallerInstance() {
+    public void testContains1AgainstSmallerInstance() {
         assertTrue(instance.contains(new Rectangle(11, 6, 998, 798)));
     }
 
     @Test
-    public void testContainsAgainstEqualInstance() {
+    public void testContains1AgainstEqualInstance() {
         assertTrue(instance.contains(new Rectangle(10, 5, 1000, 800)));
     }
 
     @Test
-    public void testContainsAgainstOutOfBoundsOrigins() {
+    public void testContains1AgainstOutOfBoundsOrigins() {
         // X
         assertFalse(instance.contains(new Rectangle(9, 5, 1000, 800)));
         // Y
@@ -58,13 +58,48 @@ public class RectangleTest {
     }
 
     @Test
-    public void testContainsAgainstOutOfBoundsDimensions() {
+    public void testContains1AgainstOutOfBoundsDimensions() {
         // X
         assertFalse(instance.contains(new Rectangle(10, 5, 1001, 800)));
         assertFalse(instance.contains(new Rectangle(500, 5, 511, 800)));
         // Y
         assertFalse(instance.contains(new Rectangle(10, 5, 1000, 801)));
         assertFalse(instance.contains(new Rectangle(10, 400, 1000, 406)));
+    }
+
+    @Test
+    public void testContains2AgainstSmallerInstance() {
+        assertTrue(instance.contains(new Rectangle(11, 6, 998, 798), 0.5));
+        assertTrue(instance.contains(new Rectangle(9, 4, 998, 798), 2));
+    }
+
+    @Test
+    public void testContains2AgainstEqualInstance() {
+        assertTrue(instance.contains(new Rectangle(10, 5, 1000, 800), DELTA));
+    }
+
+    @Test
+    public void testContains2AgainstOutOfBoundsOrigins() {
+        // X
+        assertFalse(instance.contains(new Rectangle(9, 5, 1000, 800), DELTA));
+        assertTrue(instance.contains(new Rectangle(9, 5, 1000, 800), 2));
+        // Y
+        assertFalse(instance.contains(new Rectangle(10, 4, 1000, 800), DELTA));
+        assertTrue(instance.contains(new Rectangle(10, 4, 1000, 800), 2));
+    }
+
+    @Test
+    public void testContains2AgainstOutOfBoundsDimensions() {
+        // X
+        assertFalse(instance.contains(new Rectangle(10, 5, 1001, 800), DELTA));
+        assertTrue(instance.contains(new Rectangle(10, 5, 1001, 800), 2));
+        assertFalse(instance.contains(new Rectangle(500, 5, 511, 800), DELTA));
+        assertTrue(instance.contains(new Rectangle(500, 5, 511, 800), 2));
+        // Y
+        assertFalse(instance.contains(new Rectangle(10, 5, 1000, 801), DELTA));
+        assertTrue(instance.contains(new Rectangle(10, 5, 1000, 801), 2));
+        assertFalse(instance.contains(new Rectangle(10, 400, 1000, 406), DELTA));
+        assertTrue(instance.contains(new Rectangle(10, 400, 1000, 406), 2));
     }
 
     @Test
