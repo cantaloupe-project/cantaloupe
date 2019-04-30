@@ -85,26 +85,6 @@ public class RectangleTest extends BaseTest {
     }
 
     @Test
-    void testGrowWidth() {
-        final double initialWidth = instance.width();
-        instance.growWidth(3.2);
-        Rectangle expected = new Rectangle(
-                instance.x(), instance.y(),
-                initialWidth + 3.2, instance.height());
-        assertEquals(expected, instance);
-    }
-
-    @Test
-    void testGrowHeight() {
-        final double initialHeight = instance.height();
-        instance.growHeight(3.2);
-        Rectangle expected = new Rectangle(
-                instance.x(), instance.y(),
-                instance.width(), initialHeight + 3.2);
-        assertEquals(expected, instance);
-    }
-
-    @Test
     void testHashCode() {
         int expected = Arrays.hashCode(new double[] {
                 instance.x(),
@@ -208,6 +188,19 @@ public class RectangleTest extends BaseTest {
         Rectangle expected = new Rectangle(
                 initialX + amtX, initialY + amtY,
                 instance.width(), instance.height());
+        assertEquals(expected, instance);
+    }
+
+    @Test
+    void testResize() {
+        final double initialW = instance.width();
+        final double initialH = instance.height();
+        final double amtX = 3.2;
+        final double amtY = 2.5;
+        instance.resize(amtX, amtY);
+        Rectangle expected = new Rectangle(
+                instance.x(), instance.y(),
+                initialW + amtX, initialH + amtY);
         assertEquals(expected, instance);
     }
 

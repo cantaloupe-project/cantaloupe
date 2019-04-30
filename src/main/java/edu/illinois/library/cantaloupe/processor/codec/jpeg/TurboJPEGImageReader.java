@@ -134,14 +134,14 @@ public final class TurboJPEGImageReader implements AutoCloseable {
             // Stretch origin left
             final int roiXInset = region.intX() % blockWidth;
             safeRegion.move(-roiXInset, 0);
-            safeRegion.growWidth(roiXInset);
+            safeRegion.resize(roiXInset, 0);
             roiWithinRegion.setX(region.x() - safeRegion.x());
 
             // Stretch width right
             final int roiExtraWidth =
                     (safeRegion.intX() + safeRegion.intWidth()) % blockWidth;
             if (roiExtraWidth != 0) {
-                safeRegion.growWidth(blockWidth - roiExtraWidth);
+                safeRegion.resize(blockWidth - roiExtraWidth, 0);
             }
             if (safeRegion.x() + safeRegion.width() > width) {
                 safeRegion.setWidth(width - safeRegion.x());
@@ -151,14 +151,14 @@ public final class TurboJPEGImageReader implements AutoCloseable {
             // Stretch origin up
             final int roiYInset = region.intY() % blockHeight;
             safeRegion.move(0, -roiYInset);
-            safeRegion.growHeight(roiYInset);
+            safeRegion.resize(0, roiYInset);
             roiWithinRegion.setY(region.y() - safeRegion.y());
 
             // Stretch height down
             final int roiExtraHeight =
                     (safeRegion.intY() + safeRegion.intHeight()) % blockHeight;
             if (roiExtraHeight != 0) {
-                safeRegion.growHeight(blockHeight - roiExtraHeight);
+                safeRegion.resize(0, blockHeight - roiExtraHeight);
             }
             if (safeRegion.y() + safeRegion.height() > height) {
                 safeRegion.setHeight(height - safeRegion.y());

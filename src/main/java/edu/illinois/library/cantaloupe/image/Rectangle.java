@@ -118,17 +118,14 @@ public final class Rectangle {
         return dimension.isEmpty();
     }
 
-    public void growWidth(double amount) {
-        setWidth(width() + amount);
-    }
-
-    public void growHeight(double amount) {
-        setHeight(height() + amount);
-    }
-
     public void move(double x, double y) {
         setX(x() + x);
         setY(y() + y);
+    }
+
+    public void resize(double xAmount, double yAmount) {
+        setWidth(width() + xAmount);
+        setHeight(height() + yAmount);
     }
 
     /**
