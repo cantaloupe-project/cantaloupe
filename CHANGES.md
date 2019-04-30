@@ -31,6 +31,7 @@
 ### Other
 
 * Java 11 is required.
+* JRuby has been updated to version 9.2, which supports Ruby 2.5.
 
 ## 4.1.2
 
