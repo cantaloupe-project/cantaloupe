@@ -198,41 +198,15 @@ public class RectangleTest extends BaseTest {
     }
 
     @Test
-    void testMoveLeft() {
+    void testMove() {
         final double initialX = instance.x();
-        instance.moveLeft(3.5);
-        Rectangle expected = new Rectangle(
-                initialX - 3.5, instance.y(),
-                instance.width(), instance.height());
-        assertEquals(expected, instance);
-    }
-
-    @Test
-    void testMoveRight() {
-        final double initialX = instance.x();
-        instance.moveRight(3.5);
-        Rectangle expected = new Rectangle(
-                initialX + 3.5, instance.y(),
-                instance.width(), instance.height());
-        assertEquals(expected, instance);
-    }
-
-    @Test
-    void testMoveUp() {
         final double initialY = instance.y();
-        instance.moveUp(3.5);
-        Rectangle expected = new Rectangle(
-                instance.x(), initialY - 3.5,
-                instance.width(), instance.height());
-        assertEquals(expected, instance);
-    }
+        final double amtX = 3.5;
+        final double amtY = 2.5;
+        instance.move(amtX, amtY);
 
-    @Test
-    void testMoveDown() {
-        final double initialY = instance.y();
-        instance.moveDown(3.5);
         Rectangle expected = new Rectangle(
-                instance.x(), initialY + 3.5,
+                initialX + amtX, initialY + amtY,
                 instance.width(), instance.height());
         assertEquals(expected, instance);
     }

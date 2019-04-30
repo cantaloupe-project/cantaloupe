@@ -126,20 +126,9 @@ public final class Rectangle {
         setHeight(height() + amount);
     }
 
-    public void moveLeft(double amount) {
-        setX(x() - amount);
-    }
-
-    public void moveRight(double amount) {
-        setX(x() + amount);
-    }
-
-    public void moveUp(double amount) {
-        setY(y() - amount);
-    }
-
-    public void moveDown(double amount) {
-        setY(y() + amount);
+    public void move(double x, double y) {
+        setX(x() + x);
+        setY(y() + y);
     }
 
     /**
