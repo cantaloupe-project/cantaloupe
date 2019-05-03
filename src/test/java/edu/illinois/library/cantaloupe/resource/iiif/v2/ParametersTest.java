@@ -6,8 +6,8 @@ import edu.illinois.library.cantaloupe.operation.Operation;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.operation.Rotate;
 import edu.illinois.library.cantaloupe.operation.Scale;
-import edu.illinois.library.cantaloupe.processor.UnsupportedOutputFormatException;
 import edu.illinois.library.cantaloupe.resource.IllegalClientArgumentException;
+import edu.illinois.library.cantaloupe.resource.iiif.FormatException;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -58,8 +58,8 @@ public class ParametersTest extends BaseTest {
     }
 
     @Test
-    void testConstructorThrowsUnsupportedOutputFormatException() {
-        assertThrows(UnsupportedOutputFormatException.class,
+    void testConstructorWithUnsupportedOutputFormat() {
+        assertThrows(FormatException.class,
                 () -> new Parameters(
                         new Identifier("identifier"),
                         "0,0,200,200",

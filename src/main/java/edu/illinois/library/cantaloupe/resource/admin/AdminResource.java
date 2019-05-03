@@ -11,7 +11,7 @@ import edu.illinois.library.cantaloupe.operation.Scale;
 import edu.illinois.library.cantaloupe.processor.InitializationException;
 import edu.illinois.library.cantaloupe.processor.Processor;
 import edu.illinois.library.cantaloupe.processor.ProcessorFactory;
-import edu.illinois.library.cantaloupe.processor.UnsupportedSourceFormatException;
+import edu.illinois.library.cantaloupe.processor.SourceFormatException;
 import edu.illinois.library.cantaloupe.resource.Route;
 import edu.illinois.library.cantaloupe.resource.VelocityRepresentation;
 import edu.illinois.library.cantaloupe.source.Source;
@@ -101,7 +101,7 @@ public class AdminResource extends AbstractAdminResource {
             try {
                 ((Processor) object).setSourceFormat((Format) format.object);
                 return true;
-            } catch (UnsupportedSourceFormatException e) {
+            } catch (SourceFormatException e) {
                 return false;
             }
         }
@@ -225,7 +225,7 @@ public class AdminResource extends AbstractAdminResource {
         for (Format format : Format.values()) {
             try (Processor proc = new ProcessorFactory().newProcessor(format)) {
                 assignments.put(new FormatProxy(format), new ProcessorProxy(proc));
-            } catch (UnsupportedSourceFormatException |
+            } catch (SourceFormatException |
                     InitializationException |
                     ReflectiveOperationException e) {
                 // nothing we can do

@@ -6,7 +6,6 @@ import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.operation.ValidationException;
-import edu.illinois.library.cantaloupe.operation.Scale;
 import edu.illinois.library.cantaloupe.source.StreamFactory;
 import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
 
@@ -144,15 +143,15 @@ public interface Processor extends AutoCloseable {
      *                     instance, as it may have come from a cache.
      * @param outputStream Stream to write the image to, which should not be
      *                     closed.
-     * @throws UnsupportedOutputFormatException Implementations can extend
-     *                                          {@link AbstractProcessor} and
-     *                                          call super to get this check
-     *                                          for free.
-     * @throws ProcessorException If anything goes wrong.
+     * @throws SourceFormatException if the {@link Info#getSourceFormat()}
+     *         source format} is not supported.
+     * @throws OutputFormatException if the {@link
+     *         OperationList#getOutputFormat() output format} is not supported.
+     * @throws ProcessorException if anything else goes wrong.
      */
     void process(OperationList opList,
                  Info sourceInfo,
-                 OutputStream outputStream) throws ProcessorException;
+                 OutputStream outputStream) throws FormatException, ProcessorException;
 
     /**
      * <p>Reads and returns information about the source image.</p>
@@ -166,16 +165,17 @@ public interface Processor extends AutoCloseable {
      * manually.</p>
      *
      * @return Information about the source image.
-     * @throws IOException if anything goes wrong.
+     * @throws SourceFormatException if the source format is not supported.
+     * @throws IOException if anything else goes wrong.
      */
     Info readInfo() throws IOException;
 
     /**
      * @param format Format of the source image. Never {@link Format#UNKNOWN}.
-     * @throws UnsupportedSourceFormatException if the given format is not
+     * @throws SourceFormatException if the given format is not
      *                                          supported.
      */
-    void setSourceFormat(Format format) throws UnsupportedSourceFormatException;
+    void setSourceFormat(Format format) throws SourceFormatException;
 
     /**
      * <p>Validates the given operation list, throwing an exception if
@@ -186,9 +186,9 @@ public interface Processor extends AutoCloseable {
      * <ol>
      *     <li>Calls {@link OperationList#validate}</li>
      *     <li>Ensures that the scale mode is not {@link
-     *     Scale.Mode#NON_ASPECT_FILL} if {@link
-     *     ProcessorFeature#SIZE_BY_DISTORTED_WIDTH_HEIGHT} is not {@link
-     *     #getSupportedFeatures() supported}</li>
+     *     edu.illinois.library.cantaloupe.operation.ScaleByPixels.Mode#NON_ASPECT_FILL}
+     *     if {@link ProcessorFeature#SIZE_BY_DISTORTED_WIDTH_HEIGHT} is not
+     *     {@link #getSupportedFeatures() supported}</li>
      * </ol>
      *
      * <p>Notes:</p>
@@ -202,8 +202,8 @@ public interface Processor extends AutoCloseable {
      * @param opList Operation list to process. Will be equal to the one passed
      *               to {@link #process}.
      * @throws ValidationException if validation fails.
-     * @throws ProcessorException  if there is an error in performing the
-     *                             validation.
+     * @throws ProcessorException if there is an error in performing the
+     *         validation.
      */
     default void validate(OperationList opList, Dimension fullSize)
             throws ValidationException, ProcessorException {

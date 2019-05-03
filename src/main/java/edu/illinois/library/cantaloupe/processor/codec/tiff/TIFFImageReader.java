@@ -10,7 +10,7 @@ import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.operation.Scale;
 import edu.illinois.library.cantaloupe.operation.ReductionFactor;
 import edu.illinois.library.cantaloupe.operation.ScaleByPercent;
-import edu.illinois.library.cantaloupe.processor.UnsupportedSourceFormatException;
+import edu.illinois.library.cantaloupe.processor.SourceFormatException;
 import edu.illinois.library.cantaloupe.processor.codec.AbstractIIOImageReader;
 import edu.illinois.library.cantaloupe.processor.codec.ImageReader;
 import edu.illinois.library.cantaloupe.processor.codec.ReaderHint;
@@ -150,7 +150,7 @@ public final class TIFFImageReader extends AbstractIIOImageReader
                     hints);
         }
         if (image == null) {
-            throw new UnsupportedSourceFormatException(iioReader.getFormatName());
+            throw new SourceFormatException(iioReader.getFormatName());
         }
         return image;
     }

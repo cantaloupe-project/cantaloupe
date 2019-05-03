@@ -11,7 +11,7 @@ import edu.illinois.library.cantaloupe.operation.Scale;
 import edu.illinois.library.cantaloupe.operation.ReductionFactor;
 import edu.illinois.library.cantaloupe.operation.ScaleByPercent;
 import edu.illinois.library.cantaloupe.operation.ScaleByPixels;
-import edu.illinois.library.cantaloupe.processor.UnsupportedSourceFormatException;
+import edu.illinois.library.cantaloupe.processor.SourceFormatException;
 import edu.illinois.library.cantaloupe.source.StreamFactory;
 import edu.illinois.library.cantaloupe.source.stream.ClosingMemoryCacheImageInputStream;
 import org.apache.commons.io.IOUtils;
@@ -335,7 +335,7 @@ public abstract class AbstractIIOImageReader {
         }
 
         if (image == null) {
-            throw new UnsupportedSourceFormatException(iioReader.getFormatName());
+            throw new SourceFormatException(iioReader.getFormatName());
         }
 
         return image;
@@ -528,7 +528,7 @@ public abstract class AbstractIIOImageReader {
                     crop, scale, ops.getScaleConstraint(), reductionFactor);
         }
         if (image == null) {
-            throw new UnsupportedSourceFormatException(iioReader.getFormatName());
+            throw new SourceFormatException(iioReader.getFormatName());
         }
         return image;
     }

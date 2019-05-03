@@ -77,7 +77,7 @@ public class FfmpegProcessorTest extends AbstractProcessorTest {
                 }
                 instance.setSourceFormat(format);
                 assertEquals(expectedFormats, instance.getAvailableOutputFormats());
-            } catch (UnsupportedSourceFormatException e) {
+            } catch (SourceFormatException e) {
                 // continue
             }
         }

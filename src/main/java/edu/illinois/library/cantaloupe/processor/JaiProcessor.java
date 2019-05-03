@@ -137,7 +137,7 @@ class JaiProcessor extends AbstractImageIOProcessor
     public void process(final OperationList opList,
                         final Info info,
                         final OutputStream outputStream)
-            throws ProcessorException {
+            throws ProcessorException, FormatException {
         super.process(opList, info, outputStream);
 
         ImageReader reader = null;

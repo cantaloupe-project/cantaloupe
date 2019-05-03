@@ -670,7 +670,7 @@ class ImageMagickProcessor extends AbstractMagickProcessor
     public void process(final OperationList ops,
                         final Info imageInfo,
                         final OutputStream outputStream)
-            throws ProcessorException {
+            throws FormatException, ProcessorException {
         super.process(ops, imageInfo, outputStream);
 
         try (InputStream inputStream = streamFactory.newInputStream()) {

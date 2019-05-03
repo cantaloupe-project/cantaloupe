@@ -6,7 +6,6 @@ import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
 import edu.illinois.library.cantaloupe.source.PathStreamFactory;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.util.EnumSet;
@@ -32,7 +31,7 @@ public class TurboJpegProcessorTest extends AbstractProcessorTest {
         TurboJpegProcessor proc = new TurboJpegProcessor();
         try {
             proc.setSourceFormat(Format.JPG);
-        } catch (UnsupportedSourceFormatException e) {
+        } catch (SourceFormatException e) {
             fail("Huge bug");
         }
         return proc;

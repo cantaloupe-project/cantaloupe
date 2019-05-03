@@ -46,7 +46,7 @@ public class KakaduDemoProcessorTest extends AbstractProcessorTest {
         KakaduDemoProcessor proc = new KakaduDemoProcessor();
         try {
             proc.setSourceFormat(Format.JP2);
-        } catch (UnsupportedSourceFormatException e) {
+        } catch (SourceFormatException e) {
             fail("Huge bug");
         }
         return proc;

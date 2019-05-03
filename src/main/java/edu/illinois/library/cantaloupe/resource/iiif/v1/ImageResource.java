@@ -13,8 +13,8 @@ import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.operation.Scale;
 import edu.illinois.library.cantaloupe.processor.Processor;
 import edu.illinois.library.cantaloupe.processor.ProcessorFactory;
-import edu.illinois.library.cantaloupe.processor.UnsupportedOutputFormatException;
-import edu.illinois.library.cantaloupe.processor.UnsupportedSourceFormatException;
+import edu.illinois.library.cantaloupe.processor.OutputFormatException;
+import edu.illinois.library.cantaloupe.processor.SourceFormatException;
 import edu.illinois.library.cantaloupe.status.HealthChecker;
 import edu.illinois.library.cantaloupe.source.Source;
 import edu.illinois.library.cantaloupe.source.SourceFactory;
@@ -176,7 +176,7 @@ public class ImageResource extends IIIF1Resource {
             // asking it whether it offers any output formats for it.
             if (!availableOutputFormats.isEmpty()) {
                 if (!availableOutputFormats.contains(ops.getOutputFormat())) {
-                    Exception e = new UnsupportedOutputFormatException(
+                    Exception e = new OutputFormatException(
                             processor, ops.getOutputFormat());
                     LOGGER.warn("{}: {}",
                             e.getMessage(),
@@ -184,7 +184,7 @@ public class ImageResource extends IIIF1Resource {
                     throw e;
                 }
             } else {
-                throw new UnsupportedSourceFormatException(sourceFormat);
+                throw new SourceFormatException(sourceFormat);
             }
 
             addHeaders(processor, ops.getOutputFormat(), disposition);

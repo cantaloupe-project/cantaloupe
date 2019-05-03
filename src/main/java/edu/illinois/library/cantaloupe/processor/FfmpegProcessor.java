@@ -150,7 +150,7 @@ class FfmpegProcessor extends AbstractProcessor implements FileProcessor {
     public void process(final OperationList opList,
                         final Info imageInfo,
                         final OutputStream outputStream)
-            throws ProcessorException {
+            throws ProcessorException, FormatException {
         super.process(opList, imageInfo, outputStream);
 
         final ByteArrayOutputStream errorBucket = new ByteArrayOutputStream();
@@ -293,7 +293,7 @@ class FfmpegProcessor extends AbstractProcessor implements FileProcessor {
 
     @Override
     public void setSourceFormat(Format format)
-            throws UnsupportedSourceFormatException {
+            throws SourceFormatException {
         super.setSourceFormat(format);
         reset();
     }

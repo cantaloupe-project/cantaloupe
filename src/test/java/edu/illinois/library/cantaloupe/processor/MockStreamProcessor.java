@@ -68,7 +68,7 @@ public class MockStreamProcessor implements StreamProcessor {
 
     @Override
     public void setSourceFormat(Format format)
-            throws UnsupportedSourceFormatException {
+            throws SourceFormatException {
         this.sourceFormat = format;
     }
 

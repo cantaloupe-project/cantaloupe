@@ -45,7 +45,7 @@ public class PdfBoxProcessorTest extends AbstractProcessorTest {
         PdfBoxProcessor proc = new PdfBoxProcessor();
         try {
             proc.setSourceFormat(Format.PDF);
-        } catch (UnsupportedSourceFormatException e) {
+        } catch (SourceFormatException e) {
             fail("Huge bug");
         }
         return proc;

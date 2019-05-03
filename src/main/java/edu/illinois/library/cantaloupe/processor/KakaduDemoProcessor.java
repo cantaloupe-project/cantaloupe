@@ -341,7 +341,7 @@ class KakaduDemoProcessor extends AbstractProcessor implements FileProcessor {
     @Override
     public void process(final OperationList opList,
                         final Info imageInfo,
-                        final OutputStream outputStream) throws ProcessorException {
+                        final OutputStream outputStream) throws FormatException, ProcessorException {
         super.process(opList, imageInfo, outputStream);
 
         final ByteArrayOutputStream errorBucket = new ByteArrayOutputStream();

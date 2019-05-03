@@ -41,7 +41,7 @@ public class OpenJpegProcessorTest extends AbstractProcessorTest {
         OpenJpegProcessor proc = new OpenJpegProcessor();
         try {
             proc.setSourceFormat(Format.JP2);
-        } catch (UnsupportedSourceFormatException e) {
+        } catch (SourceFormatException e) {
             fail("Huge bug");
         }
         return proc;

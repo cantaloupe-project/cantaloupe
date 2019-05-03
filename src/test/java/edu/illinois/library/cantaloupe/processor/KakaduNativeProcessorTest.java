@@ -37,7 +37,7 @@ public class KakaduNativeProcessorTest extends AbstractProcessorTest {
         KakaduNativeProcessor proc = new KakaduNativeProcessor();
         try {
             proc.setSourceFormat(Format.JP2);
-        } catch (UnsupportedSourceFormatException e) {
+        } catch (SourceFormatException e) {
             fail("Huge bug");
         }
         return proc;

@@ -210,9 +210,9 @@ class KakaduNativeProcessor implements FileProcessor, StreamProcessor {
 
     @Override
     public void setSourceFormat(Format format)
-            throws UnsupportedSourceFormatException {
+            throws SourceFormatException {
         if (!Format.JP2.equals(format)) {
-            throw new UnsupportedSourceFormatException(format);
+            throw new SourceFormatException(format);
         }
     }
 

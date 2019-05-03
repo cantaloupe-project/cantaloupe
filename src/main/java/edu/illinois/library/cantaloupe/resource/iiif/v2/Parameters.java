@@ -5,8 +5,8 @@ import edu.illinois.library.cantaloupe.http.Reference;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.operation.Encode;
 import edu.illinois.library.cantaloupe.operation.OperationList;
-import edu.illinois.library.cantaloupe.processor.UnsupportedOutputFormatException;
 import edu.illinois.library.cantaloupe.resource.IllegalClientArgumentException;
+import edu.illinois.library.cantaloupe.resource.iiif.FormatException;
 import org.apache.commons.lang3.StringUtils;
 
 /**
@@ -56,7 +56,7 @@ class Parameters {
     /**
      * No-op constructor.
      */
-    public Parameters() {}
+    Parameters() {}
 
     /**
      * @param identifier Decoded identifier.
@@ -65,17 +65,16 @@ class Parameters {
      * @param rotation From URI
      * @param quality From URI
      * @param format From URI
-     * @throws UnsupportedOutputFormatException if the {@literal format}
-     *         argument is invalid.
+     * @throws FormatException if the {@literal format} argument is invalid.
      * @throws IllegalClientArgumentException if any of the other arguments are
      *         invalid.
      */
-    public Parameters(Identifier identifier,
-                      String region,
-                      String size,
-                      String rotation,
-                      String quality,
-                      String format) {
+    Parameters(Identifier identifier,
+               String region,
+               String size,
+               String rotation,
+               String quality,
+               String format) {
         setIdentifier(identifier);
         setRegion(Region.fromUri(region));
         setSize(Size.fromUri(size));
@@ -88,7 +87,7 @@ class Parameters {
         try {
             setOutputFormat(OutputFormat.valueOf(format.toUpperCase()));
         } catch (IllegalArgumentException e) {
-            throw new UnsupportedOutputFormatException(format);
+            throw new FormatException(format);
         }
     }
 

@@ -7,6 +7,7 @@ import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.processor.FileProcessor;
+import edu.illinois.library.cantaloupe.processor.FormatException;
 import edu.illinois.library.cantaloupe.processor.Processor;
 import edu.illinois.library.cantaloupe.processor.ProcessorException;
 import edu.illinois.library.cantaloupe.processor.StreamProcessor;
@@ -174,7 +175,8 @@ public class ImageRepresentation implements Representation {
         LOGGER.debug("Streamed with no processing in {}: {}", watch, opList);
     }
 
-    private void process(OutputStream responseOS) throws ProcessorException {
+    private void process(OutputStream responseOS)
+            throws FormatException, ProcessorException {
         final Stopwatch watch = new Stopwatch();
 
         processor.process(opList, imageInfo, responseOS);

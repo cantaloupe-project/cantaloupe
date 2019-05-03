@@ -60,7 +60,7 @@ public class ProcessorFactoryTest extends BaseTest {
     void testNewProcessorWithNoMatch() {
         instance.setSelectionStrategy(f ->
                 List.of(MockPDFOnlyProcessor.class, MockPNGOnlyProcessor.class));
-        assertThrows(UnsupportedSourceFormatException.class,
+        assertThrows(SourceFormatException.class,
                 () -> instance.newProcessor(Format.JPG));
     }
 
@@ -68,7 +68,7 @@ public class ProcessorFactoryTest extends BaseTest {
     void testNewProcessorWithUnknownFormat() {
         Configuration.getInstance().setProperty(Key.PROCESSOR_FALLBACK,
                 Java2dProcessor.class.getSimpleName());
-        assertThrows(UnsupportedSourceFormatException.class,
+        assertThrows(SourceFormatException.class,
                 () -> instance.newProcessor(Format.UNKNOWN));
     }
 

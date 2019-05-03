@@ -43,7 +43,7 @@ class Java2dProcessor extends AbstractImageIOProcessor
     public void process(final OperationList ops,
                         final Info info,
                         final OutputStream outputStream)
-            throws ProcessorException {
+            throws ProcessorException, FormatException {
         super.process(ops, info, outputStream);
 
         ImageReader reader = null;

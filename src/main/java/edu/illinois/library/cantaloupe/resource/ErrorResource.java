@@ -7,8 +7,9 @@ import edu.illinois.library.cantaloupe.http.Status;
 import edu.illinois.library.cantaloupe.operation.IllegalScaleException;
 import edu.illinois.library.cantaloupe.operation.IllegalSizeException;
 import edu.illinois.library.cantaloupe.operation.ValidationException;
-import edu.illinois.library.cantaloupe.processor.UnsupportedOutputFormatException;
-import edu.illinois.library.cantaloupe.processor.UnsupportedSourceFormatException;
+import edu.illinois.library.cantaloupe.processor.OutputFormatException;
+import edu.illinois.library.cantaloupe.processor.SourceFormatException;
+import edu.illinois.library.cantaloupe.resource.iiif.FormatException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -110,12 +111,13 @@ class ErrorResource extends AbstractResource {
                 t instanceof IllegalClientArgumentException ||
                 t instanceof UnsupportedEncodingException) {
             status = Status.BAD_REQUEST;
-        } else if (t instanceof UnsupportedOutputFormatException) {
+        } else if (t instanceof FormatException ||
+                t instanceof OutputFormatException) {
             status = Status.UNSUPPORTED_MEDIA_TYPE;
         } else if (t instanceof FileNotFoundException ||
                 t instanceof NoSuchFileException) {
             status = Status.NOT_FOUND;
-        } else if (t instanceof UnsupportedSourceFormatException) {
+        } else if (t instanceof SourceFormatException) {
             status = Status.NOT_IMPLEMENTED;
         } else {
             status = Status.INTERNAL_SERVER_ERROR;

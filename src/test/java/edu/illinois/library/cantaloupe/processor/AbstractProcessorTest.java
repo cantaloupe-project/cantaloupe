@@ -13,7 +13,6 @@ import edu.illinois.library.cantaloupe.operation.CropToSquare;
 import edu.illinois.library.cantaloupe.operation.Encode;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.operation.Rotate;
-import edu.illinois.library.cantaloupe.operation.Scale;
 import edu.illinois.library.cantaloupe.operation.ScaleByPercent;
 import edu.illinois.library.cantaloupe.operation.ScaleByPixels;
 import edu.illinois.library.cantaloupe.operation.Transpose;
@@ -66,7 +65,7 @@ abstract class AbstractProcessorTest extends BaseTest {
     protected abstract Processor newInstance();
 
     private Processor newInstance(Path fixture, Format sourceFormat)
-            throws UnsupportedSourceFormatException {
+            throws SourceFormatException {
         Processor proc = newInstance();
         proc.setSourceFormat(sourceFormat);
 
@@ -90,7 +89,7 @@ abstract class AbstractProcessorTest extends BaseTest {
             try {
                 processor.setSourceFormat(format);
                 formats.add(format);
-            } catch (UnsupportedSourceFormatException ignore) {
+            } catch (SourceFormatException ignore) {
             }
         }
         return formats;
@@ -676,7 +675,7 @@ abstract class AbstractProcessorTest extends BaseTest {
                     }
                     assertEquals(expectedNumResolutions,
                             actualInfo.getNumResolutions());
-                } catch (UnsupportedSourceFormatException ignore) {
+                } catch (SourceFormatException ignore) {
                     // The processor doesn't support this format, which is
                     // fine. No processor supports all formats.
                 } catch (Exception e) {
@@ -698,7 +697,7 @@ abstract class AbstractProcessorTest extends BaseTest {
                 if (proc.getAvailableOutputFormats().isEmpty()) {
                     fail("Expected exception");
                 }
-            } catch (UnsupportedSourceFormatException e) {
+            } catch (SourceFormatException e) {
                 // pass
             }
         }

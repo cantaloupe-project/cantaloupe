@@ -5,11 +5,11 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class UnsupportedSourceFormatExceptionTest {
+public class SourceFormatExceptionTest {
 
     @Test
     void testConstructor4WithKnownFormat() {
-        Exception e = new UnsupportedSourceFormatException(
+        Exception e = new SourceFormatException(
                 new MockStreamProcessor(), Format.JPG);
         assertEquals(MockStreamProcessor.class.getSimpleName() + " does not support the JPEG source format",
                 e.getMessage());
@@ -17,7 +17,7 @@ public class UnsupportedSourceFormatExceptionTest {
 
     @Test
     void testConstructor4WithUnknownFormat() {
-        Exception e = new UnsupportedSourceFormatException(
+        Exception e = new SourceFormatException(
                 new MockStreamProcessor(), Format.UNKNOWN);
         assertEquals("Unknown source format", e.getMessage());
     }

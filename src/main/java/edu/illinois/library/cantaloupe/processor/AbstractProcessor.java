@@ -27,22 +27,21 @@ abstract class AbstractProcessor {
      * @param ops Operation list to process.
      * @param imageInfo Source image info.
      * @param outputStream Output stream to write to.
-     * @throws ProcessorException
      */
     public void process(final OperationList ops,
                         final Info imageInfo,
                         final OutputStream outputStream)
-            throws ProcessorException {
+            throws FormatException, ProcessorException {
         if (!getAvailableOutputFormats().contains(ops.getOutputFormat())) {
-            throw new UnsupportedOutputFormatException();
+            throw new OutputFormatException();
         }
     }
 
     public void setSourceFormat(Format format)
-            throws UnsupportedSourceFormatException{
+            throws SourceFormatException {
         this.sourceFormat = format;
         if (getAvailableOutputFormats().isEmpty()) {
-            throw new UnsupportedSourceFormatException(
+            throw new SourceFormatException(
                     (Processor) this, format);
         }
     }

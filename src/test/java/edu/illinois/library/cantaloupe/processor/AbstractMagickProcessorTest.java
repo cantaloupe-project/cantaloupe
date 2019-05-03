@@ -46,7 +46,7 @@ abstract class AbstractMagickProcessorTest extends AbstractProcessorTest {
                 Set<Format> expectedFormats = getAvailableOutputFormats().
                         get(format);
                 assertEquals(expectedFormats, instance.getAvailableOutputFormats());
-            } catch (UnsupportedSourceFormatException e) {
+            } catch (SourceFormatException e) {
                 // continue
             }
         }
@@ -80,7 +80,7 @@ abstract class AbstractMagickProcessorTest extends AbstractProcessorTest {
             // Skip if PDF is not supported.
             try {
                 proc.setSourceFormat(Format.PDF);
-            } catch (UnsupportedSourceFormatException e) {
+            } catch (SourceFormatException e) {
                 return;
             }
 
@@ -253,7 +253,7 @@ abstract class AbstractMagickProcessorTest extends AbstractProcessorTest {
                             throw e;
                         }
                     }
-                } catch (UnsupportedSourceFormatException ignore) {
+                } catch (SourceFormatException ignore) {
                     // The processor doesn't support this format, which is
                     // fine. No processor supports all formats.
                 }
@@ -282,7 +282,7 @@ abstract class AbstractMagickProcessorTest extends AbstractProcessorTest {
             // Skip if PDF is not supported.
             try {
                 proc.setSourceFormat(Format.PDF);
-            } catch (UnsupportedSourceFormatException e) {
+            } catch (SourceFormatException e) {
                 return;
             }
 

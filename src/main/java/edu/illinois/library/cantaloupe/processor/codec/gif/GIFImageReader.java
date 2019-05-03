@@ -6,7 +6,7 @@ import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Metadata;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.operation.ReductionFactor;
-import edu.illinois.library.cantaloupe.processor.UnsupportedSourceFormatException;
+import edu.illinois.library.cantaloupe.processor.SourceFormatException;
 import edu.illinois.library.cantaloupe.processor.codec.AbstractIIOImageReader;
 import edu.illinois.library.cantaloupe.processor.codec.BufferedImageSequence;
 import edu.illinois.library.cantaloupe.processor.codec.ImageReader;
@@ -93,7 +93,7 @@ public final class GIFImageReader extends AbstractIIOImageReader
         BufferedImage image = iioReader.read(0);
 
         if (image == null) {
-            throw new UnsupportedSourceFormatException(iioReader.getFormatName());
+            throw new SourceFormatException(iioReader.getFormatName());
         }
 
         return image;

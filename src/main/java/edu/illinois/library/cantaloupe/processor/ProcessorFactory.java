@@ -62,7 +62,7 @@ public final class ProcessorFactory {
      *                     format, based on configuration settings.
      */
     public Processor newProcessor(final Format sourceFormat)
-            throws UnsupportedSourceFormatException,
+            throws SourceFormatException,
             InitializationException,
             ReflectiveOperationException {
         final List<Class<? extends Processor>> candidates =
@@ -83,14 +83,14 @@ public final class ProcessorFactory {
                                     .map(Class::getSimpleName)
                                     .collect(Collectors.joining(", ")));
                     return candidate;
-                } catch (UnsupportedSourceFormatException ignore) {}
+                } catch (SourceFormatException ignore) {}
             }
         }
 
         if (errorMsg != null) {
             throw new InitializationException(errorMsg);
         }
-        throw new UnsupportedSourceFormatException(sourceFormat);
+        throw new SourceFormatException(sourceFormat);
     }
 
     void setSelectionStrategy(SelectionStrategy selectionStrategy) {

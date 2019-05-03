@@ -442,7 +442,7 @@ class GraphicsMagickProcessor extends AbstractMagickProcessor
     @Override
     public void process(final OperationList ops,
                         final Info info,
-                        final OutputStream outputStream) throws ProcessorException {
+                        final OutputStream outputStream) throws FormatException, ProcessorException {
         super.process(ops, info, outputStream);
         try {
             if (sourceFile != null) {
