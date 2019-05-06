@@ -6,6 +6,7 @@ import edu.illinois.library.cantaloupe.resolver.StreamSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.imageio.IIOException;
 import javax.imageio.metadata.IIOMetadata;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -45,9 +46,14 @@ final class JPEGImageReader extends AbstractImageReader {
 
     @Override
     Metadata getMetadata(int imageIndex) throws IOException {
-        final IIOMetadata metadata = iioReader.getImageMetadata(imageIndex);
-        final String metadataFormat = metadata.getNativeMetadataFormatName();
-        return new JPEGMetadata(metadata, metadataFormat);
+        try {
+            final IIOMetadata metadata = iioReader.getImageMetadata(imageIndex);
+            final String metadataFormat = metadata.getNativeMetadataFormatName();
+            return new JPEGMetadata(metadata, metadataFormat);
+        } catch (IIOException e) {
+            LOGGER.warn("getMetadata(): {}", e.getMessage(), e);
+            return null;
+        }
     }
 
     @Override
