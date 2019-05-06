@@ -80,9 +80,14 @@ final class JPEGImageReader extends AbstractIIOImageReader
 
     @Override
     public JPEGMetadata getMetadata(int imageIndex) throws IOException {
-        final IIOMetadata metadata = iioReader.getImageMetadata(imageIndex);
-        final String metadataFormat = metadata.getNativeMetadataFormatName();
-        return new JPEGMetadata(metadata, metadataFormat);
+        try {
+            final IIOMetadata metadata = iioReader.getImageMetadata(imageIndex);
+            final String metadataFormat = metadata.getNativeMetadataFormatName();
+            return new JPEGMetadata(metadata, metadataFormat);
+        } catch (IIOException e) {
+            LOGGER.warn("getMetadata(): {}", e.getMessage(), e);
+            return null;
+        }
     }
 
     @Override
