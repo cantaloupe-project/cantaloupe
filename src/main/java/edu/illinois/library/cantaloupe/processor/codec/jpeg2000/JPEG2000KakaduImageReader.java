@@ -548,20 +548,25 @@ public final class JPEG2000KakaduImageReader implements AutoCloseable {
             // Note that some wacky source images have a non-0,0 origin,
             // in which case the ROI origin must be shifted to match.
             final double reducedScale = reductionFactor.getScale();
-            regionRect.setX(sourcePos.Get_x() + regionRect.x());
-            regionRect.setY(sourcePos.Get_y() + regionRect.y());
+            regionRect.move(sourcePos.Get_x(), sourcePos.Get_y());
             regionRect.scaleX(diffScales[0] * reducedScale);
             regionRect.scaleY(diffScales[1] * reducedScale);
+
+            Rectangle sourceRect = toRectangle(sourceDims);
+            sourceRect.scaleX(reducedScale);
+            sourceRect.scaleY(reducedScale);
 
             // N.B.: if the region is not entirely within the source image
             // coordinates, either kdu_region_decompressor::start() or
             // process() will crash the JVM (which may be a bug in Kakadu
             // or its Java binding). This should never be the case, but we
             // check anyway to be extra safe.
-            Rectangle sourceRect = toRectangle(sourceDims);
-            sourceRect.scaleX(reducedScale);
-            sourceRect.scaleY(reducedScale);
-            if (!sourceRect.contains(regionRect)) {
+            //
+            // N.B. 2: sometimes one of the sourceRect dimensions is slightly
+            // (usually < 0.05) smaller than its regionRect dimension. The
+            // delta argument to contains() works around this, but it would be
+            // better to TODO: find out why this discrepancy exists and fix it.
+            if (!sourceRect.contains(regionRect, 0.08)) {
                 throw new IllegalArgumentException(String.format(
                         "Rendered region is not entirely within the image " +
                                 "on the canvas. This might be a bug. " +

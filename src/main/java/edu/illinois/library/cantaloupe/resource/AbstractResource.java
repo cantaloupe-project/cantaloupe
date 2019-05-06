@@ -504,6 +504,7 @@ public abstract class AbstractResource {
      */
     protected Reference getPublicRootReference() {
         Reference ref = new Reference(getRequest().getReference());
+        ref.getQuery().clear();
         ref.setPath(getRequest().getContextPath());
 
         // If base_uri is set in the configuration, build a URI based on that.

@@ -45,12 +45,20 @@ public final class Rectangle {
      *         instance.
      */
     public boolean contains(Rectangle other) {
-        return (other.x() > x || x - other.x() < DELTA) &&
-                (other.y() > y || y - other.y() < DELTA) &&
+        return contains(other, DELTA);
+    }
+
+    /**
+     * @return Whether the given rectangle is entirely contained within the
+     *         instance.
+     */
+    public boolean contains(Rectangle other, double delta) {
+        return (other.x() > x || x - other.x() < delta) &&
+                (other.y() > y || y - other.y() < delta) &&
                 ((other.x() + other.width() <= x + width()) ||
-                        (other.x() + other.width() - x - width() < DELTA)) &&
+                        (other.x() + other.width() - x - width() < delta)) &&
                 ((other.y() + other.height() <= y + height()) ||
-                        (other.y() + other.height() - y - height() < DELTA));
+                        (other.y() + other.height() - y - height() < delta));
     }
 
     @Override

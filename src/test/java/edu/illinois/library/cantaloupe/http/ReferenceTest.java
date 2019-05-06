@@ -337,6 +337,11 @@ public class ReferenceTest extends BaseTest {
     }
 
     @Test
+    void testSetQueryWithNullArgument() {
+        assertThrows(NullPointerException.class, () -> instance.setQuery(null));
+    }
+
+    @Test
     void testToURI() throws Exception {
         URI expected = new URI(instance.toString());
         URI actual = instance.toURI();

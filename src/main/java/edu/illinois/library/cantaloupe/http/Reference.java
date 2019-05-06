@@ -260,7 +260,13 @@ public final class Reference {
         this.port = port;
     }
 
+    /**
+     * @param query Cannot be {@code null}.
+     */
     public void setQuery(Query query) {
+        if (query == null) {
+            throw new NullPointerException("Argument cannot be null");
+        }
         this.query = query;
     }
 
