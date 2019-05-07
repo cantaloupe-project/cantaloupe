@@ -34,8 +34,6 @@ public final class JPEG2000MetadataReader implements AutoCloseable {
      */
     private enum Box {
 
-        JP2_SIGNATURE(new byte[] { 0x6a, 0x50, 0x20, 0x20 }),
-
         CONTIGUOUS_CODESTREAM(new byte[] { 0x6a, 0x70, 0x32, 0x63 }),
 
         UUID(new byte[] { 0x75, 0x75, 0x69, 0x64 }),
@@ -113,7 +111,9 @@ public final class JPEG2000MetadataReader implements AutoCloseable {
             LoggerFactory.getLogger(JPEG2000MetadataReader.class);
 
     private static final byte[] JP2_SIGNATURE = new byte[] {
-            0x0d, 0x0a, (byte) 0x87, 0x0a };
+            0x00, 0x00, 0x00, 0x0c, 0x6a, 0x50, 0x20, 0x20, 0x0d, 0x0a,
+            (byte) 0x87, 0x0a, 0x00, 0x00, 0x00, 0x14, 0x66, 0x74, 0x79, 0x70,
+            0x6a, 0x70, 0x32 };
 
     private static final byte[] IPTC_UUID = new byte[] {
             (byte) 0x33, (byte) 0xc7, (byte) 0xa4, (byte) 0xd2, (byte) 0xb8,
@@ -257,6 +257,15 @@ public final class JPEG2000MetadataReader implements AutoCloseable {
             throw new IllegalStateException("Source not set");
         }
 
+        inputStream.mark();
+        byte[] bytes = read(JP2_SIGNATURE.length);
+        if (!Arrays.equals(JP2_SIGNATURE, bytes)) {
+            String hexStr = DatatypeConverter.printHexBinary(bytes);
+            throw new IOException("Invalid signature: " + hexStr +
+                    " (is this a JP2?)");
+        }
+        inputStream.reset();
+
         final Stopwatch watch = new Stopwatch();
 
         while (readBox() != -1) {
@@ -280,9 +289,6 @@ public final class JPEG2000MetadataReader implements AutoCloseable {
         }
 
         switch (Box.forBytes(tbox)) {
-            case JP2_SIGNATURE:
-                readJP2SignatureBox();
-                return 0;
             case UUID:
                 readUUIDBox(dataLength);
                 return 0;
@@ -297,18 +303,6 @@ public final class JPEG2000MetadataReader implements AutoCloseable {
 
     private void skipBox(long dataLength) throws IOException {
         inputStream.skipBytes(dataLength);
-    }
-
-    /**
-     * @throws IOException if reading fails or if the signature is invalid.
-     */
-    private void readJP2SignatureBox() throws IOException {
-        byte[] bytes = read(4);
-        if (!Arrays.equals(JP2_SIGNATURE, bytes)) {
-            String hexStr = DatatypeConverter.printHexBinary(bytes);
-            throw new IOException("Invalid signature: " + hexStr +
-                    " (is this a JP2?)");
-        }
     }
 
     private void readUUIDBox(long dataLength) throws IOException {
