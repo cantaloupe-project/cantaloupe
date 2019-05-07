@@ -7,7 +7,6 @@ import org.junit.Test;
 import javax.imageio.ImageIO;
 import javax.imageio.stream.ImageInputStream;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 
 import static org.junit.Assert.*;
@@ -33,8 +32,26 @@ public class JPEG2000MetadataReaderTest {
     }
 
     @Test(expected = IOException.class)
-    public void testGetComponentSizeWithInvalidImage() throws Exception {
+    public void testGetComponentSizeWithInvalidImage1() throws Exception {
         Path file = TestUtil.getImage("jpg");
+        try (ImageInputStream is = ImageIO.createImageInputStream(file.toFile())) {
+            instance.setSource(is);
+            instance.getComponentSize();
+        }
+    }
+
+    @Test(expected = IOException.class)
+    public void testGetComponentSizeWithInvalidImage2() throws Exception {
+        Path file = TestUtil.getImage("unknown");
+        try (ImageInputStream is = ImageIO.createImageInputStream(file.toFile())) {
+            instance.setSource(is);
+            instance.getComponentSize();
+        }
+    }
+
+    @Test(expected = IOException.class)
+    public void testGetComponentSizeWithEmptyImage() throws Exception {
+        Path file = TestUtil.getImage("empty");
         try (ImageInputStream is = ImageIO.createImageInputStream(file.toFile())) {
             instance.setSource(is);
             instance.getComponentSize();
@@ -58,8 +75,26 @@ public class JPEG2000MetadataReaderTest {
     }
 
     @Test(expected = IOException.class)
-    public void testGetHeightWithInvalidImage() throws Exception {
+    public void testGetHeightWithInvalidImage1() throws Exception {
         Path file = TestUtil.getImage("jpg");
+        try (ImageInputStream is = ImageIO.createImageInputStream(file.toFile())) {
+            instance.setSource(is);
+            instance.getHeight();
+        }
+    }
+
+    @Test(expected = IOException.class)
+    public void testGetHeightWithInvalidImage2() throws Exception {
+        Path file = TestUtil.getImage("unknown");
+        try (ImageInputStream is = ImageIO.createImageInputStream(file.toFile())) {
+            instance.setSource(is);
+            instance.getHeight();
+        }
+    }
+
+    @Test(expected = IOException.class)
+    public void testGetHeightWithEmptyImage() throws Exception {
+        Path file = TestUtil.getImage("empty");
         try (ImageInputStream is = ImageIO.createImageInputStream(file.toFile())) {
             instance.setSource(is);
             instance.getHeight();
@@ -83,8 +118,26 @@ public class JPEG2000MetadataReaderTest {
     }
 
     @Test(expected = IOException.class)
-    public void testGetNumComponentsWithInvalidImage() throws Exception {
+    public void testGetNumComponentsWithInvalidImage1() throws Exception {
         Path file = TestUtil.getImage("jpg");
+        try (ImageInputStream is = ImageIO.createImageInputStream(file.toFile())) {
+            instance.setSource(is);
+            instance.getNumComponents();
+        }
+    }
+
+    @Test(expected = IOException.class)
+    public void testGetNumComponentsWithInvalidImage2() throws Exception {
+        Path file = TestUtil.getImage("unknown");
+        try (ImageInputStream is = ImageIO.createImageInputStream(file.toFile())) {
+            instance.setSource(is);
+            instance.getNumComponents();
+        }
+    }
+
+    @Test(expected = IOException.class)
+    public void testGetNumComponentsWithEmptyImage() throws Exception {
+        Path file = TestUtil.getImage("empty");
         try (ImageInputStream is = ImageIO.createImageInputStream(file.toFile())) {
             instance.setSource(is);
             instance.getNumComponents();
@@ -108,8 +161,26 @@ public class JPEG2000MetadataReaderTest {
     }
 
     @Test(expected = IOException.class)
-    public void testGetNumDecompositionLevelsWithInvalidImage() throws Exception {
+    public void testGetNumDecompositionLevelsWithInvalidImage1() throws Exception {
         Path file = TestUtil.getImage("jpg");
+        try (ImageInputStream is = ImageIO.createImageInputStream(file.toFile())) {
+            instance.setSource(is);
+            instance.getNumDecompositionLevels();
+        }
+    }
+
+    @Test(expected = IOException.class)
+    public void testGetNumDecompositionLevelsWithInvalidImage2() throws Exception {
+        Path file = TestUtil.getImage("unknown");
+        try (ImageInputStream is = ImageIO.createImageInputStream(file.toFile())) {
+            instance.setSource(is);
+            instance.getNumDecompositionLevels();
+        }
+    }
+
+    @Test(expected = IOException.class)
+    public void testGetNumDecompositionLevelsWithEmptyImage() throws Exception {
+        Path file = TestUtil.getImage("empty");
         try (ImageInputStream is = ImageIO.createImageInputStream(file.toFile())) {
             instance.setSource(is);
             instance.getNumDecompositionLevels();
@@ -133,8 +204,26 @@ public class JPEG2000MetadataReaderTest {
     }
 
     @Test(expected = IOException.class)
-    public void testGetTileHeightWithInvalidImage() throws Exception {
+    public void testGetTileHeightWithInvalidImage1() throws Exception {
         Path file = TestUtil.getImage("jpg");
+        try (ImageInputStream is = ImageIO.createImageInputStream(file.toFile())) {
+            instance.setSource(is);
+            instance.getTileHeight();
+        }
+    }
+
+    @Test(expected = IOException.class)
+    public void testGetTileHeightWithInvalidImage2() throws Exception {
+        Path file = TestUtil.getImage("unknown");
+        try (ImageInputStream is = ImageIO.createImageInputStream(file.toFile())) {
+            instance.setSource(is);
+            instance.getTileHeight();
+        }
+    }
+
+    @Test(expected = IOException.class)
+    public void testGetTileHeightWithEmptyImage() throws Exception {
+        Path file = TestUtil.getImage("empty");
         try (ImageInputStream is = ImageIO.createImageInputStream(file.toFile())) {
             instance.setSource(is);
             instance.getTileHeight();
@@ -158,8 +247,26 @@ public class JPEG2000MetadataReaderTest {
     }
 
     @Test(expected = IOException.class)
-    public void testGetTileWidthWithInvalidImage() throws Exception {
+    public void testGetTileWidthWithInvalidImage1() throws Exception {
         Path file = TestUtil.getImage("jpg");
+        try (ImageInputStream is = ImageIO.createImageInputStream(file.toFile())) {
+            instance.setSource(is);
+            instance.getTileWidth();
+        }
+    }
+
+    @Test(expected = IOException.class)
+    public void testGetTileWidthWithInvalidImage2() throws Exception {
+        Path file = TestUtil.getImage("unknown");
+        try (ImageInputStream is = ImageIO.createImageInputStream(file.toFile())) {
+            instance.setSource(is);
+            instance.getTileWidth();
+        }
+    }
+
+    @Test(expected = IOException.class)
+    public void testGetTileWidthWithEmptyImage() throws Exception {
+        Path file = TestUtil.getImage("empty");
         try (ImageInputStream is = ImageIO.createImageInputStream(file.toFile())) {
             instance.setSource(is);
             instance.getTileWidth();
@@ -183,8 +290,26 @@ public class JPEG2000MetadataReaderTest {
     }
 
     @Test(expected = IOException.class)
-    public void testGetWidthWithInvalidImage() throws Exception {
+    public void testGetWidthWithInvalidImage1() throws Exception {
         Path file = TestUtil.getImage("jpg");
+        try (ImageInputStream is = ImageIO.createImageInputStream(file.toFile())) {
+            instance.setSource(is);
+            instance.getWidth();
+        }
+    }
+
+    @Test(expected = IOException.class)
+    public void testGetWidthWithInvalidImage2() throws Exception {
+        Path file = TestUtil.getImage("unknown");
+        try (ImageInputStream is = ImageIO.createImageInputStream(file.toFile())) {
+            instance.setSource(is);
+            instance.getWidth();
+        }
+    }
+
+    @Test(expected = IOException.class)
+    public void testGetWidthWithEmptyImage() throws Exception {
+        Path file = TestUtil.getImage("empty");
         try (ImageInputStream is = ImageIO.createImageInputStream(file.toFile())) {
             instance.setSource(is);
             instance.getWidth();
@@ -222,6 +347,24 @@ public class JPEG2000MetadataReaderTest {
     @Test(expected = IOException.class)
     public void testGetXMPWithInvalidImage() throws Exception {
         Path file = TestUtil.getImage("jpg");
+        try (ImageInputStream is = ImageIO.createImageInputStream(file.toFile())) {
+            instance.setSource(is);
+            instance.getXMP();
+        }
+    }
+
+    @Test(expected = IOException.class)
+    public void testGetXMPWithUnknownImage() throws Exception {
+        Path file = TestUtil.getImage("unknown");
+        try (ImageInputStream is = ImageIO.createImageInputStream(file.toFile())) {
+            instance.setSource(is);
+            instance.getXMP();
+        }
+    }
+
+    @Test(expected = IOException.class)
+    public void testGetXMPWithEmptyImage() throws Exception {
+        Path file = TestUtil.getImage("empty");
         try (ImageInputStream is = ImageIO.createImageInputStream(file.toFile())) {
             instance.setSource(is);
             instance.getXMP();
