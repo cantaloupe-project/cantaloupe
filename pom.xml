@@ -43,16 +43,16 @@
     </developers>
 
     <scm>
-        <connection>scm:git:git://github.com/medusa-project/cantaloupe
+        <connection>scm:git:git://github.com/cantaloupe-project/cantaloupe
         </connection>
-        <developerConnection>scm:git:git@github.com:medusa-project/cantaloupe
+        <developerConnection>scm:git:git@github.com:cantaloupe-project/cantaloupe
         </developerConnection>
         <tag>HEAD</tag>
-        <url>https://github.com/medusa-project/cantaloupe</url>
+        <url>https://github.com/cantaloupe-project/cantaloupe</url>
     </scm>
     <issueManagement>
         <system>GitHub Issues</system>
-        <url>https://github.com/medusa-project/cantaloupe/issues</url>
+        <url>https://github.com/cantaloupe-project/cantaloupe/issues</url>
     </issueManagement>
 
     <dependencies>

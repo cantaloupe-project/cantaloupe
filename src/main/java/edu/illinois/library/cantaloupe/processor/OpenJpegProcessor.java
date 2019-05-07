@@ -137,7 +137,7 @@ class OpenJpegProcessor extends AbstractProcessor implements FileProcessor {
     private static String initializationError;
 
     /**
-     * @see <a href="https://github.com/medusa-project/cantaloupe/issues/190">
+     * @see <a href="https://github.com/cantaloupe-project/cantaloupe/issues/190">
      *     OpenJpegProcessor operating on low bit-depth images</a>
      */
     private final static Format intermediateFormat = Format.BMP;

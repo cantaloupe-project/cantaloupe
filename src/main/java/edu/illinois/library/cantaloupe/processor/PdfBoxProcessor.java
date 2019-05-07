@@ -64,7 +64,7 @@ class PdfBoxProcessor extends AbstractProcessor
         // The docs say that this "may improve the performance of rendering
         // PDFs on some systems especially if there are a lot of images on a
         // page."
-        // See: https://github.com/medusa-project/cantaloupe/issues/198
+        // See: https://github.com/cantaloupe-project/cantaloupe/issues/198
         // Also see: https://pdfbox.apache.org/2.0/getting-started.html
         System.setProperty("org.apache.pdfbox.rendering.UsePureJavaCMYKConversion", "true");
     }

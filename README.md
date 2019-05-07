@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/medusa-project/cantaloupe.svg?branch=develop)](https://travis-ci.org/medusa-project/cantaloupe)
+[![Build Status](https://travis-ci.org/cantaloupe-project/cantaloupe.svg?branch=develop)](https://travis-ci.org/cantaloupe-project/cantaloupe)
 
 # 🍈 Cantaloupe
 
@@ -6,7 +6,7 @@
 
 # Users
 
-**[Get started with a release build.](https://github.com/medusa-project/cantaloupe/releases)**
+**[Get started with a release build.](https://github.com/cantaloupe-project/cantaloupe/releases)**
 
 # Developers
 
@@ -81,7 +81,7 @@ available that contains all needed dependencies. See the `/.travis.yml` file.
 
 ### Output testing
 
-There is an [output tester tool](https://github.com/medusa-project/cantaloupe-output-tester)
+There is an [output tester tool](https://github.com/cantaloupe-project/output-tester)
 that enables visual inspection of image output.
 
 ### Performance testing
@@ -96,7 +96,7 @@ is:
 
 1. Submit a "heads-up" issue in the tracker, ideally before beginning any
    work.
-2. [Create a fork.](https://github.com/medusa-project/cantaloupe/fork)
+2. [Create a fork.](https://github.com/cantaloupe-project/cantaloupe/fork)
 3. Create a feature branch, starting from either `release/x.x` or `develop`
    (see the "Versioning" section.)
 4. Make your changes.
@@ -110,10 +110,7 @@ is:
 
 Different application versions may require different configuration file keys.
 It's good practice to use a dedicated configuration file for each version.
-Keys are documented on the website through the latest release. If you are
-using a newer build, like a snapshot from the `develop` branch, newer keys will
-be documented in
-[website/upgrade.html](https://github.com/medusa-project/cantaloupe/blob/develop/website/upgrade.html).
+Key changes are documented in [UPGRADING.md](https://github.com/cantaloupe-project/cantaloupe/blob/develop/UPGRADING.md).
 
 ### Versioning
 
@@ -146,7 +143,7 @@ release branch for that release, and merged back into `develop`.
 3. Run Findbugs (`mvn clean compile findbugs:findbugs findbugs:gui`)
 4. Run the tests:
    * JUnit
-   * [Endpoint tests](https://github.com/medusa-project/cantaloupe-output-tester)
+   * [Endpoint tests](https://github.com/cantaloupe-project/output-tester)
 5. Finalize the code to be released, addressing any relevant milestone issues,
    TODOs, etc.
 6. Finalize the documentation, including the website, user manual, and change
@@ -164,9 +161,8 @@ release branch for that release, and merged back into `develop`.
 8. Tag the release: `git tag -a v{version} -m 'Tag v{version}'`
 9. git push --tags
 10. Add the `.zip` archive and change log info to the release tag on GitHub
-11. Deploy the updated website using `build/deploy_website.rb`
-12. Append `-SNAPSHOT` to the version in `pom.xml` and commit this change
-13. Close the release's GitHub milestone
+11. Deploy the updated website (usually not necessary for bugfix releases)
+12. Close the release's GitHub milestone
 
 ## License
 

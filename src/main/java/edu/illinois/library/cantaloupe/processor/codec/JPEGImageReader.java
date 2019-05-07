@@ -193,7 +193,7 @@ final class JPEGImageReader extends AbstractIIOImageReader
      * Used for images whose embedded ICC profile is incompatible with the
      * source image data. (The Sun JPEGImageReader is not very lenient.)
      *
-     * @see <a href="https://github.com/medusa-project/cantaloupe/issues/41">
+     * @see <a href="https://github.com/cantaloupe-project/cantaloupe/issues/41">
      *     GitHub issue</a>
      */
     private BufferedImage readGrayscaleWithIncompatibleICCProfile(ImageReadParam readParam)
