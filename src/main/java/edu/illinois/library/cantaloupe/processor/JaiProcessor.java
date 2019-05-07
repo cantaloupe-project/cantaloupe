@@ -186,7 +186,7 @@ class JaiProcessor extends AbstractImageIOProcessor
                         neighbor. The error is an ArrayIndexOutOfBoundsException
                         in PlanarImage.cobbleByte().
 
-                        Issue: https://github.com/medusa-project/cantaloupe/issues/94
+                        Issue: https://github.com/cantaloupe-project/cantaloupe/issues/94
                         Example: /iiif/2/champaign-pyramidal-tiled-lzw.tif/8048,0,800,6928/99,/0/default.jpg
 
                         So, the strategy here is:
