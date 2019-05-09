@@ -494,9 +494,6 @@ public class AdminResourceUITest extends AbstractAdminResourceTest {
         css("#cl-processors li > a[href=\"#JaiProcessor\"]").click();
         // Java2dProcessor
         css("#cl-processors li > a[href=\"#Java2dProcessor\"]").click();
-        // KakaduDemoProcessor
-        css("#cl-processors li > a[href=\"#KakaduDemoProcessor\"]").click();
-        inputNamed(Key.KAKADUDEMOPROCESSOR_PATH_TO_BINARIES).sendKeys("/kpath");
         // OpenJpegProcessor
         css("#cl-processors li > a[href=\"#OpenJpegProcessor\"]").click();
         inputNamed(Key.OPENJPEGPROCESSOR_PATH_TO_BINARIES).sendKeys("/ojpath");
@@ -538,9 +535,6 @@ public class AdminResourceUITest extends AbstractAdminResourceTest {
                 config.getString(Key.IMAGEMAGICKPROCESSOR_PATH_TO_BINARIES));
         // JaiProcessor
         // Java2dProcessor
-        // KakaduDemoProcessor
-        assertEquals("/kpath",
-                config.getString(Key.KAKADUDEMOPROCESSOR_PATH_TO_BINARIES));
         // OpenJpegProcessor
         assertEquals("/ojpath",
                 config.getString(Key.OPENJPEGPROCESSOR_PATH_TO_BINARIES));

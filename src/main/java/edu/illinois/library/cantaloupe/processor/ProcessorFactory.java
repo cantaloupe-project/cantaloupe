@@ -25,7 +25,6 @@ public final class ProcessorFactory {
             ImageMagickProcessor.class,
             JaiProcessor.class,
             Java2dProcessor.class,
-            KakaduDemoProcessor.class,
             KakaduNativeProcessor.class,
             OpenJpegProcessor.class,
             PdfBoxProcessor.class,

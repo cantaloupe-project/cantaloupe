@@ -55,6 +55,8 @@ on third-party services and do not require any external tools or libraries.
 depend on open-source tools or libraries. These are the tests run in
 continuous integration. The following dependencies are required:
 
+* DynamoDB or [dynamodb-local](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/DynamoDBLocal.html)
+  (for DynamoDBCacheTest)
 * FFmpeg (for FfmpegProcessorTest)
 * GraphicsMagick (for GraphicsMagickProcessorTest)
 * ImageMagick (for ImageMagickProcessorTest)
@@ -67,8 +69,6 @@ continuous integration. The following dependencies are required:
 `mvn clean test` will run all tests, including the ones above. The following
 dependencies are required in addition to the ones above:
 
-* Kakadu demo tools (for KakaduDemoProcessorTest) - see the KakaduDemoProcessor
-  section of the user manual for information about these.
 * Kakadu native library (for KakaduNativeProcessorTest) - see the
   KakaduNativeProcessor section of the user manual for information.
 * A Microsoft Azure account

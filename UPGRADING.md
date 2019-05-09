@@ -12,11 +12,14 @@ current version.
     * `http.accept_queue_limit`
     * `endpoint.iiif.content_disposition`
     * `processor.metadata.*`
+    * `KakaduDemoProcessor.path_to_binaries`
 4. The `X-IIIF-ID` reverse proxy header is no longer supported. Use
    `X-Forwarded-ID` instead.
 5. Purge your derivative cache.
 6. If you were using the `processor.metadata.preserve` key, you will need to use
    the new `metadata()` delegate method instead.
+7. KakaduDemoProcessor is no longer available. If you were using it, you must
+   switch to either OpenJpegProcessor or KakaduNativeProcessor.
 
 ## 4.0.x → 4.1
 

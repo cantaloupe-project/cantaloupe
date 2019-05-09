@@ -1,18 +1,8 @@
 # About This Folder
 
-This folder contains native binaries needed by KakaduDemoProcessor and
-KakaduNativeProcessor.
-
-Inside each platform-specific folder are `bin` and `lib` folders:
-
-* The `bin` folder contains `kdu_expand`, one of the demo tools needed by
-  KakaduDemoProcessor. These can also be downloaded from the
-  [Kakadu website](http://kakadusoftware.com/downloads/).
-* The `lib` folder contains the Kakadu shared library needed by both
-  `kdu_expand` and `KakaduNativeProcessor`.
-
-See the user manual -> Processors section -> KakaduDemoProcessor &
-KakaduNativeProcessor sections for setup steps.
+Inside each platform-specific folder is a `lib` folder containing the Kakadu
+shared library needed by both `KakaduNativeProcessor`. See the user manual ->
+Processors section -> KakaduNativeProcessor section for setup steps.
 
 # License
 
@@ -75,13 +65,8 @@ Studio Community 2015.
         3. Add path to JDK headers
     3. Retarget solution to the 8.1 platform version
     4. Build with Release configuration & x64 platform
-5. Build `kdu_expand`
-    1. Open `apps\apps_2015`
-    2. Retarget the `kdu_expand` solution to the 8.1 platform version
-    3. Build with Release configuration & x64 platform    
 
 The resulting files are in `..\..\bin_x64`:
   * `kdu_v7AR.dll`
   * `kdu_a7AR.dll`
   * `kdu_jni.dll`
-  * `kdu_expand.exe`

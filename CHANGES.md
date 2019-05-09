@@ -28,6 +28,7 @@
 * TurboJpegProcessor supports EXIF, IPTC, and XMP metadata.
 * FfmpegProcessor, KakaduNativeProcessor, OpenJpegProcessor, and
   PdfBoxProcessor use libjpeg-turbo to write JPEGs if it is available.
+* KakaduDemoProcessor has been removed.
 
 ### Caches
 

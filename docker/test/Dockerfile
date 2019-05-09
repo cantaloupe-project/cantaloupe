@@ -15,8 +15,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 RUN mkdir -p /opt/libjpeg-turbo/lib
 COPY docker/test/image_files/libjpeg-turbo/lib64 /opt/libjpeg-turbo/lib
 
-# Install KakaduNativeProcessor & KakaduDemoProcessor dependencies
-COPY dist/deps/Linux-x86-64/bin/* /usr/bin/
+# Install KakaduNativeProcessor dependencies
 COPY dist/deps/Linux-x86-64/lib/* /usr/lib/
 
 # A non-root user is needed for some FilesystemSourceTest tests to work.

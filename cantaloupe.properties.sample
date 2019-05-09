@@ -289,8 +289,8 @@ processor.selection_strategy = AutomaticSelectionStrategy
 
 # Built-in processors are `Java2dProcessor`, `GraphicsMagickProcessor`,
 # `ImageMagickProcessor`, `TurboJpegProcessor`, `KakaduNativeProcessor`,
-# `KakaduDemoProcessor`, `OpenJpegProcessor`, `JaiProcessor`,
-# `PdfBoxProcessor`, and `FfmpegProcessor`.
+# `OpenJpegProcessor`, `JaiProcessor`, `PdfBoxProcessor`, and
+# `FfmpegProcessor`.
 # Some of these have third-party dependencies and won't work out-of-the-box.
 
 # These format-specific definitions are optional.
@@ -399,14 +399,6 @@ GraphicsMagickProcessor.path_to_binaries =
 # !! Optional absolute path of the directory containing the ImageMagick
 # binary. Overrides the PATH.
 ImageMagickProcessor.path_to_binaries =
-
-#----------------------------------------
-# KakaduDemoProcessor
-#----------------------------------------
-
-# Optional absolute path of the directory containing kdu_expand.
-# Overrides the PATH.
-KakaduDemoProcessor.path_to_binaries =
 
 #----------------------------------------
 # OpenJpegProcessor

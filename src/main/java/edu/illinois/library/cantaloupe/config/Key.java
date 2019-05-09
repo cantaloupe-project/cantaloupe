@@ -139,7 +139,6 @@ public enum Key {
     JDBCSOURCE_JDBC_URL("JdbcSource.url"),
     JDBCSOURCE_PASSWORD("JdbcSource.password"),
     JDBCSOURCE_USER("JdbcSource.user"),
-    KAKADUDEMOPROCESSOR_PATH_TO_BINARIES("KakaduDemoProcessor.path_to_binaries"),
     MAX_PIXELS("max_pixels"),
     MAX_SCALE("max_scale"),
     OPENJPEGPROCESSOR_PATH_TO_BINARIES("OpenJpegProcessor.path_to_binaries"),
