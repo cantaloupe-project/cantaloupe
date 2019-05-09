@@ -14,6 +14,7 @@ import edu.illinois.library.cantaloupe.operation.ScaleByPercent;
 import edu.illinois.library.cantaloupe.operation.ValidationException;
 import edu.illinois.library.cantaloupe.processor.codec.ImageWriterFactory;
 import edu.illinois.library.cantaloupe.processor.codec.ReaderHint;
+import edu.illinois.library.cantaloupe.processor.codec.ImageWriterFacade;
 import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
 import edu.illinois.library.cantaloupe.source.StreamFactory;
 import edu.illinois.library.cantaloupe.util.Stopwatch;
@@ -133,7 +134,7 @@ class PdfBoxProcessor extends AbstractProcessor
                     page - 1, reductionFactor, scaleConstraint);
             image = Java2DPostProcessor.postProcess(
                     image, hints, opList, imageInfo, reductionFactor);
-            WriterFacade.write(image,
+            ImageWriterFacade.write(image,
                     (Encode) opList.getFirst(Encode.class),
                     outputStream);
         } catch (SourceFormatException e) {

@@ -12,6 +12,7 @@ import edu.illinois.library.cantaloupe.operation.ValidationException;
 import edu.illinois.library.cantaloupe.processor.codec.ImageReader;
 import edu.illinois.library.cantaloupe.processor.codec.ImageReaderFactory;
 import edu.illinois.library.cantaloupe.processor.codec.ImageWriterFactory;
+import edu.illinois.library.cantaloupe.processor.codec.ImageWriterFacade;
 import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
 import edu.illinois.library.cantaloupe.util.CommandLocator;
 import org.apache.commons.lang3.StringUtils;
@@ -170,7 +171,7 @@ class FfmpegProcessor extends AbstractProcessor implements FileProcessor {
                     BufferedImage image = reader.read();
                     image = Java2DPostProcessor.postProcess(
                             image, null, opList, imageInfo, null);
-                    WriterFacade.write(
+                    ImageWriterFacade.write(
                             image,
                             (Encode) opList.getFirst(Encode.class),
                             outputStream);

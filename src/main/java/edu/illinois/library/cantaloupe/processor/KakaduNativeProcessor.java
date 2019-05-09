@@ -20,6 +20,7 @@ import edu.illinois.library.cantaloupe.operation.Transpose;
 import edu.illinois.library.cantaloupe.operation.overlay.Overlay;
 import edu.illinois.library.cantaloupe.operation.redaction.Redaction;
 import edu.illinois.library.cantaloupe.processor.codec.ImageWriterFactory;
+import edu.illinois.library.cantaloupe.processor.codec.ImageWriterFacade;
 import edu.illinois.library.cantaloupe.processor.codec.jpeg.TurboJPEGImageWriter;
 import edu.illinois.library.cantaloupe.processor.codec.jpeg2000.JPEG2000KakaduImageReader;
 import edu.illinois.library.cantaloupe.source.StreamFactory;
@@ -320,7 +321,7 @@ class KakaduNativeProcessor implements FileProcessor, StreamProcessor {
 
         // Write the result.
         final Encode encode = (Encode) opList.getFirst(Encode.class);
-        WriterFacade.write(image, encode, outputStream);
+        ImageWriterFacade.write(image, encode, outputStream);
     }
 
     @Override

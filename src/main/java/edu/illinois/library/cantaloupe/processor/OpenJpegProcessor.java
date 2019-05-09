@@ -20,6 +20,7 @@ import edu.illinois.library.cantaloupe.operation.Crop;
 import edu.illinois.library.cantaloupe.processor.codec.ImageReader;
 import edu.illinois.library.cantaloupe.processor.codec.ImageReaderFactory;
 import edu.illinois.library.cantaloupe.processor.codec.ImageWriterFactory;
+import edu.illinois.library.cantaloupe.processor.codec.ImageWriterFacade;
 import edu.illinois.library.cantaloupe.processor.codec.jpeg2000.JPEG2000MetadataReader;
 import edu.illinois.library.cantaloupe.processor.codec.ReaderHint;
 import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
@@ -539,7 +540,7 @@ class OpenJpegProcessor extends AbstractProcessor implements FileProcessor {
                 Java2DPostProcessor.postProcess(
                         image, hints, opList, info, reductionFactor);
 
-                WriterFacade.write(image,
+                ImageWriterFacade.write(image,
                         (Encode) opList.getFirst(Encode.class),
                         outputStream);
             } finally {
@@ -584,7 +585,7 @@ class OpenJpegProcessor extends AbstractProcessor implements FileProcessor {
                 image = Java2DPostProcessor.postProcess(
                         image, hints, opList, info, reductionFactor);
 
-                WriterFacade.write(image,
+                ImageWriterFacade.write(image,
                         (Encode) opList.getFirst(Encode.class),
                         outputStream);
 
