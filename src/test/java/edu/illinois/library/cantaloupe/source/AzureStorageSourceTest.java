@@ -22,12 +22,12 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.io.IOException;
 import java.nio.file.NoSuchFileException;
 import java.security.InvalidKeyException;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.EnumSet;
+import java.util.NoSuchElementException;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -208,74 +208,37 @@ public class AzureStorageSourceTest extends AbstractSourceTest {
         instance.checkAccess();
     }
 
-    /* getFormat() */
+    /* getFormatIterator() */
 
     @Test
-    void testGetSourceFormatUsingBasicLookupStrategy()
-            throws IOException {
-        assertEquals(Format.JPG, instance.getFormat());
+    void testGetFormatIteratorHasNext() {
+        AzureStorageSource source = newInstance();
+        source.setIdentifier(new Identifier(AzureStorageTestUtil.OBJECT_KEY_WITH_CONTENT_TYPE_AND_RECOGNIZED_EXTENSION));
+
+        AzureStorageSource.FormatIterator<Format> it =
+                source.getFormatIterator();
+        assertTrue(it.hasNext());
+        it.next(); // object key
+        assertTrue(it.hasNext());
+        it.next(); // identifier extension
+        assertTrue(it.hasNext());
+        it.next(); // Content-Type is null
+        assertTrue(it.hasNext());
+        it.next(); // magic bytes
+        assertFalse(it.hasNext());
     }
 
     @Test
-    void testGetSourceFormatUsingScriptLookupStrategy()
-            throws IOException {
-        useScriptLookupStrategy();
-        assertEquals(Format.JPG, instance.getFormat());
-    }
+    void testGetFormatIteratorNext() {
+        AzureStorageSource source = newInstance();
+        source.setIdentifier(new Identifier(AzureStorageTestUtil.OBJECT_KEY_WITH_NO_CONTENT_TYPE_AND_INCORRECT_EXTENSION));
 
-    @Test
-    void testGetSourceFormatWithContentTypeAndRecognizedExtensionInObjectKey()
-            throws IOException {
-        instance.setIdentifier(new Identifier(AzureStorageTestUtil.OBJECT_KEY_WITH_CONTENT_TYPE_AND_RECOGNIZED_EXTENSION));
-        assertEquals(Format.JPG, instance.getFormat());
-    }
-
-    @Test
-    void testGetSourceFormatWithContentTypeAndUnrecognizedExtensionInObjectKey()
-            throws IOException {
-        instance.setIdentifier(new Identifier(AzureStorageTestUtil.OBJECT_KEY_WITH_CONTENT_TYPE_AND_UNRECOGNIZED_EXTENSION));
-        assertEquals(Format.JPG, instance.getFormat());
-    }
-
-    @Test
-    void testGetSourceFormatWithContentTypeAndNoExtensionInObjectKey()
-            throws IOException {
-        instance.setIdentifier(new Identifier(AzureStorageTestUtil.OBJECT_KEY_WITH_CONTENT_TYPE_BUT_NO_EXTENSION));
-        assertEquals(Format.JPG, instance.getFormat());
-    }
-
-    @Test
-    void testGetSourceFormatWithNoContentTypeButRecognizedExtensionInObjectKey()
-            throws IOException {
-        instance.setIdentifier(new Identifier(AzureStorageTestUtil.OBJECT_KEY_WITH_NO_CONTENT_TYPE_AND_RECOGNIZED_EXTENSION));
-        assertEquals(Format.JPG, instance.getFormat());
-    }
-
-    @Test
-    void testGetSourceFormatWithNoContentTypeAndUnrecognizedExtensionInObjectKey()
-            throws IOException {
-        instance.setIdentifier(new Identifier(AzureStorageTestUtil.OBJECT_KEY_WITH_NO_CONTENT_TYPE_AND_UNRECOGNIZED_EXTENSION));
-        assertEquals(Format.JPG, instance.getFormat());
-    }
-
-    @Test
-    void testGetSourceFormatWithNoContentTypeOrExtensionInObjectKey()
-            throws IOException {
-        instance.setIdentifier(new Identifier(AzureStorageTestUtil.OBJECT_KEY_WITH_NO_CONTENT_TYPE_OR_EXTENSION));
-        assertEquals(Format.JPG, instance.getFormat());
-    }
-
-    @Test
-    void testGetSourceFormatWithNonImage() throws IOException {
-        instance.setIdentifier(new Identifier(AzureStorageTestUtil.NON_IMAGE_KEY));
-        assertEquals(Format.UNKNOWN, instance.getFormat());
-    }
-
-    @Test
-    void testGetSourceFormatWithSAS() throws Exception {
-        instance.setIdentifier(new Identifier(getSASURI()));
-        clearConfig();
-        instance.getFormat();
+        AzureStorageSource.FormatIterator<Format> it = source.getFormatIterator();
+        assertEquals(Format.PNG, it.next());     // object key
+        assertEquals(Format.PNG, it.next());     // identifier extension
+        assertEquals(Format.UNKNOWN, it.next()); // Content-Type is null
+        assertEquals(Format.JPG, it.next());     // magic bytes
+        assertThrows(NoSuchElementException.class, it::next);
     }
 
     /* newStreamFactory() */

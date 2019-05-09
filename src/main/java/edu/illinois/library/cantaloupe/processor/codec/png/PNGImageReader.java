@@ -27,7 +27,9 @@ public final class PNGImageReader extends AbstractIIOImageReader
     }
 
     @Override
-    public Compression getCompression(int imageIndex) {
+    public Compression getCompression(int imageIndex) throws IOException {
+        // Throw any contract-required exceptions.
+        getSize(0);
         return Compression.DEFLATE;
     }
 
@@ -43,6 +45,8 @@ public final class PNGImageReader extends AbstractIIOImageReader
 
     @Override
     public Metadata getMetadata(int imageIndex) throws IOException {
+        // Throw any contract-required exceptions.
+        getSize(0);
         final IIOMetadata metadata = iioReader.getImageMetadata(imageIndex);
         final String metadataFormat = metadata.getNativeMetadataFormatName();
         return new PNGMetadata(metadata, metadataFormat);

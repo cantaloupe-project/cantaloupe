@@ -256,8 +256,10 @@ class JaiProcessor extends AbstractImageIOProcessor
             } else {
                 writer.write(renderedOp, outputStream);
             }
+        } catch (SourceFormatException e) {
+            throw e;
         } catch (IOException e) {
-            throw new ProcessorException(e.getMessage(), e);
+            throw new ProcessorException(e);
         } finally {
             if (reader != null) {
                 reader.dispose();

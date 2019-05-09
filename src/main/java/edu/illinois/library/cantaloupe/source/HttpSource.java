@@ -30,8 +30,10 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.AccessDeniedException;
 import java.nio.file.NoSuchFileException;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -47,7 +49,7 @@ import java.util.concurrent.TimeoutException;
  *
  * <h1>Format Inference</h1>
  *
- * <p>See {@link #getFormat()}.</p>
+ * <p>See {@link FormatIterator}.</p>
  *
  * <h1>Lookup Strategies</h1>
  *
@@ -70,7 +72,8 @@ import java.util.concurrent.TimeoutException;
  *     <li>{@literal HEAD}</li>
  *     <li>If server supports ranges:
  *         <ol>
- *             <li>If {@link #getFormat()} needs to check magic bytes:
+ *             <li>If {@link FormatIterator#next()} } needs to check magic
+ *             bytes:
  *                 <ol>
  *                     <li>Ranged {@literal GET}</li>
  *                 </ol>
@@ -220,6 +223,163 @@ class HttpSource extends AbstractSource implements StreamSource {
 
     }
 
+    /**
+     * <ol>
+     *     <li>If the path component of the URI contains a recognized filename
+     *     extension, the format is inferred from that.</li>
+     *     <li>Otherwise, if the identifier contains a recognized filename
+     *     extension, the format is inferred from that.</li>
+     *     <li>Otherwise, if a {@literal Content-Type} header is present in the
+     *     {@link #fetchHEADResponseInfo() HEAD response}, and its value is
+     *     specific enough (not {@literal application/octet-stream}, for
+     *     example), a format is inferred from that.</li>
+     *     <li>Otherwise, if the {@literal HEAD} response contains an {@literal
+     *     Accept-Ranges: bytes} header, a {@literal GET} request is sent with
+     *     a {@literal Range} header specifying a small range of data from the
+     *     beginning of the resource, and a format is inferred from the magic
+     *     bytes in the response entity.</li>
+     *     <li>Otherwise, {@link Format#UNKNOWN} is returned.</li>
+     * </ol>
+     *
+     * @param <T> {@link Format}.
+     */
+    class FormatIterator<T> implements Iterator<T> {
+
+        /**
+         * Infers a {@link Format} based on the {@literal Content-Type} header in
+         * the {@link #fetchHEADResponseInfo() HEAD response}.
+         */
+        private class ContentTypeHeaderChecker implements FormatChecker {
+            /**
+             * @return Format from the {@literal Content-Type} header, or {@link
+             *         Format#UNKNOWN} if that header is missing or invalid.
+             */
+            @Override
+            public Format check() {
+                try {
+                    final RequestInfo requestInfo = getRequestInfo();
+                    final HEADResponseInfo responseInfo = fetchHEADResponseInfo();
+
+                    if (responseInfo.status >= 200 && responseInfo.status < 300) {
+                        HttpField field = responseInfo.headers.getField("Content-Type");
+                        if (field != null && field.getValue() != null) {
+                            Format format = MediaType.fromContentType(field.getValue()).toFormat();
+                            if (Format.UNKNOWN.equals(format)) {
+                                LOGGER.debug("Unrecognized Content-Type header value for HEAD {}",
+                                        requestInfo.getURI());
+                            }
+                            return format;
+                        } else {
+                            LOGGER.debug("No Content-Type header for HEAD {}",
+                                    requestInfo.getURI());
+                        }
+                    } else {
+                        LOGGER.debug("HEAD {} returned status {}",
+                                requestInfo.getURI(), responseInfo.status);
+                    }
+                } catch (Exception e) {
+                    LOGGER.error(e.getMessage(), e);
+                }
+                return Format.UNKNOWN;
+            }
+        }
+
+        private class ByteChecker implements FormatChecker {
+            /**
+             * If the {@link #fetchHEADResponseInfo() HEAD response} contains an
+             * {@literal Accept-Ranges: bytes} header, issues an HTTP {@literal GET}
+             * request for a small {@literal Range} of the beginning of the resource
+             * and checks the magic bytes in the response body.
+             *
+             * @return Inferred source format, or {@link Format#UNKNOWN}.
+             */
+            @Override
+            public Format check() {
+                try {
+                    final RequestInfo requestInfo = getRequestInfo();
+                    if (fetchHEADResponseInfo().acceptsRanges()) {
+                        final RangedGETResponseInfo responseInfo
+                                = fetchRangedGETResponseInfo();
+                        if (responseInfo.status >= 200 && responseInfo.status < 300) {
+                            Format format = responseInfo.detectFormat();
+                            if (!Format.UNKNOWN.equals(format)) {
+                                LOGGER.debug("Inferred {} format from magic bytes for GET {}",
+                                        format, requestInfo.getURI());
+                                return format;
+                            } else {
+                                LOGGER.debug("Unable to infer a format from magic bytes for GET {}",
+                                        requestInfo.getURI());
+                            }
+                        } else {
+                            LOGGER.debug("GET {} returned status {}",
+                                    requestInfo.getURI(), responseInfo.status);
+                        }
+                    } else {
+                        LOGGER.info("Server did not supply an " +
+                                        "`Accept-Ranges: bytes` header for HEAD {}, and all " +
+                                        "other attempts to infer a format failed.",
+                                requestInfo.getURI());
+                    }
+                } catch (Exception e) {
+                    LOGGER.error(e.getMessage(), e);
+                }
+                return Format.UNKNOWN;
+            }
+        }
+
+        private FormatChecker formatChecker;
+
+        @Override
+        public boolean hasNext() {
+            return (formatChecker == null ||
+                    formatChecker instanceof URIPathChecker ||
+                    formatChecker instanceof IdentifierFormatChecker ||
+                    formatChecker instanceof FormatIterator.ContentTypeHeaderChecker);
+        }
+
+        @Override
+        public T next() {
+            if (formatChecker == null) {
+                formatChecker = new URIPathChecker();
+            } else if (formatChecker instanceof URIPathChecker) {
+                formatChecker = new IdentifierFormatChecker(getIdentifier());
+            } else if (formatChecker instanceof IdentifierFormatChecker) {
+                formatChecker = new ContentTypeHeaderChecker();
+            } else if (formatChecker instanceof FormatIterator.ContentTypeHeaderChecker) {
+                formatChecker = new ByteChecker();
+            } else {
+                throw new NoSuchElementException();
+            }
+            try {
+                //noinspection unchecked
+                return (T) formatChecker.check();
+            } catch (IOException e) {
+                LOGGER.warn("Error checking format: {}", e.getMessage());
+                //noinspection unchecked
+                return (T) Format.UNKNOWN;
+            }
+        }
+    }
+
+    /**
+     * Infers a {@link Format} based on a filename extension in the URI path.
+     */
+    private class URIPathChecker implements FormatChecker {
+        @Override
+        public Format check() {
+            try {
+                return Format.inferFormat(
+                        new URI(getRequestInfo().getURI()).getPath());
+            } catch (URISyntaxException e) {
+                LOGGER.warn("{}: {}",
+                        getClass().getSimpleName(), e.getMessage());
+            } catch (Exception ignore) {
+                // This is better caught and handled elsewhere.
+            }
+            return Format.UNKNOWN;
+        }
+    }
+
     static final Logger LOGGER = LoggerFactory.getLogger(HttpSource.class);
 
     private static final int DEFAULT_REQUEST_TIMEOUT = 30;
@@ -240,6 +400,8 @@ class HttpSource extends AbstractSource implements StreamSource {
      * Cached by {@link #getRequestInfo()}.
      */
     private RequestInfo requestInfo;
+
+    private FormatIterator<Format> formatIterator = new FormatIterator<>();
 
     static synchronized HttpClient getHTTPClient(RequestInfo info) {
         if (jettyClient == null) {
@@ -320,129 +482,9 @@ class HttpSource extends AbstractSource implements StreamSource {
         }
     }
 
-    /**
-     * <ol>
-     *     <li>If the path component of the URI contains a recognized filename
-     *     extension, the format is inferred from that.</li>
-     *     <li>Otherwise, if the identifier contains a recognized filename
-     *     extension, the format is inferred from that.</li>
-     *     <li>Otherwise, if a {@literal Content-Type} header is present in the
-     *     {@link #fetchHEADResponseInfo() HEAD response}, and its value is
-     *     specific enough (not {@literal application/octet-stream}, for
-     *     example), a format is inferred from that.</li>
-     *     <li>Otherwise, if the {@literal HEAD} response contains an {@literal
-     *     Accept-Ranges: bytes} header, a {@literal GET} request is sent with
-     *     a {@literal Range} header specifying a small range of data from the
-     *     beginning of the resource, and a format is inferred from the magic
-     *     bytes in the response entity.</li>
-     *     <li>Otherwise, {@link Format#UNKNOWN} is returned.</li>
-     * </ol>
-     *
-     * @return See above.
-     */
     @Override
-    public Format getFormat() {
-        if (format == null) {
-            // Try to infer a format from the path component of the URI.
-            try {
-                format = Format.inferFormat(
-                        new URI(getRequestInfo().getURI()).getPath());
-            } catch (URISyntaxException e) {
-                LOGGER.warn("getFormat(): {}", e.getMessage());
-            } catch (Exception ignore) {
-                // This is better caught and handled elsewhere.
-            }
-
-            if (Format.UNKNOWN.equals(format)) {
-                // Try to infer a format from the identifier.
-                format = Format.inferFormat(identifier);
-            }
-
-            if (Format.UNKNOWN.equals(format)) {
-                // Try to infer a format from the Content-Type header.
-                format = inferSourceFormatFromHEADResponse();
-            }
-
-            if (Format.UNKNOWN.equals(format)) {
-                // Try to infer a format from the entity magic bytes. This
-                // will require another request.
-                format = inferSourceFormatFromMagicBytes();
-            }
-        }
-        return format;
-    }
-
-    /**
-     * @return Best guess at a format based on the {@literal Content-Type}
-     *         header in the {@link #fetchHEADResponseInfo() HEAD response}, or
-     *         {@link Format#UNKNOWN} if that header is missing or invalid.
-     */
-    private Format inferSourceFormatFromHEADResponse() {
-        Format format = Format.UNKNOWN;
-        try {
-            final RequestInfo requestInfo       = getRequestInfo();
-            final HEADResponseInfo responseInfo = fetchHEADResponseInfo();
-
-            if (responseInfo.status >= 200 && responseInfo.status < 300) {
-                HttpField field = responseInfo.headers.getField("Content-Type");
-                if (field != null && field.getValue() != null) {
-                    format = MediaType.fromContentType(field.getValue()).toFormat();
-                    if (Format.UNKNOWN.equals(format)) {
-                        LOGGER.debug("Unrecognized Content-Type header value for HEAD {}",
-                                requestInfo.getURI());
-                    }
-                } else {
-                    LOGGER.debug("No Content-Type header for HEAD {}",
-                            requestInfo.getURI());
-                }
-            } else {
-                LOGGER.debug("HEAD {} returned status {}",
-                        requestInfo.getURI(), responseInfo.status);
-            }
-        } catch (Exception e) {
-            LOGGER.error(e.getMessage(), e);
-        }
-        return format;
-    }
-
-    /**
-     * If the {@link #fetchHEADResponseInfo() HEAD response} contains an
-     * {@literal Accept-Ranges: bytes} header, issues an HTTP {@literal GET}
-     * request for a small {@literal Range} of the beginning of the resource
-     * and checks the magic bytes in the response body.
-     *
-     * @return Inferred source format, or {@link Format#UNKNOWN}.
-     */
-    private Format inferSourceFormatFromMagicBytes() {
-        Format format = Format.UNKNOWN;
-        try {
-            final RequestInfo requestInfo = getRequestInfo();
-            if (fetchHEADResponseInfo().acceptsRanges()) {
-                final RangedGETResponseInfo responseInfo
-                        = fetchRangedGETResponseInfo();
-                if (responseInfo.status >= 200 && responseInfo.status < 300) {
-                    format = responseInfo.detectFormat();
-                    if (!Format.UNKNOWN.equals(format)) {
-                        LOGGER.debug("Inferred {} format from magic bytes for GET {}",
-                                format, requestInfo.getURI());
-                    } else {
-                        LOGGER.debug("Unable to infer a format from magic bytes for GET {}",
-                                requestInfo.getURI());
-                    }
-                } else {
-                    LOGGER.debug("GET {} returned status {}",
-                            requestInfo.getURI(), responseInfo.status);
-                }
-            } else {
-                LOGGER.warn("Server did not supply an " +
-                        "`Accept-Ranges: bytes` header for HEAD {}, and all " +
-                        "other attempts to infer a format failed.",
-                        requestInfo.getURI());
-            }
-        } catch (Exception e) {
-            LOGGER.error(e.getMessage(), e);
-        }
-        return format;
+    public FormatIterator<Format> getFormatIterator() {
+        return formatIterator;
     }
 
     @Override
@@ -531,7 +573,8 @@ class HttpSource extends AbstractSource implements StreamSource {
         try {
             return request.send();
         } catch (ExecutionException e) {
-            LOGGER.debug("ExecutionException from Request.send(); generating AccessDeniedException.", e);
+            LOGGER.debug("ExecutionException from Request.send(): {}",
+                    e.getMessage(), e);
             throw new AccessDeniedException(requestInfo.getURI());
         } catch (InterruptedException | TimeoutException e) {
             throw new IOException(e);
@@ -595,9 +638,14 @@ class HttpSource extends AbstractSource implements StreamSource {
     @Override
     public void setIdentifier(Identifier identifier) {
         super.setIdentifier(identifier);
-        requestInfo = null;
-        headResponseInfo = null;
+        reset();
+    }
+
+    private void reset() {
+        requestInfo           = null;
+        headResponseInfo      = null;
         rangedGETResponseInfo = null;
+        formatIterator        = new FormatIterator<>();
     }
 
     /**

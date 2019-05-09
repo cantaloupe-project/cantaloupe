@@ -17,6 +17,7 @@ import edu.illinois.library.cantaloupe.source.stream.ClosingMemoryCacheImageInpu
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 
+import javax.imageio.IIOException;
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReadParam;
 import javax.imageio.stream.ImageInputStream;
@@ -31,9 +32,8 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Abstract reader that supplies some base functionality and tries to be
- * efficient with most formats. Format-specific readers may override what they
- * need to.
+ * Supplies some base functionality and tries to be efficient with most
+ * formats. Format-specific readers may override what they need to.
  */
 public abstract class AbstractIIOImageReader {
 
@@ -54,6 +54,22 @@ public abstract class AbstractIIOImageReader {
      * Set by {@link #setSource}. May be {@literal null}.
      */
     protected Object source;
+
+    protected static void handle(IIOException e) throws IOException {
+        // Image I/O ImageReaders don't distinguish between errors resulting
+        // from an incompatible format and other kinds of errors, so we have to
+        // check message strings, which are plugin-specific.
+        if (e.getMessage().startsWith("Unexpected block type") ||
+                e.getMessage().startsWith("I/O error reading PNG header") ||
+                e.getMessage().startsWith("Not a JPEG file") ||
+                (e.getCause() != null &&
+                        e.getCause().getMessage() != null &&
+                        (e.getCause().getMessage().startsWith("Invalid magic value") ||
+                                e.getCause().getMessage().equals("I/O error reading PNG header!")))) {
+            throw new SourceFormatException();
+        }
+        throw e;
+    }
 
     private List<javax.imageio.ImageReader> availableIIOReaders() {
         final Iterator<javax.imageio.ImageReader> it;
@@ -118,8 +134,10 @@ public abstract class AbstractIIOImageReader {
      * @return Number of images contained inside the source image.
      */
     public int getNumImages() throws IOException {
-        // The boolean argument tells getNumImages() whether to scan for
-        // images, which seems to be necessary for some, but is slower.
+        // Throw any contract-required exceptions.
+        getSize(0);
+        // The boolean argument tells whether to scan for images, which seems
+        // to be necessary for some, but is slower.
         int numImages = iioReader.getNumImages(false);
         if (numImages == -1) {
             numImages = iioReader.getNumImages(true);
@@ -131,6 +149,8 @@ public abstract class AbstractIIOImageReader {
      * @return {@literal 1}.
      */
     public int getNumResolutions() throws IOException {
+        // Throw any contract-required exceptions.
+        getSize(0);
         return 1;
     }
 
@@ -161,9 +181,16 @@ public abstract class AbstractIIOImageReader {
      * @return Pixel dimensions of the image at the given index.
      */
     public Dimension getSize(int imageIndex) throws IOException {
-        final int width  = iioReader.getWidth(imageIndex);
-        final int height = iioReader.getHeight(imageIndex);
-        return new Dimension(width, height);
+        try {
+            final int width  = iioReader.getWidth(imageIndex);
+            final int height = iioReader.getHeight(imageIndex);
+            return new Dimension(width, height);
+        } catch (IndexOutOfBoundsException e) { // thrown by GeoSolutions TIFFImageReader
+            throw new SourceFormatException();
+        } catch (IIOException e) {
+            handle(e);
+            return null;
+        }
     }
 
     /**
@@ -171,19 +198,27 @@ public abstract class AbstractIIOImageReader {
      *         dimensions if the image is not tiled (or is mono-tiled).
      */
     public Dimension getTileSize(int imageIndex) throws IOException {
-        final int width = iioReader.getTileWidth(imageIndex);
-        int height;
+        try {
+            final int width = iioReader.getTileWidth(imageIndex);
+            int height;
 
-        // If the tile width == the full image width, the image is almost
-        // certainly not tiled, and getTileHeight() may return 1 to indicate
-        // a strip height, or some other wonky value. In that case, set the
-        // tile height to the full image height.
-        if (width == iioReader.getWidth(imageIndex)) {
-            height = iioReader.getHeight(imageIndex);
-        } else {
-            height = iioReader.getTileHeight(imageIndex);
+            // If the tile width == the full image width, the image is almost
+            // certainly not tiled, or at least not in a way that is useful,
+            // and getTileHeight() may return 1 to indicate a strip height, or
+            // some other wonky value. In that case, set the tile height to the
+            // full image height.
+            if (width == iioReader.getWidth(imageIndex)) {
+                height = iioReader.getHeight(imageIndex);
+            } else {
+                height = iioReader.getTileHeight(imageIndex);
+            }
+            return new Dimension(width, height);
+        } catch (IndexOutOfBoundsException e) { // thrown by GeoSolutions TIFFImageReader
+            throw new SourceFormatException();
+        } catch (IIOException e) {
+            handle(e);
+            return null;
         }
-        return new Dimension(width, height);
     }
 
     /**
@@ -300,7 +335,14 @@ public abstract class AbstractIIOImageReader {
      * (excluding subimages) in one shot.
      */
     public BufferedImage read() throws IOException {
-        return iioReader.read(0);
+        try {
+            return iioReader.read(0);
+        } catch (IndexOutOfBoundsException e) { // thrown by GeoSolutions TIFFImageReader
+            throw new SourceFormatException();
+        } catch (IIOException e) {
+            handle(e);
+            throw e;
+        }
     }
 
     /**
@@ -326,19 +368,26 @@ public abstract class AbstractIIOImageReader {
         BufferedImage image;
 
         Crop crop = (Crop) ops.getFirst(Crop.class);
-        if (crop != null && !hints.contains(ReaderHint.IGNORE_CROP)) {
-            final Dimension fullSize = new Dimension(
-                    iioReader.getWidth(0), iioReader.getHeight(0));
-            image = tileAwareRead(0, crop.getRectangle(fullSize), hints);
-        } else {
-            image = iioReader.read(0);
-        }
+        try {
+            if (crop != null && !hints.contains(ReaderHint.IGNORE_CROP)) {
+                final Dimension fullSize = new Dimension(
+                        iioReader.getWidth(0), iioReader.getHeight(0));
+                image = tileAwareRead(0, crop.getRectangle(fullSize), hints);
+            } else {
+                image = iioReader.read(0);
+            }
 
-        if (image == null) {
-            throw new SourceFormatException(iioReader.getFormatName());
-        }
+            if (image == null) {
+                throw new SourceFormatException(iioReader.getFormatName());
+            }
 
-        return image;
+            return image;
+        } catch (IndexOutOfBoundsException e) { // thrown by GeoSolutions TIFFImageReader
+            throw new SourceFormatException();
+        } catch (IIOException e) {
+            handle(e);
+            return null;
+        }
     }
 
     /**
@@ -477,6 +526,14 @@ public abstract class AbstractIIOImageReader {
         return iioReader.read(imageIndex, param);
     }
 
+    public BufferedImageSequence readSequence() throws IOException {
+        BufferedImageSequence seq = new BufferedImageSequence();
+        for (int i = 0, count = getNumImages(); i < count; i++) {
+            seq.add(iioReader.read(i));
+        }
+        return seq;
+    }
+
     ////////////////////////////////////////////////////////////////////////
     /////////////////////// RenderedImage methods //////////////////////////
     ////////////////////////////////////////////////////////////////////////
@@ -521,16 +578,23 @@ public abstract class AbstractIIOImageReader {
         }
 
         RenderedImage image;
-        if (hints != null && hints.contains(ReaderHint.IGNORE_CROP)) {
-            image = readRendered();
-        } else {
-            image = readSmallestUsableSubimage(
-                    crop, scale, ops.getScaleConstraint(), reductionFactor);
+        try {
+            if (hints != null && hints.contains(ReaderHint.IGNORE_CROP)) {
+                image = readRendered();
+            } else {
+                image = readSmallestUsableSubimage(
+                        crop, scale, ops.getScaleConstraint(), reductionFactor);
+            }
+            if (image == null) {
+                throw new SourceFormatException(iioReader.getFormatName());
+            }
+            return image;
+        } catch (IndexOutOfBoundsException e) { // thrown by GeoSolutions TIFFImageReader
+            throw new SourceFormatException();
+        } catch (IIOException e) {
+            handle(e);
+            return null;
         }
-        if (image == null) {
-            throw new SourceFormatException(iioReader.getFormatName());
-        }
-        return image;
     }
 
     /**

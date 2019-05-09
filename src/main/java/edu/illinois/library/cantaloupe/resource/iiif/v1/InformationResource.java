@@ -3,6 +3,8 @@ package edu.illinois.library.cantaloupe.resource.iiif.v1;
 import java.io.IOException;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
+import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 
@@ -16,6 +18,7 @@ import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.image.MediaType;
 import edu.illinois.library.cantaloupe.processor.Processor;
 import edu.illinois.library.cantaloupe.processor.ProcessorFactory;
+import edu.illinois.library.cantaloupe.processor.SourceFormatException;
 import edu.illinois.library.cantaloupe.resource.JacksonRepresentation;
 import edu.illinois.library.cantaloupe.resource.ResourceException;
 import edu.illinois.library.cantaloupe.resource.Route;
@@ -31,6 +34,7 @@ import org.slf4j.LoggerFactory;
  * @see <a href="http://iiif.io/api/image/1.1/#image-info-request">Information
  * Requests</a>
  */
+@SuppressWarnings("Duplicates")
 public class InformationResource extends IIIF1Resource {
 
     private static final Logger LOGGER =
@@ -129,33 +133,47 @@ public class InformationResource extends IIIF1Resource {
         // cache, read the format from the source-cached-file, as we will
         // expect source cache access to be more efficient.
         // Otherwise, read it from the source.
-        Format format = Format.UNKNOWN;
+        Iterator<Format> formatIterator = Collections.emptyIterator();
         if (!isResolvingFirst() && optSrcImage.isPresent()) {
             List<MediaType> mediaTypes = MediaType.detectMediaTypes(optSrcImage.get());
             if (!mediaTypes.isEmpty()) {
-                format = mediaTypes.get(0).toFormat();
+                formatIterator = mediaTypes
+                        .stream()
+                        .map(MediaType::toFormat)
+                        .iterator();
             }
         } else {
-            format = source.getFormat();
+            formatIterator = source.getFormatIterator();
         }
 
-        // Obtain an instance of the processor assigned to that format.
-        try (Processor processor = new ProcessorFactory().newProcessor(format)) {
-            // Connect it to the source.
-            tempFileFuture = new ProcessorConnector().connect(
-                    source, processor, identifier, format);
+        while (formatIterator.hasNext()) {
+            final Format format = formatIterator.next();
+            // Obtain an instance of the processor assigned to this format.
+            String processorName = "unknown processor";
+            try (Processor processor = new ProcessorFactory().newProcessor(format)) {
+                processorName = processor.getClass().getSimpleName();
+                // Connect it to the source.
+                tempFileFuture = new ProcessorConnector().connect(
+                        source, processor, identifier, format);
 
-            final Info info = getOrReadInfo(identifier, processor);
-            final ImageInfo iiifInfo = new ImageInfoFactory().newImageInfo(
-                    getImageURI(),
-                    processor,
-                    info,
-                    getPageIndex(),
-                    getScaleConstraint());
+                final Info info = getOrReadInfo(identifier, processor);
+                final ImageInfo iiifInfo = new ImageInfoFactory().newImageInfo(
+                        getImageURI(),
+                        processor,
+                        info,
+                        getPageIndex(),
+                        getScaleConstraint());
 
-            addHeaders(iiifInfo);
-            newRepresentation(iiifInfo).write(getResponse().getOutputStream());
+                addHeaders(iiifInfo);
+                newRepresentation(iiifInfo).write(getResponse().getOutputStream());
+                return;
+            } catch (SourceFormatException e) {
+                LOGGER.debug("Format inferred by {} disagrees with the one " +
+                                "supplied by {} ({}) for {}; trying again",
+                        processorName, source, format, identifier);
+            }
         }
+        throw new SourceFormatException();
     }
 
     private void addHeaders(ImageInfo info) {

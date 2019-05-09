@@ -485,12 +485,12 @@ class OpenJpegProcessor extends AbstractProcessor implements FileProcessor {
             LOGGER.debug(msg, e);
             throw new ProcessorException(msg, e);
         } catch (IOException | InterruptedException e) {
-            String msg = e.getMessage();
             final String errorStr = toString(errorBucket);
-            if (errorStr.length() > 0) {
-                msg += " (command output: " + errorStr + ")";
+            if (errorStr.contains("Unknown input file format")) {
+                throw new SourceFormatException(getSourceFormat());
             }
-            throw new ProcessorException(msg, e);
+            throw new ProcessorException(
+                    e.getMessage() + " (command output: " + errorStr + ")", e);
         }
     }
 

@@ -52,6 +52,8 @@ public final class TIFFImageReader extends AbstractIIOImageReader
 
     @Override
     public Compression getCompression(int imageIndex) throws IOException {
+        // Throw any contract-required exceptions.
+        getSize(0);
         final IIOMetadata metadata = iioReader.getImageMetadata(imageIndex);
         final IIOMetadataNode node =
                 (IIOMetadataNode) metadata.getAsTree(metadata.getNativeMetadataFormatName());
@@ -95,6 +97,8 @@ public final class TIFFImageReader extends AbstractIIOImageReader
 
     @Override
     public Metadata getMetadata(int imageIndex) throws IOException {
+        // Throw any contract-required exceptions.
+        getSize(0);
         final IIOMetadata metadata = iioReader.getImageMetadata(imageIndex);
         final String metadataFormat = metadata.getNativeMetadataFormatName();
         return new TIFFMetadata(metadata, metadataFormat);
@@ -112,20 +116,10 @@ public final class TIFFImageReader extends AbstractIIOImageReader
     }
 
     /**
-     * <p>Override that is both multi-resolution- and tile-aware.</p>
+     * <p>Override that is multi-resolution- and tile-aware.</p>
      *
      * <p>After reading, clients should check the reader hints to see whether
      * the returned image will require additional cropping.</p>
-     *
-     * @param ops
-     * @param reductionFactor {@link ReductionFactor#factor} property will be
-     *                        modified to reflect the reduction factor of the
-     *                        returned image.
-     * @param hints           Will be populated by information returned from
-     *                        the reader.
-     * @return                Image best matching the given arguments. Clients
-     *                        should check the hints set to see whether they
-     *                        need to perform additional cropping.
      */
     @Override
     public BufferedImage read(final OperationList ops,
@@ -145,9 +139,13 @@ public final class TIFFImageReader extends AbstractIIOImageReader
         if (hints != null && hints.contains(ReaderHint.IGNORE_CROP)) {
             image = read();
         } else {
-            image = readSmallestUsableSubimage(
-                    crop, scale, ops.getScaleConstraint(), reductionFactor,
-                    hints);
+            try {
+                image = readSmallestUsableSubimage(
+                        crop, scale, ops.getScaleConstraint(), reductionFactor,
+                        hints);
+            } catch (IndexOutOfBoundsException e) {
+                throw new SourceFormatException();
+            }
         }
         if (image == null) {
             throw new SourceFormatException(iioReader.getFormatName());

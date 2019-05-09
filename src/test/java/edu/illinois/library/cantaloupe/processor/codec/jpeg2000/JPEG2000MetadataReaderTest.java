@@ -1,6 +1,7 @@
 package edu.illinois.library.cantaloupe.processor.codec.jpeg2000;
 
 import edu.illinois.library.cantaloupe.image.iptc.Reader;
+import edu.illinois.library.cantaloupe.processor.SourceFormatException;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.junit.jupiter.api.BeforeEach;
@@ -8,7 +9,6 @@ import org.junit.jupiter.api.Test;
 
 import javax.imageio.ImageIO;
 import javax.imageio.stream.ImageInputStream;
-import java.io.IOException;
 import java.nio.file.Path;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -39,7 +39,7 @@ public class JPEG2000MetadataReaderTest extends BaseTest {
         Path file = TestUtil.getImage("jpg");
         try (ImageInputStream is = ImageIO.createImageInputStream(file.toFile())) {
             instance.setSource(is);
-            assertThrows(IOException.class, () -> instance.getComponentSize());
+            assertThrows(SourceFormatException.class, () -> instance.getComponentSize());
         }
     }
 
@@ -48,7 +48,7 @@ public class JPEG2000MetadataReaderTest extends BaseTest {
         Path file = TestUtil.getImage("unknown");
         try (ImageInputStream is = ImageIO.createImageInputStream(file.toFile())) {
             instance.setSource(is);
-            assertThrows(IOException.class, () -> instance.getComponentSize());
+            assertThrows(SourceFormatException.class, () -> instance.getComponentSize());
         }
     }
 
@@ -57,7 +57,7 @@ public class JPEG2000MetadataReaderTest extends BaseTest {
         Path file = TestUtil.getImage("empty");
         try (ImageInputStream is = ImageIO.createImageInputStream(file.toFile())) {
             instance.setSource(is);
-            assertThrows(IOException.class, () -> instance.getComponentSize());
+            assertThrows(SourceFormatException.class, () -> instance.getComponentSize());
         }
     }
 
@@ -83,7 +83,7 @@ public class JPEG2000MetadataReaderTest extends BaseTest {
         Path file = TestUtil.getImage("jpg");
         try (ImageInputStream is = ImageIO.createImageInputStream(file.toFile())) {
             instance.setSource(is);
-            assertThrows(IOException.class, () -> instance.getHeight());
+            assertThrows(SourceFormatException.class, () -> instance.getHeight());
         }
     }
 
@@ -92,7 +92,7 @@ public class JPEG2000MetadataReaderTest extends BaseTest {
         Path file = TestUtil.getImage("unknown");
         try (ImageInputStream is = ImageIO.createImageInputStream(file.toFile())) {
             instance.setSource(is);
-            assertThrows(IOException.class, () -> instance.getHeight());
+            assertThrows(SourceFormatException.class, () -> instance.getHeight());
         }
     }
 
@@ -101,7 +101,7 @@ public class JPEG2000MetadataReaderTest extends BaseTest {
         Path file = TestUtil.getImage("empty");
         try (ImageInputStream is = ImageIO.createImageInputStream(file.toFile())) {
             instance.setSource(is);
-            assertThrows(IOException.class, () -> instance.getHeight());
+            assertThrows(SourceFormatException.class, () -> instance.getHeight());
         }
     }
 
@@ -138,7 +138,7 @@ public class JPEG2000MetadataReaderTest extends BaseTest {
         Path file = TestUtil.getImage("jpg");
         try (ImageInputStream is = ImageIO.createImageInputStream(file.toFile())) {
             instance.setSource(is);
-            assertThrows(IOException.class, () -> instance.getIPTC());
+            assertThrows(SourceFormatException.class, () -> instance.getIPTC());
         }
     }
 
@@ -147,7 +147,7 @@ public class JPEG2000MetadataReaderTest extends BaseTest {
         Path file = TestUtil.getImage("unknown");
         try (ImageInputStream is = ImageIO.createImageInputStream(file.toFile())) {
             instance.setSource(is);
-            assertThrows(IOException.class, () -> instance.getIPTC());
+            assertThrows(SourceFormatException.class, () -> instance.getIPTC());
         }
     }
 
@@ -156,7 +156,7 @@ public class JPEG2000MetadataReaderTest extends BaseTest {
         Path file = TestUtil.getImage("empty");
         try (ImageInputStream is = ImageIO.createImageInputStream(file.toFile())) {
             instance.setSource(is);
-            assertThrows(IOException.class, () -> instance.getIPTC());
+            assertThrows(SourceFormatException.class, () -> instance.getIPTC());
         }
     }
 
@@ -181,7 +181,7 @@ public class JPEG2000MetadataReaderTest extends BaseTest {
         Path file = TestUtil.getImage("jpg");
         try (ImageInputStream is = ImageIO.createImageInputStream(file.toFile())) {
             instance.setSource(is);
-            assertThrows(IOException.class, () -> instance.getNumComponents());
+            assertThrows(SourceFormatException.class, () -> instance.getNumComponents());
         }
     }
 
@@ -190,7 +190,7 @@ public class JPEG2000MetadataReaderTest extends BaseTest {
         Path file = TestUtil.getImage("unknown");
         try (ImageInputStream is = ImageIO.createImageInputStream(file.toFile())) {
             instance.setSource(is);
-            assertThrows(IOException.class, () -> instance.getNumComponents());
+            assertThrows(SourceFormatException.class, () -> instance.getNumComponents());
         }
     }
 
@@ -199,7 +199,7 @@ public class JPEG2000MetadataReaderTest extends BaseTest {
         Path file = TestUtil.getImage("empty");
         try (ImageInputStream is = ImageIO.createImageInputStream(file.toFile())) {
             instance.setSource(is);
-            assertThrows(IOException.class, () -> instance.getNumComponents());
+            assertThrows(SourceFormatException.class, () -> instance.getNumComponents());
         }
     }
 
@@ -225,7 +225,7 @@ public class JPEG2000MetadataReaderTest extends BaseTest {
         Path file = TestUtil.getImage("jpg");
         try (ImageInputStream is = ImageIO.createImageInputStream(file.toFile())) {
             instance.setSource(is);
-            assertThrows(IOException.class,
+            assertThrows(SourceFormatException.class,
                     () -> instance.getNumDecompositionLevels());
         }
     }
@@ -235,7 +235,7 @@ public class JPEG2000MetadataReaderTest extends BaseTest {
         Path file = TestUtil.getImage("unknown");
         try (ImageInputStream is = ImageIO.createImageInputStream(file.toFile())) {
             instance.setSource(is);
-            assertThrows(IOException.class,
+            assertThrows(SourceFormatException.class,
                     () -> instance.getNumDecompositionLevels());
         }
     }
@@ -245,7 +245,7 @@ public class JPEG2000MetadataReaderTest extends BaseTest {
         Path file = TestUtil.getImage("empty");
         try (ImageInputStream is = ImageIO.createImageInputStream(file.toFile())) {
             instance.setSource(is);
-            assertThrows(IOException.class,
+            assertThrows(SourceFormatException.class,
                     () -> instance.getNumDecompositionLevels());
         }
     }
@@ -272,7 +272,7 @@ public class JPEG2000MetadataReaderTest extends BaseTest {
         Path file = TestUtil.getImage("jpg");
         try (ImageInputStream is = ImageIO.createImageInputStream(file.toFile())) {
             instance.setSource(is);
-            assertThrows(IOException.class, () -> instance.getTileHeight());
+            assertThrows(SourceFormatException.class, () -> instance.getTileHeight());
         }
     }
 
@@ -281,7 +281,7 @@ public class JPEG2000MetadataReaderTest extends BaseTest {
         Path file = TestUtil.getImage("unknown");
         try (ImageInputStream is = ImageIO.createImageInputStream(file.toFile())) {
             instance.setSource(is);
-            assertThrows(IOException.class, () -> instance.getTileHeight());
+            assertThrows(SourceFormatException.class, () -> instance.getTileHeight());
         }
     }
 
@@ -290,7 +290,7 @@ public class JPEG2000MetadataReaderTest extends BaseTest {
         Path file = TestUtil.getImage("empty");
         try (ImageInputStream is = ImageIO.createImageInputStream(file.toFile())) {
             instance.setSource(is);
-            assertThrows(IOException.class, () -> instance.getTileHeight());
+            assertThrows(SourceFormatException.class, () -> instance.getTileHeight());
         }
     }
 
@@ -316,7 +316,7 @@ public class JPEG2000MetadataReaderTest extends BaseTest {
         Path file = TestUtil.getImage("jpg");
         try (ImageInputStream is = ImageIO.createImageInputStream(file.toFile())) {
             instance.setSource(is);
-            assertThrows(IOException.class, () -> instance.getTileWidth());
+            assertThrows(SourceFormatException.class, () -> instance.getTileWidth());
         }
     }
 
@@ -325,7 +325,7 @@ public class JPEG2000MetadataReaderTest extends BaseTest {
         Path file = TestUtil.getImage("unknown");
         try (ImageInputStream is = ImageIO.createImageInputStream(file.toFile())) {
             instance.setSource(is);
-            assertThrows(IOException.class, () -> instance.getTileWidth());
+            assertThrows(SourceFormatException.class, () -> instance.getTileWidth());
         }
     }
 
@@ -334,7 +334,7 @@ public class JPEG2000MetadataReaderTest extends BaseTest {
         Path file = TestUtil.getImage("empty");
         try (ImageInputStream is = ImageIO.createImageInputStream(file.toFile())) {
             instance.setSource(is);
-            assertThrows(IOException.class, () -> instance.getTileWidth());
+            assertThrows(SourceFormatException.class, () -> instance.getTileWidth());
         }
     }
 
@@ -359,7 +359,7 @@ public class JPEG2000MetadataReaderTest extends BaseTest {
         Path file = TestUtil.getImage("jpg");
         try (ImageInputStream is = ImageIO.createImageInputStream(file.toFile())) {
             instance.setSource(is);
-            assertThrows(IOException.class, () -> instance.getWidth());
+            assertThrows(SourceFormatException.class, () -> instance.getWidth());
         }
     }
 
@@ -368,7 +368,7 @@ public class JPEG2000MetadataReaderTest extends BaseTest {
         Path file = TestUtil.getImage("unknown");
         try (ImageInputStream is = ImageIO.createImageInputStream(file.toFile())) {
             instance.setSource(is);
-            assertThrows(IOException.class, () -> instance.getWidth());
+            assertThrows(SourceFormatException.class, () -> instance.getWidth());
         }
     }
 
@@ -377,7 +377,7 @@ public class JPEG2000MetadataReaderTest extends BaseTest {
         Path file = TestUtil.getImage("empty");
         try (ImageInputStream is = ImageIO.createImageInputStream(file.toFile())) {
             instance.setSource(is);
-            assertThrows(IOException.class, () -> instance.getWidth());
+            assertThrows(SourceFormatException.class, () -> instance.getWidth());
         }
     }
 
@@ -414,7 +414,7 @@ public class JPEG2000MetadataReaderTest extends BaseTest {
         Path file = TestUtil.getImage("jpg");
         try (ImageInputStream is = ImageIO.createImageInputStream(file.toFile())) {
             instance.setSource(is);
-            assertThrows(IOException.class, () -> instance.getXMP());
+            assertThrows(SourceFormatException.class, () -> instance.getXMP());
         }
     }
 
@@ -423,7 +423,7 @@ public class JPEG2000MetadataReaderTest extends BaseTest {
         Path file = TestUtil.getImage("unknown");
         try (ImageInputStream is = ImageIO.createImageInputStream(file.toFile())) {
             instance.setSource(is);
-            assertThrows(IOException.class, () -> instance.getXMP());
+            assertThrows(SourceFormatException.class, () -> instance.getXMP());
         }
     }
 
@@ -432,7 +432,7 @@ public class JPEG2000MetadataReaderTest extends BaseTest {
         Path file = TestUtil.getImage("empty");
         try (ImageInputStream is = ImageIO.createImageInputStream(file.toFile())) {
             instance.setSource(is);
-            assertThrows(IOException.class, () -> instance.getXMP());
+            assertThrows(SourceFormatException.class, () -> instance.getXMP());
         }
     }
 

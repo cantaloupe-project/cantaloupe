@@ -1,6 +1,5 @@
 package edu.illinois.library.cantaloupe.source;
 
-import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.resource.RequestContext;
 import edu.illinois.library.cantaloupe.script.DelegateProxy;
@@ -8,13 +7,12 @@ import edu.illinois.library.cantaloupe.script.DelegateProxy;
 abstract class AbstractSource {
 
     protected Identifier identifier;
-    protected Format format;
     protected DelegateProxy delegateProxy;
 
     /**
      * @return Delegate proxy. May be {@literal null}.
      */
-    DelegateProxy getDelegateProxy() {
+    protected DelegateProxy getDelegateProxy() {
         return delegateProxy;
     }
 
@@ -34,7 +32,6 @@ abstract class AbstractSource {
      */
     public void setIdentifier(Identifier identifier) {
         this.identifier = identifier;
-        this.format = null;
     }
 
 }

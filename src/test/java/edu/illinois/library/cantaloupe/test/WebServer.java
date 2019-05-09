@@ -3,7 +3,6 @@ package edu.illinois.library.cantaloupe.test;
 import edu.illinois.library.cantaloupe.http.Server;
 import org.eclipse.jetty.server.Handler;
 
-import java.io.IOException;
 import java.net.URI;
 import java.nio.file.Path;
 
@@ -18,7 +17,7 @@ public final class WebServer {
 
     private final Server wrappedServer = new Server();
 
-    public WebServer() throws IOException {
+    public WebServer() {
         Path imagesPath = TestUtil.getFixturePath().resolve("images");
         wrappedServer.setRoot(imagesPath);
         wrappedServer.setKeyStorePath(TestUtil.getFixture("keystore.jks"));

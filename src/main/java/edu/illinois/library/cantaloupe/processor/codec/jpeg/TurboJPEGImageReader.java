@@ -1,9 +1,11 @@
 package edu.illinois.library.cantaloupe.processor.codec.jpeg;
 
 import edu.illinois.library.cantaloupe.image.Rectangle;
+import edu.illinois.library.cantaloupe.processor.SourceFormatException;
 import edu.illinois.library.cantaloupe.util.Rational;
 import org.libjpegturbo.turbojpeg.TJ;
 import org.libjpegturbo.turbojpeg.TJDecompressor;
+import org.libjpegturbo.turbojpeg.TJException;
 import org.libjpegturbo.turbojpeg.TJScalingFactor;
 import org.libjpegturbo.turbojpeg.TJTransform;
 import org.libjpegturbo.turbojpeg.TJTransformer;
@@ -464,7 +466,14 @@ public final class TurboJPEGImageReader implements AutoCloseable {
     private void initDecompressor() throws IOException {
         if (decompressor == null) {
             jpegBytes = readInputStream();
-            decompressor = new TJDecompressor(jpegBytes);
+            try {
+                decompressor = new TJDecompressor(jpegBytes);
+            } catch (TJException e) {
+                if (e.getMessage().contains("Not a JPEG file")) {
+                    throw new SourceFormatException();
+                }
+                throw e;
+            }
         }
     }
 
@@ -499,6 +508,11 @@ public final class TurboJPEGImageReader implements AutoCloseable {
                 xform.options        |= TJTransform.OPT_TRIM;
                 TJDecompressor[] tjds = tjt.transform(xforms, 0);
                 decompressor          = tjds[0];
+            } catch (TJException e) {
+                if (e.getMessage().contains("Not a JPEG file")) {
+                    throw new SourceFormatException();
+                }
+                throw e;
             }
         }
     }

@@ -9,6 +9,8 @@ import edu.illinois.library.cantaloupe.processor.codec.ImageReader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
+
 public final class BMPImageReader extends AbstractIIOImageReader
         implements ImageReader {
 
@@ -24,7 +26,9 @@ public final class BMPImageReader extends AbstractIIOImageReader
     }
 
     @Override
-    public Compression getCompression(int imageIndex) {
+    public Compression getCompression(int imageIndex) throws IOException {
+        // Throw any contract-required exceptions.
+        getSize(0);
         return Compression.UNCOMPRESSED;
     }
 
@@ -39,7 +43,9 @@ public final class BMPImageReader extends AbstractIIOImageReader
     }
 
     @Override
-    public Metadata getMetadata(int imageIndex) {
+    public Metadata getMetadata(int imageIndex) throws IOException {
+        // Throw any contract-required exceptions.
+        getSize(0);
         return new Metadata();
     }
 

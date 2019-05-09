@@ -28,6 +28,7 @@ import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -95,16 +96,12 @@ abstract class HttpSourceTest extends AbstractSourceTest {
 
     @Override
     void useScriptLookupStrategy() {
-        try {
-            Configuration config = Configuration.getInstance();
-            config.setProperty(Key.HTTPSOURCE_LOOKUP_STRATEGY,
-                    "ScriptLookupStrategy");
-            config.setProperty(Key.DELEGATE_SCRIPT_ENABLED, true);
-            config.setProperty(Key.DELEGATE_SCRIPT_PATHNAME,
-                    TestUtil.getFixture("delegates.rb").toString());
-        } catch (IOException e) {
-            fail(e.getMessage());
-        }
+        Configuration config = Configuration.getInstance();
+        config.setProperty(Key.HTTPSOURCE_LOOKUP_STRATEGY,
+                "ScriptLookupStrategy");
+        config.setProperty(Key.DELEGATE_SCRIPT_ENABLED, true);
+        config.setProperty(Key.DELEGATE_SCRIPT_PATHNAME,
+                TestUtil.getFixture("delegates.rb").toString());
     }
 
     /* checkAccess() */
@@ -355,110 +352,29 @@ abstract class HttpSourceTest extends AbstractSourceTest {
         }
     }
 
-    /* getFormat() */
+    /* getFormatIterator() */
 
-    /**
-     * Tests {@link HttpSource#getFormat()} when the URI contains an extension.
-     */
     @Test
-    void testGetFormat1() {
-        assertEquals(Format.JPG, instance.getFormat());
+    void testGetFormatIteratorHasNext() {
+        instance.setIdentifier(new Identifier("jpg.jpg"));
+
+        HttpSource.FormatIterator<Format> it = instance.getFormatIterator();
+
+        assertTrue(it.hasNext());
+        it.next(); // URI path extension
+        assertTrue(it.hasNext());
+        it.next(); // identifier extension
+        assertTrue(it.hasNext());
+        it.next(); // Content-Type is null
+        assertTrue(it.hasNext());
+        it.next(); // magic bytes
+        assertFalse(it.hasNext());
     }
 
-    /**
-     * Tests {@link HttpSource#getFormat()} when the identifier contains an
-     * extension.
-     */
     @Test
-    void testGetFormat2() throws Exception {
-        useScriptLookupStrategy();
-
-        Identifier identifier = new Identifier("HttpSourceTest-" +
-                "extension-in-identifier-but-not-filename.jpg");
-        RequestContext context = new RequestContext();
-        context.setIdentifier(identifier);
-        DelegateProxyService service = DelegateProxyService.getInstance();
-        DelegateProxy proxy = service.newDelegateProxy(context);
-        instance.setDelegateProxy(proxy);
-        instance.setIdentifier(new Identifier(getServerURI() + "/" + identifier));
-
-        assertEquals(Format.JPG, instance.getFormat());
-    }
-
-    /**
-     * Tests {@link HttpSource#getFormat()} when neither the URI nor identifier
-     * contain an extension, but there is a recognized Content-Type header.
-     */
-    @Test
-    void testGetFormat3() throws Exception {
-        server.setHandler(new DefaultHandler() {
-            @Override
-            public void handle(String target,
-                               Request baseRequest,
-                               HttpServletRequest request,
-                               HttpServletResponse response) {
-                response.setHeader("Content-Type", "image/jpeg; charset=UTF-8");
-                baseRequest.setHandled(true);
-            }
-        });
-        server.start();
-
-        instance.setIdentifier(new Identifier("jpg"));
-        assertEquals(Format.JPG, instance.getFormat());
-    }
-
-    /**
-     * Tests {@link HttpSource#getFormat()} when neither the URI nor identifier
-     * contain an extension, there is an unrecognized Content-Type header, and
-     * the server does not support ranges.
-     */
-    @Test
-    void testGetFormat4() throws Exception {
-        server.setHandler(new DefaultHandler() {
-            @Override
-            public void handle(String target,
-                               Request baseRequest,
-                               HttpServletRequest request,
-                               HttpServletResponse response) {
-                response.setHeader("Content-Type", "application/octet-stream");
-                baseRequest.setHandled(true);
-            }
-        });
-        server.start();
-
-        instance.setIdentifier(new Identifier("jpg"));
-        assertEquals(Format.UNKNOWN, instance.getFormat());
-    }
-
-    /**
-     * Tests {@link HttpSource#getFormat()} when neither the URI nor identifier
-     * contain an extension, there is no Content-Type header, and the server
-     * does not support ranges.
-     */
-    @Test
-    void testGetFormat5() throws Exception {
-        server.setHandler(new DefaultHandler() {
-            @Override
-            public void handle(String target,
-                               Request baseRequest,
-                               HttpServletRequest request,
-                               HttpServletResponse response) {
-                baseRequest.setHandled(true);
-            }
-        });
-        server.start();
-
-        instance.setIdentifier(new Identifier("jpg"));
-        assertEquals(Format.UNKNOWN, instance.getFormat());
-    }
-
-    /**
-     * Tests {@link HttpSource#getFormat()} when neither the URI nor identifier
-     * contain an extension, there is no Content-Type header, and the server
-     * supports ranges.
-     */
-    @Test
-    void testGetFormat6() throws Exception {
+    void testGetFormatIteratorNext() throws Exception {
+        final String fixture = "jpg-incorrect-extension.png";
+        instance.setIdentifier(new Identifier(fixture));
         server.setHandler(new DefaultHandler() {
             @Override
             public void handle(String target,
@@ -467,28 +383,18 @@ abstract class HttpSourceTest extends AbstractSourceTest {
                                HttpServletResponse response) throws IOException {
                 response.setHeader("Accept-Ranges", "bytes");
                 try (OutputStream os = response.getOutputStream()) {
-                    Files.copy(TestUtil.getImage("jpg"), os);
+                    Files.copy(TestUtil.getImage(fixture), os);
                 }
             }
         });
         server.start();
 
-        // N.B.: Neither identifier nor URI can contain an extension.
-        instance.setIdentifier(new Identifier("jpg"));
-        assertEquals(Format.JPG, instance.getFormat());
-    }
-
-    /**
-     * Tests {@link HttpSource#getFormat()} when neither the URI nor identifier
-     * contain an extension, there is no Content-Type header, and the server
-     * supports ranges, but the ranged GET response returns unknown magic bytes.
-     */
-    @Test
-    void testGetFormat7() throws Exception {
-        server.start();
-
-        instance.setIdentifier(new Identifier("txt"));
-        assertEquals(Format.UNKNOWN, instance.getFormat());
+        HttpSource.FormatIterator<Format> it = instance.getFormatIterator();
+        assertEquals(Format.PNG, it.next());     // URI path extension
+        assertEquals(Format.PNG, it.next());     // identifier extension
+        assertEquals(Format.UNKNOWN, it.next()); // Content-Type is null
+        assertEquals(Format.JPG, it.next());     // magic bytes
+        assertThrows(NoSuchElementException.class, it::next);
     }
 
     /* getRequestInfo() */
@@ -715,7 +621,7 @@ abstract class HttpSourceTest extends AbstractSourceTest {
         server.start();
 
         instance.checkAccess();
-        instance.getFormat();
+        instance.getFormatIterator().next();
 
         StreamFactory source = instance.newStreamFactory();
         try (InputStream is = source.newInputStream()) {

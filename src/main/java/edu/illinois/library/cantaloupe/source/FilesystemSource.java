@@ -18,7 +18,9 @@ import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Iterator;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 /**
  * <p>Provides access to source content located on a locally attached
@@ -26,7 +28,7 @@ import java.util.List;
  *
  * <h1>Format Determination</h1>
  *
- * <p>See {@link #getFormat()}.</p>
+ * <p>See {@link FormatIterator}.</p>
  *
  * <h1>Lookup Strategies</h1>
  *
@@ -39,11 +41,77 @@ import java.util.List;
 class FilesystemSource extends AbstractSource
         implements StreamSource, FileSource {
 
+    /**
+     * <ol>
+     *     <li>If the file's filename contains an extension, the format is
+     *     inferred from that.</li>
+     *     <li>If unsuccessful, and the identifier contains an extension, the
+     *     format is inferred from that.</li>
+     *     <li>If unsuccessful, the format is inferred from the file's magic
+     *     bytes.</li>
+     * </ol>
+     */
+    class FormatIterator<T> implements Iterator<T> {
+
+        /**
+         * Infers a {@link Format} based on image magic bytes.
+         */
+        private class ByteChecker implements FormatChecker {
+            @Override
+            public Format check() throws IOException {
+                final Path path = getPath();
+                List<MediaType> detectedTypes = MediaType.detectMediaTypes(path);
+                if (!detectedTypes.isEmpty()) {
+                    return detectedTypes.get(0).toFormat();
+                }
+                return Format.UNKNOWN;
+            }
+        }
+
+        private FormatChecker formatChecker;
+
+        @Override
+        public boolean hasNext() {
+            return (formatChecker == null ||
+                    formatChecker instanceof NameFormatChecker ||
+                    formatChecker instanceof IdentifierFormatChecker);
+        }
+
+        @Override
+        public T next() {
+            if (formatChecker == null) {
+                try {
+                    formatChecker = new NameFormatChecker(getPath().getFileName().toString());
+                } catch (IOException e) {
+                    LOGGER.warn("FormatIterator.next(): {}", e.getMessage(), e);
+                    formatChecker = new NameFormatChecker("***BOGUS***");
+                    return next();
+                }
+            } else if (formatChecker instanceof NameFormatChecker) {
+                formatChecker = new IdentifierFormatChecker(getIdentifier());
+            } else if (formatChecker instanceof IdentifierFormatChecker) {
+                formatChecker = new ByteChecker();
+            } else {
+                throw new NoSuchElementException();
+            }
+            try {
+                //noinspection unchecked
+                return (T) formatChecker.check();
+            } catch (IOException e) {
+                LOGGER.warn("Error checking format: {}", e.getMessage());
+                //noinspection unchecked
+                return (T) Format.UNKNOWN;
+            }
+        }
+    }
+
     private static final Logger LOGGER =
             LoggerFactory.getLogger(FilesystemSource.class);
 
-    private static final String UNIX_PATH_SEPARATOR = "/";
+    private static final String UNIX_PATH_SEPARATOR    = "/";
     private static final String WINDOWS_PATH_SEPARATOR = "\\";
+
+    private FormatIterator<Format> formatIterator = new FormatIterator<>();
 
     /**
      * Lazy-loaded by {@link #getPath}.
@@ -59,6 +127,11 @@ class FilesystemSource extends AbstractSource
         } else if (!Files.isReadable(path)) {
             throw new AccessDeniedException("File is not readable: " + path);
         }
+    }
+
+    @Override
+    public FormatIterator<Format> getFormatIterator() {
+        return formatIterator;
     }
 
     /**
@@ -120,53 +193,6 @@ class FilesystemSource extends AbstractSource
         return Paths.get(pathname);
     }
 
-    /**
-     * <ol>
-     *     <li>If the file's filename contains an extension, the format is
-     *     inferred from that.</li>
-     *     <li>If unsuccessful, and the identifier contains an extension, the
-     *     format is inferred from that.</li>
-     *     <li>If unsuccessful, the format is inferred from the file's magic
-     *     bytes.</li>
-     * </ol>
-     *
-     * @return Best attempt at determining the file format.
-     * @throws IOException if the magic byte check fails.
-     */
-    @Override
-    public Format getFormat() throws IOException {
-        if (format == null) {
-            // Try to infer a format from the filename.
-            format = Format.inferFormat(getPath().getFileName().toString());
-
-            if (Format.UNKNOWN.equals(format)) {
-                // Try to infer a format from the identifier.
-                format = Format.inferFormat(identifier);
-            }
-
-            if (Format.UNKNOWN.equals(format)) {
-                // Fall back to reading the magic bytes.
-                format = detectFormat();
-            }
-        }
-        return format;
-    }
-
-    /**
-     * Detects the format of a file by reading its header.
-     *
-     * @return Detected format, or {@link Format#UNKNOWN}.
-     */
-    private Format detectFormat() throws IOException {
-        Format format = Format.UNKNOWN;
-        final Path path = getPath();
-        List<MediaType> detectedTypes = MediaType.detectMediaTypes(path);
-        if (!detectedTypes.isEmpty()) {
-            format = detectedTypes.get(0).toFormat();
-        }
-        return format;
-    }
-
     @Override
     public StreamFactory newStreamFactory() throws IOException {
         return new PathStreamFactory(getPath());
@@ -196,9 +222,13 @@ class FilesystemSource extends AbstractSource
 
     @Override
     public void setIdentifier(Identifier identifier) {
-        path = null;
-        format = null;
-        this.identifier = identifier;
+        super.setIdentifier(identifier);
+        reset();
+    }
+
+    private void reset() {
+        path           = null;
+        formatIterator = new FormatIterator<>();
     }
 
 }

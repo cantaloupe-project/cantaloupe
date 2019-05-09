@@ -9,6 +9,11 @@
 * The `endpoint.iiif.content_disposition` configuration key has been removed.
   The `?response-content-disposition` query argument should be used instead.
 
+### Sources
+
+* Sources support inconsistencies between filename/identifier extensions and
+  byte signatures.
+
 ### Processors
 
 * The metadata-handling system has been redesigned:

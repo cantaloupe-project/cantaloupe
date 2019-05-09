@@ -3,16 +3,18 @@ package edu.illinois.library.cantaloupe.source;
 import edu.illinois.library.cantaloupe.image.Format;
 import org.apache.commons.io.input.NullInputStream;
 
-public class MockStreamSource extends AbstractSource
-        implements StreamSource {
+import java.util.Collections;
+import java.util.Iterator;
+
+public class MockStreamSource extends AbstractSource implements StreamSource {
 
     @Override
     public void checkAccess() {
     }
 
     @Override
-    public Format getFormat() {
-        return null;
+    public Iterator<Format> getFormatIterator() {
+        return Collections.emptyIterator();
     }
 
     @Override

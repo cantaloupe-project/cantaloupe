@@ -4,6 +4,8 @@ import edu.illinois.library.cantaloupe.image.Format;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.Collections;
+import java.util.Iterator;
 
 public class MockFileSource extends AbstractSource implements FileSource {
 
@@ -12,8 +14,8 @@ public class MockFileSource extends AbstractSource implements FileSource {
     }
 
     @Override
-    public Format getFormat() throws IOException {
-        return null;
+    public Iterator<Format> getFormatIterator() {
+        return Collections.emptyIterator();
     }
 
     @Override

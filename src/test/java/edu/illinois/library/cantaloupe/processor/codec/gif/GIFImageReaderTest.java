@@ -15,6 +15,7 @@ import org.junit.jupiter.api.Test;
 
 import java.awt.image.BufferedImage;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -23,9 +24,19 @@ import static org.junit.jupiter.api.Assertions.*;
 public class GIFImageReaderTest extends AbstractImageReaderTest {
 
     @Override
+    protected Path getSupportedFixture() {
+        return TestUtil.getImage("gif");
+    }
+
+    @Override
+    protected Path getUnsupportedFixture() {
+        return TestUtil.getImage("png");
+    }
+
+    @Override
     protected GIFImageReader newInstance() throws IOException {
         GIFImageReader reader = new GIFImageReader();
-        reader.setSource(TestUtil.getImage("gif"));
+        reader.setSource(getSupportedFixture());
         return reader;
     }
 
@@ -93,16 +104,6 @@ public class GIFImageReaderTest extends AbstractImageReaderTest {
     }
 
     /* readSequence() */
-
-    @Test
-    @Override
-    public void testReadSequence() {}
-
-    @Test
-    public void testReadSequenceWithStaticImage() throws Exception {
-        BufferedImageSequence seq = instance.readSequence();
-        assertEquals(1, seq.length());
-    }
 
     @Test
     public void testReadSequenceWithAnimatedImage() throws Exception {

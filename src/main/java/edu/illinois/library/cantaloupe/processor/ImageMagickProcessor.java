@@ -80,30 +80,31 @@ class ImageMagickProcessor extends AbstractMagickProcessor
     static final String OVERLAY_TEMP_FILE_PREFIX = Application.getName() + "-" +
             ImageMagickProcessor.class.getSimpleName() + "-overlay";
 
-    private static final AtomicBoolean initializationAttempted =
+    private static final AtomicBoolean HAVE_CHECKED_VERSION =
             new AtomicBoolean(false);
-    private static String initializationError;
 
-    private static final AtomicBoolean checkedVersion =
+    private static final AtomicBoolean INITIALIZATION_ATTEMPTED =
             new AtomicBoolean(false);
+
+    /**
+     * Map of overlay images downloaded from web servers. Files are temp files
+     * set to delete-on-exit.
+     */
+    private static final Map<URI,File> OVERLAYS = new ConcurrentHashMap<>();
+
+    /**
+     * Lazy-initialized by {@link #readFormats()}.
+     */
+    private static final Map<Format, Set<Format>> SUPPORTED_FORMATS =
+            new HashMap<>();
+
+    private static String initializationError;
 
     /**
      * ImageMagick 7 uses a `magick` command. Earlier versions use {@literal
      * convert} and {@literal identify}. IM7 may provide aliases for these.
      */
     private static IMVersion imVersion;
-
-    /**
-     * Map of overlay images downloaded from web servers. Files are temp files
-     * set to delete-on-exit.
-     */
-    private static final Map<URI,File> overlays = new ConcurrentHashMap<>();
-
-    /**
-     * Lazy-initialized by {@link #readFormats()}.
-     */
-    protected static final Map<Format, Set<Format>> supportedFormats =
-            new HashMap<>();
 
     /**
      * <p>Checks the ImageMagick version by attempting to invoke the `magick`
@@ -114,9 +115,9 @@ class ImageMagickProcessor extends AbstractMagickProcessor
      *
      * @return ImageMagick version.
      */
-    static synchronized IMVersion getIMVersion() {
-        if (!checkedVersion.get()) {
-            checkedVersion.set(true);
+    private static synchronized IMVersion getIMVersion() {
+        if (!HAVE_CHECKED_VERSION.get()) {
+            HAVE_CHECKED_VERSION.set(true);
 
             // Search for the IM 7+ `magick` command
             final ProcessBuilder pb = new ProcessBuilder();
@@ -168,7 +169,7 @@ class ImageMagickProcessor extends AbstractMagickProcessor
      * Performs one-time class-level/shared initialization.
      */
     private static synchronized void initialize() {
-        initializationAttempted.set(true);
+        INITIALIZATION_ATTEMPTED.set(true);
         readFormats();
     }
 
@@ -178,7 +179,7 @@ class ImageMagickProcessor extends AbstractMagickProcessor
      *         identify -list format}.
      */
     private static synchronized Map<Format, Set<Format>> readFormats() {
-        if (supportedFormats.isEmpty()) {
+        if (SUPPORTED_FORMATS.isEmpty()) {
             final Set<Format> sourceFormats = EnumSet.noneOf(Format.class);
             final Set<Format> outputFormats = EnumSet.noneOf(Format.class);
 
@@ -261,7 +262,7 @@ class ImageMagickProcessor extends AbstractMagickProcessor
                     process.waitFor();
 
                     for (Format format : sourceFormats) {
-                        supportedFormats.put(format, outputFormats);
+                        SUPPORTED_FORMATS.put(format, outputFormats);
                     }
                 }
             } catch (IOException | InterruptedException e) {
@@ -269,17 +270,17 @@ class ImageMagickProcessor extends AbstractMagickProcessor
                 // This is safe to swallow.
             }
         }
-        return supportedFormats;
+        return SUPPORTED_FORMATS;
     }
 
     /**
      * For testing only!
      */
     static synchronized void resetInitialization() {
-        initializationAttempted.set(false);
+        INITIALIZATION_ATTEMPTED.set(false);
         initializationError = null;
-        supportedFormats.clear();
-        checkedVersion.set(false);
+        SUPPORTED_FORMATS.clear();
+        HAVE_CHECKED_VERSION.set(false);
         imVersion = null;
     }
 
@@ -288,11 +289,11 @@ class ImageMagickProcessor extends AbstractMagickProcessor
      */
     static synchronized void setIMVersion(IMVersion version) {
         imVersion = version;
-        checkedVersion.set(true);
+        HAVE_CHECKED_VERSION.set(true);
     }
 
     ImageMagickProcessor() {
-        if (!initializationAttempted.get()) {
+        if (!INITIALIZATION_ATTEMPTED.get()) {
             initialize();
         }
     }
@@ -638,14 +639,14 @@ class ImageMagickProcessor extends AbstractMagickProcessor
 
         if (url != null) {
             // Try to retrieve it if it has already been downloaded.
-            overlayFile = overlays.get(url);
+            overlayFile = OVERLAYS.get(url);
             if (overlayFile == null) {
                 // It doesn't exist, so download it.
                 Path tempFile = Files.createTempFile(OVERLAY_TEMP_FILE_PREFIX, ".tmp");
                 try (InputStream is = overlay.openStream()) {
                     Files.copy(is, tempFile, StandardCopyOption.REPLACE_EXISTING);
                     overlayFile = tempFile.toFile();
-                    overlays.put(url, overlayFile);
+                    OVERLAYS.put(url, overlayFile);
                 } finally {
                     if (overlayFile != null) {
                         overlayFile.deleteOnExit();
@@ -679,18 +680,22 @@ class ImageMagickProcessor extends AbstractMagickProcessor
             cmd.setInputProvider(new Pipe(inputStream, null));
             cmd.setOutputConsumer(new Pipe(null, outputStream));
             LOGGER.info("process(): invoking {}", String.join(" ", args));
-            cmd.run(args);
+            if (cmd.run(args) != 0) {
+                throw new SourceFormatException();
+            }
+        } catch (SourceFormatException e) {
+            throw e;
         } catch (Exception e) {
-            throw new ProcessorException(e.getMessage(), e);
+            throw new ProcessorException(e);
         }
     }
 
     /**
      * Note: it's tough to get all of the info needed to fully populate an
      * {@link Info} from ImageMagick. Getting most of it, including raw EXIF
-     * and XMP data, would require at least three separate process invocations,
-     * and two of them don't work reliably when reading from streams&mdash;and
-     * then {@link Info.Image#getTileSize() tile sizes} are still missing. The
+     * and XMP data, would require at least three process invocations, and two
+     * of them don't work reliably when reading from streams&mdash;and then
+     * {@link Info.Image#getTileSize() tile sizes} are still missing. The
      * returned instance is therefore marked {@link Info#isComplete()
      * incomplete}.
      */
@@ -757,8 +762,7 @@ class ImageMagickProcessor extends AbstractMagickProcessor
                 }
                 return info;
             }
-            throw new IOException("readInfo(): nothing received on " +
-                    "stdout from command: " + cmdString);
+            throw new SourceFormatException();
         } catch (IOException e) {
             throw e;
         } catch (Exception e) {

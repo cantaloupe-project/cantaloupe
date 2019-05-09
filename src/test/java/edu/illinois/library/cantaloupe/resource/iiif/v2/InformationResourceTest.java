@@ -235,6 +235,12 @@ public class InformationResourceTest extends ResourceTest {
         tester.testRecoveryFromDerivativeCacheNewDerivativeImageOutputStreamException(uri);
     }
 
+    @Test
+    void testGETRecoveryFromIncorrectSourceFormat() throws Exception {
+        URI uri = getHTTPURI("/jpg-incorrect-extension.png/info.json");
+        tester.testRecoveryFromIncorrectSourceFormat(uri);
+    }
+
     /**
      * Tests that a scale constraint of {@literal -1:1} is redirected to no
      * scale constraint.

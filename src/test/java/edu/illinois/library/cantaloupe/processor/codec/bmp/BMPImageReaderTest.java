@@ -1,24 +1,34 @@
 package edu.illinois.library.cantaloupe.processor.codec.bmp;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
+import edu.illinois.library.cantaloupe.image.Compression;
 import edu.illinois.library.cantaloupe.processor.codec.AbstractImageReaderTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
+import java.nio.file.Path;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 public class BMPImageReaderTest extends AbstractImageReaderTest {
 
     @Override
-    protected BMPImageReader newInstance() throws IOException {
-        BMPImageReader reader = new BMPImageReader();
-        reader.setSource(TestUtil.getImage("bmp"));
-        return reader;
+    protected Path getSupportedFixture() {
+        return TestUtil.getImage("bmp");
     }
 
-    /* getApplicationPreferredIIOImplementations() */
+    @Override
+    protected Path getUnsupportedFixture() {
+        return TestUtil.getImage("png");
+    }
+
+    @Override
+    protected BMPImageReader newInstance() throws IOException {
+        BMPImageReader reader = new BMPImageReader();
+        reader.setSource(getSupportedFixture());
+        return reader;
+    }
 
     @Test
     public void testGetApplicationPreferredIIOImplementations() {
@@ -27,8 +37,6 @@ public class BMPImageReaderTest extends AbstractImageReaderTest {
         assertEquals(1, impls.length);
         assertEquals("com.sun.imageio.plugins.bmp.BMPImageReader", impls[0]);
     }
-
-    /* getPreferredIIOImplementations() */
 
     @Test
     public void testGetPreferredIIOImplementationsWithUserPreference() {
@@ -47,8 +55,6 @@ public class BMPImageReaderTest extends AbstractImageReaderTest {
         assertArrayEquals(expected,
                 ((BMPImageReader) instance).getPreferredIIOImplementations());
     }
-
-    /* getUserPreferredIIOImplementation() */
 
     @Test
     public void testGetUserPreferredIIOImplementation() {

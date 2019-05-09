@@ -187,7 +187,7 @@ public class TurboJpegProcessor extends AbstractProcessor
     @Override
     public void process(final OperationList opList,
                         final Info info,
-                        final OutputStream outputStream) throws ProcessorException {
+                        final OutputStream outputStream) throws FormatException, ProcessorException {
         final Dimension fullSize              = info.getSize();
         final ReductionFactor reductionFactor = new ReductionFactor();
         final ScaleConstraint scaleConstraint = opList.getScaleConstraint();
@@ -254,6 +254,8 @@ public class TurboJpegProcessor extends AbstractProcessor
             }
 
             writer.write(image, outputStream);
+        } catch (SourceFormatException e) {
+            throw e;
         } catch (IOException e) {
             throw new ProcessorException(e);
         }

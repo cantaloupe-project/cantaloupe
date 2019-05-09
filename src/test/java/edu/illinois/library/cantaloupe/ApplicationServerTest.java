@@ -8,8 +8,6 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.io.IOException;
-
 import static edu.illinois.library.cantaloupe.test.Assert.HTTPAssert.*;
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -218,7 +216,7 @@ public class ApplicationServerTest extends BaseTest {
         instance.setHTTPPort(HTTP_PORT);
     }
 
-    private void initializeHTTPS() throws IOException {
+    private void initializeHTTPS() {
         instance.setHTTPSEnabled(true);
         instance.setHTTPSPort(HTTPS_PORT);
         instance.setHTTPSKeyStorePath(TestUtil.getFixture("keystore.jks").toString());

@@ -29,6 +29,7 @@ import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
@@ -548,6 +549,32 @@ abstract class AbstractProcessorTest extends BaseTest {
     }
 
     @Test
+    public void testProcessWithActualFormatDifferentFromSetFormat() throws Exception {
+        try (Processor proc = newInstance()) {
+            proc.setSourceFormat(getAnySupportedSourceFormat(proc));
+            Path fixture = TestUtil.getImage("unknown");
+            if (proc instanceof StreamProcessor) {
+                StreamProcessor sproc = (StreamProcessor) proc;
+                StreamFactory streamFactory = new PathStreamFactory(fixture);
+                sproc.setStreamFactory(streamFactory);
+            } else if (proc instanceof FileProcessor) {
+                FileProcessor fproc = (FileProcessor) proc;
+                fproc.setSourceFile(fixture);
+            }
+
+            OperationList opList = new OperationList(
+                    new Encode(proc.getAvailableOutputFormats().iterator().next()));
+
+            // Can't use Processor.readInfo() because that would throw an
+            // UnsupportedSourceFormatException too.
+            Info info = Info.builder().withSize(100, 100).build();
+
+            assertThrows(SourceFormatException.class, () ->
+                proc.process(opList, info, OutputStream.nullOutputStream()));
+        }
+    }
+
+    @Test
     public void testProcessWithTurboJPEGAvailable() throws Exception {
         TurboJPEGImageWriter.setTurboJPEGAvailable(true);
         // We don't want a failure if TurboJPEG is not actually available.
@@ -639,7 +666,8 @@ abstract class AbstractProcessorTest extends BaseTest {
         for (Format format : Format.values()) {
             for (Path fixture : TestUtil.getImageFixtures(format)) {
                 if (fixture.getFileName().toString().equals("jp2") ||
-                        fixture.getFileName().toString().equals("jp2-iptc.jp2")) {
+                        fixture.getFileName().toString().equals("jp2-iptc.jp2") ||
+                        fixture.getFileName().toString().contains("incorrect-extension")) {
                     continue;
                 }
                 try (final Processor proc = newInstance()) {
@@ -656,16 +684,16 @@ abstract class AbstractProcessorTest extends BaseTest {
                     }
 
                     // We don't know the dimensions of the source image and
-                    // we can't get them because that would require using
-                    // the method we are now testing, so the best we can do
-                    // is to assert that they are nonzero.
+                    // can't get them because that would require using the
+                    // method we are now testing, so the best we can do is to
+                    // assert that they are nonzero.
                     final Info actualInfo = proc.readInfo();
                     assertEquals(format, actualInfo.getSourceFormat());
                     assertTrue(actualInfo.getSize().width() >= 1);
                     assertTrue(actualInfo.getSize().height() >= 1);
 
-                    // Parse the resolution count from the filename, or
-                    // else assert 1.
+                    // Parse the resolution count from the filename, or else
+                    // assert 1.
                     int expectedNumResolutions = 1;
                     Pattern pattern = Pattern.compile("\\dres");
                     Matcher matcher = pattern.matcher(fixture.getFileName().toString());
@@ -683,6 +711,24 @@ abstract class AbstractProcessorTest extends BaseTest {
                     throw e;
                 }
             }
+        }
+    }
+
+    @Test
+    public void testReadInfoWithActualFormatDifferentFromSetFormat() throws Exception {
+        try (Processor proc = newInstance()) {
+            proc.setSourceFormat(getAnySupportedSourceFormat(proc));
+            Path fixture = TestUtil.getImage("unknown");
+            if (proc instanceof StreamProcessor) {
+                StreamProcessor sproc = (StreamProcessor) proc;
+                StreamFactory streamFactory = new PathStreamFactory(fixture);
+                sproc.setStreamFactory(streamFactory);
+            } else if (proc instanceof FileProcessor) {
+                FileProcessor fproc = (FileProcessor) proc;
+                fproc.setSourceFile(fixture);
+            }
+
+            assertThrows(SourceFormatException.class, proc::readInfo);
         }
     }
 

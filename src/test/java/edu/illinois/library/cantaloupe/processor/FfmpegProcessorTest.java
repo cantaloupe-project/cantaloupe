@@ -13,6 +13,7 @@ import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayOutputStream;
@@ -142,6 +143,12 @@ public class FfmpegProcessorTest extends AbstractProcessorTest {
                         edu.illinois.library.cantaloupe.resource.iiif.v2.Quality.DEFAULT,
                         edu.illinois.library.cantaloupe.resource.iiif.v2.Quality.GRAY);
         assertEquals(expectedQualities, instance.getSupportedIIIF2Qualities());
+    }
+
+    @Disabled // there is currently no way to support this
+    @Override
+    @Test
+    public void testProcessWithActualFormatDifferentFromSetFormat() {
     }
 
     @Test

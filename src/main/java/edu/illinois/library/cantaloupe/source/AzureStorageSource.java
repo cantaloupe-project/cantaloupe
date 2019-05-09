@@ -8,6 +8,7 @@ import com.microsoft.azure.storage.blob.CloudBlockBlob;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Format;
+import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.MediaType;
 import edu.illinois.library.cantaloupe.script.DelegateMethod;
 import org.slf4j.Logger;
@@ -21,7 +22,9 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.NoSuchFileException;
 import java.security.InvalidKeyException;
+import java.util.Iterator;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 /**
  * <p>Maps an identifier to a
@@ -30,20 +33,7 @@ import java.util.List;
  *
  * <h1>Format Inference</h1>
  *
- * <ol>
- *     <li>If the blob key has a recognized filename extension, the format will
- *     be inferred from that.</li>
- *     <li>Otherwise, if the source image's URI identifier has a recognized
- *     filename extension, the format will be inferred from that.</li>
- *     <li>Otherwise, a {@literal HEAD} request will be sent. If a {@literal
- *     Content-Type} header is present in the response, and is specific enough
- *     (i.e. not {@literal application/octet-stream}), a format will be
- *     inferred from that.</li>
- *     <li>Otherwise, a {@literal GET} request will be sent with a {@literal
- *     Range} header specifying a small range of data from the beginning of the
- *     resource, and a format will be inferred from the magic bytes in the
- *     response body.</li>
- * </ol>
+ * <p>See {@link FormatIterator}.</p>
  *
  * <h1>Lookup Strategies</h1>
  *
@@ -61,7 +51,8 @@ import java.util.List;
  *     <li>{@literal HEAD}</li>
  *     <li>
  *         <ol>
- *             <li>If {@link #getFormat()} needs to check magic bytes:
+ *             <li>If the return value of {@link #getFormatIterator()} needs to
+ *             check magic bytes:
  *                 <ol>
  *                     <li>Ranged {@literal GET}</li>
  *                 </ol>
@@ -83,9 +74,109 @@ import java.util.List;
  * </ol>
  *
  * @see <a href="https://github.com/azure/azure-storage-java">
- *     Microsoft Azure Storage DSK for Java</a>
+ *     Microsoft Azure Storage SDK for Java</a>
  */
-class AzureStorageSource extends AbstractSource implements StreamSource {
+final class AzureStorageSource extends AbstractSource implements StreamSource {
+
+    /**
+     * <ol>
+     *     <li>If the blob key has a recognized filename extension, the format is
+     *     inferred from that.</li>
+     *     <li>Otherwise, if the source image's URI identifier has a recognized
+     *     filename extension, the format is inferred from that.</li>
+     *     <li>Otherwise, a {@literal HEAD} request will be sent. If a {@literal
+     *     Content-Type} header is present in the response, and is specific enough
+     *     (i.e. not {@literal application/octet-stream}), a format is inferred
+     *     from that.</li>
+     *     <li>Otherwise, a {@literal GET} request will be sent with a {@literal
+     *     Range} header specifying a small range of data from the beginning of the
+     *     resource, and a format is inferred from the magic bytes in the response
+     *     body.</li>
+     * </ol>
+     *
+     * @param <T> {@link Format}.
+     */
+    class FormatIterator<T> implements Iterator<T> {
+
+        /**
+         * Infers a {@link Format} based on the media type in a {@literal
+         * Content-Type} header.
+         */
+        private class ContentTypeHeaderChecker implements FormatChecker {
+            @Override
+            public Format check() throws IOException {
+                final CloudBlockBlob blob = fetchBlob();
+                final String contentType  = blob.getProperties().getContentType();
+                if (contentType != null && !contentType.isEmpty()) {
+                    return new MediaType(contentType).toFormat();
+                }
+                return Format.UNKNOWN;
+            }
+        }
+
+        /**
+         * Infers a {@link Format} based on image magic bytes.
+         */
+        private class ByteChecker implements FormatChecker {
+            @Override
+            public Format check() throws IOException {
+                try {
+                    byte[] bytes = new byte[FORMAT_INFERENCE_RANGE_LENGTH];
+                    fetchBlob().downloadRangeToByteArray(
+                            0, (long) FORMAT_INFERENCE_RANGE_LENGTH, bytes, 0);
+
+                    try (InputStream is = new ByteArrayInputStream(bytes)) {
+                        List<MediaType> types = MediaType.detectMediaTypes(is);
+                        if (!types.isEmpty()) {
+                            return types.get(0).toFormat();
+                        }
+                    }
+                } catch (StorageException e) {
+                    throw new IOException(e);
+                }
+                return Format.UNKNOWN;
+            }
+        }
+
+        private FormatChecker formatChecker;
+
+        @Override
+        public boolean hasNext() {
+            return (formatChecker == null ||
+                    formatChecker instanceof NameFormatChecker ||
+                    formatChecker instanceof IdentifierFormatChecker ||
+                    formatChecker instanceof FormatIterator.ContentTypeHeaderChecker);
+        }
+
+        @Override
+        public T next() {
+            if (formatChecker == null) {
+                try {
+                    formatChecker = new NameFormatChecker(getBlobKey());
+                } catch (IOException e) {
+                    LOGGER.warn("FormatIterator.next(): {}", e.getMessage(), e);
+                    formatChecker = new NameFormatChecker("***BOGUS***");
+                    return next();
+                }
+            } else if (formatChecker instanceof NameFormatChecker) {
+                formatChecker = new IdentifierFormatChecker(getIdentifier());
+            } else if (formatChecker instanceof IdentifierFormatChecker) {
+                formatChecker = new ContentTypeHeaderChecker();
+            } else if (formatChecker instanceof FormatIterator.ContentTypeHeaderChecker) {
+                formatChecker = new ByteChecker();
+            } else {
+                throw new NoSuchElementException();
+            }
+            try {
+                //noinspection unchecked
+                return (T) formatChecker.check();
+            } catch (IOException e) {
+                LOGGER.warn("Error checking format: {}", e.getMessage());
+                //noinspection unchecked
+                return (T) Format.UNKNOWN;
+            }
+        }
+    }
 
     private static final Logger LOGGER =
             LoggerFactory.getLogger(AzureStorageSource.class);
@@ -101,6 +192,8 @@ class AzureStorageSource extends AbstractSource implements StreamSource {
     private CloudBlockBlob cachedBlob;
     private IOException cachedBlobException;
     private String objectKey;
+
+    private FormatIterator<Format> formatIterator = new FormatIterator<>();
 
     static synchronized CloudStorageAccount getAccount() {
         if (account == null) {
@@ -134,10 +227,10 @@ class AzureStorageSource extends AbstractSource implements StreamSource {
 
     @Override
     public void checkAccess() throws IOException {
-        getBlob();
+        fetchBlob();
     }
 
-    private CloudBlockBlob getBlob() throws IOException {
+    private CloudBlockBlob fetchBlob() throws IOException {
         if (cachedBlobException != null) {
             throw cachedBlobException;
         } else if (cachedBlob == null) {
@@ -145,31 +238,31 @@ class AzureStorageSource extends AbstractSource implements StreamSource {
                 final String containerName = getContainerName();
                 LOGGER.debug("Using container: {}", containerName);
 
-                try {
-                    final CloudBlockBlob blob;
-                    final String objectKey = getBlobKey();
-                    // Supports direct URI references: https://docs.microsoft.com/en-us/rest/api/storageservices/naming-and-referencing-containers--blobs--and-metadata#resource-uri-syntax
-                    // Supports SAS Token Authentication: https://docs.microsoft.com/en-us/azure/storage/common/storage-dotnet-shared-access-signature-part-1#how-a-shared-access-signature-works
-                    if (containerName.isEmpty()) { // use URI with sas token + container + path directly
-                        final URI uri = URI.create(objectKey);
-                        LOGGER.debug("Requesting {} from {}", objectKey, uri);
-                        blob = new CloudBlockBlob(uri);
-                    } else { // use a fixed storage account with fixed container.
-                        final CloudBlobClient client = getClientInstance();
-                        final CloudBlobContainer container =
-                                client.getContainerReference(containerName);
-                        LOGGER.debug("Requesting {} from fixed container {}",
-                                objectKey, containerName);
-                        blob = container.getBlockBlobReference(objectKey);
-                    }
-
-                    if (!blob.exists()) {
-                        throw new NoSuchFileException("Not found: " + objectKey);
-                    }
-                    cachedBlob = blob;
-                } catch (URISyntaxException | StorageException e) {
-                    throw new IOException(e);
+                final CloudBlockBlob blob;
+                final String objectKey = getBlobKey();
+                // Supports direct URI references:
+                // https://docs.microsoft.com/en-us/rest/api/storageservices/naming-and-referencing-containers--blobs--and-metadata#resource-uri-syntax
+                // Supports SAS Token Authentication:
+                // https://docs.microsoft.com/en-us/azure/storage/common/storage-dotnet-shared-access-signature-part-1#how-a-shared-access-signature-works
+                if (containerName.isEmpty()) { // use URI with sas token + container + path directly
+                    final URI uri = URI.create(objectKey);
+                    LOGGER.debug("Requesting {} from {}", objectKey, uri);
+                    blob = new CloudBlockBlob(uri);
+                } else { // use a fixed storage account with fixed container.
+                    final CloudBlobClient client = getClientInstance();
+                    final CloudBlobContainer container =
+                            client.getContainerReference(containerName);
+                    LOGGER.debug("Requesting {} from fixed container {}",
+                            objectKey, containerName);
+                    blob = container.getBlockBlobReference(objectKey);
                 }
+
+                if (!blob.exists()) {
+                    throw new NoSuchFileException("Not found: " + objectKey);
+                }
+                cachedBlob = blob;
+            } catch (URISyntaxException | StorageException e) {
+                throw new IOException(e);
             } catch (IOException e) {
                 cachedBlobException = e;
                 throw e;
@@ -200,7 +293,7 @@ class AzureStorageSource extends AbstractSource implements StreamSource {
     }
 
     private String getContainerName() {
-        final Configuration config = Configuration.getInstance();
+        var config = Configuration.getInstance();
         return config.getString(Key.AZURESTORAGESOURCE_CONTAINER_NAME);
     }
 
@@ -211,7 +304,6 @@ class AzureStorageSource extends AbstractSource implements StreamSource {
     private String getBlobKeyWithDelegateStrategy()
             throws NoSuchFileException, ScriptException {
         final String key = getDelegateProxy().getAzureStorageSourceBlobKey();
-
         if (key == null) {
             throw new NoSuchFileException(
                     DelegateMethod.AZURESTORAGESOURCE_BLOB_KEY +
@@ -221,57 +313,23 @@ class AzureStorageSource extends AbstractSource implements StreamSource {
     }
 
     @Override
-    public Format getFormat() throws IOException {
-        if (format == null) {
-            final String key = getBlobKey();
-
-            // Try to infer a format based on the object key.
-            LOGGER.debug("Inferring format from the object key for {}", key);
-            format = Format.inferFormat(key);
-
-            if (Format.UNKNOWN.equals(format)) {
-                // Try to infer a format based on the identifier.
-                LOGGER.debug("Inferring format from the identifier for {}", key);
-                format = Format.inferFormat(identifier);
-            }
-
-            if (Format.UNKNOWN.equals(format)) {
-                // Try to infer the format from the Content-Type header.
-                LOGGER.debug("Inferring format from the Content-Type header for {}",
-                        key);
-                final CloudBlockBlob blob = getBlob();
-                final String contentType  = blob.getProperties().getContentType();
-                if (contentType != null && !contentType.isEmpty()) {
-                    format = new MediaType(contentType).toFormat();
-                }
-
-                if (Format.UNKNOWN.equals(format)) {
-                    // Try to infer a format from the object's magic bytes.
-                    LOGGER.debug("Inferring format from magic bytes for {}",
-                            key);
-                    try {
-                        byte[] bytes = new byte[FORMAT_INFERENCE_RANGE_LENGTH];
-                        blob.downloadRangeToByteArray(
-                                0, (long) FORMAT_INFERENCE_RANGE_LENGTH, bytes, 0);
-
-                        try (InputStream is = new ByteArrayInputStream(bytes)) {
-                            List<MediaType> types = MediaType.detectMediaTypes(is);
-                            if (!types.isEmpty()) {
-                                format = types.get(0).toFormat();
-                            }
-                        }
-                    } catch (StorageException e) {
-                        throw new IOException(e);
-                    }
-                }
-            }
-        }
-        return format;
+    public FormatIterator<Format> getFormatIterator() {
+        return formatIterator;
     }
 
     @Override
     public StreamFactory newStreamFactory() throws IOException {
-        return new AzureStorageStreamFactory(getBlob());
+        return new AzureStorageStreamFactory(fetchBlob());
+    }
+
+    @Override
+    public void setIdentifier(Identifier identifier) {
+        super.setIdentifier(identifier);
+        reset();
+    }
+
+    private void reset() {
+        formatIterator = new FormatIterator<>();
     }
 
 }

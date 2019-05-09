@@ -1,6 +1,7 @@
 package edu.illinois.library.cantaloupe.processor.codec.jpeg;
 
 import edu.illinois.library.cantaloupe.image.Rectangle;
+import edu.illinois.library.cantaloupe.processor.SourceFormatException;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import edu.illinois.library.cantaloupe.util.Rational;
@@ -29,9 +30,6 @@ public class TurboJPEGImageReaderTest extends BaseTest {
         Path image = TestUtil.getImage("jpg");
         InputStream is = Files.newInputStream(image);
         instance.setSource(is);
-
-        assertEquals(16, instance.getBlockWidth());
-        assertEquals(16, instance.getBlockHeight());
     }
 
     @AfterEach
@@ -76,8 +74,28 @@ public class TurboJPEGImageReaderTest extends BaseTest {
     }
 
     @Test
+    public void testGetBlockWidthWithInvalidImage() throws Exception {
+        Path image = TestUtil.getImage("unknown");
+        InputStream is = Files.newInputStream(image);
+        instance.setSource(is);
+
+        assertThrows(SourceFormatException.class,
+                () -> instance.getBlockWidth());
+    }
+
+    @Test
     public void testGetBlockHeight() throws Exception {
         assertEquals(16, instance.getBlockHeight());
+    }
+
+    @Test
+    public void testGetBlockHeightWithInvalidImage() throws Exception {
+        Path image = TestUtil.getImage("unknown");
+        InputStream is = Files.newInputStream(image);
+        instance.setSource(is);
+
+        assertThrows(SourceFormatException.class,
+                () -> instance.getBlockHeight());
     }
 
     @Test
@@ -86,13 +104,41 @@ public class TurboJPEGImageReaderTest extends BaseTest {
     }
 
     @Test
+    public void testGetWidthWithInvalidImage() throws Exception {
+        Path image = TestUtil.getImage("unknown");
+        InputStream is = Files.newInputStream(image);
+        instance.setSource(is);
+
+        assertThrows(SourceFormatException.class, () -> instance.getWidth());
+    }
+
+    @Test
     public void testGetHeight() throws Exception {
         assertEquals(56, instance.getHeight());
     }
 
     @Test
+    public void testGetHeightWithInvalidImage() throws Exception {
+        Path image = TestUtil.getImage("unknown");
+        InputStream is = Files.newInputStream(image);
+        instance.setSource(is);
+
+        assertThrows(SourceFormatException.class, () -> instance.getHeight());
+    }
+
+    @Test
     public void testGetSubsampling() throws Exception {
         assertEquals(2, instance.getSubsampling());
+    }
+
+    @Test
+    public void testGetSubsamplingWithInvalidImage() throws Exception {
+        Path image = TestUtil.getImage("unknown");
+        InputStream is = Files.newInputStream(image);
+        instance.setSource(is);
+
+        assertThrows(SourceFormatException.class,
+                () -> instance.getSubsampling());
     }
 
     @Test
@@ -128,6 +174,15 @@ public class TurboJPEGImageReaderTest extends BaseTest {
         TurboJPEGImage image = instance.read();
         assertEquals(64, image.getScaledWidth());
         assertEquals(56, image.getScaledHeight());
+    }
+
+    @Test
+    public void testReadWithInvalidImage() throws Exception {
+        Path image = TestUtil.getImage("unknown");
+        InputStream is = Files.newInputStream(image);
+        instance.setSource(is);
+
+        assertThrows(SourceFormatException.class, () -> instance.read());
     }
 
     @Test
@@ -199,6 +254,16 @@ public class TurboJPEGImageReaderTest extends BaseTest {
         BufferedImage image = instance.readAsBufferedImage(margin);
         assertEquals(64, image.getWidth());
         assertEquals(56, image.getHeight());
+    }
+
+    @Test
+    public void testReadAsBufferedImageWithInvalidImage() throws Exception {
+        Path image = TestUtil.getImage("unknown");
+        InputStream is = Files.newInputStream(image);
+        instance.setSource(is);
+
+        assertThrows(SourceFormatException.class,
+                () -> instance.readAsBufferedImage(new Rectangle()));
     }
 
     @Test

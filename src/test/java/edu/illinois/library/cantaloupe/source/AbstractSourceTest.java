@@ -67,20 +67,13 @@ abstract class AbstractSourceTest extends BaseTest {
         }
     }
 
-    /* getFormat() */
+    /* getFormatIterator() */
 
     @Test
-    void testGetFormatInvokedMultipleTimes() throws Exception {
-        try {
-            initializeEndpoint();
-
-            Source instance = newInstance();
-            instance.getFormat();
-            instance.getFormat();
-            instance.getFormat();
-        } finally {
-            destroyEndpoint();
-        }
+    void testGetFormatIteratorConsecutiveInvocationsReturnSameInstance() {
+        Source instance = newInstance();
+        var it = instance.getFormatIterator();
+        assertSame(it, instance.getFormatIterator());
     }
 
     /* newStreamFactory() */

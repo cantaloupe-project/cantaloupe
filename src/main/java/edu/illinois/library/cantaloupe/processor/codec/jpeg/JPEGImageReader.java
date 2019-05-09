@@ -66,7 +66,9 @@ public final class JPEGImageReader extends AbstractIIOImageReader
     }
 
     @Override
-    public Compression getCompression(int imageIndex) {
+    public Compression getCompression(int imageIndex) throws IOException {
+        // Trigger any contract-required exceptions
+        getSize(0);
         return Compression.JPEG;
     }
 
@@ -82,6 +84,8 @@ public final class JPEGImageReader extends AbstractIIOImageReader
 
     @Override
     public JPEGMetadata getMetadata(int imageIndex) throws IOException {
+        // Trigger any contract-required exceptions
+        getSize(0);
         try {
             final IIOMetadata metadata = iioReader.getImageMetadata(imageIndex);
             final String metadataFormat = metadata.getNativeMetadataFormatName();
@@ -103,7 +107,7 @@ public final class JPEGImageReader extends AbstractIIOImageReader
      * (excluding subimages) in one shot.
      */
     public BufferedImage read() throws IOException {
-        BufferedImage image;
+        BufferedImage image = null;
         try {
             image = super.read();
         } catch (IllegalArgumentException e) {
@@ -119,7 +123,7 @@ public final class JPEGImageReader extends AbstractIIOImageReader
                 ImageReadParam readParam = iioReader.getDefaultReadParam();
                 image = readCMYK(readParam);
             } else {
-                throw e;
+                handle(e);
             }
         }
         return image;
@@ -142,9 +146,7 @@ public final class JPEGImageReader extends AbstractIIOImageReader
             crop = new CropByPercent();
         }
 
-        Dimension fullSize = new Dimension(
-                iioReader.getWidth(0),
-                iioReader.getHeight(0));
+        Dimension fullSize = getSize(0);
         image = readRegion(
                 crop.getRectangle(fullSize, ops.getScaleConstraint()),
                 hints);
@@ -169,8 +171,7 @@ public final class JPEGImageReader extends AbstractIIOImageReader
         final ImageReadParam param = iioReader.getDefaultReadParam();
         param.setSourceRegion(region.toAWTRectangle());
 
-        BufferedImage image;
-
+        BufferedImage image = null;
         try {
             image = iioReader.read(0, param);
         } catch (IllegalArgumentException e) {
@@ -184,7 +185,7 @@ public final class JPEGImageReader extends AbstractIIOImageReader
             if ("Unsupported Image Type".equals(e.getMessage())) {
                 image = readCMYK(param);
             } else {
-                throw e;
+                handle(e);
             }
         }
         return image;

@@ -111,7 +111,7 @@ class PdfBoxProcessor extends AbstractProcessor
     @Override
     public void process(OperationList opList,
                         Info imageInfo,
-                        OutputStream outputStream) throws ProcessorException {
+                        OutputStream outputStream) throws FormatException, ProcessorException {
         try {
             super.process(opList, imageInfo, outputStream);
 
@@ -136,6 +136,8 @@ class PdfBoxProcessor extends AbstractProcessor
             WriterFacade.write(image,
                     (Encode) opList.getFirst(Encode.class),
                     outputStream);
+        } catch (SourceFormatException e) {
+            throw e;
         } catch (IOException | IndexOutOfBoundsException e) {
             throw new ProcessorException(e.getMessage(), e);
         } finally {
@@ -171,6 +173,8 @@ class PdfBoxProcessor extends AbstractProcessor
             } else {
                 try (InputStream is = streamFactory.newInputStream()) {
                     doc = PDDocument.load(is);
+                } catch (IOException e) {
+                    throw new SourceFormatException();
                 }
             }
 

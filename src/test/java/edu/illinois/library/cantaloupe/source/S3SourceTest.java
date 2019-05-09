@@ -33,6 +33,7 @@ import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
+import java.util.NoSuchElementException;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -43,6 +44,7 @@ public class S3SourceTest extends AbstractSourceTest {
     private static final String OBJECT_KEY_WITH_CONTENT_TYPE_BUT_NO_EXTENSION              = "jpg";
     private static final String OBJECT_KEY_WITH_NO_CONTENT_TYPE_AND_RECOGNIZED_EXTENSION   = "jpeg.jpg";
     private static final String OBJECT_KEY_WITH_NO_CONTENT_TYPE_AND_UNRECOGNIZED_EXTENSION = "jpeg.unknown";
+    private static final String OBJECT_KEY_WITH_NO_CONTENT_TYPE_AND_INCORRECT_EXTENSION    = "jpeg.png";
     private static final String OBJECT_KEY_WITH_NO_CONTENT_TYPE_OR_EXTENSION               = "jpg";
     private static final String NON_IMAGE_KEY                                              = "NotAnImage";
 
@@ -114,6 +116,7 @@ public class S3SourceTest extends AbstractSourceTest {
                 OBJECT_KEY_WITH_CONTENT_TYPE_BUT_NO_EXTENSION,
                 OBJECT_KEY_WITH_NO_CONTENT_TYPE_AND_RECOGNIZED_EXTENSION,
                 OBJECT_KEY_WITH_NO_CONTENT_TYPE_AND_UNRECOGNIZED_EXTENSION,
+                OBJECT_KEY_WITH_NO_CONTENT_TYPE_AND_INCORRECT_EXTENSION,
                 OBJECT_KEY_WITH_NO_CONTENT_TYPE_OR_EXTENSION}) {
             try (ByteArrayOutputStream os = new ByteArrayOutputStream()) {
                 Files.copy(fixture, os);
@@ -122,6 +125,7 @@ public class S3SourceTest extends AbstractSourceTest {
                 final ObjectMetadata metadata = new ObjectMetadata();
                 if (!OBJECT_KEY_WITH_NO_CONTENT_TYPE_AND_RECOGNIZED_EXTENSION.equals(key) &&
                         !OBJECT_KEY_WITH_NO_CONTENT_TYPE_AND_UNRECOGNIZED_EXTENSION.equals(key) &&
+                        !OBJECT_KEY_WITH_NO_CONTENT_TYPE_AND_INCORRECT_EXTENSION.equals(key) &&
                         !OBJECT_KEY_WITH_NO_CONTENT_TYPE_OR_EXTENSION.equals(key)) {
                     metadata.setContentType("image/jpeg");
                 }
@@ -511,6 +515,38 @@ public class S3SourceTest extends AbstractSourceTest {
         assertThrows(IllegalArgumentException.class, () -> instance.checkAccess());
     }
 
+    /* getFormatIterator() */
+
+    @Test
+    void testGetFormatIteratorHasNext() {
+        S3Source source = newInstance();
+        source.setIdentifier(new Identifier(OBJECT_KEY_WITH_CONTENT_TYPE_AND_RECOGNIZED_EXTENSION));
+        S3Source.FormatIterator<Format> it = source.getFormatIterator();
+
+        assertTrue(it.hasNext());
+        it.next(); // object key
+        assertTrue(it.hasNext());
+        it.next(); // identifier extension
+        assertTrue(it.hasNext());
+        it.next(); // Content-Type is null
+        assertTrue(it.hasNext());
+        it.next(); // magic bytes
+        assertFalse(it.hasNext());
+    }
+
+    @Test
+    void testGetFormatIteratorNext() {
+        S3Source source = newInstance();
+        source.setIdentifier(new Identifier(OBJECT_KEY_WITH_NO_CONTENT_TYPE_AND_INCORRECT_EXTENSION));
+
+        S3Source.FormatIterator<Format> it = source.getFormatIterator();
+        assertEquals(Format.PNG, it.next());     // object key
+        assertEquals(Format.PNG, it.next());     // identifier extension
+        assertEquals(Format.UNKNOWN, it.next()); // Content-Type is null
+        assertEquals(Format.JPG, it.next());     // magic bytes
+        assertThrows(NoSuchElementException.class, it::next);
+    }
+
     /* getObjectInfo() */
 
     @Test
@@ -538,69 +574,6 @@ public class S3SourceTest extends AbstractSourceTest {
 
         instance.setIdentifier(new Identifier("id"));
         assertEquals("id", instance.getObjectInfo().getKey());
-    }
-
-    /* getFormat() */
-
-    @Test
-    void testGetSourceFormatUsingBasicLookupStrategy()
-            throws IOException {
-        assertEquals(Format.JPG, instance.getFormat());
-    }
-
-    @Test
-    void testGetSourceFormatUsingScriptLookupStrategy()
-            throws IOException {
-        useScriptLookupStrategy();
-        assertEquals(Format.JPG, instance.getFormat());
-    }
-
-    @Test
-    void testGetSourceFormatWithContentTypeAndRecognizedExtensionInObjectKey()
-            throws IOException {
-        instance.setIdentifier(new Identifier(OBJECT_KEY_WITH_CONTENT_TYPE_AND_RECOGNIZED_EXTENSION));
-        assertEquals(Format.JPG, instance.getFormat());
-    }
-
-    @Test
-    void testGetSourceFormatWithContentTypeAndUnrecognizedExtensionInObjectKey()
-            throws IOException {
-        instance.setIdentifier(new Identifier(OBJECT_KEY_WITH_CONTENT_TYPE_AND_UNRECOGNIZED_EXTENSION));
-        assertEquals(Format.JPG, instance.getFormat());
-    }
-
-    @Test
-    void testGetSourceFormatWithContentTypeAndNoExtensionInObjectKey()
-            throws IOException {
-        instance.setIdentifier(new Identifier(OBJECT_KEY_WITH_CONTENT_TYPE_BUT_NO_EXTENSION));
-        assertEquals(Format.JPG, instance.getFormat());
-    }
-
-    @Test
-    void testGetSourceFormatWithNoContentTypeButRecognizedExtensionInObjectKey()
-            throws IOException {
-        instance.setIdentifier(new Identifier(OBJECT_KEY_WITH_NO_CONTENT_TYPE_AND_RECOGNIZED_EXTENSION));
-        assertEquals(Format.JPG, instance.getFormat());
-    }
-
-    @Test
-    void testGetSourceFormatWithNoContentTypeAndUnrecognizedExtensionInObjectKey()
-            throws IOException {
-        instance.setIdentifier(new Identifier(OBJECT_KEY_WITH_NO_CONTENT_TYPE_AND_UNRECOGNIZED_EXTENSION));
-        assertEquals(Format.JPG, instance.getFormat());
-    }
-
-    @Test
-    void testGetSourceFormatWithNoContentTypeOrExtensionInObjectKey()
-            throws IOException {
-        instance.setIdentifier(new Identifier(OBJECT_KEY_WITH_NO_CONTENT_TYPE_OR_EXTENSION));
-        assertEquals(Format.JPG, instance.getFormat());
-    }
-
-    @Test
-    void testGetSourceFormatWithNonImage() throws IOException {
-        instance.setIdentifier(new Identifier(NON_IMAGE_KEY));
-        assertEquals(Format.UNKNOWN, instance.getFormat());
     }
 
     /* newStreamFactory() */

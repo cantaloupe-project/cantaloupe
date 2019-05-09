@@ -8,15 +8,26 @@ import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
+import java.nio.file.Path;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 public class TIFFImageReaderTest extends AbstractImageReaderTest {
 
     @Override
+    protected Path getSupportedFixture() {
+        return TestUtil.getImage("tif-rgb-3res-64x56x16-tiled-uncompressed.tif");
+    }
+
+    @Override
+    protected Path getUnsupportedFixture() {
+        return TestUtil.getImage("jpg");
+    }
+
+    @Override
     protected TIFFImageReader newInstance() throws IOException {
         TIFFImageReader reader = new TIFFImageReader();
-        reader.setSource(TestUtil.getImage("tif-rgb-3res-64x56x16-tiled-uncompressed.tif"));
+        reader.setSource(getSupportedFixture());
         return reader;
     }
 
@@ -133,6 +144,12 @@ public class TIFFImageReaderTest extends AbstractImageReaderTest {
     @Test
     public void testReadWithMultiResolutionImage() {
         // TODO: write this
+    }
+
+    @Test
+    @Override
+    public void testReadSequenceWithStaticImage() throws Exception {
+        assertEquals(3, instance.readSequence().length());
     }
 
 }

@@ -1,9 +1,11 @@
 package edu.illinois.library.cantaloupe.processor.codec.jpeg2000;
 
+import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Rectangle;
 import edu.illinois.library.cantaloupe.image.ScaleConstraint;
 import edu.illinois.library.cantaloupe.operation.ReductionFactor;
 import edu.illinois.library.cantaloupe.operation.Scale;
+import edu.illinois.library.cantaloupe.processor.SourceFormatException;
 import edu.illinois.library.cantaloupe.util.Stopwatch;
 import edu.illinois.library.cantaloupe.util.StringUtils;
 import kdu_jni.Jp2_threadsafe_family_src;
@@ -376,7 +378,11 @@ public final class JPEG2000KakaduImageReader implements AutoCloseable {
             }
         } catch (KduException e) {
             handle(e);
-            throw new IOException(e);
+            if (e.Get_kdu_exception_code() == 1801745731) {
+                throw new SourceFormatException();
+            } else {
+                throw new IOException(e);
+            }
         }
     }
 

@@ -6,6 +6,7 @@ import edu.illinois.library.cantaloupe.operation.CropByPixels;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.operation.ReductionFactor;
 import edu.illinois.library.cantaloupe.operation.ScaleByPixels;
+import edu.illinois.library.cantaloupe.processor.SourceFormatException;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -14,6 +15,7 @@ import org.junit.jupiter.api.Test;
 import java.awt.image.BufferedImage;
 import java.awt.image.RenderedImage;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -40,6 +42,10 @@ public abstract class AbstractImageReaderTest extends BaseTest {
         }
     }
 
+    abstract protected Path getSupportedFixture();
+
+    abstract protected Path getUnsupportedFixture();
+
     abstract protected ImageReader newInstance() throws IOException;
 
     @Test
@@ -48,8 +54,22 @@ public abstract class AbstractImageReaderTest extends BaseTest {
     }
 
     @Test
+    public void testGetCompressionWithIncompatibleImage() throws Exception {
+        instance.setSource(getUnsupportedFixture());
+        assertThrows(SourceFormatException.class,
+                () -> instance.getCompression(0));
+    }
+
+    @Test
     public void testGetMetadata() throws Exception {
         assertNotNull(instance.getMetadata(0));
+    }
+
+    @Test
+    public void testGetMetadataWithIncompatibleImage() throws Exception {
+        instance.setSource(getUnsupportedFixture());
+        assertThrows(SourceFormatException.class,
+                () -> instance.getMetadata(0));
     }
 
     @Test
@@ -58,8 +78,22 @@ public abstract class AbstractImageReaderTest extends BaseTest {
     }
 
     @Test
+    public void testGetNumImagesWithIncompatibleImage() throws Exception {
+        instance.setSource(getUnsupportedFixture());
+        assertThrows(SourceFormatException.class,
+                () -> instance.getNumImages());
+    }
+
+    @Test
     public void testGetNumResolutions() throws Exception {
         assertEquals(1, instance.getNumResolutions());
+    }
+
+    @Test
+    public void testGetNumResolutionsWithIncompatibleImage() throws Exception {
+        instance.setSource(getUnsupportedFixture());
+        assertThrows(SourceFormatException.class,
+                () -> instance.getNumResolutions());
     }
 
     @Test
@@ -76,8 +110,21 @@ public abstract class AbstractImageReaderTest extends BaseTest {
     }
 
     @Test
+    public void testGetSizeWithIncompatibleImage() throws Exception {
+        instance.setSource(getUnsupportedFixture());
+        assertThrows(SourceFormatException.class, () -> instance.getSize(0));
+    }
+
+    @Test
     public void testGetTileSize() throws Exception {
         assertEquals(FIXTURE_SIZE, instance.getTileSize(0));
+    }
+
+    @Test
+    public void testGetTileSizeWithIncompatibleImage() throws Exception {
+        instance.setSource(getUnsupportedFixture());
+        assertThrows(SourceFormatException.class,
+                () -> instance.getTileSize(0));
     }
 
     @Test
@@ -88,11 +135,16 @@ public abstract class AbstractImageReaderTest extends BaseTest {
     }
 
     @Test
+    public void testReadWithIncompatibleImage() throws Exception {
+        instance.setSource(getUnsupportedFixture());
+        assertThrows(SourceFormatException.class, () -> instance.read());
+    }
+
+    @Test
     public void testReadWithArguments() throws Exception {
         OperationList ops = new OperationList(
                 new CropByPixels(10, 10, 40, 40),
                 new ScaleByPixels(35, 35, ScaleByPixels.Mode.ASPECT_FIT_INSIDE));
-
         ReductionFactor rf = new ReductionFactor();
         Set<ReaderHint> hints = new HashSet<>();
 
@@ -105,15 +157,29 @@ public abstract class AbstractImageReaderTest extends BaseTest {
     }
 
     @Test
+    public void testReadWithArgumentsWithIncompatibleImage() throws Exception {
+        OperationList ops = new OperationList();
+        ReductionFactor rf = new ReductionFactor();
+        Set<ReaderHint> hints = new HashSet<>();
+
+        instance.setSource(getUnsupportedFixture());
+        assertThrows(SourceFormatException.class,
+                () -> instance.read(ops, rf, hints));
+    }
+
+    @Test
     void testReadSmallestUsableSubimageReturningBufferedImage() {
         // TODO: write this
     }
 
     @Test
     public void testReadRendered() throws Exception {
-        RenderedImage result = instance.read();
-        assertEquals(FIXTURE_SIZE.width(), result.getWidth(), DELTA);
-        assertEquals(FIXTURE_SIZE.height(), result.getHeight(), DELTA);
+        // TODO: write this
+    }
+
+    @Test
+    public void testReadRenderedWithIncompatibleImage() {
+        // TODO: write this
     }
 
     @Test
@@ -122,13 +188,32 @@ public abstract class AbstractImageReaderTest extends BaseTest {
     }
 
     @Test
+    public void testReadRenderedWithArgumentsWithIncompatibleImage()
+            throws Exception {
+        OperationList ops = new OperationList();
+        ReductionFactor rf = new ReductionFactor();
+        Set<ReaderHint> hints = new HashSet<>();
+
+        instance.setSource(getUnsupportedFixture());
+        assertThrows(SourceFormatException.class,
+                () -> instance.readRendered(ops, rf, hints));
+    }
+
+    @Test
     void testReadSmallestUsableSubimageReturningRenderedImage() {
         // TODO: write this
     }
 
     @Test
-    public void testReadSequence() {
-        assertThrows(UnsupportedOperationException.class,
+    public void testReadSequenceWithStaticImage() throws Exception {
+        BufferedImageSequence result = instance.readSequence();
+        assertEquals(1, result.length());
+    }
+
+    @Test
+    public void testReadSequenceWithIncompatibleImage() throws Exception {
+        instance.setSource(getUnsupportedFixture());
+        assertThrows(SourceFormatException.class,
                 () -> instance.readSequence());
     }
 

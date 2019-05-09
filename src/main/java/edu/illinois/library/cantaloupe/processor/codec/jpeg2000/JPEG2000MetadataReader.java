@@ -1,5 +1,6 @@
 package edu.illinois.library.cantaloupe.processor.codec.jpeg2000;
 
+import edu.illinois.library.cantaloupe.processor.SourceFormatException;
 import edu.illinois.library.cantaloupe.util.Stopwatch;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
@@ -261,7 +262,7 @@ public final class JPEG2000MetadataReader implements AutoCloseable {
         byte[] bytes = read(JP2_SIGNATURE.length);
         if (!Arrays.equals(JP2_SIGNATURE, bytes)) {
             String hexStr = DatatypeConverter.printHexBinary(bytes);
-            throw new IOException("Invalid signature: " + hexStr +
+            throw new SourceFormatException("Invalid signature: " + hexStr +
                     " (is this a JP2?)");
         }
         inputStream.reset();

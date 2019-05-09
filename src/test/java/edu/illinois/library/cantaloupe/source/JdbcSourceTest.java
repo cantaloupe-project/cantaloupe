@@ -20,15 +20,17 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Types;
+import java.util.NoSuchElementException;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 public class JdbcSourceTest extends AbstractSourceTest {
 
-    private static final String IMAGE_WITH_EXTENSION_WITH_MEDIA_TYPE = "jpg-1.jpg";
-    private static final String IMAGE_WITHOUT_EXTENSION_WITH_MEDIA_TYPE = "jpg-2";
-    private static final String IMAGE_WITH_EXTENSION_WITHOUT_MEDIA_TYPE = "jpg-3.jpg";
-    private static final String IMAGE_WITHOUT_EXTENSION_OR_MEDIA_TYPE = "jpg-4";
+    private static final String IMAGE_WITH_EXTENSION_WITH_MEDIA_TYPE              = "jpg-1.jpg";
+    private static final String IMAGE_WITHOUT_EXTENSION_WITH_MEDIA_TYPE           = "jpg-2";
+    private static final String IMAGE_WITH_EXTENSION_WITHOUT_MEDIA_TYPE           = "jpg-3.jpg";
+    private static final String IMAGE_WITH_INCORRECT_EXTENSION_WITHOUT_MEDIA_TYPE = "jpg.png";
+    private static final String IMAGE_WITHOUT_EXTENSION_OR_MEDIA_TYPE             = "jpg-4";
 
     private JdbcSource instance;
 
@@ -87,13 +89,15 @@ public class JdbcSourceTest extends AbstractSourceTest {
                     IMAGE_WITH_EXTENSION_WITH_MEDIA_TYPE,
                     IMAGE_WITHOUT_EXTENSION_WITH_MEDIA_TYPE,
                     IMAGE_WITH_EXTENSION_WITHOUT_MEDIA_TYPE,
+                    IMAGE_WITH_INCORRECT_EXTENSION_WITHOUT_MEDIA_TYPE,
                     IMAGE_WITHOUT_EXTENSION_OR_MEDIA_TYPE}) {
-                sql = "INSERT INTO items (filename, media_type, image) VALUES (?, ?, ?)";
+                sql = "INSERT INTO items (filename, media_type, image) VALUES (?, ?, ?);";
 
                 try (PreparedStatement statement = conn.prepareStatement(sql)) {
                     statement.setString(1, filename);
                     if (IMAGE_WITHOUT_EXTENSION_OR_MEDIA_TYPE.equals(filename) ||
-                            IMAGE_WITH_EXTENSION_WITHOUT_MEDIA_TYPE.equals(filename)) {
+                            IMAGE_WITH_EXTENSION_WITHOUT_MEDIA_TYPE.equals(filename) ||
+                            IMAGE_WITH_INCORRECT_EXTENSION_WITHOUT_MEDIA_TYPE.equals(filename)) {
                         statement.setNull(2, Types.VARCHAR);
                     } else {
                         statement.setString(2, "image/jpeg");
@@ -110,7 +114,6 @@ public class JdbcSourceTest extends AbstractSourceTest {
     @Override
     JdbcSource newInstance() {
         JdbcSource instance = new JdbcSource();
-
         try {
             Identifier identifier = new Identifier(IMAGE_WITH_EXTENSION_WITH_MEDIA_TYPE);
             RequestContext context = new RequestContext();
@@ -151,67 +154,49 @@ public class JdbcSourceTest extends AbstractSourceTest {
         assertThrows(NoSuchFileException.class, instance::checkAccess);
     }
 
-    /* getFormat() */
+    /* getFormatIterator() */
 
     @Test
-    void testGetSourceFormatWithExtensionInIdentifierWithMediaTypeInDB()
-            throws Exception {
-        assertEquals(Format.JPG, instance.getFormat());
-    }
-
-    @Test
-    void testGetSourceFormatWithExtensionInIdentifierWithoutMediaTypeInDB()
-            throws Exception {
-        Identifier identifier = new Identifier(IMAGE_WITH_EXTENSION_WITHOUT_MEDIA_TYPE);
+    void testGetFormatIteratorHasNext() throws Exception {
+        final Identifier identifier =
+                new Identifier(IMAGE_WITH_EXTENSION_WITH_MEDIA_TYPE);
+        JdbcSource source = newInstance();
+        source.setIdentifier(identifier);
         RequestContext context = new RequestContext();
         context.setIdentifier(identifier);
         DelegateProxyService service = DelegateProxyService.getInstance();
         DelegateProxy proxy = service.newDelegateProxy(context);
-        instance.setDelegateProxy(proxy);
-        instance.setIdentifier(identifier);
+        source.setDelegateProxy(proxy);
+        source.setIdentifier(identifier);
 
-        assertEquals(Format.JPG, instance.getFormat());
+        JdbcSource.FormatIterator<Format> it = source.getFormatIterator();
+        assertTrue(it.hasNext());
+        it.next(); // identifier extension
+        assertTrue(it.hasNext());
+        it.next(); // media type column
+        assertTrue(it.hasNext());
+        it.next(); // magic bytes
+        assertFalse(it.hasNext());
     }
 
     @Test
-    void testGetSourceFormatWithoutExtensionInIdentifierWithMediaTypeInDB()
-            throws Exception {
-        Identifier identifier = new Identifier(IMAGE_WITHOUT_EXTENSION_WITH_MEDIA_TYPE);
+    void testGetFormatIteratorNext() throws Exception {
+        final Identifier identifier =
+                new Identifier(IMAGE_WITH_INCORRECT_EXTENSION_WITHOUT_MEDIA_TYPE);
+        JdbcSource source = newInstance();
+        source.setIdentifier(identifier);
         RequestContext context = new RequestContext();
         context.setIdentifier(identifier);
         DelegateProxyService service = DelegateProxyService.getInstance();
         DelegateProxy proxy = service.newDelegateProxy(context);
-        instance.setDelegateProxy(proxy);
-        instance.setIdentifier(identifier);
+        source.setDelegateProxy(proxy);
+        source.setIdentifier(identifier);
 
-        assertEquals(Format.JPG, instance.getFormat());
-    }
-
-    @Test
-    void testGetSourceFormatWithoutExtensionInIdentifierWithoutMediaTypeInDB()
-            throws Exception {
-        Identifier identifier = new Identifier(IMAGE_WITHOUT_EXTENSION_OR_MEDIA_TYPE);
-        RequestContext context = new RequestContext();
-        context.setIdentifier(identifier);
-        DelegateProxyService service = DelegateProxyService.getInstance();
-        DelegateProxy proxy = service.newDelegateProxy(context);
-        instance.setDelegateProxy(proxy);
-        instance.setIdentifier(identifier);
-
-        assertEquals(Format.JPG, instance.getFormat());
-    }
-
-    @Test
-    void testGetSourceFormatWithMissingImage() throws Exception {
-        Identifier identifier = new Identifier("bogus");
-        RequestContext context = new RequestContext();
-        context.setIdentifier(identifier);
-        DelegateProxyService service = DelegateProxyService.getInstance();
-        DelegateProxy proxy = service.newDelegateProxy(context);
-        instance.setDelegateProxy(proxy);
-        instance.setIdentifier(identifier);
-
-        assertEquals(Format.UNKNOWN, instance.getFormat());
+        JdbcSource.FormatIterator<Format> it = source.getFormatIterator();
+        assertEquals(Format.PNG, it.next()); // identifier extension
+        assertEquals(Format.UNKNOWN, it.next()); // media type column
+        assertEquals(Format.JPG, it.next()); // magic bytes
+        assertThrows(NoSuchElementException.class, it::next);
     }
 
     /* getDatabaseIdentifier() */

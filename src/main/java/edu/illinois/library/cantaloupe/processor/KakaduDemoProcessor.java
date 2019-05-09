@@ -363,7 +363,10 @@ class KakaduDemoProcessor extends AbstractProcessor implements FileProcessor {
         } catch (IOException | InterruptedException e) {
             String msg = e.getMessage();
             final String errorStr = toString(errorBucket);
-            if (errorStr.length() > 0) {
+            if (errorStr.contains("must start with an SOC marker")) {
+                throw new SourceFormatException();
+            }
+            if (!errorStr.isBlank()) {
                 msg += " (command output: " + errorStr + ")";
             }
             throw new ProcessorException(msg, e);

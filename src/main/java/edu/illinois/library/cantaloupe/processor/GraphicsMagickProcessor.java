@@ -450,6 +450,8 @@ class GraphicsMagickProcessor extends AbstractMagickProcessor
             } else {
                 processFromStream(ops, info, outputStream);
             }
+        } catch (SourceFormatException e) {
+            throw e;
         } catch (Exception e) {
             throw new ProcessorException(e);
         }
@@ -462,7 +464,9 @@ class GraphicsMagickProcessor extends AbstractMagickProcessor
         final ProcessStarter cmd = new ProcessStarter();
         cmd.setOutputConsumer(new Pipe(null, outputStream));
         LOGGER.debug("processFromFile(): invoking {}", String.join(" ", args));
-        cmd.run(args);
+        if (cmd.run(args) != 0) {
+            throw new SourceFormatException();
+        }
     }
 
     private void processFromStream(final OperationList ops,
@@ -474,7 +478,9 @@ class GraphicsMagickProcessor extends AbstractMagickProcessor
             cmd.setInputProvider(new Pipe(inputStream, null));
             cmd.setOutputConsumer(new Pipe(null, outputStream));
             LOGGER.debug("processFromStream(): invoking {}", String.join(" ", args));
-            cmd.run(args);
+            if (cmd.run(args) != 0) {
+                throw new SourceFormatException();
+            }
         }
     }
 
@@ -522,7 +528,7 @@ class GraphicsMagickProcessor extends AbstractMagickProcessor
                 }
                 return info;
             }
-            throw new IOException("readInfo(): nothing received on stdout");
+            throw new SourceFormatException();
         } catch (IOException e) {
             throw e;
         } catch (Exception e) {

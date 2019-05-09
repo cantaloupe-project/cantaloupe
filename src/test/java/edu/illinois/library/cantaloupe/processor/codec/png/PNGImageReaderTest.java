@@ -7,15 +7,26 @@ import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
+import java.nio.file.Path;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 public class PNGImageReaderTest extends AbstractImageReaderTest {
 
     @Override
+    protected Path getSupportedFixture() {
+        return TestUtil.getImage("png");
+    }
+
+    @Override
+    protected Path getUnsupportedFixture() {
+        return TestUtil.getImage("jpg");
+    }
+
+    @Override
     protected PNGImageReader newInstance() throws IOException {
         PNGImageReader reader =new PNGImageReader();
-        reader.setSource(TestUtil.getImage("png"));
+        reader.setSource(getSupportedFixture());
         return reader;
     }
 

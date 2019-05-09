@@ -25,6 +25,7 @@ import java.io.OutputStream;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Iterator;
 
 import static edu.illinois.library.cantaloupe.test.Assert.HTTPAssert.*;
 import static edu.illinois.library.cantaloupe.test.Assert.PathAssert.*;
@@ -224,6 +225,15 @@ public class ImageAPIResourceTester {
         client.send();
     }
 
+    public void testRecoveryFromIncorrectSourceFormat(URI uri) throws Exception {
+        Client client = newClient(uri);
+        try {
+            client.send(); // should throw an exception if anything goes wrong
+        } finally {
+            client.stop();
+        }
+    }
+
     /**
      * Used by {@link #testSourceCheckAccessNotCalledWithSourceCacheHit}.
      */
@@ -235,8 +245,18 @@ public class ImageAPIResourceTester {
         }
 
         @Override
-        public Format getFormat() {
-            return Format.JPG;
+        public Iterator<Format> getFormatIterator() {
+            return new Iterator<>() {
+                @Override
+                public boolean hasNext() {
+                    return true;
+                }
+
+                @Override
+                public Format next() {
+                    return Format.JPG;
+                }
+            };
         }
 
         @Override
@@ -298,8 +318,18 @@ public class ImageAPIResourceTester {
         public void checkAccess() {}
 
         @Override
-        public Format getFormat() throws IOException {
-            throw new IOException("getFormat() called!");
+        public Iterator<Format> getFormatIterator() {
+            return new Iterator<>() {
+                @Override
+                public boolean hasNext() {
+                    return true;
+                }
+
+                @Override
+                public Format next() {
+                    return Format.UNKNOWN;
+                }
+            };
         }
 
         @Override
@@ -308,7 +338,7 @@ public class ImageAPIResourceTester {
         }
 
         @Override
-        public StreamFactory newStreamFactory() throws IOException {
+        public StreamFactory newStreamFactory() {
             return new PathStreamFactory(TestUtil.getImage("jpg"));
         }
 
@@ -345,7 +375,7 @@ public class ImageAPIResourceTester {
         Client client = newClient(uri);
         try {
             client.send();
-            // We are expecting NotReadingSourceFormatSource.getFormat()
+            // We are expecting NotReadingSourceFormatSource.getFormatIterator()
             // to not throw an exception, which would cause a 500 response.
         } finally {
             client.stop();

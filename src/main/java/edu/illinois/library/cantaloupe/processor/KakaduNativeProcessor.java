@@ -229,7 +229,7 @@ class KakaduNativeProcessor implements FileProcessor, StreamProcessor {
     @Override
     public void process(final OperationList opList,
                         final Info info,
-                        final OutputStream outputStream) throws ProcessorException {
+                        final OutputStream outputStream) throws FormatException, ProcessorException {
         final Rectangle roi       = getRegionBounds(opList, info.getSize());
         final Scale scaleOp       = (Scale) opList.getFirst(Scale.class);
         final ReductionFactor reductionFactor = new ReductionFactor();
@@ -241,6 +241,8 @@ class KakaduNativeProcessor implements FileProcessor, StreamProcessor {
                     reductionFactor, diffScales);
             postProcess(image, opList, diffScales, info, reductionFactor,
                     outputStream);
+        } catch (SourceFormatException e) {
+            throw e;
         } catch (IOException e) {
             throw new ProcessorException(e.getMessage(), e);
         }

@@ -28,6 +28,8 @@ import java.io.IOException;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -39,6 +41,7 @@ import java.util.stream.Collectors;
  * @see <a href="http://iiif.io/api/image/1.1/#url-syntax-image-request">Image
  * Request Operations</a>
  */
+@SuppressWarnings("Duplicates")
 public class ImageResource extends IIIF1Resource {
 
     private static final Logger LOGGER =
@@ -82,10 +85,12 @@ public class ImageResource extends IIIF1Resource {
         final Identifier identifier = getIdentifier();
         final CacheFacade cacheFacade = new CacheFacade();
 
+        Iterator<Format> formatIterator = Collections.emptyIterator();
+        boolean isFormatKnownYet = false;
+
         // If we are using a cache, and don't need to resolve first, see if we
         // can pluck an info from it. This will be more efficient than getting
         // it from a source.
-        Format sourceFormat = Format.UNKNOWN;
         if (!isBypassingCache() && !isResolvingFirst()) {
             try {
                 Optional<Info> optInfo = cacheFacade.getInfo(identifier);
@@ -93,7 +98,8 @@ public class ImageResource extends IIIF1Resource {
                     Info info = optInfo.get();
                     Format infoFormat = info.getSourceFormat();
                     if (infoFormat != null) {
-                        sourceFormat = infoFormat;
+                        formatIterator = Collections.singletonList(infoFormat).iterator();
+                        isFormatKnownYet = true;
                     }
                 }
             } catch (IOException e) {
@@ -121,8 +127,7 @@ public class ImageResource extends IIIF1Resource {
             }
         }
 
-        // If we don't know the format yet, get it.
-        if (Format.UNKNOWN.equals(sourceFormat)) {
+        if (!isFormatKnownYet) {
             // If we are not resolving first, and there is a hit in the source
             // cache, read the format from the source-cached-file, as we will
             // expect source cache access to be more efficient.
@@ -130,72 +135,85 @@ public class ImageResource extends IIIF1Resource {
             if (!isResolvingFirst() && sourceImage.isPresent()) {
                 List<MediaType> mediaTypes = MediaType.detectMediaTypes(sourceImage.get());
                 if (!mediaTypes.isEmpty()) {
-                    sourceFormat = mediaTypes.get(0).toFormat();
+                    formatIterator = mediaTypes
+                            .stream()
+                            .map(MediaType::toFormat)
+                            .iterator();
                 }
             } else {
-                sourceFormat = source.getFormat();
+                formatIterator = source.getFormatIterator();
             }
         }
 
-        // Obtain an instance of the processor assigned to that format.
-        try (final Processor processor =
-                     new ProcessorFactory().newProcessor(sourceFormat)) {
-            // Connect it to the source.
-            tempFileFuture = new ProcessorConnector().connect(
-                    source, processor, identifier, sourceFormat);
+        while (formatIterator.hasNext()) {
+            final Format format = formatIterator.next();
+            // Obtain an instance of the processor assigned to this format.
+            String processorName = "unknown processor";
+            try (Processor processor = new ProcessorFactory().newProcessor(format)) {
+                processorName = processor.getClass().getSimpleName();
+                // Connect it to the source.
+                tempFileFuture = new ProcessorConnector().connect(
+                        source, processor, identifier, format);
 
-            final Set<Format> availableOutputFormats =
-                    processor.getAvailableOutputFormats();
+                final Set<Format> availableOutputFormats =
+                        processor.getAvailableOutputFormats();
 
-            final OperationList ops = getOperationList(availableOutputFormats);
+                final OperationList ops = getOperationList(availableOutputFormats);
 
-            final String disposition = getRepresentationDisposition(
-                    getRequest().getReference().getQuery()
-                            .getFirstValue(RESPONSE_CONTENT_DISPOSITION_QUERY_ARG),
-                    ops.getIdentifier(), ops.getOutputFormat());
-
-            final Info info = getOrReadInfo(identifier, processor);
-            Dimension fullSize;
-            try {
-                fullSize = info.getSize(getPageIndex());
-                getRequestContext().setMetadata(info.getMetadata());
-
-                ops.setScaleConstraint(getScaleConstraint());
-                ops.applyNonEndpointMutations(info, getDelegateProxy());
-                ops.freeze();
-                getRequestContext().setOperationList(ops, fullSize);
-            } catch (IllegalArgumentException | IndexOutOfBoundsException e) {
-                throw new IllegalClientArgumentException(e);
-            }
-
-            processor.validate(ops, fullSize);
-            validateScale(info.getMetadata().getOrientation().adjustedSize(fullSize),
-                    (Scale) ops.getFirst(Scale.class));
-
-            // Find out whether the processor supports the source format by
-            // asking it whether it offers any output formats for it.
-            if (!availableOutputFormats.isEmpty()) {
-                if (!availableOutputFormats.contains(ops.getOutputFormat())) {
-                    Exception e = new OutputFormatException(
-                            processor, ops.getOutputFormat());
-                    LOGGER.warn("{}: {}",
-                            e.getMessage(),
-                            getRequest().getReference());
-                    throw e;
+                // Find out whether the processor supports the source format by
+                // asking it whether it offers any output formats for it. TODO: is this being used?
+                if (!availableOutputFormats.isEmpty()) {
+                    if (!availableOutputFormats.contains(ops.getOutputFormat())) {
+                        Exception e = new OutputFormatException(
+                                processor, ops.getOutputFormat());
+                        LOGGER.warn("{}: {}",
+                                e.getMessage(),
+                                getRequest().getReference());
+                        throw e;
+                    }
+                } else {
+                    throw new SourceFormatException();
                 }
-            } else {
-                throw new SourceFormatException(sourceFormat);
+
+                final String disposition = getRepresentationDisposition(
+                        getRequest().getReference().getQuery()
+                                .getFirstValue(RESPONSE_CONTENT_DISPOSITION_QUERY_ARG),
+                        ops.getIdentifier(), ops.getOutputFormat());
+
+                final Info info = getOrReadInfo(identifier, processor);
+                Dimension fullSize;
+                try {
+                    fullSize = info.getSize(getPageIndex());
+                    getRequestContext().setMetadata(info.getMetadata());
+
+                    ops.setScaleConstraint(getScaleConstraint());
+                    ops.applyNonEndpointMutations(info, getDelegateProxy());
+                    ops.freeze();
+                    getRequestContext().setOperationList(ops, fullSize);
+                } catch (IllegalArgumentException | IndexOutOfBoundsException e) {
+                    throw new IllegalClientArgumentException(e);
+                }
+
+                processor.validate(ops, fullSize);
+                validateScale(info.getMetadata().getOrientation().adjustedSize(fullSize),
+                        (Scale) ops.getFirst(Scale.class));
+
+                addHeaders(processor, ops.getOutputFormat(), disposition);
+
+                new ImageRepresentation(info, processor, ops, isBypassingCache())
+                        .write(getResponse().getOutputStream());
+
+                // Notify the health checker of a successful response -- after
+                // the response has been written successfully, obviously.
+                HealthChecker.addSourceProcessorPair(source, processor);
+                return;
+            } catch (SourceFormatException e) {
+                LOGGER.debug("Format inferred by {} disagrees with the one " +
+                                "supplied by {} ({}) for {}; trying again",
+                        processorName, source, format, identifier);
             }
-
-            addHeaders(processor, ops.getOutputFormat(), disposition);
-
-            new ImageRepresentation(info, processor, ops, isBypassingCache())
-                    .write(getResponse().getOutputStream());
-
-            // Notify the health checker of a successful response -- after the
-            // response has been written successfully, obviously.
-            HealthChecker.addSourceProcessorPair(source, processor);
         }
+        throw new SourceFormatException();
     }
 
     private void addHeaders(Processor processor,
@@ -241,8 +259,9 @@ public class ImageResource extends IIIF1Resource {
 
     /**
      * @param limitToFormats Set of OutputFormats to limit the result to.
-     * @return The best output format based on the URI extension, Accept
-     *         header, or default, as outlined by the Image API 1.1 spec.
+     * @return The best output format based on the URI extension, {@literal
+     *         Accept} header, or default, as outlined by the Image API 1.1
+     *         spec.
      */
     private Format getEffectiveOutputFormat(Set<Format> limitToFormats) {
         // Check for a format extension in the URI.

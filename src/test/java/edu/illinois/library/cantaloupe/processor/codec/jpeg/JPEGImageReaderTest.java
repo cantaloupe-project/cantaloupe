@@ -9,14 +9,25 @@ import org.junit.jupiter.api.Test;
 
 import java.awt.image.BufferedImage;
 import java.io.IOException;
+import java.nio.file.Path;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 public class JPEGImageReaderTest extends AbstractImageReaderTest {
 
+    @Override
+    protected Path getSupportedFixture() {
+        return TestUtil.getImage("jpg");
+    }
+
+    @Override
+    protected Path getUnsupportedFixture() {
+        return TestUtil.getImage("png");
+    }
+
     protected JPEGImageReader newInstance() throws IOException {
         JPEGImageReader reader = new JPEGImageReader();
-        reader.setSource(TestUtil.getImage("jpg"));
+        reader.setSource(getSupportedFixture());
         return reader;
     }
 

@@ -262,19 +262,25 @@ class FfmpegProcessor extends AbstractProcessor implements FileProcessor {
                  BufferedReader reader = new BufferedReader(
                          new InputStreamReader(
                                  processInputStream, StandardCharsets.UTF_8))) {
-                int width = Integer.parseInt(reader.readLine());
-                int height = Integer.parseInt(reader.readLine());
-                try {
-                    durationSec = Double.parseDouble(reader.readLine());
-                } catch (NumberFormatException e) {
-                    LOGGER.debug("readInfo(): {}", e.getMessage());
+                String tmpWidth  = reader.readLine();
+                String tmpHeight = reader.readLine();
+                if (tmpWidth != null && tmpHeight != null) {
+                    int width  = Integer.parseInt(tmpWidth);
+                    int height = Integer.parseInt(tmpHeight);
+                    try {
+                        durationSec = Double.parseDouble(reader.readLine());
+                    } catch (NumberFormatException e) {
+                        LOGGER.info("readInfo(): {}", e.getMessage());
+                    }
+                    info = Info.builder()
+                            .withSize(width, height)
+                            .withTileSize(width, height)
+                            .withFormat(getSourceFormat())
+                            .build();
+                    info.setNumResolutions(1);
+                } else {
+                    throw new SourceFormatException();
                 }
-                info = Info.builder()
-                        .withSize(width, height)
-                        .withTileSize(width, height)
-                        .withFormat(getSourceFormat())
-                        .build();
-                info.setNumResolutions(1);
             }
         }
         return info;
