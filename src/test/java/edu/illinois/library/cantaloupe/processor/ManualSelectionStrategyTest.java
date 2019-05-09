@@ -36,25 +36,25 @@ public class ManualSelectionStrategyTest extends BaseTest {
     @Test
     void getPreferredProcessorsWhenOnlyFallbackIsSet() {
         Configuration config = Configuration.getInstance();
-        config.setProperty(Key.PROCESSOR_FALLBACK, ImageMagickProcessor.class.getSimpleName());
+        config.setProperty(Key.PROCESSOR_FALLBACK, Java2dProcessor.class.getSimpleName());
 
         List<Class<? extends Processor>> expected =
-                Collections.singletonList(ImageMagickProcessor.class);
+                Collections.singletonList(Java2dProcessor.class);
         assertEquals(expected, instance.getPreferredProcessors(Format.GIF));
     }
 
     @Test
     void getPreferredProcessorsWhenAssignedAndFallbackAreSet() {
         Configuration config = Configuration.getInstance();
-        config.setProperty("processor.ManualSelectionStrategy.jpg",
-                GraphicsMagickProcessor.class.getSimpleName());
+        config.setProperty("processor.ManualSelectionStrategy.pdf",
+                PdfBoxProcessor.class.getSimpleName());
         config.setProperty(Key.PROCESSOR_FALLBACK,
-                ImageMagickProcessor.class.getSimpleName());
+                Java2dProcessor.class.getSimpleName());
 
         List<Class<? extends Processor>> expected = List.of(
-                GraphicsMagickProcessor.class,
-                ImageMagickProcessor.class);
-        assertEquals(expected, instance.getPreferredProcessors(Format.JPG));
+                PdfBoxProcessor.class,
+                Java2dProcessor.class);
+        assertEquals(expected, instance.getPreferredProcessors(Format.PDF));
     }
 
     @Test
@@ -77,12 +77,12 @@ public class ManualSelectionStrategyTest extends BaseTest {
     void getPreferredProcessorsWithFullyQualifiedNames() {
         Configuration config = Configuration.getInstance();
         config.setProperty("processor.ManualSelectionStrategy.jpg",
-                GraphicsMagickProcessor.class.getName());
-        config.setProperty(Key.PROCESSOR_FALLBACK, ImageMagickProcessor.class.getName());
+                Java2dProcessor.class.getName());
+        config.setProperty(Key.PROCESSOR_FALLBACK, PdfBoxProcessor.class.getName());
 
         List<Class<? extends Processor>> expected = List.of(
-                GraphicsMagickProcessor.class,
-                ImageMagickProcessor.class);
+                Java2dProcessor.class,
+                PdfBoxProcessor.class);
         assertEquals(expected, instance.getPreferredProcessors(Format.JPG));
     }
 

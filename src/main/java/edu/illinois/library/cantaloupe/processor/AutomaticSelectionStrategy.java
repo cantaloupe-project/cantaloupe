@@ -12,24 +12,16 @@ class AutomaticSelectionStrategy implements SelectionStrategy {
 
     private static final List<Class<? extends Processor>> JP2_CANDIDATES = List.of(
             KakaduNativeProcessor.class,
-            OpenJpegProcessor.class,
-            ImageMagickProcessor.class,
-            GraphicsMagickProcessor.class);
+            OpenJpegProcessor.class);
     private static final List<Class<? extends Processor>> JPG_CANDIDATES = List.of(
             TurboJpegProcessor.class,
-            Java2dProcessor.class,
-            GraphicsMagickProcessor.class,
-            ImageMagickProcessor.class);
+            Java2dProcessor.class);
     private static final List<Class<? extends Processor>> PDF_CANDIDATES = List.of(
-            PdfBoxProcessor.class,
-            GraphicsMagickProcessor.class,
-            ImageMagickProcessor.class);
+            PdfBoxProcessor.class);
     private static final List<Class<? extends Processor>> VIDEO_CANDIDATES = List.of(
             FfmpegProcessor.class);
     private static final List<Class<? extends Processor>> FALLBACK_CANDIDATES = List.of(
-            Java2dProcessor.class,
-            GraphicsMagickProcessor.class,
-            ImageMagickProcessor.class);
+            Java2dProcessor.class);
 
     @Override
     public List<Class<? extends Processor>> getPreferredProcessors(Format sourceFormat) {

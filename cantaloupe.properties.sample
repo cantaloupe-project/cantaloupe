@@ -287,16 +287,14 @@ JdbcSource.connection_timeout = 10
 #   on the rest of the keys in this section.
 processor.selection_strategy = AutomaticSelectionStrategy
 
-# Built-in processors are `Java2dProcessor`, `GraphicsMagickProcessor`,
-# `ImageMagickProcessor`, `TurboJpegProcessor`, `KakaduNativeProcessor`,
-# `OpenJpegProcessor`, `JaiProcessor`, `PdfBoxProcessor`, and
-# `FfmpegProcessor`.
+# Built-in processors are `Java2dProcessor`, TurboJpegProcessor`,
+# `KakaduNativeProcessor`, `OpenJpegProcessor`, `JaiProcessor`,
+# `PdfBoxProcessor`, and `FfmpegProcessor`.
 # Some of these have third-party dependencies and won't work out-of-the-box.
 
 # These format-specific definitions are optional.
 processor.ManualSelectionStrategy.avi = FfmpegProcessor
 processor.ManualSelectionStrategy.bmp =
-processor.ManualSelectionStrategy.dcm = ImageMagickProcessor
 processor.ManualSelectionStrategy.flv = FfmpegProcessor
 processor.ManualSelectionStrategy.gif =
 processor.ManualSelectionStrategy.jp2 = KakaduNativeProcessor
@@ -308,7 +306,6 @@ processor.ManualSelectionStrategy.pdf = PdfBoxProcessor
 processor.ManualSelectionStrategy.png =
 processor.ManualSelectionStrategy.tif =
 processor.ManualSelectionStrategy.webm = FfmpegProcessor
-processor.ManualSelectionStrategy.webp = ImageMagickProcessor
 
 # Fall back to this processor for any formats not assigned above.
 processor.ManualSelectionStrategy.fallback = Java2dProcessor
@@ -383,22 +380,6 @@ processor.imageio.tif.writer =
 # Optional absolute path of the directory containing the FFmpeg binaries.
 # Overrides the PATH.
 FfmpegProcessor.path_to_binaries =
-
-#----------------------------------------
-# GraphicsMagickProcessor
-#----------------------------------------
-
-# !! Optional absolute path of the directory containing the GraphicsMagick
-# binary. Overrides the PATH.
-GraphicsMagickProcessor.path_to_binaries =
-
-#----------------------------------------
-# ImageMagickProcessor
-#----------------------------------------
-
-# !! Optional absolute path of the directory containing the ImageMagick
-# binary. Overrides the PATH.
-ImageMagickProcessor.path_to_binaries =
 
 #----------------------------------------
 # OpenJpegProcessor

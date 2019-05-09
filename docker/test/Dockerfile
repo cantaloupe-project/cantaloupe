@@ -3,8 +3,6 @@ FROM openjdk:11
 # Install various dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
         curl \
-        graphicsmagick \
-        imagemagick \
 		ffmpeg \
 		maven \
 		libopenjp2-tools \

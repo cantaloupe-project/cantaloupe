@@ -23,9 +23,7 @@ public class AutomaticSelectionStrategyTest extends BaseTest {
     void getPreferredProcessorsWithJP2() {
         List<?> expected = List.of(
                 KakaduNativeProcessor.class,
-                OpenJpegProcessor.class,
-                ImageMagickProcessor.class,
-                GraphicsMagickProcessor.class);
+                OpenJpegProcessor.class);
         assertEquals(expected, instance.getPreferredProcessors(Format.JP2));
     }
 
@@ -33,18 +31,13 @@ public class AutomaticSelectionStrategyTest extends BaseTest {
     void getPreferredProcessorsWithJPG() {
         List<?> expected = List.of(
                 TurboJpegProcessor.class,
-                Java2dProcessor.class,
-                GraphicsMagickProcessor.class,
-                ImageMagickProcessor.class);
+                Java2dProcessor.class);
         assertEquals(expected, instance.getPreferredProcessors(Format.JPG));
     }
 
     @Test
     void getPreferredProcessorsWithPDF() {
-        List<?> expected = List.of(
-                PdfBoxProcessor.class,
-                GraphicsMagickProcessor.class,
-                ImageMagickProcessor.class);
+        List<?> expected = List.of(PdfBoxProcessor.class);
         assertEquals(expected, instance.getPreferredProcessors(Format.PDF));
     }
 
@@ -56,10 +49,7 @@ public class AutomaticSelectionStrategyTest extends BaseTest {
 
     @Test
     void getPreferredProcessorsWithOther() {
-        List<?> expected = List.of(
-                Java2dProcessor.class,
-                GraphicsMagickProcessor.class,
-                ImageMagickProcessor.class);
+        List<?> expected = List.of(Java2dProcessor.class);
         assertEquals(expected, instance.getPreferredProcessors(Format.BMP));
         assertEquals(expected, instance.getPreferredProcessors(Format.GIF));
         assertEquals(expected, instance.getPreferredProcessors(Format.PNG));

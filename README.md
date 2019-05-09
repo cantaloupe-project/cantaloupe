@@ -58,8 +58,6 @@ continuous integration. The following dependencies are required:
 * DynamoDB or [dynamodb-local](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/DynamoDBLocal.html)
   (for DynamoDBCacheTest)
 * FFmpeg (for FfmpegProcessorTest)
-* GraphicsMagick (for GraphicsMagickProcessorTest)
-* ImageMagick (for ImageMagickProcessorTest)
 * OpenJPEG (for OpenJpegProcessorTest)
 * Redis (for RedisCacheTest)
 * TurboJPEG with Java binding (for TurboJpegProcessorTest)

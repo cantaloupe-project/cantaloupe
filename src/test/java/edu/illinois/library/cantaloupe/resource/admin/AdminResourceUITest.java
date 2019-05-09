@@ -484,12 +484,6 @@ public class AdminResourceUITest extends AbstractAdminResourceTest {
         // FfmpegProcessor
         css("#cl-processors li > a[href=\"#FfmpegProcessor\"]").click();
         inputNamed(Key.FFMPEGPROCESSOR_PATH_TO_BINARIES).sendKeys("/ffpath");
-        // GraphicsMagickProcessor
-        css("#cl-processors li > a[href=\"#GraphicsMagickProcessor\"]").click();
-        inputNamed(Key.GRAPHICSMAGICKPROCESSOR_PATH_TO_BINARIES).sendKeys("/gmpath");
-        // ImageMagickProcessor
-        css("#cl-processors li > a[href=\"#ImageMagickProcessor\"]").click();
-        inputNamed(Key.IMAGEMAGICKPROCESSOR_PATH_TO_BINARIES).sendKeys("/impath");
         // JaiProcessor
         css("#cl-processors li > a[href=\"#JaiProcessor\"]").click();
         // Java2dProcessor
@@ -527,12 +521,6 @@ public class AdminResourceUITest extends AbstractAdminResourceTest {
         // FfmpegProcessor
         assertEquals("/ffpath",
                 config.getString(Key.FFMPEGPROCESSOR_PATH_TO_BINARIES));
-        // GraphicsMagickProcessor
-        assertEquals("/gmpath",
-                config.getString(Key.GRAPHICSMAGICKPROCESSOR_PATH_TO_BINARIES));
-        // ImageMagickProcessor
-        assertEquals("/impath",
-                config.getString(Key.IMAGEMAGICKPROCESSOR_PATH_TO_BINARIES));
         // JaiProcessor
         // Java2dProcessor
         // OpenJpegProcessor

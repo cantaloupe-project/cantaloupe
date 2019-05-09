@@ -12,7 +12,9 @@ current version.
     * `http.accept_queue_limit`
     * `endpoint.iiif.content_disposition`
     * `processor.metadata.*`
+    * `GraphicsMagickProcessor.path_to_binaries`
     * `KakaduDemoProcessor.path_to_binaries`
+    * `ImageMagickProcessor.path_to_binaries`
 4. The `X-IIIF-ID` reverse proxy header is no longer supported. Use
    `X-Forwarded-ID` instead.
 5. Purge your derivative cache.

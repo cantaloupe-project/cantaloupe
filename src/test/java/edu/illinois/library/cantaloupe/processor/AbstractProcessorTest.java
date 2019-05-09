@@ -845,14 +845,6 @@ abstract class AbstractProcessorTest extends BaseTest {
                     fixtureName.equals("tif-rgba-1res-64x56x8-striped-jpeg.tif")) {
                 return false;
             }
-        } else if (proc instanceof GraphicsMagickProcessor) {
-            if (fixtureName.equals("jpg-rgb-594x522x8-baseline.jpg")) {
-                return false;
-            }
-        } else if (proc instanceof ImageMagickProcessor) {
-            if (fixtureName.contains("pdf")) {
-                return false;
-            }
         }
         return true;
     }

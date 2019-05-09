@@ -635,8 +635,6 @@
                                 <exclude>AzureStorage*Test</exclude>
                                 <exclude>DynamoDB*Test</exclude>
                                 <exclude>FfmpegProcessorTest</exclude>
-                                <exclude>GraphicsMagickProcessorTest</exclude>
-                                <exclude>ImageMagickProcessorTest</exclude>
                                 <exclude>*Kakadu*Test</exclude>
                                 <exclude>OpenJpegProcessorTest</exclude>
                                 <exclude>RedisCacheTest</exclude>
