@@ -39,19 +39,41 @@ public class OperationListTest extends BaseTest {
     public void setUp() throws Exception {
         super.setUp();
 
-        Configuration config = Configuration.getInstance();
+        var config = Configuration.getInstance();
         config.setProperty(Key.DELEGATE_SCRIPT_ENABLED, true);
         config.setProperty(Key.DELEGATE_SCRIPT_PATHNAME,
                 TestUtil.getFixture("delegates.rb").toString());
 
         instance = new OperationList();
+    }
+
+    @Test
+    void noOpConstructor() {
         assertNotNull(instance.getOptions());
         assertFalse(instance.getScaleConstraint().hasEffect());
     }
 
     @Test
+    void constructor2() {
+        instance = new OperationList(new Identifier("cats"));
+        assertEquals("cats", instance.getIdentifier().toString());
+    }
+
+    @Test
+    void constructor3() {
+        instance = new OperationList(new CropByPercent(), new ScaleByPercent());
+        assertEquals(2, instance.stream().count());
+    }
+
+    @Test
+    void constructor4() {
+        instance = new OperationList(new Identifier("cats"), new ScaleByPercent());
+        assertEquals("cats", instance.getIdentifier().toString());
+        assertEquals(1, instance.stream().count());
+    }
+
+    @Test
     void add() {
-        instance = new OperationList();
         assertFalse(instance.iterator().hasNext());
 
         instance.add(new Rotate());
@@ -59,8 +81,13 @@ public class OperationListTest extends BaseTest {
     }
 
     @Test
+    void addWithNullArgument() {
+        instance.add(null);
+        assertFalse(instance.iterator().hasNext());
+    }
+
+    @Test
     void addWhileFrozen() {
-        instance = new OperationList();
         instance.freeze();
         assertThrows(IllegalStateException.class,
                 () -> instance.add(new Rotate()));
@@ -78,7 +105,6 @@ public class OperationListTest extends BaseTest {
 
     @Test
     void addAfterWithExistingSuperclass() {
-        instance = new OperationList();
         instance.add(new MockOverlay());
 
         class SubMockOverlay extends MockOverlay {}
@@ -91,7 +117,6 @@ public class OperationListTest extends BaseTest {
 
     @Test
     void addAfterWithoutExistingClass() {
-        instance = new OperationList();
         instance.add(new Rotate());
         instance.addAfter(new ScaleByPercent(), Crop.class);
         Iterator<Operation> it = instance.iterator();
@@ -100,8 +125,13 @@ public class OperationListTest extends BaseTest {
     }
 
     @Test
+    void addAfterWithNullArgument() {
+        instance.addAfter(null, Scale.class);
+        assertFalse(instance.iterator().hasNext());
+    }
+
+    @Test
     void addAfterWhileFrozen() {
-        instance = new OperationList();
         instance.freeze();
         assertThrows(IllegalStateException.class,
                 () -> instance.addAfter(new Rotate(), Crop.class));
@@ -109,7 +139,6 @@ public class OperationListTest extends BaseTest {
 
     @Test
     void addBeforeWithExistingClass() {
-        instance = new OperationList();
         instance.add(new Rotate());
         instance.addBefore(new ScaleByPercent(), Rotate.class);
         assertTrue(instance.iterator().next() instanceof Scale);
@@ -119,7 +148,6 @@ public class OperationListTest extends BaseTest {
     void addBeforeWithExistingSuperclass() {
         class SubMockOverlay extends MockOverlay {}
 
-        instance = new OperationList();
         instance.add(new MockOverlay());
         instance.addBefore(new SubMockOverlay(), MockOverlay.class);
         assertTrue(instance.iterator().next() instanceof SubMockOverlay);
@@ -127,7 +155,6 @@ public class OperationListTest extends BaseTest {
 
     @Test
     void addBeforeWithoutExistingClass() {
-        instance = new OperationList();
         instance.add(new Rotate());
         instance.addBefore(new ScaleByPercent(), Crop.class);
         Iterator<Operation> it = instance.iterator();
@@ -136,8 +163,13 @@ public class OperationListTest extends BaseTest {
     }
 
     @Test
+    void addBeforeWithNullArgument() {
+        instance.addBefore(null, Scale.class);
+        assertFalse(instance.iterator().hasNext());
+    }
+
+    @Test
     void addBeforeWhileFrozen() {
-        instance = new OperationList();
         instance.freeze();
         assertThrows(IllegalStateException.class,
                 () -> instance.addBefore(new Rotate(), Crop.class));

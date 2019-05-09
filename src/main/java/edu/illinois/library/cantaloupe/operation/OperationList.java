@@ -88,12 +88,12 @@ public final class OperationList implements Iterable<Operation> {
     /**
      * Adds an operation to the end of the list.
      *
-     * @param op Operation to add. Null values are silently discarded.
+     * @param op Operation to add. {@code null} values are silently discarded.
      * @throws IllegalStateException if the instance is frozen.
      */
     public void add(Operation op) {
-        checkFrozen();
         if (op != null) {
+            checkFrozen();
             operations.add(op);
         }
     }
@@ -103,19 +103,22 @@ public final class OperationList implements Iterable<Operation> {
      * class in the list. If there are no such instances in the list, the
      * operation will be added to the end of the list.
      *
-     * @param op         Operation to add.
+     * @param op         Operation to add. {@code null} values are silently
+     *                   discarded.
      * @param afterClass The operation will be added after the last
      *                   instance of this class in the list.
      * @throws IllegalStateException if the instance is frozen.
      */
     public void addAfter(Operation op,
                          Class<? extends Operation> afterClass) {
-        checkFrozen();
-        final int index = lastIndexOf(afterClass);
-        if (index >= 0) {
-            operations.add(index + 1, op);
-        } else {
-            add(op);
+        if (op != null) {
+            checkFrozen();
+            final int index = lastIndexOf(afterClass);
+            if (index >= 0) {
+                operations.add(index + 1, op);
+            } else {
+                add(op);
+            }
         }
     }
 
@@ -131,21 +134,23 @@ public final class OperationList implements Iterable<Operation> {
      */
     public void addBefore(Operation op,
                           Class<? extends Operation> beforeClass) {
-        checkFrozen();
-        int index = firstIndexOf(beforeClass);
-        if (index >= 0) {
-            operations.add(index, op);
-        } else {
-            add(op);
+        if (op != null) {
+            checkFrozen();
+            int index = firstIndexOf(beforeClass);
+            if (index >= 0) {
+                operations.add(index, op);
+            } else {
+                add(op);
+            }
         }
     }
 
     /**
-     * <p>Most image-processing operations (crop, scale, etc.) are specified in
-     * a client request to an endpoint. This method adds any other operations or
-     * options that endpoints have nothing to do with, and also tweaks existing
-     * operations according to either/both the application configuration and
-     * delegate method return values.</p>
+     * <p>Most image-processing operations (crop, scale, etc.) are supplied by
+     * a client in a request to an endpoint. This method adds any other
+     * operations or options that endpoints have nothing to do with, and also
+     * tweaks existing operations according to either/both the application
+     * configuration and delegate method return values.</p>
      *
      * <p>This method must be called <strong>after</strong> all endpoint
      * operations have been added, as it may modify them.</p>
