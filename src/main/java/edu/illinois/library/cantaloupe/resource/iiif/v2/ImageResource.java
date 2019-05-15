@@ -16,7 +16,6 @@ import edu.illinois.library.cantaloupe.operation.Scale;
 import edu.illinois.library.cantaloupe.processor.Processor;
 import edu.illinois.library.cantaloupe.processor.ProcessorConnector;
 import edu.illinois.library.cantaloupe.processor.ProcessorFactory;
-import edu.illinois.library.cantaloupe.processor.OutputFormatException;
 import edu.illinois.library.cantaloupe.processor.SourceFormatException;
 import edu.illinois.library.cantaloupe.resource.InputStreamRepresentation;
 import edu.illinois.library.cantaloupe.resource.IllegalClientArgumentException;
@@ -37,7 +36,6 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
 /**
  * Handles IIIF Image API 2.x image requests.
@@ -195,22 +193,6 @@ public class ImageResource extends IIIF2Resource {
                     throw new IllegalClientArgumentException(e);
                 }
 
-                // Find out whether the processor supports the source format by asking
-                // it whether it offers any output formats for it. TODO: is this being used?
-                Set<Format> availableOutputFormats = processor.getAvailableOutputFormats();
-                if (!availableOutputFormats.isEmpty()) {
-                    if (!availableOutputFormats.contains(ops.getOutputFormat())) {
-                        Exception e = new OutputFormatException(
-                                processor, ops.getOutputFormat());
-                        LOGGER.warn("{}: {}",
-                                e.getMessage(),
-                                getRequest().getReference());
-                        throw e;
-                    }
-                } else {
-                    throw new SourceFormatException();
-                }
-
                 processor.validate(ops, fullSize);
 
                 final Metadata metadata = info.getMetadata();
@@ -227,8 +209,7 @@ public class ImageResource extends IIIF2Resource {
                 new ImageRepresentation(info, processor, ops, isBypassingCache)
                         .write(getResponse().getOutputStream());
 
-                // Notify the health checker of a successful response -- after
-                // the response has been written successfully, obviously.
+                // Notify the health checker of a successful response.
                 HealthChecker.addSourceProcessorPair(source, processor);
                 return;
             } catch (SourceFormatException e) {

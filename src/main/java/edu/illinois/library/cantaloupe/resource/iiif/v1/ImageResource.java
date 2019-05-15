@@ -13,7 +13,6 @@ import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.operation.Scale;
 import edu.illinois.library.cantaloupe.processor.Processor;
 import edu.illinois.library.cantaloupe.processor.ProcessorFactory;
-import edu.illinois.library.cantaloupe.processor.OutputFormatException;
 import edu.illinois.library.cantaloupe.processor.SourceFormatException;
 import edu.illinois.library.cantaloupe.status.HealthChecker;
 import edu.illinois.library.cantaloupe.source.Source;
@@ -160,21 +159,6 @@ public class ImageResource extends IIIF1Resource {
 
                 final OperationList ops = getOperationList(availableOutputFormats);
 
-                // Find out whether the processor supports the source format by
-                // asking it whether it offers any output formats for it. TODO: is this being used?
-                if (!availableOutputFormats.isEmpty()) {
-                    if (!availableOutputFormats.contains(ops.getOutputFormat())) {
-                        Exception e = new OutputFormatException(
-                                processor, ops.getOutputFormat());
-                        LOGGER.warn("{}: {}",
-                                e.getMessage(),
-                                getRequest().getReference());
-                        throw e;
-                    }
-                } else {
-                    throw new SourceFormatException();
-                }
-
                 final String disposition = getRepresentationDisposition(
                         getRequest().getReference().getQuery()
                                 .getFirstValue(RESPONSE_CONTENT_DISPOSITION_QUERY_ARG),
@@ -203,8 +187,7 @@ public class ImageResource extends IIIF1Resource {
                 new ImageRepresentation(info, processor, ops, isBypassingCache())
                         .write(getResponse().getOutputStream());
 
-                // Notify the health checker of a successful response -- after
-                // the response has been written successfully, obviously.
+                // Notify the health checker of a successful response.
                 HealthChecker.addSourceProcessorPair(source, processor);
                 return;
             } catch (SourceFormatException e) {
