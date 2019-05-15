@@ -30,7 +30,7 @@ public class ResponseTest extends BaseTest {
         server.start();
 
         HttpClientTransport transport = new HttpClientTransportOverHTTP();
-        jettyClient = new HttpClient(transport, new SslContextFactory());
+        jettyClient = new HttpClient(transport, new SslContextFactory.Client());
         jettyClient.start();
         jettyClient.setFollowRedirects(false);
     }

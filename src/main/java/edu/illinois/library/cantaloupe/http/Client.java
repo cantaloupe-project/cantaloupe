@@ -132,7 +132,7 @@ public final class Client {
     }
 
     private SslContextFactory newSSLContextFactory() {
-        SslContextFactory cf = new SslContextFactory();
+        SslContextFactory cf = new SslContextFactory.Client();
         if (trustAll) {
             cf.setTrustAll(true);
         } else if (keyStore != null && keyStorePassword != null) {

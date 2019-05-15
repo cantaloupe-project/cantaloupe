@@ -282,7 +282,7 @@ public class ApplicationServer {
                 config.setSecurePort(getHTTPSPort());
                 config.addCustomizer(new SecureRequestCustomizer());
 
-                final SslContextFactory contextFactory = new SslContextFactory();
+                final SslContextFactory contextFactory = new SslContextFactory.Server();
                 contextFactory.setKeyStorePath(getHTTPSKeyStorePath());
                 contextFactory.setKeyStorePassword(getHTTPSKeyStorePassword());
                 contextFactory.setKeyManagerPassword(getHTTPSKeyPassword());

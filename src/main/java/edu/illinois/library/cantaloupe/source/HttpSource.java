@@ -409,7 +409,8 @@ class HttpSource extends AbstractSource implements StreamSource {
             final boolean allowInsecure = config.getBoolean(
                     Key.HTTPSOURCE_ALLOW_INSECURE, false);
             SslContextFactory sslContextFactory =
-                    new SslContextFactory(allowInsecure);
+                    new SslContextFactory.Server();
+            sslContextFactory.setTrustAll(allowInsecure);
             if (allowInsecure) {
                 sslContextFactory.setExcludeCipherSuites("");
             }
