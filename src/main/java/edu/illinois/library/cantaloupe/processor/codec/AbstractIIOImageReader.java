@@ -582,8 +582,11 @@ public abstract class AbstractIIOImageReader {
             if (hints != null && hints.contains(ReaderHint.IGNORE_CROP)) {
                 image = readRendered();
             } else {
+                final Dimension fullSize = new Dimension(
+                        iioReader.getWidth(0), iioReader.getHeight(0));
                 image = readSmallestUsableSubimage(
-                        crop, scale, ops.getScaleConstraint(), reductionFactor);
+                        crop.getRectangle(fullSize), scale, fullSize,
+                        ops.getScaleConstraint(), reductionFactor);
             }
             if (image == null) {
                 throw new SourceFormatException(iioReader.getFormatName());
@@ -601,23 +604,21 @@ public abstract class AbstractIIOImageReader {
      * Reads the smallest image that can fulfill the given crop and scale from
      * a multi-resolution image.
      *
-     * @param crop  Requested crop.
-     * @param scale Requested scale.
-     * @param rf    The {@link ReductionFactor#factor} will be set to the
-     *              reduction factor of the returned image.
-     * @return      The smallest image fitting the requested crop and scale
-     *              operations from the given reader.
+     * @param region Requested region.
+     * @param scale  Requested scale.
+     * @param rf     The {@link ReductionFactor#factor} will be set to the
+     *               reduction factor of the returned image.
+     * @return       The smallest image fitting the requested crop and scale
+     *               operations from the given reader.
      * @deprecated Since version 4.0.
      */
     @Deprecated
     private RenderedImage readSmallestUsableSubimage(
-            final Crop crop,
+            final Rectangle region,
             final Scale scale,
+            final Dimension fullSize,
             final ScaleConstraint scaleConstraint,
             final ReductionFactor rf) throws IOException {
-        final Dimension fullSize = new Dimension(
-                iioReader.getWidth(0), iioReader.getHeight(0));
-        final Rectangle regionRect = crop.getRectangle(fullSize);
         final ImageReadParam param = iioReader.getDefaultReadParam();
 
         RenderedImage bestImage = null;
@@ -654,7 +655,7 @@ public abstract class AbstractIIOImageReader {
 
                     final double reducedScale =
                             (double) subimageWidth / fullSize.width();
-                    if (fits(regionRect.size(), scale, scaleConstraint,
+                    if (fits(region.size(), scale, scaleConstraint,
                             reducedScale)) {
                         rf.factor = ReductionFactor.forScale(reducedScale).factor;
                         getLogger().trace("Subimage {}: {}x{} - fits! " +
