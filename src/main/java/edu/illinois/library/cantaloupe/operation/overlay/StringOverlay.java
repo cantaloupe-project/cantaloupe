@@ -134,7 +134,7 @@ public class StringOverlay extends Overlay implements Operation {
      */
     public void setString(String string) {
         checkFrozen();
-        this.string = string;
+        this.string = string.replace("\\n", "\n");
     }
 
     /**

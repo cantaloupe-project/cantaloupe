@@ -66,6 +66,12 @@ public class StringOverlayTest extends BaseTest {
         instance.setMinSize(1);
     }
 
+    @Test
+    public void setStringReplacesNewlines() {
+        instance.setString("test\\ntest");
+        assertEquals("test\ntest", instance.getString());
+    }
+
     @Test(expected = IllegalStateException.class)
     public void setStringThrowsExceptionWhenFrozen() {
         instance.freeze();

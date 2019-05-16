@@ -622,7 +622,7 @@ overlays.BasicStrategy.type = image
 overlays.BasicStrategy.image = /path/to/overlay.png
 
 # Overlay text.
-overlays.BasicStrategy.string = Copyright \u00A9️ My Great Organization\nAll rights reserved.
+overlays.BasicStrategy.string = Copyright © My Great Organization\nAll rights reserved.
 
 # For possible values, launch with the -Dcantaloupe.list_fonts option.
 overlays.BasicStrategy.string.font = Helvetica
