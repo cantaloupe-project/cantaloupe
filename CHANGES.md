@@ -4,6 +4,9 @@
 
 * Fixed incorrect `@id` values in information responses when a query argument
   is present in the URI.
+* Fixed a potential failure to fall back to the next candidate processor when
+  TurboJpegProcessor is in the candidate chain but libjpeg-turbo is not
+  available.
 * Fixed a potential IIOException when reading certain JPEG images with
   JaiProcessor.
 * Updated the Jetty dependency to address the following security vulnerability:

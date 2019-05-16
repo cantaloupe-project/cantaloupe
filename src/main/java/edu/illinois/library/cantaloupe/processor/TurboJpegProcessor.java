@@ -101,7 +101,7 @@ public class TurboJpegProcessor extends AbstractProcessor
 
     private static String initializationError;
 
-    private final TurboJPEGImageReader imageReader = new TurboJPEGImageReader();
+    private TurboJPEGImageReader imageReader;
 
     private StreamFactory streamFactory;
 
@@ -118,6 +118,17 @@ public class TurboJpegProcessor extends AbstractProcessor
 
     static synchronized void resetInitialization() {
         IS_CLASS_INITIALIZED.set(false);
+    }
+
+    TurboJpegProcessor() {
+        initializeClass();
+        try {
+            imageReader = new TurboJPEGImageReader();
+        } catch (NoClassDefFoundError ignore) {
+            // This will be thrown if TurboJPEGImageReader failed to initialize,
+            // which would happen if libjpeg-turbo is not available. It's
+            // swallowed because this isn't the place to handle it.
+        }
     }
 
     @Override
