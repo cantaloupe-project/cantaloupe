@@ -49,6 +49,7 @@
   available.
 * Fixed a potential IIOException when reading certain JPEG images with
   JaiProcessor.
+* Fixed newlines (`\n`) appearing literally in string overlays.
 * Updated the Jetty dependency to address the following security vulnerability:
   CVE-2019-10247.
 * Updated the PDFBox dependency to address the following security

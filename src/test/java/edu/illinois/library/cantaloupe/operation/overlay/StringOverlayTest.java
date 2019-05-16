@@ -76,6 +76,12 @@ public class StringOverlayTest extends BaseTest {
     }
 
     @Test
+    void setStringReplacesNewlines() {
+        instance.setString("test\\ntest");
+        assertEquals("test\ntest", instance.getString());
+    }
+
+    @Test
     void setStrokeColorThrowsExceptionWhenFrozen() {
         instance.freeze();
         assertThrows(IllegalStateException.class,
