@@ -64,8 +64,8 @@ public final class ProcessorFactory {
             ReflectiveOperationException {
         final List<Class<? extends Processor>> candidates =
                 getSelectionStrategy().getPreferredProcessors(sourceFormat);
-        String errorMsg = null;
 
+        String errorMsg = null;
         for (Class<? extends Processor> class_ : candidates) {
             Processor candidate = class_.getDeclaredConstructor().newInstance();
             errorMsg = candidate.getInitializationError();
@@ -81,6 +81,10 @@ public final class ProcessorFactory {
                                     .collect(Collectors.joining(", ")));
                     return candidate;
                 } catch (SourceFormatException ignore) {}
+            } else {
+                LOGGER.warn("Failed to initialize {} (error: {})",
+                        candidate.getClass().getSimpleName(),
+                        errorMsg);
             }
         }
 

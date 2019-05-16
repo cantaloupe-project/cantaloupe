@@ -33,7 +33,6 @@ import java.io.OutputStream;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 /**
@@ -90,21 +89,21 @@ public class TurboJpegProcessor extends AbstractProcessor
             edu.illinois.library.cantaloupe.resource.iiif.v2.Quality.DEFAULT,
             edu.illinois.library.cantaloupe.resource.iiif.v2.Quality.GRAY));
 
-    private static final AtomicBoolean IS_CLASS_INITIALIZED = new AtomicBoolean();
+    private static boolean isClassInitialized;
 
     private static final boolean USE_FAST_DECODE_DCT = true;
     private static final boolean USE_FAST_ENCODE_DCT = true;
 
     private static String initializationError;
 
-    private final TurboJPEGImageReader imageReader = new TurboJPEGImageReader();
+    private TurboJPEGImageReader imageReader;
     private final JPEGMetadataReader metadataReader = new JPEGMetadataReader();
 
     private StreamFactory streamFactory;
 
     private static synchronized void initializeClass() {
-        if (!IS_CLASS_INITIALIZED.get()) {
-            IS_CLASS_INITIALIZED.set(true);
+        if (!isClassInitialized) {
+            isClassInitialized = true;
             try {
                 TurboJPEGImageReader.initialize();
             } catch (UnsatisfiedLinkError e) {
@@ -114,7 +113,18 @@ public class TurboJpegProcessor extends AbstractProcessor
     }
 
     static synchronized void resetInitialization() {
-        IS_CLASS_INITIALIZED.set(false);
+        isClassInitialized = false;
+    }
+
+    TurboJpegProcessor() {
+        initializeClass();
+        try {
+            imageReader = new TurboJPEGImageReader();
+        } catch (NoClassDefFoundError ignore) {
+            // This will be thrown if TurboJPEGImageReader failed to initialize,
+            // which would happen if libjpeg-turbo is not available. It's
+            // swallowed because this isn't the place to handle it.
+        }
     }
 
     @Override
