@@ -5,10 +5,11 @@ import edu.illinois.library.cantaloupe.image.Compression;
 import edu.illinois.library.cantaloupe.image.Dimension;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Rectangle;
+import edu.illinois.library.cantaloupe.image.ScaleConstraint;
 import edu.illinois.library.cantaloupe.operation.Crop;
 import edu.illinois.library.cantaloupe.operation.CropByPercent;
-import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.operation.ReductionFactor;
+import edu.illinois.library.cantaloupe.operation.Scale;
 import edu.illinois.library.cantaloupe.processor.SourceFormatException;
 import edu.illinois.library.cantaloupe.processor.codec.AbstractIIOImageReader;
 import edu.illinois.library.cantaloupe.processor.codec.ImageReader;
@@ -136,20 +137,19 @@ public final class JPEGImageReader extends AbstractIIOImageReader
      * {@inheritDoc}
      */
     @Override
-    public BufferedImage read(final OperationList ops,
+    public BufferedImage read(Crop crop,
+                              Scale scale,
+                              final ScaleConstraint scaleConstraint,
                               final ReductionFactor reductionFactor,
                               final Set<ReaderHint> hints) throws IOException {
         BufferedImage image;
 
-        Crop crop = (Crop) ops.getFirst(Crop.class);
         if (crop == null || hints.contains(ReaderHint.IGNORE_CROP)) {
             crop = new CropByPercent();
         }
 
         Dimension fullSize = getSize(0);
-        image = readRegion(
-                crop.getRectangle(fullSize, ops.getScaleConstraint()),
-                hints);
+        image = readRegion(crop.getRectangle(fullSize, scaleConstraint), hints);
 
         if (image == null) {
             throw new SourceFormatException(iioReader.getFormatName());

@@ -3,8 +3,10 @@ package edu.illinois.library.cantaloupe.processor.codec;
 import edu.illinois.library.cantaloupe.image.Compression;
 import edu.illinois.library.cantaloupe.image.Dimension;
 import edu.illinois.library.cantaloupe.image.Metadata;
-import edu.illinois.library.cantaloupe.operation.OperationList;
+import edu.illinois.library.cantaloupe.image.ScaleConstraint;
+import edu.illinois.library.cantaloupe.operation.Crop;
 import edu.illinois.library.cantaloupe.operation.ReductionFactor;
+import edu.illinois.library.cantaloupe.operation.Scale;
 import edu.illinois.library.cantaloupe.processor.SourceFormatException;
 import edu.illinois.library.cantaloupe.source.StreamFactory;
 
@@ -98,7 +100,9 @@ public interface ImageReader {
      * @throws SourceFormatException if the image format is not supported.
      * @throws IOException if there is some other error reading the image.
      */
-    BufferedImage read(OperationList opList,
+    BufferedImage read(Crop crop,
+                       Scale scale,
+                       ScaleConstraint scaleConstraint,
                        ReductionFactor reductionFactor,
                        Set<ReaderHint> hints) throws IOException;
 
@@ -110,7 +114,9 @@ public interface ImageReader {
      * @deprecated Since version 4.0.
      */
     @Deprecated
-    RenderedImage readRendered(OperationList opList,
+    RenderedImage readRendered(Crop crop,
+                               Scale scale,
+                               ScaleConstraint scaleConstraint,
                                ReductionFactor reductionFactor,
                                Set<ReaderHint> hints) throws IOException;
 

@@ -4,6 +4,7 @@ import edu.illinois.library.cantaloupe.image.Dimension;
 import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.image.Metadata;
 import edu.illinois.library.cantaloupe.image.Orientation;
+import edu.illinois.library.cantaloupe.image.ScaleConstraint;
 import edu.illinois.library.cantaloupe.operation.ColorTransform;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.operation.Encode;
@@ -148,11 +149,14 @@ class JaiProcessor extends AbstractImageIOProcessor
             final Metadata metadata       = info.getMetadata();
             final Orientation orientation = metadata.getOrientation();
             final Dimension fullSize      = info.getSize();
+            final Crop crop               = (Crop) opList.getFirst(Crop.class);
+            final Scale scale             = (Scale) opList.getFirst(Scale.class);
+            final ScaleConstraint sc      = opList.getScaleConstraint();
             final ReductionFactor rf      = new ReductionFactor();
             final Set<ReaderHint> hints   = EnumSet.noneOf(ReaderHint.class);
 
             final RenderedImage renderedImage = reader.readRendered(
-                    opList, rf, hints);
+                    crop, scale, sc, rf, hints);
             RenderedOp renderedOp = JAIUtil.getAsRenderedOp(
                     RenderedOp.wrapRenderedImage(renderedImage));
 
@@ -163,7 +167,6 @@ class JaiProcessor extends AbstractImageIOProcessor
             }
 
             // Apply the Crop operation, if present.
-            Crop crop = (Crop) opList.getFirst(Crop.class);
             if (crop != null) {
                 renderedOp = JAIUtil.cropImage(
                         renderedOp, opList.getScaleConstraint(), crop, rf);

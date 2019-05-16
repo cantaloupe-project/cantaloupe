@@ -6,7 +6,6 @@ import edu.illinois.library.cantaloupe.image.ScaleConstraint;
 import edu.illinois.library.cantaloupe.operation.Crop;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.operation.CropByPercent;
-import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.operation.Scale;
 import edu.illinois.library.cantaloupe.operation.ReductionFactor;
 import edu.illinois.library.cantaloupe.operation.ScaleByPercent;
@@ -354,7 +353,9 @@ public abstract class AbstractIIOImageReader {
      * <p>After reading, clients should check the reader hints to see whether
      * the returned image will require cropping.</p>
      *
-     * @param ops
+     * @param crop            May be {@code null}.
+     * @param scale           May be {@code null}.
+     * @param scaleConstraint Scale constraint.
      * @param reductionFactor The {@link ReductionFactor#factor} property will
      *                        be modified to reflect the reduction factor of the
      *                        returned image.
@@ -362,12 +363,13 @@ public abstract class AbstractIIOImageReader {
      *                        the reader.
      * @return                Image best matching the given arguments.
      */
-    public BufferedImage read(final OperationList ops,
+    public BufferedImage read(final Crop crop,
+                              final Scale scale,
+                              final ScaleConstraint scaleConstraint,
                               final ReductionFactor reductionFactor,
                               final Set<ReaderHint> hints) throws IOException {
         BufferedImage image;
 
-        Crop crop = (Crop) ops.getFirst(Crop.class);
         try {
             if (crop != null && !hints.contains(ReaderHint.IGNORE_CROP)) {
                 final Dimension fullSize = new Dimension(
@@ -553,7 +555,9 @@ public abstract class AbstractIIOImageReader {
      * <p>Attempts to reads an image as efficiently as possible, utilizing its
      * tile layout and/or subimages, if possible.</p>
      *
-     * @param ops
+     * @param crop            May be {@code null}.
+     * @param scale           May be {@code null}.
+     * @param scaleConstraint Scale constraint.
      * @param reductionFactor The {@link ReductionFactor#factor} property will
      *                        be modified to reflect the reduction factor of the
      *                        returned image.
@@ -564,15 +568,14 @@ public abstract class AbstractIIOImageReader {
      * @deprecated            Since version 4.0.
      */
     @Deprecated
-    public RenderedImage readRendered(final OperationList ops,
+    public RenderedImage readRendered(Crop crop,
+                                      Scale scale,
+                                      final ScaleConstraint scaleConstraint,
                                       final ReductionFactor reductionFactor,
                                       final Set<ReaderHint> hints) throws IOException {
-        Crop crop = (Crop) ops.getFirst(Crop.class);
         if (crop == null) {
             crop = new CropByPercent();
         }
-
-        Scale scale = (Scale) ops.getFirst(Scale.class);
         if (scale == null) {
             scale = new ScaleByPercent();
         }
@@ -586,7 +589,7 @@ public abstract class AbstractIIOImageReader {
                         iioReader.getWidth(0), iioReader.getHeight(0));
                 image = readSmallestUsableSubimage(
                         crop.getRectangle(fullSize), scale, fullSize,
-                        ops.getScaleConstraint(), reductionFactor);
+                        scaleConstraint, reductionFactor);
             }
             if (image == null) {
                 throw new SourceFormatException(iioReader.getFormatName());

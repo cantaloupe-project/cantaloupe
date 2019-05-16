@@ -3,10 +3,10 @@ package edu.illinois.library.cantaloupe.processor.codec.tiff;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.image.Compression;
 import edu.illinois.library.cantaloupe.image.Metadata;
+import edu.illinois.library.cantaloupe.image.ScaleConstraint;
 import edu.illinois.library.cantaloupe.operation.Crop;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.operation.CropByPercent;
-import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.operation.Scale;
 import edu.illinois.library.cantaloupe.operation.ReductionFactor;
 import edu.illinois.library.cantaloupe.operation.ScaleByPercent;
@@ -122,15 +122,14 @@ public final class TIFFImageReader extends AbstractIIOImageReader
      * the returned image will require additional cropping.</p>
      */
     @Override
-    public BufferedImage read(final OperationList ops,
+    public BufferedImage read(Crop crop,
+                              Scale scale,
+                              final ScaleConstraint scaleConstraint,
                               final ReductionFactor reductionFactor,
                               final Set<ReaderHint> hints) throws IOException {
-        Crop crop = (Crop) ops.getFirst(Crop.class);
         if (crop == null) {
             crop = new CropByPercent();
         }
-
-        Scale scale = (Scale) ops.getFirst(Scale.class);
         if (scale == null) {
             scale = new ScaleByPercent();
         }
@@ -141,7 +140,7 @@ public final class TIFFImageReader extends AbstractIIOImageReader
         } else {
             try {
                 image = readSmallestUsableSubimage(
-                        crop, scale, ops.getScaleConstraint(), reductionFactor,
+                        crop, scale, scaleConstraint, reductionFactor,
                         hints);
             } catch (IndexOutOfBoundsException e) {
                 throw new SourceFormatException();

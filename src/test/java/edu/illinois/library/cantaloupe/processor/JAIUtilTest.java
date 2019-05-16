@@ -10,6 +10,7 @@ import edu.illinois.library.cantaloupe.operation.CropToSquare;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.operation.ReductionFactor;
 import edu.illinois.library.cantaloupe.operation.Rotate;
+import edu.illinois.library.cantaloupe.operation.Scale;
 import edu.illinois.library.cantaloupe.operation.ScaleByPercent;
 import edu.illinois.library.cantaloupe.operation.ScaleByPixels;
 import edu.illinois.library.cantaloupe.operation.Sharpen;
@@ -541,8 +542,14 @@ class JAIUtilTest extends BaseTest {
         try {
             reader = new ImageReaderFactory().newImageReader(
                     TestUtil.getImage(name), Format.PNG);
+
+            Crop crop          = (Crop) ops.getFirst(Crop.class);
+            Scale scale        = (Scale) ops.getFirst(Scale.class);
+            ScaleConstraint sc = new ScaleConstraint(1, 1);
+            ReductionFactor rf = new ReductionFactor();
+
             RenderedImage image = reader.readRendered(
-                    ops, new ReductionFactor(), null);
+                    crop, scale, sc, rf, null);
             PlanarImage planarImage = PlanarImage.wrapRenderedImage(image);
             return JAIUtil.getAsRenderedOp(planarImage);
         } finally {

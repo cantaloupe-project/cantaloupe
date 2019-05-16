@@ -4,8 +4,10 @@ import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.image.Compression;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Metadata;
-import edu.illinois.library.cantaloupe.operation.OperationList;
+import edu.illinois.library.cantaloupe.image.ScaleConstraint;
+import edu.illinois.library.cantaloupe.operation.Crop;
 import edu.illinois.library.cantaloupe.operation.ReductionFactor;
+import edu.illinois.library.cantaloupe.operation.Scale;
 import edu.illinois.library.cantaloupe.processor.SourceFormatException;
 import edu.illinois.library.cantaloupe.processor.codec.AbstractIIOImageReader;
 import edu.illinois.library.cantaloupe.processor.codec.ImageReader;
@@ -90,16 +92,16 @@ public final class GIFImageReader extends AbstractIIOImageReader
      * {@inheritDoc}
      */
     @Override
-    public BufferedImage read(final OperationList ops,
+    public BufferedImage read(Crop crop,
+                              Scale scale,
+                              final ScaleConstraint scaleConstraint,
                               final ReductionFactor reductionFactor,
                               final Set<ReaderHint> hints) throws IOException {
         try {
             BufferedImage image = iioReader.read(0);
-
             if (image == null) {
                 throw new SourceFormatException(iioReader.getFormatName());
             }
-
             hints.add(ReaderHint.ALREADY_ORIENTED);
             return image;
         } catch (IIOException e) {

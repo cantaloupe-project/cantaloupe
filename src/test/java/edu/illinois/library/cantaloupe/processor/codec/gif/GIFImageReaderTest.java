@@ -2,9 +2,11 @@ package edu.illinois.library.cantaloupe.processor.codec.gif;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.image.Compression;
+import edu.illinois.library.cantaloupe.image.ScaleConstraint;
+import edu.illinois.library.cantaloupe.operation.Crop;
 import edu.illinois.library.cantaloupe.operation.CropByPixels;
-import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.operation.ReductionFactor;
+import edu.illinois.library.cantaloupe.operation.Scale;
 import edu.illinois.library.cantaloupe.operation.ScaleByPixels;
 import edu.illinois.library.cantaloupe.processor.codec.AbstractIIOImageReader;
 import edu.illinois.library.cantaloupe.processor.codec.AbstractImageReaderTest;
@@ -88,14 +90,13 @@ public class GIFImageReaderTest extends AbstractImageReaderTest {
 
     @Test
     public void testReadWithArguments() throws Exception {
-        OperationList ops = new OperationList(
-                new CropByPixels(10, 10, 40, 40),
-                new ScaleByPixels(35, 35, ScaleByPixels.Mode.ASPECT_FIT_INSIDE));
-
-        ReductionFactor rf = new ReductionFactor();
+        Crop crop             = new CropByPixels(10, 10, 40, 40);
+        Scale scale           = new ScaleByPixels(35, 35, ScaleByPixels.Mode.ASPECT_FIT_INSIDE);
+        ScaleConstraint sc    = new ScaleConstraint(1, 1);
+        ReductionFactor rf    = new ReductionFactor();
         Set<ReaderHint> hints = new HashSet<>();
 
-        BufferedImage image = instance.read(ops, rf, hints);
+        BufferedImage image = instance.read(crop, scale, sc, rf, hints);
 
         assertEquals(64, image.getWidth());
         assertEquals(56, image.getHeight());

@@ -2,9 +2,12 @@ package edu.illinois.library.cantaloupe.processor;
 
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Info;
+import edu.illinois.library.cantaloupe.image.ScaleConstraint;
+import edu.illinois.library.cantaloupe.operation.Crop;
 import edu.illinois.library.cantaloupe.operation.Encode;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.operation.ReductionFactor;
+import edu.illinois.library.cantaloupe.operation.Scale;
 import edu.illinois.library.cantaloupe.processor.codec.BufferedImageSequence;
 import edu.illinois.library.cantaloupe.processor.codec.ImageReader;
 import edu.illinois.library.cantaloupe.processor.codec.ImageWriter;
@@ -65,7 +68,11 @@ class Java2dProcessor extends AbstractImageIOProcessor
                 Java2DPostProcessor.postProcess(seq, ops, info);
                 writer.write(seq, outputStream);
             } else {
-                BufferedImage image = reader.read(ops, rf, hints);
+                Crop crop          = (Crop) ops.getFirst(Crop.class);
+                Scale scale        = (Scale) ops.getFirst(Scale.class);
+                ScaleConstraint sc = ops.getScaleConstraint();
+
+                BufferedImage image = reader.read(crop, scale, sc, rf, hints);
                 image = Java2DPostProcessor.postProcess(
                         image, hints, ops, info, rf);
                 writer.write(image, outputStream);
