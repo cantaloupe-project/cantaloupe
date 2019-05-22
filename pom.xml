@@ -7,7 +7,7 @@
     <packaging>war</packaging>
     <version>4.1.2-SNAPSHOT</version>
     <name>Cantaloupe</name>
-    <url>https://medusa-project.github.io/cantaloupe/</url>
+    <url>https://cantaloupe-project.github.io/</url>
     <inceptionYear>2015</inceptionYear>
 
     <properties>
