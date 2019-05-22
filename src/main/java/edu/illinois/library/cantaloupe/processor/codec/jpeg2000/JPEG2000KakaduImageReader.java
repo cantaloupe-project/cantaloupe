@@ -569,10 +569,10 @@ public final class JPEG2000KakaduImageReader implements AutoCloseable {
             // check anyway to be extra safe.
             //
             // N.B. 2: sometimes one of the sourceRect dimensions is slightly
-            // (usually < 0.05) smaller than its regionRect dimension. The
-            // delta argument to contains() works around this, but it would be
-            // better to TODO: find out why this discrepancy exists and fix it.
-            if (!sourceRect.contains(regionRect, 0.08)) {
+            // (usually < 0.2 anecdotally) smaller than its regionRect
+            // dimension. The delta argument to contains() works around this,
+            // but it would be better to TODO: find out why the discrepancy exists and fix it.
+            if (!sourceRect.contains(regionRect, 0.2)) {
                 throw new IllegalArgumentException(String.format(
                         "Rendered region is not entirely within the image " +
                                 "on the canvas. This might be a bug. " +
