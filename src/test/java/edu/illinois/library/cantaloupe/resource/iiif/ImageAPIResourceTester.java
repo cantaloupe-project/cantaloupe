@@ -94,7 +94,7 @@ public class ImageAPIResourceTester {
             fail("Expected exception");
         } catch (ResourceException e) {
             assertEquals("no-cache, must-revalidate",
-                    e.getResponse().getHeaders().get("Cache-Control"));
+                    e.getResponse().getHeaders().getFirstValue("Cache-Control"));
         } finally {
             client.stop();
         }

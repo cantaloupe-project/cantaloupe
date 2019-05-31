@@ -1,19 +1,17 @@
 package edu.illinois.library.cantaloupe.http;
 
-import org.eclipse.jetty.client.api.ContentResponse;
-
 import java.io.IOException;
 
 public class ResourceException extends IOException {
 
-    private ContentResponse response;
+    private Response response;
 
-    public ResourceException(ContentResponse response) {
-        super("HTTP " + response.getStatus() + ": " + response.getReason());
+    public ResourceException(Response response) {
+        super("HTTP " + response.getStatus());
         this.response = response;
     }
 
-    public ContentResponse getResponse() {
+    public Response getResponse() {
         return response;
     }
 

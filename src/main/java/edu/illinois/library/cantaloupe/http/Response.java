@@ -1,9 +1,7 @@
 package edu.illinois.library.cantaloupe.http;
 
-import org.eclipse.jetty.client.api.ContentResponse;
-import org.eclipse.jetty.http.HttpField;
-
-import java.io.UnsupportedEncodingException;
+import java.net.http.HttpResponse;
+import java.nio.charset.StandardCharsets;
 
 public final class Response {
 
@@ -12,12 +10,12 @@ public final class Response {
     private int status;
     private Transport transport;
 
-    static Response fromJettyResponse(ContentResponse jresponse) {
+    static Response fromHttpClientResponse(HttpResponse<byte[]> jresponse) {
         Response response = new Response();
-        response.setBody(jresponse.getContent());
-        response.setStatus(jresponse.getStatus());
+        response.setBody(jresponse.body());
+        response.setStatus(jresponse.statusCode());
 
-        switch (jresponse.getVersion()) {
+        switch (jresponse.version()) {
             case HTTP_2:
                 response.setTransport(Transport.HTTP2_0);
                 break;
@@ -26,9 +24,9 @@ public final class Response {
                 break;
         }
 
-        for (HttpField field : jresponse.getHeaders()) {
-            response.getHeaders().add(field.getName(), field.getValue());
-        }
+        jresponse.headers().map().forEach((name, list) ->
+                list.forEach(h ->
+                        response.getHeaders().add(name, h)));
 
         return response;
     }
@@ -38,11 +36,7 @@ public final class Response {
     }
 
     public String getBodyAsString() {
-        try {
-            return new String(getBody(), "UTF-8");
-        } catch (UnsupportedEncodingException e) {
-            return null;
-        }
+        return new String(getBody(), StandardCharsets.UTF_8);
     }
 
     public Headers getHeaders() {

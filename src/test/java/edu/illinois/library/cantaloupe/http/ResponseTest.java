@@ -2,25 +2,20 @@ package edu.illinois.library.cantaloupe.http;
 
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.WebServer;
-import org.eclipse.jetty.client.HttpClient;
-import org.eclipse.jetty.client.HttpClientTransport;
-import org.eclipse.jetty.client.api.ContentResponse;
-import org.eclipse.jetty.client.api.Request;
-import org.eclipse.jetty.client.http.HttpClientTransportOverHTTP;
-import org.eclipse.jetty.http.HttpField;
-import org.eclipse.jetty.http.HttpMethod;
-import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 public class ResponseTest extends BaseTest {
 
-    private HttpClient jettyClient;
+    private HttpClient javaClient;
     private WebServer server;
 
     @BeforeEach
@@ -29,40 +24,37 @@ public class ResponseTest extends BaseTest {
         server = new WebServer();
         server.start();
 
-        HttpClientTransport transport = new HttpClientTransportOverHTTP();
-        jettyClient = new HttpClient(transport, new SslContextFactory.Client());
-        jettyClient.start();
-        jettyClient.setFollowRedirects(false);
+        javaClient = HttpClient.newBuilder()
+                .followRedirects(HttpClient.Redirect.NEVER)
+                .build();
     }
 
     @AfterEach
     public void tearDown() throws Exception {
         super.tearDown();
-        try {
-            server.stop();
-        } finally {
-            jettyClient.stop();
-        }
+        server.stop();
     }
 
     @Test
-    void testFromJettyResponse() throws Exception {
-        Request request = jettyClient.newRequest(
-                server.getHTTPURI().resolve("/jpg"));
-        request.method(HttpMethod.GET);
+    void testFromHttpClientResponse() throws Exception {
+        HttpRequest request = HttpRequest.newBuilder()
+                .GET()
+                .uri(server.getHTTPURI().resolve("/jpg"))
+                .build();
 
-        ContentResponse jresponse = request.send();
+        HttpResponse<byte[]> jresponse = javaClient.send(
+                request, HttpResponse.BodyHandlers.ofByteArray());
 
-        Response response = Response.fromJettyResponse(jresponse);
+        Response response = Response.fromHttpClientResponse(jresponse);
 
-        assertEquals(jresponse.getContent(), response.getBody());
-        assertEquals(jresponse.getStatus(), response.getStatus());
-        assertEquals(Transport.HTTP1_1, response.getTransport());
+        assertEquals(jresponse.body(), response.getBody());
+        assertEquals(jresponse.statusCode(), response.getStatus());
+        assertEquals(Transport.HTTP2_0, response.getTransport());
 
         Headers expectedHeaders = new Headers();
-        for (HttpField field : jresponse.getHeaders()) {
-            expectedHeaders.add(field.getName(), field.getValue());
-        }
+        jresponse.headers().map().forEach((name, list) ->
+                list.forEach(h ->
+                        expectedHeaders.add(name, h)));
 
         assertEquals(expectedHeaders, response.getHeaders());
     }

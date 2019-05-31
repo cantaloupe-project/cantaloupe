@@ -93,8 +93,8 @@ public class AdminResourceTest extends AbstractAdminResourceTest {
         // Cache-Control
         assertEquals("no-cache", headers.getFirstValue("Cache-Control"));
         // Content-Type
-        assertEquals("text/html;charset=UTF-8",
-                headers.getFirstValue("Content-Type"));
+        assertTrue("text/html;charset=UTF-8".equalsIgnoreCase(
+                headers.getFirstValue("Content-Type")));
         // Date
         assertNotNull(headers.getFirstValue("Date"));
         // Server

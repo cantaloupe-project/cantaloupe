@@ -58,8 +58,8 @@ public class ConfigurationResourceTest extends AbstractAdminResourceTest {
         // Content-Length
         assertNotNull(headers.getFirstValue("Content-Length"));
         // Content-Type
-        assertEquals("application/json;charset=UTF-8",
-                headers.getFirstValue("Content-Type"));
+        assertTrue("application/json;charset=UTF-8".equalsIgnoreCase(
+                headers.getFirstValue("Content-Type")));
         // Date
         assertNotNull(headers.getFirstValue("Date"));
         // Server

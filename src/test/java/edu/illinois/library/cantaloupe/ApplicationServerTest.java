@@ -176,7 +176,7 @@ public class ApplicationServerTest extends BaseTest {
         instance.setHTTPEnabled(false);
         instance.start();
 
-        assertStatus(200, "https://127.0.0.1:" + HTTPS_PORT +"/");
+        assertStatus(200, "https://localhost:" + HTTPS_PORT +"/");
     }
 
     @Test

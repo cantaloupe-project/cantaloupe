@@ -44,8 +44,8 @@ public class LandingResourceTest extends ResourceTest {
         assertTrue(headers.getFirstValue("Cache-Control").contains("public"));
         assertTrue(headers.getFirstValue("Cache-Control").contains("max-age="));
         // Content-Type
-        assertEquals("text/html;charset=UTF-8",
-                headers.getFirstValue("Content-Type"));
+        assertTrue("text/html;charset=UTF-8".equalsIgnoreCase(
+                headers.getFirstValue("Content-Type")));
         // Content-Length
         assertTrue(Integer.parseInt(headers.getFirstValue("Content-Length")) > 10);
         // Date

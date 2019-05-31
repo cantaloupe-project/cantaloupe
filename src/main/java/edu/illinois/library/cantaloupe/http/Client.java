@@ -1,27 +1,23 @@
 package edu.illinois.library.cantaloupe.http;
 
 import edu.illinois.library.cantaloupe.image.MediaType;
-import org.eclipse.jetty.client.HttpClient;
-import org.eclipse.jetty.client.HttpClientTransport;
-import org.eclipse.jetty.client.api.AuthenticationStore;
-import org.eclipse.jetty.client.api.ContentResponse;
-import org.eclipse.jetty.client.api.Request;
-import org.eclipse.jetty.client.http.HttpClientTransportOverHTTP;
-import org.eclipse.jetty.client.util.BasicAuthentication;
-import org.eclipse.jetty.client.util.StringContentProvider;
-import org.eclipse.jetty.http2.client.HTTP2Client;
-import org.eclipse.jetty.http2.client.http.HttpClientTransportOverHTTP2;
-import org.eclipse.jetty.util.ssl.SslContextFactory;
 
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.X509TrustManager;
 import java.io.File;
-import java.net.ConnectException;
+import java.io.IOException;
+import java.net.Authenticator;
+import java.net.PasswordAuthentication;
 import java.net.URI;
-import java.util.concurrent.ExecutionException;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
+import java.security.cert.X509Certificate;
+import java.util.Base64;
 
-/**
- * <p>Thinly wraps a Jetty HTTP client with support for HTTP/2 and convenient
- * initialization using the Builder pattern.</p>
- */
 public final class Client {
 
     public static final class Builder {
@@ -102,21 +98,17 @@ public final class Client {
     private URI uri;
     private String username;
 
+    public Client() {
+        // The default is 3 in JDK 11
+        System.setProperty("jdk.httpclient.auth.retrylimit", "0");
+    }
+
     public Builder builder() {
         return new Builder(this);
     }
 
     public Headers getHeaders() {
         return headers;
-    }
-
-    private HttpClientTransport getJettyTransport() {
-        switch (transport) {
-            case HTTP2_0:
-                return new HttpClientTransportOverHTTP2(new HTTP2Client());
-            default:
-                return new HttpClientTransportOverHTTP();
-        }
     }
 
     public Method getMethod() {
@@ -131,78 +123,103 @@ public final class Client {
         return uri;
     }
 
-    private SslContextFactory newSSLContextFactory() {
-        SslContextFactory cf = new SslContextFactory.Client();
-        if (trustAll) {
-            cf.setTrustAll(true);
-        } else if (keyStore != null && keyStorePassword != null) {
-            cf.setNeedClientAuth(false);
-            cf.setKeyStorePath(keyStore.getAbsolutePath());
-            cf.setKeyStorePassword(keyStorePassword);
-            cf.setKeyStoreType("JKS");
-            cf.setTrustStorePath(keyStore.getAbsolutePath());
-            cf.setTrustStorePassword(keyStorePassword);
-            cf.setTrustStoreType("JKS");
-            cf.setKeyManagerPassword(keyStorePassword);
+    public Response send() throws Exception {
+        if (client == null) {
+            client = newClient();
         }
-        return cf;
+        HttpRequest request = newRequest();
+        try {
+            HttpResponse<byte[]> response = client.send(
+                    request, HttpResponse.BodyHandlers.ofByteArray());
+            Response customResponse = Response.fromHttpClientResponse(response);
+            if (customResponse.getStatus() >= 400) {
+                throw new ResourceException(customResponse);
+            }
+            return customResponse;
+        } catch (IOException e) {
+            if (e.getMessage().startsWith("too many authentication attempts")) {
+                Response customResponse = new Response();
+                customResponse.setStatus(401);
+                throw new ResourceException(customResponse);
+            } else {
+                throw e;
+            }
+        }
     }
 
-    public Response send() throws Exception {
-        HttpClientTransport transport = getJettyTransport();
-        SslContextFactory sslContextFactory = newSSLContextFactory();
-        client = new HttpClient(transport, sslContextFactory);
-        client.start();
-        client.setFollowRedirects(followRedirects);
+    private HttpClient newClient() {
+        HttpClient.Builder clientBuilder = HttpClient.newBuilder()
+                .followRedirects(followRedirects ?
+                        HttpClient.Redirect.ALWAYS : HttpClient.Redirect.NEVER)
+                .version(Transport.HTTP1_1.equals(getTransport()) ?
+                        HttpClient.Version.HTTP_1_1 : HttpClient.Version.HTTP_2);
+
+        if (trustAll) {
+            try {
+                SSLContext sslContext = SSLContext.getInstance("TLS");
+                sslContext.init(null, new X509TrustManager[]{
+                        new X509TrustManager() {
+                            public void checkClientTrusted(X509Certificate[] chain,
+                                                           String authType) {
+                            }
+
+                            public void checkServerTrusted(X509Certificate[] chain,
+                                                           String authType) {
+                            }
+
+                            public X509Certificate[] getAcceptedIssuers() {
+                                return new X509Certificate[0];
+                            }
+                        }}, new SecureRandom());
+                clientBuilder.sslContext(sslContext);
+            } catch (KeyManagementException | NoSuchAlgorithmException e) {
+                throw new RuntimeException(e);
+            }
+        }
 
         // Set Basic auth info
         if (username != null && secret != null) {
-            AuthenticationStore auth = client.getAuthenticationStore();
-            // This worked in Jetty 9.4.9.v20180320 but is broken in 9.4.12.RC2.
-            // The alternative sends credentials preemptively which is arguably
-            // preferable anyway.
-            //auth.addAuthentication(new BasicAuthentication(
-            //        getURI(), realm, username, secret));
-            auth.addAuthenticationResult(new BasicAuthentication.BasicResult(
-                    getURI(), username, secret));
+            clientBuilder.authenticator(new Authenticator() {
+                @Override
+                protected PasswordAuthentication getPasswordAuthentication() {
+                    return new PasswordAuthentication(username, secret.toCharArray());
+                }
+            });
+        }
+        return clientBuilder.build();
+    }
+
+    private HttpRequest newRequest() {
+        // Assemble body
+        HttpRequest.BodyPublisher pub = HttpRequest.BodyPublishers.noBody();
+        if (entity != null) {
+            pub = HttpRequest.BodyPublishers.ofString(entity);
         }
 
-        Request request = client.newRequest(getURI());
+        var requestBuilder = HttpRequest.newBuilder()
+                .method(method.toString(), pub)
+                .uri(uri);
 
-        // Set method
-        request.method(method.toJettyMethod());
+        // Send the authorization header preemptively without a challenge,
+        // which the client does not do by default as of JDK 11.
+        if (username != null && secret != null) {
+            requestBuilder.header("Authorization", basicAuthToken());
+        }
 
         // Add headers
         for (Header header : headers) {
-            request.getHeaders().add(header.getName(), header.getValue());
+            requestBuilder.setHeader(header.getName(), header.getValue());
         }
+        return requestBuilder.build();
+    }
 
-        // Add body
-        if (entity != null) {
-            request.content(new StringContentProvider(entity));
-        }
-
-        ContentResponse response;
-        try {
-            response = request.send();
-        } catch (ExecutionException e) {
-            if (e.getCause() instanceof ConnectException) {
-                throw (Exception) e.getCause();
-            }
-            throw (Exception) e.getCause();
-        }
-
-        if (response != null) {
-            if (response.getStatus() >= 400) {
-                throw new ResourceException(response);
-            }
-            return Response.fromJettyResponse(response);
-        }
-        return null;
+    private String basicAuthToken() {
+        return "Basic " + Base64.getEncoder()
+                .encodeToString((username + ":" + secret).getBytes());
     }
 
     /**
-     * Adds a <code>Content-Type</code> header to the {@link #getHeaders()} map.
+     * Adds a {@code Content-Type} header to the {@link #getHeaders()} map.
      */
     public void setContentType(MediaType type) {
         getHeaders().set("Content-Type", type.toString());
@@ -237,10 +254,12 @@ public final class Client {
     }
 
     public void setTransport(Transport transport) {
+        client = null;
         this.transport = transport;
     }
 
     public void setTrustAll(boolean trustAll) {
+        client = null;
         this.trustAll = trustAll;
     }
 
@@ -252,10 +271,11 @@ public final class Client {
         this.username = username;
     }
 
+    /**
+     * This is currently a no-op, but clients should call it anyway in case the
+     * wrapped client ever changes to one that requires manual stoppage.
+     */
     public void stop() throws Exception {
-        if (client != null) {
-            client.stop();
-        }
     }
 
 }

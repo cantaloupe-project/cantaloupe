@@ -69,8 +69,8 @@ public class ConfigurationResourceTest extends AbstractAPIResourceTest {
         // Cache-Control
         assertEquals("no-cache", headers.getFirstValue("Cache-Control"));
         // Content-Type
-        assertEquals("application/json;charset=UTF-8",
-                headers.getFirstValue("Content-Type"));
+        assertTrue("application/json;charset=UTF-8".equalsIgnoreCase(
+                headers.getFirstValue("Content-Type")));
         // Content-Length
         assertNotNull(headers.getFirstValue("Content-Length"));
         // Date

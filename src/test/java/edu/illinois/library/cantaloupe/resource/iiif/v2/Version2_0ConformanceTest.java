@@ -514,8 +514,8 @@ public class Version2_0ConformanceTest extends ResourceTest {
         Response response = client.send();
 
         assertEquals(200, response.getStatus());
-        assertEquals("application/json;charset=utf-8",
-                response.getHeaders().getFirstValue("Content-Type").replace(" ", "").toLowerCase());
+        assertTrue("application/json;charset=utf-8".equalsIgnoreCase(
+                response.getHeaders().getFirstValue("Content-Type").replace(" ", "").toLowerCase()));
     }
 
     /**
@@ -533,8 +533,8 @@ public class Version2_0ConformanceTest extends ResourceTest {
 
         client.getHeaders().set("Accept", "application/json");
         response = client.send();
-        assertEquals("application/json;charset=UTF-8",
-                response.getHeaders().getFirstValue("Content-Type").replace(" ", ""));
+        assertTrue("application/json;charset=UTF-8".equalsIgnoreCase(
+                response.getHeaders().getFirstValue("Content-Type").replace(" ", "")));
     }
 
     /**

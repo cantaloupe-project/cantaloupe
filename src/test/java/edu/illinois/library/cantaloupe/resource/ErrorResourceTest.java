@@ -33,9 +33,9 @@ public class ErrorResourceTest extends ResourceTest {
         try {
             client.send();
         } catch (ResourceException e) {
-            assertTrue(e.getResponse().getContentAsString().contains("html>"));
-            assertEquals("text/html;charset=UTF-8",
-                    e.getResponse().getHeaders().get("Content-Type"));
+            assertTrue(e.getResponse().getBodyAsString().contains("html>"));
+            assertTrue("text/html;charset=UTF-8".equalsIgnoreCase(
+                    e.getResponse().getHeaders().getFirstValue("Content-Type")));
         }
     }
 
@@ -48,9 +48,9 @@ public class ErrorResourceTest extends ResourceTest {
         try {
             client.send();
         } catch (ResourceException e) {
-            assertTrue(e.getResponse().getContentAsString().contains("html>"));
-            assertEquals("text/html;charset=UTF-8",
-                    e.getResponse().getHeaders().get("Content-Type"));
+            assertTrue(e.getResponse().getBodyAsString().contains("html>"));
+            assertTrue("text/html;charset=UTF-8".equalsIgnoreCase(
+                    e.getResponse().getHeaders().getFirstValue("Content-Type")));
         }
     }
 
@@ -63,9 +63,9 @@ public class ErrorResourceTest extends ResourceTest {
         try {
             client.send();
         } catch (ResourceException e) {
-            assertFalse(e.getResponse().getContentAsString().contains("html>"));
-            assertEquals("text/plain;charset=UTF-8",
-                    e.getResponse().getHeaders().get("Content-Type"));
+            assertFalse(e.getResponse().getBodyAsString().contains("html>"));
+            assertTrue("text/plain;charset=UTF-8".equalsIgnoreCase(
+                    e.getResponse().getHeaders().getFirstValue("Content-Type")));
         }
     }
 
@@ -78,9 +78,9 @@ public class ErrorResourceTest extends ResourceTest {
         try {
             client.send();
         } catch (ResourceException e) {
-            assertFalse(e.getResponse().getContentAsString().contains("html>"));
-            assertEquals("text/plain;charset=UTF-8",
-                    e.getResponse().getHeaders().get("Content-Type"));
+            assertFalse(e.getResponse().getBodyAsString().contains("html>"));
+            assertTrue("text/plain;charset=UTF-8".equalsIgnoreCase(
+                    e.getResponse().getHeaders().getFirstValue("Content-Type")));
         }
     }
 
@@ -93,9 +93,9 @@ public class ErrorResourceTest extends ResourceTest {
         try {
             client.send();
         } catch (ResourceException e) {
-            assertFalse(e.getResponse().getContentAsString().contains("html>"));
-            assertEquals("text/plain;charset=UTF-8",
-                    e.getResponse().getHeaders().get("Content-Type"));
+            assertFalse(e.getResponse().getBodyAsString().contains("html>"));
+            assertTrue("text/plain;charset=UTF-8".equalsIgnoreCase(
+                    e.getResponse().getHeaders().getFirstValue("Content-Type")));
         }
     }
 
