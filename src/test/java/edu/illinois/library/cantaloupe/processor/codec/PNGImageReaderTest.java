@@ -18,6 +18,13 @@ public class PNGImageReaderTest extends AbstractImageReaderTest {
         return reader;
     }
 
+    /* canSeek() */
+
+    @Test
+    public void testCanSeek() {
+        assertFalse(instance.canSeek());
+    }
+
     /* getApplicationPreferredIIOImplementations() */
 
     @Test

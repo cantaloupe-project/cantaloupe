@@ -59,6 +59,11 @@ final class JPEGImageReader extends AbstractIIOImageReader
     }
 
     @Override
+    public boolean canSeek() {
+        return false;
+    }
+
+    @Override
     String[] getApplicationPreferredIIOImplementations() {
         return new String[] { "com.sun.imageio.plugins.jpeg.JPEGImageReader" };
     }

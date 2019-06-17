@@ -26,6 +26,11 @@ final class GIFImageReader extends AbstractIIOImageReader
             "processor.imageio.gif.reader";
 
     @Override
+    public boolean canSeek() {
+        return false;
+    }
+
+    @Override
     String[] getApplicationPreferredIIOImplementations() {
         return new String[] { "com.sun.imageio.plugins.gif.GIFImageReader" };
     }

@@ -17,6 +17,11 @@ final class BMPImageReader extends AbstractIIOImageReader
             "processor.imageio.bmp.reader";
 
     @Override
+    public boolean canSeek() {
+        return false;
+    }
+
+    @Override
     String[] getApplicationPreferredIIOImplementations() {
         return new String[] { "com.sun.imageio.plugins.bmp.BMPImageReader" };
     }

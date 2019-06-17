@@ -37,6 +37,11 @@ final class TIFFImageReader extends AbstractIIOImageReader
     }
 
     @Override
+    public boolean canSeek() {
+        return true;
+    }
+
+    @Override
     String[] getApplicationPreferredIIOImplementations() {
         // The GeoSolutions TIFF reader supports BigTIFF among other
         // enhancements. The Sun reader will do as a fallback, although there

@@ -20,6 +20,11 @@ final class PNGImageReader extends AbstractIIOImageReader
             "processor.imageio.png.reader";
 
     @Override
+    public boolean canSeek() {
+        return false;
+    }
+
+    @Override
     String[] getApplicationPreferredIIOImplementations() {
         return new String[] { "com.sun.imageio.plugins.png.PNGImageReader" };
     }

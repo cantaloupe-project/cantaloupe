@@ -27,7 +27,6 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -38,9 +37,6 @@ import java.util.Set;
  * need to.
  */
 abstract class AbstractIIOImageReader {
-
-    private static final Set<Format> SELECTIVELY_READABLE_FORMATS =
-            EnumSet.of(Format.JP2, Format.TIF);
 
     /**
      * Assigned by {@link #createReader()}.
@@ -84,6 +80,8 @@ abstract class AbstractIIOImageReader {
                 Key.PROCESSOR_RESPECT_ORIENTATION, false);
         return (!preserveMetadata && !respectOrientation);
     }
+
+    abstract public boolean canSeek();
 
     private void createReader() throws IOException {
         if (inputStream == null) {
@@ -303,7 +301,7 @@ abstract class AbstractIIOImageReader {
         } finally {
             // Some Image I/O readers, like the ones for JPEG, GIF, and PNG,
             // must read whole images into memory.
-            if (SELECTIVELY_READABLE_FORMATS.contains(getFormat())) {
+            if (canSeek()) {
                 inputStream = streamFactory.newSeekableStream();
                 getLogger().trace("Using a {} for format {}",
                         inputStream.getClass().getSimpleName(),

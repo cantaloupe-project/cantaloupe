@@ -24,6 +24,14 @@ import java.util.Set;
 public interface ImageReader {
 
     /**
+     * N.B.: For implementation reasons, this method must not perform any I/O.
+     *
+     * @return Whether the instance can employ seeking to read portions of the
+     *         source image data selectively.
+     */
+    boolean canSeek();
+
+    /**
      * Releases all resources.
      */
     void dispose();
