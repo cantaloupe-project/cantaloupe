@@ -373,7 +373,7 @@ public class ProcessorConnectorTest extends BaseTest {
     }
 
     @Test
-    public void testConnectWithStreamSourceAndStreamProcessorWithCacheStrategyAndSourceCacheAvailableButSourceSupportingDirectSeeking()
+    public void testConnectWithStreamSourceAndStreamProcessorWithCacheStrategyAndSourceCacheAvailableAndSourceSupportingDirectSeekingAndProcessorSupportingSeeking()
             throws Exception {
         final WebServer server = new WebServer();
         final Path cacheFolder = Files.createTempDirectory("test");
@@ -394,7 +394,8 @@ public class ProcessorConnectorTest extends BaseTest {
                     cacheFolder.toString());
 
             final Source source = new SourceFactory().newSource(IDENTIFIER, null);
-            final StreamProcessor processor = new MockStreamProcessor();
+            final MockStreamProcessor processor = new MockStreamProcessor();
+            processor.setSeeking(true);
 
             assertNull(instance.connect(source, processor, IDENTIFIER, Format.JPG));
 
@@ -402,6 +403,42 @@ public class ProcessorConnectorTest extends BaseTest {
             StreamFactory ss2 = processor.getStreamFactory();
 
             assertEqualSources(ss1, ss2);
+        } finally {
+            server.stop();
+            recursiveDeleteOnExit(cacheFolder);
+        }
+    }
+
+    @Test
+    public void testConnectWithStreamSourceAndStreamProcessorWithCacheStrategyAndSourceCacheAvailableAndSourceSupportingDirectSeekingAndProcessorNotSupportingSeeking()
+            throws Exception {
+        final WebServer server = new WebServer();
+        final Path cacheFolder = Files.createTempDirectory("test");
+        try {
+            server.start();
+
+            Configuration config = Configuration.getInstance();
+            config.setProperty(Key.SOURCE_STATIC, "HttpSource");
+            config.setProperty(Key.HTTPSOURCE_LOOKUP_STRATEGY,
+                    "BasicLookupStrategy");
+            config.setProperty(Key.HTTPSOURCE_URL_PREFIX,
+                    server.getHTTPURI() + "/");
+            config.setProperty(Key.HTTPSOURCE_CHUNKING_ENABLED, true);
+            config.setProperty(Key.SOURCE_CACHE, "FilesystemCache");
+            config.setProperty(Key.PROCESSOR_STREAM_RETRIEVAL_STRATEGY,
+                    RetrievalStrategy.CACHE.getConfigValue());
+            config.setProperty(Key.FILESYSTEMCACHE_PATHNAME,
+                    cacheFolder.toString());
+
+            final Source source = new SourceFactory().newSource(IDENTIFIER, null);
+            final MockStreamProcessor processor = new MockStreamProcessor();
+            processor.setSeeking(false);
+
+            assertNull(instance.connect(source, processor, IDENTIFIER, Format.JPG));
+
+            assertEqualSources(
+                    CacheFactory.getSourceCache().getSourceImageFile(IDENTIFIER),
+                    processor.getStreamFactory());
         } finally {
             server.stop();
             recursiveDeleteOnExit(cacheFolder);

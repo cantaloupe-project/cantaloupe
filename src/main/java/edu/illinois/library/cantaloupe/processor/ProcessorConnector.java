@@ -214,7 +214,8 @@ public final class ProcessorConnector {
                 final RetrievalStrategy strategy =
                         getStreamProcessorRetrievalStrategy();
                 if (RetrievalStrategy.STREAM.equals(strategy) ||
-                        streamFactory.isSeekingDirect()) {
+                        (streamFactory.isSeekingDirect() &&
+                                ((StreamProcessor) processor).isSeeking())) {
                     LOGGER.debug("{} -> {} connection between {} and {}",
                             StreamSource.class.getSimpleName(),
                             StreamProcessor.class.getSimpleName(),

@@ -1,5 +1,11 @@
 # Change Log
 
+## 4.1.3
+
+* Fixed failing to source-cache non-selectively-readable images when using
+  Java2dProcessor or JaiProcessor with the source cache enabled and a source
+  for which chunking is enabled.
+
 ## 4.1.2
 
 * Fixed incorrect `@id` values in information responses when a query argument

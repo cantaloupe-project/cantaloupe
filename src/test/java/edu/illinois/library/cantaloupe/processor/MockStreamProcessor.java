@@ -17,6 +17,7 @@ import java.util.Set;
  */
 public class MockStreamProcessor implements StreamProcessor {
 
+    private boolean isSeeking;
     private Format sourceFormat;
     private StreamFactory streamFactory;
 
@@ -57,7 +58,7 @@ public class MockStreamProcessor implements StreamProcessor {
 
     @Override
     public boolean isSeeking() {
-        return false;
+        return isSeeking;
     }
 
     @Override
@@ -70,6 +71,10 @@ public class MockStreamProcessor implements StreamProcessor {
     @Override
     public Info readInfo() {
         return new Info();
+    }
+
+    public void setSeeking(boolean isSeeking) {
+        this.isSeeking = isSeeking;
     }
 
     @Override
