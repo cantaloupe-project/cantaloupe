@@ -5,6 +5,8 @@
 * Fixed failing to source-cache non-selectively-readable images when using
   Java2dProcessor or JaiProcessor with the source cache enabled and a source
   for which chunking is enabled.
+* The Jetty client used by HttpSource has been downgraded to the version used
+  in 4.1.1 due to a bug in the version used in 4.1.2.
 
 ## 4.1.2
 
