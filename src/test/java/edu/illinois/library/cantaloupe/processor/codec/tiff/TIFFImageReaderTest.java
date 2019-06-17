@@ -31,6 +31,13 @@ public class TIFFImageReaderTest extends AbstractImageReaderTest {
         return reader;
     }
 
+    /* canSeek() */
+
+    @Test
+    public void testCanSeek() {
+        assertTrue(instance.canSeek());
+    }
+
     /* getApplicationPreferredIIOImplementations() */
 
     @Test

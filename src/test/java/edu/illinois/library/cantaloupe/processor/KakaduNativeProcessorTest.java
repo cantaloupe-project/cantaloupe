@@ -44,6 +44,11 @@ public class KakaduNativeProcessorTest extends AbstractProcessorTest {
     }
 
     @Test
+    void testIsSeeking() {
+        assertTrue(instance.isSeeking());
+    }
+
+    @Test
     void testGetInitializationErrorWithNoException() {
         assertNull(instance.getInitializationError());
     }

@@ -14,6 +14,13 @@ public interface StreamProcessor extends Processor {
     StreamFactory getStreamFactory();
 
     /**
+     * @return Whether the reader employed by the instance is seeking to the
+     *         data of interest, or reading it all instead. This may be {@link
+     *         #getSourceFormat() format}-dependent.
+     */
+    boolean isSeeking();
+
+    /**
      * @param source Source for acquiring streams from which to read
      *               the image.
      */

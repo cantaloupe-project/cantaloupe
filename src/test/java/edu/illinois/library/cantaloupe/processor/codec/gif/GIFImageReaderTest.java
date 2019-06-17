@@ -42,6 +42,13 @@ public class GIFImageReaderTest extends AbstractImageReaderTest {
         return reader;
     }
 
+    /* canSeek() */
+
+    @Test
+    public void testCanSeek() {
+        assertFalse(instance.canSeek());
+    }
+
     @Test
     public void testGetApplicationPreferredIIOImplementations() {
         String[] impls = ((GIFImageReader) instance).

@@ -2,6 +2,11 @@ package edu.illinois.library.cantaloupe.processor.codec;
 
 import edu.illinois.library.cantaloupe.image.MediaType;
 import edu.illinois.library.cantaloupe.image.Format;
+import edu.illinois.library.cantaloupe.processor.codec.bmp.BMPImageReader;
+import edu.illinois.library.cantaloupe.processor.codec.gif.GIFImageReader;
+import edu.illinois.library.cantaloupe.processor.codec.jpeg.JPEGImageReader;
+import edu.illinois.library.cantaloupe.processor.codec.png.PNGImageReader;
+import edu.illinois.library.cantaloupe.processor.codec.tiff.TIFFImageReader;
 import edu.illinois.library.cantaloupe.source.PathStreamFactory;
 import edu.illinois.library.cantaloupe.source.StreamFactory;
 import edu.illinois.library.cantaloupe.test.BaseTest;
@@ -44,9 +49,39 @@ public class ImageReaderFactoryTest extends BaseTest {
     }
 
     @Test
-    void testNewImageReaderWithUnsupportedFormat() {
+    void testNewImageReaderWithFormatUnknown() {
         assertThrows(IllegalArgumentException.class,
                 () -> instance.newImageReader(Paths.get("/dev/null"), Format.UNKNOWN));
+    }
+
+    @Test
+    void testNewImageReaderWithFormatBMP() {
+        ImageReader reader = instance.newImageReader(Format.BMP);
+        assertTrue(reader instanceof BMPImageReader);
+    }
+
+    @Test
+    void testNewImageReaderWithFormatGIF() {
+        ImageReader reader = instance.newImageReader(Format.GIF);
+        assertTrue(reader instanceof GIFImageReader);
+    }
+
+    @Test
+    void testNewImageReaderWithFormatJPEG() {
+        ImageReader reader = instance.newImageReader(Format.JPG);
+        assertTrue(reader instanceof JPEGImageReader);
+    }
+
+    @Test
+    void testNewImageReaderWithFormatPNG() {
+        ImageReader reader = instance.newImageReader(Format.PNG);
+        assertTrue(reader instanceof PNGImageReader);
+    }
+
+    @Test
+    void testNewImageReaderWithFormatTIF() {
+        ImageReader reader = instance.newImageReader(Format.TIF);
+        assertTrue(reader instanceof TIFFImageReader);
     }
 
     @Test

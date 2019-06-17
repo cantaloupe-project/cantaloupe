@@ -129,6 +129,16 @@ abstract class AbstractImageIOProcessor extends AbstractProcessor {
         return streamFactory;
     }
 
+    public boolean isSeeking() {
+        ImageReaderFactory rf = new ImageReaderFactory();
+        ImageReader reader = rf.newImageReader(getSourceFormat());
+        try {
+            return reader.canSeek();
+        } finally {
+            reader.dispose();
+        }
+    }
+
     public void setSourceFile(Path sourceFile) {
         close();
         this.streamFactory = null;

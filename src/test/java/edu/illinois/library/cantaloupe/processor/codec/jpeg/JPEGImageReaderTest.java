@@ -31,6 +31,13 @@ public class JPEGImageReaderTest extends AbstractImageReaderTest {
         return reader;
     }
 
+    /* canSeek() */
+
+    @Test
+    public void testCanSeek() {
+        assertFalse(instance.canSeek());
+    }
+
     @Test
     public void testGetApplicationPreferredIIOImplementations() {
         String[] impls = ((JPEGImageReader) instance).

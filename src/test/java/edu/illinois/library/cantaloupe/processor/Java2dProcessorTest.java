@@ -34,6 +34,20 @@ public class Java2dProcessorTest extends AbstractImageIOProcessorTest {
     }
 
     @Test
+    void testIsSeekingWithNonSeekableSource() throws Exception {
+        instance.setSourceFormat(Format.BMP);
+        instance.setSourceFile(TestUtil.getImage("bmp"));
+        assertFalse(instance.isSeeking());
+    }
+
+    @Test
+    void testIsSeekingWithSeekableSource() throws Exception {
+        instance.setSourceFormat(Format.TIF);
+        instance.setSourceFile(TestUtil.getImage("tif-rgb-1res-64x56x8-tiled-jpeg.tif"));
+        assertTrue(instance.isSeeking());
+    }
+
+    @Test
     void testGetSupportedFeatures() throws Exception {
         instance.setSourceFormat(getAnySupportedSourceFormat(instance));
 

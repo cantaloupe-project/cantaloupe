@@ -74,6 +74,11 @@ public class PdfBoxProcessorTest extends AbstractProcessorTest {
     }
 
     @Test
+    void testIsSeeking() {
+        assertFalse(instance.isSeeking());
+    }
+
+    @Test
     void testProcessWithPageOption() throws Exception {
         instance.setSourceFile(TestUtil.getImage("pdf-multipage.pdf"));
         final Info imageInfo = instance.readInfo();
@@ -147,7 +152,7 @@ public class PdfBoxProcessorTest extends AbstractProcessorTest {
     }
 
     @Test
-    void testValidateWithZeroPageArgument() throws Exception {
+    void testValidateWithZeroPageArgument() {
         instance.setSourceFile(TestUtil.getImage("pdf.pdf"));
 
         OperationList ops = new OperationList(
@@ -160,7 +165,7 @@ public class PdfBoxProcessorTest extends AbstractProcessorTest {
     }
 
     @Test
-    void testValidateWithNegativePageArgument() throws Exception {
+    void testValidateWithNegativePageArgument() {
         instance.setSourceFile(TestUtil.getImage("pdf.pdf"));
 
         OperationList ops = new OperationList(
@@ -173,7 +178,7 @@ public class PdfBoxProcessorTest extends AbstractProcessorTest {
     }
 
     @Test
-    void testValidateWithExcessivePageArgument() throws Exception {
+    void testValidateWithExcessivePageArgument() {
         instance.setSourceFile(TestUtil.getImage("pdf.pdf"));
 
         OperationList ops = new OperationList(

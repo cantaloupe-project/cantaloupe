@@ -171,6 +171,11 @@ public class TurboJpegProcessor extends AbstractProcessor
     }
 
     @Override
+    public boolean isSeeking() {
+        return false;
+    }
+
+    @Override
     public void setSourceFormat(Format format)
             throws SourceFormatException {
         if (!Format.JPG.equals(format)) {

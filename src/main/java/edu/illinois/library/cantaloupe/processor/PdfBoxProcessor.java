@@ -165,6 +165,11 @@ class PdfBoxProcessor extends AbstractProcessor
         return Math.max(page, 1);
     }
 
+    @Override
+    public boolean isSeeking() {
+        return false;
+    }
+
     private void readDocument() throws IOException {
         if (doc == null) {
             final Stopwatch watch = new Stopwatch();

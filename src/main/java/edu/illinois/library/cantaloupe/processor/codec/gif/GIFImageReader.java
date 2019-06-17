@@ -30,6 +30,10 @@ public final class GIFImageReader extends AbstractIIOImageReader
     static final String IMAGEIO_PLUGIN_CONFIG_KEY =
             "processor.imageio.gif.reader";
 
+    public boolean canSeek() {
+        return false;
+    }
+
     @Override
     protected String[] getApplicationPreferredIIOImplementations() {
         return new String[] { "com.sun.imageio.plugins.gif.GIFImageReader" };

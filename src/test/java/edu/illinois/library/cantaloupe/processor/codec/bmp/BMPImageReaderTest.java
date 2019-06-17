@@ -1,7 +1,6 @@
 package edu.illinois.library.cantaloupe.processor.codec.bmp;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
-import edu.illinois.library.cantaloupe.image.Compression;
 import edu.illinois.library.cantaloupe.processor.codec.AbstractImageReaderTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.junit.jupiter.api.Test;
@@ -29,6 +28,15 @@ public class BMPImageReaderTest extends AbstractImageReaderTest {
         reader.setSource(getSupportedFixture());
         return reader;
     }
+
+    /* canSeek() */
+
+    @Test
+    public void testCanSeek() {
+        assertFalse(instance.canSeek());
+    }
+
+    /* getApplicationPreferredIIOImplementations() */
 
     @Test
     public void testGetApplicationPreferredIIOImplementations() {

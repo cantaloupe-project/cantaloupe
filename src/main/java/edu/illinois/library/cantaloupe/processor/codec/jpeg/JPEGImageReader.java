@@ -50,6 +50,11 @@ public final class JPEGImageReader extends AbstractIIOImageReader
      */
     private static final String CMYK_ICC_PROFILE = "eciCMYK.icc";
 
+    @Override
+    public boolean canSeek() {
+        return false;
+    }
+
     /**
      * @return ICC profile to use for CMYK images that do not contain an
      *         embedded profile.

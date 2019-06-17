@@ -12,11 +12,10 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <project.reporting.outputEncoding>UTF-8
-        </project.reporting.outputEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <aws-sdk.version>1.11.538</aws-sdk.version>
         <jackson.version>2.9.8</jackson.version>
-        <jetty.version>9.4.17.v20190418</jetty.version>
+        <jetty.version>9.4.12.v20180830</jetty.version>
         <jruby.version>9.2.7.0</jruby.version>
         <surefire.version>3.0.0-M3</surefire.version>
     </properties>
