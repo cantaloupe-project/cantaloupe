@@ -58,6 +58,20 @@ public class Java2dProcessorTest extends ImageIOProcessorTest {
     }
 
     @Test
+    public void testIsSeekingWithNonSeekableSource() throws Exception {
+        instance.setSourceFormat(Format.BMP);
+        instance.setSourceFile(TestUtil.getImage("bmp"));
+        assertFalse(instance.isSeeking());
+    }
+
+    @Test
+    public void testIsSeekingWithSeekableSource() throws Exception {
+        instance.setSourceFormat(Format.TIF);
+        instance.setSourceFile(TestUtil.getImage("tif-rgb-1res-64x56x8-tiled-jpeg.tif"));
+        assertTrue(instance.isSeeking());
+    }
+
+    @Test
     public void testProcessWithAnimatedGIF() throws Exception {
         Path image = TestUtil.getImage("gif-animated-looping.gif");
         OperationList ops = new OperationList(new Encode(Format.GIF));

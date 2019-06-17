@@ -61,4 +61,9 @@ public class TurboJpegProcessorTest extends AbstractProcessorTest {
         assertEquals(expectedFeatures, instance.getSupportedFeatures());
     }
 
+    @Test
+    public void testIsSeeking() {
+        assertFalse(instance.isSeeking());
+    }
+
 }

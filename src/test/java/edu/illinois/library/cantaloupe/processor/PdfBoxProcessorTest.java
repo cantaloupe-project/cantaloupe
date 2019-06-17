@@ -69,6 +69,11 @@ public class PdfBoxProcessorTest extends AbstractProcessorTest {
     }
 
     @Test
+    public void testIsSeeking() {
+        assertFalse(instance.isSeeking());
+    }
+
+    @Test
     public void testProcessWithPageOption() throws Exception {
         instance.setSourceFile(TestUtil.getImage("pdf-multipage.pdf"));
         final Info imageInfo = instance.readInfo();

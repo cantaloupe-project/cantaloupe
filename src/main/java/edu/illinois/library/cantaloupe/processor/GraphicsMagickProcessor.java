@@ -443,6 +443,11 @@ class GraphicsMagickProcessor extends AbstractMagickProcessor
     }
 
     @Override
+    public boolean isSeeking() {
+        return false;
+    }
+
+    @Override
     public void process(final OperationList ops,
                         final Info info,
                         final OutputStream outputStream) throws ProcessorException {

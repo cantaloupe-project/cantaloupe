@@ -44,8 +44,38 @@ public class ImageReaderFactoryTest extends BaseTest {
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void testNewImageReaderWithUnsupportedFormat() throws Exception {
-        instance.newImageReader(Paths.get("/dev/null"), Format.UNKNOWN);
+    public void testNewImageReaderWithFormatUnknown() {
+        instance.newImageReader(Format.UNKNOWN);
+    }
+
+    @Test
+    public void testNewImageReaderWithFormatBMP() {
+        ImageReader reader = instance.newImageReader(Format.BMP);
+        assertTrue(reader instanceof BMPImageReader);
+    }
+
+    @Test
+    public void testNewImageReaderWithFormatGIF() {
+        ImageReader reader = instance.newImageReader(Format.GIF);
+        assertTrue(reader instanceof GIFImageReader);
+    }
+
+    @Test
+    public void testNewImageReaderWithFormatJPEG() {
+        ImageReader reader = instance.newImageReader(Format.JPG);
+        assertTrue(reader instanceof JPEGImageReader);
+    }
+
+    @Test
+    public void testNewImageReaderWithFormatPNG() {
+        ImageReader reader = instance.newImageReader(Format.PNG);
+        assertTrue(reader instanceof PNGImageReader);
+    }
+
+    @Test
+    public void testNewImageReaderWithFormatTIF() {
+        ImageReader reader = instance.newImageReader(Format.TIF);
+        assertTrue(reader instanceof TIFFImageReader);
     }
 
     @Test

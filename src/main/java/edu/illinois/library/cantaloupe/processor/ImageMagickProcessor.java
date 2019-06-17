@@ -665,6 +665,11 @@ class ImageMagickProcessor extends AbstractMagickProcessor
     }
 
     @Override
+    public boolean isSeeking() {
+        return false;
+    }
+
+    @Override
     public void process(final OperationList ops,
                         final Info imageInfo,
                         final OutputStream outputStream)

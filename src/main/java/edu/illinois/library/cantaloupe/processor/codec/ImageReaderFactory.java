@@ -26,6 +26,23 @@ public final class ImageReaderFactory {
         return SUPPORTED_FORMATS;
     }
 
+    public ImageReader newImageReader(Format format) {
+        switch (format) {
+            case BMP:
+                return new BMPImageReader();
+            case GIF:
+                return new GIFImageReader();
+            case JPG:
+                return new JPEGImageReader();
+            case PNG:
+                return new PNGImageReader();
+            case TIF:
+                return new TIFFImageReader();
+            default:
+                throw new IllegalArgumentException("Unsupported format: " + format);
+        }
+    }
+
     /**
      * Creates a reusable instance for reading from files.
      *
@@ -81,23 +98,6 @@ public final class ImageReaderFactory {
         ImageReader reader = newImageReader(format);
         reader.setSource(streamFactory);
         return reader;
-    }
-
-    private ImageReader newImageReader(Format format) {
-        switch (format) {
-            case BMP:
-                return new BMPImageReader();
-            case GIF:
-                return new GIFImageReader();
-            case JPG:
-                return new JPEGImageReader();
-            case PNG:
-                return new PNGImageReader();
-            case TIF:
-                return new TIFFImageReader();
-            default:
-                throw new IllegalArgumentException("Unsupported format: " + format);
-        }
     }
 
 }

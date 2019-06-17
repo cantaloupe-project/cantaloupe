@@ -141,6 +141,11 @@ public class GraphicsMagickProcessorTest extends MagickProcessorTest {
         assertEquals(0, instance.getWarnings().size());
     }
 
+    @Test
+    public void testIsSeeking() {
+        assertFalse(instance.isSeeking());
+    }
+
     /* process() */
 
     @Test

@@ -223,6 +223,11 @@ class KakaduNativeProcessor implements FileProcessor, StreamProcessor {
     }
 
     @Override
+    public boolean isSeeking() {
+        return true;
+    }
+
+    @Override
     public void setSourceFile(Path file) {
         this.sourceFile = file;
         reader.setSource(file);

@@ -20,7 +20,6 @@ import org.apache.commons.io.IOUtils;
 import org.apache.pdfbox.cos.COSObject;
 import org.apache.pdfbox.pdmodel.DefaultResourceCache;
 import org.apache.pdfbox.pdmodel.PDDocument;
-import org.apache.pdfbox.pdmodel.PDDocumentCatalog;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.common.PDMetadata;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
@@ -161,6 +160,11 @@ class PdfBoxProcessor extends AbstractProcessor
             }
         }
         return Math.max(page, 1);
+    }
+
+    @Override
+    public boolean isSeeking() {
+        return false;
     }
 
     private void readDocument() throws IOException {

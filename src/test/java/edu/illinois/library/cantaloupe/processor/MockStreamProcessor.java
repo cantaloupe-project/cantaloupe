@@ -56,13 +56,19 @@ public class MockStreamProcessor implements StreamProcessor {
     }
 
     @Override
-    public void process(OperationList opList, Info sourceInfo,
+    public boolean isSeeking() {
+        return false;
+    }
+
+    @Override
+    public void process(OperationList opList,
+                        Info sourceInfo,
                         OutputStream outputStream) {
         // no-op
     }
 
     @Override
-    public Info readInfo(){
+    public Info readInfo() {
         return new Info();
     }
 

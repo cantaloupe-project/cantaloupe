@@ -249,6 +249,11 @@ public class ImageMagickProcessorTest extends MagickProcessorTest {
         assertEquals(1, instance.getWarnings().size());
     }
 
+    @Test
+    public void testIsSeeking() {
+        assertFalse(instance.isSeeking());
+    }
+
     /* process() */
 
     @Ignore // TODO: why does this fail?

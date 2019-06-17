@@ -47,6 +47,11 @@ public class KakaduNativeProcessorTest extends AbstractProcessorTest {
     }
 
     @Test
+    public void testIsSeeking() {
+        assertTrue(instance.isSeeking());
+    }
+
+    @Test
     public void testProcessWithMetadataCopy() throws Exception {
         try (ByteArrayOutputStream os = new ByteArrayOutputStream()) {
             instance.setSourceFormat(Format.JP2);

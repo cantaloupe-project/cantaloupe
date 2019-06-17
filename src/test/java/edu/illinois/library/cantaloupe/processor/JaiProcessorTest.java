@@ -1,6 +1,8 @@
 package edu.illinois.library.cantaloupe.processor;
 
+import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
+import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -44,6 +46,20 @@ public class JaiProcessorTest extends ImageIOProcessorTest {
                 ProcessorFeature.SIZE_BY_WIDTH,
                 ProcessorFeature.SIZE_BY_WIDTH_HEIGHT);
         assertEquals(expectedFeatures, instance.getSupportedFeatures());
+    }
+
+    @Test
+    public void testIsSeekingWithNonSeekableSource() throws Exception {
+        instance.setSourceFormat(Format.BMP);
+        instance.setSourceFile(TestUtil.getImage("bmp"));
+        assertFalse(instance.isSeeking());
+    }
+
+    @Test
+    public void testIsSeekingWithSeekableSource() throws Exception {
+        instance.setSourceFormat(Format.TIF);
+        instance.setSourceFile(TestUtil.getImage("tif-rgb-1res-64x56x8-tiled-jpeg.tif"));
+        assertTrue(instance.isSeeking());
     }
 
 }
