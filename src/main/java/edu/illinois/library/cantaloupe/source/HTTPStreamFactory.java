@@ -30,12 +30,12 @@ final class HTTPStreamFactory implements StreamFactory {
     private static final int DEFAULT_CHUNK_CACHE_SIZE = (int) Math.pow(1024, 2);
 
     private final HttpClient client;
-    private final HttpSource.RequestInfo requestInfo;
+    private final HTTPRequestInfo requestInfo;
     private final long contentLength;
     private final boolean serverAcceptsRanges;
 
     HTTPStreamFactory(HttpClient client,
-                      HttpSource.RequestInfo requestInfo,
+                      HTTPRequestInfo requestInfo,
                       long contentLength,
                       boolean serverAcceptsRanges) {
         this.client              = client;

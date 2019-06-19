@@ -50,7 +50,7 @@ public class HTTPStreamFactoryTest extends BaseTest {
     private HTTPStreamFactory newInstance(boolean serverAcceptsRanges) {
         Map<String,String> headers = new HashMap<>();
         headers.put("X-Custom", "yes");
-        HttpSource.RequestInfo requestInfo = new HttpSource.RequestInfo(
+        HTTPRequestInfo requestInfo = new HTTPRequestInfo(
                 server.getHTTPURI().resolve("/" + PRESENT_READABLE_IDENTIFIER).toString(),
                 null, null, headers);
 

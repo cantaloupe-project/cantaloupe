@@ -599,7 +599,7 @@ abstract class HttpSourceTest extends AbstractSourceTest {
 
         server.start();
 
-        HttpSource.RequestInfo actual = instance.getRequestInfo();
+        HTTPRequestInfo actual = instance.getRequestInfo();
         assertEquals(getScheme() + "://example.org/bla/" + identifier,
                 actual.getURI());
         assertEquals("username", actual.getUsername());

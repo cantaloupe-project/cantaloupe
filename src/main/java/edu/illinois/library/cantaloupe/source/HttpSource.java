@@ -114,51 +114,6 @@ import java.util.concurrent.TimeoutException;
  */
 class HttpSource extends AbstractSource implements StreamSource {
 
-    static class RequestInfo {
-
-        private Headers headers = new Headers();
-        private String uri, username, secret;
-
-        RequestInfo(String uri, String username, String secret) {
-            this.uri = uri;
-            this.username = username;
-            this.secret = secret;
-        }
-
-        RequestInfo(String uri,
-                    String username,
-                    String secret,
-                    Map<String,?> headers) {
-            this(uri, username, secret);
-            if (headers != null) {
-                headers.forEach((key, value) ->
-                        this.headers.add(key, value.toString()));
-            }
-        }
-
-        Headers getHeaders() {
-            return headers;
-        }
-
-        String getSecret() {
-            return secret;
-        }
-
-        String getURI() {
-            return uri;
-        }
-
-        String getUsername() {
-            return username;
-        }
-
-        @Override
-        public String toString() {
-            return getURI() + "";
-        }
-
-    }
-
     /**
      * Encapsulates some parts of a HEAD response.
      */
@@ -239,9 +194,9 @@ class HttpSource extends AbstractSource implements StreamSource {
     /**
      * Cached by {@link #getRequestInfo()}.
      */
-    private RequestInfo requestInfo;
+    private HTTPRequestInfo requestInfo;
 
-    static synchronized HttpClient getHTTPClient(RequestInfo info) {
+    static synchronized HttpClient getHTTPClient(HTTPRequestInfo info) {
         if (jettyClient == null) {
             final Configuration config = Configuration.getInstance();
             final boolean allowInsecure = config.getBoolean(
@@ -380,7 +335,7 @@ class HttpSource extends AbstractSource implements StreamSource {
     private Format inferSourceFormatFromHEADResponse() {
         Format format = Format.UNKNOWN;
         try {
-            final RequestInfo requestInfo       = getRequestInfo();
+            final HTTPRequestInfo requestInfo   = getRequestInfo();
             final HEADResponseInfo responseInfo = fetchHEADResponseInfo();
 
             if (responseInfo.status >= 200 && responseInfo.status < 300) {
@@ -416,7 +371,7 @@ class HttpSource extends AbstractSource implements StreamSource {
     private Format inferSourceFormatFromMagicBytes() {
         Format format = Format.UNKNOWN;
         try {
-            final RequestInfo requestInfo = getRequestInfo();
+            final HTTPRequestInfo requestInfo = getRequestInfo();
             if (fetchHEADResponseInfo().acceptsRanges()) {
                 final RangedGETResponseInfo responseInfo
                         = fetchRangedGETResponseInfo();
@@ -447,7 +402,7 @@ class HttpSource extends AbstractSource implements StreamSource {
 
     @Override
     public StreamFactory newStreamFactory() throws IOException {
-        RequestInfo info;
+        HTTPRequestInfo info;
         try {
             info = getRequestInfo();
         } catch (IOException e) {
@@ -505,7 +460,7 @@ class HttpSource extends AbstractSource implements StreamSource {
 
     private ContentResponse request(HttpMethod method,
                                     Headers extraHeaders) throws IOException {
-        RequestInfo requestInfo;
+        HTTPRequestInfo requestInfo;
         try {
             requestInfo = getRequestInfo();
         } catch (InterruptedException | TimeoutException e) {
@@ -542,7 +497,7 @@ class HttpSource extends AbstractSource implements StreamSource {
      * @return Instance corresponding to {@link #identifier}. The result is
      *         cached.
      */
-    RequestInfo getRequestInfo() throws Exception {
+    HTTPRequestInfo getRequestInfo() throws Exception {
         if (requestInfo == null) {
             final LookupStrategy strategy =
                     LookupStrategy.from(Key.HTTPSOURCE_LOOKUP_STRATEGY);
@@ -558,11 +513,11 @@ class HttpSource extends AbstractSource implements StreamSource {
         return requestInfo;
     }
 
-    private RequestInfo getRequestInfoUsingBasicStrategy() {
+    private HTTPRequestInfo getRequestInfoUsingBasicStrategy() {
         final Configuration config = Configuration.getInstance();
         final String prefix = config.getString(Key.HTTPSOURCE_URL_PREFIX, "");
         final String suffix = config.getString(Key.HTTPSOURCE_URL_SUFFIX, "");
-        return new RequestInfo(
+        return new HTTPRequestInfo(
                 prefix + identifier.toString() + suffix,
                 config.getString(Key.HTTPSOURCE_BASIC_AUTH_USERNAME),
                 config.getString(Key.HTTPSOURCE_BASIC_AUTH_SECRET));
@@ -572,7 +527,7 @@ class HttpSource extends AbstractSource implements StreamSource {
      * @throws NoSuchFileException if the remote resource was not found.
      * @throws ScriptException     if the delegate method throws an exception.
      */
-    private RequestInfo getRequestInfoUsingScriptStrategy()
+    private HTTPRequestInfo getRequestInfoUsingScriptStrategy()
             throws NoSuchFileException, ScriptException {
         final DelegateProxy proxy   = getDelegateProxy();
         final Map<String, ?> result = proxy.getHttpSourceResourceInfo();
@@ -589,7 +544,7 @@ class HttpSource extends AbstractSource implements StreamSource {
         @SuppressWarnings("unchecked")
         final Map<String,?> headers = (Map<String,?>) result.get("headers");
 
-        return new RequestInfo(uri, username, secret, headers);
+        return new HTTPRequestInfo(uri, username, secret, headers);
     }
 
     @Override
