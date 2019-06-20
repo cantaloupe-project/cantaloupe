@@ -5,7 +5,7 @@ import edu.illinois.library.cantaloupe.http.Range;
 import edu.illinois.library.cantaloupe.http.Response;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.WebServer;
-import org.eclipse.jetty.client.HttpClient;
+import okhttp3.OkHttpClient;
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.handler.DefaultHandler;
 import org.junit.jupiter.api.AfterEach;
@@ -17,7 +17,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class JettyHTTPImageInputStreamClientTest extends BaseTest {
+public class OkHttpHTTPImageInputStreamClientTest extends BaseTest {
 
     private WebServer server;
 
@@ -49,11 +49,10 @@ public class JettyHTTPImageInputStreamClientTest extends BaseTest {
         server.start();
 
         final String uri = server.getHTTPURI().toString();
-        final HttpClient jettyClient = new HttpClient();
-        jettyClient.start();
+        final OkHttpClient httpClient = new OkHttpClient();
 
-        final JettyHTTPImageInputStreamClient instance =
-                new JettyHTTPImageInputStreamClient(jettyClient, uri);
+        final OkHttpHTTPImageInputStreamClient instance =
+                new OkHttpHTTPImageInputStreamClient(httpClient, uri);
 
         instance.sendHEADRequest();
     }
@@ -73,11 +72,10 @@ public class JettyHTTPImageInputStreamClientTest extends BaseTest {
         server.start();
 
         final String uri = server.getHTTPURI().toString();
-        final HttpClient jettyClient = new HttpClient();
-        jettyClient.start();
+        final OkHttpClient httpClient = new OkHttpClient();
 
-        final JettyHTTPImageInputStreamClient instance =
-                new JettyHTTPImageInputStreamClient(jettyClient, uri);
+        final OkHttpHTTPImageInputStreamClient instance =
+                new OkHttpHTTPImageInputStreamClient(httpClient, uri);
         Headers extraHeaders = new Headers();
         extraHeaders.add("X-Cats", "yes");
         instance.setExtraRequestHeaders(extraHeaders);
@@ -90,15 +88,15 @@ public class JettyHTTPImageInputStreamClientTest extends BaseTest {
         server.start();
 
         final String uri = server.getHTTPURI().toString() + "/jpg";
-        final HttpClient jettyClient = new HttpClient();
-        jettyClient.start();
+        final OkHttpClient httpClient = new OkHttpClient();
 
-        final JettyHTTPImageInputStreamClient instance =
-                new JettyHTTPImageInputStreamClient(jettyClient, uri);
+        final OkHttpHTTPImageInputStreamClient instance =
+                new OkHttpHTTPImageInputStreamClient(httpClient, uri);
 
         Response response = instance.sendGETRequest(new Range(0, 1, 4));
 
-        assertArrayEquals(new byte[] { (byte) 0xff, (byte) 0xd8 }, response.getBody());
+        assertArrayEquals(new byte[] { (byte) 0xff, (byte) 0xd8 },
+                response.getBody());
         assertEquals(206, response.getStatus());
     }
 
@@ -117,11 +115,10 @@ public class JettyHTTPImageInputStreamClientTest extends BaseTest {
         server.start();
 
         final String uri = server.getHTTPURI().toString() + "/jpg";
-        final HttpClient jettyClient = new HttpClient();
-        jettyClient.start();
+        final OkHttpClient httpClient = new OkHttpClient();
 
-        final JettyHTTPImageInputStreamClient instance =
-                new JettyHTTPImageInputStreamClient(jettyClient, uri);
+        final OkHttpHTTPImageInputStreamClient instance =
+                new OkHttpHTTPImageInputStreamClient(httpClient, uri);
         Headers extraHeaders = new Headers();
         extraHeaders.add("X-Cats", "yes");
         instance.setExtraRequestHeaders(extraHeaders);

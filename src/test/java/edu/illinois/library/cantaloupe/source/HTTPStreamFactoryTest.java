@@ -29,6 +29,7 @@ public class HTTPStreamFactoryTest extends BaseTest {
 
     private WebServer server;
 
+    @Override
     @BeforeEach
     public void setUp() throws Exception {
         super.setUp();
@@ -37,6 +38,7 @@ public class HTTPStreamFactoryTest extends BaseTest {
         server.setHTTP1Enabled(true);
     }
 
+    @Override
     @AfterEach
     public void tearDown() throws Exception {
         super.tearDown();
@@ -50,12 +52,12 @@ public class HTTPStreamFactoryTest extends BaseTest {
     private HTTPStreamFactory newInstance(boolean serverAcceptsRanges) {
         Map<String,String> headers = new HashMap<>();
         headers.put("X-Custom", "yes");
-        HttpSource.RequestInfo requestInfo = new HttpSource.RequestInfo(
+        HTTPRequestInfo requestInfo = new HTTPRequestInfo(
                 server.getHTTPURI().resolve("/" + PRESENT_READABLE_IDENTIFIER).toString(),
                 null, null, headers);
 
         return new HTTPStreamFactory(
-                HttpSource.getHTTPClient(requestInfo),
+                HttpSource.getHTTPClient(),
                 requestInfo,
                 5439,
                 serverAcceptsRanges);

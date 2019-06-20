@@ -3,49 +3,45 @@ package edu.illinois.library.cantaloupe.source;
 import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
-import edu.illinois.library.cantaloupe.http.Headers;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.MediaType;
 import edu.illinois.library.cantaloupe.script.DelegateMethod;
 import edu.illinois.library.cantaloupe.script.DelegateProxy;
-import org.eclipse.jetty.client.HttpClient;
-import org.eclipse.jetty.client.HttpClientTransport;
-import org.eclipse.jetty.client.api.AuthenticationStore;
-import org.eclipse.jetty.client.api.ContentResponse;
-import org.eclipse.jetty.client.api.Request;
-import org.eclipse.jetty.client.http.HttpClientTransportOverHTTP;
-import org.eclipse.jetty.client.util.BasicAuthentication;
-import org.eclipse.jetty.http.HttpField;
-import org.eclipse.jetty.http.HttpFields;
-import org.eclipse.jetty.http.HttpMethod;
-import org.eclipse.jetty.http.HttpStatus;
-import org.eclipse.jetty.util.ssl.SslContextFactory;
+import okhttp3.Headers;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.X509TrustManager;
 import javax.script.ScriptException;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.AccessDeniedException;
 import java.nio.file.NoSuchFileException;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
+import java.security.cert.X509Certificate;
+import java.time.Duration;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 /**
- * <p>Provides access to source content located on an HTTP(S) server.</p>
+ * <p>Provides access to source content located on an HTTP(S) server. Backed by
+ * an <a href="http://square.github.io/okhttp/">OkHttp</a> client.</p>
  *
  * <h1>Protocol Support</h1>
  *
- * <p>HTTP/1.1 and HTTPS/1.1 are supported.</p>
- *
- * <p>HTTP/2 is not supported.</p>
+ * <p>HTTP/1.x, HTTPS/1.x, and HTTPS/2.0 are supported.</p>
  *
  * <h1>Format Inference</h1>
  *
@@ -73,7 +69,6 @@ import java.util.concurrent.TimeoutException;
  *     <li>If server supports ranges:
  *         <ol>
  *             <li>If {@link FormatIterator#next()} } needs to check magic
- *             bytes:
  *                 <ol>
  *                     <li>Ranged {@literal GET}</li>
  *                 </ol>
@@ -111,69 +106,23 @@ import java.util.concurrent.TimeoutException;
  *     returned from the delegate method.</li>
  * </ul>
  *
- * @see <a href="http://www.eclipse.org/jetty/documentation/current/http-client.html">
- *     Jetty HTTP Client</a>
  * @author Alex Dolski UIUC
  */
 class HttpSource extends AbstractSource implements StreamSource {
 
-    static class RequestInfo {
-
-        private Headers headers = new Headers();
-        private String uri, username, secret;
-
-        RequestInfo(String uri, String username, String secret) {
-            this.uri = uri;
-            this.username = username;
-            this.secret = secret;
-        }
-
-        RequestInfo(String uri,
-                    String username,
-                    String secret,
-                    Map<String,?> headers) {
-            this(uri, username, secret);
-            if (headers != null) {
-                headers.forEach((key, value) ->
-                        this.headers.add(key, value.toString()));
-            }
-        }
-
-        Headers getHeaders() {
-            return headers;
-        }
-
-        String getSecret() {
-            return secret;
-        }
-
-        String getURI() {
-            return uri;
-        }
-
-        String getUsername() {
-            return username;
-        }
-
-        @Override
-        public String toString() {
-            return getURI() + "";
-        }
-
-    }
-
     /**
-     * Encapsulates some parts of a HEAD response.
+     * Encapsulates the status code and headers of a HEAD response.
      */
     private static class HEADResponseInfo {
 
         int status;
-        HttpFields headers;
+        Headers headers;
 
-        static HEADResponseInfo fromResponse(ContentResponse response) {
+        static HEADResponseInfo fromResponse(Response response)
+                throws IOException {
             HEADResponseInfo info = new HEADResponseInfo();
-            info.status  = response.getStatus();
-            info.headers = response.getHeaders();
+            info.status           = response.code();
+            info.headers          = response.headers();
             return info;
         }
 
@@ -182,15 +131,16 @@ class HttpSource extends AbstractSource implements StreamSource {
         }
 
         long getContentLength() {
-            return headers.getLongField("Content-Length");
+            String value = headers.get("Content-Length");
+            return (value != null) ? Long.parseLong(value) : 0;
         }
 
     }
 
     /**
-     * Encapsulates parts of a ranged GET response. The range specifies a small
-     * part of the beginning of the resource to use for the purpose of
-     * inferring its format.
+     * Encapsulates the status code, headers, and body of a ranged GET
+     * response. The range specifies a small part of the beginning of the
+     * resource to use for the purpose of inferring its format.
      */
     private static class RangedGETResponseInfo extends HEADResponseInfo {
 
@@ -200,13 +150,16 @@ class HttpSource extends AbstractSource implements StreamSource {
          * Ranged response entity, with a maximum length of {@link
          * #RANGE_LENGTH}.
          */
-        byte[] entity;
+        private byte[] entity;
 
-        static RangedGETResponseInfo fromResponse(ContentResponse response) {
+        static RangedGETResponseInfo fromResponse(Response response)
+                throws IOException {
             RangedGETResponseInfo info = new RangedGETResponseInfo();
-            info.status  = response.getStatus();
-            info.headers = response.getHeaders();
-            info.entity  = response.getContent();
+            info.status                = response.code();
+            info.headers               = response.headers();
+            if (response.body() != null) {
+                info.entity = response.body().bytes();
+            }
             return info;
         }
 
@@ -257,13 +210,13 @@ class HttpSource extends AbstractSource implements StreamSource {
             @Override
             public Format check() {
                 try {
-                    final RequestInfo requestInfo = getRequestInfo();
+                    final HTTPRequestInfo requestInfo = getRequestInfo();
                     final HEADResponseInfo responseInfo = fetchHEADResponseInfo();
 
                     if (responseInfo.status >= 200 && responseInfo.status < 300) {
-                        HttpField field = responseInfo.headers.getField("Content-Type");
-                        if (field != null && field.getValue() != null) {
-                            Format format = MediaType.fromContentType(field.getValue()).toFormat();
+                        String field = responseInfo.headers.get("Content-Type");
+                        if (field != null) {
+                            Format format = MediaType.fromContentType(field).toFormat();
                             if (Format.UNKNOWN.equals(format)) {
                                 LOGGER.debug("Unrecognized Content-Type header value for HEAD {}",
                                         requestInfo.getURI());
@@ -296,7 +249,7 @@ class HttpSource extends AbstractSource implements StreamSource {
             @Override
             public Format check() {
                 try {
-                    final RequestInfo requestInfo = getRequestInfo();
+                    final HTTPRequestInfo requestInfo = getRequestInfo();
                     if (fetchHEADResponseInfo().acceptsRanges()) {
                         final RangedGETResponseInfo responseInfo
                                 = fetchRangedGETResponseInfo();
@@ -384,7 +337,7 @@ class HttpSource extends AbstractSource implements StreamSource {
 
     private static final int DEFAULT_REQUEST_TIMEOUT = 30;
 
-    private static HttpClient jettyClient;
+    private static OkHttpClient httpClient;
 
     /**
      * Cached {@link #fetchHEADResponseInfo() HEAD response info}.
@@ -399,59 +352,63 @@ class HttpSource extends AbstractSource implements StreamSource {
     /**
      * Cached by {@link #getRequestInfo()}.
      */
-    private RequestInfo requestInfo;
+    private HTTPRequestInfo requestInfo;
 
     private FormatIterator<Format> formatIterator = new FormatIterator<>();
 
-    static synchronized HttpClient getHTTPClient(RequestInfo info) {
-        if (jettyClient == null) {
+    static synchronized OkHttpClient getHTTPClient() {
+        if (httpClient == null) {
+            final OkHttpClient.Builder builder = new OkHttpClient.Builder()
+                    .followRedirects(true)
+                    .connectTimeout(getRequestTimeout().getSeconds(), TimeUnit.SECONDS)
+                    .readTimeout(getRequestTimeout().getSeconds(), TimeUnit.SECONDS)
+                    .writeTimeout(getRequestTimeout().getSeconds(), TimeUnit.SECONDS);
+
             final Configuration config = Configuration.getInstance();
             final boolean allowInsecure = config.getBoolean(
                     Key.HTTPSOURCE_ALLOW_INSECURE, false);
-            SslContextFactory sslContextFactory =
-                    new SslContextFactory(allowInsecure);
-            sslContextFactory.setTrustAll(allowInsecure);
+
             if (allowInsecure) {
-                sslContextFactory.setExcludeCipherSuites("");
+                try {
+                    X509TrustManager[] tm = new X509TrustManager[]{
+                            new X509TrustManager() {
+                                @Override
+                                public void checkClientTrusted(X509Certificate[] chain,
+                                                               String authType) {}
+                                @Override
+                                public void checkServerTrusted(X509Certificate[] chain,
+                                                               String authType) {}
+                                @Override
+                                public X509Certificate[] getAcceptedIssuers() {
+                                    return new X509Certificate[0];
+                                }
+                            }};
+                    SSLContext sslContext = SSLContext.getInstance("TLS");
+                    sslContext.init(null, tm, new SecureRandom());
+                    builder.sslSocketFactory(sslContext.getSocketFactory(), tm[0]);
+                    builder.hostnameVerifier((s, sslSession) -> true);
+                } catch (KeyManagementException | NoSuchAlgorithmException e) {
+                    LOGGER.error("getHTTPClient(): {}", e.getMessage(), e);
+                    throw new RuntimeException(e);
+                }
             }
-
-            HttpClientTransport transport = new HttpClientTransportOverHTTP();
-            jettyClient = new HttpClient(transport, sslContextFactory);
-            jettyClient.setFollowRedirects(true);
-            jettyClient.setUserAgentField(new HttpField("User-Agent", getUserAgent()));
-
-            try {
-                jettyClient.start();
-            } catch (Exception e) {
-                LOGGER.error("getHTTPClient(): {}", e.getMessage());
-            }
+            httpClient = builder.build();
         }
-
-        // Add Basic auth credentials to the authentication store.
-        // https://www.eclipse.org/jetty/documentation/9.4.x/http-client-authentication.html
-        if (info.getUsername() != null && info.getSecret() != null) {
-            AuthenticationStore auth = jettyClient.getAuthenticationStore();
-            try {
-                auth.addAuthenticationResult(new BasicAuthentication.BasicResult(
-                        new URI(info.getURI()), info.getUsername(), info.getSecret()));
-            } catch (URISyntaxException e) {
-                LOGGER.warn("getHTTPClient(): {}", e.getMessage());
-            }
-        }
-        return jettyClient;
+        return httpClient;
     }
 
     /**
      * @return Request timeout from the application configuration, or a
      *         reasonable default if not set.
      */
-    static int getRequestTimeout() {
-        return Configuration.getInstance().getInt(
+    private static Duration getRequestTimeout() {
+        int timeout = Configuration.getInstance().getInt(
                 Key.HTTPSOURCE_REQUEST_TIMEOUT,
                 DEFAULT_REQUEST_TIMEOUT);
+        return Duration.ofSeconds(timeout);
     }
 
-    private static String getUserAgent() {
+    static String getUserAgent() {
         return String.format("%s/%s (%s/%s; java/%s; %s/%s)",
                 HttpSource.class.getSimpleName(),
                 Application.getVersion(),
@@ -467,15 +424,11 @@ class HttpSource extends AbstractSource implements StreamSource {
         fetchHEADResponseInfo();
 
         final int status = headResponseInfo.status;
-
-        if (status >= HttpStatus.BAD_REQUEST_400) {
+        if (status >= 400) {
             final String statusLine = "HTTP " + status;
-
-            if (status == HttpStatus.NOT_FOUND_404
-                    || status == HttpStatus.GONE_410) {
+            if (status == 404 || status == 410) {        // not found or gone
                 throw new NoSuchFileException(statusLine);
-            } else if (status == HttpStatus.UNAUTHORIZED_401
-                    || status == HttpStatus.FORBIDDEN_403) {
+            } else if (status == 401 || status == 403) { // unauthorized or forbidden
                 throw new AccessDeniedException(statusLine);
             } else {
                 throw new IOException(statusLine);
@@ -490,7 +443,7 @@ class HttpSource extends AbstractSource implements StreamSource {
 
     @Override
     public StreamFactory newStreamFactory() throws IOException {
-        RequestInfo info;
+        HTTPRequestInfo info;
         try {
             info = getRequestInfo();
         } catch (IOException e) {
@@ -504,7 +457,7 @@ class HttpSource extends AbstractSource implements StreamSource {
             LOGGER.debug("Resolved {} to {}", identifier, info.getURI());
             fetchHEADResponseInfo();
             return new HTTPStreamFactory(
-                    getHTTPClient(info),
+                    getHTTPClient(),
                     info,
                     headResponseInfo.getContentLength(),
                     headResponseInfo.acceptsRanges());
@@ -518,7 +471,7 @@ class HttpSource extends AbstractSource implements StreamSource {
      */
     private HEADResponseInfo fetchHEADResponseInfo() throws IOException {
         if (headResponseInfo == null) {
-            ContentResponse response = request(HttpMethod.HEAD);
+            Response response = request("HEAD");
             headResponseInfo = HEADResponseInfo.fromResponse(response);
         }
         return headResponseInfo;
@@ -531,62 +484,58 @@ class HttpSource extends AbstractSource implements StreamSource {
     private RangedGETResponseInfo fetchRangedGETResponseInfo()
             throws IOException {
         if (rangedGETResponseInfo == null) {
-            final Headers extraHeaders = new Headers();
-            extraHeaders.add("Range",
+            Map<String,String> extraHeaders = Map.of("Range",
                     "bytes=0-" + (RangedGETResponseInfo.RANGE_LENGTH - 1));
-
-            ContentResponse response = request(HttpMethod.GET, extraHeaders);
-            rangedGETResponseInfo =
-                    RangedGETResponseInfo.fromResponse(response);
+            try (Response response = request("GET", extraHeaders)) {
+                rangedGETResponseInfo =
+                        RangedGETResponseInfo.fromResponse(response);
+            }
         }
         return rangedGETResponseInfo;
     }
 
-    private ContentResponse request(HttpMethod method) throws IOException {
-        return request(method, new Headers());
+    private Response request(String method) throws IOException {
+        return request(method, Collections.emptyMap());
     }
 
-    private ContentResponse request(HttpMethod method,
-                                    Headers extraHeaders) throws IOException {
-        RequestInfo requestInfo;
+    private Response request(String method,
+                             Map<String,String> extraHeaders) throws IOException {
+        HTTPRequestInfo requestInfo;
         try {
             requestInfo = getRequestInfo();
-        } catch (InterruptedException | TimeoutException e) {
-            LOGGER.error(e.getMessage(), e);
-            throw new IOException(e);
         } catch (Exception e) {
             LOGGER.error("request(): {}", e.getMessage());
             throw new IOException(e.getMessage(), e);
         }
 
-        Request request = getHTTPClient(requestInfo)
-                .newRequest(requestInfo.getURI())
-                .timeout(getRequestTimeout(), TimeUnit.SECONDS)
-                .method(method);
-        // Add any additional headers returned from the delegate method.
-        extraHeaders.addAll(requestInfo.getHeaders());
-        // Then add them all to the request.
-        extraHeaders.forEach(h -> request.header(h.getName(), h.getValue()));
+        Request.Builder builder = new Request.Builder()
+                .method(method, null)
+                .url(requestInfo.getURI())
+                .addHeader("User-Agent", getUserAgent());
+        // Add any additional headers.
+        requestInfo.getHeaders().forEach(h ->
+                builder.addHeader(h.getName(), h.getValue()));
+        extraHeaders.forEach(builder::addHeader);
+
+        if (requestInfo.getUsername() != null &&
+                requestInfo.getSecret() != null) {
+            builder.addHeader("Authorization",
+                    "Basic " + requestInfo.getBasicAuthToken());
+        }
+
+        Request request = builder.build();
 
         LOGGER.debug("Requesting {} {} (extra headers: {})",
                 method, requestInfo.getURI(), extraHeaders);
 
-        try {
-            return request.send();
-        } catch (ExecutionException e) {
-            LOGGER.debug("ExecutionException from Request.send(): {}",
-                    e.getMessage(), e);
-            throw new AccessDeniedException(requestInfo.getURI());
-        } catch (InterruptedException | TimeoutException e) {
-            throw new IOException(e);
-        }
+        return getHTTPClient().newCall(request).execute();
     }
 
     /**
      * @return Instance corresponding to {@link #identifier}. The result is
      *         cached.
      */
-    RequestInfo getRequestInfo() throws Exception {
+    HTTPRequestInfo getRequestInfo() throws Exception {
         if (requestInfo == null) {
             final LookupStrategy strategy =
                     LookupStrategy.from(Key.HTTPSOURCE_LOOKUP_STRATEGY);
@@ -602,11 +551,11 @@ class HttpSource extends AbstractSource implements StreamSource {
         return requestInfo;
     }
 
-    private RequestInfo getRequestInfoUsingBasicStrategy() {
+    private HTTPRequestInfo getRequestInfoUsingBasicStrategy() {
         final Configuration config = Configuration.getInstance();
         final String prefix = config.getString(Key.HTTPSOURCE_URL_PREFIX, "");
         final String suffix = config.getString(Key.HTTPSOURCE_URL_SUFFIX, "");
-        return new RequestInfo(
+        return new HTTPRequestInfo(
                 prefix + identifier.toString() + suffix,
                 config.getString(Key.HTTPSOURCE_BASIC_AUTH_USERNAME),
                 config.getString(Key.HTTPSOURCE_BASIC_AUTH_SECRET));
@@ -616,7 +565,7 @@ class HttpSource extends AbstractSource implements StreamSource {
      * @throws NoSuchFileException if the remote resource was not found.
      * @throws ScriptException     if the delegate method throws an exception.
      */
-    private RequestInfo getRequestInfoUsingScriptStrategy()
+    private HTTPRequestInfo getRequestInfoUsingScriptStrategy()
             throws NoSuchFileException, ScriptException {
         final DelegateProxy proxy   = getDelegateProxy();
         final Map<String, ?> result = proxy.getHttpSourceResourceInfo();
@@ -624,7 +573,7 @@ class HttpSource extends AbstractSource implements StreamSource {
         if (result.isEmpty()) {
             throw new NoSuchFileException(
                     DelegateMethod.HTTPSOURCE_RESOURCE_INFO +
-                    " returned nil for " + identifier);
+                            " returned nil for " + identifier);
         }
 
         final String uri            = (String) result.get("uri");
@@ -633,7 +582,7 @@ class HttpSource extends AbstractSource implements StreamSource {
         @SuppressWarnings("unchecked")
         final Map<String,?> headers = (Map<String,?>) result.get("headers");
 
-        return new RequestInfo(uri, username, secret, headers);
+        return new HTTPRequestInfo(uri, username, secret, headers);
     }
 
     @Override
@@ -646,22 +595,17 @@ class HttpSource extends AbstractSource implements StreamSource {
         requestInfo           = null;
         headResponseInfo      = null;
         rangedGETResponseInfo = null;
-        formatIterator        = new FormatIterator<>();
     }
 
     /**
-     * Stops the shared Jetty client.
+     * Stops the shared HTTP client.
      */
     @Override
     public void shutdown() {
         synchronized (HttpSource.class) {
-            if (jettyClient != null) {
-                try {
-                    jettyClient.stop();
-                    jettyClient = null;
-                } catch (Exception e) {
-                    LOGGER.error("shutdown(): {}", e.getMessage());
-                }
+            if (httpClient != null) {
+                httpClient.dispatcher().executorService().shutdown();
+                httpClient.connectionPool().evictAll();
             }
         }
     }

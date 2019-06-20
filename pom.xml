@@ -124,6 +124,13 @@
             <artifactId>azure-storage</artifactId>
             <version>5.2.0</version>
         </dependency>
+        <!-- HTTP client used by HttpSource
+        Also a transitive dependency of io.minio:minio. -->
+        <dependency>
+            <groupId>com.squareup.okhttp3</groupId>
+            <artifactId>okhttp</artifactId>
+            <version>3.7.0</version>
+        </dependency>
         <!-- Provides a JDBC connection pool for JdbcSource and JdbcCache -->
         <dependency>
             <groupId>com.zaxxer</groupId>
@@ -250,18 +257,6 @@
             <artifactId>janino</artifactId>
             <version>2.7.8</version>
         </dependency>
-        <!-- Provides HTTP/2 support in the Jetty client.
-        N.B.: ALPN support is in a different module. -->
-        <dependency>
-            <groupId>org.eclipse.jetty.http2</groupId>
-            <artifactId>http2-client</artifactId>
-            <version>${jetty.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.eclipse.jetty.http2</groupId>
-            <artifactId>http2-http-client-transport</artifactId>
-            <version>${jetty.version}</version>
-        </dependency>
         <!-- Provides HTTP/2 support in the Jetty server.
         N.B.: ALPN support is in a different module. -->
         <dependency>
@@ -269,24 +264,11 @@
             <artifactId>http2-server</artifactId>
             <version>${jetty.version}</version>
         </dependency>
-        <!-- Enables support for ALPN in Jetty client.
-        N.B.: in Java 8, this requires an alpn-boot JAR on the boot classpath. -->
-        <dependency>
-            <groupId>org.eclipse.jetty</groupId>
-            <artifactId>jetty-alpn-client</artifactId>
-            <version>${jetty.version}</version>
-        </dependency>
         <!-- Enables support for ALPN in Jetty server.
         N.B.: in Java 8, this requires an alpn-boot JAR on the boot classpath. -->
         <dependency>
             <groupId>org.eclipse.jetty</groupId>
             <artifactId>jetty-alpn-server</artifactId>
-            <version>${jetty.version}</version>
-        </dependency>
-        <!-- Enables Jetty client to support the ALPN built into Java 9 -->
-        <dependency>
-            <groupId>org.eclipse.jetty</groupId>
-            <artifactId>jetty-alpn-java-client</artifactId>
             <version>${jetty.version}</version>
         </dependency>
         <!-- Enables Jetty server to support the ALPN built into Java 9 -->
@@ -304,11 +286,6 @@
         <dependency>
             <groupId>org.eclipse.jetty</groupId>
             <artifactId>jetty-io</artifactId>
-            <version>${jetty.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.eclipse.jetty</groupId>
-            <artifactId>jetty-client</artifactId>
             <version>${jetty.version}</version>
         </dependency>
         <!-- Provides the standalone servlet container -->

@@ -410,7 +410,7 @@ abstract class HttpSourceTest extends AbstractSourceTest {
 
         instance.setIdentifier(new Identifier("id"));
         assertEquals(getScheme() + "://example.org/prefix/id",
-                instance.getRequestInfo().getURI().toString());
+                instance.getRequestInfo().getURI());
     }
 
     @Test
@@ -500,7 +500,7 @@ abstract class HttpSourceTest extends AbstractSourceTest {
 
         server.start();
 
-        HttpSource.RequestInfo actual = instance.getRequestInfo();
+        HTTPRequestInfo actual = instance.getRequestInfo();
         assertEquals(getScheme() + "://example.org/bla/" + identifier,
                 actual.getURI());
         assertEquals("username", actual.getUsername());
