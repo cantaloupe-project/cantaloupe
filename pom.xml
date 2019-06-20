@@ -122,6 +122,13 @@
             <artifactId>azure-storage</artifactId>
             <version>5.2.0</version>
         </dependency>
+        <!-- HTTP client used by HttpSource
+        Also a transitive dependency of io.minio:minio. -->
+        <dependency>
+            <groupId>com.squareup.okhttp3</groupId>
+            <artifactId>okhttp</artifactId>
+            <version>3.7.0</version>
+        </dependency>
         <!-- Provides a JDBC connection pool for JdbcSource and JdbcCache -->
         <dependency>
             <groupId>com.zaxxer</groupId>

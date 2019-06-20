@@ -53,6 +53,7 @@ public final class SourceFactory {
                 new AzureStorageSource(),
                 new FilesystemSource(),
                 new HttpSource(),
+                new HttpSource2(),
                 new JdbcSource(),
                 new S3Source()));
     }

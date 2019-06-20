@@ -2,6 +2,11 @@
 
 ## 4.1.3
 
+* Added an undocumented `HttpSource2` source which works the same as
+  `HttpSource`, and uses the same configuration keys and delegate method, but
+  is backed by a different HTTP client library. If you are having problems with
+  `HttpSource`, try this one instead. The current implementation of
+  `HttpSource` will probably be replaced by this one in the next major version.
 * Fixed failing to source-cache non-selectively-readable images when using
   Java2dProcessor or JaiProcessor with the source cache enabled and a source
   for which chunking is enabled.

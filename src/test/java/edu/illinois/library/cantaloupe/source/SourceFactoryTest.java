@@ -25,7 +25,7 @@ public class SourceFactoryTest extends BaseTest {
 
     @Test
     public void getAllSources() {
-        assertEquals(5, SourceFactory.getAllSources().size());
+        assertEquals(6, SourceFactory.getAllSources().size());
     }
 
     @Test
