@@ -471,8 +471,9 @@ class HttpSource extends AbstractSource implements StreamSource {
      */
     private HEADResponseInfo fetchHEADResponseInfo() throws IOException {
         if (headResponseInfo == null) {
-            Response response = request("HEAD");
-            headResponseInfo = HEADResponseInfo.fromResponse(response);
+            try (Response response = request("HEAD")) {
+                headResponseInfo = HEADResponseInfo.fromResponse(response);
+            }
         }
         return headResponseInfo;
     }
