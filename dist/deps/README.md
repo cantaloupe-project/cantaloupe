@@ -1,7 +1,7 @@
 # About This Folder
 
 Inside each platform-specific folder is a `lib` folder containing the Kakadu
-shared library needed by both `KakaduNativeProcessor`. See the user manual ->
+shared library needed by `KakaduNativeProcessor`. See the user manual ->
 Processors section -> KakaduNativeProcessor section for setup steps.
 
 # License
