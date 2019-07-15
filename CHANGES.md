@@ -49,6 +49,8 @@
   is backed by a different HTTP client library. If you are having problems with
   `HttpSource`, try this one instead. The current implementation of
   `HttpSource` will probably be replaced by this one in the next major version.
+* Fixed a missing `resulting_size` key in the delegate script's `options` hash,
+  introduced in 4.1.
 * Fixed failing to source-cache non-selectively-readable images when using
   Java2dProcessor or JaiProcessor with the source cache enabled and a source
   for which chunking is enabled.
