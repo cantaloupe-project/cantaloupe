@@ -66,9 +66,6 @@ public class ImageResource extends IIIF2Resource {
         if (redirectToNormalizedScaleConstraint()) {
             return;
         }
-        if (!authorize()) {
-            return;
-        }
 
         final Configuration config     = Configuration.getInstance();
         final List<String> args        = getPathArguments();
@@ -180,6 +177,10 @@ public class ImageResource extends IIIF2Resource {
                 getRequestContext().setOperationList(ops, fullSize);
             } catch (IllegalArgumentException | IndexOutOfBoundsException e) {
                 throw new IllegalClientArgumentException(e);
+            }
+
+            if (!authorize()) {
+                return;
             }
 
             processor.validate(ops, fullSize);
