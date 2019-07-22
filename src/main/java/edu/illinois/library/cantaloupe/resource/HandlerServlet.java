@@ -1,5 +1,7 @@
 package edu.illinois.library.cantaloupe.resource;
 
+import edu.illinois.library.cantaloupe.config.Configuration;
+import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.http.Method;
 import edu.illinois.library.cantaloupe.http.Status;
 import edu.illinois.library.cantaloupe.util.Stopwatch;
@@ -142,6 +144,7 @@ public class HandlerServlet extends HttpServlet {
         // Try to use an ErrorResource, which will render an HTML template.
         ErrorResource resource = new ErrorResource(t);
         try {
+            response.setStatus(500);
             response.setContentType("text/html;charset=UTF-8");
             resource.setRequest(new Request(request));
             resource.setResponse(response);
@@ -152,10 +155,13 @@ public class HandlerServlet extends HttpServlet {
             response.setContentType("text/plain;charset=UTF-8");
             try {
                 PrintWriter writer = response.getWriter();
-                writer.println("Unrecoverable error in " +
-                        HandlerServlet.class.getSimpleName() + ":");
-                writer.println("");
-                t2.printStackTrace(writer);
+                writer.print("Unrecoverable error in " +
+                        HandlerServlet.class.getSimpleName());
+                if (isPrintingStackTraces()) {
+                    writer.println(":");
+                    writer.println("");
+                    t2.printStackTrace(writer);
+                }
             } catch (IllegalStateException e) {
                 if ("STREAM".equals(e.getMessage())) {
                     // This means that something was writing to the response
@@ -175,6 +181,11 @@ public class HandlerServlet extends HttpServlet {
         } finally {
             resource.destroy();
         }
+    }
+
+    private boolean isPrintingStackTraces() {
+        Configuration config = Configuration.getInstance();
+        return config.getBoolean(Key.PRINT_STACK_TRACE_ON_ERROR_PAGES, false);
     }
 
 }
