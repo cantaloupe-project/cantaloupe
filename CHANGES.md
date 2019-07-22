@@ -14,6 +14,8 @@
   for which chunking is enabled.
 * The Jetty client used by HttpSource has been downgraded to the version used
   in 4.1.1 due to a bug in the version used in 4.1.2.
+* Fixed the behavior of the print_stack_trace_on_error_pages configuration key
+  in the context of certain unrecoverable errors.
 
 ## 4.1.2
 
