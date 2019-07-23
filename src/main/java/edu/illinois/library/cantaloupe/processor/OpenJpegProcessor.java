@@ -23,7 +23,6 @@ import edu.illinois.library.cantaloupe.processor.codec.ImageWriterFactory;
 import edu.illinois.library.cantaloupe.processor.codec.ImageWriterFacade;
 import edu.illinois.library.cantaloupe.processor.codec.jpeg2000.JPEG2000MetadataReader;
 import edu.illinois.library.cantaloupe.processor.codec.ReaderHint;
-import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
 import edu.illinois.library.cantaloupe.source.stream.BufferedImageInputStream;
 import edu.illinois.library.cantaloupe.util.CommandLocator;
 import org.apache.commons.io.IOUtils;
@@ -354,11 +353,6 @@ class OpenJpegProcessor extends AbstractProcessor implements FileProcessor {
     @Override
     public Path getSourceFile() {
         return sourceFile;
-    }
-
-    @Override
-    public Set<ProcessorFeature> getSupportedFeatures() {
-        return Java2DPostProcessor.SUPPORTED_FEATURES;
     }
 
     @Override

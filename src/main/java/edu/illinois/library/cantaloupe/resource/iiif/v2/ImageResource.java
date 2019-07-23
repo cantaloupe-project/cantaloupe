@@ -246,7 +246,6 @@ public class ImageResource extends IIIF2Resource {
 
         if (config.getBoolean(Key.IIIF_2_RESTRICT_TO_SIZES, false)) {
             final ImageInfoFactory factory = new ImageInfoFactory(
-                    processor.getSupportedFeatures(),
                     processor.getSupportedIIIF2Qualities(),
                     processor.getAvailableOutputFormats());
 

@@ -50,7 +50,6 @@ final class ImageInfoFactory {
                             ServiceFeature.JSON_LD_MEDIA_TYPE,
                             ServiceFeature.PROFILE_LINK_HEADER));
 
-    private Set<ProcessorFeature> processorFeatures;
     private Set<Quality> processorQualities;
     private Set<Format> processorOutputFormats;
     private DelegateProxy delegateProxy;
@@ -58,15 +57,12 @@ final class ImageInfoFactory {
     private int maxPixels, minSize, minTileSize;
 
     /**
-     * @param processorFeatures      Return value of {@link
-     *                               Processor#getSupportedFeatures()}.
      * @param processorQualities     Return value of {@link
      *                               Processor#getSupportedIIIF2Qualities()}.
      * @param processorOutputFormats Return value of {@link
      *                               Processor#getAvailableOutputFormats()}.
      */
-    ImageInfoFactory(final Set<ProcessorFeature> processorFeatures,
-                     final Set<Quality> processorQualities,
+    ImageInfoFactory(final Set<Quality> processorQualities,
                      final Set<Format> processorOutputFormats) {
         Configuration config = Configuration.getInstance();
         maxPixels            = config.getInt(Key.MAX_PIXELS, 0);
@@ -74,7 +70,6 @@ final class ImageInfoFactory {
         minSize              = config.getInt(Key.IIIF_MIN_SIZE, DEFAULT_MIN_SIZE);
         minTileSize          = config.getInt(Key.IIIF_MIN_TILE_SIZE, DEFAULT_MIN_TILE_SIZE);
 
-        this.processorFeatures = processorFeatures;
         this.processorQualities = processorQualities;
         this.processorOutputFormats = processorOutputFormats;
     }
@@ -155,7 +150,6 @@ final class ImageInfoFactory {
 
         final String complianceUri = ComplianceLevel.getLevel(
                 SUPPORTED_SERVICE_FEATURES,
-                processorFeatures,
                 processorQualities,
                 processorOutputFormats).getUri();
         profile.add(complianceUri);
@@ -186,15 +180,13 @@ final class ImageInfoFactory {
 
         // supports
         final Set<String> featureStrings = new HashSet<>();
-        for (Feature pFeature : processorFeatures) {
+        for (Feature pFeature : ProcessorFeature.values()) {
             // sizeAboveFull should not be available if the info is being used
             // for a virtual scale-constrained version, or if upscaling is
             // disallowed in the configuration.
-            if (ProcessorFeature.SIZE_ABOVE_FULL.equals(pFeature)) {
-                if (scaleConstraint.hasEffect() ||
-                        (ProcessorFeature.SIZE_ABOVE_FULL.equals(pFeature) && maxScale <= 1)) {
-                    continue;
-                }
+            if (ProcessorFeature.SIZE_ABOVE_FULL.equals(pFeature) &&
+                    (scaleConstraint.hasEffect() || maxScale <= 1)) {
+                continue;
             }
             featureStrings.add(pFeature.getName());
         }

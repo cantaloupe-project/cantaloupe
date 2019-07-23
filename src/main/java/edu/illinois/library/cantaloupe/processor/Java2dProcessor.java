@@ -13,7 +13,6 @@ import edu.illinois.library.cantaloupe.processor.codec.ImageReader;
 import edu.illinois.library.cantaloupe.processor.codec.ImageWriter;
 import edu.illinois.library.cantaloupe.processor.codec.ImageWriterFactory;
 import edu.illinois.library.cantaloupe.processor.codec.ReaderHint;
-import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
 
 import java.awt.image.BufferedImage;
 import java.io.IOException;
@@ -26,11 +25,6 @@ import java.util.Set;
  */
 class Java2dProcessor extends AbstractImageIOProcessor
         implements StreamProcessor, FileProcessor {
-
-    @Override
-    public Set<ProcessorFeature> getSupportedFeatures() {
-        return Java2DPostProcessor.SUPPORTED_FEATURES;
-    }
 
     @Override
     public Set<edu.illinois.library.cantaloupe.resource.iiif.v1.Quality> getSupportedIIIF1Qualities() {

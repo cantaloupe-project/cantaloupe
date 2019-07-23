@@ -22,7 +22,6 @@ import edu.illinois.library.cantaloupe.operation.redaction.Redaction;
 import edu.illinois.library.cantaloupe.processor.codec.jpeg.JPEGMetadataReader;
 import edu.illinois.library.cantaloupe.processor.codec.jpeg.TurboJPEGImageReader;
 import edu.illinois.library.cantaloupe.processor.codec.jpeg.TurboJPEGImageWriter;
-import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
 import edu.illinois.library.cantaloupe.source.StreamFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -57,23 +56,6 @@ public class TurboJpegProcessor extends AbstractProcessor
 
     private static final Set<Format> SUPPORTED_OUTPUT_FORMATS =
             Collections.unmodifiableSet(EnumSet.of(Format.JPG));
-
-    private static final Set<ProcessorFeature> SUPPORTED_FEATURES =
-            Collections.unmodifiableSet(EnumSet.of(
-                    ProcessorFeature.MIRRORING,
-                    ProcessorFeature.REGION_BY_PERCENT,
-                    ProcessorFeature.REGION_BY_PIXELS,
-                    ProcessorFeature.REGION_SQUARE,
-                    ProcessorFeature.ROTATION_BY_90S,
-                    ProcessorFeature.ROTATION_ARBITRARY,
-                    ProcessorFeature.SIZE_ABOVE_FULL,
-                    ProcessorFeature.SIZE_BY_CONFINED_WIDTH_HEIGHT,
-                    ProcessorFeature.SIZE_BY_DISTORTED_WIDTH_HEIGHT,
-                    ProcessorFeature.SIZE_BY_FORCED_WIDTH_HEIGHT,
-                    ProcessorFeature.SIZE_BY_HEIGHT,
-                    ProcessorFeature.SIZE_BY_PERCENT,
-                    ProcessorFeature.SIZE_BY_WIDTH,
-                    ProcessorFeature.SIZE_BY_WIDTH_HEIGHT));
 
     private static final Set<edu.illinois.library.cantaloupe.resource.iiif.v1.Quality>
             SUPPORTED_IIIF_1_1_QUALITIES = Collections.unmodifiableSet(EnumSet.of(
@@ -151,11 +133,6 @@ public class TurboJpegProcessor extends AbstractProcessor
     @Override
     public StreamFactory getStreamFactory() {
         return streamFactory;
-    }
-
-    @Override
-    public Set<ProcessorFeature> getSupportedFeatures() {
-        return SUPPORTED_FEATURES;
     }
 
     @Override

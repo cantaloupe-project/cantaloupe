@@ -1,54 +1,41 @@
 package edu.illinois.library.cantaloupe.resource.iiif.v2;
 
 import edu.illinois.library.cantaloupe.image.Format;
-import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import org.junit.jupiter.api.Test;
 
-import java.util.HashSet;
+import java.util.EnumSet;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class ComplianceLevelTest extends BaseTest {
+class ComplianceLevelTest extends BaseTest {
 
     @Test
     void testGetLevel() {
-        Set<ServiceFeature> serviceFeatures = new HashSet<>();
-        Set<ProcessorFeature> processorFeatures = new HashSet<>();
-        Set<Quality> qualities = new HashSet<>();
-        Set<Format> outputFormats = new HashSet<>();
+        Set<ServiceFeature> serviceFeatures = EnumSet.noneOf(ServiceFeature.class);
+        Set<Quality> qualities              = EnumSet.noneOf(Quality.class);
+        Set<Format> outputFormats           = EnumSet.noneOf(Format.class);
         assertEquals(ComplianceLevel.LEVEL_0,
-                ComplianceLevel.getLevel(serviceFeatures, processorFeatures,
-                        qualities, outputFormats));
+                ComplianceLevel.getLevel(serviceFeatures, qualities, outputFormats));
 
         // add the set of level 1 features
-        processorFeatures.add(ProcessorFeature.REGION_BY_PIXELS);
         serviceFeatures.add(ServiceFeature.SIZE_BY_WHITELISTED);
-        processorFeatures.add(ProcessorFeature.SIZE_BY_WIDTH);
-        processorFeatures.add(ProcessorFeature.SIZE_BY_HEIGHT);
-        processorFeatures.add(ProcessorFeature.SIZE_BY_PERCENT);
         qualities.add(Quality.DEFAULT);
         outputFormats.add(Format.JPG);
         serviceFeatures.add(ServiceFeature.BASE_URI_REDIRECT);
         serviceFeatures.add(ServiceFeature.CORS);
         serviceFeatures.add(ServiceFeature.JSON_LD_MEDIA_TYPE);
         assertEquals(ComplianceLevel.LEVEL_1,
-                ComplianceLevel.getLevel(serviceFeatures, processorFeatures,
-                        qualities, outputFormats));
+                ComplianceLevel.getLevel(serviceFeatures, qualities, outputFormats));
 
         // add the set of level 2 features
-        processorFeatures.add(ProcessorFeature.REGION_BY_PERCENT);
-        processorFeatures.add(ProcessorFeature.SIZE_BY_FORCED_WIDTH_HEIGHT);
-        processorFeatures.add(ProcessorFeature.SIZE_BY_WIDTH_HEIGHT);
-        processorFeatures.add(ProcessorFeature.ROTATION_BY_90S);
         qualities.add(Quality.BITONAL);
         qualities.add(Quality.COLOR);
         qualities.add(Quality.GRAY);
         outputFormats.add(Format.PNG);
         assertEquals(ComplianceLevel.LEVEL_2,
-                ComplianceLevel.getLevel(serviceFeatures, processorFeatures,
-                        qualities, outputFormats));
+                ComplianceLevel.getLevel(serviceFeatures, qualities, outputFormats));
     }
 
     @Test

@@ -2,7 +2,6 @@ package edu.illinois.library.cantaloupe.resource.iiif.v2;
 
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.resource.iiif.Feature;
-import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
 
 import java.util.EnumSet;
 import java.util.HashSet;
@@ -36,11 +35,7 @@ enum ComplianceLevel {
     private String uri;
 
     static {
-        LEVEL_1_FEATURES.add(ProcessorFeature.REGION_BY_PIXELS);
         LEVEL_1_FEATURES.add(ServiceFeature.SIZE_BY_WHITELISTED);
-        LEVEL_1_FEATURES.add(ProcessorFeature.SIZE_BY_WIDTH);
-        LEVEL_1_FEATURES.add(ProcessorFeature.SIZE_BY_HEIGHT);
-        LEVEL_1_FEATURES.add(ProcessorFeature.SIZE_BY_PERCENT);
         LEVEL_1_FEATURES.add(ServiceFeature.BASE_URI_REDIRECT);
         LEVEL_1_FEATURES.add(ServiceFeature.CORS);
         LEVEL_1_FEATURES.add(ServiceFeature.JSON_LD_MEDIA_TYPE);
@@ -48,10 +43,6 @@ enum ComplianceLevel {
         LEVEL_1_OUTPUT_FORMATS.add(Format.JPG);
 
         LEVEL_2_FEATURES.addAll(LEVEL_1_FEATURES);
-        LEVEL_2_FEATURES.add(ProcessorFeature.REGION_BY_PERCENT);
-        LEVEL_2_FEATURES.add(ProcessorFeature.SIZE_BY_FORCED_WIDTH_HEIGHT);
-        LEVEL_2_FEATURES.add(ProcessorFeature.SIZE_BY_WIDTH_HEIGHT);
-        LEVEL_2_FEATURES.add(ProcessorFeature.ROTATION_BY_90S);
         LEVEL_2_QUALITIES.addAll(LEVEL_1_QUALITIES);
         LEVEL_2_QUALITIES.add(Quality.BITONAL);
         LEVEL_2_QUALITIES.add(Quality.COLOR);
@@ -61,20 +52,13 @@ enum ComplianceLevel {
     }
 
     /**
-     * @param serviceFeatures
-     * @param processorFeatures
-     * @param qualities
-     * @param outputFormats
-     * @return The effective IIIF compliance level corresponding to the given
-     * parameters.
+     * @return The effective compliance level corresponding to the given
+     *         arguments.
      */
     public static ComplianceLevel getLevel(Set<ServiceFeature> serviceFeatures,
-                                           Set<ProcessorFeature> processorFeatures,
                                            Set<Quality> qualities,
                                            Set<Format> outputFormats) {
-        Set<Feature> allFeatures = new HashSet<>();
-        allFeatures.addAll(serviceFeatures);
-        allFeatures.addAll(processorFeatures);
+        Set<Feature> allFeatures = new HashSet<>(serviceFeatures);
 
         ComplianceLevel level = LEVEL_0;
         if (allFeatures.containsAll(LEVEL_1_FEATURES) &&

@@ -13,7 +13,6 @@ import edu.illinois.library.cantaloupe.processor.codec.ImageReader;
 import edu.illinois.library.cantaloupe.processor.codec.ImageReaderFactory;
 import edu.illinois.library.cantaloupe.processor.codec.ImageWriterFactory;
 import edu.illinois.library.cantaloupe.processor.codec.ImageWriterFacade;
-import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
 import edu.illinois.library.cantaloupe.util.CommandLocator;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -130,11 +129,6 @@ class FfmpegProcessor extends AbstractProcessor implements FileProcessor {
     @Override
     public Path getSourceFile() {
         return sourceFile;
-    }
-
-    @Override
-    public Set<ProcessorFeature> getSupportedFeatures() {
-        return Java2DPostProcessor.SUPPORTED_FEATURES;
     }
 
     @Override

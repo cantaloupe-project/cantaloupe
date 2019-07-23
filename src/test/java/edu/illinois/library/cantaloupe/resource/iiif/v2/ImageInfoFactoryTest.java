@@ -8,7 +8,6 @@ import edu.illinois.library.cantaloupe.image.Metadata;
 import edu.illinois.library.cantaloupe.image.Orientation;
 import edu.illinois.library.cantaloupe.image.ScaleConstraint;
 import edu.illinois.library.cantaloupe.resource.RequestContext;
-import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
 import edu.illinois.library.cantaloupe.script.DelegateProxy;
 import edu.illinois.library.cantaloupe.script.DelegateProxyService;
 import edu.illinois.library.cantaloupe.test.BaseTest;
@@ -31,14 +30,11 @@ public class ImageInfoFactoryTest extends BaseTest {
     public void setUp() throws Exception {
         super.setUp();
 
-        final Set<ProcessorFeature> processorFeatures =
-                EnumSet.allOf(ProcessorFeature.class);
         final Set<Quality> processorQualities = EnumSet.allOf(Quality.class);
         final Set<Format> processorFormats =
                 EnumSet.of(Format.GIF, Format.JPG, Format.PNG);
 
-        instance = new ImageInfoFactory(processorFeatures,
-                processorQualities, processorFormats);
+        instance = new ImageInfoFactory(processorQualities, processorFormats);
     }
 
     private ImageInfo<String,Object> invokeNewImageInfo() {

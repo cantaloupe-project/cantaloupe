@@ -24,7 +24,6 @@ import edu.illinois.library.cantaloupe.processor.codec.ImageWriterFacade;
 import edu.illinois.library.cantaloupe.processor.codec.jpeg.TurboJPEGImageWriter;
 import edu.illinois.library.cantaloupe.processor.codec.jpeg2000.JPEG2000KakaduImageReader;
 import edu.illinois.library.cantaloupe.source.StreamFactory;
-import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
 import kdu_jni.KduException;
 import kdu_jni.Kdu_global;
 
@@ -72,22 +71,6 @@ class KakaduNativeProcessor implements FileProcessor, StreamProcessor {
 
     private static final Logger LOGGER =
             LoggerFactory.getLogger(KakaduNativeProcessor.class);
-
-    private static final Set<ProcessorFeature> SUPPORTED_FEATURES = EnumSet.of(
-            ProcessorFeature.MIRRORING,
-            ProcessorFeature.REGION_BY_PERCENT,
-            ProcessorFeature.REGION_BY_PIXELS,
-            ProcessorFeature.REGION_SQUARE,
-            ProcessorFeature.ROTATION_ARBITRARY,
-            ProcessorFeature.ROTATION_BY_90S,
-            ProcessorFeature.SIZE_ABOVE_FULL,
-            ProcessorFeature.SIZE_BY_CONFINED_WIDTH_HEIGHT,
-            ProcessorFeature.SIZE_BY_DISTORTED_WIDTH_HEIGHT,
-            ProcessorFeature.SIZE_BY_FORCED_WIDTH_HEIGHT,
-            ProcessorFeature.SIZE_BY_HEIGHT,
-            ProcessorFeature.SIZE_BY_PERCENT,
-            ProcessorFeature.SIZE_BY_WIDTH,
-            ProcessorFeature.SIZE_BY_WIDTH_HEIGHT);
 
     private static final Set<edu.illinois.library.cantaloupe.resource.iiif.v1.Quality>
             SUPPORTED_IIIF_1_1_QUALITIES = EnumSet.of(
@@ -164,17 +147,6 @@ class KakaduNativeProcessor implements FileProcessor, StreamProcessor {
     @Override
     public StreamFactory getStreamFactory() {
         return streamFactory;
-    }
-
-    @Override
-    public Set<ProcessorFeature> getSupportedFeatures() {
-        Set<ProcessorFeature> features;
-        if (!getAvailableOutputFormats().isEmpty()) {
-            features = SUPPORTED_FEATURES;
-        } else {
-            features = Collections.emptySet();
-        }
-        return Collections.unmodifiableSet(features);
     }
 
     @Override

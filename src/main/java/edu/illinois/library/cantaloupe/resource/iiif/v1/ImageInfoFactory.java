@@ -29,7 +29,6 @@ final class ImageInfoFactory {
             scaleConstraint = new ScaleConstraint(1, 1);
         }
         final ComplianceLevel complianceLevel = ComplianceLevel.getLevel(
-                processor.getSupportedFeatures(),
                 processor.getSupportedIIIF1Qualities(),
                 processor.getAvailableOutputFormats());
 
@@ -60,13 +59,13 @@ final class ImageInfoFactory {
         // Create an Info instance, which will eventually be serialized
         // to JSON and sent as the response body.
         final ImageInfo imageInfo = new ImageInfo();
-        imageInfo.id = imageURI;
-        imageInfo.width = virtualSize.intWidth();
-        imageInfo.height = virtualSize.intHeight();
-        imageInfo.profile = complianceLevel.getUri();
+        imageInfo.id              = imageURI;
+        imageInfo.width           = virtualSize.intWidth();
+        imageInfo.height          = virtualSize.intHeight();
+        imageInfo.profile         = complianceLevel.getUri();
         // Round up to prevent clients from requesting narrow edge tiles.
-        imageInfo.tileWidth = (int) Math.ceil(virtualTileSize.width());
-        imageInfo.tileHeight = (int) Math.ceil(virtualTileSize.height());
+        imageInfo.tileWidth       = (int) Math.ceil(virtualTileSize.width());
+        imageInfo.tileHeight      = (int) Math.ceil(virtualTileSize.height());
 
         // scale factors
         int maxReductionFactor =

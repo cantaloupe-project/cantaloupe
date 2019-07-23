@@ -6,7 +6,6 @@ import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.operation.ValidationException;
 import edu.illinois.library.cantaloupe.source.StreamFactory;
-import edu.illinois.library.cantaloupe.resource.iiif.ProcessorFeature;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -62,12 +61,6 @@ public interface Processor extends AutoCloseable {
      * @return The same format passed to {@link #setSourceFormat(Format)}.
      */
     Format getSourceFormat();
-
-    /**
-     * @return All features supported for the {@link #setSourceFormat(Format)
-     *         given source format}.
-     */
-    Set<ProcessorFeature> getSupportedFeatures();
 
     /**
      * @return All qualities supported for the {@link #setSourceFormat(Format)
@@ -186,10 +179,6 @@ public interface Processor extends AutoCloseable {
      *
      * <ol>
      *     <li>Calls {@link OperationList#validate}</li>
-     *     <li>Ensures that the scale mode is not {@link
-     *     edu.illinois.library.cantaloupe.operation.ScaleByPixels.Mode#NON_ASPECT_FILL}
-     *     if {@link ProcessorFeature#SIZE_BY_DISTORTED_WIDTH_HEIGHT} is not
-     *     {@link #getSupportedFeatures() supported}</li>
      * </ol>
      *
      * <p>Notes:</p>
