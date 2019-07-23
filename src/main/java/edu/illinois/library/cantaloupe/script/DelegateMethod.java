@@ -18,7 +18,7 @@ public enum DelegateMethod {
     /**
      * Called by {@link DelegateProxy#getExtraIIIFInformationResponseKeys()}.
      */
-    EXTRA_IIIF2_INFORMATION_RESPONSE_KEYS("extra_iiif2_information_response_keys"),
+    EXTRA_IIIF_INFORMATION_RESPONSE_KEYS("extra_iiif_information_response_keys"),
 
     /**
      * Called by {@link DelegateProxy#getFilesystemSourcePathname()}.

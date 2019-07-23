@@ -17,12 +17,14 @@ current version.
     * `GraphicsMagickProcessor.path_to_binaries`
     * `KakaduDemoProcessor.path_to_binaries`
     * `ImageMagickProcessor.path_to_binaries`
-5. The `X-IIIF-ID` reverse proxy header is no longer supported. Use
+5. Rename the `extra_iiif2_information_response_keys()` delegate method to
+   `extra_iiif_information_response_keys()`.
+6. The `X-IIIF-ID` reverse proxy header is no longer supported. Use
    `X-Forwarded-ID` instead.
-6. Purge your derivative cache.
-7. If you were using the `processor.metadata.preserve` key, you will need to use
+7. Purge your derivative cache.
+8. If you were using the `processor.metadata.preserve` key, you will need to use
    the new `metadata()` delegate method instead.
-8. KakaduDemoProcessor is no longer available. If you were using it, you must
+9. KakaduDemoProcessor is no longer available. If you were using it, you must
    switch to either OpenJpegProcessor or KakaduNativeProcessor.
 
 ## 4.0.x → 4.1

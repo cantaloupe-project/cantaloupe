@@ -98,7 +98,7 @@ class CustomDelegate
   # @return [Hash] Hash that will be merged into an IIIF Image API 2.x
   #                information response. Return an empty hash to add nothing.
   #
-  def extra_iiif2_information_response_keys(options = {})
+  def extra_iiif_information_response_keys(options = {})
 =begin
     Example:
     {

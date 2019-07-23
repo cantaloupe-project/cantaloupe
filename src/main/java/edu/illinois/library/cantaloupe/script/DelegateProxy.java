@@ -176,13 +176,13 @@ public final class DelegateProxy {
 
     /**
      * @return Return value of {@link
-     *         DelegateMethod#EXTRA_IIIF2_INFORMATION_RESPONSE_KEYS}, or an
+     *         DelegateMethod#EXTRA_IIIF_INFORMATION_RESPONSE_KEYS}, or an
      *         empty map if it returned {@literal nil}.
      */
     @SuppressWarnings("unchecked")
     public Map<String, Object> getExtraIIIFInformationResponseKeys()
             throws ScriptException {
-        Object result = invoke(DelegateMethod.EXTRA_IIIF2_INFORMATION_RESPONSE_KEYS);
+        Object result = invoke(DelegateMethod.EXTRA_IIIF_INFORMATION_RESPONSE_KEYS);
         if (result != null) {
             return (Map<String, Object>) result;
         }
