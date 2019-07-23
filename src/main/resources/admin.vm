@@ -1013,6 +1013,26 @@
                                                data-requires-restart="false">
                                     </td>
                                 </tr>
+                                <tr>
+                                    <td>
+                                        <a tabindex="0" class="btn btn-sm cl-help"
+                                           role="button" data-toggle="popover"
+                                           data-trigger="focus"
+                                           data-content="When enabled, requests for sizes other than those
+                                           specified in an info.json response will be forbidden.">?</a>
+                                    </td>
+                                    <td>
+                                        <div class="checkbox">
+                                            <label>
+                                                <input type="checkbox"
+                                                       name="endpoint.iiif.restrict_to_sizes"
+                                                       value="true"
+                                                       data-requires-restart="false">
+                                                Restrict to sizes in <span class="filename">info.json</span>
+                                            </label>
+                                        </div>
+                                    </td>
+                                </tr>
                             </table>
 
                             <h3>1.x</h3>
@@ -1045,27 +1065,6 @@
                                                        value="true"
                                                        data-requires-restart="false">
                                                 Enabled
-                                            </label>
-                                        </div>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>
-                                        <a tabindex="0" class="btn btn-sm cl-help"
-                                           role="button" data-toggle="popover"
-                                           data-trigger="focus"
-                                           data-content="When enabled, requests for sizes other than those
-                                           specified in an info.json response will be denied with HTTP
-                                           403 Forbidden.">?</a>
-                                    </td>
-                                    <td>
-                                        <div class="checkbox">
-                                            <label>
-                                                <input type="checkbox"
-                                                       name="endpoint.iiif.2.restrict_to_sizes"
-                                                       value="true"
-                                                       data-requires-restart="false">
-                                                Restrict to sizes in <span class="filename">info.json</span>
                                             </label>
                                         </div>
                                     </td>

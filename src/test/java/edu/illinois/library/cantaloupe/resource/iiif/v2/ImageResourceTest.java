@@ -441,7 +441,7 @@ public class ImageResourceTest extends ResourceTest {
     @Test
     void testGETNotRestrictedToSizes() {
         Configuration config = Configuration.getInstance();
-        config.setProperty(Key.IIIF_2_RESTRICT_TO_SIZES, false);
+        config.setProperty(Key.IIIF_RESTRICT_TO_SIZES, false);
 
         assertStatus(200, getHTTPURI("/" + IMAGE + "/full/53,37/0/color.jpg"));
     }
@@ -449,7 +449,7 @@ public class ImageResourceTest extends ResourceTest {
     @Test
     void testGETRestrictedToSizes() {
         Configuration config = Configuration.getInstance();
-        config.setProperty(Key.IIIF_2_RESTRICT_TO_SIZES, true);
+        config.setProperty(Key.IIIF_RESTRICT_TO_SIZES, true);
 
         assertStatus(403, getHTTPURI("/" + IMAGE + "/full/53,37/0/color.jpg"));
     }

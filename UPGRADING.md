@@ -6,21 +6,23 @@ current version.
 ## 4.1.x → 5.0
 
 1. Note that Java 11 is now required.
-2. Add the following keys from the sample configuration:
+2. Rename the following configuration keys:
+    * `endpoint.iiif.2.restrict_to_sizes` to `endpoint.iiif.restrict_to_sizes`
+3. Add the following keys from the sample configuration:
     * `DynamoDBCache.*`
-3. Remove the following configuration keys:
+4. Remove the following configuration keys:
     * `http.accept_queue_limit`
     * `endpoint.iiif.content_disposition`
     * `processor.metadata.*`
     * `GraphicsMagickProcessor.path_to_binaries`
     * `KakaduDemoProcessor.path_to_binaries`
     * `ImageMagickProcessor.path_to_binaries`
-4. The `X-IIIF-ID` reverse proxy header is no longer supported. Use
+5. The `X-IIIF-ID` reverse proxy header is no longer supported. Use
    `X-Forwarded-ID` instead.
-5. Purge your derivative cache.
-6. If you were using the `processor.metadata.preserve` key, you will need to use
+6. Purge your derivative cache.
+7. If you were using the `processor.metadata.preserve` key, you will need to use
    the new `metadata()` delegate method instead.
-7. KakaduDemoProcessor is no longer available. If you were using it, you must
+8. KakaduDemoProcessor is no longer available. If you were using it, you must
    switch to either OpenJpegProcessor or KakaduNativeProcessor.
 
 ## 4.0.x → 4.1

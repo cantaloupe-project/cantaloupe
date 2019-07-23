@@ -279,9 +279,9 @@ public class AdminResourceUITest extends AbstractAdminResourceTest {
         inputNamed(Key.MAX_SCALE).sendKeys("1.1");
         inputNamed(Key.IIIF_MIN_SIZE).sendKeys("75");
         inputNamed(Key.IIIF_MIN_TILE_SIZE).sendKeys("250");
+        inputNamed(Key.IIIF_RESTRICT_TO_SIZES).click();
         inputNamed(Key.IIIF_1_ENDPOINT_ENABLED).click();
         inputNamed(Key.IIIF_2_ENDPOINT_ENABLED).click();
-        inputNamed(Key.IIIF_2_RESTRICT_TO_SIZES).click();
         inputNamed(Key.API_ENABLED).click();
         inputNamed(Key.API_USERNAME).sendKeys("cats");
         inputNamed(Key.API_SECRET).sendKeys("dogs");
@@ -297,9 +297,9 @@ public class AdminResourceUITest extends AbstractAdminResourceTest {
         assertEquals(1.1, config.getDouble(Key.MAX_SCALE), DELTA);
         assertEquals(75, config.getInt(Key.IIIF_MIN_SIZE));
         assertEquals(250, config.getInt(Key.IIIF_MIN_TILE_SIZE));
+        assertTrue(config.getBoolean(Key.IIIF_RESTRICT_TO_SIZES));
         assertTrue(config.getBoolean(Key.IIIF_1_ENDPOINT_ENABLED));
         assertTrue(config.getBoolean(Key.IIIF_2_ENDPOINT_ENABLED));
-        assertTrue(config.getBoolean(Key.IIIF_2_RESTRICT_TO_SIZES));
         assertTrue(config.getBoolean(Key.API_ENABLED));
         assertEquals("cats", config.getString(Key.API_USERNAME));
         assertEquals("dogs", config.getString(Key.API_SECRET));

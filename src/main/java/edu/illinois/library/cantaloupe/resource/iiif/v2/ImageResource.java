@@ -244,7 +244,7 @@ public class ImageResource extends IIIF2Resource {
                               Processor processor) throws SizeRestrictedException {
         final Configuration config = Configuration.getInstance();
 
-        if (config.getBoolean(Key.IIIF_2_RESTRICT_TO_SIZES, false)) {
+        if (config.getBoolean(Key.IIIF_RESTRICT_TO_SIZES, false)) {
             final ImageInfoFactory factory = new ImageInfoFactory(
                     processor.getAvailableOutputFormats());
 

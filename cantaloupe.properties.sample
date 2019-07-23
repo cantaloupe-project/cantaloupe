@@ -90,7 +90,7 @@ endpoint.iiif.min_tile_size = 512
 
 # If true, requests for sizes other than those contained in an information
 # response will be denied.
-endpoint.iiif.2.restrict_to_sizes = false
+endpoint.iiif.restrict_to_sizes = false
 
 # Enables the Control Panel, at /admin.
 endpoint.admin.enabled = false
