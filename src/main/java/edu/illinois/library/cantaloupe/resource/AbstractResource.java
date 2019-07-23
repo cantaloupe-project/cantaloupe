@@ -79,7 +79,8 @@ public abstract class AbstractResource {
                 Application.getName() + "/" + Application.getVersion());
 
         if (DelegateProxyService.isEnabled()) {
-            requestContext.setRequestURI(request.getReference().toURI());
+            requestContext.setLocalURI(request.getReference().toURI());
+            requestContext.setRequestURI(getPublicReference().toURI());
             requestContext.setRequestHeaders(request.getHeaders().toMap());
             requestContext.setClientIP(getCanonicalClientIPAddress());
             requestContext.setCookies(request.getCookies());

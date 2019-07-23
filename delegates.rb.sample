@@ -29,7 +29,10 @@ class CustomDelegate
   # * `cookies`          [Hash<String,String>] Hash of cookie name-value pairs.
   # * `identifier`       [String] Image identifier.
   # * `request_headers`  [Hash<String,String>] Hash of header name-value pairs.
-  # * `request_uri`      [String] Public request URI.
+  # * `request_uri`      [String] URI requested by the client.
+  # * `local_uri`        [String] URI seen by the application, which may be
+  #                      different from `request_uri` when operating behind a
+  #                      reverse-proxy server.
   # * `scale_constraint` [Array<Integer>] Two-element array with scale
   #                      constraint numerator at position 0 and denominator at
   #                      position 1.

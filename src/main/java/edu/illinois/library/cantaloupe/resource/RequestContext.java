@@ -21,6 +21,7 @@ public final class RequestContext {
     static final String COOKIES_KEY          = "cookies";
     static final String FULL_SIZE_KEY        = "full_size";
     static final String IDENTIFIER_KEY       = "identifier";
+    static final String LOCAL_URI_KEY        = "local_uri";
     static final String METADATA_KEY         = "metadata";
     static final String OPERATIONS_KEY       = "operations";
     static final String OUTPUT_FORMAT_KEY    = "output_format";
@@ -34,7 +35,7 @@ public final class RequestContext {
     /**
      * Sets or clears {@link #CLIENT_IP_KEY}.
      *
-     * @param clientIP May be {@literal null}.
+     * @param clientIP May be {@code null}.
      */
     public void setClientIP(String clientIP) {
         if (clientIP != null) {
@@ -47,7 +48,7 @@ public final class RequestContext {
     /**
      * Sets or clears {@link #COOKIES_KEY}.
      *
-     * @param cookies May be {@literal null}.
+     * @param cookies May be {@code null}.
      */
     public void setCookies(Map<String,String> cookies) {
         if (cookies != null) {
@@ -60,7 +61,7 @@ public final class RequestContext {
     /**
      * Sets or clears {@link #IDENTIFIER_KEY}.
      *
-     * @param identifier May be {@literal null}.
+     * @param identifier May be {@code null}.
      */
     public void setIdentifier(Identifier identifier) {
         if (identifier != null) {
@@ -71,9 +72,23 @@ public final class RequestContext {
     }
 
     /**
+     * Sets {@link #LOCAL_URI_KEY} to the URI seen by the application.
+     *
+     * @param uri May be {@code null}.
+     * @see #setRequestURI(URI)
+     */
+    public void setLocalURI(URI uri) {
+        if (uri != null) {
+            backingMap.put(LOCAL_URI_KEY, uri.toString());
+        } else {
+            backingMap.remove(LOCAL_URI_KEY);
+        }
+    }
+
+    /**
      * Sets or clears {@link #METADATA_KEY}.
      *
-     * @param metadata May be {@literal null}.
+     * @param metadata May be {@code null}.
      */
     public void setMetadata(Metadata metadata) {
         if (metadata != null) {
@@ -88,8 +103,8 @@ public final class RequestContext {
      * {@link #OPERATIONS_KEY}, {@link #OUTPUT_FORMAT_KEY}, and
      * {@link #RESULTING_SIZE_KEY}.
      *
-     * @param opList   May be {@literal null}.
-     * @param fullSize May be {@literal null}.
+     * @param opList   May be {@code null}.
+     * @param fullSize May be {@code null}.
      */
     public void setOperationList(OperationList opList, Dimension fullSize) {
         if (opList != null && fullSize != null) {
@@ -113,7 +128,7 @@ public final class RequestContext {
     /**
      * Sets {@link #REQUEST_HEADERS_KEY}.
      *
-     * @param requestHeaders May be {@literal null}.
+     * @param requestHeaders May be {@code null}.
      */
     public void setRequestHeaders(Map<String,String> requestHeaders) {
         if (requestHeaders != null) {
@@ -125,9 +140,10 @@ public final class RequestContext {
     }
 
     /**
-     * Sets {@link #REQUEST_URI_KEY}.
+     * Sets {@link #REQUEST_URI_KEY} to the URI requested by the client.
      *
-     * @param uri May be {@literal null}.
+     * @param uri May be {@code null}.
+     * @see #setLocalURI(URI)
      */
     public void setRequestURI(URI uri) {
         if (uri != null) {
@@ -140,7 +156,7 @@ public final class RequestContext {
     /**
      * Sets {@link #SCALE_CONSTRAINT_KEY}.
      *
-     * @param scaleConstraint May be {@literal null}.
+     * @param scaleConstraint May be {@code null}.
      */
     public void setScaleConstraint(ScaleConstraint scaleConstraint) {
         if (scaleConstraint != null) {
@@ -154,7 +170,7 @@ public final class RequestContext {
 
     /**
      * <p>Returns a &quot;live view&quot; map representation of the instance.
-     * Keys correspond to non-{@literal null} properties. Any of the keys
+     * Keys correspond to non-{@code null} properties. Any of the keys
      * represented by the class key constants may be present, like {@link
      * #CLIENT_IP_KEY}, etc.</p>
      *
@@ -165,10 +181,7 @@ public final class RequestContext {
     }
 
     private Map<String,Integer> toMap(Dimension size) {
-        Map<String,Integer> map = new HashMap<>();
-        map.put("width", size.intWidth());
-        map.put("height", size.intHeight());
-        return Collections.unmodifiableMap(map);
+        return Map.of("width", size.intWidth(), "height", size.intHeight());
     }
 
 }

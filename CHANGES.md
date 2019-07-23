@@ -40,6 +40,7 @@
 ### Other
 
 * Java 11 is required.
+* Added a `local_uri` key to the delegate script `context` hash.
 * JRuby has been updated to version 9.2, which supports Ruby 2.5.
 
 ## 4.1.3

@@ -20,6 +20,7 @@ import static edu.illinois.library.cantaloupe.resource.RequestContext.CLIENT_IP_
 import static edu.illinois.library.cantaloupe.resource.RequestContext.COOKIES_KEY;
 import static edu.illinois.library.cantaloupe.resource.RequestContext.FULL_SIZE_KEY;
 import static edu.illinois.library.cantaloupe.resource.RequestContext.IDENTIFIER_KEY;
+import static edu.illinois.library.cantaloupe.resource.RequestContext.LOCAL_URI_KEY;
 import static edu.illinois.library.cantaloupe.resource.RequestContext.METADATA_KEY;
 import static edu.illinois.library.cantaloupe.resource.RequestContext.OPERATIONS_KEY;
 import static edu.illinois.library.cantaloupe.resource.RequestContext.OUTPUT_FORMAT_KEY;
@@ -59,8 +60,11 @@ public class RequestContextTest extends BaseTest {
         headers.put("X-Cats", "Yes");
         instance.setRequestHeaders(headers);
 
-        // request URI
+        // client-requested URI
         instance.setRequestURI(new URI("http://example.org/cats"));
+
+        // local URI
+        instance.setLocalURI(new URI("http://example.org/cats"));
     }
 
     @Test
@@ -85,6 +89,14 @@ public class RequestContextTest extends BaseTest {
         assertEquals("cats", instance.toMap().get(IDENTIFIER_KEY));
         instance.setIdentifier(null);
         assertNull(instance.toMap().get(IDENTIFIER_KEY));
+    }
+
+    @Test
+    void testSetLocalURI() throws Exception {
+        instance.setLocalURI(new URI("http://example.org/"));
+        assertNotNull(instance.toMap().get(LOCAL_URI_KEY));
+        instance.setLocalURI(null);
+        assertNull(instance.toMap().get(LOCAL_URI_KEY));
     }
 
     @Test
