@@ -34,8 +34,6 @@ import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.file.Path;
-import java.util.Collections;
-import java.util.EnumSet;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
@@ -71,20 +69,6 @@ class KakaduNativeProcessor implements FileProcessor, StreamProcessor {
 
     private static final Logger LOGGER =
             LoggerFactory.getLogger(KakaduNativeProcessor.class);
-
-    private static final Set<edu.illinois.library.cantaloupe.resource.iiif.v1.Quality>
-            SUPPORTED_IIIF_1_1_QUALITIES = EnumSet.of(
-            edu.illinois.library.cantaloupe.resource.iiif.v1.Quality.BITONAL,
-            edu.illinois.library.cantaloupe.resource.iiif.v1.Quality.COLOR,
-            edu.illinois.library.cantaloupe.resource.iiif.v1.Quality.GREY,
-            edu.illinois.library.cantaloupe.resource.iiif.v1.Quality.NATIVE);
-
-    private static final Set<edu.illinois.library.cantaloupe.resource.iiif.v2.Quality>
-            SUPPORTED_IIIF_2_0_QUALITIES = EnumSet.of(
-            edu.illinois.library.cantaloupe.resource.iiif.v2.Quality.BITONAL,
-            edu.illinois.library.cantaloupe.resource.iiif.v2.Quality.COLOR,
-            edu.illinois.library.cantaloupe.resource.iiif.v2.Quality.DEFAULT,
-            edu.illinois.library.cantaloupe.resource.iiif.v2.Quality.GRAY);
 
     private static final AtomicBoolean IS_CLASS_INITIALIZED = new AtomicBoolean();
 
@@ -147,32 +131,6 @@ class KakaduNativeProcessor implements FileProcessor, StreamProcessor {
     @Override
     public StreamFactory getStreamFactory() {
         return streamFactory;
-    }
-
-    @Override
-    public Set<edu.illinois.library.cantaloupe.resource.iiif.v1.Quality>
-    getSupportedIIIF1Qualities() {
-        Set<edu.illinois.library.cantaloupe.resource.iiif.v1.Quality>
-                qualities;
-        if (!getAvailableOutputFormats().isEmpty()) {
-            qualities = SUPPORTED_IIIF_1_1_QUALITIES;
-        } else {
-            qualities = Collections.emptySet();
-        }
-        return Collections.unmodifiableSet(qualities);
-    }
-
-    @Override
-    public Set<edu.illinois.library.cantaloupe.resource.iiif.v2.Quality>
-    getSupportedIIIF2Qualities() {
-        Set<edu.illinois.library.cantaloupe.resource.iiif.v2.Quality>
-                qualities;
-        if (!getAvailableOutputFormats().isEmpty()) {
-            qualities = SUPPORTED_IIIF_2_0_QUALITIES;
-        } else {
-            qualities = Collections.emptySet();
-        }
-        return Collections.unmodifiableSet(qualities);
     }
 
     @Override

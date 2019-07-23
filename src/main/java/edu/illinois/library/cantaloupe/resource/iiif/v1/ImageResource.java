@@ -210,7 +210,6 @@ public class ImageResource extends IIIF1Resource {
                 outputFormat.getPreferredMediaType().toString());
 
         final ComplianceLevel complianceLevel = ComplianceLevel.getLevel(
-                processor.getSupportedIIIF1Qualities(),
                 processor.getAvailableOutputFormats());
         getResponse().setHeader("Link",
                 String.format("<%s>;rel=\"profile\";", complianceLevel.getUri()));

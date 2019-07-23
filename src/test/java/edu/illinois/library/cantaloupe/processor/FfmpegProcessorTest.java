@@ -97,32 +97,6 @@ public class FfmpegProcessorTest extends AbstractProcessorTest {
         assertNotNull(instance.getInitializationError());
     }
 
-    @Test
-    @Override
-    public void testGetSupportedIIIF1Qualities() throws Exception {
-        instance.setSourceFormat(getAnySupportedSourceFormat(instance));
-        Set<edu.illinois.library.cantaloupe.resource.iiif.v1.Quality> expectedQualities =
-                EnumSet.of(
-                        edu.illinois.library.cantaloupe.resource.iiif.v1.Quality.BITONAL,
-                        edu.illinois.library.cantaloupe.resource.iiif.v1.Quality.COLOR,
-                        edu.illinois.library.cantaloupe.resource.iiif.v1.Quality.GREY,
-                        edu.illinois.library.cantaloupe.resource.iiif.v1.Quality.NATIVE);
-        assertEquals(expectedQualities, instance.getSupportedIIIF1Qualities());
-    }
-
-    @Test
-    @Override
-    public void testGetSupportedIIIF2Qualities() throws Exception {
-        instance.setSourceFormat(getAnySupportedSourceFormat(instance));
-        Set<edu.illinois.library.cantaloupe.resource.iiif.v2.Quality> expectedQualities =
-                EnumSet.of(
-                        edu.illinois.library.cantaloupe.resource.iiif.v2.Quality.BITONAL,
-                        edu.illinois.library.cantaloupe.resource.iiif.v2.Quality.COLOR,
-                        edu.illinois.library.cantaloupe.resource.iiif.v2.Quality.DEFAULT,
-                        edu.illinois.library.cantaloupe.resource.iiif.v2.Quality.GRAY);
-        assertEquals(expectedQualities, instance.getSupportedIIIF2Qualities());
-    }
-
     @Disabled // there is currently no way to support this
     @Override
     @Test

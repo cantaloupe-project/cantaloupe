@@ -30,11 +30,10 @@ public class ImageInfoFactoryTest extends BaseTest {
     public void setUp() throws Exception {
         super.setUp();
 
-        final Set<Quality> processorQualities = EnumSet.allOf(Quality.class);
         final Set<Format> processorFormats =
                 EnumSet.of(Format.GIF, Format.JPG, Format.PNG);
 
-        instance = new ImageInfoFactory(processorQualities, processorFormats);
+        instance = new ImageInfoFactory(processorFormats);
     }
 
     private ImageInfo<String,Object> invokeNewImageInfo() {

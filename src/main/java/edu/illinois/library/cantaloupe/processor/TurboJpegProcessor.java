@@ -57,20 +57,6 @@ public class TurboJpegProcessor extends AbstractProcessor
     private static final Set<Format> SUPPORTED_OUTPUT_FORMATS =
             Collections.unmodifiableSet(EnumSet.of(Format.JPG));
 
-    private static final Set<edu.illinois.library.cantaloupe.resource.iiif.v1.Quality>
-            SUPPORTED_IIIF_1_1_QUALITIES = Collections.unmodifiableSet(EnumSet.of(
-            edu.illinois.library.cantaloupe.resource.iiif.v1.Quality.BITONAL,
-            edu.illinois.library.cantaloupe.resource.iiif.v1.Quality.COLOR,
-            edu.illinois.library.cantaloupe.resource.iiif.v1.Quality.GREY,
-            edu.illinois.library.cantaloupe.resource.iiif.v1.Quality.NATIVE));
-
-    private static final Set<edu.illinois.library.cantaloupe.resource.iiif.v2.Quality>
-            SUPPORTED_IIIF_2_0_QUALITIES = Collections.unmodifiableSet(EnumSet.of(
-            edu.illinois.library.cantaloupe.resource.iiif.v2.Quality.BITONAL,
-            edu.illinois.library.cantaloupe.resource.iiif.v2.Quality.COLOR,
-            edu.illinois.library.cantaloupe.resource.iiif.v2.Quality.DEFAULT,
-            edu.illinois.library.cantaloupe.resource.iiif.v2.Quality.GRAY));
-
     private static boolean isClassInitialized;
 
     private static final boolean USE_FAST_DECODE_DCT = true;
@@ -133,18 +119,6 @@ public class TurboJpegProcessor extends AbstractProcessor
     @Override
     public StreamFactory getStreamFactory() {
         return streamFactory;
-    }
-
-    @Override
-    public Set<edu.illinois.library.cantaloupe.resource.iiif.v1.Quality>
-    getSupportedIIIF1Qualities() {
-        return SUPPORTED_IIIF_1_1_QUALITIES;
-    }
-
-    @Override
-    public Set<edu.illinois.library.cantaloupe.resource.iiif.v2.Quality>
-    getSupportedIIIF2Qualities() {
-        return SUPPORTED_IIIF_2_0_QUALITIES;
     }
 
     @Override

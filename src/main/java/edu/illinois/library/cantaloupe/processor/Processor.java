@@ -63,20 +63,6 @@ public interface Processor extends AutoCloseable {
     Format getSourceFormat();
 
     /**
-     * @return All qualities supported for the {@link #setSourceFormat(Format)
-     *         given source format}.
-     */
-    Set<edu.illinois.library.cantaloupe.resource.iiif.v1.Quality>
-    getSupportedIIIF1Qualities();
-
-    /**
-     * @return All qualities supported for the {@link #setSourceFormat(Format)
-     *         given source format}.
-     */
-    Set<edu.illinois.library.cantaloupe.resource.iiif.v2.Quality>
-    getSupportedIIIF2Qualities();
-
-    /**
      * <p>Returns a list of global (not request-specific) non-fatal warnings,
      * such as deprecation notices.</p>
      *
@@ -201,7 +187,7 @@ public interface Processor extends AutoCloseable {
 
         // TODO: bind Scale.Mode to ProcessorFeature and validate whether the
         // processor supports all of the requested operations.
-        // This isn't needed as of 4.1 because all processors support all
+        // This isn't needed as of 5.0 because all processors support all
         // operations.
     }
 

@@ -27,16 +27,6 @@ class Java2dProcessor extends AbstractImageIOProcessor
         implements StreamProcessor, FileProcessor {
 
     @Override
-    public Set<edu.illinois.library.cantaloupe.resource.iiif.v1.Quality> getSupportedIIIF1Qualities() {
-        return Java2DPostProcessor.SUPPORTED_IIIF_1_QUALITIES;
-    }
-
-    @Override
-    public Set<edu.illinois.library.cantaloupe.resource.iiif.v2.Quality> getSupportedIIIF2Qualities() {
-        return Java2DPostProcessor.SUPPORTED_IIIF_2_QUALITIES;
-    }
-
-    @Override
     public void process(final OperationList ops,
                         final Info info,
                         final OutputStream outputStream)

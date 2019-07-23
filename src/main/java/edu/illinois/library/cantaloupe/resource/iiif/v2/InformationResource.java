@@ -194,7 +194,6 @@ public class InformationResource extends IIIF2Resource {
     private JacksonRepresentation newRepresentation(Info info,
                                                     Processor processor) {
         final ImageInfoFactory factory = new ImageInfoFactory(
-                processor.getSupportedIIIF2Qualities(),
                 processor.getAvailableOutputFormats());
         factory.setDelegateProxy(getDelegateProxy());
 

@@ -13,24 +13,19 @@ class ComplianceLevelTest extends BaseTest {
 
     @Test
     void testGetLevel() {
-        Set<Quality> qualities    = EnumSet.noneOf(Quality.class);
         Set<Format> outputFormats = EnumSet.noneOf(Format.class);
         assertEquals(ComplianceLevel.LEVEL_0,
-                ComplianceLevel.getLevel(qualities, outputFormats));
+                ComplianceLevel.getLevel(outputFormats));
 
         // add the set of level 1 features
-        qualities.add(Quality.NATIVE);
         outputFormats.add(Format.JPG);
         assertEquals(ComplianceLevel.LEVEL_1,
-                ComplianceLevel.getLevel(qualities, outputFormats));
+                ComplianceLevel.getLevel(outputFormats));
 
         // add the set of level 2 features
-        qualities.add(Quality.BITONAL);
-        qualities.add(Quality.COLOR);
-        qualities.add(Quality.GREY);
         outputFormats.add(Format.PNG);
         assertEquals(ComplianceLevel.LEVEL_2,
-                ComplianceLevel.getLevel(qualities, outputFormats));
+                ComplianceLevel.getLevel(outputFormats));
     }
 
     @Test

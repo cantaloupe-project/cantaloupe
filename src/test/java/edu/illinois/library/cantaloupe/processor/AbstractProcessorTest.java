@@ -96,46 +96,6 @@ abstract class AbstractProcessorTest extends BaseTest {
         return formats;
     }
 
-    /* getSupportedIIIF11Qualities() */
-
-    /**
-     * Tests for the presence of all available IIIF 1.x qualities. Subclasses
-     * must override if they lack support for any of these.
-     */
-    @Test
-    public void testGetSupportedIIIF1Qualities() throws Exception {
-        Processor proc = newInstance();
-        proc.setSourceFormat(getAnySupportedSourceFormat(proc));
-
-        Set<edu.illinois.library.cantaloupe.resource.iiif.v1.Quality> expectedQualities =
-                EnumSet.of(
-                        edu.illinois.library.cantaloupe.resource.iiif.v1.Quality.BITONAL,
-                        edu.illinois.library.cantaloupe.resource.iiif.v1.Quality.COLOR,
-                        edu.illinois.library.cantaloupe.resource.iiif.v1.Quality.GREY,
-                        edu.illinois.library.cantaloupe.resource.iiif.v1.Quality.NATIVE);
-        assertEquals(expectedQualities, proc.getSupportedIIIF1Qualities());
-    }
-
-    /* getSupportedIIIF20Qualities() */
-
-    /**
-     * Tests for the presence of all available IIIF 2.x qualities. Subclasses
-     * must override if they lack support for any of these.
-     */
-    @Test
-    public void testGetSupportedIIIF2Qualities() throws Exception {
-        Processor proc = newInstance();
-        proc.setSourceFormat(getAnySupportedSourceFormat(proc));
-
-        Set<edu.illinois.library.cantaloupe.resource.iiif.v2.Quality> expectedQualities =
-                EnumSet.of(
-                        edu.illinois.library.cantaloupe.resource.iiif.v2.Quality.BITONAL,
-                        edu.illinois.library.cantaloupe.resource.iiif.v2.Quality.COLOR,
-                        edu.illinois.library.cantaloupe.resource.iiif.v2.Quality.GRAY,
-                        edu.illinois.library.cantaloupe.resource.iiif.v2.Quality.DEFAULT);
-        assertEquals(expectedQualities, proc.getSupportedIIIF2Qualities());
-    }
-
     /* process() */
 
     @Test

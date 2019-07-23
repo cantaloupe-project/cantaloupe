@@ -40,17 +40,6 @@ public class MockStreamProcessor implements StreamProcessor {
     }
 
     @Override
-    public Set<Quality> getSupportedIIIF1Qualities() {
-        return new HashSet<>();
-    }
-
-    @Override
-    public Set<edu.illinois.library.cantaloupe.resource.iiif.v2.Quality>
-    getSupportedIIIF2Qualities() {
-        return new HashSet<>();
-    }
-
-    @Override
     public boolean isSeeking() {
         return isSeeking;
     }

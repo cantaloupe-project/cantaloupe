@@ -53,20 +53,6 @@ class JaiProcessor extends AbstractImageIOProcessor
     private static final Logger LOGGER =
             LoggerFactory.getLogger(JaiProcessor.class);
 
-    private static final Set<edu.illinois.library.cantaloupe.resource.iiif.v1.Quality>
-            SUPPORTED_IIIF_1_1_QUALITIES = Collections.unmodifiableSet(EnumSet.of(
-                    edu.illinois.library.cantaloupe.resource.iiif.v1.Quality.BITONAL,
-                    edu.illinois.library.cantaloupe.resource.iiif.v1.Quality.COLOR,
-                    edu.illinois.library.cantaloupe.resource.iiif.v1.Quality.GREY,
-                    edu.illinois.library.cantaloupe.resource.iiif.v1.Quality.NATIVE));
-
-    private static final Set<edu.illinois.library.cantaloupe.resource.iiif.v2.Quality>
-            SUPPORTED_IIIF_2_0_QUALITIES = Collections.unmodifiableSet(EnumSet.of(
-                    edu.illinois.library.cantaloupe.resource.iiif.v2.Quality.BITONAL,
-                    edu.illinois.library.cantaloupe.resource.iiif.v2.Quality.COLOR,
-                    edu.illinois.library.cantaloupe.resource.iiif.v2.Quality.DEFAULT,
-                    edu.illinois.library.cantaloupe.resource.iiif.v2.Quality.GRAY));
-
     /**
      * Override that disables support for GIF source images.
      */
@@ -79,30 +65,6 @@ class JaiProcessor extends AbstractImageIOProcessor
             formats = super.getAvailableOutputFormats();
         }
         return formats;
-    }
-
-    @Override
-    public Set<edu.illinois.library.cantaloupe.resource.iiif.v1.Quality>
-    getSupportedIIIF1Qualities() {
-        Set<edu.illinois.library.cantaloupe.resource.iiif.v1.Quality> qualities;
-        if (!getAvailableOutputFormats().isEmpty()) {
-            qualities = SUPPORTED_IIIF_1_1_QUALITIES;
-        } else {
-            qualities = Collections.unmodifiableSet(Collections.emptySet());
-        }
-        return qualities;
-    }
-
-    @Override
-    public Set<edu.illinois.library.cantaloupe.resource.iiif.v2.Quality>
-    getSupportedIIIF2Qualities() {
-        Set<edu.illinois.library.cantaloupe.resource.iiif.v2.Quality> qualities;
-        if (!getAvailableOutputFormats().isEmpty()) {
-            qualities = SUPPORTED_IIIF_2_0_QUALITIES;
-        } else {
-            qualities = Collections.unmodifiableSet(Collections.emptySet());
-        }
-        return qualities;
     }
 
     @Override

@@ -29,7 +29,6 @@ final class ImageInfoFactory {
             scaleConstraint = new ScaleConstraint(1, 1);
         }
         final ComplianceLevel complianceLevel = ComplianceLevel.getLevel(
-                processor.getSupportedIIIF1Qualities(),
                 processor.getAvailableOutputFormats());
 
         final int minTileSize = Configuration.getInstance().
@@ -80,7 +79,7 @@ final class ImageInfoFactory {
         }
 
         // qualities
-        for (Quality quality : processor.getSupportedIIIF1Qualities()) {
+        for (Quality quality : Quality.values()) {
             imageInfo.qualities.add(quality.toString().toLowerCase());
         }
 

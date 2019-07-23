@@ -94,16 +94,6 @@ class PdfBoxProcessor extends AbstractProcessor
     }
 
     @Override
-    public Set<edu.illinois.library.cantaloupe.resource.iiif.v1.Quality> getSupportedIIIF1Qualities() {
-        return Java2DPostProcessor.SUPPORTED_IIIF_1_QUALITIES;
-    }
-
-    @Override
-    public Set<edu.illinois.library.cantaloupe.resource.iiif.v2.Quality> getSupportedIIIF2Qualities() {
-        return Java2DPostProcessor.SUPPORTED_IIIF_2_QUALITIES;
-    }
-
-    @Override
     public void process(OperationList opList,
                         Info imageInfo,
                         OutputStream outputStream) throws FormatException, ProcessorException {

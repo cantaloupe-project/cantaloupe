@@ -19,23 +19,13 @@ enum ComplianceLevel {
 
     private static final Set<Format> LEVEL_1_OUTPUT_FORMATS =
             EnumSet.noneOf(Format.class);
-    private static final Set<Quality> LEVEL_1_QUALITIES =
-            EnumSet.noneOf(Quality.class);
     private static final Set<Format> LEVEL_2_OUTPUT_FORMATS =
             EnumSet.noneOf(Format.class);
-    private static final Set<Quality> LEVEL_2_QUALITIES =
-            EnumSet.noneOf(Quality.class);
 
     private String uri;
 
     static {
-        LEVEL_1_QUALITIES.add(Quality.NATIVE);
         LEVEL_1_OUTPUT_FORMATS.add(Format.JPG);
-
-        LEVEL_2_QUALITIES.addAll(LEVEL_1_QUALITIES);
-        LEVEL_2_QUALITIES.add(Quality.BITONAL);
-        LEVEL_2_QUALITIES.add(Quality.COLOR);
-        LEVEL_2_QUALITIES.add(Quality.GREY);
         LEVEL_2_OUTPUT_FORMATS.addAll(LEVEL_1_OUTPUT_FORMATS);
         LEVEL_2_OUTPUT_FORMATS.add(Format.PNG);
     }
@@ -44,14 +34,11 @@ enum ComplianceLevel {
      * @return Effective IIIF compliance level corresponding to the given
      * parameters.
      */
-    public static ComplianceLevel getLevel(Set<Quality> qualities,
-                                           Set<Format> outputFormats) {
+    public static ComplianceLevel getLevel(Set<Format> outputFormats) {
         ComplianceLevel level = LEVEL_0;
-        if (qualities.containsAll(LEVEL_1_QUALITIES) &&
-                outputFormats.containsAll(LEVEL_1_OUTPUT_FORMATS)) {
+        if (outputFormats.containsAll(LEVEL_1_OUTPUT_FORMATS)) {
             level = LEVEL_1;
-            if (qualities.containsAll(LEVEL_2_QUALITIES) &&
-                    outputFormats.containsAll(LEVEL_2_OUTPUT_FORMATS)) {
+            if (outputFormats.containsAll(LEVEL_2_OUTPUT_FORMATS)) {
                 level = LEVEL_2;
             }
         }

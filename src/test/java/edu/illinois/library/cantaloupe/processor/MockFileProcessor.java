@@ -35,17 +35,6 @@ public class MockFileProcessor implements FileProcessor {
     }
 
     @Override
-    public Set<Quality> getSupportedIIIF1Qualities() {
-        return new HashSet<>();
-    }
-
-    @Override
-    public Set<edu.illinois.library.cantaloupe.resource.iiif.v2.Quality>
-    getSupportedIIIF2Qualities() {
-        return new HashSet<>();
-    }
-
-    @Override
     public void process(OperationList opList, Info sourceInfo,
                         OutputStream outputStream) throws ProcessorException {
         // no-op

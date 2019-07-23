@@ -17,7 +17,7 @@ class ComplianceLevelTest extends BaseTest {
         Set<Quality> qualities              = EnumSet.noneOf(Quality.class);
         Set<Format> outputFormats           = EnumSet.noneOf(Format.class);
         assertEquals(ComplianceLevel.LEVEL_0,
-                ComplianceLevel.getLevel(serviceFeatures, qualities, outputFormats));
+                ComplianceLevel.getLevel(serviceFeatures, outputFormats));
 
         // add the set of level 1 features
         serviceFeatures.add(ServiceFeature.SIZE_BY_WHITELISTED);
@@ -27,7 +27,7 @@ class ComplianceLevelTest extends BaseTest {
         serviceFeatures.add(ServiceFeature.CORS);
         serviceFeatures.add(ServiceFeature.JSON_LD_MEDIA_TYPE);
         assertEquals(ComplianceLevel.LEVEL_1,
-                ComplianceLevel.getLevel(serviceFeatures, qualities, outputFormats));
+                ComplianceLevel.getLevel(serviceFeatures, outputFormats));
 
         // add the set of level 2 features
         qualities.add(Quality.BITONAL);
@@ -35,7 +35,7 @@ class ComplianceLevelTest extends BaseTest {
         qualities.add(Quality.GRAY);
         outputFormats.add(Format.PNG);
         assertEquals(ComplianceLevel.LEVEL_2,
-                ComplianceLevel.getLevel(serviceFeatures, qualities, outputFormats));
+                ComplianceLevel.getLevel(serviceFeatures, outputFormats));
     }
 
     @Test

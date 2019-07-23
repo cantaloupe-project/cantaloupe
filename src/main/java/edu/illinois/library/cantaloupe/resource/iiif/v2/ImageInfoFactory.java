@@ -49,27 +49,22 @@ final class ImageInfoFactory {
                             ServiceFeature.JSON_LD_MEDIA_TYPE,
                             ServiceFeature.PROFILE_LINK_HEADER));
 
-    private Set<Quality> processorQualities;
     private Set<Format> processorOutputFormats;
     private DelegateProxy delegateProxy;
     private double maxScale;
     private int maxPixels, minSize, minTileSize;
 
     /**
-     * @param processorQualities     Return value of {@link
-     *                               Processor#getSupportedIIIF2Qualities()}.
      * @param processorOutputFormats Return value of {@link
      *                               Processor#getAvailableOutputFormats()}.
      */
-    ImageInfoFactory(final Set<Quality> processorQualities,
-                     final Set<Format> processorOutputFormats) {
+    ImageInfoFactory(Set<Format> processorOutputFormats) {
         Configuration config = Configuration.getInstance();
         maxPixels            = config.getInt(Key.MAX_PIXELS, 0);
         maxScale             = config.getDouble(Key.MAX_SCALE, Double.MAX_VALUE);
         minSize              = config.getInt(Key.IIIF_MIN_SIZE, DEFAULT_MIN_SIZE);
         minTileSize          = config.getInt(Key.IIIF_MIN_TILE_SIZE, DEFAULT_MIN_TILE_SIZE);
 
-        this.processorQualities = processorQualities;
         this.processorOutputFormats = processorOutputFormats;
     }
 
@@ -149,7 +144,6 @@ final class ImageInfoFactory {
 
         final String complianceUri = ComplianceLevel.getLevel(
                 SUPPORTED_SERVICE_FEATURES,
-                processorQualities,
                 processorOutputFormats).getUri();
         profile.add(complianceUri);
 
@@ -172,7 +166,7 @@ final class ImageInfoFactory {
 
         // qualities
         final Set<String> qualityStrings = new HashSet<>();
-        for (Quality quality : processorQualities) {
+        for (Quality quality : Quality.values()) {
             qualityStrings.add(quality.toString().toLowerCase());
         }
         profileMap.put("qualities", qualityStrings);
