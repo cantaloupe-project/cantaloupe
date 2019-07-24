@@ -1,7 +1,5 @@
 package edu.illinois.library.cantaloupe.resource.iiif.v2;
 
-import edu.illinois.library.cantaloupe.resource.iiif.Feature;
-
 /**
  * Processor-dependent feature.
  */

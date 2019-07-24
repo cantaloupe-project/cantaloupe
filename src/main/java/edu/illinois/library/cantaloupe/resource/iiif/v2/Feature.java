@@ -1,4 +1,4 @@
-package edu.illinois.library.cantaloupe.resource.iiif;
+package edu.illinois.library.cantaloupe.resource.iiif.v2;
 
 /**
  * Image API "feature," which may be application-based or {@link

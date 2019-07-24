@@ -1,7 +1,6 @@
 package edu.illinois.library.cantaloupe.resource.iiif.v2;
 
 import edu.illinois.library.cantaloupe.image.Format;
-import edu.illinois.library.cantaloupe.resource.iiif.Feature;
 
 import java.util.EnumSet;
 import java.util.HashSet;
