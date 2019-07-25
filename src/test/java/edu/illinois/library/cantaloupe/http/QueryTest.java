@@ -138,4 +138,10 @@ public class QueryTest {
         assertEquals("key1=value1&key2=value2", instance.toString());
     }
 
+    @Test
+    void testToStringWithEmptyInstance() {
+        instance = new Query();
+        assertEquals("", instance.toString());
+    }
+
 }
