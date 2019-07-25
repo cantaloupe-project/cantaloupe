@@ -52,6 +52,8 @@
   `HttpSource` will probably be replaced by this one in the next major version.
 * Fixed a missing `resulting_size` key in the delegate script's `options` hash,
   introduced in 4.1.
+* Fixed a bug in KakaduNativeProcessor that could cause requests for certain
+  scales to fail (or possibly even crash the JVM).
 * Fixed failing to source-cache non-selectively-readable images when using
   Java2dProcessor or JaiProcessor with the source cache enabled and a source
   for which chunking is enabled.

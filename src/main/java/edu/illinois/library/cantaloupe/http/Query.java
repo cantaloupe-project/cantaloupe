@@ -145,7 +145,7 @@ public final class Query implements Iterable<KeyValuePair> {
                     .map(KeyValuePair::toString)
                     .collect(Collectors.joining("&"));
         }
-        return super.toString();
+        return "";
     }
 
 }
