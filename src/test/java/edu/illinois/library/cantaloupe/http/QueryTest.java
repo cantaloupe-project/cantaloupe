@@ -139,7 +139,7 @@ public class QueryTest {
     }
 
     @Test
-    void testToStringWithEmptyInstance() {
+    public void testToStringWithEmptyInstance() {
         instance = new Query();
         assertEquals("", instance.toString());
     }
