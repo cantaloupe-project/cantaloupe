@@ -544,27 +544,35 @@ public final class JPEG2000KakaduImageReader implements AutoCloseable {
             sourceRect.scaleX(reducedScale);
             sourceRect.scaleY(reducedScale);
 
+            // Note that Get_rendered_image_dims() returned a Kdu_coords, whose
+            // Kdu_dims members are integer-based. Precision loss in that
+            // conversion can cause one or both of the regionRect dimensions to
+            // be larger than those of sourceRect, which
+            // kdu_region_decompressor.start() and process() absolutely do not
+            // like at all. Here we ensure that this will never be the case.
+            if (regionRect.width() > sourceRect.width()) {
+                regionRect.setWidth(sourceRect.width());
+            }
+            if (regionRect.height() > sourceRect.height()) {
+                regionRect.setHeight(sourceRect.height());
+            }
+
             // N.B.: if the region is not entirely within the source image
             // coordinates, either kdu_region_decompressor::start() or
             // process() will crash the JVM (which may be a bug in Kakadu
-            // or its Java binding). This should never be the case, but we
-            // check anyway to be extra safe.
-            //
-            // N.B. 2: sometimes one of the sourceRect dimensions is slightly
-            // (usually < 0.2 anecdotally) smaller than its regionRect
-            // dimension. The delta argument to contains() works around this,
-            // but it would be better to TODO: find out why the discrepancy exists and fix it.
-            if (!sourceRect.contains(regionRect, 0.2)) {
+            // or its Java binding). If all went well above, this should never
+            // be the case, but we check anyway to be extra safe.
+            if (!sourceRect.contains(regionRect)) {
                 throw new IllegalArgumentException(String.format(
                         "Rendered region is not entirely within the image " +
-                                "on the canvas. This might be a bug. " +
+                                "on the canvas. This is probably a bug. " +
                                 "[region: %s] [image: %s]",
                         regionRect, sourceRect));
             }
 
-            LOGGER.debug("Rendered region {}; source {}; " +
+            LOGGER.debug("Rendered region {}; " +
                             "{}x reduction factor; differential scale {}/{}",
-                    regionRect, sourceRect,
+                    regionRect,
                     reductionFactor.factor,
                     expandNumerator.Get_x(), expandDenominator.Get_x()); // y should == x
 
