@@ -508,7 +508,7 @@ public final class JPEG2000KakaduImageReader implements AutoCloseable {
             // kdu_region_decompressor.start() at what fractional scale to
             // render the result. The expansion is relative to the selected
             // resolution level, not the full image dimensions.
-            final double[] expansion = determineReferenceExpansion(
+            final Kdu_coords expandNumerator = determineReferenceExpansion(
                     referenceComponent, channels, codestream,
                     threadEnv, limiter);
             if (scaleOp != null) {
@@ -516,13 +516,12 @@ public final class JPEG2000KakaduImageReader implements AutoCloseable {
                         roi.size(), reductionFactor, scaleConstraint);
                 System.arraycopy(tmp, 0, diffScales, 0, 2);
             }
-            expansion[0] *= diffScales[0] * EXPAND_DENOMINATOR;
-            expansion[1] *= diffScales[1] * EXPAND_DENOMINATOR;
-            final Kdu_coords expandNumerator = new Kdu_coords(
-                    (int) Math.round(expansion[0]),
-                    (int) Math.round(expansion[1]));
-            final Kdu_coords expandDenominator = new Kdu_coords(
-                    EXPAND_DENOMINATOR, EXPAND_DENOMINATOR);
+            expandNumerator.Set_x((int) Math.round(
+                    expandNumerator.Get_x() * diffScales[0] * EXPAND_DENOMINATOR));
+            expandNumerator.Set_y((int) Math.round(
+                    expandNumerator.Get_y() * diffScales[1] * EXPAND_DENOMINATOR));
+            final Kdu_coords expandDenominator =
+                    new Kdu_coords(EXPAND_DENOMINATOR, EXPAND_DENOMINATOR);
 
             // Get the effective source image size.
             final Kdu_dims sourceDims = decompressor.Get_rendered_image_dims(
@@ -550,7 +549,12 @@ public final class JPEG2000KakaduImageReader implements AutoCloseable {
             // process() will crash the JVM (which may be a bug in Kakadu
             // or its Java binding). This should never be the case, but we
             // check anyway to be extra safe.
-            if (!sourceRect.contains(regionRect)) {
+            //
+            // N.B. 2: sometimes one of the sourceRect dimensions is slightly
+            // (usually < 0.2 anecdotally) smaller than its regionRect
+            // dimension. The delta argument to contains() works around this,
+            // but it would be better to TODO: find out why the discrepancy exists and fix it.
+            if (!sourceRect.contains(regionRect, 0.2)) {
                 throw new IllegalArgumentException(String.format(
                         "Rendered region is not entirely within the image " +
                                 "on the canvas. This might be a bug. " +
@@ -638,11 +642,8 @@ public final class JPEG2000KakaduImageReader implements AutoCloseable {
     }
 
     /**
-     * <p>This method is based on the one with the same name in the {@literal
-     * KduRender.java} file in the Kakadu SDK. To improve accuracy, a {@code
-     * double[]} is returned instead of a {@code Kdu_coords}.</p>
-     *
-     * <p>The original documentation follows:</p>
+     * <p>This method is largely lifted from the {@literal KduRender.java} file
+     * in the Kakadu SDK. The author's documentation follows:</p>
      *
      * <blockquote>This function almost invariably returns (1,1), but there can
      * be some wacky images for which larger expansions are required. The need
@@ -658,7 +659,7 @@ public final class JPEG2000KakaduImageReader implements AutoCloseable {
      * individual image components, but we do not exploit this feature in the
      * present coding example.</blockquote>
      */
-    private static double[] determineReferenceExpansion(
+    private static Kdu_coords determineReferenceExpansion(
             int reference_component,
             Kdu_channel_mapping channels,
             Kdu_codestream codestream,
@@ -668,8 +669,7 @@ public final class JPEG2000KakaduImageReader implements AutoCloseable {
         Kdu_coords ref_subs = new Kdu_coords();
         Kdu_coords subs = new Kdu_coords();
         codestream.Get_subsampling(reference_component,ref_subs);
-        Kdu_coords min_subs = new Kdu_coords();
-        min_subs.Assign(ref_subs);
+        Kdu_coords min_subs = new Kdu_coords(); min_subs.Assign(ref_subs);
 
         for (c = 0; c < channels.Get_num_channels(); c++) {
             codestream.Get_subsampling(channels.Get_source_component(c),subs);
@@ -681,16 +681,15 @@ public final class JPEG2000KakaduImageReader implements AutoCloseable {
             }
         }
 
-        final double[] expansion = new double[] {
-                ref_subs.Get_x() / (double) min_subs.Get_x(),
-                ref_subs.Get_y() / (double) min_subs.Get_y()
-        };
+        Kdu_coords expansion = new Kdu_coords();
+        expansion.Set_x((int) Math.round(ref_subs.Get_x() / (double) min_subs.Get_x()));
+        expansion.Set_y((int) Math.round(ref_subs.Get_y() / (double) min_subs.Get_y()));
 
         for (c = 0; c < channels.Get_num_channels(); c++) {
             codestream.Get_subsampling(channels.Get_source_component(c),subs);
 
-            if ((((subs.Get_x() * expansion[0]) % ref_subs.Get_x()) != 0) ||
-                    (((subs.Get_y() * expansion[1]) % ref_subs.Get_y()) != 0)) {
+            if ((((subs.Get_x() * expansion.Get_x()) % ref_subs.Get_x()) != 0) ||
+                    (((subs.Get_y() * expansion.Get_y()) % ref_subs.Get_y()) != 0)) {
                 Kdu_global.Kdu_print_error(
                         "The supplied JP2 file contains colour channels " +
                                 "whose sub-sampling factors are not integer " +
@@ -699,7 +698,7 @@ public final class JPEG2000KakaduImageReader implements AutoCloseable {
                         Kdu_global.KDU_WANT_OUTPUT_COMPONENTS,
                         threadEnv, limiter);
                 channels.Configure(codestream);
-                expansion[0] = expansion[1] = 1;
+                expansion = new Kdu_coords(1,1);
             }
         }
         return expansion;
