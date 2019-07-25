@@ -242,25 +242,16 @@ public class ImageResource extends IIIF2Resource {
     private void validateSize(Dimension resultingSize,
                               Dimension virtualSize,
                               Processor processor) throws SizeRestrictedException {
-        final Configuration config = Configuration.getInstance();
-
+        final var config = Configuration.getInstance();
         if (config.getBoolean(Key.IIIF_RESTRICT_TO_SIZES, false)) {
-            final ImageInfoFactory factory = new ImageInfoFactory(
+            var factory = new ImageInfoFactory(
                     processor.getAvailableOutputFormats());
-
-            final List<ImageInfo.Size> sizes = factory.getSizes(virtualSize);
-
-            boolean ok = false;
-            for (ImageInfo.Size size : sizes) {
-                if (size.width == resultingSize.intWidth() &&
-                        size.height == resultingSize.intHeight()) {
-                    ok = true;
-                    break;
-                }
-            }
-            if (!ok) {
-                throw new SizeRestrictedException();
-            }
+            factory.getSizes(virtualSize).stream()
+                    .filter(s -> s.width == resultingSize.intWidth() &&
+                            s.height == resultingSize.intHeight())
+                    .findAny()
+                    .orElseThrow(() -> new SizeRestrictedException(
+                            "Available sizes are limited to those in the information response."));
         }
     }
 
