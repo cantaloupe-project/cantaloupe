@@ -22,9 +22,15 @@ public class QueryTest extends BaseTest {
     }
 
     @Test
-    void testConstructorWithString() {
+    void testStringConstructor() {
         assertEquals("value1", instance.getFirstValue("key1"));
         assertEquals("value2", instance.getFirstValue("key2"));
+    }
+
+    @Test
+    void testCopyConstructor() {
+        Query q2 = new Query(instance);
+        assertEquals(q2, instance);
     }
 
     @Test

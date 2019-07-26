@@ -31,6 +31,13 @@ public final class Query implements Iterable<KeyValuePair> {
         }
     }
 
+    /**
+     * Copy constructor.
+     */
+    public Query(Query query) {
+        pairs.addAll(query.getAll());
+    }
+
     public void add(String name) {
         add(name, null);
     }
