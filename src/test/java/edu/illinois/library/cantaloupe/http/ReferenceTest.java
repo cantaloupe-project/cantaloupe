@@ -30,6 +30,7 @@ public class ReferenceTest extends BaseTest {
     void testCopyConstructor() {
         Reference copy = new Reference(instance);
         assertEquals(copy, instance);
+        assertNotSame(copy.getQuery(), instance.getQuery());
     }
 
     @Test

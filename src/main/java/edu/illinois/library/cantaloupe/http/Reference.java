@@ -38,7 +38,7 @@ public final class Reference {
         setHost(reference.getHost());
         setPort(reference.getPort());
         setPath(reference.getPath());
-        setQuery(reference.getQuery());
+        setQuery(new Query(reference.getQuery()));
         setFragment(reference.getFragment());
     }
 
