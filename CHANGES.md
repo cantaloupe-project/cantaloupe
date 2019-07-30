@@ -54,6 +54,8 @@
   introduced in 4.1.
 * Fixed a bug in KakaduNativeProcessor that could cause requests for certain
   scales to fail (or possibly even crash the JVM).
+* Fixed the behavior of `response-content-disposition` query arguments
+  containing a `filename` argument.
 * Fixed failing to source-cache non-selectively-readable images when using
   Java2dProcessor or JaiProcessor with the source cache enabled and a source
   for which chunking is enabled.

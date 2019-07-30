@@ -372,10 +372,11 @@ public class RectangleTest extends BaseTest {
 
     @Test
     void testToString() {
-        String expected = String.format("%f,%f/%fx%f",
-                instance.x(), instance.y(),
-                instance.width(), instance.height());
-        assertEquals(expected, instance.toString());
+        instance.setX(10.5);
+        instance.setY(5.5);
+        instance.setWidth(1000.5);
+        instance.setHeight(800.5);
+        assertEquals("10.5,5.5/1000.5x800.5", instance.toString());
     }
 
 }

@@ -177,6 +177,36 @@ public class ImageResourceTest extends ResourceTest {
     }
 
     @Test
+    void testGETContentDispositionHeaderSetToInline() throws Exception {
+        URI uri = getHTTPURI("/" + IMAGE + "/full/full/0/color.jpg?response-content-disposition=inline");
+        tester.testContentDispositionHeaderSetToInline(uri);
+    }
+
+    @Test
+    void testGETContentDispositionHeaderSetToAttachment() throws Exception {
+        URI uri = getHTTPURI("/" + IMAGE + "/full/full/0/color.jpg?response-content-disposition=attachment");
+        tester.testContentDispositionHeaderSetToAttachment(uri);
+    }
+
+    @Test
+    void testGETContentDispositionHeaderSetToAttachmentWithFilename()
+            throws Exception {
+        final String filename = "cats.jpg";
+
+        URI uri = getHTTPURI("/" + IMAGE + "/full/full/0/color.jpg?response-content-disposition=attachment;filename%3D%22" + filename + "%22");
+        tester.testContentDispositionHeaderSetToAttachmentWithFilename(uri, filename);
+
+        uri = getHTTPURI("/" + IMAGE + "/full/full/0/color.jpg?response-content-disposition=attachment;%20filename%3D%22" + filename + "%22");
+        tester.testContentDispositionHeaderSetToAttachmentWithFilename(uri, filename);
+
+        uri = getHTTPURI("/" + IMAGE + "/full/full/0/color.jpg?response-content-disposition=attachment;filename%3D" + filename);
+        tester.testContentDispositionHeaderSetToAttachmentWithFilename(uri, filename);
+
+        uri = getHTTPURI("/" + IMAGE + "/full/full/0/color.jpg?response-content-disposition=attachment;%20filename%3D" + filename);
+        tester.testContentDispositionHeaderSetToAttachmentWithFilename(uri, filename);
+    }
+
+    @Test
     void testGETWithEndpointEnabled() {
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.IIIF_1_ENDPOINT_ENABLED, true);

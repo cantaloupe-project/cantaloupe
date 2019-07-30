@@ -488,17 +488,32 @@ public final class JPEG2000KakaduImageReader implements AutoCloseable {
                                     final ScaleConstraint scaleConstraint,
                                     final ReductionFactor reductionFactor,
                                     final double[] diffScales) throws IOException {
-        // Note: Kdu_dims and Kdu_coords are integer-based, and this can lead
+        // N.B. 1: Kdu_dims and Kdu_coords are integer-based, and this can lead
         // to precision loss when Rectangles and Dimensions are converted
-        // back-and-forth... and precision loss can cause crashes in
-        // Kdu_region_decompressor. Try to stay in the Rectangle/Dimension
-        // space and convert into the libkdu equivalent objects only when
-        // necessary.
+        // back-and-forth. Try to stay in the Rectangle/Dimension space and
+        // convert only when necessary.
+        //
+        // N.B. 2: Kdu_region_decompressor is brutally unforgiving of ROIs that
+        // don't lie fully within the image canvas. Get_rendered_image_dims()
+        // is supposed to help in finding a safe ROI, but sometimes this
+        // supposedly safe ROI will cause Start() to crash the JVM.
+        // (One or both of these may be bugs.)
+        //
+        // To be sure that the ROI lies fully within the canvas, we employ a
+        // technique whereby we lie to Kdu_region_decompressor about wanting a
+        // slightly larger scale than we really do (based on a 1 pixel larger
+        // "fake ROI"), and then pass our actual ROI (which now has a safer
+        // safer margin within the canvas bounds) to Start().
+        final Rectangle fakeROI = new Rectangle(
+                roi.x(),
+                roi.y(),
+                roi.width() + 1,
+                roi.height() + 1);
 
         // Find the best resolution level to read.
         if (scaleOp != null) {
             final double[] scales = scaleOp.getResultingScales(
-                    roi.size(), scaleConstraint);
+                    fakeROI.size(), scaleConstraint);
             // If x & y scales are different, base the reduction factor on the
             // largest one.
             final double maxScale = Arrays.stream(scales).max().orElse(1);
@@ -532,7 +547,7 @@ public final class JPEG2000KakaduImageReader implements AutoCloseable {
                     threadEnv, limiter);
             if (scaleOp != null) {
                 double[] tmp = scaleOp.getDifferentialScales(
-                        roi.size(), reductionFactor, scaleConstraint);
+                        fakeROI.size(), reductionFactor, scaleConstraint);
                 System.arraycopy(tmp, 0, diffScales, 0, 2);
             }
             expandNumerator.Set_x((int) Math.round(
@@ -557,44 +572,21 @@ public final class JPEG2000KakaduImageReader implements AutoCloseable {
             regionRect.move(sourcePos.Get_x(), sourcePos.Get_y());
             regionRect.scaleX(diffScales[0] * reducedScale);
             regionRect.scaleY(diffScales[1] * reducedScale);
-
-            Rectangle sourceRect = toRectangle(sourceDims);
-            sourceRect.scaleX(reducedScale);
-            sourceRect.scaleY(reducedScale);
-
-            // Note that Get_rendered_image_dims() returned a Kdu_coords, whose
-            // Kdu_dims members are integer-based. Precision loss in that
-            // conversion can cause one or both of the regionRect dimensions to
-            // be larger than those of sourceRect, which
-            // kdu_region_decompressor.start() and process() absolutely do not
-            // like at all. Here we ensure that this will never be the case.
-            if (regionRect.width() > sourceRect.width()) {
-                regionRect.setWidth(sourceRect.width());
-            }
-            if (regionRect.height() > sourceRect.height()) {
-                regionRect.setHeight(sourceRect.height());
-            }
-
-            // N.B.: if the region is not entirely within the source image
-            // coordinates, either kdu_region_decompressor::start() or
-            // process() will crash the JVM (which may be a bug in Kakadu
-            // or its Java binding). If all went well above, this should never
-            // be the case, but we check anyway to be extra safe.
-            if (!sourceRect.contains(regionRect)) {
-                throw new IllegalArgumentException(String.format(
-                        "Rendered region is not entirely within the image " +
-                                "on the canvas. This is probably a bug. " +
-                                "[region: %s] [image: %s]",
-                        regionRect, sourceRect));
-            }
-
-            LOGGER.debug("Rendered region {}; " +
-                            "{}x reduction factor; differential scale {}/{}",
-                    regionRect,
-                    reductionFactor.factor,
-                    expandNumerator.Get_x(), expandDenominator.Get_x()); // y should == x
-
             final Kdu_dims regionDims = toKduDims(regionRect);
+
+            LOGGER.debug("Rendered region {},{}/{}x{}; source {},{}/{}x{}; " +
+                            "{}x reduction factor; differential scale {}/{}",
+                    regionDims.Access_pos().Get_x(),
+                    regionDims.Access_pos().Get_y(),
+                    regionDims.Access_size().Get_x(),
+                    regionDims.Access_size().Get_x(),
+                    sourceDims.Access_pos().Get_x(),
+                    sourceDims.Access_pos().Get_y(),
+                    sourceDims.Access_size().Get_x(),
+                    sourceDims.Access_size().Get_x(),
+                    reductionFactor.factor,
+                    expandNumerator.Get_x(),
+                    expandDenominator.Get_x()); // y should == x
 
             final Stopwatch watch = new Stopwatch();
 
@@ -657,14 +649,6 @@ public final class JPEG2000KakaduImageReader implements AutoCloseable {
         regionDims.From_u32(rect.intX(), rect.intY(),
                 rect.intWidth(), rect.intHeight());
         return regionDims;
-    }
-
-    private static Rectangle toRectangle(Kdu_dims dims) throws KduException {
-        return new Rectangle(
-                dims.Access_pos().Get_x(),
-                dims.Access_pos().Get_y(),
-                dims.Access_size().Get_x(),
-                dims.Access_size().Get_y());
     }
 
     /**

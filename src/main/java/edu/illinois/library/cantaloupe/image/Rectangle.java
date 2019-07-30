@@ -1,5 +1,7 @@
 package edu.illinois.library.cantaloupe.image;
 
+import edu.illinois.library.cantaloupe.util.StringUtils;
+
 import java.util.Arrays;
 
 /**
@@ -208,7 +210,9 @@ public final class Rectangle {
 
     @Override
     public String toString() {
-        return String.format("%f,%f/%fx%f", x(), y(), width(), height());
+        return StringUtils.removeTrailingZeroes(x()) + "," +
+                StringUtils.removeTrailingZeroes(y()) + "/" +
+                dimension.toString();
     }
 
 }
