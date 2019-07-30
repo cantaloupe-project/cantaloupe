@@ -320,7 +320,7 @@ public class ImageResourceTester extends ImageAPIResourceTester {
         }
     }
 
-    public void testContentDispositionHeaderWithNoHeader(URI uri)
+    public void testContentDispositionHeaderWithNoHeaderInConfiguration(URI uri)
             throws Exception {
         Client client = newClient(uri);
         try {
@@ -331,7 +331,7 @@ public class ImageResourceTester extends ImageAPIResourceTester {
         }
     }
 
-    public void testContentDispositionHeaderSetToInline(URI uri)
+    public void testContentDispositionHeaderSetToInlineInConfiguration(URI uri)
             throws Exception {
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.IIIF_CONTENT_DISPOSITION, "inline");
@@ -346,7 +346,7 @@ public class ImageResourceTester extends ImageAPIResourceTester {
         }
     }
 
-    public void testContentDispositionHeaderSetToAttachment(URI uri)
+    public void testContentDispositionHeaderSetToAttachmentInConfiguration(URI uri)
             throws Exception {
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.IIIF_CONTENT_DISPOSITION, "attachment");
@@ -355,6 +355,53 @@ public class ImageResourceTester extends ImageAPIResourceTester {
         try {
             Response response = client.send();
             assertEquals("attachment; filename=" + IMAGE + ".jpg",
+                    response.getHeaders().getFirstValue("Content-Disposition"));
+        } finally {
+            client.stop();
+        }
+    }
+
+    public void testContentDispositionHeaderWithNoHeaderInQuery(URI uri)
+            throws Exception {
+        Client client = newClient(uri);
+        try {
+            Response response = client.send();
+            assertNull(response.getHeaders().getFirstValue("Content-Disposition"));
+        } finally {
+            client.stop();
+        }
+    }
+
+    public void testContentDispositionHeaderSetToInlineInQuery(URI uri)
+            throws Exception {
+        Client client = newClient(uri);
+        try {
+            Response response = client.send();
+            assertEquals("inline; filename=" + IMAGE + ".jpg",
+                    response.getHeaders().getFirstValue("Content-Disposition"));
+        } finally {
+            client.stop();
+        }
+    }
+
+    public void testContentDispositionHeaderSetToAttachmentInQuery(URI uri)
+            throws Exception {
+        Client client = newClient(uri);
+        try {
+            Response response = client.send();
+            assertEquals("attachment; filename=" + IMAGE + ".jpg",
+                    response.getHeaders().getFirstValue("Content-Disposition"));
+        } finally {
+            client.stop();
+        }
+    }
+
+    public void testContentDispositionHeaderSetToAttachmentWithFilenameInQuery(URI uri,
+                                                                               String filename) throws Exception {
+        Client client = newClient(uri);
+        try {
+            Response response = client.send();
+            assertEquals("attachment; filename=" + filename,
                     response.getHeaders().getFirstValue("Content-Disposition"));
         } finally {
             client.stop();

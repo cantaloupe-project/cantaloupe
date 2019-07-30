@@ -173,22 +173,59 @@ public class ImageResourceTest extends ResourceTest {
     }
 
     @Test
-    public void testGETContentDispositionHeaderWithNoHeader() throws Exception {
+    public void testGETContentDispositionHeaderWithNoHeaderInConfiguration() throws Exception {
         URI uri = getHTTPURI("/" + IMAGE + "/full/full/0/color.jpg");
-        tester.testContentDispositionHeaderWithNoHeader(uri);
+        tester.testContentDispositionHeaderWithNoHeaderInConfiguration(uri);
     }
 
     @Test
-    public void testGETContentDispositionHeaderSetToInline() throws Exception {
+    public void testGETContentDispositionHeaderSetToInlineInConfiguration() throws Exception {
         URI uri = getHTTPURI("/" + IMAGE + "/full/full/0/color.jpg");
-        tester.testContentDispositionHeaderSetToInline(uri);
+        tester.testContentDispositionHeaderSetToInlineInConfiguration(uri);
     }
 
     @Test
-    public void testGETContentDispositionHeaderSetToAttachment()
+    public void testGETContentDispositionHeaderSetToAttachmentInConfiguration()
             throws Exception {
         URI uri = getHTTPURI("/" + IMAGE + "/full/full/0/color.jpg");
-        tester.testContentDispositionHeaderSetToAttachment(uri);
+        tester.testContentDispositionHeaderSetToAttachmentInConfiguration(uri);
+    }
+
+    @Test
+    public void testGETContentDispositionHeaderWithNoHeaderInQuery() throws Exception {
+        URI uri = getHTTPURI("/" + IMAGE + "/full/full/0/color.jpg");
+        tester.testContentDispositionHeaderWithNoHeaderInQuery(uri);
+    }
+
+    @Test
+    public void testGETContentDispositionHeaderSetToInlineInQuery() throws Exception {
+        URI uri = getHTTPURI("/" + IMAGE + "/full/full/0/color.jpg?response-content-disposition=inline");
+        tester.testContentDispositionHeaderSetToInlineInQuery(uri);
+    }
+
+    @Test
+    public void testGETContentDispositionHeaderSetToAttachmentInQuery()
+            throws Exception {
+        URI uri = getHTTPURI("/" + IMAGE + "/full/full/0/color.jpg?response-content-disposition=attachment");
+        tester.testContentDispositionHeaderSetToAttachmentInQuery(uri);
+    }
+
+    @Test
+    public void testGETContentDispositionHeaderSetToAttachmentWithFilenameInQuery()
+            throws Exception {
+        final String filename = "cats.jpg";
+
+        URI uri = getHTTPURI("/" + IMAGE + "/full/full/0/color.jpg?response-content-disposition=attachment;filename%3D%22" + filename + "%22");
+        tester.testContentDispositionHeaderSetToAttachmentWithFilenameInQuery(uri, filename);
+
+        uri = getHTTPURI("/" + IMAGE + "/full/full/0/color.jpg?response-content-disposition=attachment;%20filename%3D%22" + filename + "%22");
+        tester.testContentDispositionHeaderSetToAttachmentWithFilenameInQuery(uri, filename);
+
+        uri = getHTTPURI("/" + IMAGE + "/full/full/0/color.jpg?response-content-disposition=attachment;filename%3D" + filename);
+        tester.testContentDispositionHeaderSetToAttachmentWithFilenameInQuery(uri, filename);
+
+        uri = getHTTPURI("/" + IMAGE + "/full/full/0/color.jpg?response-content-disposition=attachment;%20filename%3D" + filename);
+        tester.testContentDispositionHeaderSetToAttachmentWithFilenameInQuery(uri, filename);
     }
 
     @Test
