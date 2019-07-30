@@ -481,22 +481,6 @@ public class Version2_0ConformanceTest extends ResourceTest {
     }
 
     /**
-     * 4.7. "When the client requests an image, the server may add a link
-     * header to the response that indicates the canonical URI for that
-     * request."
-     */
-    @Test
-    void testCanonicalUriLinkHeader() throws Exception {
-        final String path = "/" + IMAGE + "/full/full/0/default.jpg";
-        final URI uri = getHTTPURI(path);
-        client = newClient(path);
-        Response response = client.send();
-
-        assertEquals("<" + uri + ">;rel=\"canonical\"",
-                response.getHeaders().getFirstValue("Link"));
-    }
-
-    /**
      * 5. "The service must return this information about the image."
      */
     @Test

@@ -20,7 +20,6 @@ import edu.illinois.library.cantaloupe.processor.SourceFormatException;
 import edu.illinois.library.cantaloupe.resource.InputStreamRepresentation;
 import edu.illinois.library.cantaloupe.resource.IllegalClientArgumentException;
 import edu.illinois.library.cantaloupe.resource.ImageRepresentation;
-import edu.illinois.library.cantaloupe.resource.Route;
 import edu.illinois.library.cantaloupe.status.HealthChecker;
 import edu.illinois.library.cantaloupe.resource.iiif.SizeRestrictedException;
 import edu.illinois.library.cantaloupe.source.Source;
@@ -114,7 +113,7 @@ public class ImageResource extends IIIF2Resource {
                 }
 
                 if (cacheStream != null) {
-                    addHeaders(params, disposition,
+                    addHeaders(disposition,
                             params.getOutputFormat().toFormat().getPreferredMediaType().toString());
 
                     new InputStreamRepresentation(cacheStream)
@@ -204,7 +203,7 @@ public class ImageResource extends IIIF2Resource {
                 validateScale(virtualSize, (Scale) ops.getFirst(Scale.class));
                 validateSize(resultingSize, virtualSize, processor);
 
-                addHeaders(params, disposition,
+                addHeaders(disposition,
                         params.getOutputFormat().toFormat().getPreferredMediaType().toString());
 
                 new ImageRepresentation(info, processor, ops, isBypassingCache)
@@ -222,21 +221,11 @@ public class ImageResource extends IIIF2Resource {
         throw new SourceFormatException();
     }
 
-    private void addHeaders(Parameters params,
-                            String disposition,
-                            String contentType) {
+    private void addHeaders(String disposition, String contentType) {
         if (disposition != null) {
             getResponse().setHeader("Content-Disposition", disposition);
         }
         getResponse().setHeader("Content-Type", contentType);
-
-        final Identifier identifier = params.getIdentifier();
-        final String paramsStr = params.toString().replaceFirst(
-                identifier.toString(), getPublicIdentifier());
-        getResponse().setHeader("Link",
-                String.format("<%s%s/%s>;rel=\"canonical\"",
-                getPublicRootReference(),
-                Route.IIIF_2_PATH, paramsStr));
     }
 
     private void validateSize(Dimension resultingSize,

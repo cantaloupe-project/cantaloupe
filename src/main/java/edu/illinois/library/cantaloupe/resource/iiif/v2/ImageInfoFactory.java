@@ -43,7 +43,6 @@ final class ImageInfoFactory {
             Collections.unmodifiableSet(
                     EnumSet.of(ServiceFeature.SIZE_BY_WHITELISTED,
                             ServiceFeature.BASE_URI_REDIRECT,
-                            ServiceFeature.CANONICAL_LINK_HEADER,
                             ServiceFeature.CORS,
                             ServiceFeature.JSON_LD_MEDIA_TYPE,
                             ServiceFeature.PROFILE_LINK_HEADER));
