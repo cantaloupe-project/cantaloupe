@@ -537,14 +537,21 @@ public final class JPEG2000KakaduImageReader implements AutoCloseable {
             regionRect.moveDown(sourcePos.Get_y());
             regionRect.scaleX(diffScales[0] * reducedScale);
             regionRect.scaleY(diffScales[1] * reducedScale);
-
-            LOGGER.debug("Rendered region {}; " +
-                            "{}x reduction factor; differential scale {}/{}",
-                    regionRect,
-                    reductionFactor.factor,
-                    expandNumerator.Get_x(), expandDenominator.Get_x()); // y should == x
-
             final Kdu_dims regionDims = toKduDims(regionRect);
+
+            LOGGER.debug("Rendered region {},{}/{}x{}; source {},{}/{}x{}; " +
+                            "{}x reduction factor; differential scale {}/{}",
+                    regionDims.Access_pos().Get_x(),
+                    regionDims.Access_pos().Get_y(),
+                    regionDims.Access_size().Get_x(),
+                    regionDims.Access_size().Get_x(),
+                    sourceDims.Access_pos().Get_x(),
+                    sourceDims.Access_pos().Get_y(),
+                    sourceDims.Access_size().Get_x(),
+                    sourceDims.Access_size().Get_x(),
+                    reductionFactor.factor,
+                    expandNumerator.Get_x(),
+                    expandDenominator.Get_x()); // y should == x
 
             final Stopwatch watch = new Stopwatch();
 
