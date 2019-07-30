@@ -1,5 +1,7 @@
 package edu.illinois.library.cantaloupe.image;
 
+import edu.illinois.library.cantaloupe.util.StringUtils;
+
 /**
  * <p>Two-dimensional area, typically an image area. Values are stored as
  * doubles, in contrast to {@link java.awt.Dimension}.</p>
@@ -151,7 +153,8 @@ public final class Dimension {
 
     @Override
     public String toString() {
-        return intWidth() + "x" + intHeight();
+        return StringUtils.removeTrailingZeroes(width()) + "x" +
+                StringUtils.removeTrailingZeroes(height());
     }
 
 }

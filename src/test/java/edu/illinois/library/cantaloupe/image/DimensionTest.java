@@ -203,7 +203,9 @@ public class DimensionTest {
 
     @Test
     public void testToString() {
-        assertEquals("1000x800", instance.toString());
+        instance.setWidth(1000.5);
+        instance.setHeight(800.5);
+        assertEquals("1000.5x800.5", instance.toString());
     }
 
 }

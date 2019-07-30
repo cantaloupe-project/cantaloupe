@@ -1,5 +1,7 @@
 package edu.illinois.library.cantaloupe.image;
 
+import edu.illinois.library.cantaloupe.util.StringUtils;
+
 /**
  * <p>Rectangle on a 2D plane with origin and dimensions. Values are stored as
  * doubles, in contrast to {@link java.awt.Rectangle}.</p>
@@ -221,7 +223,9 @@ public final class Rectangle {
 
     @Override
     public String toString() {
-        return String.format("%f,%f/%fx%f", x(), y(), width(), height());
+        return StringUtils.removeTrailingZeroes(x()) + "," +
+                StringUtils.removeTrailingZeroes(y()) + "/" +
+                dimension.toString();
     }
 
 }
