@@ -202,7 +202,7 @@ public class AbstractResourceTest extends BaseTest {
         // inline
         disposition = instance.getRepresentationDisposition(
                 "inline", identifier, outputFormat);
-        assertEquals("inline", disposition);
+        assertEquals("inline; filename=cats___dogs.jpg", disposition);
 
         // attachment
         disposition = instance.getRepresentationDisposition(
