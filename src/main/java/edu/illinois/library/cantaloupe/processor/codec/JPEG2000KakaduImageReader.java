@@ -471,10 +471,8 @@ public final class JPEG2000KakaduImageReader implements AutoCloseable {
                                     final double[] diffScales) throws IOException {
         // Note: Kdu_dims and Kdu_coords are integer-based, and this can lead
         // to precision loss when Rectangles and Dimensions are converted
-        // back-and-forth... and precision loss can cause crashes in
-        // Kdu_region_decompressor. Try to stay in the Rectangle/Dimension
-        // space and convert into the libkdu equivalent objects only when
-        // necessary.
+        // back-and-forth. Try to stay in the Rectangle/Dimension space and
+        // convert only when necessary.
 
         // Find the best resolution level to read.
         if (scaleOp != null) {
@@ -539,36 +537,6 @@ public final class JPEG2000KakaduImageReader implements AutoCloseable {
             regionRect.moveDown(sourcePos.Get_y());
             regionRect.scaleX(diffScales[0] * reducedScale);
             regionRect.scaleY(diffScales[1] * reducedScale);
-
-            Rectangle sourceRect = toRectangle(sourceDims);
-            sourceRect.scaleX(reducedScale);
-            sourceRect.scaleY(reducedScale);
-
-            // Note that Get_rendered_image_dims() returned a Kdu_coords, whose
-            // Kdu_dims members are integer-based. Precision loss in that
-            // conversion can cause one or both of the regionRect dimensions to
-            // be larger than those of sourceRect, which
-            // kdu_region_decompressor.start() and process() absolutely do not
-            // like at all. Here we ensure that this will never be the case.
-            if (regionRect.width() > sourceRect.width()) {
-                regionRect.setWidth(sourceRect.width());
-            }
-            if (regionRect.height() > sourceRect.height()) {
-                regionRect.setHeight(sourceRect.height());
-            }
-
-            // N.B.: if the region is not entirely within the source image
-            // coordinates, either kdu_region_decompressor::start() or
-            // process() will crash the JVM (which may be a bug in Kakadu
-            // or its Java binding). If all went well above, this should never
-            // be the case, but we check anyway to be extra safe.
-            if (!sourceRect.contains(regionRect)) {
-                throw new IllegalArgumentException(String.format(
-                        "Rendered region is not entirely within the image " +
-                                "on the canvas. This is probably a bug. " +
-                                "[region: %s] [image: %s]",
-                        regionRect, sourceRect));
-            }
 
             LOGGER.debug("Rendered region {}; " +
                             "{}x reduction factor; differential scale {}/{}",
@@ -639,14 +607,6 @@ public final class JPEG2000KakaduImageReader implements AutoCloseable {
         regionDims.From_u32(rect.intX(), rect.intY(),
                 rect.intWidth(), rect.intHeight());
         return regionDims;
-    }
-
-    private static Rectangle toRectangle(Kdu_dims dims) throws KduException {
-        return new Rectangle(
-                dims.Access_pos().Get_x(),
-                dims.Access_pos().Get_y(),
-                dims.Access_size().Get_x(),
-                dims.Access_size().Get_y());
     }
 
     /**
