@@ -469,32 +469,15 @@ public final class JPEG2000KakaduImageReader implements AutoCloseable {
                                     final ScaleConstraint scaleConstraint,
                                     final ReductionFactor reductionFactor,
                                     final double[] diffScales) throws IOException {
-        // N.B. 1: Kdu_dims and Kdu_coords are integer-based, and this can lead
+        // Note: Kdu_dims and Kdu_coords are integer-based, and this can lead
         // to precision loss when Rectangles and Dimensions are converted
         // back-and-forth. Try to stay in the Rectangle/Dimension space and
         // convert only when necessary.
-        //
-        // N.B. 2: Kdu_region_decompressor is brutally unforgiving of ROIs that
-        // don't lie fully within the image canvas. Get_rendered_image_dims()
-        // is supposed to help in finding a safe ROI, but sometimes this
-        // supposedly safe ROI will cause Start() to crash the JVM.
-        // (One or both of these may be bugs.)
-        //
-        // To be sure that the ROI lies fully within the canvas, we employ a
-        // technique whereby we lie to Kdu_region_decompressor about wanting a
-        // slightly larger scale than we really do (based on a 1 pixel larger
-        // "fake ROI"), and then pass our actual ROI (which now has a safer
-        // safer margin within the canvas bounds) to Start().
-        final Rectangle fakeROI = new Rectangle(
-                roi.x(),
-                roi.y(),
-                roi.width() + 1,
-                roi.height() + 1);
 
         // Find the best resolution level to read.
         if (scaleOp != null) {
             final double[] scales = scaleOp.getResultingScales(
-                    fakeROI.size(), scaleConstraint);
+                    roi.size(), scaleConstraint);
             // If x & y scales are different, base the reduction factor on the
             // largest one.
             final double maxScale = Arrays.stream(scales).max().orElse(1);
@@ -528,7 +511,7 @@ public final class JPEG2000KakaduImageReader implements AutoCloseable {
                     threadEnv, limiter);
             if (scaleOp != null) {
                 double[] tmp = scaleOp.getDifferentialScales(
-                        fakeROI.size(), reductionFactor, scaleConstraint);
+                        roi.size(), reductionFactor, scaleConstraint);
                 System.arraycopy(tmp, 0, diffScales, 0, 2);
             }
             expandNumerator.Set_x((int) Math.round(
@@ -561,11 +544,11 @@ public final class JPEG2000KakaduImageReader implements AutoCloseable {
                     regionDims.Access_pos().Get_x(),
                     regionDims.Access_pos().Get_y(),
                     regionDims.Access_size().Get_x(),
-                    regionDims.Access_size().Get_x(),
+                    regionDims.Access_size().Get_y(),
                     sourceDims.Access_pos().Get_x(),
                     sourceDims.Access_pos().Get_y(),
                     sourceDims.Access_size().Get_x(),
-                    sourceDims.Access_size().Get_x(),
+                    sourceDims.Access_size().Get_y(),
                     reductionFactor.factor,
                     expandNumerator.Get_x(),
                     expandDenominator.Get_x()); // y should == x
