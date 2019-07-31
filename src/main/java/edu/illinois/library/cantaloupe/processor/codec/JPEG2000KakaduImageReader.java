@@ -525,19 +525,16 @@ public final class JPEG2000KakaduImageReader implements AutoCloseable {
             final Kdu_dims sourceDims = decompressor.Get_rendered_image_dims(
                     codestream, channels, -1, reductionFactor.factor,
                     expandNumerator, expandDenominator, accessMode);
-            final Kdu_coords sourcePos  = sourceDims.Access_pos();
 
-            final Rectangle regionRect = new Rectangle(roi);
-
-            // Adjust the ROI coordinates for the selected decomposition level.
-            // Note that some wacky source images have a non-0,0 origin,
-            // in which case the ROI origin must be shifted to match.
-            final double reducedScale = reductionFactor.getScale();
-            regionRect.moveRight(sourcePos.Get_x());
-            regionRect.moveDown(sourcePos.Get_y());
-            regionRect.scaleX(diffScales[0] * reducedScale);
-            regionRect.scaleY(diffScales[1] * reducedScale);
-            final Kdu_dims regionDims = toKduDims(regionRect);
+            // Adjust the ROI coordinates for the image size on the canvas.
+            final double rfScale = reductionFactor.getScale();
+            roi.scaleX(rfScale);
+            roi.scaleY(rfScale);
+            Kdu_dims regionDims = toKduDims(roi);
+            Kdu_coords refSubs  = new Kdu_coords();
+            codestream.Get_subsampling(referenceComponent, refSubs);
+            regionDims = decompressor.Find_render_dims(regionDims, refSubs,
+                    expandNumerator, expandDenominator);
 
             LOGGER.debug("Rendered region {},{}/{}x{}; source {},{}/{}x{}; " +
                             "{}x reduction factor; differential scale {}/{}",
@@ -611,8 +608,7 @@ public final class JPEG2000KakaduImageReader implements AutoCloseable {
 
     private static Kdu_dims toKduDims(Rectangle rect) throws KduException {
         Kdu_dims regionDims = new Kdu_dims();
-        regionDims.From_u32(rect.intX(), rect.intY(),
-                rect.intWidth(), rect.intHeight());
+        regionDims.From_double(rect.x(), rect.y(), rect.width(), rect.height());
         return regionDims;
     }
 
