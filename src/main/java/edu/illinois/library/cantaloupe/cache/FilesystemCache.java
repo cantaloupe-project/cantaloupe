@@ -521,7 +521,7 @@ class FilesystemCache implements SourceCache, DerivativeCache {
                     .filter(p -> p.getFileName().toString().startsWith(expectedNamePrefix))
                     .collect(Collectors.toSet());
         } catch (NoSuchFileException e) {
-            LOGGER.warn("getDerivativeImageFiles(): {}", e.getMessage());
+            LOGGER.debug("getDerivativeImageFiles(): no such file: {}", e.getMessage());
             return Collections.emptySet();
         }
     }
