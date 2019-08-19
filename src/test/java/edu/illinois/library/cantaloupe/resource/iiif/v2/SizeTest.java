@@ -1,5 +1,6 @@
 package edu.illinois.library.cantaloupe.resource.iiif.v2;
 
+import edu.illinois.library.cantaloupe.image.Dimension;
 import edu.illinois.library.cantaloupe.resource.IllegalClientArgumentException;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import org.junit.Before;
@@ -270,6 +271,29 @@ public class SizeTest extends BaseTest {
 
         s = Size.fromUri("!50,40");
         assertEquals("!50,40", s.toString());
+    }
+
+    @Test
+    public void testToCanonicalString() {
+        final Dimension fullSize = new Dimension(1000, 800);
+
+        Size s = Size.fromUri("full");
+        assertEquals("full", s.toCanonicalString(fullSize));
+
+        s = Size.fromUri("50,");
+        assertEquals("50,", s.toCanonicalString(fullSize));
+
+        s = Size.fromUri(",50");
+        assertEquals("63,", s.toCanonicalString(fullSize));
+
+        s = Size.fromUri("pct:50");
+        assertEquals("500,", s.toCanonicalString(fullSize));
+
+        s = Size.fromUri("50,40");
+        assertEquals("50,40", s.toCanonicalString(fullSize));
+
+        s = Size.fromUri("!50,40");
+        assertEquals("50,", s.toCanonicalString(fullSize));
     }
 
 }

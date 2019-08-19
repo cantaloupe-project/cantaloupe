@@ -108,7 +108,7 @@ public class ImageResource extends IIIF2Resource {
                 }
 
                 if (cacheStream != null) {
-                    addHeaders(params, disposition,
+                    addHeaders(disposition,
                             params.getOutputFormat().toFormat().getPreferredMediaType().toString());
 
                     new CachedImageRepresentation(cacheStream)
@@ -206,7 +206,7 @@ public class ImageResource extends IIIF2Resource {
                 throw new UnsupportedSourceFormatException(sourceFormat);
             }
 
-            addHeaders(params, disposition,
+            addHeaders(params, fullSize, disposition,
                     params.getOutputFormat().toFormat().getPreferredMediaType().toString());
 
             new ImageRepresentation(info, processor, ops, isBypassingCache)
@@ -218,21 +218,38 @@ public class ImageResource extends IIIF2Resource {
         }
     }
 
-    private void addHeaders(Parameters params,
-                            String disposition,
+    /**
+     * Adds {@code Content-Disposition} and {@code Content-Type} response
+     * headers.
+     */
+    private void addHeaders(String disposition,
                             String contentType) {
+        // Content-Disposition
         if (disposition != null) {
             getResponse().setHeader("Content-Disposition", disposition);
         }
+        // Content-Type
         getResponse().setHeader("Content-Type", contentType);
+    }
+
+    /**
+     * Invokes {@link #addHeaders(String, String)} and also adds an {@code Link}
+     * header.
+     */
+    private void addHeaders(Parameters params,
+                            Dimension fullSize,
+                            String disposition,
+                            String contentType) {
+        addHeaders(disposition, contentType);
 
         final Identifier identifier = params.getIdentifier();
-        final String paramsStr = params.toString().replaceFirst(
+        final String paramsStr = params.toCanonicalString(fullSize).replaceFirst(
                 identifier.toString(), getPublicIdentifier());
         getResponse().setHeader("Link",
                 String.format("<%s%s/%s>;rel=\"canonical\"",
-                getPublicRootReference(),
-                Route.IIIF_2_PATH, paramsStr));
+                        getPublicRootReference(),
+                        Route.IIIF_2_PATH,
+                        paramsStr));
     }
 
     private void validateSize(Dimension resultingSize,

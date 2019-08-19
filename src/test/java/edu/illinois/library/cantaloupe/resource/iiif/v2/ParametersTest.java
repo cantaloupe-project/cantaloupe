@@ -1,5 +1,6 @@
 package edu.illinois.library.cantaloupe.resource.iiif.v2;
 
+import edu.illinois.library.cantaloupe.image.Dimension;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.operation.Crop;
 import edu.illinois.library.cantaloupe.operation.Operation;
@@ -68,6 +69,17 @@ public class ParametersTest extends BaseTest {
         assertTrue(it.next() instanceof Crop);
         assertTrue(it.next() instanceof Scale);
         assertTrue(it.next() instanceof Rotate);
+    }
+
+    /**
+     * N.B.: the individual path components are tested more thoroughly in the
+     * specific component classes (e.g. {@link Size} etc.).
+     */
+    @Test
+    public void testToCanonicalString() {
+        final Dimension fullSize = new Dimension(1000, 800);
+        assertEquals("identifier/0,0,200,200/500,/5/default.jpg",
+                instance.toCanonicalString(fullSize));
     }
 
 }

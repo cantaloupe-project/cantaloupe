@@ -2,6 +2,7 @@ package edu.illinois.library.cantaloupe.resource.iiif.v2;
 
 import edu.illinois.library.cantaloupe.http.Query;
 import edu.illinois.library.cantaloupe.http.Reference;
+import edu.illinois.library.cantaloupe.image.Dimension;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.operation.Encode;
 import edu.illinois.library.cantaloupe.operation.OperationList;
@@ -194,25 +195,56 @@ class Parameters {
 
     /**
      * @return URI parameters with no leading slash.
+     * @see #toCanonicalString(Dimension)
+     * @see <a href="https://iiif.io/api/image/2.1/#image-request-uri-syntax">
+     *     Image Request URI Syntax</a>
      */
+    @Override
     public String toString() {
-        final StringBuilder builder = new StringBuilder();
-        builder.append(getIdentifier());
-        builder.append("/");
-        builder.append(getRegion());
-        builder.append("/");
-        builder.append(getSize());
-        builder.append("/");
-        builder.append(getRotation());
-        builder.append("/");
-        builder.append(getQuality().toString().toLowerCase());
-        builder.append(".");
-        builder.append(getOutputFormat());
+        final StringBuilder b = new StringBuilder();
+        b.append(getIdentifier());
+        b.append("/");
+        b.append(getRegion());
+        b.append("/");
+        b.append(getSize());
+        b.append("/");
+        b.append(getRotation());
+        b.append("/");
+        b.append(getQuality().toString().toLowerCase());
+        b.append(".");
+        b.append(getOutputFormat());
         if (!getQuery().isEmpty()) {
-            builder.append("?");
-            builder.append(getQuery().toString());
+            b.append("?");
+            b.append(getQuery().toString());
         }
-        return builder.toString();
+        return b.toString();
+    }
+
+    /**
+     * @param fullSize Full source image dimensions.
+     * @return         Canonicalized URI parameters with no leading slash.
+     * @see            #toString()
+     * @see            <a href="https://iiif.io/api/image/2.1/#canonical-uri-syntax">
+     *                 Canonical URI Syntax</a>
+     */
+    String toCanonicalString(Dimension fullSize) {
+        final StringBuilder b = new StringBuilder();
+        b.append(getIdentifier());
+        b.append("/");
+        b.append(getRegion().toCanonicalString(fullSize));
+        b.append("/");
+        b.append(getSize().toCanonicalString(fullSize));
+        b.append("/");
+        b.append(getRotation().toCanonicalString());
+        b.append("/");
+        b.append(getQuality().toString().toLowerCase());
+        b.append(".");
+        b.append(getOutputFormat());
+        if (!getQuery().isEmpty()) {
+            b.append("?");
+            b.append(getQuery().toString());
+        }
+        return b.toString();
     }
 
 }

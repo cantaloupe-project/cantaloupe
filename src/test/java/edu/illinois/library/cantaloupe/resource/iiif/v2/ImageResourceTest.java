@@ -310,14 +310,14 @@ public class ImageResourceTest extends ResourceTest {
 
     @Test
     public void testGETLinkHeaderWithProxyHeaders() throws Exception {
-        client = newClient("/" + IMAGE + "/full/full/0/color.jpg");
+        client = newClient("/" + IMAGE + "/pct:50,50,50,50/,35/0/color.jpg");
         client.getHeaders().set("X-Forwarded-Proto", "HTTP");
         client.getHeaders().set("X-Forwarded-Host", "example.org");
         client.getHeaders().set("X-Forwarded-Port", "8080");
         client.getHeaders().set("X-Forwarded-Path", "/cats");
         Response response = client.send();
 
-        assertEquals("<http://example.org:8080/cats/iiif/2/jpg-rgb-64x56x8-baseline.jpg/full/full/0/color.jpg>;rel=\"canonical\"",
+        assertEquals("<http://example.org:8080/cats/iiif/2/jpg-rgb-64x56x8-baseline.jpg/32,28,32,28/40,/0/color.jpg>;rel=\"canonical\"",
                 response.getHeaders().getFirstValue("Link"));
     }
 

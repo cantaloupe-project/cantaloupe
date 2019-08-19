@@ -487,12 +487,15 @@ public class Version2_0ConformanceTest extends ResourceTest {
      */
     @Test
     public void testCanonicalUriLinkHeader() throws Exception {
-        final String path = "/" + IMAGE + "/full/full/0/default.jpg";
+        final String path = "/" + IMAGE + "/pct:50,50,50,50/,50/0/default.jpg";
         final URI uri = getHTTPURI(path);
+        final String uriStr = uri.toString();
+        final String expectedURI = uriStr.substring(0, uriStr.indexOf(IMAGE.toString()) + IMAGE.toString().length()) +
+                "/32,28,32,28/57,/0/default.jpg";
         client = newClient(path);
         Response response = client.send();
 
-        assertEquals("<" + uri + ">;rel=\"canonical\"",
+        assertEquals("<" + expectedURI + ">;rel=\"canonical\"",
                 response.getHeaders().getFirstValue("Link"));
     }
 

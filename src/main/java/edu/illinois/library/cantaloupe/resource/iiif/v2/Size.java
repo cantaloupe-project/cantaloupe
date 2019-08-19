@@ -1,5 +1,6 @@
 package edu.illinois.library.cantaloupe.resource.iiif.v2;
 
+import edu.illinois.library.cantaloupe.image.Dimension;
 import edu.illinois.library.cantaloupe.operation.Scale;
 import edu.illinois.library.cantaloupe.resource.IllegalClientArgumentException;
 import edu.illinois.library.cantaloupe.util.StringUtils;
@@ -188,7 +189,9 @@ class Size {
 
     /**
      * @return Value compatible with the size component of a URI.
+     * @see    #toCanonicalString(Dimension)
      */
+    @Override
     public String toString() {
         String str = "";
         if (ScaleMode.MAX.equals(getScaleMode())) {
@@ -209,6 +212,33 @@ class Size {
             }
         }
         return str;
+    }
+
+    /**
+     * @param fullSize Full source image dimensions.
+     * @return         Canonical value compatible with the size component of a
+     *                 URI.
+     * @see            #toString()
+     */
+    String toCanonicalString(Dimension fullSize) {
+        if (ScaleMode.MAX.equals(getScaleMode())) {
+            return toString();
+        } else if (ScaleMode.NON_ASPECT_FILL.equals(getScaleMode())) { // w,h syntax
+            return getWidth() + "," + getHeight();
+        } else { // w, syntax
+            long width;
+            if (getPercent() != null) {
+                width = Math.round(fullSize.width() * getPercent() / 100.0);
+            } else {
+                if (getWidth() == null || getWidth() == 0) {
+                    double scale = getHeight() / fullSize.height();
+                    width = Math.round(fullSize.width() * scale);
+                } else {
+                    width = getWidth();
+                }
+            }
+            return width + ",";
+        }
     }
 
 }

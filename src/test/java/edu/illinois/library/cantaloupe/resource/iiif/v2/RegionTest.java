@@ -1,5 +1,6 @@
 package edu.illinois.library.cantaloupe.resource.iiif.v2;
 
+import edu.illinois.library.cantaloupe.image.Dimension;
 import edu.illinois.library.cantaloupe.operation.Crop;
 import edu.illinois.library.cantaloupe.operation.CropByPercent;
 import edu.illinois.library.cantaloupe.operation.CropByPixels;
@@ -454,6 +455,34 @@ public class RegionTest extends BaseTest {
     public void testToStringWithPercent() {
         Region r = Region.fromUri("pct:0,0,50,40");
         assertEquals("pct:0,0,50,40", r.toString());
+    }
+
+    @Test
+    public void testToCanonicalStringWithFull() {
+        final Dimension fullSize = new Dimension(1000, 800);
+        Region r = Region.fromUri("full");
+        assertEquals("full", r.toCanonicalString(fullSize));
+    }
+
+    @Test
+    public void testToCanonicalStringWithSquare() {
+        final Dimension fullSize = new Dimension(1000, 800);
+        Region r = Region.fromUri("square");
+        assertEquals("square", r.toCanonicalString(fullSize));
+    }
+
+    @Test
+    public void testToCanonicalStringWithPixels() {
+        final Dimension fullSize = new Dimension(1000, 800);
+        Region r = Region.fromUri("0,0,50,40");
+        assertEquals("0,0,50,40", r.toCanonicalString(fullSize));
+    }
+
+    @Test
+    public void testToCanonicalStringWithPercent() {
+        final Dimension fullSize = new Dimension(1000, 800);
+        Region r = Region.fromUri("pct:0,0,50,40");
+        assertEquals("0,0,500,320", r.toCanonicalString(fullSize));
     }
 
 }
