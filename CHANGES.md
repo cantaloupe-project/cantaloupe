@@ -3,6 +3,8 @@
 ## 4.1.4
 
 * Fixed the health-check endpoint (at `/health`).
+* When using `AutomaticSelectionStrategy`, processor initialization errors are
+  logged at debug-level rather than error-level.
 
 ## 4.1.3
 
