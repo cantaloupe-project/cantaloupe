@@ -423,6 +423,7 @@ public class ImageInfoFactoryTest extends BaseTest {
         List<?> profile = (List<?>) imageInfo.get("profile");
         final Set<?> supportsSet = (Set<?>) ((Map<?, ?>) profile.get(1)).get("supports");
         assertTrue(supportsSet.contains("baseUriRedirect"));
+        assertTrue(supportsSet.contains("canonicalLinkHeader"));
         assertTrue(supportsSet.contains("cors"));
         assertTrue(supportsSet.contains("jsonldMediaType"));
         assertTrue(supportsSet.contains("profileLinkHeader"));

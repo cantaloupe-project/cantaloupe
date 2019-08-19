@@ -20,6 +20,7 @@ import edu.illinois.library.cantaloupe.processor.SourceFormatException;
 import edu.illinois.library.cantaloupe.resource.InputStreamRepresentation;
 import edu.illinois.library.cantaloupe.resource.IllegalClientArgumentException;
 import edu.illinois.library.cantaloupe.resource.ImageRepresentation;
+import edu.illinois.library.cantaloupe.resource.Route;
 import edu.illinois.library.cantaloupe.status.HealthChecker;
 import edu.illinois.library.cantaloupe.resource.iiif.SizeRestrictedException;
 import edu.illinois.library.cantaloupe.source.Source;
@@ -203,7 +204,7 @@ public class ImageResource extends IIIF2Resource {
                 validateScale(virtualSize, (Scale) ops.getFirst(Scale.class));
                 validateSize(resultingSize, virtualSize, processor);
 
-                addHeaders(disposition,
+                addHeaders(params, fullSize, disposition,
                         params.getOutputFormat().toFormat().getPreferredMediaType().toString());
 
                 new ImageRepresentation(info, processor, ops, isBypassingCache)
@@ -221,11 +222,38 @@ public class ImageResource extends IIIF2Resource {
         throw new SourceFormatException();
     }
 
-    private void addHeaders(String disposition, String contentType) {
+    /**
+     * Adds {@code Content-Disposition} and {@code Content-Type} response
+     * headers.
+     */
+    private void addHeaders(String disposition,
+                            String contentType) {
+        // Content-Disposition
         if (disposition != null) {
             getResponse().setHeader("Content-Disposition", disposition);
         }
+        // Content-Type
         getResponse().setHeader("Content-Type", contentType);
+    }
+
+    /**
+     * Invokes {@link #addHeaders(String, String)} and also adds an {@code Link}
+     * header.
+     */
+    private void addHeaders(Parameters params,
+                            Dimension fullSize,
+                            String disposition,
+                            String contentType) {
+        addHeaders(disposition, contentType);
+
+        final Identifier identifier = params.getIdentifier();
+        final String paramsStr = params.toCanonicalString(fullSize).replaceFirst(
+                identifier.toString(), getPublicIdentifier());
+        getResponse().setHeader("Link",
+                String.format("<%s%s/%s>;rel=\"canonical\"",
+                        getPublicRootReference(),
+                        Route.IIIF_2_PATH,
+                        paramsStr));
     }
 
     private void validateSize(Dimension resultingSize,

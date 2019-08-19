@@ -92,7 +92,7 @@ public final class ProcessorFactory {
             InitializationException,
             ReflectiveOperationException {
         final List<Class<? extends Processor>> candidates =
-                getSelectionStrategy().getPreferredProcessors(sourceFormat);
+                selectionStrategy.getPreferredProcessors(sourceFormat);
 
         String errorMsg = null;
         for (Class<? extends Processor> class_ : candidates) {
@@ -111,9 +111,15 @@ public final class ProcessorFactory {
                     return candidate;
                 } catch (SourceFormatException ignore) {}
             } else {
-                LOGGER.warn("Failed to initialize {} (error: {})",
-                        candidate.getClass().getSimpleName(),
-                        errorMsg);
+                if (selectionStrategy instanceof AutomaticSelectionStrategy) {
+                    LOGGER.debug("Failed to initialize {} (error: {})",
+                            candidate.getClass().getSimpleName(),
+                            errorMsg);
+                } else {
+                    LOGGER.warn("Failed to initialize {} (error: {})",
+                            candidate.getClass().getSimpleName(),
+                            errorMsg);
+                }
             }
         }
 

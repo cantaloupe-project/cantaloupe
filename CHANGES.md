@@ -46,6 +46,10 @@
 ## 4.1.4
 
 * Fixed the health-check endpoint (at `/health`).
+* Fixed incorrect URIs in `Link` header values in certain IIIF Image API v2
+  image endpoint responses.
+* When using `AutomaticSelectionStrategy`, processor initialization errors are
+  logged at debug-level rather than error-level.
 
 ## 4.1.3
 

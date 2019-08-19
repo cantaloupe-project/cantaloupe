@@ -130,4 +130,22 @@ public class RotationTest extends BaseTest {
         assertEquals("!50", r.toString());
     }
 
+    @Test
+    public void testToCanonicalString() {
+        Rotation r = Rotation.fromUri("50");
+        assertEquals("50", r.toCanonicalString());
+
+        r = Rotation.fromUri("!50");
+        assertEquals("!50", r.toCanonicalString());
+
+        r = Rotation.fromUri("50.50");
+        assertEquals("50.5", r.toCanonicalString());
+
+        r = Rotation.fromUri(".5");
+        assertEquals("0.5", r.toCanonicalString());
+
+        r = Rotation.fromUri("!.5");
+        assertEquals("!0.5", r.toCanonicalString());
+    }
+
 }

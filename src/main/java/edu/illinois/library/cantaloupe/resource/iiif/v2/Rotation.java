@@ -120,6 +120,7 @@ class Rotation implements Comparable<Object> {
     /**
      * @return Value compatible with the rotation component of an IIIF URI.
      */
+    @Override
     public String toString() {
         String str = "";
         if (shouldMirror()) {
@@ -127,6 +128,15 @@ class Rotation implements Comparable<Object> {
         }
         str += StringUtils.removeTrailingZeroes(getDegrees());
         return str;
+    }
+
+    /**
+     * @return Canonical value compatible with the rotation component of an
+     *         IIIF URI.
+     * @see    #toString()
+     */
+    String toCanonicalString() {
+        return toString();
     }
 
 }

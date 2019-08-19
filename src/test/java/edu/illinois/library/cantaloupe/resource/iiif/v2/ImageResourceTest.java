@@ -240,6 +240,80 @@ public class ImageResourceTest extends ResourceTest {
     }
 
     @Test
+    void testGETLinkHeader() throws Exception {
+        client = newClient("/" + IMAGE + "/full/full/0/color.jpg");
+        Response response = client.send();
+
+        String value = response.getHeaders().getFirstValue("Link");
+        assertTrue(value.startsWith("<http://localhost"));
+    }
+
+    @Test
+    void testGETLinkHeaderWithSlashSubstitution() throws Exception {
+        Configuration config = Configuration.getInstance();
+        config.setProperty(Key.SLASH_SUBSTITUTE, "CATS");
+
+        client = newClient("/subfolderCATSjpg/full/full/0/color.jpg");
+        Response response = client.send();
+
+        String value = response.getHeaders().getFirstValue("Link");
+        assertTrue(value.contains("subfolderCATSjpg"));
+    }
+
+    @Test
+    void testGETLinkHeaderWithEncodedCharacters() throws Exception {
+        Configuration config = Configuration.getInstance();
+        config.setProperty(Key.SLASH_SUBSTITUTE, ":");
+
+        client = newClient("/subfolder%3Ajpg/full/full/0/color.jpg");
+        Response response = client.send();
+
+        String value = response.getHeaders().getFirstValue("Link");
+        assertTrue(value.contains("subfolder%3Ajpg"));
+    }
+
+    @Test
+    void testGETLinkHeaderWithBaseURIOverride() throws Exception {
+        Configuration config = Configuration.getInstance();
+        config.setProperty(Key.BASE_URI, "http://example.org/");
+
+        client = newClient("/" + IMAGE + "/full/full/0/color.jpg");
+        Response response = client.send();
+
+        String value = response.getHeaders().getFirstValue("Link");
+        assertTrue(value.startsWith("<http://example.org/"));
+    }
+
+    @Test
+    void testGETLinkHeaderWithProxyHeaders() throws Exception {
+        client = newClient("/" + IMAGE + "/pct:50,50,50,50/,35/0/color.jpg");
+        client.getHeaders().set("X-Forwarded-Proto", "HTTP");
+        client.getHeaders().set("X-Forwarded-Host", "example.org");
+        client.getHeaders().set("X-Forwarded-Port", "8080");
+        client.getHeaders().set("X-Forwarded-Path", "/cats");
+        Response response = client.send();
+
+        assertEquals("<http://example.org:8080/cats/iiif/2/jpg-rgb-64x56x8-baseline.jpg/32,28,32,28/40,/0/color.jpg>;rel=\"canonical\"",
+                response.getHeaders().getFirstValue("Link"));
+    }
+
+    @Test
+    void testGETLinkHeaderBaseURIOverridesProxyHeaders() throws Exception {
+        Configuration config = Configuration.getInstance();
+        config.setProperty(Key.BASE_URI, "https://example.net/");
+
+        client = newClient("/" + IMAGE + "/full/full/0/color.jpg");
+        client.getHeaders().set("X-Forwarded-Proto", "HTTP");
+        client.getHeaders().set("X-Forwarded-Host", "example.org");
+        client.getHeaders().set("X-Forwarded-Port", "8080");
+        client.getHeaders().set("X-Forwarded-Path", "/cats");
+        Response response = client.send();
+
+        assertEquals("<https://example.net/iiif/2/jpg-rgb-64x56x8-baseline.jpg/full/full/0/color.jpg>;rel=\"canonical\"",
+                response.getHeaders().getFirstValue("Link"));
+    }
+
+    @Test
     void testGETLessThanOrEqualToFullScale() {
         URI uri = getHTTPURI("/" + IMAGE + "/full/full/0/color.png");
         tester.testLessThanOrEqualToMaxScale(uri);
@@ -436,7 +510,7 @@ public class ImageResourceTest extends ResourceTest {
         client = newClient("/" + IMAGE + "/full/full/0/color.jpg");
         Response response = client.send();
         Headers headers = response.getHeaders();
-        assertEquals(7, headers.size());
+        assertEquals(8, headers.size());
 
         // Access-Control-Allow-Origin
         assertEquals("*", headers.getFirstValue("Access-Control-Allow-Origin"));
@@ -446,6 +520,8 @@ public class ImageResourceTest extends ResourceTest {
         assertEquals("image/jpeg", headers.getFirstValue("Content-Type"));
         // Date
         assertNotNull(headers.getFirstValue("Date"));
+        // Link
+        assertTrue(headers.getFirstValue("Link").contains("://"));
         // Server
         assertNotNull(headers.getFirstValue("Server"));
         // Vary

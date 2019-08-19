@@ -1,5 +1,6 @@
 package edu.illinois.library.cantaloupe.resource.iiif.v2;
 
+import edu.illinois.library.cantaloupe.image.Dimension;
 import edu.illinois.library.cantaloupe.operation.Crop;
 import edu.illinois.library.cantaloupe.operation.CropByPercent;
 import edu.illinois.library.cantaloupe.operation.CropByPixels;
@@ -161,7 +162,9 @@ final class Region {
 
     /**
      * @return Value compatible with the region component of an IIIF URI.
+     * @see    #toCanonicalString(Dimension)
      */
+    @Override
     public String toString() {
         String str;
         switch (getType()) {
@@ -188,6 +191,23 @@ final class Region {
                 break;
         }
         return str;
+    }
+
+    /**
+     * @param fullSize Full source image dimensions.
+     * @return         Canonical value compatible with the region component of
+     *                 an IIIF URI.
+     * @see            #toString()
+     */
+    String toCanonicalString(Dimension fullSize) {
+        if (Type.PERCENT.equals(getType())) {
+            return String.format("%d,%d,%d,%d",
+                    Math.round(getX() / 100.0 * fullSize.width()),
+                    Math.round(getY() / 100.0 * fullSize.height()),
+                    Math.round(getWidth() / 100.0 * fullSize.width()),
+                    Math.round(getHeight() / 100.0 * fullSize.height()));
+        }
+        return toString();
     }
 
 }
