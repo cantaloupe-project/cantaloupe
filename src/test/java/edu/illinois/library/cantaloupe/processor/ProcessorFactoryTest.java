@@ -26,15 +26,41 @@ public class ProcessorFactoryTest extends BaseTest {
         assertTrue(ProcessorFactory.getAllProcessors().size() > 5);
     }
 
+    /* newProcessor(String) */
+
     @Test
-    void testNewProcessorWithWorkingFirstPreferenceMatch() throws Exception {
+    void testNewProcessorWithStringWithUnqualifiedName() throws Exception {
+        assertTrue(instance.newProcessor(Java2dProcessor.class.getSimpleName()) instanceof Java2dProcessor);
+    }
+
+    @Test
+    void testNewProcessorWithStringWithNonExistingUnqualifiedName() {
+        assertThrows(ClassNotFoundException.class, () ->
+                instance.newProcessor("Bogus"));
+    }
+
+    @Test
+    void testNewProcessorWithStringWithQualifiedName() throws Exception {
+        assertTrue(instance.newProcessor(Java2dProcessor.class.getName()) instanceof Java2dProcessor);
+    }
+
+    @Test
+    void testNewProcessorWithStringWithNonExistingQualifiedName() {
+        assertThrows(ClassNotFoundException.class, () ->
+                instance.newProcessor(ProcessorFactory.class.getPackage().getName() + ".Bogus"));
+    }
+
+    /* newProcessor(Format) */
+
+    @Test
+    void testNewProcessorWithFormatWithWorkingFirstPreferenceMatch() throws Exception {
         instance.setSelectionStrategy(f ->
                 List.of(PdfBoxProcessor.class, Java2dProcessor.class));
         assertTrue(instance.newProcessor(Format.PDF) instanceof PdfBoxProcessor);
     }
 
     @Test
-    void testNewProcessorWithBrokenFirstPreferenceMatchAndWorkingSecondPreferenceMatch()
+    void testNewProcessorWithFormatWithBrokenFirstPreferenceMatchAndWorkingSecondPreferenceMatch()
             throws Exception {
         instance.setSelectionStrategy(f ->
                 List.of(MockBrokenProcessor.class, Java2dProcessor.class));
@@ -42,14 +68,14 @@ public class ProcessorFactoryTest extends BaseTest {
     }
 
     @Test
-    void testNewProcessorWithWorkingSecondPreferenceMatch() throws Exception {
+    void testNewProcessorWithFormatWithWorkingSecondPreferenceMatch() throws Exception {
         instance.setSelectionStrategy(f ->
                 List.of(PdfBoxProcessor.class, Java2dProcessor.class));
         assertTrue(instance.newProcessor(Format.JPG) instanceof Java2dProcessor);
     }
 
     @Test
-    void testNewProcessorWithBrokenSecondPreferenceMatch() {
+    void testNewProcessorWithFormatWithBrokenSecondPreferenceMatch() {
         instance.setSelectionStrategy(f ->
                 List.of(PdfBoxProcessor.class, MockBrokenProcessor.class));
         assertThrows(InitializationException.class,
@@ -57,7 +83,7 @@ public class ProcessorFactoryTest extends BaseTest {
     }
 
     @Test
-    void testNewProcessorWithNoMatch() {
+    void testNewProcessorWithFormatWithNoMatch() {
         instance.setSelectionStrategy(f ->
                 List.of(MockPDFOnlyProcessor.class, MockPNGOnlyProcessor.class));
         assertThrows(SourceFormatException.class,
@@ -65,7 +91,7 @@ public class ProcessorFactoryTest extends BaseTest {
     }
 
     @Test
-    void testNewProcessorWithUnknownFormat() {
+    void testNewProcessorWithFormatWithUnknownFormat() {
         Configuration.getInstance().setProperty(Key.PROCESSOR_FALLBACK,
                 Java2dProcessor.class.getSimpleName());
         assertThrows(SourceFormatException.class,

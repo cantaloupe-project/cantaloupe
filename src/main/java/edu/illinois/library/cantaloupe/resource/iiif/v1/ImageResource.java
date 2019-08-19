@@ -189,7 +189,7 @@ public class ImageResource extends IIIF1Resource {
                         .write(getResponse().getOutputStream());
 
                 // Notify the health checker of a successful response.
-                HealthChecker.addSourceProcessorPair(source, processor);
+                HealthChecker.addSourceProcessorPair(source, processor, ops);
                 return;
             } catch (SourceFormatException e) {
                 LOGGER.debug("Format inferred by {} disagrees with the one " +

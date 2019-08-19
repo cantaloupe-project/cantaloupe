@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.script.ScriptException;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.util.Set;
 
 import static edu.illinois.library.cantaloupe.source.SourceFactory.SelectionStrategy.DELEGATE_SCRIPT;
@@ -55,6 +56,34 @@ public final class SourceFactory {
      */
     public static Set<Source> getAllSources() {
         return ALL_SOURCES;
+    }
+
+    /**
+     * @param unqualifiedName Unqualified class name.
+     * @return                Qualified class name (package name + class name).
+     */
+    private static String getQualifiedName(String unqualifiedName) {
+        return unqualifiedName.contains(".") ?
+                unqualifiedName :
+                SourceFactory.class.getPackage().getName() + "." +
+                        unqualifiedName;
+    }
+
+    /**
+     * Retrieves an instance by name.
+     *
+     * @param name The name of the source. If the package name is omitted, it
+     *             will be assumed to be {@link
+     *             edu.illinois.library.cantaloupe.source}.
+     * @return     Instance with the given name.
+     */
+    public Source newSource(final String name)
+            throws ClassNotFoundException, NoSuchMethodException,
+            InstantiationException, IllegalAccessException,
+            InvocationTargetException {
+        String qualifiedName = getQualifiedName(name);
+        Class<?> implClass = Class.forName(qualifiedName);
+        return (Source) implClass.getDeclaredConstructor().newInstance();
     }
 
     /**

@@ -43,6 +43,10 @@
 * Added a `local_uri` key to the delegate script `context` hash.
 * JRuby has been updated to version 9.2, which supports Ruby 2.5.
 
+## 4.1.4
+
+* Fixed the health-check endpoint (at `/health`).
+
 ## 4.1.3
 
 * Added an undocumented `HttpSource2` source which works the same as

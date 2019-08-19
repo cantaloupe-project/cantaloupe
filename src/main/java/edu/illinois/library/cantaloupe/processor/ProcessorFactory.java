@@ -4,6 +4,7 @@ import edu.illinois.library.cantaloupe.image.Format;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -47,8 +48,36 @@ public final class ProcessorFactory {
         return Collections.unmodifiableSet(ALL_PROCESSORS);
     }
 
+    /**
+     * @param unqualifiedName Unqualified class name.
+     * @return                Qualified class name (package name + class name).
+     */
+    private static String getQualifiedName(String unqualifiedName) {
+        return unqualifiedName.contains(".") ?
+                unqualifiedName :
+                ProcessorFactory.class.getPackage().getName() + "." +
+                        unqualifiedName;
+    }
+
     public SelectionStrategy getSelectionStrategy() {
         return selectionStrategy;
+    }
+
+    /**
+     * Retrieves an instance by name.
+     *
+     * @param name The name of the processor. If the package name is omitted,
+     *             it will be assumed to be {@link
+     *             edu.illinois.library.cantaloupe.processor}.
+     * @return     Instance with the given name.
+     */
+    public Processor newProcessor(final String name)
+            throws ClassNotFoundException, NoSuchMethodException,
+            InstantiationException, IllegalAccessException,
+            InvocationTargetException {
+        String qualifiedName = getQualifiedName(name);
+        Class<?> implClass = Class.forName(qualifiedName);
+        return (Processor) implClass.getDeclaredConstructor().newInstance();
     }
 
     /**
