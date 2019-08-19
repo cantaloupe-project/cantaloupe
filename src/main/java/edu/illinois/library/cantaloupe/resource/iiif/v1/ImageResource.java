@@ -193,7 +193,7 @@ public class ImageResource extends IIIF1Resource {
 
             // Notify the health checker of a successful response -- after the
             // response has been written successfully, obviously.
-            HealthChecker.addSourceProcessorPair(source, processor);
+            HealthChecker.addSourceProcessorPair(source, processor, ops);
         }
     }
 

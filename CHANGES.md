@@ -1,5 +1,9 @@
 # Change Log
 
+## 4.1.4
+
+* Fixed the health-check endpoint (at `/health`).
+
 ## 4.1.3
 
 * Added an undocumented `HttpSource2` source which works the same as

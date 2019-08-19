@@ -28,8 +28,32 @@ public class SourceFactoryTest extends BaseTest {
         assertEquals(6, SourceFactory.getAllSources().size());
     }
 
+    /* newSource(String) */
+
     @Test
-    public void newSourceWithValidStaticResolverSimpleClassName()
+    public void testNewSourceWithStringWithUnqualifiedName() throws Exception {
+        assertTrue(instance.newSource(FilesystemSource.class.getSimpleName()) instanceof FilesystemSource);
+    }
+
+    @Test(expected = ClassNotFoundException.class)
+    public void testNewSourceWithStringWithNonExistingUnqualifiedName() throws Exception {
+        instance.newSource("Bogus");
+    }
+
+    @Test
+    public void testNewSourceWithStringWithQualifiedName() throws Exception {
+        assertTrue(instance.newSource(FilesystemSource.class.getName()) instanceof FilesystemSource);
+    }
+
+    @Test(expected = ClassNotFoundException.class)
+    public void testNewSourceWithStringWithNonExistingQualifiedName() throws Exception {
+        instance.newSource(SourceFactory.class.getPackage().getName() + ".Bogus");
+    }
+
+    /* newSource(Identifier, DelegateProxy) */
+
+    @Test
+    public void newSourceWithIdentifierValidStaticResolverSimpleClassName()
             throws Exception {
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.SOURCE_STATIC,
@@ -41,7 +65,7 @@ public class SourceFactoryTest extends BaseTest {
     }
 
     @Test
-    public void newSourceWithValidStaticResolverFullClassName()
+    public void newSourceWithIdentifierWithValidStaticResolverFullClassName()
             throws Exception {
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.SOURCE_STATIC, HttpSource.class.getName());
@@ -53,7 +77,7 @@ public class SourceFactoryTest extends BaseTest {
     }
 
     @Test(expected = ClassNotFoundException.class)
-    public void newSourceWithInvalidStaticResolver() throws Exception {
+    public void newSourceWithIdentifierWithInvalidStaticResolver() throws Exception {
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.SOURCE_STATIC, "BogusSource");
 
@@ -62,7 +86,7 @@ public class SourceFactoryTest extends BaseTest {
     }
 
     @Test
-    public void newSourceUsingDelegateScript() throws Exception {
+    public void newSourceWithIdentifierUsingDelegateScript() throws Exception {
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.DELEGATE_SCRIPT_ENABLED, true);
         config.setProperty(Key.DELEGATE_SCRIPT_PATHNAME,

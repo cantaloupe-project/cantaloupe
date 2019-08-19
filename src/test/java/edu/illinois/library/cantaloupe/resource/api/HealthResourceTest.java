@@ -3,11 +3,14 @@ package edu.illinois.library.cantaloupe.resource.api;
 import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
+import edu.illinois.library.cantaloupe.http.Client;
 import edu.illinois.library.cantaloupe.http.Headers;
 import edu.illinois.library.cantaloupe.http.ResourceException;
 import edu.illinois.library.cantaloupe.http.Response;
 import edu.illinois.library.cantaloupe.resource.Route;
 import org.junit.Test;
+
+import java.net.URI;
 
 import static org.junit.Assert.*;
 
@@ -16,15 +19,6 @@ public class HealthResourceTest extends AbstractAPIResourceTest {
     @Override
     protected String getEndpointPath() {
         return Route.HEALTH_PATH;
-    }
-
-    @Test
-    public void testGETWithEndpointEnabled() throws Exception {
-        Configuration config = Configuration.getInstance();
-        config.setProperty(Key.API_ENABLED, true);
-
-        Response response = client.send();
-        assertEquals(200, response.getStatus());
     }
 
     @Test
@@ -37,6 +31,42 @@ public class HealthResourceTest extends AbstractAPIResourceTest {
         } catch (ResourceException e) {
             assertEquals(403, e.getStatusCode());
         }
+    }
+
+    /**
+     * The processing pipeline isn't exercised until an image has been
+     * successfully returned from an image endpoint.
+     */
+    @Test
+    public void testGETWithNoPriorImageRequest() throws Exception {
+        Configuration config = Configuration.getInstance();
+        config.setProperty(Key.API_ENABLED, true);
+
+        Response response = client.send();
+        assertEquals(200, response.getStatus());
+    }
+
+    @Test
+    public void testGETWithPriorImageRequest() throws Exception {
+        Configuration config = Configuration.getInstance();
+        config.setProperty(Key.API_ENABLED, true);
+
+        // Request an image
+        Client imageClient = null;
+        try {
+            URI uri = new URI("http://localhost:" + appServer.getHTTPPort() +
+                    Route.IIIF_2_PATH +
+                    "/jpg-rgb-64x56x8-baseline.jpg/full/max/5/default.jpg");
+            imageClient = new Client().builder().uri(uri).build();
+            imageClient.send();
+        } finally {
+            if (imageClient != null) {
+                imageClient.stop();
+            }
+        }
+        Response response = client.send();
+        assertEquals(200, response.getStatus());
+        assertTrue(response.getBodyAsString().contains("\"color\":\"GREEN\""));
     }
 
     @Override // because this endpoint doesn't require auth

@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.script.ScriptException;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
@@ -56,6 +57,34 @@ public final class SourceFactory {
                 new HttpSource2(),
                 new JdbcSource(),
                 new S3Source()));
+    }
+
+    /**
+     * @param unqualifiedName Unqualified class name.
+     * @return                Qualified class name (package name + class name).
+     */
+    private static String getQualifiedName(String unqualifiedName) {
+        return unqualifiedName.contains(".") ?
+                unqualifiedName :
+                SourceFactory.class.getPackage().getName() + "." +
+                        unqualifiedName;
+    }
+
+    /**
+     * Retrieves an instance by name.
+     *
+     * @param name The name of the source. If the package name is omitted, it
+     *             will be assumed to be {@link
+     *             edu.illinois.library.cantaloupe.source}.
+     * @return     Instance with the given name.
+     */
+    public Source newSource(final String name)
+            throws ClassNotFoundException, NoSuchMethodException,
+            InstantiationException, IllegalAccessException,
+            InvocationTargetException {
+        String qualifiedName = getQualifiedName(name);
+        Class<?> implClass = Class.forName(qualifiedName);
+        return (Source) implClass.getDeclaredConstructor().newInstance();
     }
 
     /**
