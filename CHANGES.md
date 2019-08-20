@@ -5,6 +5,8 @@
 * Fixed the health-check endpoint (at `/health`).
 * Fixed incorrect URIs in `Link` header values in certain IIIF Image API v2
   image endpoint responses.
+* Fixed TurboJpegProcessor not respecting the `processor.background_color`
+  configuration key.
 * When using `AutomaticSelectionStrategy`, processor initialization errors are
   logged at debug-level rather than error-level.
 

@@ -616,6 +616,17 @@ public class Java2DUtilTest extends BaseTest {
         assertEquals(BufferedImage.TYPE_CUSTOM, outImage.getType());
     }
 
+    /* rotate(BufferedImage, Rotate, Color) */
+
+    @Test
+    public void testRotateWithColor() {
+        BufferedImage inImage = newColorImage(8, true);
+        Rotate rotate = new Rotate(15);
+        BufferedImage outImage = Java2DUtil.rotate(inImage, rotate, Color.RED);
+
+        assertRGBA(outImage.getRGB(0, 0), 255, 0, 0, 255);
+    }
+
     /* scale */
 
     @Test
