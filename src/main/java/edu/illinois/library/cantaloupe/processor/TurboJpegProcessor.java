@@ -6,6 +6,7 @@ import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.image.Metadata;
 import edu.illinois.library.cantaloupe.image.Rectangle;
 import edu.illinois.library.cantaloupe.image.ScaleConstraint;
+import edu.illinois.library.cantaloupe.operation.Color;
 import edu.illinois.library.cantaloupe.operation.ColorTransform;
 import edu.illinois.library.cantaloupe.operation.Crop;
 import edu.illinois.library.cantaloupe.operation.CropByPercent;
@@ -191,6 +192,15 @@ public class TurboJpegProcessor extends AbstractProcessor
                     new double[] { 1.0, 1.0 }, reductionFactor,
                     opList.getScaleConstraint(), redactions);
 
+            final Encode encode = (Encode) opList.getFirst(Encode.class);
+            final Color bgColor = encode.getBackgroundColor();
+            writer.setQuality(encode.getQuality());
+            writer.setProgressive(encode.isInterlacing());
+            Metadata metadata = encode.getMetadata();
+            if (metadata != null) {
+                metadata.getXMP().ifPresent(writer::setXMP);
+            }
+
             for (Operation op : opList) {
                 if (!op.hasEffect(fullSize, opList)) {
                     continue;
@@ -201,21 +211,13 @@ public class TurboJpegProcessor extends AbstractProcessor
                 } else if (op instanceof Transpose) {
                     image = Java2DUtil.transpose(image, (Transpose) op);
                 } else if (op instanceof Rotate) {
-                    image = Java2DUtil.rotate(image, (Rotate) op);
+                    image = Java2DUtil.rotate(image, (Rotate) op, bgColor);
                 } else if (op instanceof ColorTransform) {
                     image = Java2DUtil.transformColor(image, (ColorTransform) op);
                 } else if (op instanceof Sharpen) {
                     image = Java2DUtil.sharpen(image, (Sharpen) op);
                 } else if (op instanceof Overlay) {
                     Java2DUtil.applyOverlay(image, (Overlay) op);
-                } else if (op instanceof Encode) {
-                    Encode encode = (Encode) op;
-                    writer.setQuality(encode.getQuality());
-                    writer.setProgressive(encode.isInterlacing());
-                    Metadata metadata = encode.getMetadata();
-                    if (metadata != null) {
-                        metadata.getXMP().ifPresent(writer::setXMP);
-                    }
                 }
             }
 

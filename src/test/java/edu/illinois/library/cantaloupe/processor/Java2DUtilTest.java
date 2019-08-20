@@ -144,7 +144,7 @@ class Java2DUtilTest extends BaseTest {
     /* applyOverlay() */
 
     @Test
-    void testApplyOverlayWithImageOverlay() throws Exception {
+    void testApplyOverlayWithImageOverlay() {
         final BufferedImage baseImage = newColorImage(8, false);
 
         // fill it with white
@@ -165,7 +165,7 @@ class Java2DUtilTest extends BaseTest {
     }
 
     @Test
-    void testApplyOverlayWithImageOverlayAndInset() throws Exception {
+    void testApplyOverlayWithImageOverlayAndInset() {
         final BufferedImage baseImage = newColorImage(8, false);
 
         // fill it with white
@@ -354,7 +354,7 @@ class Java2DUtilTest extends BaseTest {
     /* getOverlayImage() */
 
     @Test
-    void testGetOverlayImage() throws Exception {
+    void testGetOverlayImage() {
         ImageOverlay overlay = new ImageOverlay(
                 TestUtil.getImage("png").toUri(), Position.BOTTOM_RIGHT, 0);
         assertNotNull(Java2DUtil.getOverlayImage(overlay));
@@ -488,7 +488,7 @@ class Java2DUtilTest extends BaseTest {
     /* rotate(BufferedImage, Orientation) */
 
     @Test
-    void testRotateWithOrientation() {
+    void testRotate1() {
         BufferedImage inImage = newColorImage(8, false);
         BufferedImage outImage = Java2DUtil.rotate(inImage, Orientation.ROTATE_0);
         assertSame(inImage, outImage);
@@ -509,7 +509,7 @@ class Java2DUtilTest extends BaseTest {
     /* rotate(BufferedImage, Rotate) */
 
     @Test
-    void testRotateDimensions() {
+    void testRotate2Dimensions() {
         BufferedImage inImage = newColorImage(8, false);
         final int sourceWidth = inImage.getWidth();
         final int sourceHeight = inImage.getHeight();
@@ -530,7 +530,7 @@ class Java2DUtilTest extends BaseTest {
     }
 
     @Test
-    void testRotateWith8BitGray() {
+    void testRotate2With8BitGray() {
         BufferedImage inImage = newGrayImage(8, false);
         Rotate rotate = new Rotate(15);
         BufferedImage outImage = Java2DUtil.rotate(inImage, rotate);
@@ -541,7 +541,7 @@ class Java2DUtilTest extends BaseTest {
     }
 
     @Test
-    void testRotateWith8BitGrayWithAlpha() {
+    void testRotate2With8BitGrayWithAlpha() {
         BufferedImage inImage = newGrayImage(8, true);
         Rotate rotate = new Rotate(15);
         BufferedImage outImage = Java2DUtil.rotate(inImage, rotate);
@@ -552,7 +552,7 @@ class Java2DUtilTest extends BaseTest {
     }
 
     @Test
-    void testRotateWith8BitRGB() {
+    void testRotate2With8BitRGB() {
         BufferedImage inImage = newColorImage(8, false);
         Rotate rotate = new Rotate(15);
         BufferedImage outImage = Java2DUtil.rotate(inImage, rotate);
@@ -563,7 +563,7 @@ class Java2DUtilTest extends BaseTest {
     }
 
     @Test
-    void testRotateWith8BitRGBA() {
+    void testRotate2With8BitRGBA() {
         BufferedImage inImage = newColorImage(8, true);
         Rotate rotate = new Rotate(15);
         BufferedImage outImage = Java2DUtil.rotate(inImage, rotate);
@@ -574,7 +574,7 @@ class Java2DUtilTest extends BaseTest {
     }
 
     @Test
-    void testRotateWith16BitGray() {
+    void testRotate2With16BitGray() {
         BufferedImage inImage = newGrayImage(16, false);
         Rotate rotate = new Rotate(15);
         BufferedImage outImage = Java2DUtil.rotate(inImage, rotate);
@@ -585,7 +585,7 @@ class Java2DUtilTest extends BaseTest {
     }
 
     @Test
-    void testRotateWith16BitGrayWithAlpha() {
+    void testRotate2With16BitGrayWithAlpha() {
         BufferedImage inImage = newGrayImage(16, true);
         Rotate rotate = new Rotate(15);
         BufferedImage outImage = Java2DUtil.rotate(inImage, rotate);
@@ -596,7 +596,7 @@ class Java2DUtilTest extends BaseTest {
     }
 
     @Test
-    void testRotateWith16BitRGB() {
+    void testRotate2With16BitRGB() {
         BufferedImage inImage = newColorImage(16, false);
         Rotate rotate = new Rotate(15);
         BufferedImage outImage = Java2DUtil.rotate(inImage, rotate);
@@ -607,7 +607,7 @@ class Java2DUtilTest extends BaseTest {
     }
 
     @Test
-    void testRotateWith16BitRGBA() {
+    void testRotate2With16BitRGBA() {
         BufferedImage inImage = newColorImage(16, true);
         Rotate rotate = new Rotate(15);
         BufferedImage outImage = Java2DUtil.rotate(inImage, rotate);
@@ -615,6 +615,16 @@ class Java2DUtilTest extends BaseTest {
         assertTrue(outImage.getColorModel().hasAlpha());
         assertEquals(16, outImage.getColorModel().getComponentSize(0));
         assertEquals(BufferedImage.TYPE_CUSTOM, outImage.getType());
+    }
+
+    /* rotate(BufferedImage, Rotate, Color) */
+
+    @Test
+    void testRotate3WithColor() {
+        BufferedImage inImage = newColorImage(8, true);
+        Rotate rotate = new Rotate(15);
+        BufferedImage outImage = Java2DUtil.rotate(inImage, rotate, Color.RED);
+        assertRGBA(outImage.getRGB(0, 0), 255, 0, 0, 255);
     }
 
     /* scale */

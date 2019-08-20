@@ -820,6 +820,19 @@ public final class Java2DUtil {
      */
     static BufferedImage rotate(final BufferedImage inImage,
                                 final Rotate rotate) {
+        return rotate(inImage, rotate, null);
+    }
+
+    /**
+     * @param inImage         Image to rotate.
+     * @param rotate          Rotate operation.
+     * @param backgroundColor Color to paint underneath the image.
+     * @return                Rotated image, or the input image if the given
+     *                        rotation is a no-op.
+     */
+    static BufferedImage rotate(final BufferedImage inImage,
+                                final Rotate rotate,
+                                final Color backgroundColor) {
         BufferedImage outImage = inImage;
         if (rotate.hasEffect()) {
             final Stopwatch watch = new Stopwatch();
@@ -871,8 +884,13 @@ public final class Java2DUtil {
             g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
                     RenderingHints.VALUE_INTERPOLATION_BILINEAR);
 
+            if (backgroundColor != null) {
+                g2d.setBackground(backgroundColor.toColor());
+                g2d.clearRect(0, 0, outImage.getWidth(), outImage.getHeight());
+            }
+
             g2d.drawImage(inImage, tx, null);
-            LOGGER.debug("rotate() executed in {}", watch);
+            LOGGER.debug("rotate(): executed in {}", watch);
         }
         return outImage;
     }
