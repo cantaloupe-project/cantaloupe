@@ -136,9 +136,9 @@ class KakaduDemoProcessor extends AbstractJava2DProcessor implements FileProcess
      */
     private static void createStdoutSymlink() throws IOException {
         Path tempDir = Application.getTempPath();
-
+        ///changed this to .bmp as .tif was throwing std:bad_alloc errors
         final String name = KakaduDemoProcessor.class.getSimpleName() + "-" +
-                UUID.randomUUID() + ".tif";
+                UUID.randomUUID() + ".bmp";
         final Path link = tempDir.resolve(name);
         final Path devStdout = Paths.get("/dev/stdout");
 
@@ -160,7 +160,7 @@ class KakaduDemoProcessor extends AbstractJava2DProcessor implements FileProcess
      */
     private static Path getIntermediateImageFile(OperationList opList) {
         final String name = opList.toFilename() + "-" +
-                Thread.currentThread().getName() + ".tif";
+                Thread.currentThread().getName() + ".bmp";
         return getScratchDir().resolve(name);
     }
 
@@ -369,7 +369,7 @@ class KakaduDemoProcessor extends AbstractJava2DProcessor implements FileProcess
 
         try (InputStream is = Files.newInputStream(intermediateFile)) {
             final ImageReader reader =
-                    new ImageReaderFactory().newImageReader(is, Format.TIF);
+                    new ImageReaderFactory().newImageReader(is, Format.BMP);
             try {
                 final BufferedImage image = reader.read();
                 Set<ReaderHint> hints =
@@ -414,7 +414,7 @@ class KakaduDemoProcessor extends AbstractJava2DProcessor implements FileProcess
                     new StreamCopier(processErrorStream, errorOutput));
 
             final ImageReader reader = new ImageReaderFactory().newImageReader(
-                    processInputStream, Format.TIF);
+                    processInputStream, Format.BMP);
             try {
                 final BufferedImage image = reader.read();
                 Set<ReaderHint> hints =
