@@ -59,6 +59,12 @@ public final class HealthChecker {
             ConcurrentHashMap.newKeySet();
 
     /**
+     * Can be set during testing to cause {@link #check()} to return a custom
+     * instance.
+     */
+    private static Health overriddenHealth;
+
+    /**
      * <p>Informs the class of a {@link Source}-{@link Processor} pair that has
      * been used successfully, and could be used again in the course of a
      * health check. Should be called by image processing endpoints after
@@ -85,6 +91,16 @@ public final class HealthChecker {
      */
     static Set<SourceProcessorPair> getSourceProcessorPairs() {
         return SOURCE_PROCESSOR_PAIRS;
+    }
+
+    /**
+     * For testing only!
+     *
+     * @param health Custom instance that will be returned by {@link #check()}.
+     *               Supply {@code null} to clear the override.
+     */
+    public static synchronized void setOverriddenHealth(Health health) {
+        overriddenHealth = health;
     }
 
     /**
@@ -238,6 +254,10 @@ public final class HealthChecker {
      */
     public Health check() {
         LOGGER.debug("Initiating a health check");
+
+        if (overriddenHealth != null) {
+            return overriddenHealth;
+        }
 
         final Stopwatch watch = new Stopwatch();
         final Health health   = new Health();

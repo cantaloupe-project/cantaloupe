@@ -8,6 +8,8 @@ import edu.illinois.library.cantaloupe.http.Headers;
 import edu.illinois.library.cantaloupe.http.ResourceException;
 import edu.illinois.library.cantaloupe.http.Response;
 import edu.illinois.library.cantaloupe.resource.Route;
+import edu.illinois.library.cantaloupe.status.Health;
+import edu.illinois.library.cantaloupe.status.HealthChecker;
 import org.junit.Test;
 
 import java.net.URI;
@@ -67,6 +69,44 @@ public class HealthResourceTest extends AbstractAPIResourceTest {
         Response response = client.send();
         assertEquals(200, response.getStatus());
         assertTrue(response.getBodyAsString().contains("\"color\":\"GREEN\""));
+    }
+
+    @Test
+    public void testGETWithYellowStatus() throws Exception {
+        Health health = new Health();
+        health.setMinColor(Health.Color.YELLOW);
+        try {
+            HealthChecker.setOverriddenHealth(health);
+
+            Configuration config = Configuration.getInstance();
+            config.setProperty(Key.API_ENABLED, true);
+
+            client.send();
+            fail("Expected HTTP 500");
+        } catch (ResourceException e) {
+            assertEquals(500, e.getStatusCode());
+        } finally {
+            HealthChecker.setOverriddenHealth(null);
+        }
+    }
+
+    @Test
+    public void testGETWithRedStatus() throws Exception {
+        Health health = new Health();
+        health.setMinColor(Health.Color.RED);
+        try {
+            HealthChecker.setOverriddenHealth(health);
+
+            Configuration config = Configuration.getInstance();
+            config.setProperty(Key.API_ENABLED, true);
+
+            client.send();
+            fail("Expected HTTP 500");
+        } catch (ResourceException e) {
+            assertEquals(500, e.getStatusCode());
+        } finally {
+            HealthChecker.setOverriddenHealth(null);
+        }
     }
 
     @Override // because this endpoint doesn't require auth

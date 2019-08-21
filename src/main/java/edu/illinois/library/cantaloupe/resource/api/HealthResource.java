@@ -3,6 +3,7 @@ package edu.illinois.library.cantaloupe.resource.api;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import edu.illinois.library.cantaloupe.http.Method;
 import edu.illinois.library.cantaloupe.resource.JacksonRepresentation;
+import edu.illinois.library.cantaloupe.status.Health;
 import edu.illinois.library.cantaloupe.status.HealthChecker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,9 +38,15 @@ public class HealthResource extends AbstractAPIResource {
         Map<SerializationFeature, Boolean> features = new HashMap<>();
         features.put(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, true);
 
+        final Health health = new HealthChecker().check();
+
+        if (!Health.Color.GREEN.equals(health.getColor())) {
+            getResponse().setStatus(500);
+        }
         getResponse().setHeader("Content-Type",
                 "application/json;charset=UTF-8");
-        new JacksonRepresentation(new HealthChecker().check())
+
+        new JacksonRepresentation(health)
                 .write(getResponse().getOutputStream(), features);
     }
 
