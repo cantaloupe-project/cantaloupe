@@ -394,6 +394,8 @@ public final class JPEG2000KakaduImageReader implements AutoCloseable {
 
             codestream.Create(compSrc, threadEnv);
             codestream.Set_resilient();
+
+            boolean anyChannels = false;
             if (layerSrc != null) {
                 channels.Configure(
                         layerSrc.Access_colour(0),
@@ -401,7 +403,9 @@ public final class JPEG2000KakaduImageReader implements AutoCloseable {
                         codestreamSrc.Get_codestream_id(),
                         codestreamSrc.Access_palette(),
                         codestreamSrc.Access_dimensions());
-            } else {
+                anyChannels = (channels.Get_num_channels() > 0);
+            }
+            if (!anyChannels) {
                 channels.Configure(codestream);
             }
         } catch (KduException e) {
