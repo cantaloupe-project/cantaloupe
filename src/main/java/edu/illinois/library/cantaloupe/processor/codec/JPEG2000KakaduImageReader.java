@@ -366,14 +366,14 @@ public final class JPEG2000KakaduImageReader implements AutoCloseable {
                 familySrc.Open(compSrc);
             }
 
-            Jpx_layer_source xLayer       = null;
-            Jpx_codestream_source xStream = null;
+            Jpx_layer_source layerSrc           = null;
+            Jpx_codestream_source codestreamSrc = null;
             int success = jpxSrc.Open(familySrc, true);
             if (success >= 0) {
                 // Succeeded in opening as wrapped JP2/JPX source.
-                xLayer  = jpxSrc.Access_layer(0);
-                xStream = jpxSrc.Access_codestream(xLayer.Get_codestream_id(0));
-                compSrc = xStream.Open_stream();
+                layerSrc      = jpxSrc.Access_layer(0);
+                codestreamSrc = jpxSrc.Access_codestream(layerSrc.Get_codestream_id(0));
+                compSrc       = codestreamSrc.Open_stream();
             } else {
                 // Must open as raw codestream.
                 familySrc.Close();
@@ -394,12 +394,13 @@ public final class JPEG2000KakaduImageReader implements AutoCloseable {
 
             codestream.Create(compSrc, threadEnv);
             codestream.Set_resilient();
-            if (xLayer != null) {
+            if (layerSrc != null) {
                 channels.Configure(
-                        xLayer.Access_colour(0), xLayer.Access_channels(),
-                        xStream.Get_codestream_id(),
-                        xStream.Access_palette(),
-                        xStream.Access_dimensions());
+                        layerSrc.Access_colour(0),
+                        layerSrc.Access_channels(),
+                        codestreamSrc.Get_codestream_id(),
+                        codestreamSrc.Access_palette(),
+                        codestreamSrc.Access_dimensions());
             } else {
                 channels.Configure(codestream);
             }
