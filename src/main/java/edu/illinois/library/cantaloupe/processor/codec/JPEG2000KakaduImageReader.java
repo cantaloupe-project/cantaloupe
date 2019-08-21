@@ -573,7 +573,7 @@ public final class JPEG2000KakaduImageReader implements AutoCloseable {
                     regionDims.Access_size().Get_y(),
                     BufferedImage.TYPE_INT_ARGB);
 
-            final int regionBufferSize = regionDims.Access_size().Get_x() * 128;
+            final int regionBufferSize = regionDims.Access_size().Get_x() * 32;
             final int[] regionBuffer   = new int[regionBufferSize];
 
             while (decompressor.Process(regionBuffer, regionDims.Access_pos(),
@@ -582,12 +582,9 @@ public final class JPEG2000KakaduImageReader implements AutoCloseable {
                 Kdu_coords newSize = newRegion.Access_size();
                 newPos.Subtract(viewDims.Access_pos());
 
-                int bufferIndex = 0;
-                for (int y = newPos.Get_y(); y < newPos.Get_y() + newSize.Get_y(); y++) {
-                    for (int x = newPos.Get_x(); x < newSize.Get_x(); x++) {
-                        image.setRGB(x, y, regionBuffer[bufferIndex++]);
-                    }
-                }
+                image.setRGB(newPos.Get_x(), newPos.Get_y(),
+                        newSize.Get_x(), newSize.Get_y(),
+                        regionBuffer, 0, newSize.Get_x());
             }
             if (decompressor.Finish()) {
                 if (reductionFactor.factor - 1 > getNumDecompositionLevels()) {
