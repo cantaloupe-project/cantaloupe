@@ -8,6 +8,9 @@ import edu.illinois.library.cantaloupe.http.Headers;
 import edu.illinois.library.cantaloupe.http.ResourceException;
 import edu.illinois.library.cantaloupe.http.Response;
 import edu.illinois.library.cantaloupe.resource.Route;
+import edu.illinois.library.cantaloupe.status.Health;
+import edu.illinois.library.cantaloupe.status.HealthChecker;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.net.URI;
@@ -15,6 +18,14 @@ import java.net.URI;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class HealthResourceTest extends AbstractAPIResourceTest {
+
+    @BeforeEach
+    @Override
+    public void setUp() throws Exception {
+        super.setUp();
+        HealthChecker.getSourceProcessorPairs().clear();
+        HealthChecker.overrideHealth(null);
+    }
 
     @Override
     protected String getEndpointPath() {
@@ -67,6 +78,40 @@ public class HealthResourceTest extends AbstractAPIResourceTest {
         Response response = client.send();
         assertEquals(200, response.getStatus());
         assertTrue(response.getBodyAsString().contains("\"color\":\"GREEN\""));
+    }
+
+    @Test
+    void testGETWithYellowStatus() throws Exception {
+        Health health = new Health();
+        health.setMinColor(Health.Color.YELLOW);
+        try {
+            HealthChecker.overrideHealth(health);
+
+            Configuration config = Configuration.getInstance();
+            config.setProperty(Key.API_ENABLED, true);
+
+            client.send();
+            fail("Expected HTTP 500");
+        } catch (ResourceException e) {
+            assertEquals(500, e.getStatusCode());
+        }
+    }
+
+    @Test
+    void testGETWithRedStatus() throws Exception {
+        Health health = new Health();
+        health.setMinColor(Health.Color.RED);
+        try {
+            HealthChecker.overrideHealth(health);
+
+            Configuration config = Configuration.getInstance();
+            config.setProperty(Key.API_ENABLED, true);
+
+            client.send();
+            fail("Expected HTTP 500");
+        } catch (ResourceException e) {
+            assertEquals(500, e.getStatusCode());
+        }
     }
 
     @Override // because this endpoint doesn't require auth

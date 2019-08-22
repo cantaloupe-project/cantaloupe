@@ -37,7 +37,7 @@ public final class Health {
      * Sets the minimum color to the given value. Subsequent calls cannot set
      * the color to any lower value.
      */
-    synchronized void setMinColor(Color minColor) {
+    public synchronized void setMinColor(Color minColor) {
         if (minColor.ordinal() > color.ordinal()) {
             this.color = minColor;
         }

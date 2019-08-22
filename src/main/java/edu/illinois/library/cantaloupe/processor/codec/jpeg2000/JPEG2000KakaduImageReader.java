@@ -338,14 +338,14 @@ public final class JPEG2000KakaduImageReader implements AutoCloseable {
                 familySrc.Open(compSrc);
             }
 
-            Jpx_layer_source xLayer       = null;
-            Jpx_codestream_source xStream = null;
+            Jpx_layer_source layerSrc           = null;
+            Jpx_codestream_source codestreamSrc = null;
             int success = jpxSrc.Open(familySrc, true);
             if (success >= 0) {
                 // Succeeded in opening as wrapped JP2/JPX source.
-                xLayer  = jpxSrc.Access_layer(0);
-                xStream = jpxSrc.Access_codestream(xLayer.Get_codestream_id(0));
-                compSrc = xStream.Open_stream();
+                layerSrc      = jpxSrc.Access_layer(0);
+                codestreamSrc = jpxSrc.Access_codestream(layerSrc.Get_codestream_id(0));
+                compSrc       = codestreamSrc.Open_stream();
             } else {
                 // Must open as raw codestream.
                 familySrc.Close();
@@ -366,13 +366,18 @@ public final class JPEG2000KakaduImageReader implements AutoCloseable {
 
             codestream.Create(compSrc, threadEnv);
             codestream.Set_resilient();
-            if (xLayer != null) {
+
+            boolean anyChannels = false;
+            if (layerSrc != null) {
                 channels.Configure(
-                        xLayer.Access_colour(0), xLayer.Access_channels(),
-                        xStream.Get_codestream_id(),
-                        xStream.Access_palette(),
-                        xStream.Access_dimensions());
-            } else {
+                        layerSrc.Access_colour(0),
+                        layerSrc.Access_channels(),
+                        codestreamSrc.Get_codestream_id(),
+                        codestreamSrc.Access_palette(),
+                        codestreamSrc.Access_dimensions());
+                anyChannels = (channels.Get_num_channels() > 0);
+            }
+            if (!anyChannels) {
                 channels.Configure(codestream);
             }
         } catch (KduException e) {
@@ -586,7 +591,7 @@ public final class JPEG2000KakaduImageReader implements AutoCloseable {
                     regionDims.Access_size().Get_y(),
                     BufferedImage.TYPE_INT_ARGB);
 
-            final int regionBufferSize = regionDims.Access_size().Get_x() * 128;
+            final int regionBufferSize = regionDims.Access_size().Get_x() * 32;
             final int[] regionBuffer   = new int[regionBufferSize];
 
             while (decompressor.Process(regionBuffer, regionDims.Access_pos(),
@@ -595,12 +600,9 @@ public final class JPEG2000KakaduImageReader implements AutoCloseable {
                 Kdu_coords newSize = newRegion.Access_size();
                 newPos.Subtract(viewDims.Access_pos());
 
-                int bufferIndex = 0;
-                for (int y = newPos.Get_y(); y < newPos.Get_y() + newSize.Get_y(); y++) {
-                    for (int x = newPos.Get_x(); x < newSize.Get_x(); x++) {
-                        image.setRGB(x, y, regionBuffer[bufferIndex++]);
-                    }
-                }
+                image.setRGB(newPos.Get_x(), newPos.Get_y(),
+                        newSize.Get_x(), newSize.Get_y(),
+                        regionBuffer, 0, newSize.Get_x());
             }
             if (decompressor.Finish()) {
                 if (reductionFactor.factor - 1 > getNumDecompositionLevels()) {
