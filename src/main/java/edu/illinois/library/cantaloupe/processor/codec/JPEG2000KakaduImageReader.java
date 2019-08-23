@@ -178,7 +178,7 @@ public final class JPEG2000KakaduImageReader implements AutoCloseable {
 
     /**
      * N.B.: {@link Kdu_global#Kdu_get_num_processors()} is another way of
-     * getting the CPU count. Unknown whether it's any more or less reliable.
+     * getting the CPU count. Unknown whether it's any more reliable.
      */
     private static final int NUM_THREADS =
             Math.max(1, Runtime.getRuntime().availableProcessors());
@@ -480,26 +480,31 @@ public final class JPEG2000KakaduImageReader implements AutoCloseable {
             final Stopwatch watch = new Stopwatch();
 
             // Read the image dimensions.
-            final int referenceComponent = channels.Get_source_component(0);
-            Kdu_dims image_dims = new Kdu_dims();
-            codestream.Get_dims(referenceComponent, image_dims);
-            width = image_dims.Access_size().Get_x();
-            height = image_dims.Access_size().Get_y();
+            {
+                final int referenceComponent = channels.Get_source_component(0);
+                final Kdu_dims imageDims = new Kdu_dims();
+                codestream.Get_dims(referenceComponent, imageDims);
+                width = imageDims.Access_size().Get_x();
+                height = imageDims.Access_size().Get_y();
+            }
 
             // Read the tile dimensions.
-            Kdu_coords tileIndex = new Kdu_coords();
-            Kdu_dims tileDims = new Kdu_dims();
-            codestream.Get_tile_dims(tileIndex, -1, tileDims, false);
-            tileWidth = tileDims.Access_size().Get_x();
-            tileHeight = tileDims.Access_size().Get_y();
-            // Swap dimensions to harmonize with the main image dimensions,
-            // if necessary.
-            if (width > height && tileWidth < tileHeight ||
-                    width < height && tileWidth > tileHeight) {
-                int tmp = tileWidth;
-                //noinspection SuspiciousNameCombination
-                tileWidth = tileHeight;
-                tileHeight = tmp;
+            {
+                Kdu_coords tileIndex = new Kdu_coords();
+                Kdu_dims tileDims    = new Kdu_dims();
+                codestream.Get_tile_dims(tileIndex, -1, tileDims, false);
+                tileWidth = tileDims.Access_size().Get_x();
+                tileHeight = tileDims.Access_size().Get_y();
+
+                // Swap dimensions to harmonize with the main image dimensions,
+                // if necessary.
+                if (width > height && tileWidth < tileHeight ||
+                        width < height && tileWidth > tileHeight) {
+                    int tmp = tileWidth;
+                    //noinspection SuspiciousNameCombination
+                    tileWidth = tileHeight;
+                    tileHeight = tmp;
+                }
             }
 
             // Read the DWT level count.
@@ -644,7 +649,7 @@ public final class JPEG2000KakaduImageReader implements AutoCloseable {
 
             while (decompressor.Process(regionBuffer, regionDims.Access_pos(),
                     0, 0, regionBufferSize, incompleteRegion, newRegion)) {
-                Kdu_coords newPos = newRegion.Access_pos();
+                Kdu_coords newPos  = newRegion.Access_pos();
                 Kdu_coords newSize = newRegion.Access_size();
                 newPos.Subtract(viewDims.Access_pos());
 
@@ -720,30 +725,30 @@ public final class JPEG2000KakaduImageReader implements AutoCloseable {
             Kdu_thread_env threadEnv,
             Kdu_quality_limiter limiter) throws KduException {
         int c;
-        Kdu_coords ref_subs = new Kdu_coords();
+        Kdu_coords refSubs = new Kdu_coords();
         Kdu_coords subs = new Kdu_coords();
-        codestream.Get_subsampling(reference_component,ref_subs);
-        Kdu_coords min_subs = new Kdu_coords(); min_subs.Assign(ref_subs);
+        codestream.Get_subsampling(reference_component, refSubs);
+        Kdu_coords minSubs = new Kdu_coords(); minSubs.Assign(refSubs);
 
         for (c = 0; c < channels.Get_num_channels(); c++) {
             codestream.Get_subsampling(channels.Get_source_component(c),subs);
-            if (subs.Get_x() < min_subs.Get_x()) {
-                min_subs.Set_x(subs.Get_x());
+            if (subs.Get_x() < minSubs.Get_x()) {
+                minSubs.Set_x(subs.Get_x());
             }
-            if (subs.Get_y() < min_subs.Get_y()) {
-                min_subs.Set_y(subs.Get_y());
+            if (subs.Get_y() < minSubs.Get_y()) {
+                minSubs.Set_y(subs.Get_y());
             }
         }
 
         Kdu_coords expansion = new Kdu_coords();
-        expansion.Set_x((int) Math.round(ref_subs.Get_x() / (double) min_subs.Get_x()));
-        expansion.Set_y((int) Math.round(ref_subs.Get_y() / (double) min_subs.Get_y()));
+        expansion.Set_x((int) Math.round(refSubs.Get_x() / (double) minSubs.Get_x()));
+        expansion.Set_y((int) Math.round(refSubs.Get_y() / (double) minSubs.Get_y()));
 
         for (c = 0; c < channels.Get_num_channels(); c++) {
             codestream.Get_subsampling(channels.Get_source_component(c),subs);
 
-            if ((((subs.Get_x() * expansion.Get_x()) % ref_subs.Get_x()) != 0) ||
-                    (((subs.Get_y() * expansion.Get_y()) % ref_subs.Get_y()) != 0)) {
+            if ((((subs.Get_x() * expansion.Get_x()) % refSubs.Get_x()) != 0) ||
+                    (((subs.Get_y() * expansion.Get_y()) % refSubs.Get_y()) != 0)) {
                 Kdu_global.Kdu_print_error(
                         "The supplied JP2 file contains colour channels " +
                                 "whose sub-sampling factors are not integer " +
@@ -752,7 +757,7 @@ public final class JPEG2000KakaduImageReader implements AutoCloseable {
                         Kdu_global.KDU_WANT_OUTPUT_COMPONENTS,
                         threadEnv, limiter);
                 channels.Configure(codestream);
-                expansion = new Kdu_coords(1,1);
+                expansion = new Kdu_coords(1, 1);
             }
         }
         return expansion;
