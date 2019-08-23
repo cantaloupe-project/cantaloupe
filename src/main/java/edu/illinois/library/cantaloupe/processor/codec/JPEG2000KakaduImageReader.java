@@ -569,13 +569,13 @@ public final class JPEG2000KakaduImageReader implements AutoCloseable {
 
         BufferedImage image;
 
+        final Stopwatch watch = new Stopwatch();
+
         try {
             openImage();
 
             final int referenceComponent = channels.Get_source_component(0);
             final int accessMode = Kdu_global.KDU_WANT_OUTPUT_COMPONENTS;
-
-            limiter.Set_display_resolution(600f, 600f);
 
             // The expand numerator & denominator here tell
             // kdu_region_decompressor.start() at what fractional scale to
@@ -612,8 +612,15 @@ public final class JPEG2000KakaduImageReader implements AutoCloseable {
             regionDims = decompressor.Find_render_dims(regionDims, refSubs,
                     expandNumerator, expandDenominator);
 
+            // The kdu_quality_limiter can save decoding effort by truncating
+            // code blocks to sensible lengths. The docs are pretty detailed
+            // about optimizing these argument values.
+            final float xPPI = 600f * refSubs.Get_x();
+            final float yPPI = 600f * refSubs.Get_y();
+            limiter.Set_display_resolution(xPPI, yPPI);
+
             LOGGER.debug("Rendered region {},{}/{}x{}; source {},{}/{}x{}; " +
-                            "{}x reduction factor; differential scale {}/{}",
+                            "{}x reduction factor; differential scale {}/{}; PPI {}x{}",
                     regionDims.Access_pos().Get_x(),
                     regionDims.Access_pos().Get_y(),
                     regionDims.Access_size().Get_x(),
@@ -624,9 +631,9 @@ public final class JPEG2000KakaduImageReader implements AutoCloseable {
                     sourceDims.Access_size().Get_y(),
                     reductionFactor.factor,
                     expandNumerator.Get_x(),
-                    expandDenominator.Get_x()); // y should == x
-
-            final Stopwatch watch = new Stopwatch();
+                    expandDenominator.Get_x(), // y should == x
+                    xPPI,
+                    yPPI);
 
             decompressor.Start(codestream, channels, -1,
                     reductionFactor.factor, MAX_LAYERS, regionDims,
@@ -675,7 +682,6 @@ public final class JPEG2000KakaduImageReader implements AutoCloseable {
                                 reductionFactor, diffScales);
                     }
                 }
-                LOGGER.trace("readRegion(): read in {}", watch);
             } else {
                 // Would be nice if we knew more...
                 LOGGER.error("Fatal error in the codestream management machinery.");
@@ -690,6 +696,8 @@ public final class JPEG2000KakaduImageReader implements AutoCloseable {
             }
             throw new IOException(e);
         }
+
+        LOGGER.trace("readRegion(): read in {}", watch);
 
         return image;
     }
