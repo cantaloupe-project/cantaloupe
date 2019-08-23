@@ -183,6 +183,13 @@ public final class JPEG2000KakaduImageReader implements AutoCloseable {
     private static final int NUM_THREADS =
             Math.max(1, Runtime.getRuntime().availableProcessors());
 
+    private static final KduDebugMessage KDU_SYSOUT = new KduDebugMessage();
+    private static final KduErrorMessage KDU_SYSERR = new KduErrorMessage();
+    private static final Kdu_message_formatter KDU_PRETTY_SYSOUT =
+            new Kdu_message_formatter(KDU_SYSOUT);
+    private static final Kdu_message_formatter KDU_PRETTY_SYSERR =
+            new Kdu_message_formatter(KDU_SYSERR);
+
     private Jpx_source jpxSrc;
     private Jp2_threadsafe_family_src familySrc;
     private Kdu_compressed_source compSrc;
@@ -207,6 +214,15 @@ public final class JPEG2000KakaduImageReader implements AutoCloseable {
     private boolean isOpenAttempted, haveReadInfo, haveReadXMP;
     private int width, height, tileWidth, tileHeight, numDWTLevels = -1;
     private String xmp;
+
+    static {
+        try {
+            Kdu_global.Kdu_customize_warnings(KDU_PRETTY_SYSOUT);
+            Kdu_global.Kdu_customize_errors(KDU_PRETTY_SYSERR);
+        } catch (KduException e) {
+            LOGGER.error("Static initializer: {}", e.getMessage(), e);
+        }
+    }
 
     public JPEG2000KakaduImageReader() {
         init();
@@ -405,16 +421,7 @@ public final class JPEG2000KakaduImageReader implements AutoCloseable {
         }
         isOpenAttempted = true;
 
-        // Initialize error handling. (Is it just me or is Kakadu's error
-        // handling system not thread-safe?)
-        KduDebugMessage sysout             = new KduDebugMessage();
-        KduErrorMessage syserr             = new KduErrorMessage();
-        Kdu_message_formatter prettySysout = new Kdu_message_formatter(sysout);
-        Kdu_message_formatter prettySyserr = new Kdu_message_formatter(syserr);
         try {
-            Kdu_global.Kdu_customize_warnings(prettySysout);
-            Kdu_global.Kdu_customize_errors(prettySyserr);
-
             if (sourceFile != null) {
                 familySrc.Open(sourceFile.toString());
             } else {
