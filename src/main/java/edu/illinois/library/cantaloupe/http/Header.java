@@ -55,8 +55,8 @@ public final class Header {
     }
 
     private void setValue(String value) {
-        if (value == null || value.length() < 1) {
-            throw new IllegalArgumentException("Illegal value: " + name);
+        if (value == null) {
+            throw new IllegalArgumentException("Illegal header value null, for header name: " + name);
         }
         this.value = value;
     }
