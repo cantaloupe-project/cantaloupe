@@ -42,9 +42,10 @@ public class HeaderTest {
         new Header("", "value");
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testConstructorWithZeroLengthValueArgument() {
-        new Header("name", "");
+        instance = new Header("name", "");
+        assertEquals("", instance.getValue());
     }
 
     @Test

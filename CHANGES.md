@@ -3,6 +3,8 @@
 ## 4.1.4
 
 * Fixed the health-check endpoint (at `/health`).
+* Fixed error responses when encountering empty request headers. (Thanks to
+  @RRMoelker)
 * Fixed incorrect URIs in `Link` header values in certain IIIF Image API v2
   image endpoint responses.
 * Fixed two separate bugs in KakaduNativeProcessor that both caused empty
