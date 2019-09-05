@@ -118,7 +118,7 @@ public final class SourceFactory {
                             getSelectionStrategy() + ".");
                 }
                 Source source = newDynamicSource(identifier, proxy);
-                LOGGER.info("{}() returned a {} for {}",
+                LOGGER.debug("{}() returned a {} for {}",
                         DelegateMethod.SOURCE,
                         source.getClass().getSimpleName(),
                         identifier);

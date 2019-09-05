@@ -49,8 +49,8 @@ public class HeaderTest extends BaseTest {
 
     @Test
     void testConstructorWithZeroLengthValueArgument() {
-        assertThrows(IllegalArgumentException.class,
-                () -> new Header("name", ""));
+        instance = new Header("name", "");
+        assertEquals("", instance.getValue());
     }
 
     @Test

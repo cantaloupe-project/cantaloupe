@@ -179,23 +179,26 @@ public final class JPEG2000KakaduImageReader implements AutoCloseable {
 
     /**
      * N.B.: {@link Kdu_global#Kdu_get_num_processors()} is another way of
-     * getting the CPU count. Unknown whether it's any more or less reliable.
+     * getting the CPU count. Unknown whether it's any more reliable.
      */
     private static final int NUM_THREADS =
             Math.max(1, Runtime.getRuntime().availableProcessors());
 
-    // N.B.: see the end notes in the KduRender.java file in the Kakadu SDK
-    // for explanation of how this stuff needs to be destroyed. (And it DOES
-    // need to be destroyed!)
-    // N.B. 2: see KduRender2.java for use of the Kdu_thread_env.
-    private Jpx_source jpxSrc                    = new Jpx_source();
-    private Jp2_threadsafe_family_src familySrc  = new Jp2_threadsafe_family_src();
+    private static final KduDebugMessage KDU_SYSOUT = new KduDebugMessage();
+    private static final KduErrorMessage KDU_SYSERR = new KduErrorMessage();
+    private static final Kdu_message_formatter KDU_PRETTY_SYSOUT =
+            new Kdu_message_formatter(KDU_SYSOUT);
+    private static final Kdu_message_formatter KDU_PRETTY_SYSERR =
+            new Kdu_message_formatter(KDU_SYSERR);
+
+    private Jpx_source jpxSrc;
+    private Jp2_threadsafe_family_src familySrc;
     private Kdu_compressed_source compSrc;
-    private Kdu_codestream codestream            = new Kdu_codestream();
-    private Kdu_channel_mapping channels         = new Kdu_channel_mapping();
-    private Kdu_region_decompressor decompressor = new Kdu_region_decompressor();
-    private Kdu_thread_env threadEnv             = new Kdu_thread_env();
-    private Kdu_quality_limiter limiter          = new Kdu_quality_limiter(1 / 256f, false);
+    private Kdu_codestream codestream;
+    private Kdu_channel_mapping channels;
+    private Kdu_region_decompressor decompressor;
+    private Kdu_thread_env threadEnv;
+    private Kdu_quality_limiter limiter;
 
     /**
      * Set by {@link #setSource(Path)}. Used preferentially over {@link
@@ -214,6 +217,19 @@ public final class JPEG2000KakaduImageReader implements AutoCloseable {
     private String xmp;
     private byte[] iptc;
 
+    static {
+        try {
+            Kdu_global.Kdu_customize_warnings(KDU_PRETTY_SYSOUT);
+            Kdu_global.Kdu_customize_errors(KDU_PRETTY_SYSERR);
+        } catch (KduException e) {
+            LOGGER.error("Static initializer: {}", e.getMessage(), e);
+        }
+    }
+
+    public JPEG2000KakaduImageReader() {
+        init();
+    }
+
     private void handle(KduException e) {
         try {
             threadEnv.Handle_exception(e.Get_kdu_exception_code());
@@ -225,8 +241,22 @@ public final class JPEG2000KakaduImageReader implements AutoCloseable {
         }
     }
 
+    /**
+     * Closes everything.
+     */
     @Override
     public void close() {
+        close(true);
+    }
+
+    /**
+     * Variant of {@link #close()} with an option to leave the {@link
+     * #setSource(ImageInputStream) input stream} open.
+     */
+    private void close(boolean alsoCloseInputStream) {
+        // N.B.: see the end notes in the KduRender.java file in the Kakadu SDK
+        // for explanation of how this stuff needs to be destroyed. (And it DOES
+        // need to be destroyed!)
         limiter.Native_destroy();
 
         try {
@@ -248,13 +278,47 @@ public final class JPEG2000KakaduImageReader implements AutoCloseable {
                     e.getMessage(),
                     Integer.toHexString(e.Get_kdu_exception_code()));
         }
+
         if (compSrc != null) {
-            compSrc.Native_destroy();
+            try {
+                compSrc.Close();
+            } catch (KduException e) {
+                LOGGER.warn("Failed to close the {}: {} (code: {})",
+                        compSrc.getClass().getSimpleName(),
+                        e.getMessage(),
+                        Integer.toHexString(e.Get_kdu_exception_code()));
+            } finally {
+                compSrc.Native_destroy();
+            }
         }
         jpxSrc.Native_destroy();
         familySrc.Native_destroy();
 
-        IOUtils.closeQuietly(inputStream);
+        if (inputStream != null) {
+            try {
+                if (alsoCloseInputStream) {
+                    IOUtils.closeQuietly(inputStream);
+                } else {
+                    inputStream.seek(0);
+                }
+            } catch (IOException e) {
+                LOGGER.warn("Failed to close the {}: {}",
+                        inputStream.getClass().getSimpleName(),
+                        e.getMessage(), e);
+            }
+        }
+
+        isOpenAttempted = false;
+    }
+
+    private void init() {
+        jpxSrc       = new Jpx_source();
+        familySrc    = new Jp2_threadsafe_family_src();
+        codestream   = new Kdu_codestream();
+        channels     = new Kdu_channel_mapping();
+        decompressor = new Kdu_region_decompressor();
+        threadEnv    = new Kdu_thread_env();
+        limiter      = new Kdu_quality_limiter(1 / 256f, false);
     }
 
     public int getHeight() throws IOException {
@@ -270,6 +334,14 @@ public final class JPEG2000KakaduImageReader implements AutoCloseable {
         return iptc;
     }
 
+    /**
+     * @return Number of decomposition levels available in the codestream as
+     *         reported in its {@literal COD} or {@literal COC} segment. Note
+     *         that this may (rarely) be larger than the actual number of
+     *         decomposition levels available in the codestream, and may change
+     *         (to reflect a more accurate number) after {@link #readRegion}
+     *         is invoked.
+     */
     public int getNumDecompositionLevels() throws IOException {
         if (numDWTLevels == -1) {
             openImage();
@@ -321,16 +393,7 @@ public final class JPEG2000KakaduImageReader implements AutoCloseable {
         }
         isOpenAttempted = true;
 
-        // Initialize error handling. (Is it just me or is Kakadu's error
-        // handling system not thread-safe?)
-        KduDebugMessage sysout             = new KduDebugMessage();
-        KduErrorMessage syserr             = new KduErrorMessage();
-        Kdu_message_formatter prettySysout = new Kdu_message_formatter(sysout);
-        Kdu_message_formatter prettySyserr = new Kdu_message_formatter(syserr);
         try {
-            Kdu_global.Kdu_customize_warnings(prettySysout);
-            Kdu_global.Kdu_customize_errors(prettySyserr);
-
             if (sourceFile != null) {
                 familySrc.Open(sourceFile.toString());
             } else {
@@ -442,26 +505,31 @@ public final class JPEG2000KakaduImageReader implements AutoCloseable {
             final Stopwatch watch = new Stopwatch();
 
             // Read the image dimensions.
-            final int referenceComponent = channels.Get_source_component(0);
-            Kdu_dims image_dims = new Kdu_dims();
-            codestream.Get_dims(referenceComponent, image_dims);
-            width = image_dims.Access_size().Get_x();
-            height = image_dims.Access_size().Get_y();
+            {
+                final int referenceComponent = channels.Get_source_component(0);
+                final Kdu_dims imageDims = new Kdu_dims();
+                codestream.Get_dims(referenceComponent, imageDims);
+                width = imageDims.Access_size().Get_x();
+                height = imageDims.Access_size().Get_y();
+            }
 
             // Read the tile dimensions.
-            Kdu_coords tileIndex = new Kdu_coords();
-            Kdu_dims tileDims = new Kdu_dims();
-            codestream.Get_tile_dims(tileIndex, -1, tileDims, false);
-            tileWidth = tileDims.Access_size().Get_x();
-            tileHeight = tileDims.Access_size().Get_y();
-            // Swap dimensions to harmonize with the main image dimensions,
-            // if necessary.
-            if (width > height && tileWidth < tileHeight ||
-                    width < height && tileWidth > tileHeight) {
-                int tmp = tileWidth;
-                //noinspection SuspiciousNameCombination
-                tileWidth = tileHeight;
-                tileHeight = tmp;
+            {
+                Kdu_coords tileIndex = new Kdu_coords();
+                Kdu_dims tileDims    = new Kdu_dims();
+                codestream.Get_tile_dims(tileIndex, -1, tileDims, false);
+                tileWidth = tileDims.Access_size().Get_x();
+                tileHeight = tileDims.Access_size().Get_y();
+
+                // Swap dimensions to harmonize with the main image dimensions,
+                // if necessary.
+                if (width > height && tileWidth < tileHeight ||
+                        width < height && tileWidth > tileHeight) {
+                    int tmp = tileWidth;
+                    //noinspection SuspiciousNameCombination
+                    tileWidth = tileHeight;
+                    tileHeight = tmp;
+                }
             }
 
             // Read the DWT level count.
@@ -492,12 +560,21 @@ public final class JPEG2000KakaduImageReader implements AutoCloseable {
                                     final ScaleConstraint scaleConstraint,
                                     final ReductionFactor reductionFactor,
                                     final double[] diffScales) throws IOException {
-        // Note: Kdu_dims and Kdu_coords are integer-based, and this can lead
+        // N.B. 1: Kdu_dims and Kdu_coords are integer-based, and this can lead
         // to precision loss when Rectangles and Dimensions are converted
         // back-and-forth. Try to stay in the Rectangle/Dimension space and
         // convert only when necessary.
 
-        // Find the best resolution level to read.
+        // N.B. 2: The arguments (except for reductionFactor & diffScales) must
+        // not be modified as this method may need to re-invoke itself. Here we
+        // store the initial ROI in case.
+        final Rectangle initialROI = new Rectangle(roi);
+
+        // Find what we assume for now is the best resolution level to read
+        // based on the requested scale and the number of DWT levels reported
+        // in the codestream COD/COC segment (which
+        // Kdu_region_decompressor.Finish() may end up telling us is incorrect,
+        // but we'll cross that bridge when we get to it).
         if (scaleOp != null) {
             final double[] scales = scaleOp.getResultingScales(
                     roi.size(), scaleConstraint);
@@ -517,13 +594,13 @@ public final class JPEG2000KakaduImageReader implements AutoCloseable {
 
         BufferedImage image;
 
+        final Stopwatch watch = new Stopwatch();
+
         try {
             openImage();
 
             final int referenceComponent = channels.Get_source_component(0);
             final int accessMode = Kdu_global.KDU_WANT_OUTPUT_COMPONENTS;
-
-            limiter.Set_display_resolution(600f, 600f);
 
             // The expand numerator & denominator here tell
             // kdu_region_decompressor.start() at what fractional scale to
@@ -544,7 +621,8 @@ public final class JPEG2000KakaduImageReader implements AutoCloseable {
             final Kdu_coords expandDenominator =
                     new Kdu_coords(EXPAND_DENOMINATOR, EXPAND_DENOMINATOR);
 
-            // Get the effective source image size.
+            // Get the effective source image size at the selected resolution
+            // level.
             final Kdu_dims sourceDims = decompressor.Get_rendered_image_dims(
                     codestream, channels, -1, reductionFactor.factor,
                     expandNumerator, expandDenominator, accessMode);
@@ -559,8 +637,15 @@ public final class JPEG2000KakaduImageReader implements AutoCloseable {
             regionDims = decompressor.Find_render_dims(regionDims, refSubs,
                     expandNumerator, expandDenominator);
 
+            // The kdu_quality_limiter can save decoding effort by truncating
+            // code blocks to sensible lengths. The docs are pretty detailed
+            // about optimizing these argument values.
+            final float xPPI = 600f * refSubs.Get_x();
+            final float yPPI = 600f * refSubs.Get_y();
+            limiter.Set_display_resolution(xPPI, yPPI);
+
             LOGGER.debug("Rendered region {},{}/{}x{}; source {},{}/{}x{}; " +
-                            "{}x reduction factor; differential scale {}/{}",
+                            "{}x reduction factor; differential scale {}/{}; PPI {}x{}",
                     regionDims.Access_pos().Get_x(),
                     regionDims.Access_pos().Get_y(),
                     regionDims.Access_size().Get_x(),
@@ -571,9 +656,9 @@ public final class JPEG2000KakaduImageReader implements AutoCloseable {
                     sourceDims.Access_size().Get_y(),
                     reductionFactor.factor,
                     expandNumerator.Get_x(),
-                    expandDenominator.Get_x()); // y should == x
-
-            final Stopwatch watch = new Stopwatch();
+                    expandDenominator.Get_x(), // y should == x
+                    xPPI,
+                    yPPI);
 
             decompressor.Start(codestream, channels, -1,
                     reductionFactor.factor, MAX_LAYERS, regionDims,
@@ -596,7 +681,7 @@ public final class JPEG2000KakaduImageReader implements AutoCloseable {
 
             while (decompressor.Process(regionBuffer, regionDims.Access_pos(),
                     0, 0, regionBufferSize, incompleteRegion, newRegion)) {
-                Kdu_coords newPos = newRegion.Access_pos();
+                Kdu_coords newPos  = newRegion.Access_pos();
                 Kdu_coords newSize = newRegion.Access_size();
                 newPos.Subtract(viewDims.Access_pos());
 
@@ -605,12 +690,26 @@ public final class JPEG2000KakaduImageReader implements AutoCloseable {
                         regionBuffer, 0, newSize.Get_x());
             }
             if (decompressor.Finish()) {
-                if (reductionFactor.factor - 1 > getNumDecompositionLevels()) {
-                    LOGGER.error("Insufficient DWT levels ({}) for reduction factor ({})",
-                            codestream.Get_min_dwt_levels(),
-                            reductionFactor.factor);
+                // If the incomplete region is non-empty, this means that the
+                // image was not fully decoded, probably because it contains
+                // fewer resolution levels than the number we tried to discard,
+                // so we will have to re-invoke this method, discarding fewer.
+                if (!incompleteRegion.Is_empty()) {
+                    final int initialNumDWTLevels = numDWTLevels;
+                    numDWTLevels = codestream.Get_min_dwt_levels();
+                    if (reductionFactor.factor > numDWTLevels) {
+                        LOGGER.debug("COD/COC segment reported {} DWT levels, " +
+                                        "but only {} are available. Retrying.",
+                                initialNumDWTLevels, numDWTLevels);
+                        close(false);
+                        init();
+                        image = readRegion(initialROI, scaleOp, scaleConstraint,
+                                reductionFactor, diffScales);
+                    }
                 }
-                LOGGER.trace("readRegion(): read in {}", watch);
+            } else {
+                // Would be nice if we knew more...
+                LOGGER.error("Fatal error in the codestream management machinery.");
             }
         } catch (KduException e) {
             try {
@@ -622,6 +721,8 @@ public final class JPEG2000KakaduImageReader implements AutoCloseable {
             }
             throw new IOException(e);
         }
+
+        LOGGER.trace("readRegion(): read in {}", watch);
 
         return image;
     }
@@ -657,30 +758,30 @@ public final class JPEG2000KakaduImageReader implements AutoCloseable {
             Kdu_thread_env threadEnv,
             Kdu_quality_limiter limiter) throws KduException {
         int c;
-        Kdu_coords ref_subs = new Kdu_coords();
+        Kdu_coords refSubs = new Kdu_coords();
         Kdu_coords subs = new Kdu_coords();
-        codestream.Get_subsampling(reference_component,ref_subs);
-        Kdu_coords min_subs = new Kdu_coords(); min_subs.Assign(ref_subs);
+        codestream.Get_subsampling(reference_component, refSubs);
+        Kdu_coords minSubs = new Kdu_coords(); minSubs.Assign(refSubs);
 
         for (c = 0; c < channels.Get_num_channels(); c++) {
             codestream.Get_subsampling(channels.Get_source_component(c),subs);
-            if (subs.Get_x() < min_subs.Get_x()) {
-                min_subs.Set_x(subs.Get_x());
+            if (subs.Get_x() < minSubs.Get_x()) {
+                minSubs.Set_x(subs.Get_x());
             }
-            if (subs.Get_y() < min_subs.Get_y()) {
-                min_subs.Set_y(subs.Get_y());
+            if (subs.Get_y() < minSubs.Get_y()) {
+                minSubs.Set_y(subs.Get_y());
             }
         }
 
         Kdu_coords expansion = new Kdu_coords();
-        expansion.Set_x((int) Math.round(ref_subs.Get_x() / (double) min_subs.Get_x()));
-        expansion.Set_y((int) Math.round(ref_subs.Get_y() / (double) min_subs.Get_y()));
+        expansion.Set_x((int) Math.round(refSubs.Get_x() / (double) minSubs.Get_x()));
+        expansion.Set_y((int) Math.round(refSubs.Get_y() / (double) minSubs.Get_y()));
 
         for (c = 0; c < channels.Get_num_channels(); c++) {
             codestream.Get_subsampling(channels.Get_source_component(c),subs);
 
-            if ((((subs.Get_x() * expansion.Get_x()) % ref_subs.Get_x()) != 0) ||
-                    (((subs.Get_y() * expansion.Get_y()) % ref_subs.Get_y()) != 0)) {
+            if ((((subs.Get_x() * expansion.Get_x()) % refSubs.Get_x()) != 0) ||
+                    (((subs.Get_y() * expansion.Get_y()) % refSubs.Get_y()) != 0)) {
                 Kdu_global.Kdu_print_error(
                         "The supplied JP2 file contains colour channels " +
                                 "whose sub-sampling factors are not integer " +
@@ -689,7 +790,7 @@ public final class JPEG2000KakaduImageReader implements AutoCloseable {
                         Kdu_global.KDU_WANT_OUTPUT_COMPONENTS,
                         threadEnv, limiter);
                 channels.Configure(codestream);
-                expansion = new Kdu_coords(1,1);
+                expansion = new Kdu_coords(1, 1);
             }
         }
         return expansion;
