@@ -26,7 +26,7 @@ public class CacheWorkerTest extends BaseTest {
 
     @Test
     void testRunCallsCleanUp() {
-        MockCache cache = (MockCache) CacheFactory.getDerivativeCache();
+        MockCache cache = (MockCache) CacheFactory.getDerivativeCache().get();
         instance.run();
         assertTrue(cache.isCleanUpCalled());
     }
@@ -40,7 +40,7 @@ public class CacheWorkerTest extends BaseTest {
 
     @Test
     void testRunCallsOnCacheWorkerCallback() {
-        MockCache cache = (MockCache) CacheFactory.getDerivativeCache();
+        MockCache cache = (MockCache) CacheFactory.getDerivativeCache().get();
         instance.run();
         assertTrue(cache.isOnCacheWorkerCalled());
     }

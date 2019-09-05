@@ -353,7 +353,7 @@ public class InformationResourceTester extends ImageAPIResourceTester {
 
             // Assert that it's been cached.
             assertRecursiveFileCount(cacheDir, 1);
-            DerivativeCache cache = CacheFactory.getDerivativeCache();
+            DerivativeCache cache = CacheFactory.getDerivativeCache().get();
             assertNotNull(cache.getInfo(identifier));
 
             // Delete the source image.

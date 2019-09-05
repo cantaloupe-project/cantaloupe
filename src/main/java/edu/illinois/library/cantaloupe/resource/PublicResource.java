@@ -121,7 +121,7 @@ public abstract class PublicResource extends AbstractResource {
                 info = new CacheFacade().getOrReadInfo(identifier, proc).orElseThrow();
             } else {
                 info = proc.readInfo();
-                DerivativeCache cache = CacheFactory.getDerivativeCache();
+                DerivativeCache cache = CacheFactory.getDerivativeCache().orElse(null);
                 if (cache != null) {
                     cache.put(identifier, info);
                 }

@@ -27,16 +27,15 @@ final class CacheWorker implements Runnable {
     public void run() {
         LOGGER.info("Working...");
 
-        DerivativeCache dCache = CacheFactory.getDerivativeCache();
+        DerivativeCache dCache = CacheFactory.getDerivativeCache().orElse(null);
         if (dCache != null) {
             dCache.onCacheWorker();
         }
 
-        CacheFactory.getSourceCache().ifPresent(sCache -> {
-            if (sCache != dCache) {
-                sCache.onCacheWorker();
-            }
-        });
+        SourceCache sCache = CacheFactory.getSourceCache().orElse(null);
+        if (sCache != null && sCache != dCache) {
+            sCache.onCacheWorker();
+        }
 
         LOGGER.info("Done working. Next shift starts in {} seconds.", interval);
     }

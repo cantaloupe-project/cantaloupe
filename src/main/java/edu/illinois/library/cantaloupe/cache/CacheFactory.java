@@ -59,10 +59,10 @@ public final class CacheFactory {
      *
      * <p>This method respects live changes in application configuration.</p>
      *
-     * @return The shared instance, or {@literal null} if a derivative cache
+     * @return The shared instance, or {@code null} if a derivative cache
      *         is not available.
      */
-    public static DerivativeCache getDerivativeCache() {
+    public static Optional<DerivativeCache> getDerivativeCache() {
         DerivativeCache cache = null;
 
         if (isDerivativeCacheEnabled()) {
@@ -104,7 +104,7 @@ public final class CacheFactory {
                 shutdownDerivativeCache();
             }
         }
-        return cache;
+        return Optional.ofNullable(cache);
     }
 
     /**
@@ -112,7 +112,7 @@ public final class CacheFactory {
      *
      * <p>This method respects live changes in application configuration.</p>
      *
-     * @return The shared instance, or {@literal null} if the source cache
+     * @return The shared instance, or {@code null} if the source cache
      *         implementation specified in the configuration is invalid or not
      *         specified.
      */

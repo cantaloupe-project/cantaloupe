@@ -46,19 +46,19 @@ public class CacheFactoryTest extends BaseTest {
         final Key key = Key.DERIVATIVE_CACHE;
 
         config.setProperty(key, FilesystemCache.class.getSimpleName());
-        assertTrue(CacheFactory.getDerivativeCache() instanceof FilesystemCache);
+        assertTrue(CacheFactory.getDerivativeCache().get() instanceof FilesystemCache);
 
         config.setProperty(key, "");
-        assertNull(CacheFactory.getDerivativeCache());
+        assertFalse(CacheFactory.getDerivativeCache().isPresent());
 
         config.clearProperty(key);
-        assertNull(CacheFactory.getDerivativeCache());
+        assertFalse(CacheFactory.getDerivativeCache().isPresent());
 
         config.setProperty(key, "bogus");
-        assertNull(CacheFactory.getDerivativeCache());
+        assertFalse(CacheFactory.getDerivativeCache().isPresent());
 
         config.setProperty(key, HeapCache.class.getSimpleName());
-        assertTrue(CacheFactory.getDerivativeCache() instanceof HeapCache);
+        assertTrue(CacheFactory.getDerivativeCache().get() instanceof HeapCache);
     }
 
     @Test
@@ -66,7 +66,7 @@ public class CacheFactoryTest extends BaseTest {
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.DERIVATIVE_CACHE, HeapCache.class.getName());
 
-        assertTrue(CacheFactory.getDerivativeCache() instanceof HeapCache);
+        assertTrue(CacheFactory.getDerivativeCache().get() instanceof HeapCache);
     }
 
     @Test
@@ -75,7 +75,7 @@ public class CacheFactoryTest extends BaseTest {
         final Key key = Key.DERIVATIVE_CACHE;
 
         config.setProperty(key, MockCache.class.getSimpleName());
-        MockCache cache = (MockCache) CacheFactory.getDerivativeCache();
+        MockCache cache = (MockCache) CacheFactory.getDerivativeCache().get();
 
         assertTrue(cache.isInitializeCalled());
     }
@@ -86,7 +86,7 @@ public class CacheFactoryTest extends BaseTest {
         final Key key = Key.DERIVATIVE_CACHE;
 
         config.setProperty(key, MockCache.class.getSimpleName());
-        MockCache cache1 = (MockCache) CacheFactory.getDerivativeCache();
+        MockCache cache1 = (MockCache) CacheFactory.getDerivativeCache().get();
 
         config.setProperty(key, FilesystemCache.class.getSimpleName());
         CacheFactory.getDerivativeCache();

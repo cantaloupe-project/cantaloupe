@@ -229,8 +229,8 @@ public class CacheFacadeTest extends BaseTest {
     @Test
     void testPurge() throws Exception {
         enableDerivativeCache();
-        SourceCache sourceCache = CacheFactory.getSourceCache().get();
-        DerivativeCache derivCache = CacheFactory.getDerivativeCache();
+        SourceCache sourceCache    = CacheFactory.getSourceCache().get();
+        DerivativeCache derivCache = CacheFactory.getDerivativeCache().get();
 
         Identifier identifier = new Identifier("jpg");
         OperationList ops = new OperationList(identifier);
@@ -272,8 +272,8 @@ public class CacheFacadeTest extends BaseTest {
     @Test
     void testPurgeWithIdentifier() throws Exception {
         enableDerivativeCache();
-        SourceCache sourceCache = CacheFactory.getSourceCache().get();
-        DerivativeCache derivCache = CacheFactory.getDerivativeCache();
+        SourceCache sourceCache    = CacheFactory.getSourceCache().get();
+        DerivativeCache derivCache = CacheFactory.getDerivativeCache().get();
 
         Identifier identifier = new Identifier("jpg");
         OperationList ops = new OperationList(identifier);
@@ -314,8 +314,8 @@ public class CacheFacadeTest extends BaseTest {
     @Test
     void testPurgeAsyncWithIdentifier() throws Exception {
         enableDerivativeCache();
-        SourceCache sourceCache = CacheFactory.getSourceCache().get();
-        DerivativeCache derivCache = CacheFactory.getDerivativeCache();
+        SourceCache sourceCache    = CacheFactory.getSourceCache().get();
+        DerivativeCache derivCache = CacheFactory.getDerivativeCache().get();
 
         Identifier identifier = new Identifier("jpg");
         OperationList ops = new OperationList(identifier);
@@ -384,8 +384,8 @@ public class CacheFacadeTest extends BaseTest {
         config.setProperty(Key.DERIVATIVE_CACHE_TTL, 1);
 
         enableDerivativeCache();
-        SourceCache sourceCache = CacheFactory.getSourceCache().get();
-        DerivativeCache derivCache = CacheFactory.getDerivativeCache();
+        SourceCache sourceCache    = CacheFactory.getSourceCache().get();
+        DerivativeCache derivCache = CacheFactory.getDerivativeCache().get();
 
         Identifier identifier = new Identifier("jpg");
         OperationList ops = new OperationList(identifier);
