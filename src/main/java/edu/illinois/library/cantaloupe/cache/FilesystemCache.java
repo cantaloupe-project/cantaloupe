@@ -25,6 +25,7 @@ import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.nio.file.attribute.FileTime;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -182,14 +183,13 @@ class FilesystemCache implements SourceCache, DerivativeCache {
                     if (Files.size(tempFile) > 0) {
                         CFOS_LOGGER.debug("close(): moving {} to {}",
                                 tempFile, destinationFile);
-                        Files.move(tempFile, destinationFile);
+                        Files.move(tempFile, destinationFile,
+                                StandardCopyOption.REPLACE_EXISTING);
                     } else {
                         CFOS_LOGGER.debug("close(): deleting zero-byte file: {}",
                                 tempFile);
                         Files.delete(tempFile);
                     }
-                } catch (FileAlreadyExistsException e) {
-                    CFOS_LOGGER.debug("close(): {}", e.getMessage(), e);
                 } catch (IOException e) {
                     CFOS_LOGGER.warn("close(): {}", e.getMessage(), e);
                 } finally {
@@ -913,12 +913,8 @@ class FilesystemCache implements SourceCache, DerivativeCache {
             }
 
             LOGGER.debug("put(): moving {} to {}", tempFile, destFile);
-            Files.move(tempFile, destFile);
-        } catch (FileAlreadyExistsException e) {
-            // When this method runs concurrently with an equal Identifier
-            // argument, all of the other invocations of Files.move() will
-            // throw this, which is fine.
-            LOGGER.debug("put(): file already exists: {}", e.getMessage());
+            Files.move(tempFile, destFile,
+                    StandardCopyOption.REPLACE_EXISTING);
         } catch (IOException e) {
             try {
                 Files.deleteIfExists(tempFile);

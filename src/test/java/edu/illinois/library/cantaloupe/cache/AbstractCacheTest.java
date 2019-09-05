@@ -221,6 +221,11 @@ abstract class AbstractCacheTest extends BaseTest {
         // This is tested in testNewDerivativeImageInputStreamConcurrently()
     }
 
+    @Test
+    void testNewDerivativeImageOutputStreamOverwritesExistingImage() {
+        // TODO: write this
+    }
+
     /* purge() */
 
     @Test
