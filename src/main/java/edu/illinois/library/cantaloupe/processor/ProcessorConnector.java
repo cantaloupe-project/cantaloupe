@@ -189,23 +189,20 @@ public final class ProcessorConnector {
                         }
                         return dl;
                     case CACHE:
-                        SourceCache sourceCache = CacheFactory.getSourceCache();
-                        if (sourceCache != null) {
-                            LOGGER.info("Using {} to work around the " +
-                                            "incompatibility of {} (a {}) and {} (a {})",
-                                    RetrievalStrategy.CACHE,
-                                    source.getClass().getSimpleName(),
-                                    StreamSource.class.getSimpleName(),
-                                    processor.getClass().getSimpleName(),
-                                    FileProcessor.class.getSimpleName());
+                        SourceCache sourceCache = CacheFactory.getSourceCache()
+                                .orElseThrow(() -> new CacheDisabledException(
+                                        "The source cache is not available."));
+                        LOGGER.info("Using {} to work around the " +
+                                        "incompatibility of {} (a {}) and {} (a {})",
+                                RetrievalStrategy.CACHE,
+                                source.getClass().getSimpleName(),
+                                StreamSource.class.getSimpleName(),
+                                processor.getClass().getSimpleName(),
+                                FileProcessor.class.getSimpleName());
 
-                            Path file = downloadToSourceCache(
-                                    streamFactory, sourceCache, identifier);
-                            connect(sourceCache, file, processor);
-                        } else {
-                            throw new CacheDisabledException(
-                                    "The source cache is not available.");
-                        }
+                        Path file = downloadToSourceCache(
+                                streamFactory, sourceCache, identifier);
+                        connect(sourceCache, file, processor);
                         break;
                     default:
                         throw new IncompatibleSourceException(source, processor);
@@ -240,16 +237,14 @@ public final class ProcessorConnector {
                             RetrievalStrategy.CACHE,
                             processorName,
                             StreamProcessor.class.getSimpleName());
-                    SourceCache sourceCache = CacheFactory.getSourceCache();
-                    if (sourceCache != null) {
-                        Path file = downloadToSourceCache(
-                                streamFactory,
-                                sourceCache,
-                                identifier);
-                        connect(sourceCache, file, processor);
-                    } else {
-                        throw new CacheDisabledException("Source cache is disabled.");
-                    }
+                    SourceCache sourceCache = CacheFactory.getSourceCache()
+                            .orElseThrow(() -> new CacheDisabledException(
+                                    "Source cache is disabled."));
+                    Path file = downloadToSourceCache(
+                            streamFactory,
+                            sourceCache,
+                            identifier);
+                    connect(sourceCache, file, processor);
                 }
             }
         }

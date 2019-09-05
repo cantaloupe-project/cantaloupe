@@ -33,7 +33,7 @@ public class CacheWorkerTest extends BaseTest {
 
     @Test
     void testCallsPurgeInvalid() {
-        MockCache cache = (MockCache) CacheFactory.getSourceCache();
+        MockCache cache = (MockCache) CacheFactory.getSourceCache().get();
         instance.run();
         assertTrue(cache.isPurgeInvalidCalled());
     }

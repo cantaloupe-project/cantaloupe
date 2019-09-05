@@ -279,7 +279,8 @@ public class AdminResource extends AbstractAdminResource {
 
         // source caches
         try {
-            vars.put("currentSourceCache", CacheFactory.getSourceCache());
+            CacheFactory.getSourceCache().ifPresent(sc ->
+                    vars.put("currentSourceCache", sc));
         } catch (Exception e) {
             // noop
         }

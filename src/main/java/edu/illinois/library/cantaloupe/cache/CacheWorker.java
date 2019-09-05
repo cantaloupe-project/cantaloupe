@@ -32,10 +32,11 @@ final class CacheWorker implements Runnable {
             dCache.onCacheWorker();
         }
 
-        SourceCache sCache = CacheFactory.getSourceCache();
-        if (sCache != null && sCache != dCache) {
-            sCache.onCacheWorker();
-        }
+        CacheFactory.getSourceCache().ifPresent(sCache -> {
+            if (sCache != dCache) {
+                sCache.onCacheWorker();
+            }
+        });
 
         LOGGER.info("Done working. Next shift starts in {} seconds.", interval);
     }

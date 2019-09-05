@@ -76,11 +76,7 @@ public final class CacheFacade {
      * @see CacheFactory#getSourceCache
      */
     public Optional<SourceCache> getSourceCache() {
-        SourceCache srcCache = CacheFactory.getSourceCache();
-        if (srcCache != null) {
-            return Optional.of(srcCache);
-        }
-        return Optional.empty();
+        return CacheFactory.getSourceCache();
     }
 
     /**

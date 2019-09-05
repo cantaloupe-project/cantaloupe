@@ -6,6 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -115,7 +116,7 @@ public final class CacheFactory {
      *         implementation specified in the configuration is invalid or not
      *         specified.
      */
-    public static SourceCache getSourceCache() {
+    public static Optional<SourceCache> getSourceCache() {
         SourceCache cache = null;
 
         final Configuration config = Configuration.getInstance();
@@ -150,7 +151,7 @@ public final class CacheFactory {
                 }
             }
         }
-        return cache;
+        return Optional.ofNullable(cache);
     }
 
     private static String getQualifiedName(String unqualifiedName) {

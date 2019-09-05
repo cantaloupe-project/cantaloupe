@@ -127,16 +127,16 @@ public class CacheFactoryTest extends BaseTest {
         final Key key = Key.SOURCE_CACHE;
 
         config.setProperty(key, FilesystemCache.class.getSimpleName());
-        assertTrue(CacheFactory.getSourceCache() instanceof FilesystemCache);
+        assertTrue(CacheFactory.getSourceCache().get() instanceof FilesystemCache);
 
         config.setProperty(key, "");
-        assertNull(CacheFactory.getSourceCache());
+        assertFalse(CacheFactory.getSourceCache().isPresent());
 
         config.clearProperty(key);
-        assertNull(CacheFactory.getSourceCache());
+        assertFalse(CacheFactory.getSourceCache().isPresent());
 
         config.setProperty(key, "bogus");
-        assertNull(CacheFactory.getSourceCache());
+        assertFalse(CacheFactory.getSourceCache().isPresent());
     }
 
     @Test
@@ -144,7 +144,7 @@ public class CacheFactoryTest extends BaseTest {
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.SOURCE_CACHE, FilesystemCache.class.getName());
 
-        assertTrue(CacheFactory.getSourceCache() instanceof FilesystemCache);
+        assertTrue(CacheFactory.getSourceCache().get() instanceof FilesystemCache);
     }
 
     @Test
@@ -153,7 +153,7 @@ public class CacheFactoryTest extends BaseTest {
         final Key key = Key.SOURCE_CACHE;
 
         config.setProperty(key, MockCache.class.getSimpleName());
-        MockCache cache = (MockCache) CacheFactory.getSourceCache();
+        MockCache cache = (MockCache) CacheFactory.getSourceCache().get();
 
         assertTrue(cache.isInitializeCalled());
     }
@@ -164,7 +164,7 @@ public class CacheFactoryTest extends BaseTest {
         final Key key = Key.SOURCE_CACHE;
 
         config.setProperty(key, MockCache.class.getSimpleName());
-        MockCache cache1 = (MockCache) CacheFactory.getSourceCache();
+        MockCache cache1 = (MockCache) CacheFactory.getSourceCache().get();
 
         config.setProperty(key, FilesystemCache.class.getSimpleName());
         CacheFactory.getSourceCache();

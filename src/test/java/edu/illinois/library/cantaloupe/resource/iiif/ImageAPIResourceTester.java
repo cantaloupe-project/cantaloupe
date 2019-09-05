@@ -347,7 +347,7 @@ public class ImageAPIResourceTester {
 
         // Put an image in the source cache.
         Path image = TestUtil.getImage("jpg");
-        SourceCache sourceCache = CacheFactory.getSourceCache();
+        SourceCache sourceCache = CacheFactory.getSourceCache().get();
 
         try (OutputStream os = sourceCache.newSourceImageOutputStream(identifier)) {
             Files.copy(image, os);
@@ -420,7 +420,7 @@ public class ImageAPIResourceTester {
 
         // Put an image in the source cache.
         Path image = TestUtil.getImage("jpg");
-        SourceCache sourceCache = CacheFactory.getSourceCache();
+        SourceCache sourceCache = CacheFactory.getSourceCache().get();
 
         try (OutputStream os = sourceCache.newSourceImageOutputStream(identifier)) {
             Files.copy(image, os);
