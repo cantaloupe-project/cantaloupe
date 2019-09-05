@@ -19,6 +19,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.Future;
 
 public abstract class PublicResource extends AbstractResource {
@@ -26,12 +27,18 @@ public abstract class PublicResource extends AbstractResource {
     private static final Logger LOGGER =
             LoggerFactory.getLogger(PublicResource.class);
 
+    /**
+     * URL argument values that can be used with the {@code cache} query key to
+     * bypass all caching.
+     */
+    private static final Set<String> CACHE_BYPASS_ARGUMENTS =
+            Set.of("false", "nocache");
+
     protected Future<Path> tempFileFuture;
 
     @Override
     public void doInit() throws Exception {
         super.doInit();
-
         addHeaders();
     }
 
@@ -139,8 +146,8 @@ public abstract class PublicResource extends AbstractResource {
      *         false} in the URI query string.
      */
     protected final boolean isBypassingCache() {
-        return "false".equals(getRequest().getReference().getQuery()
-                .getFirstValue("cache"));
+        String value = getRequest().getReference().getQuery().getFirstValue("cache");
+        return value != null && CACHE_BYPASS_ARGUMENTS.contains(value);
     }
 
     /**

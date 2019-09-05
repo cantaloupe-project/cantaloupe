@@ -101,9 +101,9 @@ public class ImageAPIResourceTester {
     }
 
     /**
-     * Tests that there is no Cache-Control header returned when
-     * cache.httpClient.enabled = true but a cache=false argument is present in the
-     * URL query.
+     * Tests that there is no {@code Cache-Control} header returned when
+     * {@code cache.client.enabled = true} but a {@code cache=false} argument
+     * is present in the URL query.
      */
     public void testCacheHeadersWhenClientCachingIsEnabledButCachingIsDisabledInURL(URI uri)
             throws Exception {

@@ -4,6 +4,8 @@
 
 ### Endpoints
 
+* A `?cache=recache` URL query argument is available that reprocesses and
+  recaches the derivative image before delivering it.
 * The `X-IIIF-ID` reverse proxy header is no longer supported. `X-Forwarded-ID`
   should be used instead.
 * The `endpoint.iiif.content_disposition` configuration key has been removed.

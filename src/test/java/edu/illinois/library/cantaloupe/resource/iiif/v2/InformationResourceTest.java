@@ -71,12 +71,24 @@ public class InformationResourceTest extends ResourceTest {
     }
 
     /**
-     * Tests that there is no Cache-Control header returned when
-     * cache.httpClient.enabled = true but a cache=false argument is present in the
-     * URL query.
+     * Tests that there is no {@code Cache-Control} header returned when
+     * {@code cache.client.enabled = true} but a {@code cache=nocache} argument
+     * is present in the URL query.
      */
     @Test
-    void testGETCacheHeadersWhenClientCachingIsEnabledButCachingIsDisabledInURL()
+    void testGETCacheHeadersWhenClientCachingIsEnabledButCachingIsDisabledInURL1()
+            throws Exception {
+        URI uri = getHTTPURI("/" + IMAGE + "/info.json?cache=nocache");
+        tester.testCacheHeadersWhenClientCachingIsEnabledButCachingIsDisabledInURL(uri);
+    }
+
+    /**
+     * Tests that there is no {@code Cache-Control} header returned when
+     * {@code cache.client.enabled = true} but a {@code cache=false} argument
+     * is present in the URL query.
+     */
+    @Test
+    void testGETCacheHeadersWhenClientCachingIsEnabledButCachingIsDisabledInURL2()
             throws Exception {
         URI uri = getHTTPURI("/" + IMAGE + "/info.json?cache=false");
         tester.testCacheHeadersWhenClientCachingIsEnabledButCachingIsDisabledInURL(uri);
@@ -89,7 +101,14 @@ public class InformationResourceTest extends ResourceTest {
     }
 
     @Test
-    void testGETCachingWhenCachesAreEnabledButNegativeCacheQueryArgumentIsSupplied()
+    void testGETCachingWhenCachesAreEnabledButNegativeCacheQueryArgumentIsSupplied1()
+            throws Exception {
+        URI uri = getHTTPURI("/" + IMAGE + "/info.json?cache=nocache");
+        tester.testCachingWhenCachesAreEnabledButNegativeCacheQueryArgumentIsSupplied(uri);
+    }
+
+    @Test
+    void testGETCachingWhenCachesAreEnabledButNegativeCacheQueryArgumentIsSupplied2()
             throws Exception {
         URI uri = getHTTPURI("/" + IMAGE + "/info.json?cache=false");
         tester.testCachingWhenCachesAreEnabledButNegativeCacheQueryArgumentIsSupplied(uri);
