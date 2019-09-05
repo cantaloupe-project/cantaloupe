@@ -581,7 +581,7 @@ class FilesystemCache implements SourceCache, DerivativeCache {
         InputStream inputStream = null;
         final Path cacheFile = derivativeImageFile(ops);
 
-        if (Files.exists(cacheFile)) {
+        try {
             if (!isExpired(cacheFile)) {
                 try {
                     LOGGER.debug("newDerivativeImageInputStream(): hit: {} ({})",
@@ -593,6 +593,9 @@ class FilesystemCache implements SourceCache, DerivativeCache {
             } else {
                 purgeAsync(cacheFile);
             }
+        } catch (NoSuchFileException e) {
+            LOGGER.debug("newDerivativeImageInputStream(): {} ",
+                    e.getMessage());
         }
         return inputStream;
     }
