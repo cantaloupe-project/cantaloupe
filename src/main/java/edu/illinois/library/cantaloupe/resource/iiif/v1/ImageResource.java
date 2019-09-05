@@ -77,9 +77,11 @@ public class ImageResource extends IIIF1Resource {
             return;
         }
 
-        final Configuration config = Configuration.getInstance();
-        final Identifier identifier = getIdentifier();
-        final CacheFacade cacheFacade = new CacheFacade();
+        final Configuration config         = Configuration.getInstance();
+        final Identifier identifier        = getIdentifier();
+        final CacheFacade cacheFacade      = new CacheFacade();
+        final boolean isBypassingCacheRead = isBypassingCacheRead();
+        final boolean isBypassingCache     = isBypassingCache();
 
         Iterator<Format> formatIterator = Collections.emptyIterator();
         boolean isFormatKnownYet = false;
@@ -87,7 +89,7 @@ public class ImageResource extends IIIF1Resource {
         // If we are using a cache, and don't need to resolve first, see if we
         // can pluck an info from it. This will be more efficient than getting
         // it from a source.
-        if (!isBypassingCache() && !isResolvingFirst()) {
+        if (!isBypassingCache && !isBypassingCacheRead && !isResolvingFirst()) {
             try {
                 Optional<Info> optInfo = cacheFacade.getInfo(identifier);
                 if (optInfo.isPresent()) {
@@ -185,7 +187,8 @@ public class ImageResource extends IIIF1Resource {
 
                 addHeaders(processor, ops.getOutputFormat(), disposition);
 
-                new ImageRepresentation(info, processor, ops, isBypassingCache())
+                new ImageRepresentation(info, processor, ops,
+                        isBypassingCacheRead, isBypassingCache)
                         .write(getResponse().getOutputStream());
 
                 // Notify the health checker of a successful response.

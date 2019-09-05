@@ -80,7 +80,8 @@ public class InformationResource extends IIIF1Resource {
         // If we are using a cache, and don't need to resolve first, and the
         // cache contains an info matching the request, skip all the setup and
         // just return the cached info.
-        if (!isBypassingCache() && !isResolvingFirst()) {
+        if (!isBypassingCache() && !isBypassingCacheRead() &&
+                !isResolvingFirst()) {
             try {
                 Optional<Info> optInfo = cacheFacade.getInfo(identifier);
                 if (optInfo.isPresent()) {

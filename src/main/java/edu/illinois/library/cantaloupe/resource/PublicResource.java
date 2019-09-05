@@ -1,6 +1,8 @@
 package edu.illinois.library.cantaloupe.resource;
 
 import edu.illinois.library.cantaloupe.cache.CacheFacade;
+import edu.illinois.library.cantaloupe.cache.CacheFactory;
+import edu.illinois.library.cantaloupe.cache.DerivativeCache;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Dimension;
@@ -103,7 +105,8 @@ public abstract class PublicResource extends AbstractResource {
 
     /**
      * <p>Returns the info for the source image corresponding to the
-     * given identifier as efficiently as possible.</p>
+     * given identifier as efficiently as possible, respecting {@link
+     * #isBypassingCache()} and {@link #isBypassingCacheRead()}.</p>
      *
      * @param identifier Image identifier.
      * @param proc       Processor from which to read the info if it can't be
@@ -114,7 +117,15 @@ public abstract class PublicResource extends AbstractResource {
                                        final Processor proc) throws IOException {
         Info info;
         if (!isBypassingCache()) {
-            info = new CacheFacade().getOrReadInfo(identifier, proc).orElseThrow();
+            if (!isBypassingCacheRead()) {
+                info = new CacheFacade().getOrReadInfo(identifier, proc).orElseThrow();
+            } else {
+                info = proc.readInfo();
+                DerivativeCache cache = CacheFactory.getDerivativeCache();
+                if (cache != null) {
+                    cache.put(identifier, info);
+                }
+            }
             info.setIdentifier(identifier);
         } else {
             LOGGER.debug("getOrReadInfo(): bypassing the cache, as requested");
@@ -142,12 +153,23 @@ public abstract class PublicResource extends AbstractResource {
     }
 
     /**
-     * @return Whether there is a {@literal cache} argument set to {@literal
-     *         false} in the URI query string.
+     * @return Whether there is a {@code cache} argument set to {@code false}
+     *         or {@code nocache} in the URI query string to indicate that
+     *         cache reads and writes are both bypassed.
      */
     protected final boolean isBypassingCache() {
         String value = getRequest().getReference().getQuery().getFirstValue("cache");
-        return value != null && CACHE_BYPASS_ARGUMENTS.contains(value);
+        return (value != null) && CACHE_BYPASS_ARGUMENTS.contains(value);
+    }
+
+    /**
+     * @return Whether there is a {@code cache} argument set to {@code recache}
+     *         in the URI query string to indicate that cache reads are
+     *         bypassed.
+     */
+    protected final boolean isBypassingCacheRead() {
+        String value = getRequest().getReference().getQuery().getFirstValue("cache");
+        return "recache".equals(value);
     }
 
     /**

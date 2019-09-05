@@ -94,6 +94,18 @@ public class InformationResourceTest extends ResourceTest {
         tester.testCacheHeadersWhenClientCachingIsEnabledButCachingIsDisabledInURL(uri);
     }
 
+    /**
+     * Tests that there is a {@code Cache-Control} header returned when
+     * {@code cache.client.enabled = true} and a {@code cache=recache} argument
+     * is present in the URL query.
+     */
+    @Test
+    void testGETCacheHeadersWhenClientCachingIsEnabledAndRecachingIsEnabledInURL()
+            throws Exception {
+        URI uri = getHTTPURI("/" + IMAGE + "/info.json?cache=recache");
+        tester.testCacheHeadersWhenClientCachingIsEnabledAndResponseIsCacheable(uri);
+    }
+
     @Test
     void testGETCacheHeadersWhenClientCachingIsDisabled() throws Exception {
         URI uri = getHTTPURI("/" + IMAGE + "/info.json");
@@ -112,6 +124,13 @@ public class InformationResourceTest extends ResourceTest {
             throws Exception {
         URI uri = getHTTPURI("/" + IMAGE + "/info.json?cache=false");
         tester.testCachingWhenCachesAreEnabledButNegativeCacheQueryArgumentIsSupplied(uri);
+    }
+
+    @Test
+    void testGETCachingWhenCachesAreEnabledAndRecacheQueryArgumentIsSupplied()
+            throws Exception {
+        URI uri = getHTTPURI("/" + IMAGE + "/info.json?cache=recache");
+        tester.testCachingWhenCachesAreEnabledAndRecacheQueryArgumentIsSupplied(uri);
     }
 
     @Test

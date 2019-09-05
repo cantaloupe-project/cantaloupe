@@ -96,6 +96,18 @@ public class ImageResourceTest extends ResourceTest {
         tester.testCacheHeadersWhenClientCachingIsEnabledButCachingIsDisabledInURL(uri);
     }
 
+    /**
+     * Tests that there is a {@code Cache-Control} header returned when
+     * {@code cache.client.enabled = true} and a {@code cache=recache} argument
+     * is present in the URL query.
+     */
+    @Test
+    void testGETCacheHeadersWhenClientCachingIsEnabledAndRecachingIsEnabledInURL()
+            throws Exception {
+        URI uri = getHTTPURI("/" + IMAGE + "/full/full/0/color.jpg?cache=recache");
+        tester.testCacheHeadersWhenClientCachingIsEnabledAndResponseIsCacheable(uri);
+    }
+
     @Test
     void testGETCacheHeadersWhenClientCachingIsDisabled()
             throws Exception {
@@ -115,6 +127,13 @@ public class ImageResourceTest extends ResourceTest {
             throws Exception {
         URI uri = getHTTPURI("/" + IMAGE + "/full/full/0/color.png?cache=false");
         tester.testCachingWhenCachesAreEnabledButNegativeCacheQueryArgumentIsSupplied(uri);
+    }
+
+    @Test
+    void testGETCachingWhenCachesAreEnabledAndRecacheQueryArgumentIsSupplied()
+            throws Exception {
+        URI uri = getHTTPURI("/" + IMAGE + "/full/full/0/color.png?cache=recache");
+        tester.testCachingWhenCachesAreEnabledAndRecacheQueryArgumentIsSupplied(uri);
     }
 
     @Test

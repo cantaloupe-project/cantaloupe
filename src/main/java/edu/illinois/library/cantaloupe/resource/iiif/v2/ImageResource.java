@@ -71,11 +71,12 @@ public class ImageResource extends IIIF2Resource {
             return;
         }
 
-        final Configuration config     = Configuration.getInstance();
-        final List<String> args        = getPathArguments();
-        final Identifier identifier    = getIdentifier();
-        final CacheFacade cacheFacade  = new CacheFacade();
-        final boolean isBypassingCache = isBypassingCache();
+        final Configuration config         = Configuration.getInstance();
+        final List<String> args            = getPathArguments();
+        final Identifier identifier        = getIdentifier();
+        final CacheFacade cacheFacade      = new CacheFacade();
+        final boolean isBypassingCacheRead = isBypassingCacheRead();
+        final boolean isBypassingCache     = isBypassingCache();
 
         // Assemble the URI parameters into a Parameters object.
         final Parameters params = new Parameters(
@@ -97,7 +98,7 @@ public class ImageResource extends IIIF2Resource {
         //    setup and just return the cached image.
         // 2. Otherwise, if the cache contains a relevant info, get it to avoid
         //    having to get it from a source later.
-        if (!isBypassingCache && !isResolvingFirst()) {
+        if (!isBypassingCache && !isBypassingCacheRead && !isResolvingFirst()) {
             final Optional<Info> optInfo = cacheFacade.getInfo(identifier);
             if (optInfo.isPresent()) {
                 Info info = optInfo.get();
@@ -207,7 +208,8 @@ public class ImageResource extends IIIF2Resource {
                 addHeaders(params, fullSize, disposition,
                         params.getOutputFormat().toFormat().getPreferredMediaType().toString());
 
-                new ImageRepresentation(info, processor, ops, isBypassingCache)
+                new ImageRepresentation(info, processor, ops,
+                        isBypassingCacheRead, isBypassingCache)
                         .write(getResponse().getOutputStream());
 
                 // Notify the health checker of a successful response.

@@ -23,8 +23,12 @@ import edu.illinois.library.cantaloupe.test.TestUtil;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.URI;
+import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.nio.file.attribute.FileTime;
 import java.util.Iterator;
 
 import static edu.illinois.library.cantaloupe.test.Assert.HTTPAssert.*;
@@ -151,6 +155,56 @@ public class ImageAPIResourceTester {
 
             // assert that the info does NOT exist in the info cache
             assertEquals(0, InfoService.getInstance().getInfoCache().size());
+        } finally {
+            client.stop();
+        }
+    }
+
+    public void testCachingWhenCachesAreEnabledAndRecacheQueryArgumentIsSupplied(URI uri)
+            throws Exception {
+        Path cacheDir = initializeFilesystemCache();
+
+        // request an image
+        Client client = newClient(uri);
+        try {
+            client.send();
+
+            class FileTimeHolder {
+                FileTime time;
+            }
+            final FileTimeHolder timeHolder = new FileTimeHolder();
+            class FileCreationTimeChecker<T> extends SimpleFileVisitor<T> {
+                @Override
+                public FileVisitResult visitFile(T file,
+                                                 BasicFileAttributes attrs) throws IOException {
+                    BasicFileAttributes fattrs = Files.readAttributes(
+                            (Path) file,
+                            BasicFileAttributes.class);
+                    timeHolder.time = fattrs.creationTime();
+                    return FileVisitResult.CONTINUE;
+                }
+            }
+
+            final FileCreationTimeChecker<Path> visitor =
+                    new FileCreationTimeChecker<>();
+            FileTime time1, time2;
+
+            // check its last-modified time
+            Files.walkFileTree(cacheDir, visitor);
+            time1 = timeHolder.time;
+
+            // FileTime only has 1-second precision so wait at least that long.
+            Thread.sleep(1000);
+
+            // request it again
+            client.send();
+
+            // check its last-modified time again
+            Files.walkFileTree(cacheDir, visitor);
+            time2 = timeHolder.time;
+
+            // assert that the times have changed
+            assertTrue(time2.compareTo(time1) > 0);
         } finally {
             client.stop();
         }

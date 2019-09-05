@@ -25,34 +25,38 @@ import java.nio.file.Path;
 import java.util.Optional;
 
 /**
- * Representation that {@link Processor processes} an image and writes the
- * result to the response (possibly also caching it).
+ * Representation that {@link Processor#process} processes} an image and writes
+ * the result to the response (possibly also caching it).
  */
 public class ImageRepresentation implements Representation {
 
     private static final Logger LOGGER =
             LoggerFactory.getLogger(ImageRepresentation.class);
 
-    private boolean bypassCache;
+    private boolean bypassCacheRead, bypassCacheWrite;
     private Info imageInfo;
     private OperationList opList;
     private Processor processor;
 
     /**
-     * @param imageInfo   Info corresponding to the source image.
-     * @param processor   Processor configured for writing the image.
-     * @param opList      Instance describing the image.
-     * @param bypassCache If {@literal true}, the cache will not be written to
-     *                    nor read from.
+     * @param imageInfo        Info corresponding to the source image.
+     * @param processor        Processor configured for writing the image.
+     * @param opList           Instance describing the image.
+     * @param bypassCacheRead  If {@code true}, the cache will not be read
+     *                         from.
+     * @param bypassCacheWrite If {@code true}, the cache will not be written
+     *                         to.
      */
     public ImageRepresentation(final Info imageInfo,
                                final Processor processor,
                                final OperationList opList,
-                               final boolean bypassCache) {
-        this.imageInfo = imageInfo;
-        this.processor = processor;
-        this.opList = opList;
-        this.bypassCache = bypassCache;
+                               final boolean bypassCacheRead,
+                               final boolean bypassCacheWrite) {
+        this.imageInfo        = imageInfo;
+        this.processor        = processor;
+        this.opList           = opList;
+        this.bypassCacheRead  = bypassCacheRead;
+        this.bypassCacheWrite = bypassCacheWrite;
     }
 
     /**
@@ -63,8 +67,8 @@ public class ImageRepresentation implements Representation {
     @Override
     public void write(OutputStream responseOS) throws IOException {
         // If we are bypassing the cache, write directly to the response.
-        if (bypassCache) {
-            LOGGER.debug("Bypassing the cache and writing directly to the response");
+        if (bypassCacheWrite) {
+            LOGGER.debug("Bypassing the cache and writing only to the response");
             copyOrProcess(responseOS);
             return;
         }
@@ -78,31 +82,33 @@ public class ImageRepresentation implements Representation {
             return;
         }
 
-        // A derivative cache is available, so try to copy the image from the
-        // cache to the response.
-        final Optional<DerivativeCache> optCache = cacheFacade.getDerivativeCache();
-        if (optCache.isPresent()) {
-            DerivativeCache cache = optCache.get();
-            try (InputStream cacheIS = cache.newDerivativeImageInputStream(opList)) {
-                if (cacheIS != null) {
-                    // The image is available, so write it to the response.
-                    final Stopwatch watch = new Stopwatch();
-                    cacheIS.transferTo(responseOS);
+        // If we aren't bypassing cache reads, and a derivative cache is
+        // available, try to copy the image from the cache to the response.
+        if (!bypassCacheRead) {
+            final Optional<DerivativeCache> optCache = cacheFacade.getDerivativeCache();
+            if (optCache.isPresent()) {
+                DerivativeCache cache = optCache.get();
+                try (InputStream cacheIS = cache.newDerivativeImageInputStream(opList)) {
+                    if (cacheIS != null) {
+                        // The image is available, so write it to the response.
+                        final Stopwatch watch = new Stopwatch();
+                        cacheIS.transferTo(responseOS);
 
-                    LOGGER.debug("Streamed from {} in {}: {}",
-                            cache.getClass().getSimpleName(), watch, opList);
+                        LOGGER.debug("Streamed from {} in {}: {}",
+                                cache.getClass().getSimpleName(), watch, opList);
+                        return;
+                    }
+                } catch (IOException e) {
+                    LOGGER.error("Failed to read from {}: {}",
+                            cache.getClass().getSimpleName(), e.getMessage(), e);
+                    // It may still be possible to fulfill the request.
+                    copyOrProcess(responseOS);
                     return;
                 }
-            } catch (IOException e) {
-                LOGGER.error("Failed to read from {}: {}",
-                        cache.getClass().getSimpleName(), e.getMessage(), e);
-                // It may still be possible to fulfill the request.
-                copyOrProcess(responseOS);
-                return;
             }
         }
 
-        // At this point, a derivative cache is available, but it doesn't
+        // At this point, a derivative cache may be available, but it doesn't
         // contain an image that can fulfill the request. So, we will create a
         // TeeOutputStream to write to the response output stream and the cache
         // pseudo-simultaneously.
@@ -112,7 +118,7 @@ public class ImageRepresentation implements Representation {
         // because doing so would close its wrapped streams. So, we have to
         // leave its closure up to the finalizer. But, when that happens, its
         // wrapped streams' close() methods will have been called twice, so
-        // it's important that these two streams' close() methods can deal with
+        // it's important that these two streams' close() methods can cope with
         // that.
         try (OutputStream cacheOS =
                      cacheFacade.newDerivativeImageOutputStream(opList)) {
@@ -142,7 +148,7 @@ public class ImageRepresentation implements Representation {
         // If the operations are effectively a no-op, the source image can be
         // streamed through with no processing.
         if (!opList.hasEffect(imageInfo.getSize(), imageInfo.getSourceFormat())) {
-            copyFromSource(responseOS);
+            copy(responseOS);
         } else {
             try {
                 process(responseOS);
@@ -152,7 +158,11 @@ public class ImageRepresentation implements Representation {
         }
     }
 
-    private void copyFromSource(OutputStream responseOS) throws IOException {
+    /**
+     * Copies a source resource directly to a given {@link OutputStream} with
+     * no processing or caching.
+     */
+    private void copy(OutputStream responseOS) throws IOException {
         boolean done = false;
         final Stopwatch watch = new Stopwatch();
 
