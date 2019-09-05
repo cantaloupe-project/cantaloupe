@@ -27,9 +27,18 @@
             <appender name="AppFileLog" class="ch.qos.logback.core.FileAppender">
                 <filter class="edu.illinois.library.cantaloupe.logging.ApplicationLogFilter" />
                 <file>${log.application.FileAppender.pathname}</file>
-                <encoder>
-                    <pattern>%date %level [%thread] %logger{10} [%file:%line] %msg%n</pattern>
-                </encoder>
+                <if condition='property("log.application.FileAppender.logstash.enabled").contains("true")'>
+                    <then>
+                        <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+                            <includeContext>false</includeContext>
+                        </encoder>
+                    </then>
+                    <else>
+                        <encoder>
+                            <pattern>%date %level [%thread] %logger{10} [%file:%line] %msg%n</pattern>
+                        </encoder>
+                    </else>
+                </if>
             </appender>
         </then>
     </if>
@@ -39,9 +48,18 @@
             <appender name="ErrorFileLog" class="ch.qos.logback.core.FileAppender">
                 <filter class="edu.illinois.library.cantaloupe.logging.ApplicationErrorLogFilter" />
                 <file>${log.error.FileAppender.pathname}</file>
-                <encoder>
-                    <pattern>%date %level [%thread] %logger{10} [%file:%line] %msg%n</pattern>
-                </encoder>
+                <if condition='property("log.error.FileAppender.logstash.enabled").contains("true")'>
+                    <then>
+                        <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+                            <includeContext>false</includeContext>
+                        </encoder>
+                    </then>
+                    <else>
+                        <encoder>
+                            <pattern>%date %level [%thread] %logger{10} [%file:%line] %msg%n</pattern>
+                        </encoder>
+                    </else>
+                </if>
             </appender>
         </then>
     </if>
@@ -59,9 +77,18 @@
                         </rollingPolicy>
                     </then>
                 </if>
-                <encoder>
-                    <pattern>%date %level [%thread] %logger{10} [%file:%line] %msg%n</pattern>
-                </encoder>
+                <if condition='property("log.application.RollingFileAppender.logstash.enabled").contains("true")'>
+                    <then>
+                        <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+                            <includeContext>false</includeContext>
+                        </encoder>
+                    </then>
+                    <else>
+                        <encoder>
+                            <pattern>%date %level [%thread] %logger{10} [%file:%line] %msg%n</pattern>
+                        </encoder>
+                    </else>
+                </if>
             </appender>
         </then>
     </if>
@@ -79,9 +106,18 @@
                         </rollingPolicy>
                     </then>
                 </if>
-                <encoder>
-                    <pattern>%date %level [%thread] %logger{10} [%file:%line] %msg%n</pattern>
-                </encoder>
+                <if condition='property("log.error.RollingFileAppender.logstash.enabled").contains("true")'>
+                    <then>
+                        <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+                            <includeContext>false</includeContext>
+                        </encoder>
+                    </then>
+                    <else>
+                        <encoder>
+                            <pattern>%date %level [%thread] %logger{10} [%file:%line] %msg%n</pattern>
+                        </encoder>
+                    </else>
+                </if>
             </appender>
         </then>
     </if>
