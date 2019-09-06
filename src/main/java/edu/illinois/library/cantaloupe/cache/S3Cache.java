@@ -5,6 +5,7 @@ import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.AmazonS3Exception;
 import com.amazonaws.services.s3.model.CopyObjectRequest;
 import com.amazonaws.services.s3.model.GetObjectRequest;
+import com.amazonaws.services.s3.model.ListObjectsRequest;
 import com.amazonaws.services.s3.model.ObjectListing;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
@@ -470,27 +471,27 @@ class S3Cache implements DerivativeCache {
         purge(getObjectKey(identifier));
 
         // purge images
-        final AmazonS3 s3 = getClientInstance();
+        final AmazonS3 s3       = getClientInstance();
         final String bucketName = getBucketName();
+        final String prefix     = getObjectKeyPrefix() + "image/" +
+                StringUtils.md5(identifier.toString());
 
-        ObjectListing listing = s3.listObjects(
-                getBucketName(),
-                getObjectKeyPrefix() + "image/" + identifier.toString());
+        ListObjectsRequest listObjectsRequest = new ListObjectsRequest()
+                .withBucketName(bucketName)
+                .withPrefix(prefix);
+        ObjectListing listing;
         int count = 0;
 
-        while (true) {
+        do {
+            listing = s3.listObjects(listObjectsRequest);
             for (S3ObjectSummary summary : listing.getObjectSummaries()) {
+                LOGGER.trace("purge(Identifier): deleting {}",
+                        summary.getKey());
                 s3.deleteObject(bucketName, summary.getKey());
                 count++;
             }
-
-            if (listing.isTruncated()) {
-                LOGGER.debug("purge(Identifier): retrieving next batch");
-                listing = s3.listNextBatchOfObjects(listing);
-            } else {
-                break;
-            }
-        }
+            listObjectsRequest.setMarker(listing.getNextMarker());
+        } while (listing.isTruncated());
         LOGGER.debug("purge(Identifier): deleted {} items", count);
     }
 
