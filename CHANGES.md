@@ -56,6 +56,8 @@
   regions to appear in certain images.
 * Fixed TurboJpegProcessor not respecting the `processor.background_color`
   configuration key.
+* Fixed the `PurgeItemFromCache` API method not working with S3Cache and
+  AzureStorageCache.
 * When using `AutomaticSelectionStrategy`, processor initialization errors are
   logged at debug-level rather than error-level.
 

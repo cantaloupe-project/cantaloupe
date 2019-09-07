@@ -275,32 +275,47 @@ abstract class AbstractCacheTest extends BaseTest {
     @Test
     void testPurgeWithIdentifier() throws Exception {
         DerivativeCache instance = newInstance();
-        Identifier id1 = new Identifier(IMAGE);
-        OperationList opList = new OperationList(
-                new Identifier("cats"), new Encode(Format.JPG));
-        Info info = new Info();
 
-        // add an image
-        Path fixture = TestUtil.getImage(id1.toString());
-        try (OutputStream os = instance.newDerivativeImageOutputStream(opList)) {
+        final Path fixture = TestUtil.getImage(IMAGE);
+
+        // add an image and an info
+        final Identifier id1        = new Identifier("cats");
+        final OperationList opList1 = new OperationList(
+                id1, new Encode(Format.JPG));
+        try (OutputStream os = instance.newDerivativeImageOutputStream(opList1)) {
             Files.copy(fixture, os);
         }
+        instance.put(id1, new Info());
 
-        // add an Info
-        instance.put(id1, info);
 
-        // add another Info
-        Identifier id2 = new Identifier("dogs");
+        // add another image and another info
+        final Identifier id2        = new Identifier("dogs");
+        final OperationList opList2 = new OperationList(
+                id2, new Encode(Format.JPG));
+        try (OutputStream os = instance.newDerivativeImageOutputStream(opList2)) {
+            Files.copy(fixture, os);
+        }
         instance.put(id2, new Info());
 
         assertNotNull(instance.getInfo(id1));
         assertNotNull(instance.getInfo(id2));
 
-        // purge one of them
+        // purge one of the info/image pairs
         instance.purge(id1);
 
-        assertFalse(instance.getInfo(id1).isPresent());
-        assertTrue(instance.getInfo(id2).isPresent());
+        Thread.sleep(1000);
+
+        // assert that its info and image are gone
+        assertNull(instance.getInfo(id1));
+        try (InputStream is = instance.newDerivativeImageInputStream(opList1)) {
+            assertNull(is);
+        }
+
+        // ... but the other one is still there
+        assertNotNull(instance.getInfo(id2));
+        try (InputStream is = instance.newDerivativeImageInputStream(opList2)) {
+            assertNotNull(is);
+        }
     }
 
     /* purge(OperationList) */

@@ -127,6 +127,8 @@ public class ImageRepresentation implements Representation {
                     "cache simultaneously");
             copyOrProcess(teeOS);
         } catch (Throwable t) {
+            LOGGER.debug("write(): {}", t.getMessage(), t);
+
             // The cached image has been incompletely written and is corrupt,
             // so it must be purged.
             cacheFacade.purge(opList);
