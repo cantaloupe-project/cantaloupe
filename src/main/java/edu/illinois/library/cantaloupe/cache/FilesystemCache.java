@@ -563,7 +563,7 @@ class FilesystemCache implements SourceCache, DerivativeCache {
 
         final Path cacheFile = sourceImageFile(identifier);
 
-        if (Files.exists(cacheFile)) {
+        try {
             if (!isExpired(cacheFile)) {
                 LOGGER.debug("getSourceImageFile(): hit: {} ({})",
                         identifier, cacheFile);
@@ -571,6 +571,8 @@ class FilesystemCache implements SourceCache, DerivativeCache {
             } else {
                 purgeAsync(cacheFile);
             }
+        } catch (NoSuchFileException e) {
+            LOGGER.debug("getSourceImageFile(): {} ", e.getMessage());
         }
         return Optional.empty();
     }
