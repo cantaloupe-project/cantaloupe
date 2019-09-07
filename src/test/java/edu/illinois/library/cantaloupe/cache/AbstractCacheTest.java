@@ -306,7 +306,8 @@ abstract class AbstractCacheTest extends BaseTest {
         Thread.sleep(1000);
 
         // assert that its info and image are gone
-        assertNull(instance.getInfo(id1));
+        assertFalse(instance.getInfo(id1).isPresent());
+
         try (InputStream is = instance.newDerivativeImageInputStream(opList1)) {
             assertNull(is);
         }
