@@ -664,17 +664,16 @@ redaction.enabled = false
 log.application.level = debug
 
 log.application.ConsoleAppender.enabled = true
-log.application.stdout.ConsoleAppender.logstash.enabled = false
-log.application.stderr.ConsoleAppender.logstash.enabled = false
+log.application.ConsoleAppender.logstash.enabled = false
 
 # N.B.: Don't enable FileAppender and RollingFileAppender simultaneously!
 log.application.FileAppender.enabled = false
-log.application.FileAppender.pathname = /path/to/logs/application.log
 log.application.FileAppender.logstash.enabled = false
+log.application.FileAppender.pathname = /path/to/logs/application.log
 
 log.application.RollingFileAppender.enabled = false
-log.application.RollingFileAppender.pathname = /path/to/logs/application.log
 log.application.RollingFileAppender.logstash.enabled = false
+log.application.RollingFileAppender.pathname = /path/to/logs/application.log
 log.application.RollingFileAppender.policy = TimeBasedRollingPolicy
 log.application.RollingFileAppender.TimeBasedRollingPolicy.filename_pattern = /path/to/logs/application-%d{yyyy-MM-dd}.log
 log.application.RollingFileAppender.TimeBasedRollingPolicy.max_history = 30
@@ -695,12 +694,12 @@ log.application.SyslogAppender.facility = LOCAL0
 
 # N.B.: Don't enable FileAppender and RollingFileAppender simultaneously!
 log.error.FileAppender.enabled = false
-log.error.FileAppender.pathname = /path/to/logs/error.log
 log.error.FileAppender.logstash.enabled = false
+log.error.FileAppender.pathname = /path/to/logs/error.log
 
 log.error.RollingFileAppender.enabled = false
-log.error.RollingFileAppender.pathname = /path/to/logs/error.log
 log.error.RollingFileAppender.logstash.enabled = false
+log.error.RollingFileAppender.pathname = /path/to/logs/error.log
 log.error.RollingFileAppender.policy = TimeBasedRollingPolicy
 log.error.RollingFileAppender.TimeBasedRollingPolicy.filename_pattern = /path/to/logs/error-%d{yyyy-MM-dd}.log
 log.error.RollingFileAppender.TimeBasedRollingPolicy.max_history = 30

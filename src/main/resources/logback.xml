@@ -5,7 +5,7 @@
         <target>System.out</target>
         <filter class="edu.illinois.library.cantaloupe.logging.ApplicationLogFilter" />
         <filter class="edu.illinois.library.cantaloupe.logging.StandardOutputLogFilter" />
-        <if condition='property("log.application.stdout.ConsoleAppender.logstash.enabled").contains("true")'>
+        <if condition='property("log.application.ConsoleAppender.logstash.enabled").contains("true")'>
             <then>
                 <encoder class="net.logstash.logback.encoder.LogstashEncoder">
                     <includeContext>false</includeContext>

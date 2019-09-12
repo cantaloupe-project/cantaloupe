@@ -10,6 +10,11 @@ current version.
     * `endpoint.iiif.2.restrict_to_sizes` to `endpoint.iiif.restrict_to_sizes`
 3.  Add the following keys from the sample configuration:
     * `DynamoDBCache.*`
+    * `log.application.ConsoleAppender.logstash.enabled`
+    * `log.application.FileAppender.logstash.enabled`
+    * `log.application.RollingFileAppender.logstash.enabled`
+    * `log.error.FileAppender.logstash.enabled`
+    * `log.error.RollingFileAppender.logstash.enabled`
 4.  Remove the following configuration keys:
     * `http.accept_queue_limit`
     * `endpoint.iiif.content_disposition`
