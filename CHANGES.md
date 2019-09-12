@@ -20,20 +20,19 @@
 
 ### Processors
 
+* ImageMagickProcessor, GraphicsMagickProcessor, and KakaduDemoProcessor have
+  been removed.
 * The metadata-handling system has been redesigned:
     * Source image metadata is cached in derivative caches.
     * XMP metadata can be copied or edited using a delegate method.
     * The `processor.metadata.respect_orientation` configuration key has been
       removed and EXIF Orientation values are always respected.
-* KakaduNativeProcessor, KakaduDemoProcessor, OpenJpegProcessor, and
-  TurboJpegProcessor respect the EXIF `Orientation` tag.
-* KakaduNativeProcessor, KakaduDemoProcessor, and OpenJpegProcessor support
-  IPTC and XMP metadata.
+* KakaduNativeProcessor, OpenJpegProcessor, and TurboJpegProcessor respect the
+  EXIF `Orientation` tag.
+* KakaduNativeProcessor and OpenJpegProcessor support IPTC and XMP metadata.
 * TurboJpegProcessor supports EXIF, IPTC, and XMP metadata.
 * FfmpegProcessor, KakaduNativeProcessor, OpenJpegProcessor, and
   PdfBoxProcessor use libjpeg-turbo to write JPEGs if it is available.
-* ImageMagickProcessor, GraphicsMagickProcessor, and KakaduDemoProcessor have
-  been removed.
 
 ### Caches
 
