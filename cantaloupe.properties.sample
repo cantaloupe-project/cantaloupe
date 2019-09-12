@@ -664,6 +664,8 @@ redaction.enabled = false
 log.application.level = debug
 
 log.application.ConsoleAppender.enabled = true
+log.application.stdout.ConsoleAppender.logstash.enabled = false
+log.application.stderr.ConsoleAppender.logstash.enabled = false
 
 # N.B.: Don't enable FileAppender and RollingFileAppender simultaneously!
 log.application.FileAppender.enabled = false
