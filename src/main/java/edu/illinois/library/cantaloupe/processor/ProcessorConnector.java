@@ -171,7 +171,7 @@ public final class ProcessorConnector {
             if (!(processor instanceof StreamProcessor)) {
                 switch (getFallbackRetrievalStrategy()) {
                     case DOWNLOAD:
-                        LOGGER.info("Using {} to work around the " +
+                        LOGGER.debug("Using {} to work around the " +
                                         "incompatibility of {} (a {}) and {} (a {})",
                                 RetrievalStrategy.DOWNLOAD,
                                 source.getClass().getSimpleName(),
@@ -191,7 +191,7 @@ public final class ProcessorConnector {
                     case CACHE:
                         SourceCache sourceCache = CacheFactory.getSourceCache();
                         if (sourceCache != null) {
-                            LOGGER.info("Using {} to work around the " +
+                            LOGGER.debug("Using {} to work around the " +
                                             "incompatibility of {} (a {}) and {} (a {})",
                                     RetrievalStrategy.CACHE,
                                     source.getClass().getSimpleName(),
