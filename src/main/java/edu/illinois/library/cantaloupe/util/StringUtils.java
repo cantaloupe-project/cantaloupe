@@ -11,7 +11,7 @@ import java.util.regex.Pattern;
 
 public final class StringUtils {
 
-    public static final String ASCII_FILENAME_REGEX = "[^A-Za-z0-9\\-._]";
+    public static final String ASCII_FILENAME_REGEX = "[^A-Za-z0-9\\-._ ]";
 
     /**
      * Some web servers have issues dealing with encoded slashes ({@literal
@@ -88,27 +88,17 @@ public final class StringUtils {
     }
 
     /**
-     * Recursively filters out {@code removeables} from the given dirty string.
-     *
-     * @return Sanitized string.
-     */
-    public static String sanitize(String dirty, final Pattern... removeables) {
-        return sanitize(dirty, "", removeables);
-    }
-
-    /**
      * Recursively filters out {@code removeables} from the given dirty string,
      * replacing it with {@code replacement}.
      *
      * @return Sanitized string.
      */
     public static String sanitize(String dirty,
-                                  final String replacement,
                                   final Pattern... removeables) {
         for (Pattern toRemove : removeables) {
             Matcher matcher = toRemove.matcher(dirty);
             if (matcher.find()) {
-                dirty = dirty.replaceAll(toRemove.pattern(), replacement);
+                dirty = dirty.replaceAll(toRemove.pattern(), "");
                 dirty = sanitize(dirty, removeables);
             }
         }

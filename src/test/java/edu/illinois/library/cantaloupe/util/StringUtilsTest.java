@@ -75,19 +75,6 @@ class StringUtilsTest extends BaseTest {
     }
 
     @Test
-    void testSanitize3() {
-        assertEquals("_", StringUtils.sanitize("dirt", "_", Pattern.compile("dirt")));
-        assertEquals("_y", StringUtils.sanitize("dirty", "_", Pattern.compile("dirt")));
-        assertEquals("dir_ty", StringUtils.sanitize("dir1ty", "_", Pattern.compile("1")));
-
-        // test injection
-        assertEquals("caca_tsts", StringUtils.sanitize("cacacatststs", "_",
-                Pattern.compile("cats")));
-        assertEquals("cadoca_tsgsts", StringUtils.sanitize("cadocadogstsgsts", "_",
-                Pattern.compile("cats"), Pattern.compile("dogs")));
-    }
-
-    @Test
     void testStripEndWithMatch() {
         String str = "ababab";
         String toStrip = "ab";

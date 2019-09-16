@@ -202,27 +202,27 @@ public class AbstractResourceTest extends BaseTest {
         // inline
         disposition = instance.getRepresentationDisposition(
                 "inline", identifier, outputFormat);
-        assertEquals("inline; filename=cats___dogs.jpg", disposition);
+        assertEquals("inline; filename=\"cats___dogs.jpg\"", disposition);
 
         // attachment
         disposition = instance.getRepresentationDisposition(
                 "attachment", identifier, outputFormat);
-        assertEquals("attachment; filename=cats___dogs.jpg", disposition);
+        assertEquals("attachment; filename=\"cats___dogs.jpg\"", disposition);
 
         // attachment; filename="dogs.jpg"
         disposition = instance.getRepresentationDisposition(
                 "attachment; filename=\"dogs.jpg\"", identifier, outputFormat);
-        assertEquals("attachment; filename=dogs.jpg", disposition);
+        assertEquals("attachment; filename=\"dogs.jpg\"", disposition);
 
         // attachment; filename="unsafe_path../\.jpg"
         disposition = instance.getRepresentationDisposition(
                 "attachment; filename=\"unsafe_path../\\.jpg\"", identifier, outputFormat);
-        assertEquals("attachment; filename=unsafe_path_.jpg", disposition);
+        assertEquals("attachment; filename=\"unsafe_path.jpg\"", disposition);
 
         // attachment; filename="unsafe_injection_.....//./.jpg"
         disposition = instance.getRepresentationDisposition(
                 "attachment; filename=\"unsafe_injection_.....//./.jpg\"", identifier, outputFormat);
-        assertEquals("attachment; filename=unsafe_injection___.jpg", disposition);
+        assertEquals("attachment; filename=\"unsafe_injection_.jpg\"", disposition);
     }
 
     @Test

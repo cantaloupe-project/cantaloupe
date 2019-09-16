@@ -21,8 +21,8 @@ import org.slf4j.Logger;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
@@ -562,14 +562,10 @@ public abstract class AbstractResource {
         // If a query argument value is available, use that. Otherwise, consult
         // the configuration.
         if (queryArg != null) {
-            try {
-                queryArg = URLDecoder.decode(queryArg, "UTF-8");
-            } catch (UnsupportedEncodingException e) {
-                throw new RuntimeException(e);
-            }
+            queryArg = URLDecoder.decode(queryArg, StandardCharsets.UTF_8);
             if (queryArg.startsWith("inline")) {
-                disposition = "inline; filename=" +
-                        safeContentDispositionFilename(identifier, outputFormat);
+                disposition = "inline; filename=\"" +
+                        safeContentDispositionFilename(identifier, outputFormat) + "\"";
             } else if (queryArg.startsWith("attachment")) {
                 Pattern pattern = Pattern.compile(".*filename=\"?([^\"]*)\"?.*");
                 Matcher m = pattern.matcher(queryArg);
@@ -580,14 +576,13 @@ public abstract class AbstractResource {
                     // filenames, so use underscore instead.
                     filename = StringUtils.sanitize(
                             m.group(1),
-                            "_",
                             Pattern.compile("\\.\\."),
                             Pattern.compile(StringUtils.ASCII_FILENAME_REGEX));
                 } else {
                     filename = safeContentDispositionFilename(identifier,
                             outputFormat);
                 }
-                disposition = "attachment; filename=" + filename;
+                disposition = "attachment; filename=\"" + filename + "\"";
             }
         }
         return disposition;
