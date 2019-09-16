@@ -215,7 +215,7 @@ public class ImageResourceTest extends ResourceTest {
     public void testGETContentDispositionHeaderSetToAttachmentWithFilenameInQuery()
             throws Exception {
         final String filename = "cats%20dogs.jpg";
-        final String expected = "cats_dogs.jpg";
+        final String expected = "cats dogs.jpg";
 
         URI uri = getHTTPURI("/" + IMAGE + "/full/full/0/color.jpg?response-content-disposition=attachment;filename%3D%22" + filename + "%22");
         tester.testContentDispositionHeaderSetToAttachmentWithFilenameInQuery(uri, expected);

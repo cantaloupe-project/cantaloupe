@@ -591,8 +591,8 @@ public abstract class AbstractResource {
                 throw new RuntimeException(e);
             }
             if (queryArg.startsWith("inline")) {
-                disposition = "inline; filename=" +
-                        safeContentDispositionFilename(identifier, outputFormat);
+                disposition = "inline; filename=\"" +
+                        safeContentDispositionFilename(identifier, outputFormat) + "\"";
             } else if (queryArg.startsWith("attachment")) {
                 Pattern pattern = Pattern.compile(".*filename=\"?([^\"]*)\"?.*");
                 Matcher m = pattern.matcher(queryArg);
@@ -603,25 +603,24 @@ public abstract class AbstractResource {
                     // filenames, so use underscore instead.
                     filename = StringUtils.sanitize(
                             m.group(1),
-                            "_",
                             Pattern.compile("\\.\\."),
                             Pattern.compile(StringUtils.ASCII_FILENAME_REGEX));
                 } else {
                     filename = safeContentDispositionFilename(identifier,
                             outputFormat);
                 }
-                disposition = "attachment; filename=" + filename;
+                disposition = "attachment; filename=\"" + filename + "\"";
             }
         } else {
             switch (Configuration.getInstance()
                     .getString(Key.IIIF_CONTENT_DISPOSITION, "none")) {
                 case "inline":
-                    disposition = "inline; filename=" +
-                            safeContentDispositionFilename(identifier, outputFormat);
+                    disposition = "inline; filename=\"" +
+                            safeContentDispositionFilename(identifier, outputFormat) + "\"";
                     break;
                 case "attachment":
-                    disposition = "attachment; filename=" +
-                            safeContentDispositionFilename(identifier, outputFormat);
+                    disposition = "attachment; filename=\"" +
+                            safeContentDispositionFilename(identifier, outputFormat) + "\"";
                     break;
             }
         }

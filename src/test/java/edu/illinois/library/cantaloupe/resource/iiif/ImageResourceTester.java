@@ -339,7 +339,7 @@ public class ImageResourceTester extends ImageAPIResourceTester {
         Client client = newClient(uri);
         try {
             Response response = client.send();
-            assertEquals("inline; filename=" + IMAGE + ".jpg",
+            assertEquals("inline; filename=\"" + IMAGE + ".jpg\"",
                     response.getHeaders().getFirstValue("Content-Disposition"));
         } finally {
             client.stop();
@@ -354,7 +354,7 @@ public class ImageResourceTester extends ImageAPIResourceTester {
         Client client = newClient(uri);
         try {
             Response response = client.send();
-            assertEquals("attachment; filename=" + IMAGE + ".jpg",
+            assertEquals("attachment; filename=\"" + IMAGE + ".jpg\"",
                     response.getHeaders().getFirstValue("Content-Disposition"));
         } finally {
             client.stop();
@@ -377,7 +377,7 @@ public class ImageResourceTester extends ImageAPIResourceTester {
         Client client = newClient(uri);
         try {
             Response response = client.send();
-            assertEquals("inline; filename=" + IMAGE + ".jpg",
+            assertEquals("inline; filename=\"" + IMAGE + ".jpg\"",
                     response.getHeaders().getFirstValue("Content-Disposition"));
         } finally {
             client.stop();
@@ -389,7 +389,7 @@ public class ImageResourceTester extends ImageAPIResourceTester {
         Client client = newClient(uri);
         try {
             Response response = client.send();
-            assertEquals("attachment; filename=" + IMAGE + ".jpg",
+            assertEquals("attachment; filename=\"" + IMAGE + ".jpg\"",
                     response.getHeaders().getFirstValue("Content-Disposition"));
         } finally {
             client.stop();
@@ -401,7 +401,7 @@ public class ImageResourceTester extends ImageAPIResourceTester {
         Client client = newClient(uri);
         try {
             Response response = client.send();
-            assertEquals("attachment; filename=" + filename,
+            assertEquals("attachment; filename=\"" + filename + "\"",
                     response.getHeaders().getFirstValue("Content-Disposition"));
         } finally {
             client.stop();
