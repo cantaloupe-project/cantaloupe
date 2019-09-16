@@ -51,18 +51,18 @@ public class StringUtilsTest extends BaseTest {
     }
 
     @Test
-    public void testSanitizeWithStrings() {
-        assertEquals("", StringUtils.sanitize("dirt", "dirt"));
-        assertEquals("y", StringUtils.sanitize("dirty", "dirt"));
-        assertEquals("dirty", StringUtils.sanitize("dir1ty", "1"));
+    public void testSanitize1() {
+        assertEquals("", StringUtils.sanitize("dirt", "dirt", "dirt"));
+        assertEquals("y", StringUtils.sanitize("dirty", "dirt", "dirt"));
+        assertEquals("dirty", StringUtils.sanitize("dir1ty", "1", "1"));
 
         // test injection
-        assertEquals("", StringUtils.sanitize("cacacatststs", "cats"));
-        assertEquals("", StringUtils.sanitize("cadocadogstsgsts", "cats", "dogs"));
+        assertEquals("", StringUtils.sanitize("cacacatststs", "cats", "cats"));
+        assertEquals("", StringUtils.sanitize("cadocadogstsgsts", "cats", "dogs", "foxes"));
     }
 
     @Test
-    public void testSanitizeWithPatterns() {
+    public void testSanitize2() {
         assertEquals("", StringUtils.sanitize("dirt", Pattern.compile("dirt")));
         assertEquals("y", StringUtils.sanitize("dirty", Pattern.compile("dirt")));
         assertEquals("dirty", StringUtils.sanitize("dir1ty", Pattern.compile("1")));
@@ -71,6 +71,19 @@ public class StringUtilsTest extends BaseTest {
         assertEquals("", StringUtils.sanitize("cacacatststs",
                 Pattern.compile("cats")));
         assertEquals("", StringUtils.sanitize("cadocadogstsgsts",
+                Pattern.compile("cats"), Pattern.compile("dogs")));
+    }
+
+    @Test
+    public void testSanitize3() {
+        assertEquals("_", StringUtils.sanitize("dirt", "_", Pattern.compile("dirt")));
+        assertEquals("_y", StringUtils.sanitize("dirty", "_", Pattern.compile("dirt")));
+        assertEquals("dir_ty", StringUtils.sanitize("dir1ty", "_", Pattern.compile("1")));
+
+        // test injection
+        assertEquals("caca_tsts", StringUtils.sanitize("cacacatststs", "_",
+                Pattern.compile("cats")));
+        assertEquals("cadoca_tsgsts", StringUtils.sanitize("cadocadogstsgsts", "_",
                 Pattern.compile("cats"), Pattern.compile("dogs")));
     }
 

@@ -7,6 +7,8 @@
   @RRMoelker)
 * Fixed incorrect URIs in `Link` header values in certain IIIF Image API v2
   image endpoint responses.
+* The `?response-content-disposition` query argument correctly handles
+  filenames containing spaces.
 * Fixed two separate bugs in KakaduNativeProcessor that both caused empty
   regions to appear in certain images.
 * Fixed TurboJpegProcessor not respecting the `processor.background_color`
