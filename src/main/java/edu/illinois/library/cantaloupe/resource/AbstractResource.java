@@ -69,6 +69,12 @@ public abstract class AbstractResource {
      */
     private Identifier identifier;
 
+    private static String safeContentDispositionFilename(Identifier identifier,
+                                                         Format outputFormat) {
+        return identifier.toString().replaceAll(StringUtils.ASCII_FILENAME_REGEX, "_") +
+                "." + outputFormat.getPreferredExtension();
+    }
+
     /**
      * <p>Initialization method, called after all necessary setters have been
      * called but before any request-handler method (like {@link #doGET()}
@@ -563,30 +569,28 @@ public abstract class AbstractResource {
             }
             if (queryArg.startsWith("inline")) {
                 disposition = "inline; filename=" +
-                        getContentDispositionFilename(identifier, outputFormat);
+                        safeContentDispositionFilename(identifier, outputFormat);
             } else if (queryArg.startsWith("attachment")) {
-                Pattern pattern = Pattern.compile(".*filename=\"?(.*)\"?.*");
+                Pattern pattern = Pattern.compile(".*filename=\"?([^\"]*)\"?.*");
                 Matcher m = pattern.matcher(queryArg);
                 String filename;
                 if (m.matches()) {
-                    // Filter out filename-unsafe characters as well as ".."
-                    filename = StringUtils.sanitize(m.group(1),
+                    // Filter out filename-unsafe characters as well as "..".
+                    // Some browsers don't allow spaces in Content-Disposition
+                    // filenames, so use underscore instead.
+                    filename = StringUtils.sanitize(
+                            m.group(1),
+                            "_",
                             Pattern.compile("\\.\\."),
-                            Pattern.compile(StringUtils.FILENAME_REGEX));
+                            Pattern.compile(StringUtils.ASCII_FILENAME_REGEX));
                 } else {
-                    filename = getContentDispositionFilename(identifier,
+                    filename = safeContentDispositionFilename(identifier,
                             outputFormat);
                 }
                 disposition = "attachment; filename=" + filename;
             }
         }
         return disposition;
-    }
-
-    private String getContentDispositionFilename(Identifier identifier,
-                                                 Format outputFormat) {
-        return identifier.toString().replaceAll(StringUtils.FILENAME_REGEX, "_") +
-                "." + outputFormat.getPreferredExtension();
     }
 
     /**

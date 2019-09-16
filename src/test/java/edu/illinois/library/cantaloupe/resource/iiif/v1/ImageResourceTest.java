@@ -229,19 +229,20 @@ public class ImageResourceTest extends ResourceTest {
     @Test
     void testGETContentDispositionHeaderSetToAttachmentWithFilename()
             throws Exception {
-        final String filename = "cats.jpg";
+        final String filename = "cats%20dogs.jpg";
+        final String expected = "cats_dogs.jpg";
 
         URI uri = getHTTPURI("/" + IMAGE + "/full/full/0/color.jpg?response-content-disposition=attachment;filename%3D%22" + filename + "%22");
-        tester.testContentDispositionHeaderSetToAttachmentWithFilename(uri, filename);
+        tester.testContentDispositionHeaderSetToAttachmentWithFilename(uri, expected);
 
         uri = getHTTPURI("/" + IMAGE + "/full/full/0/color.jpg?response-content-disposition=attachment;%20filename%3D%22" + filename + "%22");
-        tester.testContentDispositionHeaderSetToAttachmentWithFilename(uri, filename);
+        tester.testContentDispositionHeaderSetToAttachmentWithFilename(uri, expected);
 
         uri = getHTTPURI("/" + IMAGE + "/full/full/0/color.jpg?response-content-disposition=attachment;filename%3D" + filename);
-        tester.testContentDispositionHeaderSetToAttachmentWithFilename(uri, filename);
+        tester.testContentDispositionHeaderSetToAttachmentWithFilename(uri, expected);
 
         uri = getHTTPURI("/" + IMAGE + "/full/full/0/color.jpg?response-content-disposition=attachment;%20filename%3D" + filename);
-        tester.testContentDispositionHeaderSetToAttachmentWithFilename(uri, filename);
+        tester.testContentDispositionHeaderSetToAttachmentWithFilename(uri, expected);
     }
 
     @Test

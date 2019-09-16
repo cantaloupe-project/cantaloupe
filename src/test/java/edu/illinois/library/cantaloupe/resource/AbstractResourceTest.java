@@ -217,12 +217,12 @@ public class AbstractResourceTest extends BaseTest {
         // attachment; filename="unsafe_path../\.jpg"
         disposition = instance.getRepresentationDisposition(
                 "attachment; filename=\"unsafe_path../\\.jpg\"", identifier, outputFormat);
-        assertEquals("attachment; filename=unsafe_path.jpg", disposition);
+        assertEquals("attachment; filename=unsafe_path_.jpg", disposition);
 
         // attachment; filename="unsafe_injection_.....//./.jpg"
         disposition = instance.getRepresentationDisposition(
                 "attachment; filename=\"unsafe_injection_.....//./.jpg\"", identifier, outputFormat);
-        assertEquals("attachment; filename=unsafe_injection_.jpg", disposition);
+        assertEquals("attachment; filename=unsafe_injection___.jpg", disposition);
     }
 
     @Test
