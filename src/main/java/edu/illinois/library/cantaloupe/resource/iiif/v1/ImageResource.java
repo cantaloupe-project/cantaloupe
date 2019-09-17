@@ -159,8 +159,6 @@ public class ImageResource extends IIIF1Resource {
                 final OperationList ops = getOperationList(availableOutputFormats);
 
                 final String disposition = getRepresentationDisposition(
-                        getRequest().getReference().getQuery()
-                                .getFirstValue(RESPONSE_CONTENT_DISPOSITION_QUERY_ARG),
                         ops.getIdentifier(), ops.getOutputFormat());
 
                 final Info info = getOrReadInfo(identifier, processor);

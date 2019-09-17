@@ -86,8 +86,6 @@ public class ImageResource extends IIIF2Resource {
         ops.getOptions().putAll(getRequest().getReference().getQuery().toMap());
 
         final String disposition = getRepresentationDisposition(
-                getRequest().getReference().getQuery()
-                        .getFirstValue(RESPONSE_CONTENT_DISPOSITION_QUERY_ARG),
                 ops.getIdentifier(), ops.getOutputFormat());
 
         Iterator<Format> formatIterator = Collections.emptyIterator();
