@@ -103,6 +103,10 @@ public final class Query implements Iterable<KeyValuePair> {
         return pairs.iterator();
     }
 
+    public void remove(String key) {
+        pairs.removeIf(pair -> pair.getKey().equals(key));
+    }
+
     /**
      * @see #clear()
      */

@@ -112,6 +112,20 @@ public class QueryTest extends BaseTest {
     }
 
     @Test
+    void testRemoveOnNonExistingKey() {
+        int size = instance.size();
+        instance.remove("bogus");
+        assertEquals(size, instance.size());
+    }
+
+    @Test
+    void testRemoveOnExistingKey() {
+        int size = instance.size();
+        instance.remove("key1");
+        assertEquals(size - 1, instance.size());
+    }
+
+    @Test
     void testRemoveAll() {
         instance.removeAll("key1");
         assertNull(instance.getFirstValue("key1"));
