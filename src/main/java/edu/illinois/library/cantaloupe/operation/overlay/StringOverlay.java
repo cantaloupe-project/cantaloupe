@@ -5,8 +5,6 @@ import edu.illinois.library.cantaloupe.image.ScaleConstraint;
 import edu.illinois.library.cantaloupe.operation.Color;
 import edu.illinois.library.cantaloupe.operation.Operation;
 import edu.illinois.library.cantaloupe.util.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.awt.Font;
 import java.awt.font.TextAttribute;
@@ -19,8 +17,6 @@ import java.util.Map;
  * {@link OverlayService}.</p>
  */
 public class StringOverlay extends Overlay implements Operation {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(StringOverlay.class);
 
     private Color backgroundColor;
     private Color color;
