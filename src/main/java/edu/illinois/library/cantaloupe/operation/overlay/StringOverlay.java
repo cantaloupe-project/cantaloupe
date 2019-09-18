@@ -5,6 +5,8 @@ import edu.illinois.library.cantaloupe.image.ScaleConstraint;
 import edu.illinois.library.cantaloupe.operation.Color;
 import edu.illinois.library.cantaloupe.operation.Operation;
 import edu.illinois.library.cantaloupe.util.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.awt.Font;
 import java.awt.font.TextAttribute;
@@ -17,6 +19,8 @@ import java.util.Map;
  * {@link OverlayService}.</p>
  */
 public class StringOverlay extends Overlay implements Operation {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(StringOverlay.class);
 
     private Color backgroundColor;
     private Color color;
@@ -156,14 +160,22 @@ public class StringOverlay extends Overlay implements Operation {
     @Override
     public Map<String, Object> toMap(Dimension fullSize,
                                      ScaleConstraint scaleConstraint) {
+        Float fontWeight = TextAttribute.WEIGHT_REGULAR;
+        if (getFont().getAttributes().get(TextAttribute.WEIGHT) != null) {
+            fontWeight = (Float)getFont().getAttributes().get(TextAttribute.WEIGHT);
+        }
+        Float tracking = 0.0f;
+        if (getFont().getAttributes().get(TextAttribute.TRACKING) != null) {
+            tracking = (Float)getFont().getAttributes().get(TextAttribute.TRACKING);
+        }
         return Map.ofEntries(
                 Map.entry("background_color", getBackgroundColor().toRGBAHex()),
                 Map.entry("class", getClass().getSimpleName()),
                 Map.entry("color", getColor().toRGBAHex()),
                 Map.entry("font", getFont().getName()),
                 Map.entry("font_size", getFont().getSize()),
-                Map.entry("font_weight", getFont().getAttributes().get(TextAttribute.WEIGHT)),
-                Map.entry("glyph_spacing", getFont().getAttributes().get(TextAttribute.TRACKING)),
+                Map.entry("font_weight", fontWeight),
+                Map.entry("glyph_spacing", tracking),
                 Map.entry("inset", getInset()),
                 Map.entry("position", getPosition().toString()),
                 Map.entry("string", getString()),
