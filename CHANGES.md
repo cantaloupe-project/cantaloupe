@@ -11,6 +11,8 @@
   filenames containing spaces.
 * Fixed two separate bugs in KakaduNativeProcessor that both caused empty
   regions to appear in certain images.
+* Fixed overly restrictive signature verification in KakaduDemoProcessor and
+  OpenJpegProcessor that could cause errors with some valid images.
 * Fixed TurboJpegProcessor not respecting the `processor.background_color`
   configuration key.
 * Fixed the `PurgeItemFromCache` API method not working with S3Cache and
