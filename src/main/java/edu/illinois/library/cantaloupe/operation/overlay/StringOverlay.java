@@ -156,14 +156,22 @@ public class StringOverlay extends Overlay implements Operation {
     @Override
     public Map<String, Object> toMap(Dimension fullSize,
                                      ScaleConstraint scaleConstraint) {
+        Float fontWeight = TextAttribute.WEIGHT_REGULAR;
+        if (getFont().getAttributes().get(TextAttribute.WEIGHT) != null) {
+            fontWeight = (Float)getFont().getAttributes().get(TextAttribute.WEIGHT);
+        }
+        Float tracking = 0.0f;
+        if (getFont().getAttributes().get(TextAttribute.TRACKING) != null) {
+            tracking = (Float)getFont().getAttributes().get(TextAttribute.TRACKING);
+        }
         return Map.ofEntries(
                 Map.entry("background_color", getBackgroundColor().toRGBAHex()),
                 Map.entry("class", getClass().getSimpleName()),
                 Map.entry("color", getColor().toRGBAHex()),
                 Map.entry("font", getFont().getName()),
                 Map.entry("font_size", getFont().getSize()),
-                Map.entry("font_weight", getFont().getAttributes().get(TextAttribute.WEIGHT)),
-                Map.entry("glyph_spacing", getFont().getAttributes().get(TextAttribute.TRACKING)),
+                Map.entry("font_weight", fontWeight),
+                Map.entry("glyph_spacing", tracking),
                 Map.entry("inset", getInset()),
                 Map.entry("position", getPosition().toString()),
                 Map.entry("string", getString()),

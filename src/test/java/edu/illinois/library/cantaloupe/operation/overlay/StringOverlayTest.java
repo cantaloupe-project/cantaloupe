@@ -18,12 +18,12 @@ public class StringOverlayTest extends BaseTest {
 
     private StringOverlay instance;
 
-    private Font newFont() {
+    private Font newFont(Float weight, Float tracking) {
         final Map<TextAttribute, Object> attributes = new HashMap<>();
         attributes.put(TextAttribute.FAMILY, "SansSerif");
         attributes.put(TextAttribute.SIZE, 12);
-        attributes.put(TextAttribute.WEIGHT, 2.0f);
-        attributes.put(TextAttribute.TRACKING, 0.1f);
+        attributes.put(TextAttribute.WEIGHT, weight);
+        attributes.put(TextAttribute.TRACKING, tracking);
         return Font.getFont(attributes);
     }
 
@@ -32,7 +32,7 @@ public class StringOverlayTest extends BaseTest {
         super.setUp();
 
         instance = new StringOverlay("cats", Position.BOTTOM_RIGHT, 5,
-                newFont(), 11, Color.BLUE, Color.ORANGE, Color.RED, 5f);
+                newFont(2.0f,  0.1f), 11, Color.BLUE, Color.ORANGE, Color.RED, 5f);
     }
 
     @Test
@@ -60,7 +60,7 @@ public class StringOverlayTest extends BaseTest {
     void setFontThrowsExceptionWhenFrozen() {
         instance.freeze();
         assertThrows(IllegalStateException.class,
-                () -> instance.setFont(newFont()));
+                () -> instance.setFont(newFont(2.0f,  0.1f)));
     }
 
     @Test
@@ -116,6 +116,17 @@ public class StringOverlayTest extends BaseTest {
         assertEquals(instance.getStrokeColor().toRGBAHex(),
                 map.get("stroke_color"));
         assertEquals(5f, map.get("stroke_width"));
+    }
+
+    @Test
+    void toMapReturnsDefaultValueForMissingFontAttributes() {
+        Dimension fullSize = new Dimension(100, 100);
+        ScaleConstraint scaleConstraint = new ScaleConstraint(1, 1);
+        StringOverlay fontModifiedInstance = new StringOverlay("cats", Position.BOTTOM_RIGHT, 5,
+                newFont(null,  null), 11, Color.BLUE, Color.ORANGE, Color.RED, 5f);
+        Map<String,Object> map = fontModifiedInstance.toMap(fullSize, scaleConstraint);
+        assertEquals(TextAttribute.WEIGHT_REGULAR, map.get("font_weight"));
+        assertEquals(0.0f, map.get("glyph_spacing"));
     }
 
     @Test
