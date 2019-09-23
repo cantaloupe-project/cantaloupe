@@ -9,6 +9,8 @@
   image endpoint responses.
 * The `?response-content-disposition` query argument correctly handles
   filenames containing spaces.
+* Image endpoints return HTTP 403 instead of 500 in response to
+  AccessDeniedExceptions from the underlying Source.
 * Fixed two separate bugs in KakaduNativeProcessor that both caused empty
   regions to appear in certain images.
 * Fixed overly restrictive signature verification in KakaduDemoProcessor and

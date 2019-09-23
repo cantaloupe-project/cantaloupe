@@ -206,6 +206,12 @@ public class InformationResourceTest extends ResourceTest {
     }
 
     @Test
+    public void testGETForbidden() {
+        URI uri = getHTTPURI("/forbidden/info.json");
+        tester.testForbidden(uri);
+    }
+
+    @Test
     public void testGETNotFound() {
         URI uri = getHTTPURI("/invalid/info.json");
         tester.testNotFound(uri);

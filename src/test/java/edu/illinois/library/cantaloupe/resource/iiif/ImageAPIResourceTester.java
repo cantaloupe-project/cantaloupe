@@ -13,6 +13,7 @@ import edu.illinois.library.cantaloupe.http.Response;
 import edu.illinois.library.cantaloupe.http.Transport;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
+import edu.illinois.library.cantaloupe.source.AccessDeniedSource;
 import edu.illinois.library.cantaloupe.source.FileSource;
 import edu.illinois.library.cantaloupe.source.PathStreamFactory;
 import edu.illinois.library.cantaloupe.source.StreamFactory;
@@ -155,6 +156,14 @@ public class ImageAPIResourceTester {
         } finally {
             client.stop();
         }
+    }
+
+    public void testForbidden(URI uri) {
+        Configuration config = Configuration.getInstance();
+        config.setProperty(Key.SOURCE_STATIC,
+                AccessDeniedSource.class.getName());
+
+        assertStatus(403, uri);
     }
 
     public void testHTTP2(URI uri) throws Exception {

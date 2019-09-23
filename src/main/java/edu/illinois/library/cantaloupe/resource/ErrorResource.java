@@ -17,6 +17,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
+import java.nio.file.AccessDeniedException;
 import java.nio.file.NoSuchFileException;
 import java.util.Arrays;
 import java.util.List;
@@ -34,6 +35,31 @@ class ErrorResource extends AbstractResource {
             Arrays.asList("text/plain", "text/html", "application/xhtml+xml");
 
     private Throwable error;
+
+    private static Status toStatus(Throwable t) {
+        Status status;
+        if (t instanceof ResourceException) {
+            status = ((ResourceException) t).getStatus();
+        } else if (t instanceof IllegalSizeException ||
+                t instanceof IllegalScaleException ||
+                t instanceof AccessDeniedException) {
+            status = Status.FORBIDDEN;
+        } else if (t instanceof ValidationException ||
+                t instanceof IllegalClientArgumentException ||
+                t instanceof UnsupportedEncodingException) {
+            status = Status.BAD_REQUEST;
+        } else if (t instanceof UnsupportedOutputFormatException) {
+            status = Status.UNSUPPORTED_MEDIA_TYPE;
+        } else if (t instanceof FileNotFoundException ||
+                t instanceof NoSuchFileException) {
+            status = Status.NOT_FOUND;
+        } else if (t instanceof UnsupportedSourceFormatException) {
+            status = Status.NOT_IMPLEMENTED;
+        } else {
+            status = Status.INTERNAL_SERVER_ERROR;
+        }
+        return status;
+    }
 
     ErrorResource(Throwable error) {
         this.error = error;
@@ -98,31 +124,6 @@ class ErrorResource extends AbstractResource {
             LOGGER.error("getStackTrace(): {}", e.getMessage(), e);
             return "Stack trace unavailable";
         }
-    }
-
-    private Status toStatus(Throwable t) {
-        Status status;
-
-        if (t instanceof ResourceException) {
-            status = ((ResourceException) t).getStatus();
-        } else if (t instanceof IllegalSizeException ||
-                t instanceof IllegalScaleException) {
-            status = Status.FORBIDDEN;
-        } else if (t instanceof ValidationException ||
-                t instanceof IllegalClientArgumentException ||
-                t instanceof UnsupportedEncodingException) {
-            status = Status.BAD_REQUEST;
-        } else if (t instanceof UnsupportedOutputFormatException) {
-            status = Status.UNSUPPORTED_MEDIA_TYPE;
-        } else if (t instanceof FileNotFoundException ||
-                t instanceof NoSuchFileException) {
-            status = Status.NOT_FOUND;
-        } else if (t instanceof UnsupportedSourceFormatException) {
-            status = Status.NOT_IMPLEMENTED;
-        } else {
-            status = Status.INTERNAL_SERVER_ERROR;
-        }
-        return status;
     }
 
 }

@@ -376,6 +376,12 @@ public class ImageResourceTest extends ResourceTest {
     }
 
     @Test
+    public void testGETForbidden() {
+        URI uri = getHTTPURI("/forbidden/full/full/0/color.jpg");
+        tester.testForbidden(uri);
+    }
+
+    @Test
     public void testGETNotFound() {
         URI uri = getHTTPURI("/invalid/full/full/0/color.jpg");
         tester.testNotFound(uri);
