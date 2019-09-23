@@ -144,7 +144,8 @@ public class HandlerServlet extends HttpServlet {
         // Try to use an ErrorResource, which will render an HTML template.
         ErrorResource resource = new ErrorResource(t);
         try {
-            response.setStatus(500);
+            // N.B.: the response status will be set by ErrorResource based on
+            // the type of Throwable.
             response.setContentType("text/html;charset=UTF-8");
             resource.setRequest(new Request(request));
             resource.setResponse(response);
