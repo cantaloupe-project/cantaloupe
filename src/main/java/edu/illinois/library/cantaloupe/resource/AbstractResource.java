@@ -39,18 +39,14 @@ import java.util.stream.Collectors;
  * more of the HTTP-method-specific methods {@link #doGET()} etc., and may
  * optionally use {@link #doInit()} and {@link #destroy()}.</p>
  *
- * <p>This class is loosely modeled on Restlet framework's {@literal
- * ServerResource}, both because this application used to use Restlet, and
- * because it's a good design.</p>
- *
- * <p>Unlike {@link javax.servlet.http.HttpServlet}s, instances will only be
- * used once and will not be shared across threads.</p>
+ * <p>Unlike {@link javax.servlet.http.HttpServlet}s, instances are only used
+ * once and not shared across threads.</p>
  */
 public abstract class AbstractResource {
 
     public static final String PUBLIC_IDENTIFIER_HEADER = "X-Forwarded-ID";
 
-    protected static final String RESPONSE_CONTENT_DISPOSITION_QUERY_ARG =
+    static final String RESPONSE_CONTENT_DISPOSITION_QUERY_ARG =
             "response-content-disposition";
 
     /**
@@ -78,17 +74,17 @@ public abstract class AbstractResource {
      * set, it will be set to a reasonable value based on the given identifier
      * and output format.</p>
      *
-     * @param queryArg     Value of the {@link
+     * @param queryArg     Value of the unsanitized {@link
      *                     #RESPONSE_CONTENT_DISPOSITION_QUERY_ARG} query
-     *                     argument without sanitization.
-     * @param identifier
-     * @param outputFormat
+     *                     argument.
+     * @param identifier   Image identifier.
+     * @param outputFormat Output format.
      * @return             Value for a {@code Content-Disposition} header,
      *                     which may be {@code null}.
      */
-    static String getRepresentationDisposition(String queryArg,
-                                               Identifier identifier,
-                                               Format outputFormat) {
+    private static String getSafeContentDisposition(String queryArg,
+                                                    Identifier identifier,
+                                                    Format outputFormat) {
         String disposition = null;
         if (queryArg != null) {
             queryArg = URLDecoder.decode(queryArg, StandardCharsets.UTF_8);
@@ -96,20 +92,39 @@ public abstract class AbstractResource {
                 disposition = "inline; filename=\"" +
                         safeContentDispositionFilename(identifier, outputFormat) + "\"";
             } else if (queryArg.startsWith("attachment")) {
+                final List<String> dispositionParts = new ArrayList<>(3);
+                dispositionParts.add("attachment");
+
+                // Check for ISO-8859-1 filename pattern
                 Pattern pattern = Pattern.compile(".*filename=\"?([^\"]*)\"?.*");
-                Matcher m = pattern.matcher(queryArg);
+                Matcher matcher = pattern.matcher(queryArg);
                 String filename;
-                if (m.matches()) {
+                if (matcher.matches()) {
                     // Filter out filename-unsafe characters as well as "..".
                     filename = StringUtils.sanitize(
-                            m.group(1),
+                            matcher.group(1),
                             Pattern.compile("\\.\\."),
-                            Pattern.compile(StringUtils.ASCII_FILENAME_REGEX));
+                            Pattern.compile(StringUtils.ASCII_FILENAME_UNSAFE_REGEX));
                 } else {
                     filename = safeContentDispositionFilename(identifier,
                             outputFormat);
                 }
-                disposition = "attachment; filename=\"" + filename + "\"";
+                dispositionParts.add("filename=\"" + filename + "\"");
+
+                // Check for Unicode filename pattern
+                pattern = Pattern.compile(".*filename\\*= ?(utf-8|UTF-8)''([^\"]*).*");
+                matcher = pattern.matcher(queryArg);
+                if (matcher.matches()) {
+                    // Filter out filename-unsafe characters as well as "..".
+                    filename = StringUtils.sanitize(
+                            matcher.group(2),
+                            Pattern.compile("\\.\\."),
+                            Pattern.compile(StringUtils.UNICODE_FILENAME_UNSAFE_REGEX,
+                                    Pattern.UNICODE_CHARACTER_CLASS));
+                    filename = Reference.encode(filename);
+                    dispositionParts.add("filename*= UTF-8''" + filename);
+                }
+                disposition = String.join("; ", dispositionParts);
             }
         }
         return disposition;
@@ -117,7 +132,7 @@ public abstract class AbstractResource {
 
     private static String safeContentDispositionFilename(Identifier identifier,
                                                          Format outputFormat) {
-        return identifier.toString().replaceAll(StringUtils.ASCII_FILENAME_REGEX, "_") +
+        return identifier.toString().replaceAll(StringUtils.ASCII_FILENAME_UNSAFE_REGEX, "_") +
                 "." + outputFormat.getPreferredExtension();
     }
 
@@ -600,7 +615,7 @@ public abstract class AbstractResource {
                                                   Format outputFormat) {
         var queryArg = getRequest().getReference().getQuery()
                 .getFirstValue(RESPONSE_CONTENT_DISPOSITION_QUERY_ARG);
-        return getRepresentationDisposition(queryArg, identifier, outputFormat);
+        return getSafeContentDisposition(queryArg, identifier, outputFormat);
     }
 
     /**

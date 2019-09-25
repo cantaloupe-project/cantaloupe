@@ -219,7 +219,7 @@ public class AbstractResourceTest extends BaseTest {
     }
 
     @Test
-    void testGetRepresentationDispositionWithAttachmentQueryArgumentWithFilename() {
+    void testGetRepresentationDispositionWithAttachmentQueryArgumentWithASCIIFilename() {
         instance.getRequest().getReference().getQuery().set(
                 AbstractResource.RESPONSE_CONTENT_DISPOSITION_QUERY_ARG,
                 "attachment; filename=\"dogs.jpg\"");
@@ -229,13 +229,14 @@ public class AbstractResourceTest extends BaseTest {
     }
 
     @Test
-    void testGetRepresentationDispositionWithAttachmentQueryArgumentWithUnsafeFilename() {
+    void testGetRepresentationDispositionWithAttachmentQueryArgumentWithUnsafeASCIIFilename() {
         instance.getRequest().getReference().getQuery().set(
                 AbstractResource.RESPONSE_CONTENT_DISPOSITION_QUERY_ARG,
                 "attachment; filename=\"unsafe_path../\\.jpg\"");
         String disposition = instance.getRepresentationDisposition(
                 new Identifier("cats?/\\dogs"), Format.JPG);
-        assertEquals("attachment; filename=\"unsafe_path.jpg\"", disposition);
+        assertEquals("attachment; filename=\"unsafe_path.jpg\"",
+                disposition);
 
         // attachment; filename="unsafe_injection_.....//./.jpg"
         instance.getRequest().getReference().getQuery().set(
@@ -243,7 +244,50 @@ public class AbstractResourceTest extends BaseTest {
                 "attachment; filename=\"unsafe_injection_.....//./.jpg\"");
         disposition = instance.getRepresentationDisposition(
                 new Identifier("cats?/\\dogs"), Format.JPG);
-        assertEquals("attachment; filename=\"unsafe_injection_.jpg\"", disposition);
+        assertEquals("attachment; filename=\"unsafe_injection_.jpg\"",
+                disposition);
+    }
+
+    @Test
+    void testGetRepresentationDispositionWithAttachmentQueryArgumentWithUnicodeFilename() {
+        instance.getRequest().getReference().getQuery().set(
+                AbstractResource.RESPONSE_CONTENT_DISPOSITION_QUERY_ARG,
+                "attachment; filename*= UTF-8''dogs.jpg");
+        String disposition = instance.getRepresentationDisposition(
+                new Identifier("cats?/\\dogs"), Format.JPG);
+        assertEquals("attachment; filename=\"cats___dogs.jpg\"; filename*= UTF-8''dogs.jpg",
+                disposition);
+    }
+
+    @Test
+    void testGetRepresentationDispositionWithAttachmentQueryArgumentWithUnsafeUnicodeFilename() {
+        instance.getRequest().getReference().getQuery().set(
+                AbstractResource.RESPONSE_CONTENT_DISPOSITION_QUERY_ARG,
+                "attachment; filename*=UTF-8''unsafe_path../\\.jpg");
+        String disposition = instance.getRepresentationDisposition(
+                new Identifier("cats?/\\dogs"), Format.JPG);
+        assertEquals("attachment; filename=\"cats___dogs.jpg\"; filename*= UTF-8''unsafe_path.jpg",
+                disposition);
+
+        // attachment; filename*= utf-8''"unsafe_injection_.....//./.jpg"
+        instance.getRequest().getReference().getQuery().set(
+                AbstractResource.RESPONSE_CONTENT_DISPOSITION_QUERY_ARG,
+                "attachment; filename*= utf-8''unsafe_injection_.....//./.jpg");
+        disposition = instance.getRepresentationDisposition(
+                new Identifier("cats?/\\dogs"), Format.JPG);
+        assertEquals("attachment; filename=\"cats___dogs.jpg\"; filename*= UTF-8''unsafe_injection_.jpg",
+                disposition);
+    }
+
+    @Test
+    void testGetRepresentationDispositionWithAttachmentQueryArgumentWithASCIIAndUnicodeFilenames() {
+        instance.getRequest().getReference().getQuery().set(
+                AbstractResource.RESPONSE_CONTENT_DISPOSITION_QUERY_ARG,
+                "attachment; filename=\"dogs.jpg\"; filename*= UTF-8''dogs.jpg");
+        String disposition = instance.getRepresentationDisposition(
+                new Identifier("cats?/\\dogs"), Format.JPG);
+        assertEquals("attachment; filename=\"dogs.jpg\"; filename*= UTF-8''dogs.jpg",
+                disposition);
     }
 
     @Test

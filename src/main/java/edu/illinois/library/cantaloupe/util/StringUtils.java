@@ -11,7 +11,11 @@ import java.util.regex.Pattern;
 
 public final class StringUtils {
 
-    public static final String ASCII_FILENAME_REGEX = "[^A-Za-z0-9\\-._ ]";
+    public static final String ASCII_FILENAME_UNSAFE_REGEX =
+            "[^A-Za-z0-9\\-._ ]";
+    // http://www.fileformat.info/info/unicode/category/index.htm
+    public static final String UNICODE_FILENAME_UNSAFE_REGEX =
+            "[^\\pL\\pM\\pN\\pS\\pZs\\-._ ]";
 
     /**
      * Some web servers have issues dealing with encoded slashes ({@literal
