@@ -4,10 +4,14 @@
 
 ### Endpoints
 
+* A `cache=recache` URL query argument is available that reprocesses and
+  recaches the derivative image before delivering it.
 * The `X-IIIF-ID` reverse proxy header is no longer supported. `X-Forwarded-ID`
   should be used instead.
+* The `response-content-disposition` URL query argument supports RFC 6266
+  Unicode filename syntax.
 * The `endpoint.iiif.content_disposition` configuration key has been removed.
-  The `?response-content-disposition` query argument should be used instead.
+  The `response-content-disposition` URL query argument should be used instead.
 
 ### Sources
 
@@ -18,20 +22,19 @@
 
 ### Processors
 
+* ImageMagickProcessor, GraphicsMagickProcessor, and KakaduDemoProcessor have
+  been removed.
 * The metadata-handling system has been redesigned:
     * Source image metadata is cached in derivative caches.
     * XMP metadata can be copied or edited using a delegate method.
     * The `processor.metadata.respect_orientation` configuration key has been
       removed and EXIF Orientation values are always respected.
-* KakaduNativeProcessor, KakaduDemoProcessor, OpenJpegProcessor, and
-  TurboJpegProcessor respect the EXIF `Orientation` tag.
-* KakaduNativeProcessor, KakaduDemoProcessor, and OpenJpegProcessor support
-  IPTC and XMP metadata.
+* KakaduNativeProcessor, OpenJpegProcessor, and TurboJpegProcessor respect the
+  EXIF `Orientation` tag.
+* KakaduNativeProcessor and OpenJpegProcessor support IPTC and XMP metadata.
 * TurboJpegProcessor supports EXIF, IPTC, and XMP metadata.
 * FfmpegProcessor, KakaduNativeProcessor, OpenJpegProcessor, and
   PdfBoxProcessor use libjpeg-turbo to write JPEGs if it is available.
-* ImageMagickProcessor, GraphicsMagickProcessor, and KakaduDemoProcessor have
-  been removed.
 * Added the `scaled` position for image overlays.
 
 ### Caches
@@ -41,18 +44,30 @@
 ### Other
 
 * Java 11 is required.
+* Added configuration options for logging in Logstash format. (Thanks to
+  @cmhdave)
 * Added a `local_uri` key to the delegate script `context` hash.
 * JRuby has been updated to version 9.2, which supports Ruby 2.5.
 
 ## 4.1.4
 
 * Fixed the health-check endpoint (at `/health`).
+* Fixed error responses when encountering empty request headers. (Thanks to
+  @RRMoelker)
 * Fixed incorrect URIs in `Link` header values in certain IIIF Image API v2
   image endpoint responses.
-* Fixed a bug in KakaduNativeProcessor that caused empty regions to appear in
-  certain images.
+* The `?response-content-disposition` query argument correctly handles
+  filenames containing spaces.
+* Image endpoints return HTTP 403 instead of 500 in response to
+  AccessDeniedExceptions from the underlying Source.
+* Fixed two separate bugs in KakaduNativeProcessor that both caused empty
+  regions to appear in certain images.
+* Fixed overly restrictive signature verification in KakaduDemoProcessor and
+  OpenJpegProcessor that could cause errors with some valid images.
 * Fixed TurboJpegProcessor not respecting the `processor.background_color`
   configuration key.
+* Fixed the `PurgeItemFromCache` API method not working with S3Cache and
+  AzureStorageCache.
 * When using `AutomaticSelectionStrategy`, processor initialization errors are
   logged at debug-level rather than error-level.
 

@@ -9,7 +9,7 @@ import java.util.regex.Pattern;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class StringUtilsTest extends BaseTest {
+class StringUtilsTest extends BaseTest {
 
     @Test
     void testDecodeSlashes() {
@@ -51,18 +51,18 @@ public class StringUtilsTest extends BaseTest {
     }
 
     @Test
-    void testSanitizeWithStrings() {
-        assertEquals("", StringUtils.sanitize("dirt", "dirt"));
-        assertEquals("y", StringUtils.sanitize("dirty", "dirt"));
-        assertEquals("dirty", StringUtils.sanitize("dir1ty", "1"));
+    void testSanitize1() {
+        assertEquals("", StringUtils.sanitize("dirt", "dirt", "dirt"));
+        assertEquals("y", StringUtils.sanitize("dirty", "dirt", "dirt"));
+        assertEquals("dirty", StringUtils.sanitize("dir1ty", "1", "1"));
 
         // test injection
-        assertEquals("", StringUtils.sanitize("cacacatststs", "cats"));
-        assertEquals("", StringUtils.sanitize("cadocadogstsgsts", "cats", "dogs"));
+        assertEquals("", StringUtils.sanitize("cacacatststs", "cats", "cats"));
+        assertEquals("", StringUtils.sanitize("cadocadogstsgsts", "cats", "dogs", "foxes"));
     }
 
     @Test
-    void testSanitizeWithPatterns() {
+    void testSanitize2() {
         assertEquals("", StringUtils.sanitize("dirt", Pattern.compile("dirt")));
         assertEquals("y", StringUtils.sanitize("dirty", Pattern.compile("dirt")));
         assertEquals("dirty", StringUtils.sanitize("dir1ty", Pattern.compile("1")));

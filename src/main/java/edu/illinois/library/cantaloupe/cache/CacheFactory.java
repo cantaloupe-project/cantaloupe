@@ -6,6 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -58,10 +59,10 @@ public final class CacheFactory {
      *
      * <p>This method respects live changes in application configuration.</p>
      *
-     * @return The shared instance, or {@literal null} if a derivative cache
+     * @return The shared instance, or {@code null} if a derivative cache
      *         is not available.
      */
-    public static DerivativeCache getDerivativeCache() {
+    public static Optional<DerivativeCache> getDerivativeCache() {
         DerivativeCache cache = null;
 
         if (isDerivativeCacheEnabled()) {
@@ -103,7 +104,7 @@ public final class CacheFactory {
                 shutdownDerivativeCache();
             }
         }
-        return cache;
+        return Optional.ofNullable(cache);
     }
 
     /**
@@ -111,11 +112,11 @@ public final class CacheFactory {
      *
      * <p>This method respects live changes in application configuration.</p>
      *
-     * @return The shared instance, or {@literal null} if the source cache
+     * @return The shared instance, or {@code null} if the source cache
      *         implementation specified in the configuration is invalid or not
      *         specified.
      */
-    public static SourceCache getSourceCache() {
+    public static Optional<SourceCache> getSourceCache() {
         SourceCache cache = null;
 
         final Configuration config = Configuration.getInstance();
@@ -150,7 +151,7 @@ public final class CacheFactory {
                 }
             }
         }
-        return cache;
+        return Optional.ofNullable(cache);
     }
 
     private static String getQualifiedName(String unqualifiedName) {

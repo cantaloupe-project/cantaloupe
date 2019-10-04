@@ -5,27 +5,35 @@ current version.
 
 ## 4.1.x → 5.0
 
-1. Note that Java 11 is now required.
-2. Rename the following configuration keys:
+1.  Note that Java 11 is now required.
+2.  Rename the following configuration keys:
     * `endpoint.iiif.2.restrict_to_sizes` to `endpoint.iiif.restrict_to_sizes`
-3. Add the following keys from the sample configuration:
+3.  Add the following keys from the sample configuration:
     * `DynamoDBCache.*`
-4. Remove the following configuration keys:
+    * `log.application.ConsoleAppender.logstash.enabled`
+    * `log.application.FileAppender.logstash.enabled`
+    * `log.application.RollingFileAppender.logstash.enabled`
+    * `log.error.FileAppender.logstash.enabled`
+    * `log.error.RollingFileAppender.logstash.enabled`
+4.  Remove the following configuration keys:
     * `http.accept_queue_limit`
     * `endpoint.iiif.content_disposition`
     * `processor.metadata.*`
     * `GraphicsMagickProcessor.path_to_binaries`
     * `KakaduDemoProcessor.path_to_binaries`
     * `ImageMagickProcessor.path_to_binaries`
-5. Rename the `extra_iiif2_information_response_keys()` delegate method to
-   `extra_iiif_information_response_keys()`.
-6. The `X-IIIF-ID` reverse proxy header is no longer supported. Use
-   `X-Forwarded-ID` instead.
-7. Purge your derivative cache.
-8. If you were using the `processor.metadata.preserve` key, you will need to use
-   the new `metadata()` delegate method instead.
-9. KakaduDemoProcessor is no longer available. If you were using it, you must
-   switch to either OpenJpegProcessor or KakaduNativeProcessor.
+5.  Rename the `extra_iiif2_information_response_keys()` delegate method to
+    `extra_iiif_information_response_keys()`.
+6.  The `X-IIIF-ID` reverse proxy header is no longer supported. Use
+    `X-Forwarded-ID` instead.
+7.  Purge your derivative cache.
+8.  If you were using the `processor.metadata.preserve` key, you will need to
+    use the new `metadata()` delegate method instead.
+9.  KakaduDemoProcessor is no longer available. If you were using it, you must
+    switch to either OpenJpegProcessor or KakaduNativeProcessor.
+10. Note that the `false` value supplied to the `cache` URL query argument
+    (e.g. `?cache=false`) has been replaced by `nocache`. `false` can still be
+    used, but is deprecated and may be removed in a future version.
 
 ## 4.0.x → 4.1
 

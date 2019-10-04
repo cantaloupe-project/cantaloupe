@@ -75,7 +75,8 @@ public final class InfoService {
             return Optional.of(info);
         }
         // Check the derivative cache.
-        final DerivativeCache derivCache = CacheFactory.getDerivativeCache();
+        final DerivativeCache derivCache =
+                CacheFactory.getDerivativeCache().orElse(null);
         if (derivCache != null) {
             Stopwatch watch = new Stopwatch();
             Optional<Info> optInfo = derivCache.getInfo(identifier);
@@ -134,7 +135,8 @@ public final class InfoService {
             Info info = readInfo(identifier, proc);
 
             // Add it to the derivative and object caches.
-            final DerivativeCache derivCache = CacheFactory.getDerivativeCache();
+            final DerivativeCache derivCache =
+                    CacheFactory.getDerivativeCache().orElse(null);
             putInCachesAsync(identifier, info, derivCache);
             optInfo = Optional.of(info);
         }

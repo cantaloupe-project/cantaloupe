@@ -79,18 +79,20 @@ public class InformationResource extends IIIF2Resource {
         // If we are using a cache, and don't need to resolve first, and the
         // cache contains an info matching the request, skip all the setup and
         // just return the cached info.
-        if (!isBypassingCache() && !isResolvingFirst()) {
+        if (!isBypassingCache() && !isBypassingCacheRead() &&
+                !isResolvingFirst()) {
             try {
-                Optional<Info> info = cacheFacade.getInfo(identifier);
-                if (info.isPresent()) {
+                Optional<Info> optInfo = cacheFacade.getInfo(identifier);
+                if (optInfo.isPresent()) {
+                    final Info info = optInfo.get();
                     // The source format will be null or UNKNOWN if the info was
                     // serialized in version < 3.4.
-                    final Format format = info.get().getSourceFormat();
+                    final Format format = info.getSourceFormat();
                     if (format != null && !Format.UNKNOWN.equals(format)) {
                         final Processor processor = new ProcessorFactory().
                                 newProcessor(format);
                         addHeaders();
-                        newRepresentation(info.get(), processor)
+                        newRepresentation(info, processor)
                                 .write(getResponse().getOutputStream());
                         return;
                     }

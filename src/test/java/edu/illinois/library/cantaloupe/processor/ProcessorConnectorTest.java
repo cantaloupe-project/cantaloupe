@@ -216,7 +216,7 @@ public class ProcessorConnectorTest extends BaseTest {
             assertNull(instance.connect(source, processor, identifier, Format.JPG));
 
             assertEquals(
-                    CacheFactory.getSourceCache().getSourceImageFile(identifier).orElseThrow(),
+                    CacheFactory.getSourceCache().get().getSourceImageFile(identifier).orElseThrow(),
                     ((FileProcessor) processor).getSourceFile());
         } finally {
             server.stop();
@@ -364,7 +364,7 @@ public class ProcessorConnectorTest extends BaseTest {
             assertNull(instance.connect(source, processor, IDENTIFIER, Format.JPG));
 
             assertEqualSources(
-                    CacheFactory.getSourceCache().getSourceImageFile(IDENTIFIER).orElseThrow(),
+                    CacheFactory.getSourceCache().get().getSourceImageFile(IDENTIFIER).orElseThrow(),
                     processor.getStreamFactory());
         } finally {
             server.stop();
@@ -437,7 +437,7 @@ public class ProcessorConnectorTest extends BaseTest {
             assertNull(instance.connect(source, processor, IDENTIFIER, Format.JPG));
 
             assertEqualSources(
-                    CacheFactory.getSourceCache().getSourceImageFile(IDENTIFIER).orElseThrow(),
+                    CacheFactory.getSourceCache().get().getSourceImageFile(IDENTIFIER).orElseThrow(),
                     processor.getStreamFactory());
         } finally {
             server.stop();
@@ -540,7 +540,7 @@ public class ProcessorConnectorTest extends BaseTest {
             assertNull(instance.connect(source, processor, IDENTIFIER, Format.JPG));
 
             assertEqualSources(
-                    CacheFactory.getSourceCache().getSourceImageFile(IDENTIFIER).orElseThrow(),
+                    CacheFactory.getSourceCache().get().getSourceImageFile(IDENTIFIER).orElseThrow(),
                     processor.getStreamFactory());
         } finally {
             server.stop();
@@ -578,7 +578,7 @@ public class ProcessorConnectorTest extends BaseTest {
             assertNull(instance.connect(source, processor, IDENTIFIER, Format.JPG));
 
             assertEqualSources(
-                    CacheFactory.getSourceCache().getSourceImageFile(IDENTIFIER).orElseThrow(),
+                    CacheFactory.getSourceCache().get().getSourceImageFile(IDENTIFIER).orElseThrow(),
                     processor.getStreamFactory());
         } finally {
             server.stop();

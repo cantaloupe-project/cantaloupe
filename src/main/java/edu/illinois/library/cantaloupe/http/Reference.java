@@ -5,6 +5,7 @@ import edu.illinois.library.cantaloupe.util.StringUtils;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URLDecoder;
+import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
@@ -24,6 +25,10 @@ public final class Reference {
 
     public static String decode(String encoded) {
         return URLDecoder.decode(encoded, StandardCharsets.UTF_8);
+    }
+
+    public static String encode(String decoded) {
+        return URLEncoder.encode(decoded, StandardCharsets.UTF_8);
     }
 
     public Reference() {}

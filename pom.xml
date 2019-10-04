@@ -69,6 +69,12 @@
             <artifactId>logback-core</artifactId>
             <version>1.2.3</version>
         </dependency>
+        <!-- Allow the use of Logstash encoders with logback -->
+        <dependency>
+            <groupId>net.logstash.logback</groupId>
+            <artifactId>logstash-logback-encoder</artifactId>
+            <version>6.1</version>
+        </dependency>
         <!-- Used by S3Cache and DynamoDBCache-->
         <dependency>
             <groupId>com.amazonaws</groupId>

@@ -73,15 +73,39 @@ public class ImageResourceTest extends ResourceTest {
     }
 
     /**
-     * Tests that there is no Cache-Control header returned when
-     * cache.client.enabled = true but a cache=false argument is present
-     * in the URL query.
+     * Tests that there is no {@code Cache-Control} header returned when
+     * {@code cache.client.enabled = true} but a {@code cache=nocache} argument
+     * is present in the URL query.
      */
     @Test
-    void testGETCacheHeadersWhenClientCachingIsEnabledButCachingIsDisabledInURL()
+    void testGETCacheHeadersWhenClientCachingIsEnabledButCachingIsDisabledInURL1()
+            throws Exception {
+        URI uri = getHTTPURI("/" + IMAGE + "/full/full/0/color.jpg?cache=nocache");
+        tester.testCacheHeadersWhenClientCachingIsEnabledButCachingIsDisabledInURL(uri);
+    }
+
+    /**
+     * Tests that there is no {@code Cache-Control} header returned when
+     * {@code cache.client.enabled = true} but a {@code cache=false} argument
+     * is present in the URL query.
+     */
+    @Test
+    void testGETCacheHeadersWhenClientCachingIsEnabledButCachingIsDisabledInURL2()
             throws Exception {
         URI uri = getHTTPURI("/" + IMAGE + "/full/full/0/color.jpg?cache=false");
         tester.testCacheHeadersWhenClientCachingIsEnabledButCachingIsDisabledInURL(uri);
+    }
+
+    /**
+     * Tests that there is a {@code Cache-Control} header returned when
+     * {@code cache.client.enabled = true} and a {@code cache=recache} argument
+     * is present in the URL query.
+     */
+    @Test
+    void testGETCacheHeadersWhenClientCachingIsEnabledAndRecachingIsEnabledInURL()
+            throws Exception {
+        URI uri = getHTTPURI("/" + IMAGE + "/full/full/0/color.jpg?cache=recache");
+        tester.testCacheHeadersWhenClientCachingIsEnabledAndResponseIsCacheable(uri);
     }
 
     @Test
@@ -91,10 +115,24 @@ public class ImageResourceTest extends ResourceTest {
     }
 
     @Test
-    void testGETCachingWhenCachesAreEnabledButNegativeCacheQueryArgumentIsSupplied()
+    void testGETCachingWhenCachesAreEnabledButNegativeCacheQueryArgumentIsSupplied1()
+            throws Exception {
+        URI uri = getHTTPURI("/" + IMAGE + "/full/full/0/color.png?cache=nocache");
+        tester.testCachingWhenCachesAreEnabledButNegativeCacheQueryArgumentIsSupplied(uri);
+    }
+
+    @Test
+    void testGETCachingWhenCachesAreEnabledButNegativeCacheQueryArgumentIsSupplied2()
             throws Exception {
         URI uri = getHTTPURI("/" + IMAGE + "/full/full/0/color.png?cache=false");
         tester.testCachingWhenCachesAreEnabledButNegativeCacheQueryArgumentIsSupplied(uri);
+    }
+
+    @Test
+    void testGETCachingWhenCachesAreEnabledAndRecacheQueryArgumentIsSupplied()
+            throws Exception {
+        URI uri = getHTTPURI("/" + IMAGE + "/full/full/0/color.png?cache=recache");
+        tester.testCachingWhenCachesAreEnabledAndRecacheQueryArgumentIsSupplied(uri);
     }
 
     @Test
@@ -190,19 +228,21 @@ public class ImageResourceTest extends ResourceTest {
     @Test
     void testGETContentDispositionHeaderSetToAttachmentWithFilename()
             throws Exception {
-        final String filename = "cats.jpg";
+        final String filename = "cats%20dogs.jpg";
+        final String expected = "cats dogs.jpg";
 
         URI uri = getHTTPURI("/" + IMAGE + "/full/full/0/color.jpg?response-content-disposition=attachment;filename%3D%22" + filename + "%22");
-        tester.testContentDispositionHeaderSetToAttachmentWithFilename(uri, filename);
+
+        tester.testContentDispositionHeaderSetToAttachmentWithFilename(uri, expected);
 
         uri = getHTTPURI("/" + IMAGE + "/full/full/0/color.jpg?response-content-disposition=attachment;%20filename%3D%22" + filename + "%22");
-        tester.testContentDispositionHeaderSetToAttachmentWithFilename(uri, filename);
+        tester.testContentDispositionHeaderSetToAttachmentWithFilename(uri, expected);
 
         uri = getHTTPURI("/" + IMAGE + "/full/full/0/color.jpg?response-content-disposition=attachment;filename%3D" + filename);
-        tester.testContentDispositionHeaderSetToAttachmentWithFilename(uri, filename);
+        tester.testContentDispositionHeaderSetToAttachmentWithFilename(uri, expected);
 
         uri = getHTTPURI("/" + IMAGE + "/full/full/0/color.jpg?response-content-disposition=attachment;%20filename%3D" + filename);
-        tester.testContentDispositionHeaderSetToAttachmentWithFilename(uri, filename);
+        tester.testContentDispositionHeaderSetToAttachmentWithFilename(uri, expected);
     }
 
     @Test
@@ -347,6 +387,12 @@ public class ImageResourceTest extends ResourceTest {
     void testGETMaxPixelsIgnoredWhenStreamingSource() {
         URI uri = getHTTPURI("/" + IMAGE + "/full/full/0/color.jpg");
         tester.testMaxPixelsIgnoredWhenStreamingSource(uri);
+    }
+
+    @Test
+    void testGETForbidden() {
+        URI uri = getHTTPURI("/forbidden/full/full/0/color.jpg");
+        tester.testForbidden(uri);
     }
 
     @Test

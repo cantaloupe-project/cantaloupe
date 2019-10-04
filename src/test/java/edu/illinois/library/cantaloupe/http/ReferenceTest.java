@@ -21,9 +21,16 @@ public class ReferenceTest extends BaseTest {
 
     @Test
     void testDecode() {
-        String uri = "http://example.org/cats%2Fdogs?cats=dogs";
+        String uri      = "http://example.org/cats%2Fdogs?cats=dogs";
         String expected = "http://example.org/cats/dogs?cats=dogs";
         assertEquals(expected, Reference.decode(uri));
+    }
+
+    @Test
+    void testEncode() {
+        String str      = "dogs?cats=dogs";
+        String expected = "dogs%3Fcats%3Ddogs";
+        assertEquals(expected, Reference.encode(str));
     }
 
     @Test

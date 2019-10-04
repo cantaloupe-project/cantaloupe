@@ -357,16 +357,33 @@ class AzureStorageCache implements DerivativeCache {
 
     @Override
     public void purge(Identifier identifier) throws IOException {
-        final String containerName = getContainerName();
-
-        final CloudBlobClient client = getClientInstance();
-        final String objectKey = getObjectKey(identifier);
-
         try {
+            final CloudBlobClient client = getClientInstance();
+            final String containerName   = getContainerName();
             final CloudBlobContainer container =
                     client.getContainerReference(containerName);
-            final CloudBlockBlob blob = container.getBlockBlobReference(objectKey);
-            blob.deleteIfExists();
+            int count = 0;
+
+            // purge the info
+            CloudBlockBlob blob = container.getBlockBlobReference(getObjectKey(identifier));
+            if (blob.deleteIfExists()) {
+                count++;
+            }
+
+            // purge images
+            final String prefix = getObjectKeyPrefix() + "image/" +
+                    StringUtils.md5(identifier.toString());
+            for (ListBlobItem item : container.listBlobs(prefix, true)) {
+                if (item instanceof CloudBlob) {
+                    CloudBlob cblob = (CloudBlob) item;
+                    LOGGER.trace("purge(Identifier): deleting {}",
+                            cblob.getName());
+                    if (cblob.deleteIfExists()) {
+                        count++;
+                    }
+                }
+            }
+            LOGGER.debug("purge(Identifier): deleted {} items", count);
         } catch (URISyntaxException | StorageException e) {
             throw new IOException(e.getMessage(), e);
         }

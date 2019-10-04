@@ -21,8 +21,8 @@ import org.slf4j.Logger;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
@@ -39,18 +39,14 @@ import java.util.stream.Collectors;
  * more of the HTTP-method-specific methods {@link #doGET()} etc., and may
  * optionally use {@link #doInit()} and {@link #destroy()}.</p>
  *
- * <p>This class is loosely modeled on Restlet framework's {@literal
- * ServerResource}, both because this application used to use Restlet, and
- * because it's a good design.</p>
- *
- * <p>Unlike {@link javax.servlet.http.HttpServlet}s, instances will only be
- * used once and will not be shared across threads.</p>
+ * <p>Unlike {@link javax.servlet.http.HttpServlet}s, instances are only used
+ * once and not shared across threads.</p>
  */
 public abstract class AbstractResource {
 
     public static final String PUBLIC_IDENTIFIER_HEADER = "X-Forwarded-ID";
 
-    protected static final String RESPONSE_CONTENT_DISPOSITION_QUERY_ARG =
+    static final String RESPONSE_CONTENT_DISPOSITION_QUERY_ARG =
             "response-content-disposition";
 
     /**
@@ -68,6 +64,77 @@ public abstract class AbstractResource {
      * Cached by {@link #getIdentifier()}.
      */
     private Identifier identifier;
+
+    /**
+     * <p>Returns a sanitized value for a {@literal Content-Disposition} header
+     * based on the value of the {@link #RESPONSE_CONTENT_DISPOSITION_QUERY_ARG}
+     * query argument.</p>
+     *
+     * <p>If the disposition is {@literal attachment} and the filename is not
+     * set, it will be set to a reasonable value based on the given identifier
+     * and output format.</p>
+     *
+     * @param queryArg     Value of the unsanitized {@link
+     *                     #RESPONSE_CONTENT_DISPOSITION_QUERY_ARG} query
+     *                     argument.
+     * @param identifier   Image identifier.
+     * @param outputFormat Output format.
+     * @return             Value for a {@code Content-Disposition} header,
+     *                     which may be {@code null}.
+     */
+    private static String getSafeContentDisposition(String queryArg,
+                                                    Identifier identifier,
+                                                    Format outputFormat) {
+        String disposition = null;
+        if (queryArg != null) {
+            queryArg = URLDecoder.decode(queryArg, StandardCharsets.UTF_8);
+            if (queryArg.startsWith("inline")) {
+                disposition = "inline; filename=\"" +
+                        safeContentDispositionFilename(identifier, outputFormat) + "\"";
+            } else if (queryArg.startsWith("attachment")) {
+                final List<String> dispositionParts = new ArrayList<>(3);
+                dispositionParts.add("attachment");
+
+                // Check for ISO-8859-1 filename pattern
+                Pattern pattern = Pattern.compile(".*filename=\"?([^\"]*)\"?.*");
+                Matcher matcher = pattern.matcher(queryArg);
+                String filename;
+                if (matcher.matches()) {
+                    // Filter out filename-unsafe characters as well as "..".
+                    filename = StringUtils.sanitize(
+                            matcher.group(1),
+                            Pattern.compile("\\.\\."),
+                            Pattern.compile(StringUtils.ASCII_FILENAME_UNSAFE_REGEX));
+                } else {
+                    filename = safeContentDispositionFilename(identifier,
+                            outputFormat);
+                }
+                dispositionParts.add("filename=\"" + filename + "\"");
+
+                // Check for Unicode filename pattern
+                pattern = Pattern.compile(".*filename\\*= ?(utf-8|UTF-8)''([^\"]*).*");
+                matcher = pattern.matcher(queryArg);
+                if (matcher.matches()) {
+                    // Filter out filename-unsafe characters as well as "..".
+                    filename = StringUtils.sanitize(
+                            matcher.group(2),
+                            Pattern.compile("\\.\\."),
+                            Pattern.compile(StringUtils.UNICODE_FILENAME_UNSAFE_REGEX,
+                                    Pattern.UNICODE_CHARACTER_CLASS));
+                    filename = Reference.encode(filename);
+                    dispositionParts.add("filename*= UTF-8''" + filename);
+                }
+                disposition = String.join("; ", dispositionParts);
+            }
+        }
+        return disposition;
+    }
+
+    private static String safeContentDispositionFilename(Identifier identifier,
+                                                         Format outputFormat) {
+        return identifier.toString().replaceAll(StringUtils.ASCII_FILENAME_UNSAFE_REGEX, "_") +
+                "." + outputFormat.getPreferredExtension();
+    }
 
     /**
      * <p>Initialization method, called after all necessary setters have been
@@ -533,60 +600,22 @@ public abstract class AbstractResource {
     }
 
     /**
-     * <p>Returns a value for a {@literal Content-Disposition} header based on
-     * the value of the {@link #RESPONSE_CONTENT_DISPOSITION_QUERY_ARG} query
-     * argument.</p>
-     *
-     * <p>Falls back to an empty disposition, signified by a {@literal null}
-     * return value.</p>
+     * <p>Returns a sanitized value for a {@literal Content-Disposition} header
+     * based on the value of the {@link #RESPONSE_CONTENT_DISPOSITION_QUERY_ARG}
+     * query argument.</p>
      *
      * <p>If the disposition is {@literal attachment} and the filename is not
      * set, it will be set to a reasonable value based on the given identifier
      * and output format.</p>
      *
-     * @param queryArg Value of the {@link
-     *                 #RESPONSE_CONTENT_DISPOSITION_QUERY_ARG} query argument.
-     * @param identifier
-     * @param outputFormat
+     * @return Value for a {@code Content-Disposition} header, which may be
+     *         {@code null}.
      */
-    protected String getRepresentationDisposition(String queryArg,
-                                                  Identifier identifier,
+    protected String getRepresentationDisposition(Identifier identifier,
                                                   Format outputFormat) {
-        String disposition = null;
-        // If a query argument value is available, use that. Otherwise, consult
-        // the configuration.
-        if (queryArg != null) {
-            try {
-                queryArg = URLDecoder.decode(queryArg, "UTF-8");
-            } catch (UnsupportedEncodingException e) {
-                throw new RuntimeException(e);
-            }
-            if (queryArg.startsWith("inline")) {
-                disposition = "inline; filename=" +
-                        getContentDispositionFilename(identifier, outputFormat);
-            } else if (queryArg.startsWith("attachment")) {
-                Pattern pattern = Pattern.compile(".*filename=\"?(.*)\"?.*");
-                Matcher m = pattern.matcher(queryArg);
-                String filename;
-                if (m.matches()) {
-                    // Filter out filename-unsafe characters as well as ".."
-                    filename = StringUtils.sanitize(m.group(1),
-                            Pattern.compile("\\.\\."),
-                            Pattern.compile(StringUtils.FILENAME_REGEX));
-                } else {
-                    filename = getContentDispositionFilename(identifier,
-                            outputFormat);
-                }
-                disposition = "attachment; filename=" + filename;
-            }
-        }
-        return disposition;
-    }
-
-    private String getContentDispositionFilename(Identifier identifier,
-                                                 Format outputFormat) {
-        return identifier.toString().replaceAll(StringUtils.FILENAME_REGEX, "_") +
-                "." + outputFormat.getPreferredExtension();
+        var queryArg = getRequest().getReference().getQuery()
+                .getFirstValue(RESPONSE_CONTENT_DISPOSITION_QUERY_ARG);
+        return getSafeContentDisposition(queryArg, identifier, outputFormat);
     }
 
     /**

@@ -13,6 +13,7 @@ import edu.illinois.library.cantaloupe.http.Response;
 import edu.illinois.library.cantaloupe.http.Transport;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
+import edu.illinois.library.cantaloupe.source.AccessDeniedSource;
 import edu.illinois.library.cantaloupe.source.FileSource;
 import edu.illinois.library.cantaloupe.source.PathStreamFactory;
 import edu.illinois.library.cantaloupe.source.StreamFactory;
@@ -23,8 +24,12 @@ import edu.illinois.library.cantaloupe.test.TestUtil;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.URI;
+import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.nio.file.attribute.FileTime;
 import java.util.Iterator;
 
 import static edu.illinois.library.cantaloupe.test.Assert.HTTPAssert.*;
@@ -101,9 +106,9 @@ public class ImageAPIResourceTester {
     }
 
     /**
-     * Tests that there is no Cache-Control header returned when
-     * cache.httpClient.enabled = true but a cache=false argument is present in the
-     * URL query.
+     * Tests that there is no {@code Cache-Control} header returned when
+     * {@code cache.client.enabled = true} but a {@code cache=false} argument
+     * is present in the URL query.
      */
     public void testCacheHeadersWhenClientCachingIsEnabledButCachingIsDisabledInURL(URI uri)
             throws Exception {
@@ -156,6 +161,56 @@ public class ImageAPIResourceTester {
         }
     }
 
+    public void testCachingWhenCachesAreEnabledAndRecacheQueryArgumentIsSupplied(URI uri)
+            throws Exception {
+        Path cacheDir = initializeFilesystemCache();
+
+        // request an image
+        Client client = newClient(uri);
+        try {
+            client.send();
+
+            class FileTimeHolder {
+                FileTime time;
+            }
+            final FileTimeHolder timeHolder = new FileTimeHolder();
+            class FileCreationTimeChecker<T> extends SimpleFileVisitor<T> {
+                @Override
+                public FileVisitResult visitFile(T file,
+                                                 BasicFileAttributes attrs) throws IOException {
+                    BasicFileAttributes fattrs = Files.readAttributes(
+                            (Path) file,
+                            BasicFileAttributes.class);
+                    timeHolder.time = fattrs.creationTime();
+                    return FileVisitResult.CONTINUE;
+                }
+            }
+
+            final FileCreationTimeChecker<Path> visitor =
+                    new FileCreationTimeChecker<>();
+            FileTime time1, time2;
+
+            // check its last-modified time
+            Files.walkFileTree(cacheDir, visitor);
+            time1 = timeHolder.time;
+
+            // FileTime only has 1-second precision so wait at least that long.
+            Thread.sleep(1000);
+
+            // request it again
+            client.send();
+
+            // check its last-modified time again
+            Files.walkFileTree(cacheDir, visitor);
+            time2 = timeHolder.time;
+
+            // assert that the times have changed
+            assertTrue(time2.compareTo(time1) > 0);
+        } finally {
+            client.stop();
+        }
+    }
+
     public void testHTTP2(URI uri) throws Exception {
         Client client = newClient(uri);
         try {
@@ -185,6 +240,14 @@ public class ImageAPIResourceTester {
         } finally {
             client.stop();
         }
+    }
+
+    public void testForbidden(URI uri) {
+        Configuration config = Configuration.getInstance();
+        config.setProperty(Key.SOURCE_STATIC,
+                AccessDeniedSource.class.getName());
+
+        assertStatus(403, uri);
     }
 
     public void testNotFound(URI uri) {
@@ -293,7 +356,7 @@ public class ImageAPIResourceTester {
 
         // Put an image in the source cache.
         Path image = TestUtil.getImage("jpg");
-        SourceCache sourceCache = CacheFactory.getSourceCache();
+        SourceCache sourceCache = CacheFactory.getSourceCache().get();
 
         try (OutputStream os = sourceCache.newSourceImageOutputStream(identifier)) {
             Files.copy(image, os);
@@ -366,7 +429,7 @@ public class ImageAPIResourceTester {
 
         // Put an image in the source cache.
         Path image = TestUtil.getImage("jpg");
-        SourceCache sourceCache = CacheFactory.getSourceCache();
+        SourceCache sourceCache = CacheFactory.getSourceCache().get();
 
         try (OutputStream os = sourceCache.newSourceImageOutputStream(identifier)) {
             Files.copy(image, os);

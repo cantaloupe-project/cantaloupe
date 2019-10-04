@@ -88,7 +88,7 @@ public class InfoServiceTest extends BaseTest {
         final Identifier identifier = new Identifier("jpg");
         final Info info = new Info();
 
-        DerivativeCache cache = CacheFactory.getDerivativeCache();
+        DerivativeCache cache = CacheFactory.getDerivativeCache().get();
         cache.put(identifier, info);
 
         Optional<Info> actualInfo = instance.getInfo(identifier);
@@ -122,7 +122,7 @@ public class InfoServiceTest extends BaseTest {
         final Identifier identifier = new Identifier("jpg");
         final Info info = new Info();
 
-        DerivativeCache cache = CacheFactory.getDerivativeCache();
+        DerivativeCache cache = CacheFactory.getDerivativeCache().get();
         cache.put(identifier, info);
 
         Optional<Info> actualInfo = instance.getOrReadInfo(identifier, newMockProcessor());

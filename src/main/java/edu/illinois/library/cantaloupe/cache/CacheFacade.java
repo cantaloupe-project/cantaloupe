@@ -43,11 +43,7 @@ public final class CacheFacade {
      * @see CacheFactory#getDerivativeCache
      */
     public Optional<DerivativeCache> getDerivativeCache() {
-        DerivativeCache cache = CacheFactory.getDerivativeCache();
-        if (cache != null) {
-            return Optional.of(cache);
-        }
-        return Optional.empty();
+        return CacheFactory.getDerivativeCache();
     }
 
     /**
@@ -76,11 +72,7 @@ public final class CacheFacade {
      * @see CacheFactory#getSourceCache
      */
     public Optional<SourceCache> getSourceCache() {
-        SourceCache srcCache = CacheFactory.getSourceCache();
-        if (srcCache != null) {
-            return Optional.of(srcCache);
-        }
-        return Optional.empty();
+        return CacheFactory.getSourceCache();
     }
 
     /**
