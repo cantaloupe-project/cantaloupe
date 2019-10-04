@@ -630,7 +630,7 @@ overlays.BasicStrategy.string.background.color = rgba(0, 0, 0, 100)
 
 # Allowed values: `top left`, `top center`, `top right`, `left center`,
 # `center`, `right center`, `bottom left`, `bottom center`, `bottom right`,
-# `repeat` (images only).
+# `repeat` (images only), `scaled` (images only).
 overlays.BasicStrategy.position = bottom right
 
 # Pixel margin between the overlay and the image edge. Does not apply to

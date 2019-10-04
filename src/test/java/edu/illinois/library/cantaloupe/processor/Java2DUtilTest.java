@@ -213,6 +213,52 @@ class Java2DUtilTest extends BaseTest {
     }
 
     @Test
+    void testApplyOverlayWithImageOverlayAndScaled() {
+        final BufferedImage baseImage = newColorImage(8, false);
+
+        // fill it with white
+        Graphics2D g2d = baseImage.createGraphics();
+        g2d.setColor(Color.WHITE.toColor());
+        g2d.fillRect(0, 0, baseImage.getWidth(), baseImage.getHeight());
+        g2d.dispose();
+
+        // create a Overlay
+        final ImageOverlay overlay = new ImageOverlay(
+                TestUtil.getImage("png-rgb-64x56x8.png").toUri(),
+                Position.SCALED,
+                0);
+
+        // apply it
+        Java2DUtil.applyOverlay(baseImage, overlay);
+
+        assertRGBA(baseImage.getRGB(0, 0), 255, 255, 255, 255);
+        assertRGBA(baseImage.getRGB(0, 2), 130, 115, 83, 255);
+    }
+
+    @Test
+    void testApplyOverlayWithImageOverlayAndScaledWithInset() {
+        final BufferedImage baseImage = newColorImage(8, false);
+
+        // fill it with white
+        Graphics2D g2d = baseImage.createGraphics();
+        g2d.setColor(Color.WHITE.toColor());
+        g2d.fillRect(0, 0, baseImage.getWidth(), baseImage.getHeight());
+        g2d.dispose();
+
+        // create a Overlay
+        final ImageOverlay overlay = new ImageOverlay(
+                TestUtil.getImage("png-rgb-64x56x8.png").toUri(),
+                Position.SCALED,
+                2);
+
+        // apply it
+        Java2DUtil.applyOverlay(baseImage, overlay);
+
+        assertRGBA(baseImage.getRGB(0, 0), 255, 255, 255, 255);
+        assertRGBA(baseImage.getRGB(4, 4), 154, 119, 59, 255);
+    }
+
+    @Test
     @Disabled // see inline comment
     void testApplyOverlayWithStringOverlay() {
         final BufferedImage baseImage = newColorImage(8, false);

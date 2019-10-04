@@ -11,6 +11,7 @@ import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.operation.Operation;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.operation.ReductionFactor;
+import edu.illinois.library.cantaloupe.operation.ScaleByPixels;
 import edu.illinois.library.cantaloupe.operation.Sharpen;
 import edu.illinois.library.cantaloupe.operation.redaction.Redaction;
 import edu.illinois.library.cantaloupe.operation.overlay.ImageOverlay;
@@ -397,6 +398,26 @@ public final class Java2DUtil {
                         g2d.drawImage(overlayImage, x, y, null);
                     }
                 }
+            } else if (Position.SCALED.equals(position)) {
+                // We want to scale the overlay to be the size of the image but also respect the inset value.
+                // The inset value will be respected on all sides of the overlay so we want our scale to be the
+                // size of the base image MINUS the size of the inset * 2 in both width and height
+                ScaleByPixels scale = new ScaleByPixels(
+                        baseImage.getWidth() - (inset * 2),
+                        baseImage.getHeight() - (inset * 2),
+                        ScaleByPixels.Mode.ASPECT_FIT_INSIDE);
+                ScaleConstraint sc = new ScaleConstraint(1, 1);
+                ReductionFactor rf = new ReductionFactor(1);
+                BufferedImage scaledOverlay = Java2DUtil.scale(overlayImage, scale, sc, rf);
+                int xOffset = inset;
+                int yOffset = inset;
+                if (scaledOverlay.getWidth() < baseImage.getWidth()) {
+                    xOffset = Math.round((baseImage.getWidth() - scaledOverlay.getWidth()) / 2f);
+                }
+                if (scaledOverlay.getHeight() < baseImage.getHeight()) {
+                    yOffset = Math.round((baseImage.getHeight() - scaledOverlay.getHeight()) / 2f);
+                }
+                g2d.drawImage(Java2DUtil.scale(overlayImage, scale, sc, rf), xOffset, yOffset, null);
             } else {
                 int overlayX, overlayY;
                 switch (position) {

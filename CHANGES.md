@@ -32,6 +32,7 @@
   PdfBoxProcessor use libjpeg-turbo to write JPEGs if it is available.
 * ImageMagickProcessor, GraphicsMagickProcessor, and KakaduDemoProcessor have
   been removed.
+* Added the `scaled` position for image overlays.
 
 ### Caches
 
