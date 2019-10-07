@@ -402,9 +402,11 @@ public final class Java2DUtil {
                 // We want to scale the overlay to be the size of the image but also respect the inset value.
                 // The inset value will be respected on all sides of the overlay so we want our scale to be the
                 // size of the base image MINUS the size of the inset * 2 in both width and height
+                int calculatedOverlayWidth = baseImage.getWidth() - (inset * 2);
+                int calculatedOverlayHeight = baseImage.getHeight() - (inset * 2);
                 ScaleByPixels scale = new ScaleByPixels(
-                        baseImage.getWidth() - (inset * 2),
-                        baseImage.getHeight() - (inset * 2),
+                        (calculatedOverlayWidth > 0) ? calculatedOverlayWidth : baseImage.getWidth(),
+                        (calculatedOverlayHeight > 0) ? calculatedOverlayHeight : baseImage.getHeight(),
                         ScaleByPixels.Mode.ASPECT_FIT_INSIDE);
                 ScaleConstraint sc = new ScaleConstraint(1, 1);
                 ReductionFactor rf = new ReductionFactor(1);
