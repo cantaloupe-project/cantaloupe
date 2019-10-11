@@ -148,7 +148,7 @@ public final class DelegateProxy {
 
             LOGGER.trace("Instantiated delegate object in {}", watch);
         } catch (javax.script.ScriptException e) {
-            LOGGER.error(e.getMessage());
+            LOGGER.error(e.getMessage(), e);
         } finally {
             lock.unlock(stamp);
         }
