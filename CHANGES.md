@@ -1,5 +1,10 @@
 # Change Log
 
+## 4.1.5
+
+* Fixed the IIIF Image API 2.x endpoint's handling of identifiers containing
+  backslashes.
+
 ## 4.1.4
 
 * Fixed the health-check endpoint (at `/health`).

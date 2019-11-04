@@ -166,6 +166,14 @@ public class ImageAPIResourceTester {
         assertStatus(403, uri);
     }
 
+    public void testForwardSlashInIdentifier(URI uri) {
+        assertStatus(200, uri);
+    }
+
+    public void testBackslashInIdentifier(URI uri) {
+        assertStatus(200, uri);
+    }
+
     public void testHTTP2(URI uri) throws Exception {
         Client client = newClient(uri);
         try {

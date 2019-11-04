@@ -233,7 +233,7 @@ public class ImageResource extends IIIF2Resource {
     }
 
     /**
-     * Invokes {@link #addHeaders(String, String)} and also adds an {@code Link}
+     * Invokes {@link #addHeaders(String, String)} and also adds a {@code Link}
      * header.
      */
     private void addHeaders(Parameters params,
@@ -242,9 +242,9 @@ public class ImageResource extends IIIF2Resource {
                             String contentType) {
         addHeaders(disposition, contentType);
 
-        final Identifier identifier = params.getIdentifier();
-        final String paramsStr = params.toCanonicalString(fullSize).replaceFirst(
-                identifier.toString(), getPublicIdentifier());
+        Parameters paramsCopy = new Parameters(params);
+        paramsCopy.setIdentifier(new Identifier(getPublicIdentifier()));
+        String paramsStr = paramsCopy.toCanonicalString(fullSize);
         getResponse().setHeader("Link",
                 String.format("<%s%s/%s>;rel=\"canonical\"",
                         getPublicRootReference(),
