@@ -59,7 +59,19 @@ public class ParametersTest extends BaseTest {
     }
 
     @Test
-    void testConstructorWithUnsupportedOutputFormat() {
+    void testCopyConstructor() {
+        Parameters copy = new Parameters(instance);
+        assertEquals(copy.getIdentifier(), instance.getIdentifier());
+        assertEquals(copy.getRegion(), instance.getRegion());
+        assertEquals(copy.getSize(), instance.getSize());
+        assertEquals(copy.getRotation(), instance.getRotation());
+        assertEquals(copy.getQuality(), instance.getQuality());
+        assertEquals(copy.getOutputFormat(), instance.getOutputFormat());
+        assertEquals(copy.getQuery(), instance.getQuery());
+    }
+
+    @Test
+    void testConstructor3WithUnsupportedOutputFormat() {
         assertThrows(FormatException.class,
                 () -> new Parameters(
                         new Identifier("identifier"),
@@ -84,7 +96,7 @@ public class ParametersTest extends BaseTest {
      * specific component classes (e.g. {@link Size} etc.).
      */
     @Test
-    public void testToCanonicalString() {
+    void testToCanonicalString() {
         final Dimension fullSize = new Dimension(1000, 800);
         assertEquals("identifier/0,0,200,200/500,/5/default.jpg",
                 instance.toCanonicalString(fullSize));

@@ -60,6 +60,19 @@ class Parameters {
     Parameters() {}
 
     /**
+     * Copy constructor.
+     */
+    public Parameters(Parameters params) {
+        setIdentifier(params.getIdentifier());
+        setRegion(params.getRegion());
+        setSize(params.getSize());
+        setRotation(params.getRotation());
+        setQuality(params.getQuality());
+        setOutputFormat(params.getOutputFormat());
+        setQuery(params.getQuery());
+    }
+
+    /**
      * @param identifier Decoded identifier.
      * @param region From URI
      * @param size From URI

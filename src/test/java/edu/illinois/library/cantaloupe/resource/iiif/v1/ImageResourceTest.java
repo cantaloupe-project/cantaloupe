@@ -262,6 +262,18 @@ public class ImageResourceTest extends ResourceTest {
     }
 
     @Test
+    void testGETWithForwardSlashInIdentifier() {
+        URI uri = getHTTPURI("/subfolder%2Fjpg/full/max/0/default.jpg");
+        tester.testForwardSlashInIdentifier(uri);
+    }
+
+    @Test
+    void testGETWithBackslashInIdentifier() {
+        URI uri = getHTTPURI("/subfolder%5Cjpg/full/max/0/default.jpg");
+        tester.testBackslashInIdentifier(uri);
+    }
+
+    @Test
     void testGETHTTP2() throws Exception {
         URI uri = getHTTPURI("/" + IMAGE + "/full/full/0/color.jpg");
         tester.testHTTP2(uri);

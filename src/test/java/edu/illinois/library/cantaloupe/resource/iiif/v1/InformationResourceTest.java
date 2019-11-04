@@ -222,6 +222,18 @@ public class InformationResourceTest extends ResourceTest {
     }
 
     @Test
+    void testGETWithForwardSlashInIdentifier() {
+        URI uri = getHTTPURI("/subfolder%2Fjpg/info.json");
+        tester.testForwardSlashInIdentifier(uri);
+    }
+
+    @Test
+    void testGETWithBackslashInIdentifier() {
+        URI uri = getHTTPURI("/subfolder%5Cjpg/info.json");
+        tester.testBackslashInIdentifier(uri);
+    }
+
+    @Test
     void testGETHTTP2() throws Exception {
         URI uri = getHTTPURI("/" + IMAGE + "/info.json");
         tester.testHTTP2(uri);
