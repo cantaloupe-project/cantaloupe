@@ -10,6 +10,9 @@ import edu.illinois.library.cantaloupe.processor.UnsupportedOutputFormatExceptio
 import edu.illinois.library.cantaloupe.resource.IllegalClientArgumentException;
 import org.apache.commons.lang3.StringUtils;
 
+import java.util.Arrays;
+import java.util.stream.Collectors;
+
 /**
  * Encapsulates the parameters of a request.
  *
@@ -97,12 +100,18 @@ class Parameters {
         try {
             setQuality(Quality.valueOf(quality.toUpperCase()));
         } catch (IllegalArgumentException e) {
-            throw new IllegalClientArgumentException(e.getMessage(), e);
+            String message = "Unsupported quality. Available qualities are: " +
+                    Arrays.stream(Quality.values())
+                            .map(Quality::getURIValue)
+                            .collect(Collectors.joining(", ")) + ".";
+            throw new IllegalClientArgumentException(message, e);
         }
         try {
             setOutputFormat(OutputFormat.valueOf(format.toUpperCase()));
         } catch (IllegalArgumentException e) {
-            throw new UnsupportedOutputFormatException(format);
+            throw new UnsupportedOutputFormatException("Unsupported format. " +
+                    "Available output formats for this image are listed in " +
+                    "the information response.");
         }
     }
 

@@ -68,8 +68,14 @@ public class ParametersTest extends BaseTest {
         assertEquals(copy.getQuery(), instance.getQuery());
     }
 
+    @Test(expected = IllegalClientArgumentException.class)
+    public void testConstructor3WithIllegalQuality() {
+        new Parameters(new Identifier("identifier"), "0,0,200,200", "pct:50",
+                "5", "bogus", "jpg");
+    }
+
     @Test(expected = UnsupportedOutputFormatException.class)
-    public void testConstructor3ThrowsUnsupportedOutputFormatException() {
+    public void testConstructor3WithIllegalFormat() {
         new Parameters(new Identifier("identifier"), "0,0,200,200", "pct:50",
                 "5", "default", "bogus");
     }
