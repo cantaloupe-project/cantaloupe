@@ -16,13 +16,18 @@ import javax.servlet.http.Part;
 import java.io.BufferedReader;
 import java.security.Principal;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
 public class MockHttpServletRequest implements HttpServletRequest {
 
     private String contextPath, requestURL = "";
+    private final Map<String, List<String>> headers = new HashMap<>();
 
     @Override
     public boolean authenticate(HttpServletResponse httpServletResponse) {
@@ -96,17 +101,54 @@ public class MockHttpServletRequest implements HttpServletRequest {
 
     @Override
     public String getHeader(String s) {
+        List<String> values = headers.get(s);
+        if (values != null) {
+            return values.get(0);
+        }
         return null;
     }
 
     @Override
     public Enumeration<String> getHeaderNames() {
-        return null;
+        final Iterator<String> iter = headers.keySet().iterator();
+        return new Enumeration<>() {
+            @Override
+            public boolean hasMoreElements() {
+                return iter.hasNext();
+            }
+            @Override
+            public String nextElement() {
+                return iter.next();
+            }
+        };
+    }
+
+    /**
+     * @return Mutable map of headers.
+     */
+    public Map<String,List<String>> getHeaders() {
+        return this.headers;
     }
 
     @Override
     public Enumeration<String> getHeaders(String s) {
-        return null;
+        List<String> values = headers.get(s);
+        Iterator<String> iter;
+        if (values != null) {
+            iter = values.iterator();
+        } else {
+            iter = Collections.emptyIterator();
+        }
+        return new Enumeration<>() {
+            @Override
+            public boolean hasMoreElements() {
+                return iter.hasNext();
+            }
+            @Override
+            public String nextElement() {
+                return iter.next();
+            }
+        };
     }
 
     @Override
