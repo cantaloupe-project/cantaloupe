@@ -26,7 +26,10 @@ import java.util.Map;
 
 public class MockHttpServletRequest implements HttpServletRequest {
 
-    private String contextPath, requestURL = "";
+    private String contextPath;
+    private String method = "GET";
+    private String remoteAddr;
+    private String requestURL = "";
     private final Map<String, List<String>> headers = new HashMap<>();
 
     @Override
@@ -188,7 +191,7 @@ public class MockHttpServletRequest implements HttpServletRequest {
 
     @Override
     public String getMethod() {
-        return null;
+        return method;
     }
 
     @Override
@@ -253,7 +256,7 @@ public class MockHttpServletRequest implements HttpServletRequest {
 
     @Override
     public String getRemoteAddr() {
-        return null;
+        return remoteAddr;
     }
 
     @Override
@@ -393,6 +396,14 @@ public class MockHttpServletRequest implements HttpServletRequest {
 
     public void setContextPath(String contextPath) {
         this.contextPath = contextPath;
+    }
+
+    public void setMethod(String method) {
+        this.method = method;
+    }
+
+    public void setRemoteAddr(String addr) {
+        this.remoteAddr = addr;
     }
 
     public void setRequestURL(String requestURL) {
