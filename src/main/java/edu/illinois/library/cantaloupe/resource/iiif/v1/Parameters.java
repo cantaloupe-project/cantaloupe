@@ -41,7 +41,7 @@ class Parameters {
                 String[] subparts = StringUtils.split(parts[4], ".");
                 if (subparts.length == 2) {
                     params.setQuality(Quality.valueOf(subparts[0].toUpperCase()));
-                    params.setOutputFormat(Format.valueOf(subparts[1].toUpperCase()));
+                    params.setOutputFormat(Format.withExtension(subparts[1].toUpperCase()));
                 } else {
                     throw new IllegalClientArgumentException("Invalid parameters format");
                 }
@@ -87,9 +87,10 @@ class Parameters {
         } catch (IllegalArgumentException e) {
             throw new IllegalClientArgumentException(e.getMessage(), e);
         }
-        try {
-            setOutputFormat(Format.valueOf(format.toUpperCase()));
-        } catch (IllegalArgumentException e) {
+        Format f = Format.withExtension(format);
+        if (f != null) {
+            setOutputFormat(f);
+        } else {
             throw new FormatException(format);
         }
     }

@@ -4,13 +4,23 @@ import edu.illinois.library.cantaloupe.test.BaseTest;
 import org.junit.jupiter.api.Test;
 
 import java.util.Map;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 class FormatTest extends BaseTest {
 
     @Test
-    void inferFormatWithIdentifier() {
+    void testGetRegistryInitialValues() {
+        Set<Format> expected = Set.of(Format.AVI, Format.BMP, Format.DCM,
+                Format.FLV, Format.GIF, Format.JP2, Format.JPG, Format.MOV,
+                Format.MP4, Format.MPG,Format.PDF, Format.PNG, Format.TIF,
+                Format.UNKNOWN, Format.WEBM, Format.WEBP);
+        assertEquals(expected, Format.getAllFormats());
+    }
+
+    @Test
+    void testInferFormatWithIdentifier() {
         // AVI
         assertEquals(Format.AVI,
                 Format.inferFormat(new Identifier("bla.avi")));
@@ -66,7 +76,7 @@ class FormatTest extends BaseTest {
     }
 
     @Test
-    void inferFormatWithString() {
+    void testInferFormatWithString() {
         // AVI
         assertEquals(Format.AVI, Format.inferFormat("bla.avi"));
         assertEquals(Format.AVI, Format.inferFormat("bla.AVI"));
@@ -104,7 +114,37 @@ class FormatTest extends BaseTest {
     }
 
     @Test
-    void getPreferredExtension() {
+    void testWithExtensionAndAMatch() {
+        assertEquals(Format.JPG, Format.withExtension("jpg"));
+        assertEquals(Format.JPG, Format.withExtension(".jpg"));
+        assertEquals(Format.JPG, Format.withExtension("JPG"));
+        assertEquals(Format.JPG, Format.withExtension(".JPG"));
+    }
+
+    @Test
+    void testWithExtensionAndNoMatch() {
+        assertNull(Format.withExtension("bogus"));
+    }
+
+    @Test
+    void testCompareTo() {
+        assertTrue(Format.AVI.compareTo(Format.TIF) < 0);
+        assertEquals(0, Format.AVI.compareTo(Format.AVI));
+        assertTrue(Format.TIF.compareTo(Format.AVI) > 0);
+    }
+
+    @Test
+    void testEqualsWithEqualInstances() {
+        assertEquals(Format.JPG, Format.JPG);
+    }
+
+    @Test
+    void testEqualsWithUnequalInstances() {
+        assertNotEquals(Format.JPG, Format.TIF);
+    }
+
+    @Test
+    void testGetPreferredExtension() {
         assertEquals("avi", Format.AVI.getPreferredExtension());
         assertEquals("bmp", Format.BMP.getPreferredExtension());
         assertEquals("dcm", Format.DCM.getPreferredExtension());
@@ -124,7 +164,7 @@ class FormatTest extends BaseTest {
     }
 
     @Test
-    void getPreferredMediaType() {
+    void testGetPreferredMediaType() {
         assertEquals("video/avi",
                 Format.AVI.getPreferredMediaType().toString());
         assertEquals("image/bmp",
@@ -160,7 +200,17 @@ class FormatTest extends BaseTest {
     }
 
     @Test
-    void toMap() {
+    void testHashCodeWithEqualInstances() {
+        assertEquals(Format.JPG.hashCode(), Format.JPG.hashCode());
+    }
+
+    @Test
+    void testHashCodeWithUnequalInstances() {
+        assertNotEquals(Format.JPG.hashCode(), Format.TIF.hashCode());
+    }
+
+    @Test
+    void testToMap() {
         Map<String, Object> map = Format.JPG.toMap();
         assertEquals("jpg", map.get("extension"));
         assertEquals("image/jpeg", map.get("media_type"));
@@ -172,7 +222,7 @@ class FormatTest extends BaseTest {
 
     @Test
     void testToString() {
-        for (Format format : Format.values()) {
+        for (Format format : Format.getAllFormats()) {
             assertEquals(format.getPreferredExtension(),
                     format.toString());
         }

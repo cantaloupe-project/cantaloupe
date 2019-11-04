@@ -10,7 +10,6 @@ import javax.imageio.spi.ServiceRegistry;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -95,7 +94,8 @@ public final class IIOProviderContextListener implements ServletContextListener 
     }
 
     private static void logImageIOReaders() {
-        final List<Format> imageFormats = Arrays.stream(Format.values())
+        final List<Format> imageFormats = Format.getAllFormats()
+                .stream()
                 .filter(f -> Format.Type.IMAGE.equals(f.getType()))
                 .collect(Collectors.toList());
         final List<String> formatLines = new ArrayList<>(imageFormats.size());
@@ -119,7 +119,8 @@ public final class IIOProviderContextListener implements ServletContextListener 
     }
 
     private static void logImageIOWriters() {
-        final List<Format> imageFormats = Arrays.stream(Format.values())
+        final List<Format> imageFormats = Format.getAllFormats()
+                .stream()
                 .filter(f -> Format.Type.IMAGE.equals(f.getType()))
                 .collect(Collectors.toList());
         final List<String> formatLines = new ArrayList<>(imageFormats.size());

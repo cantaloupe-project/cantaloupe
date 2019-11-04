@@ -4,7 +4,7 @@ import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import org.junit.jupiter.api.Test;
 
-import java.util.EnumSet;
+import java.util.HashSet;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -13,7 +13,7 @@ class ComplianceLevelTest extends BaseTest {
 
     @Test
     void testGetLevel() {
-        Set<Format> outputFormats = EnumSet.noneOf(Format.class);
+        Set<Format> outputFormats = new HashSet<>();
         assertEquals(ComplianceLevel.LEVEL_0,
                 ComplianceLevel.getLevel(outputFormats));
 

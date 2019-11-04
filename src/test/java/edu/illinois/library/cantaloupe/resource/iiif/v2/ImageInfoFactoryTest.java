@@ -15,7 +15,6 @@ import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -30,8 +29,8 @@ public class ImageInfoFactoryTest extends BaseTest {
     public void setUp() throws Exception {
         super.setUp();
 
-        final Set<Format> processorFormats =
-                EnumSet.of(Format.GIF, Format.JPG, Format.PNG);
+        final Set<Format> processorFormats = Set.of(
+                Format.GIF, Format.JPG, Format.PNG);
 
         instance = new ImageInfoFactory(processorFormats);
     }

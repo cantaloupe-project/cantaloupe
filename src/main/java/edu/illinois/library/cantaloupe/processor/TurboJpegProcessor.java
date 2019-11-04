@@ -30,8 +30,6 @@ import org.slf4j.LoggerFactory;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.Collections;
-import java.util.EnumSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -56,7 +54,7 @@ public class TurboJpegProcessor extends AbstractProcessor
             LoggerFactory.getLogger(TurboJpegProcessor.class);
 
     private static final Set<Format> SUPPORTED_OUTPUT_FORMATS =
-            Collections.unmodifiableSet(EnumSet.of(Format.JPG));
+            Set.of(Format.JPG);
 
     private static boolean isClassInitialized;
 

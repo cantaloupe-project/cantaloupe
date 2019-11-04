@@ -26,7 +26,6 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -252,7 +251,8 @@ public class ImageResource extends IIIF1Resource {
 
         Format format = null;
         if (extension != null) {
-            format = Arrays.stream(Format.values())
+            format = Format.getAllFormats()
+                    .stream()
                     .filter(f -> f.getPreferredExtension().equals(extension))
                     .findFirst()
                     .orElse(null);

@@ -261,27 +261,24 @@ public final class OperationList implements Iterable<Operation> {
 
         // Encode customization
         final Encode encode = (Encode) getFirst(Encode.class);
-        switch (encode.getFormat()) {
-            case JPG:
-                // Compression
-                encode.setCompression(Compression.JPEG);
-                // Interlacing
-                final boolean progressive =
-                        config.getBoolean(Key.PROCESSOR_JPG_PROGRESSIVE, false);
-                encode.setInterlacing(progressive);
-                // Quality
-                final int quality =
-                        config.getInt(Key.PROCESSOR_JPG_QUALITY, 80);
-                encode.setQuality(quality);
-                break;
-            case TIF:
-                // Compression
-                final String compressionStr =
-                        config.getString(Key.PROCESSOR_TIF_COMPRESSION, "LZW");
-                final Compression compression =
-                        Compression.valueOf(compressionStr.toUpperCase());
-                encode.setCompression(compression);
-                break;
+        if (Format.JPG.equals(encode.getFormat())) {
+            // Compression
+            encode.setCompression(Compression.JPEG);
+            // Interlacing
+            final boolean progressive =
+                    config.getBoolean(Key.PROCESSOR_JPG_PROGRESSIVE, false);
+            encode.setInterlacing(progressive);
+            // Quality
+            final int quality =
+                    config.getInt(Key.PROCESSOR_JPG_QUALITY, 80);
+            encode.setQuality(quality);
+        } else if (Format.TIF.equals(encode.getFormat())) {
+            // Compression
+            final String compressionStr =
+                    config.getString(Key.PROCESSOR_TIF_COMPRESSION, "LZW");
+            final Compression compression =
+                    Compression.valueOf(compressionStr.toUpperCase());
+            encode.setCompression(compression);
         }
 
         // Set the Encode operation's background color.

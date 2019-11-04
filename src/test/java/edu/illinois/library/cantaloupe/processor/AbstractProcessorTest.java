@@ -36,8 +36,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.util.EnumSet;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
@@ -56,7 +56,7 @@ import static org.junit.jupiter.api.Assumptions.*;
  * fixture image whose format it supports, with every output {@link Format}.</p>
  *
  * <p>Fixtures are obtained from {@link TestUtil#getImage(String)}. Fixture
- * names must start with the lowercased {@link Format#name()} and contain
+ * names must start with the lowercased {@link Format#getName()} and contain
  * {@literal WxHxS} (width, height, sample size) somewhere after that.</p>
  */
 abstract class AbstractProcessorTest extends BaseTest {
@@ -85,8 +85,8 @@ abstract class AbstractProcessorTest extends BaseTest {
     }
 
     private Set<Format> getSupportedSourceFormats(Processor processor) {
-        Set<Format> formats = EnumSet.noneOf(Format.class);
-        for (Format format : Format.values()) {
+        Set<Format> formats = new HashSet<>();
+        for (Format format : Format.getAllFormats()) {
             try {
                 processor.setSourceFormat(format);
                 formats.add(format);
@@ -118,7 +118,9 @@ abstract class AbstractProcessorTest extends BaseTest {
     @Test
     public void testProcessWithOnlyNoOpOperations() throws Exception {
         OperationList ops = new OperationList(
-                new ScaleByPercent(), new Rotate(0), new Encode(Format.JPG));
+                new ScaleByPercent(),
+                new Rotate(0),
+                new Encode(Format.JPG));
 
         forEachFixture(ops, new ProcessorAssertion() {
             @Override
@@ -623,7 +625,7 @@ abstract class AbstractProcessorTest extends BaseTest {
      */
     @Test
     public void testReadInfoOnAllFixtures() throws Exception {
-        for (Format format : Format.values()) {
+        for (Format format : Format.getAllFormats()) {
             for (Path fixture : TestUtil.getImageFixtures(format)) {
                 if (fixture.getFileName().toString().equals("jp2") ||
                         fixture.getFileName().toString().equals("jp2-iptc.jp2") ||
@@ -696,7 +698,7 @@ abstract class AbstractProcessorTest extends BaseTest {
 
     @Test
     public void testSetSourceFormatWithUnsupportedSourceFormat() {
-        for (Format format : Format.values()) {
+        for (Format format : Format.getAllFormats()) {
             try {
                 final Processor proc = newInstance();
                 proc.setSourceFormat(format);
@@ -783,7 +785,7 @@ abstract class AbstractProcessorTest extends BaseTest {
         final String fixtureName = fixture.getFileName().toString();
 
         // Skip other formats.
-        if (!fixtureName.startsWith(sourceFormat.name().toLowerCase())) {
+        if (!fixtureName.startsWith(sourceFormat.getName().toLowerCase())) {
             return false;
         }
 

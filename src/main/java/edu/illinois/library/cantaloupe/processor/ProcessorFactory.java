@@ -103,7 +103,7 @@ public final class ProcessorFactory {
                     candidate.setSourceFormat(sourceFormat);
                     LOGGER.debug("{} selected for format {} ({} offered {})",
                             candidate.getClass().getSimpleName(),
-                            sourceFormat.name(),
+                            sourceFormat.getName(),
                             getSelectionStrategy(),
                             candidates.stream()
                                     .map(Class::getSimpleName)

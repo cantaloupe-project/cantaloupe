@@ -23,7 +23,6 @@ import java.awt.GraphicsEnvironment;
 import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -222,7 +221,7 @@ public class AdminResource extends AbstractAdminResource {
 
         // source format assignments
         Map<FormatProxy,ProcessorProxy> assignments = new TreeMap<>();
-        for (Format format : Format.values()) {
+        for (Format format : Format.getAllFormats()) {
             try (Processor proc = new ProcessorFactory().newProcessor(format)) {
                 assignments.put(new FormatProxy(format), new ProcessorProxy(proc));
             } catch (SourceFormatException |
@@ -234,8 +233,8 @@ public class AdminResource extends AbstractAdminResource {
         vars.put("processorAssignments", assignments);
 
         // image source formats
-        List<FormatProxy> imageFormats = Arrays
-                .stream(Format.values())
+        List<FormatProxy> imageFormats = Format.getAllFormats()
+                .stream()
                 .filter(f -> Format.Type.IMAGE.equals(f.getType()) && !Format.DCM.equals(f))
                 .sorted(Comparator.comparing(Format::getName))
                 .map(FormatProxy::new)
@@ -243,8 +242,8 @@ public class AdminResource extends AbstractAdminResource {
         vars.put("imageSourceFormats", imageFormats);
 
         // video source formats
-        List<FormatProxy> videoFormats = Arrays
-                .stream(Format.values())
+        List<FormatProxy> videoFormats = Format.getAllFormats()
+                .stream()
                 .filter(f -> Format.Type.VIDEO.equals(f.getType()))
                 .sorted(Comparator.comparing(Format::getName))
                 .map(FormatProxy::new)
@@ -252,8 +251,8 @@ public class AdminResource extends AbstractAdminResource {
         vars.put("videoSourceFormats", videoFormats);
 
         // source format assignments
-        vars.put("sourceFormats", Arrays
-                .stream(Format.values())
+        vars.put("sourceFormats", Format.getAllFormats()
+                .stream()
                 .map(FormatProxy::new)
                 .collect(Collectors.toUnmodifiableList()));
 

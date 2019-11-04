@@ -28,11 +28,11 @@ public class MediaTypeTest extends BaseTest {
     @BeforeAll
     public static void beforeClass() throws Exception {
         BaseTest.beforeClass();
-        for (Format format : Format.values()) {
+        for (Format format : Format.getAllFormats()) {
             if (format.equals(Format.UNKNOWN)) {
                 continue;
             }
-            String fixtureName = format.name().toLowerCase();
+            String fixtureName = format.getKey().toLowerCase();
             FILES.put(format, TestUtil.getImage(fixtureName));
         }
     }
@@ -94,9 +94,9 @@ public class MediaTypeTest extends BaseTest {
             boolean result = MediaType.detectMediaTypes(file).
                     contains(preferredMediaType);
             if (!result) {
-                System.err.println("detection failed:" +
-                        "\tformat: " + format +
-                        "\tfile: " + file.getFileName());
+                System.err.println("detection failed: " +
+                        "[format: " + format + "] " +
+                        "[file: " + file.getFileName() + "]");
             }
 
             // detectMediaTypes() doesn't understand these.

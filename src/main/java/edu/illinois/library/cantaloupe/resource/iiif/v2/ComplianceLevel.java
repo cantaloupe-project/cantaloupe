@@ -2,7 +2,6 @@ package edu.illinois.library.cantaloupe.resource.iiif.v2;
 
 import edu.illinois.library.cantaloupe.image.Format;
 
-import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -18,14 +17,10 @@ enum ComplianceLevel {
     LEVEL_1("http://iiif.io/api/image/2/level1.json"),
     LEVEL_2("http://iiif.io/api/image/2/level2.json");
 
-    private static final Set<Feature> LEVEL_1_FEATURES =
-            new HashSet<>();
-    private static final Set<Format> LEVEL_1_OUTPUT_FORMATS =
-            EnumSet.noneOf(Format.class);
-    private static final Set<Feature> LEVEL_2_FEATURES =
-            new HashSet<>();
-    private static final Set<Format> LEVEL_2_OUTPUT_FORMATS =
-            EnumSet.noneOf(Format.class);
+    private static final Set<Feature> LEVEL_1_FEATURES      = new HashSet<>();
+    private static final Set<Format> LEVEL_1_OUTPUT_FORMATS = new HashSet<>();
+    private static final Set<Feature> LEVEL_2_FEATURES      = new HashSet<>();
+    private static final Set<Format> LEVEL_2_OUTPUT_FORMATS = new HashSet<>();
 
     private String uri;
 

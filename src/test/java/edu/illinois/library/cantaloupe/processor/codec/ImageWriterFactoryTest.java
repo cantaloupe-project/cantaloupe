@@ -6,7 +6,6 @@ import edu.illinois.library.cantaloupe.test.BaseTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.util.EnumSet;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -23,7 +22,7 @@ public class ImageWriterFactoryTest extends BaseTest {
 
     @Test
     void testSupportedFormats() {
-        Set<Format> outputFormats = EnumSet.of(
+        Set<Format> outputFormats = Set.of(
                 Format.GIF, Format.JPG, Format.PNG, Format.TIF);
         assertEquals(outputFormats, ImageWriterFactory.supportedFormats());
     }

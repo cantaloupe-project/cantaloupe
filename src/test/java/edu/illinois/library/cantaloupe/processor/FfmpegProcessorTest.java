@@ -20,8 +20,8 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.file.Path;
 import java.util.Arrays;
-import java.util.EnumSet;
 
+import java.util.HashSet;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -67,10 +67,10 @@ public class FfmpegProcessorTest extends AbstractProcessorTest {
 
     @Test
     void testGetAvailableOutputFormats() {
-        for (Format format : Format.values()) {
+        for (Format format : Format.getAllFormats()) {
             try {
                 instance = newInstance();
-                Set<Format> expectedFormats = EnumSet.noneOf(Format.class);
+                Set<Format> expectedFormats = new HashSet<>();
                 if (format.getType() != null &&
                         format.getType().equals(Format.Type.VIDEO)) {
                     expectedFormats.addAll(ImageWriterFactory.supportedFormats());

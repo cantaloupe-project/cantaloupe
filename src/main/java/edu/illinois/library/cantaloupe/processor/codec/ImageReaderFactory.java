@@ -13,15 +13,12 @@ import javax.imageio.stream.ImageInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Path;
-import java.util.Collections;
-import java.util.EnumSet;
 import java.util.Set;
 
 public final class ImageReaderFactory {
 
-    private static final Set<Format> SUPPORTED_FORMATS =
-            Collections.unmodifiableSet(EnumSet.of(Format.BMP,
-                    Format.GIF, Format.JPG, Format.PNG, Format.TIF));
+    private static final Set<Format> SUPPORTED_FORMATS = Set.of(
+            Format.BMP, Format.GIF, Format.JPG, Format.PNG, Format.TIF);
 
     /**
      * @return Map of available output formats for all known source formats,
@@ -32,20 +29,18 @@ public final class ImageReaderFactory {
     }
 
     public ImageReader newImageReader(Format format) {
-        switch (format) {
-            case BMP:
-                return new BMPImageReader();
-            case GIF:
-                return new GIFImageReader();
-            case JPG:
-                return new JPEGImageReader();
-            case PNG:
-                return new PNGImageReader();
-            case TIF:
-                return new TIFFImageReader();
-            default:
-                throw new IllegalArgumentException("Unsupported format: " + format);
+        if (Format.BMP.equals(format)) {
+            return new BMPImageReader();
+        } else if (Format.GIF.equals(format)) {
+            return new GIFImageReader();
+        } else if (Format.JPG.equals(format)) {
+            return new JPEGImageReader();
+        } else if (Format.PNG.equals(format)) {
+            return new PNGImageReader();
+        } else if (Format.TIF.equals(format)) {
+            return new TIFFImageReader();
         }
+        throw new IllegalArgumentException("Unsupported format: " + format);
     }
 
     /**
