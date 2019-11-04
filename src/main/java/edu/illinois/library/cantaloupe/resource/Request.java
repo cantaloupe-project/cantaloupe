@@ -11,11 +11,16 @@ import java.io.InputStream;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Wraps an {@link HttpServletRequest}, adding some convenience methods.
  */
 public final class Request {
+
+    private static final Pattern COOKIE_PATTERN =
+            Pattern.compile("(\\w+)=(\\w+)");
 
     private HttpServletRequest wrappedRequest;
 
@@ -37,13 +42,13 @@ public final class Request {
     public Map<String,String> getCookies() {
         if (cookies == null) {
             cookies = new HashMap<>();
-            final Enumeration<String> names = wrappedRequest.getHeaderNames();
-            while (names.hasMoreElements()) {
-                final String name = names.nextElement();
-                if ("Cookie".equalsIgnoreCase(name)) {
-                    final Enumeration<String> values = wrappedRequest.getHeaders(name);
-                    while (values.hasMoreElements()) {
-                        cookies.put(name, values.nextElement());
+            final Enumeration<String> values = wrappedRequest.getHeaders("Cookie");
+            while (values.hasMoreElements()) {
+                String value = values.nextElement();
+                Matcher matcher = COOKIE_PATTERN.matcher(value);
+                while (matcher.find()) {
+                    for (int i = 1; i <= matcher.groupCount(); i += 2) {
+                        cookies.put(matcher.group(i), matcher.group(i + 1));
                     }
                 }
             }

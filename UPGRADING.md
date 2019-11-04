@@ -29,11 +29,15 @@ current version.
 7.  Purge your derivative cache.
 8.  If you were using the `processor.metadata.preserve` key, you will need to
     use the new `metadata()` delegate method instead.
-9.  KakaduDemoProcessor is no longer available. If you were using it, you must
+9.  If you were using the `cookie` key in the delegate script context hash,
+    note that its structure has changed to a hash of cookie name-value pairs.
+    This is how it was documented to work, and how it was supposed to work, in
+    prior versions.
+10. KakaduDemoProcessor is no longer available. If you were using it, you must
     switch to either OpenJpegProcessor or KakaduNativeProcessor.
-10. Note that the `false` value supplied to the `cache` URL query argument
+11. Note that the `false` value supplied to the `cache` URL query argument
     (e.g. `?cache=false`) has been replaced by `nocache`. `false` can still be
-    used, but is deprecated and may be removed in a future version.
+    used, but it is deprecated and may be removed in a future version.
 
 ## 4.0.x → 4.1
 

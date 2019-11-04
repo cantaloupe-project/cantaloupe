@@ -44,6 +44,8 @@
 ### Other
 
 * Java 11 is required.
+* Corrected the structure of the `cookie` key in the delegate script context.
+  See the upgrade guide for more information.
 * Added configuration options for logging in Logstash format. (Thanks to
   @cmhdave)
 * Added a `local_uri` key to the delegate script `context` hash.
