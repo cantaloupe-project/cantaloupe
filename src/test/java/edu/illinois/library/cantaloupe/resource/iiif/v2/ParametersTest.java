@@ -71,7 +71,19 @@ public class ParametersTest extends BaseTest {
     }
 
     @Test
-    void testConstructor3WithUnsupportedOutputFormat() {
+    void testConstructor3WithUnsupportedQuality() {
+        assertThrows(IllegalClientArgumentException.class,
+                () -> new Parameters(
+                        new Identifier("identifier"),
+                        "0,0,200,200",
+                        "pct:50",
+                        "5",
+                        "bogus",
+                        "jpg"));
+    }
+
+    @Test
+    void testConstructor3WithUnsupportedFormat() {
         assertThrows(FormatException.class,
                 () -> new Parameters(
                         new Identifier("identifier"),

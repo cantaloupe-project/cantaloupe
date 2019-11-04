@@ -10,6 +10,9 @@ import edu.illinois.library.cantaloupe.resource.IllegalClientArgumentException;
 import edu.illinois.library.cantaloupe.resource.iiif.FormatException;
 import org.apache.commons.lang3.StringUtils;
 
+import java.util.Arrays;
+import java.util.stream.Collectors;
+
 /**
  * Encapsulates the parameters of a request.
  *
@@ -62,7 +65,7 @@ class Parameters {
     /**
      * Copy constructor.
      */
-    public Parameters(Parameters params) {
+    Parameters(Parameters params) {
         setIdentifier(params.getIdentifier());
         setRegion(params.getRegion());
         setSize(params.getSize());
@@ -74,11 +77,11 @@ class Parameters {
 
     /**
      * @param identifier Decoded identifier.
-     * @param region From URI
-     * @param size From URI
-     * @param rotation From URI
-     * @param quality From URI
-     * @param format From URI
+     * @param region     From URI.
+     * @param size       From URI.
+     * @param rotation   From URI.
+     * @param quality    From URI.
+     * @param format     From URI.
      * @throws FormatException if the {@literal format} argument is invalid.
      * @throws IllegalClientArgumentException if any of the other arguments are
      *         invalid.
@@ -96,12 +99,18 @@ class Parameters {
         try {
             setQuality(Quality.valueOf(quality.toUpperCase()));
         } catch (IllegalArgumentException e) {
-            throw new IllegalClientArgumentException(e.getMessage(), e);
+            String message = "Unsupported quality. Available qualities are: " +
+                    Arrays.stream(Quality.values())
+                            .map(Quality::getURIValue)
+                            .collect(Collectors.joining(", ")) + ".";
+            throw new IllegalClientArgumentException(message, e);
         }
         try {
             setOutputFormat(OutputFormat.valueOf(format.toUpperCase()));
         } catch (IllegalArgumentException e) {
-            throw new FormatException(format);
+            throw new FormatException("Unsupported format. Available output" +
+                    "formats for this image are listed in the information " +
+                    "response.");
         }
     }
 

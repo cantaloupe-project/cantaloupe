@@ -55,6 +55,8 @@
 
 * Fixed the IIIF Image API 2.x endpoint's handling of identifiers containing
   backslashes.
+* Improved the user-friendliness of error messages resulting from illegal
+  quality and format arguments in image requests.
 
 ## 4.1.4
 
