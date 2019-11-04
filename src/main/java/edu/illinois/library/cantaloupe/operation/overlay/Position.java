@@ -11,7 +11,8 @@ public enum Position {
     BOTTOM_LEFT("SW"),
     BOTTOM_CENTER("S"),
     BOTTOM_RIGHT("SE"),
-    REPEAT("REPEAT");
+    REPEAT("REPEAT"),
+    SCALED("SCALED");
 
     private final String shortName;
 
