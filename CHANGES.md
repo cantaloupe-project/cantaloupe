@@ -4,6 +4,8 @@
 
 * Fixed the IIIF Image API 2.x endpoint's handling of identifiers containing
   backslashes.
+* Fixed a potential NullPointerException thrown by various
+  AbstractIIOImageReader methods resulting from improper exception handling.
 * Improved the user-friendliness of error messages resulting from illegal
   quality and format arguments in image requests.
 

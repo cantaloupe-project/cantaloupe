@@ -280,8 +280,8 @@ abstract class AbstractIIOImageReader {
             }
         } finally {
             inputStream = ImageIO.createImageInputStream(inputFile.toFile());
+            createReader();
         }
-        createReader();
     }
 
     public void setSource(ImageInputStream inputStream) throws IOException {
@@ -313,8 +313,8 @@ abstract class AbstractIIOImageReader {
                         inputStream.getClass().getSimpleName(),
                         getFormat());
             }
+            createReader();
         }
-        createReader();
     }
 
     ////////////////////////////////////////////////////////////////////////
