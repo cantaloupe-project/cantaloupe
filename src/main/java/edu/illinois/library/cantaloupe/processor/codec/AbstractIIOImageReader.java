@@ -13,7 +13,6 @@ import edu.illinois.library.cantaloupe.operation.ScaleByPixels;
 import edu.illinois.library.cantaloupe.processor.SourceFormatException;
 import edu.illinois.library.cantaloupe.source.StreamFactory;
 import edu.illinois.library.cantaloupe.source.stream.ClosingMemoryCacheImageInputStream;
-import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 
 import javax.imageio.IIOException;
@@ -104,12 +103,17 @@ public abstract class AbstractIIOImageReader {
      * Should be called when the instance is no longer needed.
      */
     public void dispose() {
-        try {
-            IOUtils.closeQuietly(inputStream);
-        } finally {
-            if (iioReader != null) {
-                iioReader.dispose();
-                iioReader = null;
+        if (inputStream != null) {
+            try {
+                inputStream.close();
+            } catch (IOException e) {
+                getLogger().debug("dispose(): failed to close the input " +
+                                "stream: {}", e.getMessage(), e);
+            } finally {
+                if (iioReader != null) {
+                    iioReader.dispose();
+                    iioReader = null;
+                }
             }
         }
     }
@@ -282,12 +286,15 @@ public abstract class AbstractIIOImageReader {
         source = inputFile;
         try {
             if (inputStream != null) {
-                IOUtils.closeQuietly(inputStream);
+                inputStream.close();
             }
+        } catch (IOException e) {
+            getLogger().debug("setSource(Path): failed to close the input " +
+                            "stream: {}", e.getMessage(), e);
         } finally {
             inputStream = ImageIO.createImageInputStream(inputFile.toFile());
+            createReader();
         }
-        createReader();
     }
 
     public void setSource(ImageInputStream inputStream) throws IOException {
@@ -302,8 +309,11 @@ public abstract class AbstractIIOImageReader {
         source = streamFactory;
         try {
             if (inputStream != null) {
-                IOUtils.closeQuietly(inputStream);
+                inputStream.close();
             }
+        } catch (IOException e) {
+            getLogger().debug("setSource(StreamFactory): failed to close " +
+                    "the input stream: {}", e.getMessage(), e);
         } finally {
             // Some Image I/O readers, like the ones for JPEG, GIF, and PNG,
             // must read whole images into memory.
@@ -319,8 +329,8 @@ public abstract class AbstractIIOImageReader {
                         inputStream.getClass().getSimpleName(),
                         getFormat());
             }
+            createReader();
         }
-        createReader();
     }
 
     ////////////////////////////////////////////////////////////////////////
