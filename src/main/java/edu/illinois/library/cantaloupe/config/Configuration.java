@@ -2,6 +2,8 @@ package edu.illinois.library.cantaloupe.config;
 
 import edu.illinois.library.cantaloupe.util.StringUtils;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
@@ -238,11 +240,13 @@ public interface Configuration {
      * @return Object value corresponding to the given key, or {@literal null}
      *         if not set.
      */
-    Object getProperty(String key);
+    @Nullable
+    Object getProperty(@Nonnull String key);
 
     /**
      * @see #getString(String)
      */
+    @Nullable
     default String getString(Key key) {
         return getString(key.key());
     }
@@ -251,7 +255,8 @@ public interface Configuration {
      * @return String value corresponding to the given key, or {@literal null}
      *         if not set.
      */
-    String getString(String key);
+    @Nullable
+    String getString(@Nonnull String key);
 
     /**
      * @see #getString(String, String)

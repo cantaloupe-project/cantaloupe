@@ -1,5 +1,7 @@
 package edu.illinois.library.cantaloupe.config;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.util.Iterator;
@@ -159,8 +161,9 @@ public final class ConfigurationProvider implements Configuration {
         return defaultValue;
     }
 
+    @Nullable
     @Override
-    public Object getProperty(String key) {
+    public Object getProperty(@Nonnull String key) {
         Object value = null;
         for (Configuration config : wrappedConfigs) {
             value = config.getProperty(key);
@@ -172,7 +175,8 @@ public final class ConfigurationProvider implements Configuration {
     }
 
     @Override
-    public String getString(String key) {
+    @Nullable
+    public String getString(@Nonnull String key) {
         String value = null;
         for (Configuration config : wrappedConfigs) {
             value = config.getString(key);
