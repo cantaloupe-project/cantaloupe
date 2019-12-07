@@ -2,6 +2,8 @@ package edu.illinois.library.cantaloupe.config;
 
 import edu.illinois.library.cantaloupe.util.StringUtils;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.nio.file.Path;
 import java.util.Iterator;
 import java.util.Map;
@@ -133,13 +135,15 @@ public class MapConfiguration implements Configuration {
         }
     }
 
+    @Nullable
     @Override
-    public Object getProperty(String key) {
+    public Object getProperty(@Nonnull String key) {
         return configuration.get(key);
     }
 
     @Override
-    public String getString(String key) {
+    @Nullable
+    public String getString(@Nonnull String key) {
         Object value = configuration.get(key);
         if (value != null) {
             return value.toString();
