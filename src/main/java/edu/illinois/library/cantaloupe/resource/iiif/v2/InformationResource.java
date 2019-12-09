@@ -195,12 +195,15 @@ public class InformationResource extends IIIF2Resource {
 
     private JacksonRepresentation newRepresentation(Info info,
                                                     Processor processor) {
-        final ImageInfoFactory factory = new ImageInfoFactory(
-                processor.getAvailableOutputFormats());
+        final ImageInfoFactory factory = new ImageInfoFactory();
         factory.setDelegateProxy(getDelegateProxy());
 
         final ImageInfo<String, Object> imageInfo = factory.newImageInfo(
-                getImageURI(), info, getPageIndex(), getScaleConstraint());
+                processor.getAvailableOutputFormats(),
+                getImageURI(),
+                info,
+                getPageIndex(),
+                getScaleConstraint());
         return new JacksonRepresentation(imageInfo);
     }
 

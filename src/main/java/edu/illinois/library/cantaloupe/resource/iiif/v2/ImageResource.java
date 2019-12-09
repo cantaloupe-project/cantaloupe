@@ -201,7 +201,7 @@ public class ImageResource extends IIIF2Resource {
                 final Dimension virtualSize = orientation.adjustedSize(fullSize);
                 final Dimension resultingSize = ops.getResultingSize(info.getSize());
                 validateScale(virtualSize, (Scale) ops.getFirst(Scale.class));
-                validateSize(resultingSize, virtualSize, processor);
+                validateSize(resultingSize, virtualSize);
 
                 addHeaders(params, fullSize, disposition,
                         params.getOutputFormat().toFormat().getPreferredMediaType().toString());
@@ -257,12 +257,10 @@ public class ImageResource extends IIIF2Resource {
     }
 
     private void validateSize(Dimension resultingSize,
-                              Dimension virtualSize,
-                              Processor processor) throws SizeRestrictedException {
+                              Dimension virtualSize) throws SizeRestrictedException {
         final var config = Configuration.getInstance();
         if (config.getBoolean(Key.IIIF_RESTRICT_TO_SIZES, false)) {
-            var factory = new ImageInfoFactory(
-                    processor.getAvailableOutputFormats());
+            var factory = new ImageInfoFactory();
             factory.getSizes(virtualSize).stream()
                     .filter(s -> s.width == resultingSize.intWidth() &&
                             s.height == resultingSize.intHeight())

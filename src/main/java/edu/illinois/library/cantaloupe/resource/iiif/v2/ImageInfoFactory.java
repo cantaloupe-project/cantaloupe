@@ -48,33 +48,30 @@ final class ImageInfoFactory {
                             ServiceFeature.JSON_LD_MEDIA_TYPE,
                             ServiceFeature.PROFILE_LINK_HEADER));
 
-    private Set<Format> processorOutputFormats;
     private DelegateProxy delegateProxy;
     private double maxScale;
     private int maxPixels, minSize, minTileSize;
 
-    /**
-     * @param processorOutputFormats Return value of {@link
-     *                               Processor#getAvailableOutputFormats()}.
-     */
-    ImageInfoFactory(Set<Format> processorOutputFormats) {
-        Configuration config = Configuration.getInstance();
-        maxPixels            = config.getInt(Key.MAX_PIXELS, 0);
-        maxScale             = config.getDouble(Key.MAX_SCALE, Double.MAX_VALUE);
-        minSize              = config.getInt(Key.IIIF_MIN_SIZE, DEFAULT_MIN_SIZE);
-        minTileSize          = config.getInt(Key.IIIF_MIN_TILE_SIZE, DEFAULT_MIN_TILE_SIZE);
-
-        this.processorOutputFormats = processorOutputFormats;
+    ImageInfoFactory() {
+        var config  = Configuration.getInstance();
+        maxPixels   = config.getInt(Key.MAX_PIXELS, 0);
+        maxScale    = config.getDouble(Key.MAX_SCALE, Double.MAX_VALUE);
+        minSize     = config.getInt(Key.IIIF_MIN_SIZE, DEFAULT_MIN_SIZE);
+        minTileSize = config.getInt(Key.IIIF_MIN_TILE_SIZE, DEFAULT_MIN_TILE_SIZE);
     }
 
     /**
-     * @param imageURI        May be {@literal null}.
-     * @param info            Info describing the image.
-     * @param infoImageIndex  Index of the full/main image in the {@link Info}
-     *                        argument's {@link Info#getImages()} list.
-     * @param scaleConstraint May be {@literal null}.
+     * @param processorOutputFormats Return value of {@link
+     *                               Processor#getAvailableOutputFormats()}.
+     * @param imageURI               May be {@code null}.
+     * @param info                   Instance describing the image.
+     * @param infoImageIndex         Index of the full/main image in the {@link
+     *                               Info} argument's {@link Info#getImages()}
+     *                               list.
+     * @param scaleConstraint        May be {@code null}.
      */
-    ImageInfo<String,Object> newImageInfo(final String imageURI,
+    ImageInfo<String,Object> newImageInfo(final Set<Format> processorOutputFormats,
+                                          final String imageURI,
                                           final Info info,
                                           final int infoImageIndex,
                                           ScaleConstraint scaleConstraint) {
@@ -115,7 +112,7 @@ final class ImageInfoFactory {
         final Set<Dimension> uniqueTileSizes = new HashSet<>();
 
         // Find a tile width and height. If the image is not tiled,
-        // calculate a tile size close to IIIF_MIN_TILE_SIZE pixels.
+        // calculate a tile size close to minTileSize pixels.
         // Otherwise, use the smallest multiple of the tile size above that
         // of image resolution 0.
         final List<ImageInfo.Tile> tiles = new ArrayList<>();
@@ -245,7 +242,7 @@ final class ImageInfoFactory {
     }
 
     /**
-     * @param maxPixels Maximum number of pixels that will be used in {@literal
+     * @param maxPixels Maximum number of pixels that will be used in {@code
      *                  sizes} keys.
      */
     void setMaxPixels(int maxPixels) {
@@ -260,7 +257,7 @@ final class ImageInfoFactory {
     }
 
     /**
-     * @param minSize Minimum size that will be used in {@literal sizes} keys.
+     * @param minSize Minimum size that will be used in {@code sizes} keys.
      */
     void setMinSize(int minSize) {
         this.minSize = minSize;

@@ -23,22 +23,22 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class ImageInfoFactoryTest extends BaseTest {
 
+    private static final Set<Format> PROCESSOR_FORMATS = Set.of(
+            Format.GIF, Format.JPG, Format.PNG);
+
     private ImageInfoFactory instance;
 
     @BeforeEach
     public void setUp() throws Exception {
         super.setUp();
 
-        final Set<Format> processorFormats = Set.of(
-                Format.GIF, Format.JPG, Format.PNG);
-
-        instance = new ImageInfoFactory(processorFormats);
+        instance = new ImageInfoFactory();
     }
 
     private ImageInfo<String,Object> invokeNewImageInfo() {
         final String imageURI = "http://example.org/bla";
         final Info info = Info.builder().withSize(1500, 1200).build();
-        return instance.newImageInfo(imageURI, info, 0,
+        return instance.newImageInfo(PROCESSOR_FORMATS, imageURI, info, 0,
                 new ScaleConstraint(1, 1));
     }
 
@@ -80,7 +80,7 @@ public class ImageInfoFactoryTest extends BaseTest {
                 })
                 .build();
         ImageInfo<String, Object> imageInfo = instance.newImageInfo(
-                imageURI, info, 0, new ScaleConstraint(1, 1));
+                PROCESSOR_FORMATS, imageURI, info, 0, new ScaleConstraint(1, 1));
 
         assertEquals(1200, imageInfo.get("width"));
     }
@@ -92,7 +92,7 @@ public class ImageInfoFactoryTest extends BaseTest {
                 .withSize(1499, 1199) // test rounding
                 .build();
         ImageInfo<String, Object> imageInfo = instance.newImageInfo(
-                imageURI, info, 0, new ScaleConstraint(1, 2));
+                PROCESSOR_FORMATS, imageURI, info, 0, new ScaleConstraint(1, 2));
 
         assertEquals(750, imageInfo.get("width"));
     }
@@ -116,7 +116,7 @@ public class ImageInfoFactoryTest extends BaseTest {
                 })
                 .build();
         ImageInfo<String, Object> imageInfo = instance.newImageInfo(
-                imageURI, info, 0, new ScaleConstraint(1, 1));
+                PROCESSOR_FORMATS, imageURI, info, 0, new ScaleConstraint(1, 1));
 
         assertEquals(1500, imageInfo.get("height"));
     }
@@ -128,7 +128,7 @@ public class ImageInfoFactoryTest extends BaseTest {
                 .withSize(1499, 1199) // test rounding
                 .build();
         ImageInfo<String, Object> imageInfo = instance.newImageInfo(
-                imageURI, info, 0, new ScaleConstraint(1, 2));
+                PROCESSOR_FORMATS, imageURI, info, 0, new ScaleConstraint(1, 2));
 
         assertEquals(600, imageInfo.get("height"));
     }
@@ -194,7 +194,7 @@ public class ImageInfoFactoryTest extends BaseTest {
                 })
                 .build();
         ImageInfo<String, Object> imageInfo = instance.newImageInfo(
-                imageURI, info, 0, new ScaleConstraint(1, 1));
+                PROCESSOR_FORMATS, imageURI, info, 0, new ScaleConstraint(1, 1));
 
         @SuppressWarnings("unchecked")
         List<ImageInfo.Size> sizes =
@@ -219,7 +219,7 @@ public class ImageInfoFactoryTest extends BaseTest {
                 .withSize(1500, 1200)
                 .build();
         ImageInfo<String, Object> imageInfo = instance.newImageInfo(
-                imageURI, info, 0, new ScaleConstraint(1, 2));
+                PROCESSOR_FORMATS, imageURI, info, 0, new ScaleConstraint(1, 2));
 
         @SuppressWarnings("unchecked")
         List<ImageInfo.Size> sizes =
@@ -262,7 +262,7 @@ public class ImageInfoFactoryTest extends BaseTest {
                 .withNumResolutions(3)
                 .build();
         ImageInfo<String, Object> imageInfo = instance.newImageInfo(
-                imageURI, info, 0, new ScaleConstraint(1, 1));
+                PROCESSOR_FORMATS, imageURI, info, 0, new ScaleConstraint(1, 1));
 
         @SuppressWarnings("unchecked")
         List<ImageInfo.Tile> tiles =
@@ -289,7 +289,7 @@ public class ImageInfoFactoryTest extends BaseTest {
                 .build();
         instance.setMinTileSize(1000);
         ImageInfo<String, Object> imageInfo = instance.newImageInfo(
-                imageURI, info, 0, new ScaleConstraint(1, 1));
+                PROCESSOR_FORMATS, imageURI, info, 0, new ScaleConstraint(1, 1));
 
         @SuppressWarnings("unchecked")
         List<ImageInfo.Tile> tiles =
@@ -312,7 +312,7 @@ public class ImageInfoFactoryTest extends BaseTest {
                 .withTileSize(64, 56)
                 .build();
         ImageInfo<String, Object> imageInfo = instance.newImageInfo(
-                imageURI, info, 0, new ScaleConstraint(1, 1));
+                PROCESSOR_FORMATS, imageURI, info, 0, new ScaleConstraint(1, 1));
 
         @SuppressWarnings("unchecked")
         List<ImageInfo.Tile> tiles =
@@ -329,7 +329,7 @@ public class ImageInfoFactoryTest extends BaseTest {
                 .withTileSize(64, 56)
                 .build();
         ImageInfo<String, Object> imageInfo = instance.newImageInfo(
-                imageURI, info, 0, new ScaleConstraint(1, 2));
+                PROCESSOR_FORMATS, imageURI, info, 0, new ScaleConstraint(1, 2));
 
         @SuppressWarnings("unchecked")
         List<ImageInfo.Tile> tiles =
@@ -346,7 +346,7 @@ public class ImageInfoFactoryTest extends BaseTest {
                 .withTileSize(64, 56)
                 .build();
         ImageInfo<String, Object> imageInfo = instance.newImageInfo(
-                imageURI, info, 0, new ScaleConstraint(1, 1));
+                PROCESSOR_FORMATS, imageURI, info, 0, new ScaleConstraint(1, 1));
 
         @SuppressWarnings("unchecked")
         List<ImageInfo.Tile> tiles =
@@ -455,7 +455,7 @@ public class ImageInfoFactoryTest extends BaseTest {
         final String imageURI = "http://example.org/bla";
         final Info info = Info.builder().withSize(1500, 1200).build();
         ImageInfo<String, Object> imageInfo = instance.newImageInfo(
-                imageURI, info, 0, new ScaleConstraint(1, 4));
+                PROCESSOR_FORMATS, imageURI, info, 0, new ScaleConstraint(1, 4));
 
         List<?> profile = (List<?>) imageInfo.get("profile");
         final Set<?> supportsSet = (Set<?>) ((Map<?, ?>) profile.get(1)).get("supports");
