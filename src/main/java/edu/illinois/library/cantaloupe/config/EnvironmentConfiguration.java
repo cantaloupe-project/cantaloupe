@@ -4,7 +4,6 @@ import edu.illinois.library.cantaloupe.util.StringUtils;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.nio.file.Path;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 

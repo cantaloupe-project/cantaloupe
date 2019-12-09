@@ -152,8 +152,8 @@ class PropertiesDocument {
         return items.stream()
                 .filter(it -> {
                     if (it instanceof KeyValuePair) {
-                        var kvp = (KeyValuePair) it;
-                        return !kvp.value.isBlank() && key.equals(kvp.key());
+                        final KeyValuePair kvp = (KeyValuePair) it;
+                        return !kvp.value.trim().isEmpty() && key.equals(kvp.key());
                     }
                     return false;
                 })
