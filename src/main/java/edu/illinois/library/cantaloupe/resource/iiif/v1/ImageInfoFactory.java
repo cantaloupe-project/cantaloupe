@@ -8,8 +8,9 @@ import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.image.Metadata;
 import edu.illinois.library.cantaloupe.image.Orientation;
 import edu.illinois.library.cantaloupe.image.ScaleConstraint;
-import edu.illinois.library.cantaloupe.processor.Processor;
 import edu.illinois.library.cantaloupe.resource.iiif.ImageInfoUtil;
+
+import java.util.Set;
 
 final class ImageInfoFactory {
 
@@ -21,7 +22,7 @@ final class ImageInfoFactory {
     private static final int DEFAULT_MIN_TILE_SIZE = 512;
 
     ImageInfo newImageInfo(final String imageURI,
-                           final Processor processor,
+                           final Set<Format> availableOutputFormats,
                            final Info info,
                            final int imageIndex,
                            ScaleConstraint scaleConstraint) {
@@ -29,7 +30,7 @@ final class ImageInfoFactory {
             scaleConstraint = new ScaleConstraint(1, 1);
         }
         final ComplianceLevel complianceLevel = ComplianceLevel.getLevel(
-                processor.getAvailableOutputFormats());
+                availableOutputFormats);
 
         final int minTileSize = Configuration.getInstance().
                 getInt(Key.IIIF_MIN_TILE_SIZE, DEFAULT_MIN_TILE_SIZE);
@@ -74,7 +75,7 @@ final class ImageInfoFactory {
         }
 
         // formats
-        for (Format format : processor.getAvailableOutputFormats()) {
+        for (Format format : availableOutputFormats) {
             imageInfo.formats.add(format.getPreferredExtension());
         }
 

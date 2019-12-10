@@ -66,11 +66,11 @@ public abstract class AbstractResource {
     private Identifier identifier;
 
     /**
-     * <p>Returns a sanitized value for a {@literal Content-Disposition} header
+     * <p>Returns a sanitized value for a {@code Content-Disposition} header
      * based on the value of the {@link #RESPONSE_CONTENT_DISPOSITION_QUERY_ARG}
      * query argument.</p>
      *
-     * <p>If the disposition is {@literal attachment} and the filename is not
+     * <p>If the disposition is {@code attachment} and the filename is not
      * set, it will be set to a reasonable value based on the given identifier
      * and output format.</p>
      *
@@ -141,7 +141,7 @@ public abstract class AbstractResource {
      * called but before any request-handler method (like {@link #doGET()}
      * etc.)</p>
      *
-     * <p>Overrides must call {@literal super}.</p>
+     * <p>Overrides must call {@code super}.</p>
      */
     public void doInit() throws Exception {
         response.setHeader("X-Powered-By",
@@ -180,7 +180,7 @@ public abstract class AbstractResource {
     /**
      * <p>Called at the end of the instance's lifecycle.</p>
      *
-     * <p>Overrides must call {@literal super}.</p>
+     * <p>Overrides must call {@code super}.</p>
      */
     public void destroy() {
     }
@@ -189,7 +189,7 @@ public abstract class AbstractResource {
      * <p>Must be overridden by implementations that support {@literal
      * DELETE}.</p>
      *
-     * <p>Overrides must not call {@literal super}.</p>
+     * <p>Overrides must not call {@code super}.</p>
      */
     public void doDELETE() throws Exception {
         response.setStatus(Status.METHOD_NOT_ALLOWED.getCode());
@@ -198,7 +198,7 @@ public abstract class AbstractResource {
     /**
      * <p>Must be overridden by implementations that support {@literal GET}.</p>
      *
-     * <p>Overrides must not call {@literal super}.</p>
+     * <p>Overrides must not call {@code super}.</p>
      */
     public void doGET() throws Exception {
         response.setStatus(Status.METHOD_NOT_ALLOWED.getCode());
@@ -229,7 +229,7 @@ public abstract class AbstractResource {
      * <p>Must be overridden by implementations that support {@literal
      * POST}.</p>
      *
-     * <p>Overrides must not call {@literal super}.</p>
+     * <p>Overrides must not call {@code super}.</p>
      */
     public void doPOST() throws Exception {
         response.setStatus(Status.METHOD_NOT_ALLOWED.getCode());
@@ -238,15 +238,15 @@ public abstract class AbstractResource {
     /**
      * <p>Must be overridden by implementations that support {@literal PUT}.</p>
      *
-     * <p>Overrides must not call {@literal super}.</p>
+     * <p>Overrides must not call {@code super}.</p>
      */
     public void doPUT() throws Exception {
         response.setStatus(Status.METHOD_NOT_ALLOWED.getCode());
     }
 
     /**
-     * Checks the {@literal Authorization} header for credentials that exist in
-     * the given {@link CredentialStore}. If not found, sends a {@literal
+     * Checks the {@code Authorization} header for credentials that exist in
+     * the given {@link CredentialStore}. If not found, sends a {@code
      * WWW-Authenticate} header and throws an exception.
      *
      * @param realm           Basic realm.
@@ -282,8 +282,8 @@ public abstract class AbstractResource {
      * Uses an {@link Authorizer} to determine how to respond to the request.
      * The response will be modified if necessary.
      *
-     * @return Whether authorization was successful. {@literal false} indicates
-     *         a redirect, and client code should abort.
+     * @return Whether authorization was successful. {@code false} indicates a
+     *         redirect, and client code should abort.
      * @throws IOException if there was an I/O error while checking
      *                     authorization.
      * @throws ResourceException if authorization resulted in an HTTP 400-level
@@ -328,8 +328,8 @@ public abstract class AbstractResource {
     }
 
     /**
-     * @return User agent's IP address, respecting the {@literal
-     *         X-Forwarded-For} request header, if present.
+     * @return User agent's IP address, respecting the {@code X-Forwarded-For}
+     *         request header, if present.
      */
     private String getCanonicalClientIPAddress() {
         // The value is expected to be in the format: "client, proxy1, proxy2"
@@ -363,7 +363,7 @@ public abstract class AbstractResource {
 
     /**
      * @return Instance for the current request. The result is cached. May be
-     *         {@literal null}.
+     *         {@code null}.
      */
     protected final DelegateProxy getDelegateProxy() {
         if (delegateProxy == null && DelegateProxyService.isEnabled()) {
@@ -382,7 +382,7 @@ public abstract class AbstractResource {
      * be the identifier that the client supplies or sees; for that, use {@link
      * #getPublicIdentifier()}.)
      *
-     * @return Identifier, or {@literal null} if the URI does not have an
+     * @return Identifier, or {@code null} if the URI does not have an
      *         identifier path component.
      * @see #getPublicIdentifier()
      */
@@ -405,7 +405,7 @@ public abstract class AbstractResource {
      * edu.illinois.library.cantaloupe.image.ScaleConstraint scale constraint
      * suffix}. As such, it is not usable without additional processing.</p>
      *
-     * @return Identifier, or {@literal null} if no path arguments are
+     * @return Identifier, or {@code null} if no path arguments are
      *         available.
      */
     protected String getIdentifierPathComponent() {
@@ -427,7 +427,7 @@ public abstract class AbstractResource {
 
     /**
      * @return List of client-preferred media types as expressed in the
-     *         {@literal Accept} request header.
+     *         {@code Accept} request header.
      * @see    <a href="https://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html">
      *         RFC 2616</a>
      */
@@ -476,7 +476,7 @@ public abstract class AbstractResource {
     /**
      * <p>Returns the identifier that the client sees. This will be the value
      * of the {@link #PUBLIC_IDENTIFIER_HEADER} header, if available, or else
-     * the {@literal identifier} URI path component.</p>
+     * the {@code identifier} URI path component.</p>
      *
      * <p>The result is not decoded, as the encoding may be influenced by
      * {@link Key#SLASH_SUBSTITUTE}, for example.</p>
@@ -492,7 +492,7 @@ public abstract class AbstractResource {
     /**
      * <p>Returns the current public reference.</p>
      *
-     * <p>{@link Key#BASE_URI} is respected, if set. Otherwise, the {@literal
+     * <p>{@link Key#BASE_URI} is respected, if set. Otherwise, the {@code
      * X-Forwarded-*} request headers are respected, if available. Finally,
      * Servlet-supplied information is used otherwise.</p>
      *
@@ -566,7 +566,7 @@ public abstract class AbstractResource {
     /**
      * <p>Returns a reference to the base URI path of the application.</p>
      *
-     * <p>{@link Key#BASE_URI} is respected, if set. Otherwise, the {@literal
+     * <p>{@link Key#BASE_URI} is respected, if set. Otherwise, the {@code
      * X-Forwarded-*} request headers are respected, if available. Finally,
      * Servlet-supplied information is used otherwise.</p>
      *
@@ -600,11 +600,11 @@ public abstract class AbstractResource {
     }
 
     /**
-     * <p>Returns a sanitized value for a {@literal Content-Disposition} header
+     * <p>Returns a sanitized value for a {@code Content-Disposition} header
      * based on the value of the {@link #RESPONSE_CONTENT_DISPOSITION_QUERY_ARG}
      * query argument.</p>
      *
-     * <p>If the disposition is {@literal attachment} and the filename is not
+     * <p>If the disposition is {@code attachment} and the filename is not
      * set, it will be set to a reasonable value based on the given identifier
      * and output format.</p>
      *
@@ -641,7 +641,7 @@ public abstract class AbstractResource {
 
     /**
      * @return Scale constraint from the {@link #getIdentifierPathComponent()
-     *         identifier path component}, or {@literal null} if not present.
+     *         identifier path component}, or {@code null} if not present.
      */
     protected final ScaleConstraint getScaleConstraint() {
         return ScaleConstraint.fromIdentifierPathComponent(getIdentifierPathComponent());
@@ -669,8 +669,9 @@ public abstract class AbstractResource {
     /**
      * @param limitToTypes Media types to limit the result to, in order of
      *                     most to least preferred by the application.
-     * @return Best media type conforming to client preferences as expressed in
-     *         the {@literal Accept} header.
+     * @return             Best media type conforming to client preferences as
+     *                     expressed in the {@code Accept} header; or {@code
+     *                     null} if negotiation failed.
      */
     protected final String negotiateContentType(List<String> limitToTypes) {
         return getPreferredMediaTypes().stream()

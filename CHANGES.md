@@ -12,6 +12,9 @@
   Unicode filename syntax.
 * The `endpoint.iiif.content_disposition` configuration key has been removed.
   The `response-content-disposition` URL query argument should be used instead.
+* The IIIF Image API 1.x endpoint no longer supports content negotiation. If a
+  format extension is not supplied in the URI, JPEG will be returned regardless
+  of the value of the `Accept` header.
 
 ### Sources
 

@@ -11,6 +11,7 @@ import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.resource.ResourceTest;
 import edu.illinois.library.cantaloupe.resource.Route;
 import org.apache.commons.lang3.StringUtils;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import javax.imageio.ImageIO;
@@ -472,6 +473,7 @@ public class Version1_1ConformanceTest extends ResourceTest {
      * response) or 30x (redirect to the correct URI with a format extension)
      * style content negotiation."
      */
+    @Disabled // this feature has been removed as of 5.0 (see change log)
     @Test
     void testFormatInAcceptHeader() throws Exception {
         client = newClient("/" + IMAGE + "/full/full/0/native");

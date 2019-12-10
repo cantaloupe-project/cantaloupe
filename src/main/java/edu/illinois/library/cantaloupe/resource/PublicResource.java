@@ -1,33 +1,19 @@
 package edu.illinois.library.cantaloupe.resource;
 
-import edu.illinois.library.cantaloupe.cache.CacheFacade;
-import edu.illinois.library.cantaloupe.cache.CacheFactory;
-import edu.illinois.library.cantaloupe.cache.DerivativeCache;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Dimension;
-import edu.illinois.library.cantaloupe.image.Identifier;
-import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.http.Reference;
 import edu.illinois.library.cantaloupe.image.ScaleConstraint;
 import edu.illinois.library.cantaloupe.operation.Scale;
-import edu.illinois.library.cantaloupe.processor.Processor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.Future;
 
 public abstract class PublicResource extends AbstractResource {
-
-    private static final Logger LOGGER =
-            LoggerFactory.getLogger(PublicResource.class);
 
     /**
      * URL argument values that can be used with the {@code cache} query key to
@@ -35,8 +21,6 @@ public abstract class PublicResource extends AbstractResource {
      */
     private static final Set<String> CACHE_BYPASS_ARGUMENTS =
             Set.of("false", "nocache");
-
-    protected Future<Path> tempFileFuture;
 
     @Override
     public void doInit() throws Exception {
@@ -85,54 +69,6 @@ public abstract class PublicResource extends AbstractResource {
                         String.join(", ", directives));
             }
         }
-    }
-
-    @Override
-    public void destroy() {
-        // If a temp file was created in the source of fulfilling the request,
-        // it will need to be deleted.
-        if (tempFileFuture != null) {
-            try {
-                Path tempFile = tempFileFuture.get();
-                if (tempFile != null) {
-                    Files.deleteIfExists(tempFile);
-                }
-            } catch (Exception e) {
-                LOGGER.error("destroy(): {}", e.getMessage(), e);
-            }
-        }
-    }
-
-    /**
-     * <p>Returns the info for the source image corresponding to the
-     * given identifier as efficiently as possible, respecting {@link
-     * #isBypassingCache()} and {@link #isBypassingCacheRead()}.</p>
-     *
-     * @param identifier Image identifier.
-     * @param proc       Processor from which to read the info if it can't be
-     *                   retrieved from a cache.
-     * @return           Info for the image with the given identifier.
-     */
-    protected final Info getOrReadInfo(final Identifier identifier,
-                                       final Processor proc) throws IOException {
-        Info info;
-        if (!isBypassingCache()) {
-            if (!isBypassingCacheRead()) {
-                info = new CacheFacade().getOrReadInfo(identifier, proc).orElseThrow();
-            } else {
-                info = proc.readInfo();
-                DerivativeCache cache = CacheFactory.getDerivativeCache().orElse(null);
-                if (cache != null) {
-                    cache.put(identifier, info);
-                }
-            }
-            info.setIdentifier(identifier);
-        } else {
-            LOGGER.debug("getOrReadInfo(): bypassing the cache, as requested");
-            info = proc.readInfo();
-            info.setIdentifier(identifier);
-        }
-        return info;
     }
 
     /**

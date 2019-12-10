@@ -36,7 +36,8 @@ public class ImageInfoFactoryTest extends BaseTest {
 
         Info info = processor.readInfo();
         imageInfo = new ImageInfoFactory().newImageInfo(
-                imageUri, processor, info, 0, new ScaleConstraint(1, 1));
+                imageUri, processor.getAvailableOutputFormats(),
+                info, 0, new ScaleConstraint(1, 1));
     }
 
     @Override
@@ -56,7 +57,8 @@ public class ImageInfoFactoryTest extends BaseTest {
 
         Info info = processor.readInfo();
         imageInfo = new ImageInfoFactory().newImageInfo(
-                imageUri, processor, info, 0, new ScaleConstraint(1, 1));
+                imageUri, processor.getAvailableOutputFormats(),
+                info, 0, new ScaleConstraint(1, 1));
     }
 
     private void setUpForScaleConstrainedImage() throws Exception {
@@ -67,7 +69,8 @@ public class ImageInfoFactoryTest extends BaseTest {
 
         Info info = processor.readInfo();
         imageInfo = new ImageInfoFactory().newImageInfo(
-                imageUri, processor, info, 0, new ScaleConstraint(1, 2));
+                imageUri, processor.getAvailableOutputFormats(),
+                info, 0, new ScaleConstraint(1, 2));
     }
 
     @Test
@@ -158,7 +161,8 @@ public class ImageInfoFactoryTest extends BaseTest {
                 TestUtil.getImage("tif-rgb-1res-64x56x8-tiled-uncompressed.tif"));
         Info info = processor.readInfo();
         imageInfo = new ImageInfoFactory().newImageInfo(
-                imageUri, processor, info, 0, new ScaleConstraint(1, 1));
+                imageUri, processor.getAvailableOutputFormats(),
+                info, 0, new ScaleConstraint(1, 1));
 
         assertEquals(64, (long) imageInfo.tileWidth);
     }
@@ -188,7 +192,8 @@ public class ImageInfoFactoryTest extends BaseTest {
                 TestUtil.getImage("tif-rgb-1res-64x56x8-tiled-uncompressed.tif"));
         Info info = processor.readInfo();
         imageInfo = new ImageInfoFactory().newImageInfo(
-                imageUri, processor, info, 0, new ScaleConstraint(1, 1));
+                imageUri, processor.getAvailableOutputFormats(),
+                info, 0, new ScaleConstraint(1, 1));
 
         assertEquals(64, (long) imageInfo.tileWidth);
         assertEquals(56, (long) imageInfo.tileHeight);
