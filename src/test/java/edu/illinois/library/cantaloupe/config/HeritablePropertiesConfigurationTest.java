@@ -9,7 +9,8 @@ import java.nio.file.Paths;
 import java.util.Iterator;
 import java.util.List;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 public class HeritablePropertiesConfigurationTest extends AbstractFileConfigurationTest {
 
@@ -55,7 +56,7 @@ public class HeritablePropertiesConfigurationTest extends AbstractFileConfigurat
             it.next();
             count++;
         }
-        assertEquals(8, count);
+        assertEquals(9, count);
     }
 
     /* getProperty(Key) */
@@ -127,4 +128,10 @@ public class HeritablePropertiesConfigurationTest extends AbstractFileConfigurat
         assertNull(docs.get(2).get("newkey"));
     }
 
+    @Test
+    public void testGetPropertyReturnsNullIfKeyIsSpecifiedButNoValueIsPresent() throws ConfigurationException {
+        instance.reload();
+
+        assertNull(instance.getProperty("key_without_value"));
+    }
 }

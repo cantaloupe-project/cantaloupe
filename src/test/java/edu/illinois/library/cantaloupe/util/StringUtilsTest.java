@@ -7,7 +7,10 @@ import org.junit.Test;
 
 import java.util.regex.Pattern;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
 
 public class StringUtilsTest extends BaseTest {
 
@@ -106,6 +109,11 @@ public class StringUtilsTest extends BaseTest {
 
         toStrip = "longer than str";
         assertSame(str, StringUtils.stripStart(str, toStrip));
+    }
+
+    @Test(expected = NumberFormatException.class)
+    public void testToBooleanWithNullValueThrowsException() {
+        StringUtils.toBoolean(null);
     }
 
     @Test(expected = NumberFormatException.class)
