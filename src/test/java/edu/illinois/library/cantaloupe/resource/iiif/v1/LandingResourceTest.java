@@ -61,8 +61,6 @@ public class LandingResourceTest extends ResourceTest {
 
         // Access-Control-Allow-Origin
         assertEquals("*", headers.getFirstValue("Access-Control-Allow-Origin"));
-        // Content-Length
-        assertNotNull(headers.getFirstValue("Content-Length"));
         // Content-Type
         assertTrue("text/html;charset=UTF-8".equalsIgnoreCase(
                 headers.getFirstValue("Content-Type")));
