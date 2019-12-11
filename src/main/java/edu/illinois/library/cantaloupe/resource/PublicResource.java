@@ -72,8 +72,8 @@ public abstract class PublicResource extends AbstractResource {
     }
 
     /**
-     * @return Page index (a.k.a. page number - 1) from the {@literal page}
-     *         query argument, or {@literal 0} if not supplied.
+     * @return Page index (a.k.a. {@literal page number - 1}) from the {@code
+     *         page} query argument, or {@code 0} if not supplied.
      */
     protected int getPageIndex() {
         String arg = getRequest().getReference().getQuery()
@@ -90,8 +90,8 @@ public abstract class PublicResource extends AbstractResource {
 
     /**
      * @return Whether there is a {@code cache} argument set to {@code false}
-     *         or {@code nocache} in the URI query string to indicate that
-     *         cache reads and writes are both bypassed.
+     *         or {@code nocache} in the URI query string indicating that cache
+     *         reads and writes are both bypassed.
      */
     protected final boolean isBypassingCache() {
         String value = getRequest().getReference().getQuery().getFirstValue("cache");
@@ -100,7 +100,7 @@ public abstract class PublicResource extends AbstractResource {
 
     /**
      * @return Whether there is a {@code cache} argument set to {@code recache}
-     *         in the URI query string to indicate that cache reads are
+     *         in the URI query string indicating that cache reads are
      *         bypassed.
      */
     protected final boolean isBypassingCacheRead() {
@@ -110,7 +110,7 @@ public abstract class PublicResource extends AbstractResource {
 
     /**
      * <p>If an identifier is present in the URI, and it contains a scale
-     * constraint suffix in a non-normalized form, this method will redirect to
+     * constraint suffix in a non-normalized form, this method redirects to
      * a normalized URI.</p>
      *
      * <p>Examples:</p>
@@ -124,8 +124,8 @@ public abstract class PublicResource extends AbstractResource {
      *     <dd>redirect to no constraint</dd>
      * </dl>
      *
-     * @return {@literal true} if redirecting. Clients should stop processing
-     *         if this is the case.
+     * @return {@code true} if redirecting. Clients should stop processing if
+     *         this is the case.
      */
     protected final boolean redirectToNormalizedScaleConstraint()
             throws IOException {
@@ -160,22 +160,23 @@ public abstract class PublicResource extends AbstractResource {
 
     /**
      * @param virtualSize Orientation-aware full source image size.
-     * @param scale       May be {@literal null}.
+     * @param scale       May be {@code null}.
      */
     protected void validateScale(Dimension virtualSize,
                                  Scale scale) throws ScaleRestrictedException {
-        final ScaleConstraint scaleConstraint = (getScaleConstraint() != null) ?
-                getScaleConstraint() : new ScaleConstraint(1, 1);
-        double scalePct = scaleConstraint.getRational().doubleValue();
-        if (scale != null) {
-            scalePct = Arrays.stream(scale.getResultingScales(virtualSize,
-                            scaleConstraint)).max().orElse(1);
-        }
-
         final Configuration config = Configuration.getInstance();
         final double maxScale      = config.getDouble(Key.MAX_SCALE, 1.0);
-        if (maxScale > 0.0001 && scalePct > maxScale) {
-            throw new ScaleRestrictedException(maxScale);
+        if (maxScale > 0.0001) { // A maxScale of 0 indicates no max.
+            ScaleConstraint scaleConstraint = (getScaleConstraint() != null) ?
+                    getScaleConstraint() : new ScaleConstraint(1, 1);
+            double scalePct = scaleConstraint.getRational().doubleValue();
+            if (scale != null) {
+                scalePct = Arrays.stream(scale.getResultingScales(virtualSize,
+                        scaleConstraint)).max().orElse(1);
+            }
+            if (scalePct > maxScale) {
+                throw new ScaleRestrictedException(maxScale);
+            }
         }
     }
 
