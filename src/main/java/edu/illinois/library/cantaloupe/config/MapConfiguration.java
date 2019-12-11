@@ -9,6 +9,8 @@ import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 /**
  * In-memory configuration that cannot be persisted.
@@ -133,13 +135,15 @@ public class MapConfiguration implements Configuration {
         }
     }
 
+    @Nullable
     @Override
-    public Object getProperty(String key) {
+    public Object getProperty(@Nonnull String key) {
         return configuration.get(key);
     }
 
     @Override
-    public String getString(String key) {
+    @Nullable
+    public String getString(@Nonnull String key) {
         Object value = configuration.get(key);
         if (value != null) {
             return value.toString();

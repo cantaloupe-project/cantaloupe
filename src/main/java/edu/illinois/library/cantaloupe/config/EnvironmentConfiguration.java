@@ -6,6 +6,8 @@ import java.nio.file.Path;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.Optional;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 /**
  * <p>Read-only configuration backed by the environment.</p>
@@ -141,13 +143,15 @@ class EnvironmentConfiguration implements Configuration {
         }
     }
 
+    @Nullable
     @Override
-    public Object getProperty(String key) {
+    public Object getProperty(@Nonnull String key) {
         return getString(key);
     }
 
     @Override
-    public String getString(String key) {
+    @Nullable
+    public String getString(@Nonnull String key) {
         key = toEnvironmentKey(key);
         return System.getenv(key);
     }

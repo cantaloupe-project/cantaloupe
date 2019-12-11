@@ -55,7 +55,7 @@ public class HeritablePropertiesConfigurationTest extends AbstractFileConfigurat
             it.next();
             count++;
         }
-        assertEquals(8, count);
+        assertEquals(9, count);
     }
 
     /* getProperty(Key) */
@@ -122,6 +122,12 @@ public class HeritablePropertiesConfigurationTest extends AbstractFileConfigurat
         assertEquals("bears", docs.get(0).get("newkey"));
         assertNull(docs.get(1).get("newkey"));
         assertNull(docs.get(2).get("newkey"));
+    }
+
+    @Test
+    public void testGetPropertyReturnsNullIfKeyIsSpecifiedButNoValueIsPresent() {
+        instance.reload();
+        assertNull(instance.getProperty("key_without_value"));
     }
 
 }

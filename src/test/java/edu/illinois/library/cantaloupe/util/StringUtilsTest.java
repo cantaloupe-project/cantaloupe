@@ -109,6 +109,12 @@ class StringUtilsTest extends BaseTest {
     }
 
     @Test
+    void testToBooleanWithNullValue() {
+        assertThrows(NumberFormatException.class,
+                () -> StringUtils.toBoolean(null));
+    }
+
+    @Test
     void testToBooleanWithUnrecognizedValue() {
         assertThrows(NumberFormatException.class,
                 () -> StringUtils.toBoolean("cats"));
