@@ -47,8 +47,6 @@ public class LandingResourceTest extends ResourceTest {
         // Content-Type
         assertEquals("text/html;charset=UTF-8",
                 headers.getFirstValue("Content-Type"));
-        // Content-Length
-        assertTrue(Integer.parseInt(headers.getFirstValue("Content-Length")) > 10);
         // Date
         assertNotNull(headers.getFirstValue("Date"));
         // Server
