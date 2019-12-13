@@ -12,6 +12,8 @@ public class ApplicationLogFilter extends Filter<ILoggingEvent> {
 
     public FilterReply decide(ILoggingEvent event) {
         // PDFBox log messages are unfortunately not calibrated very well.
+        // There are lots of warnings for trivial things that nobody but a
+        // PDF enthusiast would care about.
         // Would be better to reduce their level, but we can't here...
         if (event.getLoggerName().startsWith("org.apache.pdfbox") &&
                 event.getLevel().equals(Level.WARN)) {
@@ -22,18 +24,20 @@ public class ApplicationLogFilter extends Filter<ILoggingEvent> {
                 Level.TRACE.isGreaterOrEqual(event.getLevel())) {
             return FilterReply.DENY;
         }
-        // Reject Jetty debug messages as they totally overwhelm the debug log.
+        // Reject Jetty debug messages, even though they might be useful, as
+        // they totally overwhelm the debug log.
         else if (event.getLoggerName().startsWith("org.eclipse.jetty") &&
                 Level.DEBUG.isGreaterOrEqual(event.getLevel())) {
             return FilterReply.DENY;
         }
         // Reject Jetty static content access messages.
-        else if ("org.eclipse.jetty.server.ResourceService".equals(event.getLoggerName()) &&
+        else if (org.eclipse.jetty.server.ResourceService.class.getName().equals(event.getLoggerName()) &&
                 Level.INFO.isGreaterOrEqual(event.getLevel())) {
             return FilterReply.DENY;
         }
-        // Reject Jetty access log messages.
-        else if (event.getLoggerName().equals("LogService")) {
+        // Reject Jetty access log messages. AccessLogFilter will accept them
+        // instead.
+        else if (org.eclipse.jetty.server.RequestLog.class.getName().equals(event.getLoggerName())) {
             return FilterReply.DENY;
         }
         // Reject Velocity debug messages.

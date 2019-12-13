@@ -11,7 +11,7 @@ public class AccessLogFilter extends Filter<ILoggingEvent> {
 
     public FilterReply decide(ILoggingEvent event) {
         // Accept Jetty access log messages; deny everything else.
-        return event.getLoggerName().equals("LogService") ?
+        return org.eclipse.jetty.server.RequestLog.class.getName().equals(event.getLoggerName()) ?
                 FilterReply.ACCEPT : FilterReply.DENY;
     }
 
