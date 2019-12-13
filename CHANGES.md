@@ -60,8 +60,11 @@
   backslashes.
 * Fixed a potential NullPointerException thrown by various
   AbstractIIOImageReader methods resulting from improper exception handling.
+* Fixed a regression involving failure to write to the access log.
 * Improved the user-friendliness of error messages resulting from illegal
   quality and format arguments in image requests.
+* Jetty has been upgraded to version 9.4.24.v20191120, which addresses
+  multiple CVEs.
 
 ## 4.1.4
 
@@ -103,8 +106,8 @@
   for which chunking is enabled.
 * The Jetty client used by HttpSource has been downgraded to the version used
   in 4.1.1 due to a bug in the version used in 4.1.2.
-* Fixed the behavior of the print_stack_trace_on_error_pages configuration key
-  in the context of certain unrecoverable errors.
+* Fixed the behavior of the `print_stack_trace_on_error_pages` configuration
+  key in the context of certain unrecoverable errors.
 
 ## 4.1.2
 
