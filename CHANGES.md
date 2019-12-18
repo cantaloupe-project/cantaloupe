@@ -60,9 +60,10 @@
   backslashes.
 * Fixed a potential NullPointerException thrown by various
   AbstractIIOImageReader methods resulting from improper exception handling.
-* Fixed a regression involving failure to write to the access log.
 * Improved the user-friendliness of error messages resulting from illegal
   quality and format arguments in image requests.
+* Reduced an error-level log statement resulting from an exception while
+  streaming from a derivative cache to the response to debug-level.
 * Jetty has been upgraded to version 9.4.24.v20191120, which addresses
   multiple CVEs.
 

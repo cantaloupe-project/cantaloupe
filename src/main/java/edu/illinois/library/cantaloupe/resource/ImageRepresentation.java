@@ -99,8 +99,9 @@ public class ImageRepresentation implements Representation {
                         return;
                     }
                 } catch (IOException e) {
-                    LOGGER.error("Failed to read from {}: {}",
-                            cache.getClass().getSimpleName(), e.getMessage(), e);
+                    LOGGER.debug("Error while streaming from {} to the response: {}",
+                            cache.getClass().getSimpleName(),
+                            e.getMessage());
                     // It may still be possible to fulfill the request.
                     copyOrProcess(responseOS);
                     return;
