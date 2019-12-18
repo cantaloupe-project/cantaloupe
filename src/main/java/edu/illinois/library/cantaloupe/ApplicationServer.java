@@ -7,14 +7,11 @@ import org.eclipse.jetty.alpn.server.ALPNServerConnectionFactory;
 import org.eclipse.jetty.http2.HTTP2Cipher;
 import org.eclipse.jetty.http2.server.HTTP2CServerConnectionFactory;
 import org.eclipse.jetty.http2.server.HTTP2ServerConnectionFactory;
-import org.eclipse.jetty.server.CustomRequestLog;
 import org.eclipse.jetty.server.HttpConfiguration;
 import org.eclipse.jetty.server.HttpConnectionFactory;
-import org.eclipse.jetty.server.RequestLog;
 import org.eclipse.jetty.server.SecureRequestCustomizer;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
-import org.eclipse.jetty.server.Slf4jRequestLogWriter;
 import org.eclipse.jetty.server.SslConnectionFactory;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.eclipse.jetty.webapp.WebAppContext;
@@ -152,12 +149,6 @@ public class ApplicationServer {
         server = new Server();
         context.setServer(server);
         server.setHandler(context);
-
-        // This is technically "NCSA Combined" format.
-        RequestLog log = new CustomRequestLog(
-                new Slf4jRequestLogWriter(),
-                CustomRequestLog.EXTENDED_NCSA_FORMAT);
-        server.setRequestLog(log);
     }
 
     public int getAcceptQueueLimit() {
