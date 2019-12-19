@@ -316,6 +316,11 @@
             <artifactId>jetty-webapp</artifactId>
             <version>${jetty.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>jetty-jmx</artifactId>
+            <version>${jetty.version}</version>
+        </dependency>
         <!-- Enables colorized Logback console output in Windows -->
         <dependency>
             <groupId>org.fusesource.jansi</groupId>
