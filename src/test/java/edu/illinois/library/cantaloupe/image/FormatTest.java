@@ -3,8 +3,6 @@ package edu.illinois.library.cantaloupe.image;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import org.junit.jupiter.api.Test;
 
-import java.util.Collections;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -18,7 +16,7 @@ class FormatTest extends BaseTest {
                 Format.FLV, Format.GIF, Format.JP2, Format.JPG, Format.MOV,
                 Format.MP4, Format.MPG,Format.PDF, Format.PNG, Format.TIF,
                 Format.UNKNOWN, Format.WEBM, Format.WEBP, Format.XPM);
-        assertEquals(expected, Format.getAllFormats());
+        assertEquals(expected, Format.knownFormats());
     }
 
     @Test
@@ -232,7 +230,7 @@ class FormatTest extends BaseTest {
 
     @Test
     void testToString() {
-        for (Format format : Format.getAllFormats()) {
+        for (Format format : Format.knownFormats()) {
             assertEquals(format.getPreferredExtension(),
                     format.toString());
         }

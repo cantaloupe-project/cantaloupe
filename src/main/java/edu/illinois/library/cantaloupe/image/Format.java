@@ -13,7 +13,7 @@ import java.util.stream.Collectors;
  *
  * <p>Common formats recognized by the application are accessible via {@code
  * public static final} variables and automatically added to the {@link
- * #getAllFormats() format registry}.</p>
+ * #knownFormats() registry of known formats}.</p>
  *
  * <p>Instances are immutable.</p>
  */
@@ -238,7 +238,7 @@ public final class Format implements Comparable<Format> {
             Type.IMAGE,
             true);
 
-    private static final Set<Format> ALL_FORMATS =
+    private static final Set<Format> KNOWN_FORMATS =
             ConcurrentHashMap.newKeySet();
 
     private List<String> extensions;
@@ -250,15 +250,8 @@ public final class Format implements Comparable<Format> {
     private Type type;
 
     static {
-        getAllFormats().addAll(Set.of(AVI, BMP, DCM, FLV, GIF, JP2, JPG, MOV,
+        KNOWN_FORMATS.addAll(Set.of(AVI, BMP, DCM, FLV, GIF, JP2, JPG, MOV,
                 MP4, MPG, PDF, PNG, TIF, UNKNOWN, WEBM, WEBP, XPM));
-    }
-
-    /**
-     * @return Thread-safe registry of all known formats.
-     */
-    public static Set<Format> getAllFormats() {
-        return ALL_FORMATS;
     }
 
     /**
@@ -295,7 +288,7 @@ public final class Format implements Comparable<Format> {
         }
         if (extension != null) {
             extension = extension.toLowerCase();
-            for (Format format : Format.getAllFormats()) {
+            for (Format format : Format.knownFormats()) {
                 if (format.getExtensions().contains(extension)) {
                     return format;
                 }
@@ -305,7 +298,14 @@ public final class Format implements Comparable<Format> {
     }
 
     /**
-     * @return Format in the {@link #getAllFormats() registry} with the given
+     * @return Thread-safe registry of all known formats.
+     */
+    public static Set<Format> knownFormats() {
+        return KNOWN_FORMATS;
+    }
+
+    /**
+     * @return Format in the {@link #knownFormats() registry} with the given
      *         extension.
      */
     public static Format withExtension(String extension) {
@@ -313,7 +313,7 @@ public final class Format implements Comparable<Format> {
             extension = extension.substring(1);
         }
         final String lcext = extension.toLowerCase();
-        return getAllFormats()
+        return knownFormats()
                 .stream()
                 .filter(f -> f.getExtensions().contains(lcext))
                 .findAny()

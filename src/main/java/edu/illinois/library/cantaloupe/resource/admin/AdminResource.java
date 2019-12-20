@@ -221,7 +221,7 @@ public class AdminResource extends AbstractAdminResource {
 
         // source format assignments
         Map<FormatProxy,ProcessorProxy> assignments = new TreeMap<>();
-        for (Format format : Format.getAllFormats()) {
+        for (Format format : Format.knownFormats()) {
             try (Processor proc = new ProcessorFactory().newProcessor(format)) {
                 assignments.put(new FormatProxy(format), new ProcessorProxy(proc));
             } catch (SourceFormatException |
@@ -233,7 +233,7 @@ public class AdminResource extends AbstractAdminResource {
         vars.put("processorAssignments", assignments);
 
         // image source formats
-        List<FormatProxy> imageFormats = Format.getAllFormats()
+        List<FormatProxy> imageFormats = Format.knownFormats()
                 .stream()
                 .filter(f -> Format.Type.IMAGE.equals(f.getType()) && !Format.DCM.equals(f))
                 .sorted(Comparator.comparing(Format::getName))
@@ -242,7 +242,7 @@ public class AdminResource extends AbstractAdminResource {
         vars.put("imageSourceFormats", imageFormats);
 
         // video source formats
-        List<FormatProxy> videoFormats = Format.getAllFormats()
+        List<FormatProxy> videoFormats = Format.knownFormats()
                 .stream()
                 .filter(f -> Format.Type.VIDEO.equals(f.getType()))
                 .sorted(Comparator.comparing(Format::getName))
@@ -251,7 +251,7 @@ public class AdminResource extends AbstractAdminResource {
         vars.put("videoSourceFormats", videoFormats);
 
         // source format assignments
-        vars.put("sourceFormats", Format.getAllFormats()
+        vars.put("sourceFormats", Format.knownFormats()
                 .stream()
                 .map(FormatProxy::new)
                 .collect(Collectors.toUnmodifiableList()));

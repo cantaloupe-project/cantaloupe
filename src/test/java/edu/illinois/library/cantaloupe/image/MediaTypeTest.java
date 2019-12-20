@@ -30,7 +30,7 @@ public class MediaTypeTest extends BaseTest {
     @BeforeAll
     public static void beforeClass() throws Exception {
         BaseTest.beforeClass();
-        for (Format format : Format.getAllFormats()) {
+        for (Format format : Format.knownFormats()) {
             if (format.equals(Format.UNKNOWN)) {
                 continue;
             }
