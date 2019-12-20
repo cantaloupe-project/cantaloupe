@@ -46,12 +46,12 @@ public final class ImageReaderFactory {
     /**
      * Creates a reusable instance for reading from files.
      *
-     * @param sourceFile File to read from.
      * @param format     Format of the source image.
+     * @param sourceFile File to read from.
      * @throws IllegalArgumentException if the format is unsupported.
      */
-    public ImageReader newImageReader(Path sourceFile,
-                                      Format format) throws IOException {
+    public ImageReader newImageReader(Format format,
+                                      Path sourceFile) throws IOException {
         ImageReader reader = newImageReader(format);
         reader.setSource(sourceFile);
         return reader;
@@ -60,27 +60,27 @@ public final class ImageReaderFactory {
     /**
      * <p>Creates a non-reusable instance.</p>
      *
-     * <p>{@link #newImageReader(ImageInputStream, Format)} should be preferred
+     * <p>{@link #newImageReader(Format, ImageInputStream)} should be preferred
      * when a first-class {@link ImageInputStream} can be provided.</p>
      *
-     * @param inputStream Stream to read from.
      * @param format      Format of the source image.
+     * @param inputStream Stream to read from.
      * @throws IllegalArgumentException if the format is unsupported.
      */
-    public ImageReader newImageReader(InputStream inputStream,
-                                      Format format) throws IOException {
-        return newImageReader(new ClosingMemoryCacheImageInputStream(inputStream), format);
+    public ImageReader newImageReader(Format format,
+                                      InputStream inputStream) throws IOException {
+        return newImageReader(format, new ClosingMemoryCacheImageInputStream(inputStream));
     }
 
     /**
      * Creates a non-reusable instance.
      *
-     * @param inputStream Stream to read from.
      * @param format      Format of the source image.
+     * @param inputStream Stream to read from.
      * @throws IllegalArgumentException if the format is unsupported.
      */
-    public ImageReader newImageReader(ImageInputStream inputStream,
-                                      Format format) throws IOException {
+    public ImageReader newImageReader(Format format,
+                                      ImageInputStream inputStream) throws IOException {
         ImageReader reader = newImageReader(format);
         reader.setSource(inputStream);
         return reader;
@@ -89,12 +89,12 @@ public final class ImageReaderFactory {
     /**
      * Creates a reusable instance for reading from streams.
      *
+     * @param format        Format of the source image.
      * @param streamFactory Source of stream to read from.
-     * @param format       Format of the source image.
      * @throws IllegalArgumentException if the format is unsupported.
      */
-    public ImageReader newImageReader(StreamFactory streamFactory,
-                                      Format format) throws IOException {
+    public ImageReader newImageReader(Format format,
+                                      StreamFactory streamFactory) throws IOException {
         ImageReader reader = newImageReader(format);
         reader.setSource(streamFactory);
         return reader;

@@ -51,7 +51,7 @@ public class ImageReaderFactoryTest extends BaseTest {
     @Test
     void testNewImageReaderWithFormatUnknown() {
         assertThrows(IllegalArgumentException.class,
-                () -> instance.newImageReader(Paths.get("/dev/null"), Format.UNKNOWN));
+                () -> instance.newImageReader(Format.UNKNOWN, Paths.get("/dev/null")));
     }
 
     @Test
@@ -86,27 +86,27 @@ public class ImageReaderFactoryTest extends BaseTest {
 
     @Test
     void testNewImageReaderWithPath() throws Exception {
-        instance.newImageReader(Paths.get("/dev/null"), Format.JPG);
+        instance.newImageReader(Format.JPG, Paths.get("/dev/null"));
     }
 
     @Test
     void testNewImageReaderWithInputStream() throws Exception {
         try (InputStream is = Files.newInputStream(TestUtil.getImage("jpg"))) {
-            instance.newImageReader(is, Format.JPG);
+            instance.newImageReader(Format.JPG, is);
         }
     }
 
     @Test
     void testNewImageReaderWithImageInputStream() throws Exception {
         try (ImageInputStream iis = ImageIO.createImageInputStream(TestUtil.getImage("jpg").toFile())) {
-            instance.newImageReader(iis, Format.JPG);
+            instance.newImageReader(Format.JPG, iis);
         }
     }
 
     @Test
     void testNewImageReaderWithStreamSource() throws Exception {
         StreamFactory source = new PathStreamFactory(Paths.get("/dev/null"));
-        instance.newImageReader(source, Format.JPG);
+        instance.newImageReader(Format.JPG, source);
     }
 
 }
