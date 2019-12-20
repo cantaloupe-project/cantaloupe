@@ -51,8 +51,6 @@ public class ApplicationServer {
     private String httpsKeyStorePath;
     private String httpsKeyStoreType;
     private int httpsPort                   = DEFAULT_HTTPS_PORT;
-    private boolean isInsecureHTTP2Enabled;
-    private boolean isSecureHTTP2Enabled;
     private boolean isStarted;
     private Server server;
 
@@ -72,8 +70,6 @@ public class ApplicationServer {
         setHTTPEnabled(config.getBoolean(Key.HTTP_ENABLED, false));
         setHTTPHost(config.getString(Key.HTTP_HOST, DEFAULT_HTTP_HOST));
         setHTTPPort(config.getInt(Key.HTTP_PORT, DEFAULT_HTTP_PORT));
-        setInsecureHTTP2Enabled(
-                config.getBoolean(Key.HTTP_HTTP2_ENABLED, true));
 
         setHTTPSEnabled(config.getBoolean(Key.HTTPS_ENABLED, false));
         setHTTPSHost(config.getString(Key.HTTPS_HOST, DEFAULT_HTTPS_HOST));
@@ -85,8 +81,6 @@ public class ApplicationServer {
         setHTTPSKeyStoreType(
                 config.getString(Key.HTTPS_KEY_STORE_TYPE));
         setHTTPSPort(config.getInt(Key.HTTPS_PORT, DEFAULT_HTTPS_PORT));
-        setSecureHTTP2Enabled(
-                config.getBoolean(Key.HTTPS_HTTP2_ENABLED, true));
     }
 
     private void createServer() {
@@ -181,14 +175,6 @@ public class ApplicationServer {
         return isHTTPSEnabled;
     }
 
-    public boolean isInsecureHTTP2Enabled() {
-        return isInsecureHTTP2Enabled;
-    }
-
-    public boolean isSecureHTTP2Enabled() {
-        return isSecureHTTP2Enabled;
-    }
-
     public boolean isStarted() {
         return (server != null && server.isStarted());
     }
@@ -237,14 +223,6 @@ public class ApplicationServer {
         this.httpsPort = port;
     }
 
-    public void setInsecureHTTP2Enabled(boolean enabled) {
-        this.isInsecureHTTP2Enabled = enabled;
-    }
-
-    public void setSecureHTTP2Enabled(boolean enabled) {
-        this.isSecureHTTP2Enabled = enabled;
-    }
-
     /**
      * Starts the HTTP and/or HTTPS servers.
      */
@@ -255,18 +233,12 @@ public class ApplicationServer {
             // Initialize the HTTP server, handling both HTTP/1.1 and plaintext
             // HTTP/2.
             if (isHTTPEnabled()) {
-                ServerConnector connector;
                 HttpConfiguration config = new HttpConfiguration();
                 HttpConnectionFactory http1 = new HttpConnectionFactory();
 
-                if (isInsecureHTTP2Enabled()) {
-                    HTTP2CServerConnectionFactory http2 =
-                            new HTTP2CServerConnectionFactory(config);
-                    connector = new ServerConnector(server, http1, http2);
-                } else {
-                    connector = new ServerConnector(server, http1);
-                }
-
+                HTTP2CServerConnectionFactory http2 =
+                        new HTTP2CServerConnectionFactory(config);
+                ServerConnector connector = new ServerConnector(server, http1, http2);
                 connector.setHost(getHTTPHost());
                 connector.setPort(getHTTPPort());
                 connector.setIdleTimeout(IDLE_TIMEOUT);
@@ -274,8 +246,6 @@ public class ApplicationServer {
             }
 
             // Initialize the HTTPS server.
-            // N.B.: HTTP/2 requires ALPN, which requires Java 9.
-            // https://www.eclipse.org/jetty/documentation/9.3.x/alpn-chapter.html
             if (isHTTPSEnabled()) {
                 HttpConfiguration config = new HttpConfiguration();
                 config.setSecureScheme("https");
@@ -287,32 +257,24 @@ public class ApplicationServer {
                 contextFactory.setKeyStorePassword(getHTTPSKeyStorePassword());
                 contextFactory.setKeyManagerPassword(getHTTPSKeyPassword());
 
-                ServerConnector connector;
+                HttpConnectionFactory http1 =
+                        new HttpConnectionFactory(config);
+                HTTP2ServerConnectionFactory http2 =
+                        new HTTP2ServerConnectionFactory(config);
 
-                if (isSecureHTTP2Enabled()) {
-                    HttpConnectionFactory http1 =
-                            new HttpConnectionFactory(config);
-                    HTTP2ServerConnectionFactory http2 =
-                            new HTTP2ServerConnectionFactory(config);
+                ALPNServerConnectionFactory alpn =
+                        new ALPNServerConnectionFactory();
+                alpn.setDefaultProtocol(http1.getProtocol());
 
-                    ALPNServerConnectionFactory alpn =
-                            new ALPNServerConnectionFactory();
-                    alpn.setDefaultProtocol(http1.getProtocol());
+                contextFactory.setCipherComparator(HTTP2Cipher.COMPARATOR);
+                contextFactory.setUseCipherSuitesOrder(true);
 
-                    contextFactory.setCipherComparator(HTTP2Cipher.COMPARATOR);
-                    contextFactory.setUseCipherSuitesOrder(true);
+                SslConnectionFactory connectionFactory =
+                        new SslConnectionFactory(contextFactory,
+                                alpn.getProtocol());
 
-                    SslConnectionFactory connectionFactory =
-                            new SslConnectionFactory(contextFactory,
-                                    alpn.getProtocol());
-
-                    connector = new ServerConnector(server,
-                            connectionFactory, alpn, http2, http1);
-                } else {
-                    connector = new ServerConnector(server,
-                            new SslConnectionFactory(contextFactory, "HTTP/1.1"),
-                            new HttpConnectionFactory(config));
-                }
+                ServerConnector connector = new ServerConnector(server,
+                        connectionFactory, alpn, http2, http1);
 
                 connector.setHost(getHTTPSHost());
                 connector.setPort(getHTTPSPort());

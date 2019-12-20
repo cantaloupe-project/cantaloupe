@@ -17,14 +17,11 @@ temp_pathname =
 http.enabled = true
 http.host = 0.0.0.0
 http.port = 8182
-http.http2.enabled = false
 
 # !! Configures the HTTPS server. (Standalone mode only.)
 https.enabled = false
 https.host = 0.0.0.0
 https.port = 8183
-# Secure HTTP/2 requires Java 9 or later.
-https.http2.enabled = false
 
 # !! Available values are `JKS` and `PKCS12`. (Standalone mode only.)
 https.key_store_type = JKS

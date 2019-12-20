@@ -15,6 +15,8 @@
 * The IIIF Image API 1.x endpoint no longer supports content negotiation. If a
   format extension is not supplied in the URI, JPEG will be returned regardless
   of the value of the `Accept` header.
+* The `http.http2.enabled` and `https.http2.enabled` configuration keys have
+  been removed. HTTP/2 is always enabled.
 
 ### Sources
 
