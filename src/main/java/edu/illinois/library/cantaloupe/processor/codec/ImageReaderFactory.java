@@ -6,6 +6,7 @@ import edu.illinois.library.cantaloupe.processor.codec.gif.GIFImageReader;
 import edu.illinois.library.cantaloupe.processor.codec.jpeg.JPEGImageReader;
 import edu.illinois.library.cantaloupe.processor.codec.png.PNGImageReader;
 import edu.illinois.library.cantaloupe.processor.codec.tiff.TIFFImageReader;
+import edu.illinois.library.cantaloupe.processor.codec.xpm.XPMImageReader;
 import edu.illinois.library.cantaloupe.source.StreamFactory;
 import edu.illinois.library.cantaloupe.source.stream.ClosingMemoryCacheImageInputStream;
 
@@ -15,10 +16,14 @@ import java.io.InputStream;
 import java.nio.file.Path;
 import java.util.Set;
 
+/**
+ * Used for obtaining {@link ImageReader} instances.
+ */
 public final class ImageReaderFactory {
 
     private static final Set<Format> SUPPORTED_FORMATS = Set.of(
-            Format.BMP, Format.GIF, Format.JPG, Format.PNG, Format.TIF);
+            Format.BMP, Format.GIF, Format.JPG, Format.PNG, Format.TIF,
+            Format.XPM);
 
     /**
      * @return Map of available output formats for all known source formats,
@@ -39,6 +44,8 @@ public final class ImageReaderFactory {
             return new PNGImageReader();
         } else if (Format.TIF.equals(format)) {
             return new TIFFImageReader();
+        } else if (Format.XPM.equals(format)) {
+            return new XPMImageReader();
         }
         throw new IllegalArgumentException("Unsupported format: " + format);
     }

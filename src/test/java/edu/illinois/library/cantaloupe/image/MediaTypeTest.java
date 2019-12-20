@@ -182,6 +182,7 @@ public class MediaTypeTest extends BaseTest {
         assertEquals(Format.TIF, new MediaType("image/tiff").toFormat());
         assertEquals(Format.WEBM, new MediaType("video/webm").toFormat());
         assertEquals(Format.WEBP, new MediaType("image/webp").toFormat());
+        assertEquals(Format.XPM, new MediaType("image/x-xpixmap").toFormat());
     }
 
     /* toString() */

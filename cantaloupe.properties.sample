@@ -306,6 +306,7 @@ processor.ManualSelectionStrategy.pdf = PdfBoxProcessor
 processor.ManualSelectionStrategy.png =
 processor.ManualSelectionStrategy.tif =
 processor.ManualSelectionStrategy.webm = FfmpegProcessor
+processor.ManualSelectionStrategy.xpm =
 
 # Fall back to this processor for any formats not assigned above.
 processor.ManualSelectionStrategy.fallback = Java2dProcessor
@@ -372,6 +373,7 @@ processor.imageio.png.reader =
 processor.imageio.png.writer =
 processor.imageio.tif.reader =
 processor.imageio.tif.writer =
+processor.imageio.xpm.reader =
 
 #----------------------------------------
 # FfmpegProcessor

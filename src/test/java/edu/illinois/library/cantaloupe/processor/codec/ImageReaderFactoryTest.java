@@ -3,6 +3,7 @@ package edu.illinois.library.cantaloupe.processor.codec;
 import edu.illinois.library.cantaloupe.image.MediaType;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.processor.codec.bmp.BMPImageReader;
+import edu.illinois.library.cantaloupe.processor.codec.xpm.XPMImageReader;
 import edu.illinois.library.cantaloupe.processor.codec.gif.GIFImageReader;
 import edu.illinois.library.cantaloupe.processor.codec.jpeg.JPEGImageReader;
 import edu.illinois.library.cantaloupe.processor.codec.png.PNGImageReader;
@@ -35,17 +36,28 @@ public class ImageReaderFactoryTest extends BaseTest {
 
     @Test
     void testSupportedFormats() {
-        final HashSet<Format> formats = new HashSet<>();
+        final HashSet<Format> expected = new HashSet<>();
+        // Scan for Image I/O-supported formats by media type.
         for (String mediaTypeStr : ImageIO.getReaderMIMETypes()) {
-            if (mediaTypeStr.length() < 1 || mediaTypeStr.equals("image/jp2")) {
+            if (mediaTypeStr.isBlank() || mediaTypeStr.equals("image/jp2")) {
                 continue;
             }
             final Format format = new MediaType(mediaTypeStr).toFormat();
             if (format != null && !format.equals(Format.UNKNOWN)) {
-                formats.add(format);
+                expected.add(format);
             }
         }
-        assertEquals(formats, ImageReaderFactory.supportedFormats());
+        // Scan by extension, just in case the media type scan missed anything.
+        for (String extension : ImageIO.getReaderFileSuffixes()) {
+            if (extension.isBlank() || extension.equals("jp2")) {
+                continue;
+            }
+            final Format format = Format.withExtension(extension);
+            if (format != null && !format.equals(Format.UNKNOWN)) {
+                expected.add(format);
+            }
+        }
+        assertEquals(expected, ImageReaderFactory.supportedFormats());
     }
 
     @Test
@@ -82,6 +94,12 @@ public class ImageReaderFactoryTest extends BaseTest {
     void testNewImageReaderWithFormatTIF() {
         ImageReader reader = instance.newImageReader(Format.TIF);
         assertTrue(reader instanceof TIFFImageReader);
+    }
+
+    @Test
+    void testNewImageReaderWithFormatXPM() {
+        ImageReader reader = instance.newImageReader(Format.XPM);
+        assertTrue(reader instanceof XPMImageReader);
     }
 
     @Test

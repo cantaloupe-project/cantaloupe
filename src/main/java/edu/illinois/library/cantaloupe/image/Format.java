@@ -223,6 +223,21 @@ public final class Format implements Comparable<Format> {
             Type.UNKNOWN,
             false);
 
+    /**
+     * XPM image format.
+     */
+    public static final Format XPM = new Format(
+            "xpm",
+            "XPM",
+            ImageType.RASTER,
+            // TODO: Tika returns image/x-xbitmap for XPMs. I thought that was
+            // the type for XBM, but since we don't support that, we can let it
+            // slide for now.
+            List.of("image/x-xpixmap", "image/x-xbitmap"),
+            List.of("xpm"),
+            Type.IMAGE,
+            true);
+
     private static final Set<Format> ALL_FORMATS =
             ConcurrentHashMap.newKeySet();
 
@@ -236,7 +251,7 @@ public final class Format implements Comparable<Format> {
 
     static {
         getAllFormats().addAll(Set.of(AVI, BMP, DCM, FLV, GIF, JP2, JPG, MOV,
-                MP4, MPG, PDF, PNG, TIF, UNKNOWN, WEBM, WEBP));
+                MP4, MPG, PDF, PNG, TIF, UNKNOWN, WEBM, WEBP, XPM));
     }
 
     /**
@@ -420,6 +435,7 @@ public final class Format implements Comparable<Format> {
     /**
      * @return Preferred extension.
      */
+    @Override
     public String toString() {
         return getPreferredExtension();
     }

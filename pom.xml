@@ -157,6 +157,11 @@
             <artifactId>commons-io</artifactId>
             <version>2.4</version>
         </dependency>
+        <dependency>
+            <groupId>edu.illinois.library</groupId>
+            <artifactId>imageio-xpm</artifactId>
+            <version>1.0</version>
+        </dependency>
         <!-- Used by S3SourceTest and S3CacheTest -->
         <dependency>
             <groupId>io.findify</groupId>
