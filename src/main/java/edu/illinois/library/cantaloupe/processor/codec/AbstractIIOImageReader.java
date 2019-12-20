@@ -94,7 +94,7 @@ public abstract class AbstractIIOImageReader {
             getLogger().debug("Using {}", iioReader.getClass().getName());
             iioReader.setInput(inputStream, false, false);
         } else {
-            throw new IOException("Unable to determine the format of the" +
+            throw new IOException("Unable to determine the format of the " +
                     "source image.");
         }
     }
