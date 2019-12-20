@@ -598,7 +598,7 @@ overlays.BasicStrategy.image = /path/to/overlay.png
 # Overlay text.
 overlays.BasicStrategy.string = Copyright © My Great Organization\nAll rights reserved.
 
-# For possible values, launch with the -Dcantaloupe.list_fonts option.
+# For a list of possible values, launch with the -list-fonts argument.
 overlays.BasicStrategy.string.font = Helvetica
 
 # Font size in points.

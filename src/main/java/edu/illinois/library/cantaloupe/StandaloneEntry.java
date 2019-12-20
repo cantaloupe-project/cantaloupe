@@ -2,7 +2,9 @@ package edu.illinois.library.cantaloupe;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
+import edu.illinois.library.cantaloupe.config.MissingConfigurationException;
 
+import java.awt.GraphicsEnvironment;
 import java.io.File;
 import java.net.URL;
 import java.nio.file.Files;
@@ -22,15 +24,9 @@ import java.util.Optional;
 public class StandaloneEntry {
 
     /**
-     * <p>When provided (no value required), a list of available fonts will be
-     * printed to stdout.</p>
-     *
-     * <p>The main reason this is a VM option and not a command-line argument
-     * is that, due to the way the application is packaged, this class needs to
-     * have as few dependencies as possible. All of the other would-be
-     * arguments are VM options too, so let's preserve uniformity.</p>
+     * Prints a list of available fonts to stdout.
      */
-    static final String LIST_FONTS_VM_ARGUMENT = "cantaloupe.list_fonts";
+    static final String LIST_FONTS_ARGUMENT = "-list-fonts";
 
     private static ApplicationServer appServer;
 
@@ -61,18 +57,17 @@ public class StandaloneEntry {
      *     Required.</dd>
      *     <dt><code>-Dcantaloupe.test</code></dt>
      *     <dd>If set to <code>true</code>, calls to {@link System#exit(int)}
-     *     will be disabled. Should only be supplied when testing.</dd>
+     *     are disabled. Should only be supplied when testing.</dd>
      * </dl>
      *
      * @param args       Ignored.
      * @throws Exception if there is a problem starting the web server.
      */
     public static void main(String... args) throws Exception {
-        final Configuration config = Configuration.getInstance();
-        if (config == null) {
-            printUsage();
-            exitUnlessTesting(-1);
-        } else {
+        handleArguments(args);
+        try {
+            // Will throw an exception if the config VM argument is missing.
+            Configuration.getInstance();
             Optional<Path> optConfigFile = getConfigFile();
             if (optConfigFile.isEmpty()) {
                 printUsage();
@@ -94,8 +89,24 @@ public class StandaloneEntry {
                     exitUnlessTesting(-1);
                 }
             }
+            getAppServer().start();
+        } catch (MissingConfigurationException e) {
+            printUsage();
+            exitUnlessTesting(-1);
         }
-        getAppServer().start();
+    }
+
+    private static void handleArguments(String... args) {
+        if (args.length > 0) {
+            if (LIST_FONTS_ARGUMENT.equals(args[0])) {
+                GraphicsEnvironment ge =
+                        GraphicsEnvironment.getLocalGraphicsEnvironment();
+                for (String family : ge.getAvailableFontFamilyNames()) {
+                    System.out.println(family);
+                }
+                exitUnlessTesting(0);
+            }
+        }
     }
 
     private static Optional<Path> getConfigFile() {
@@ -130,13 +141,14 @@ public class StandaloneEntry {
      * @return Program usage message.
      */
     static String usage() {
-        return "Usage: java <VM options> -jar " + getWARFile().getName() +
+        return "Usage: java <VM args> -jar " + getWARFile().getName() + " <command args>" +
                 "\n\n" +
-                "VM options:\n" +
-                "-D" + ConfigurationFactory.CONFIG_VM_ARGUMENT + "=<config>" +
-                "           Configuration file (REQUIRED)\n" +
-                "-D" + LIST_FONTS_VM_ARGUMENT +
-                "                List fonts\n";
+                "VM arguments:\n" +
+                "-D" + ConfigurationFactory.CONFIG_VM_ARGUMENT + "=<path>" +
+                "       Configuration file (REQUIRED)\n\n" +
+                "Command arguments:\n" +
+                LIST_FONTS_ARGUMENT +
+                "                      List fonts\n";
     }
 
 }

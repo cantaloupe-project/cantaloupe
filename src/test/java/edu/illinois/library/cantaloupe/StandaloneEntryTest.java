@@ -87,7 +87,7 @@ public class StandaloneEntryTest extends BaseTest {
         httpClient.stop();
         deleteCacheDir();
         System.clearProperty(ConfigurationFactory.CONFIG_VM_ARGUMENT);
-        System.clearProperty(StandaloneEntry.LIST_FONTS_VM_ARGUMENT);
+        System.clearProperty(StandaloneEntry.LIST_FONTS_ARGUMENT);
         resetOutput();
     }
 
@@ -96,8 +96,7 @@ public class StandaloneEntryTest extends BaseTest {
     @Test
     void mainWithListFontsOption() throws Exception {
         redirectOutput();
-        System.setProperty(StandaloneEntry.LIST_FONTS_VM_ARGUMENT, "");
-        StandaloneEntry.main("");
+        StandaloneEntry.main(StandaloneEntry.LIST_FONTS_ARGUMENT);
         assertTrue(redirectedOutput.toString().contains("SansSerif"));
     }
 
@@ -107,7 +106,7 @@ public class StandaloneEntryTest extends BaseTest {
         //exit.expectSystemExitWithStatus(0);
         System.clearProperty(Application.TEST_VM_ARGUMENT);
 
-        System.setProperty(StandaloneEntry.LIST_FONTS_VM_ARGUMENT, "");
+        System.setProperty(StandaloneEntry.LIST_FONTS_ARGUMENT, "");
         StandaloneEntry.main("");
     }
 

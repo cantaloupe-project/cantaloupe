@@ -51,6 +51,8 @@
   See the upgrade guide for more information.
 * Added configuration options for logging in Logstash format. (Thanks to
   @cmhdave)
+* The `-Dcantaloupe.list_fonts` VM argument has been replaced with the
+  `-list-fonts` command-line argument.
 * Added a `local_uri` key to the delegate script `context` hash.
 * JRuby has been updated to version 9.2, which supports Ruby 2.5.
 

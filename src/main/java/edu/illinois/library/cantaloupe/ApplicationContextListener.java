@@ -15,10 +15,6 @@ import org.slf4j.LoggerFactory;
 
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
-import java.awt.GraphicsEnvironment;
-
-import static edu.illinois.library.cantaloupe.StandaloneEntry.LIST_FONTS_VM_ARGUMENT;
-import static edu.illinois.library.cantaloupe.StandaloneEntry.exitUnlessTesting;
 
 /**
  * <p>Performs application initialization that cannot be performed
@@ -36,17 +32,6 @@ public class ApplicationContextListener implements ServletContextListener {
         System.setProperty("java.awt.headless", "true");
     }
 
-    private void handleVmArguments() {
-        if (System.getProperty(LIST_FONTS_VM_ARGUMENT) != null) {
-            GraphicsEnvironment ge =
-                    GraphicsEnvironment.getLocalGraphicsEnvironment();
-            for (String family : ge.getAvailableFontFamilyNames()) {
-                System.out.println(family);
-            }
-            exitUnlessTesting(0);
-        }
-    }
-
     @Override
     public void contextInitialized(ServletContextEvent sce) {
         // Logback has already initialized itself, which is a problem because
@@ -55,7 +40,6 @@ public class ApplicationContextListener implements ServletContextListener {
         LoggerUtil.reloadConfiguration();
 
         logSystemInfo();
-        handleVmArguments();
 
         // Start watching configuration files.
         ConfigurationFileWatcher.startWatching();
