@@ -13,8 +13,10 @@ import edu.illinois.library.cantaloupe.script.DelegateProxyService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.script.ScriptEngineManager;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
+import java.util.stream.Collectors;
 
 /**
  * <p>Performs application initialization that cannot be performed
@@ -85,15 +87,20 @@ public class ApplicationContextListener implements ServletContextListener {
                 System.getProperty("java.vm.name") + " " +
                 System.getProperty("java.version") + " / " +
                 System.getProperty("java.vm.info"));
-        LOGGER.info("Java home: {}",
-                System.getProperty("java.home"));
-        LOGGER.info("Java library path: {}",
-                System.getProperty("java.library.path"));
         LOGGER.info("{} available processor cores",
                 runtime.availableProcessors());
         LOGGER.info("Heap total: {}MB; max: {}MB",
                 runtime.totalMemory() / mb,
                 runtime.maxMemory() / mb);
+        LOGGER.info("Java home: {}",
+                System.getProperty("java.home"));
+        LOGGER.info("Java library path: {}",
+                System.getProperty("java.library.path"));
+        LOGGER.info("JSR-223 script engines: {}",
+                new ScriptEngineManager().getEngineFactories()
+                        .stream()
+                        .map(Object::toString)
+                        .collect(Collectors.joining(", ")));
         LOGGER.info("Effective temp directory: {}",
                 Application.getTempPath());
 
