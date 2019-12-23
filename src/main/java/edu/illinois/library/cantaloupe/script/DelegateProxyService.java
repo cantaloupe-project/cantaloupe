@@ -27,6 +27,12 @@ public final class DelegateProxyService {
 
     private static DelegateProxyService instance;
 
+    /**
+     * Caches delegate method invocations (arguments + return values).
+     */
+    private static final InvocationCache invocationCache =
+            new HeapInvocationCache();
+
     private static boolean isCodeLoaded;
 
     private ScriptWatcher scriptWatcher;
@@ -35,12 +41,21 @@ public final class DelegateProxyService {
 
     private Future<?> watcherFuture;
 
+    public static InvocationCache getInvocationCache() {
+        return invocationCache;
+    }
+
     /**
      * @return Whether the delegate script is enabled.
      */
     public static boolean isEnabled() {
-        Configuration config = Configuration.getInstance();
+        var config = Configuration.getInstance();
         return config.getBoolean(Key.DELEGATE_SCRIPT_ENABLED, false);
+    }
+
+    static boolean isInvocationCacheEnabled() {
+        var config = Configuration.getInstance();
+        return config.getBoolean(Key.DELEGATE_METHOD_INVOCATION_CACHE_ENABLED, false);
     }
 
     /**
@@ -51,23 +66,21 @@ public final class DelegateProxyService {
     }
 
     /**
-     * Returns the shared instance. If the instance is being created, the
-     * delegate script code will be {@link DelegateProxy#load(String) loaded}
-     * into it from the result of {@link #getScriptFile()}.
-     *
-     * @return Shared instance.
+     * @return The shared instance. If the instance is being created, the
+     *         {@link #getScriptFile() delegate script code} will be loaded
+     *         into it.
      */
     public static synchronized DelegateProxyService getInstance() {
         if (instance == null) {
             instance = new DelegateProxyService();
         }
-        if (Configuration.getInstance().getBoolean(Key.DELEGATE_SCRIPT_ENABLED, false) &&
-                !isCodeLoaded) {
+        if (!isCodeLoaded && Configuration.getInstance()
+                .getBoolean(Key.DELEGATE_SCRIPT_ENABLED, false)) {
             try {
                 Path file = getScriptFile();
                 if (file != null) {
                     String code = Files.readString(file);
-                    DelegateProxy.load(code);
+                    JRubyDelegateProxy.load(code);
                     isCodeLoaded = true;
                 }
             } catch (IOException | ScriptException e) {
@@ -80,7 +93,7 @@ public final class DelegateProxyService {
     /**
      * @return Absolute path representing the delegate script, regardless of
      *         whether the delegate script system is {@link #isEnabled()
-     *         enabled}; or {@literal null} if {@link
+     *         enabled}; or {@code null} if {@link
      *         Key#DELEGATE_SCRIPT_PATHNAME} is not set.
      * @throws NoSuchFileException If the script specified in {@link
      *         Key#DELEGATE_SCRIPT_PATHNAME} does not exist.
@@ -104,9 +117,11 @@ public final class DelegateProxyService {
     /**
      * Finds the canonical location of a script based on the given filename or
      * absolute pathname. Existence of the underlying file is not checked.
+     *
+     * @param pathname Pathname or filename.
      */
-    private static Path findScript(String filenameOrPathname) {
-        Path script = Paths.get(filenameOrPathname);
+    private static Path findScript(String pathname) {
+        Path script = Paths.get(pathname);
         if (!script.isAbsolute()) {
             // Search for it in the same directory as the application config
             // (if available), or the current working directory if not.
@@ -119,6 +134,13 @@ public final class DelegateProxyService {
             script = script.toAbsolutePath();
         }
         return script;
+    }
+
+    /**
+     * @param code Code to load into the script interpreter.
+     */
+    public static void load(String code) throws ScriptException {
+        JRubyDelegateProxy.load(code);
     }
 
     /**
@@ -135,7 +157,7 @@ public final class DelegateProxyService {
     public DelegateProxy newDelegateProxy(RequestContext context)
             throws DisabledException {
         if (isEnabled()) {
-            return new DelegateProxy(context);
+            return new JRubyDelegateProxy(context);
         } else {
             throw new DisabledException();
         }
