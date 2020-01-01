@@ -6,6 +6,7 @@ import org.eclipse.jetty.alpn.server.ALPNServerConnectionFactory;
 import org.eclipse.jetty.http2.HTTP2Cipher;
 import org.eclipse.jetty.http2.server.HTTP2CServerConnectionFactory;
 import org.eclipse.jetty.http2.server.HTTP2ServerConnectionFactory;
+import org.eclipse.jetty.jmx.ConnectorServer;
 import org.eclipse.jetty.jmx.MBeanContainer;
 import org.eclipse.jetty.server.HttpConfiguration;
 import org.eclipse.jetty.server.HttpConnectionFactory;
@@ -16,9 +17,11 @@ import org.eclipse.jetty.server.SslConnectionFactory;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.eclipse.jetty.webapp.WebAppContext;
 
+import javax.management.remote.JMXServiceURL;
 import java.io.File;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
+import java.net.MalformedURLException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Comparator;
@@ -43,6 +46,8 @@ public class ApplicationServer {
 
     static final int DEFAULT_HTTPS_PORT = 8183;
 
+    static final int DEFAULT_REMOTE_JMX_PORT = 1099;
+
     private boolean isHTTPEnabled;
     private String httpHost                 = DEFAULT_HTTP_HOST;
     private int httpPort                    = DEFAULT_HTTP_PORT;
@@ -56,6 +61,8 @@ public class ApplicationServer {
     private boolean isInsecureHTTP2Enabled;
     private boolean isSecureHTTP2Enabled;
     private boolean isStarted;
+    private boolean isJMXEnabled;
+    private int jmxRemotePort;
     private Server server;
 
     /**
@@ -89,6 +96,8 @@ public class ApplicationServer {
         setHTTPSPort(config.getInt(Key.HTTPS_PORT, DEFAULT_HTTPS_PORT));
         setSecureHTTP2Enabled(
                 config.getBoolean(Key.HTTPS_HTTP2_ENABLED, true));
+        setJMXEnabled(config.getBoolean(Key.APPLICATION_MONITORING_ENABLED, false));
+        setJmxRemotePort(config.getInt(Key.APPLICATION_MONITORING_REMOTE_PORT, DEFAULT_REMOTE_JMX_PORT));
     }
 
     private void createServer() {
@@ -142,9 +151,20 @@ public class ApplicationServer {
         context.setServer(server);
         server.setHandler(context);
 
-        // Setup JMX
-        MBeanContainer mbContainer = new MBeanContainer(ManagementFactory.getPlatformMBeanServer());
-        server.addBean(mbContainer);
+        if (isJMXEnabled()) {
+            // Setup JMX
+            MBeanContainer mbContainer = new MBeanContainer(ManagementFactory.getPlatformMBeanServer());
+            server.addBean(mbContainer);
+
+            // Setup ConnectorServer
+            try {
+                JMXServiceURL jmxURL = new JMXServiceURL("rmi", null, getJmxRemotePort(), "/jndi/rmi:///jmxrmi");
+                ConnectorServer jmxServer = new ConnectorServer(jmxURL, "org.eclipse.jetty.jmx:name=rmiconnectorserver");
+                server.addBean(jmxServer);
+            } catch (MalformedURLException e) {
+                System.err.println("ApplicationServer: Error creating JMX Remote access URI : " + e.getMessage());
+            }
+        }
     }
 
     public String getHTTPHost() {
@@ -203,6 +223,18 @@ public class ApplicationServer {
         return (server == null || server.isStopped());
     }
 
+    public boolean isJMXEnabled() {
+        return isJMXEnabled;
+    }
+
+    public int getJmxRemotePort() {
+        return jmxRemotePort;
+    }
+
+    public void setJmxRemotePort(int jmxRemotePort) {
+        this.jmxRemotePort = jmxRemotePort;
+    }
+
     public void setHTTPEnabled(boolean enabled) {
         this.isHTTPEnabled = enabled;
     }
@@ -251,6 +283,9 @@ public class ApplicationServer {
         this.isSecureHTTP2Enabled = enabled;
     }
 
+    public void setJMXEnabled(boolean enabled) {
+        this.isJMXEnabled = enabled;
+    }
     /**
      * Starts the HTTP and/or HTTPS servers.
      */

@@ -163,6 +163,12 @@ public class ApplicationServerTest extends BaseTest {
     }
 
     @Test
+    void isJMXEnabled() {
+        assertFalse(instance.isJMXEnabled());
+    }
+
+
+    @Test
     void startStartsHTTPServer() throws Exception {
         initializeHTTP();
         instance.start();

@@ -54,6 +54,12 @@ max_scale = 1.0
 
 print_stack_trace_on_error_pages = true
 
+# JMX can be enabled for monitoring Jetty processes and for some basic
+# System administration.  See the Jetty documentation for more details.
+# https://www.eclipse.org/jetty/documentation/current/jmx-chapter.html
+jmx.application.enabled = false
+jmx.application.remote.port = 1099
+
 ###########################################################################
 # DELEGATE SCRIPT
 ###########################################################################

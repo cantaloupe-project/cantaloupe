@@ -44,6 +44,8 @@ public enum Key {
     APPLICATION_LOG_SYSLOGAPPENDER_HOST("log.application.SyslogAppender.host"),
     APPLICATION_LOG_SYSLOGAPPENDER_PORT("log.application.SyslogAppender.port"),
     APPLICATION_LOG_SYSLOGAPPENDER_FACILITY("log.application.SyslogAppender.facility"),
+    APPLICATION_MONITORING_ENABLED("jmx.application.enabled"),
+    APPLICATION_MONITORING_REMOTE_PORT("jmx.application.remote.port"),
     AZURESTORAGECACHE_ACCOUNT_KEY("AzureStorageCache.account_key"),
     AZURESTORAGECACHE_ACCOUNT_NAME("AzureStorageCache.account_name"),
     AZURESTORAGECACHE_CONTAINER_NAME("AzureStorageCache.container_name"),
