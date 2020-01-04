@@ -57,7 +57,7 @@ public class FilesystemSourceTest extends AbstractSourceTest {
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.DELEGATE_SCRIPT_ENABLED, true);
         config.setProperty(Key.DELEGATE_SCRIPT_PATHNAME,
-                TestUtil.getFixture("delegates.rb").toString());
+                TestUtil.getFixture("delegates-truffle.rb").toString());
         config.setProperty(Key.FILESYSTEMSOURCE_LOOKUP_STRATEGY,
                 "BasicLookupStrategy");
         config.setProperty(Key.FILESYSTEMSOURCE_PATH_PREFIX,
@@ -71,7 +71,7 @@ public class FilesystemSourceTest extends AbstractSourceTest {
                 "ScriptLookupStrategy");
         config.setProperty(Key.DELEGATE_SCRIPT_ENABLED, true);
         config.setProperty(Key.DELEGATE_SCRIPT_PATHNAME,
-                TestUtil.getFixture("delegates.rb").toString());
+                TestUtil.getFixture("delegates-truffle.rb").toString());
     }
 
     /* checkAccess() */

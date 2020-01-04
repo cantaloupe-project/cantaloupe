@@ -152,7 +152,7 @@ public class AzureStorageSourceTest extends AbstractSourceTest {
                     "ScriptLookupStrategy");
             config.setProperty(Key.DELEGATE_SCRIPT_ENABLED, true);
             config.setProperty(Key.DELEGATE_SCRIPT_PATHNAME,
-                    TestUtil.getFixture("delegates.rb").toString());
+                    TestUtil.getFixture("delegates-truffle.rb").toString());
 
             Identifier identifier = new Identifier(AzureStorageTestUtil.OBJECT_KEY_WITH_CONTENT_TYPE_AND_RECOGNIZED_EXTENSION);
             RequestContext context = new RequestContext();

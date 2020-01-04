@@ -33,7 +33,7 @@ public class DelegateOverlayServiceTest extends BaseTest {
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.DELEGATE_SCRIPT_ENABLED, true);
         config.setProperty(Key.DELEGATE_SCRIPT_PATHNAME,
-                TestUtil.getFixture("delegates.rb").toString());
+                TestUtil.getFixture("delegates-truffle.rb").toString());
 
         instance = new DelegateOverlayService();
     }

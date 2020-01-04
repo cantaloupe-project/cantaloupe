@@ -46,11 +46,16 @@ public final class DelegateProxyService {
     }
 
     /**
-     * @return Whether the delegate script is enabled.
+     * @return Whether the delegate script is enabled according to the
+     *         application configuration.
      */
     public static boolean isEnabled() {
         var config = Configuration.getInstance();
         return config.getBoolean(Key.DELEGATE_SCRIPT_ENABLED, false);
+    }
+
+    static boolean isGraalVM() {
+        return System.getProperty("java.vm.name").contains("GraalVM");
     }
 
     static boolean isInvocationCacheEnabled() {
@@ -79,8 +84,7 @@ public final class DelegateProxyService {
             try {
                 Path file = getScriptFile();
                 if (file != null) {
-                    String code = Files.readString(file);
-                    JRubyDelegateProxy.load(code);
+                    load(Files.readString(file));
                     isCodeLoaded = true;
                 }
             } catch (IOException | ScriptException e) {
@@ -140,7 +144,11 @@ public final class DelegateProxyService {
      * @param code Code to load into the script interpreter.
      */
     public static void load(String code) throws ScriptException {
-        JRubyDelegateProxy.load(code);
+        if (isGraalVM()) {
+            TruffleRubyDelegateProxy.load(code);
+        } else {
+            JRubyDelegateProxy.load(code);
+        }
     }
 
     /**
@@ -157,6 +165,9 @@ public final class DelegateProxyService {
     public DelegateProxy newDelegateProxy(RequestContext context)
             throws DisabledException {
         if (isEnabled()) {
+            if (isGraalVM()) {
+                return new TruffleRubyDelegateProxy(context);
+            }
             return new JRubyDelegateProxy(context);
         } else {
             throw new DisabledException();

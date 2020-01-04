@@ -220,6 +220,12 @@
             <artifactId>jbig2-imageio</artifactId>
             <version>3.0.0</version>
         </dependency>
+        <!-- GraalVM SDK used by the delegate script. -->
+        <dependency>
+            <groupId>org.graalvm.sdk</groupId>
+            <artifactId>graal-sdk</artifactId>
+            <version>19.3.0</version>
+        </dependency>
         <!-- JUnit for unit tests. -->
         <dependency>
             <groupId>org.junit.jupiter</groupId>

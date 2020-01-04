@@ -258,7 +258,7 @@ public class S3SourceTest extends AbstractSourceTest {
                     "ScriptLookupStrategy");
             config.setProperty(Key.DELEGATE_SCRIPT_ENABLED, true);
             config.setProperty(Key.DELEGATE_SCRIPT_PATHNAME,
-                    TestUtil.getFixture("delegates.rb"));
+                    TestUtil.getFixture("delegates-truffle.rb"));
 
             Identifier identifier = new Identifier(OBJECT_KEY_WITH_CONTENT_TYPE_AND_RECOGNIZED_EXTENSION);
             instance.setIdentifier(identifier);

@@ -21,7 +21,9 @@ import java.util.stream.Collectors;
 /**
  * @see <a href="https://github.com/jruby/jruby/wiki/Embedding-with-JSR-223">
  *     Embedding JRuby with JSR223 - Code Examples</a>
+ * @deprecated To be replaced by {@link TruffleRubyDelegateProxy}.
  */
+@Deprecated
 final class JRubyDelegateProxy implements DelegateProxy {
 
     private static final Logger LOGGER =

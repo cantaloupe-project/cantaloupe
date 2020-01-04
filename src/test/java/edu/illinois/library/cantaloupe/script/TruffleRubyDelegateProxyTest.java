@@ -4,6 +4,7 @@ import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.resource.RequestContext;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -13,10 +14,17 @@ import java.util.List;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assumptions.*;
 
-public class JRubyDelegateProxyTest extends BaseTest {
+public class TruffleRubyDelegateProxyTest extends BaseTest {
 
-    private JRubyDelegateProxy instance;
+    private TruffleRubyDelegateProxy instance;
+
+    @BeforeAll
+    public static void beforeAll() {
+        assumeTrue(DelegateProxyService.isGraalVM(),
+                "GraalVM is not available");
+    }
 
     @BeforeEach
     public void setUp() throws Exception {
@@ -25,11 +33,11 @@ public class JRubyDelegateProxyTest extends BaseTest {
         RequestContext context = new RequestContext();
         context.setIdentifier(new Identifier("cats"));
 
-        Path scriptFile = TestUtil.getFixture("delegates-jruby.rb");
+        Path scriptFile = TestUtil.getFixture("delegates-truffle.rb");
         String code = Files.readString(scriptFile);
-        JRubyDelegateProxy.load(code);
+        TruffleRubyDelegateProxy.load(code);
 
-        instance = new JRubyDelegateProxy(context);
+        instance = new TruffleRubyDelegateProxy(context);
     }
 
     /* authorize() */
@@ -60,6 +68,7 @@ public class JRubyDelegateProxyTest extends BaseTest {
 
         @SuppressWarnings("unchecked")
         Map<String,Object> result = (Map<String,Object>) instance.authorize();
+        assertEquals(2, result.size());
         assertEquals("http://example.org/", result.get("location"));
         assertEquals(303, (long) result.get("status_code"));
     }

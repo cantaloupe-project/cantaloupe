@@ -42,7 +42,7 @@ public class OperationListTest extends BaseTest {
         var config = Configuration.getInstance();
         config.setProperty(Key.DELEGATE_SCRIPT_ENABLED, true);
         config.setProperty(Key.DELEGATE_SCRIPT_PATHNAME,
-                TestUtil.getFixture("delegates.rb").toString());
+                TestUtil.getFixture("delegates-truffle.rb").toString());
 
         instance = new OperationList();
     }
@@ -470,7 +470,7 @@ public class OperationListTest extends BaseTest {
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.DELEGATE_SCRIPT_ENABLED, true);
         config.setProperty(Key.DELEGATE_SCRIPT_PATHNAME,
-                TestUtil.getFixture("delegates.rb").toString());
+                TestUtil.getFixture("delegates-truffle.rb").toString());
 
         final Dimension fullSize = new Dimension(2000, 1000);
         final Info info = Info.builder().withSize(fullSize).build();

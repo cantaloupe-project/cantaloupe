@@ -5,7 +5,18 @@ current version.
 
 ## 4.1.x → 5.0
 
-1.  Note that Java 11 is now required.
+1. To respond to the demand for more delegate script languages, the delegate
+   script system has been overhauled, which has had wide-ranging effects:
+    * Cantaloupe can still run with its bundled JRuby in a conventional JVM
+      just as before, but this configuration is deprecated.
+    * Supplanting the JVM/JRuby tandem is a new system based on GraalVM. This
+      requires running Cantaloupe in GraalVM instead of a conventional JVM.
+        * You can use the same Ruby delegate script, or use a new script
+          written in JavaScript.
+    * Even if you choose not to migrate to GraalVM at this time, you will at
+      least have to migrate to Java 11.
+    * If you are ready to migrate, see the Delegate Script section of the
+      user manual for detailed steps.
 2.  Rename the following configuration keys:
     * `endpoint.iiif.2.restrict_to_sizes` to `endpoint.iiif.restrict_to_sizes`
 3.  Add the following keys from the sample configuration:

@@ -44,7 +44,7 @@ public abstract class ResourceTest extends BaseTest {
         config.setProperty(Key.ADMIN_ENABLED, true);
         config.setProperty(Key.DELEGATE_SCRIPT_ENABLED, true);
         config.setProperty(Key.DELEGATE_SCRIPT_PATHNAME,
-                TestUtil.getFixture("delegates.rb").toString());
+                TestUtil.getFixture("delegates-truffle.rb").toString());
         config.setProperty(Key.PROCESSOR_SELECTION_STRATEGY,
                 "ManualSelectionStrategy");
         config.setProperty(Key.PROCESSOR_FALLBACK, "Java2dProcessor");
