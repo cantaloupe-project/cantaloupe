@@ -33,6 +33,12 @@ public final class DelegateProxyService {
     private static final InvocationCache invocationCache =
             new HeapInvocationCache();
 
+    /**
+     * N.B.: Always access through {@link #getLanguage()}/
+     * {@link #setLanguage(Language)}!
+     */
+    private static Language language;
+
     private static boolean isCodeLoaded;
 
     private ScriptWatcher scriptWatcher;
@@ -84,7 +90,9 @@ public final class DelegateProxyService {
             try {
                 Path file = getScriptFile();
                 if (file != null) {
-                    load(Files.readString(file));
+                    String code   = Files.readString(file);
+                    Language lang = Language.forPath(file.toString());
+                    load(code, lang);
                     isCodeLoaded = true;
                 }
             } catch (IOException | ScriptException e) {
@@ -141,14 +149,39 @@ public final class DelegateProxyService {
     }
 
     /**
-     * @param code Code to load into the script interpreter.
+     * @param code     Code to load into the script interpreter.
+     * @param language Language in which the code is written.
      */
-    public static void load(String code) throws ScriptException {
+    public static void load(String code,
+                            Language language) throws ScriptException {
         if (isGraalVM()) {
-            TruffleRubyDelegateProxy.load(code);
+            switch (language) {
+                case JAVASCRIPT:
+                    GraalJSDelegateProxy.load(code);
+                    break;
+                case RUBY:
+                    TruffleRubyDelegateProxy.load(code);
+                    break;
+            }
         } else {
-            JRubyDelegateProxy.load(code);
+            switch (language) {
+                case RUBY:
+                    JRubyDelegateProxy.load(code);
+                    break;
+                default:
+                    throw new IllegalArgumentException(
+                            "Support for this language is only available in GraalVM.");
+            }
         }
+        setLanguage(language);
+    }
+
+    static synchronized Language getLanguage() {
+        return language;
+    }
+
+    private static synchronized void setLanguage(Language lang) {
+        language = lang;
     }
 
     /**
@@ -161,14 +194,25 @@ public final class DelegateProxyService {
      * @param context Request context.
      * @return        Shared delegate proxy.
      * @throws DisabledException if the delegate script is disabled.
+     * @throws IllegalStateException if the language is not supported.
      */
     public DelegateProxy newDelegateProxy(RequestContext context)
             throws DisabledException {
         if (isEnabled()) {
             if (isGraalVM()) {
-                return new TruffleRubyDelegateProxy(context);
+                switch (getLanguage()) {
+                    case JAVASCRIPT:
+                        return new GraalJSDelegateProxy(context);
+                    case RUBY:
+                        return new TruffleRubyDelegateProxy(context);
+                }
             }
-            return new JRubyDelegateProxy(context);
+            switch (getLanguage()) {
+                case RUBY:
+                    return new JRubyDelegateProxy(context);
+                default:
+                    throw new IllegalStateException("Unsupported language");
+            }
         } else {
             throw new DisabledException();
         }

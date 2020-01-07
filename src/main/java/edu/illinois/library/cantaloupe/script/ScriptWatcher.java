@@ -52,6 +52,7 @@ final class ScriptWatcher implements Runnable {
                     // times. To avoid that, we will calculate the checksum of
                     // the file contents and compare it to what has already
                     // been loaded. If the checksums match, skip the load.
+                    final Language language = Language.forPath(path.toString());
                     final byte[] fileBytes = Files.readAllBytes(path);
                     final MessageDigest md = MessageDigest.getInstance("SHA-1");
                     md.update(fileBytes);
@@ -61,7 +62,7 @@ final class ScriptWatcher implements Runnable {
                         LOGGER.debug("Script checksums differ; reloading");
                         currentChecksum = newChecksum;
                         final String code = new String(fileBytes, StandardCharsets.UTF_8);
-                        DelegateProxyService.load(code);
+                        DelegateProxyService.load(code, language);
                     } else {
                         LOGGER.debug("Script checksums match; skipping reload");
                     }

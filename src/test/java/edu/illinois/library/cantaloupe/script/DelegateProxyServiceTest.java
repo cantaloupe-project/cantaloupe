@@ -12,6 +12,7 @@ import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assumptions.*;
 
 public class DelegateProxyServiceTest extends BaseTest {
 
@@ -98,6 +99,21 @@ public class DelegateProxyServiceTest extends BaseTest {
         assertTrue(DelegateProxyService.isInvocationCacheEnabled());
     }
 
+    /* load() */
+
+    @Test
+    void testLoadSetsTheLanguage() throws Exception {
+        DelegateProxyService.load("{}", Language.RUBY);
+        assertEquals(Language.RUBY, DelegateProxyService.getLanguage());
+    }
+
+    @Test // TODO: remove this once graal is required
+    void testLoadWithUnsupportedLanguage() {
+        assumeFalse(DelegateProxyService.isGraalVM());
+        assertThrows(IllegalArgumentException.class,
+                () -> DelegateProxyService.load("{}", Language.JAVASCRIPT));
+    }
+
     /* newDelegateProxy() */
 
     @Test
@@ -113,6 +129,15 @@ public class DelegateProxyServiceTest extends BaseTest {
 
         RequestContext context = new RequestContext();
         assertThrows(DisabledException.class,
+                () -> instance.newDelegateProxy(context));
+    }
+
+    @Test // TODO: remove this once graal is required
+    void newDelegateProxyWithUnsupportedLanguage() throws Exception {
+        assumeFalse(DelegateProxyService.isGraalVM());
+        DelegateProxyService.load("{}", Language.JAVASCRIPT);
+        RequestContext context = new RequestContext();
+        assertThrows(IllegalStateException.class,
                 () -> instance.newDelegateProxy(context));
     }
 

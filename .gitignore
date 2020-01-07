@@ -17,6 +17,8 @@ nbactions.xml
 # App config
 /cantaloupe.properties
 /cantaloupe*.properties
+/delegates.js
+/delegates*.js
 /delegates.rb
 /delegates*.rb
 /test.properties

@@ -49,10 +49,10 @@
 
 ### Other
 
-* The delegate script system has been overhauled in order to support more
-  scripting languages and possibly open the door to some interesting
-  functionality in the future. This requires running Cantaloupe in GraalVM
-  instead of a conventional JVM. See the upgrade guide for more information.
+* The delegate script system has been overhauled to support more scripting
+  languages. Using languages other than Ruby requires running Cantaloupe in
+  GraalVM instead of a conventional JVM. See the Delegate Script section of the
+  user manual for more information.
 * Corrected the structure of the `cookie` key in the delegate script context.
   See the upgrade guide for more information.
 * Added configuration options for logging in Logstash format. (Thanks to
