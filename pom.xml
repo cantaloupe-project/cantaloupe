@@ -321,12 +321,6 @@
             <artifactId>jetty-webapp</artifactId>
             <version>${jetty.version}</version>
         </dependency>
-        <!-- Enables colorized Logback console output in Windows -->
-        <dependency>
-            <groupId>org.fusesource.jansi</groupId>
-            <artifactId>jansi</artifactId>
-            <version>1.13</version>
-        </dependency>
         <!-- JRuby is used to execute delegate script methods. -->
         <dependency>
             <groupId>org.jruby</groupId>

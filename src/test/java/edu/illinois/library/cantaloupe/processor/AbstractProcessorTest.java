@@ -544,7 +544,6 @@ abstract class AbstractProcessorTest extends BaseTest {
 
     @Test
     public void testProcessWithTurboJPEGAvailable() throws Exception {
-        TurboJPEGImageWriter.setTurboJPEGAvailable(true);
         // We don't want a failure if TurboJPEG is not actually available.
         assumeTrue(TurboJPEGImageWriter.isTurboJPEGAvailable());
 

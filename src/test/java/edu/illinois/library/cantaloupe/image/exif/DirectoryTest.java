@@ -21,6 +21,8 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class DirectoryTest extends BaseTest {
 
+    private static final String NEWLINE = System.getProperty("line.separator");
+
     private Directory instance;
 
     private static TIFFDirectory readTIFFDirectory(Path fixture) throws IOException {
@@ -69,67 +71,67 @@ public class DirectoryTest extends BaseTest {
         rootIFD.put(Tag.DATE_TIME, DataType.ASCII, "2002:07:12 16:54:59");
         rootIFD.put(Tag.EXIF_IFD_POINTER, exifIFD);
 
-        final String expected = "{\n" +
-                "  \"fields\" : [ {\n" +
-                "    \"tag\" : 256,\n" +
-                "    \"dataType\" : 3,\n" +
-                "    \"value\" : 64\n" +
-                "  }, {\n" +
-                "    \"tag\" : 257,\n" +
-                "    \"dataType\" : 3,\n" +
-                "    \"value\" : 56\n" +
-                "  }, {\n" +
-                "    \"tag\" : 271,\n" +
-                "    \"dataType\" : 2,\n" +
-                "    \"value\" : \"Canon\"\n" +
-                "  }, {\n" +
-                "    \"tag\" : 274,\n" +
-                "    \"dataType\" : 3,\n" +
-                "    \"value\" : 1\n" +
-                "  }, {\n" +
-                "    \"tag\" : 282,\n" +
-                "    \"dataType\" : 5,\n" +
-                "    \"value\" : [ 72, 1 ]\n" +
-                "  }, {\n" +
-                "    \"tag\" : 284,\n" +
-                "    \"dataType\" : 3,\n" +
-                "    \"value\" : 1\n" +
-                "  }, {\n" +
-                "    \"tag\" : 306,\n" +
-                "    \"dataType\" : 2,\n" +
-                "    \"value\" : \"2002:07:12 16:54:59\"\n" +
-                "  }, {\n" +
-                "    \"tag\" : 34665,\n" +
-                "    \"dataType\" : 4,\n" +
-                "    \"value\" : {\n" +
-                "      \"parentTag\" : 34665,\n" +
-                "      \"fields\" : [ {\n" +
-                "        \"tag\" : 33434,\n" +
-                "        \"dataType\" : 5,\n" +
-                "        \"value\" : [ 1, 160 ]\n" +
-                "      }, {\n" +
-                "        \"tag\" : 34855,\n" +
-                "        \"dataType\" : 3,\n" +
-                "        \"value\" : 50\n" +
-                "      }, {\n" +
-                "        \"tag\" : 36864,\n" +
-                "        \"dataType\" : 7,\n" +
-                "        \"value\" : \"MDIyMA==\"\n" +
-                "      }, {\n" +
-                "        \"tag\" : 36867,\n" +
-                "        \"dataType\" : 2,\n" +
-                "        \"value\" : \"2002:07:12 16:54:59\"\n" +
-                "      }, {\n" +
-                "        \"tag\" : 37377,\n" +
-                "        \"dataType\" : 10,\n" +
-                "        \"value\" : [ 117, 16 ]\n" +
-                "      }, {\n" +
-                "        \"tag\" : 40962,\n" +
-                "        \"dataType\" : 4,\n" +
-                "        \"value\" : 64\n" +
-                "      } ]\n" +
-                "    }\n" +
-                "  } ]\n" +
+        final String expected = "{" + NEWLINE +
+                "  \"fields\" : [ {" + NEWLINE +
+                "    \"tag\" : 256," + NEWLINE +
+                "    \"dataType\" : 3," + NEWLINE +
+                "    \"value\" : 64" + NEWLINE +
+                "  }, {" + NEWLINE +
+                "    \"tag\" : 257," + NEWLINE +
+                "    \"dataType\" : 3," + NEWLINE +
+                "    \"value\" : 56" + NEWLINE +
+                "  }, {" + NEWLINE +
+                "    \"tag\" : 271," + NEWLINE +
+                "    \"dataType\" : 2," + NEWLINE +
+                "    \"value\" : \"Canon\"" + NEWLINE +
+                "  }, {" + NEWLINE +
+                "    \"tag\" : 274," + NEWLINE +
+                "    \"dataType\" : 3," + NEWLINE +
+                "    \"value\" : 1" + NEWLINE +
+                "  }, {" + NEWLINE +
+                "    \"tag\" : 282," + NEWLINE +
+                "    \"dataType\" : 5," + NEWLINE +
+                "    \"value\" : [ 72, 1 ]" + NEWLINE +
+                "  }, {" + NEWLINE +
+                "    \"tag\" : 284," + NEWLINE +
+                "    \"dataType\" : 3," + NEWLINE +
+                "    \"value\" : 1" + NEWLINE +
+                "  }, {" + NEWLINE +
+                "    \"tag\" : 306," + NEWLINE +
+                "    \"dataType\" : 2," + NEWLINE +
+                "    \"value\" : \"2002:07:12 16:54:59\"" + NEWLINE +
+                "  }, {" + NEWLINE +
+                "    \"tag\" : 34665," + NEWLINE +
+                "    \"dataType\" : 4," + NEWLINE +
+                "    \"value\" : {" + NEWLINE +
+                "      \"parentTag\" : 34665," + NEWLINE +
+                "      \"fields\" : [ {" + NEWLINE +
+                "        \"tag\" : 33434," + NEWLINE +
+                "        \"dataType\" : 5," + NEWLINE +
+                "        \"value\" : [ 1, 160 ]" + NEWLINE +
+                "      }, {" + NEWLINE +
+                "        \"tag\" : 34855," + NEWLINE +
+                "        \"dataType\" : 3," + NEWLINE +
+                "        \"value\" : 50" + NEWLINE +
+                "      }, {" + NEWLINE +
+                "        \"tag\" : 36864," + NEWLINE +
+                "        \"dataType\" : 7," + NEWLINE +
+                "        \"value\" : \"MDIyMA==\"" + NEWLINE +
+                "      }, {" + NEWLINE +
+                "        \"tag\" : 36867," + NEWLINE +
+                "        \"dataType\" : 2," + NEWLINE +
+                "        \"value\" : \"2002:07:12 16:54:59\"" + NEWLINE +
+                "      }, {" + NEWLINE +
+                "        \"tag\" : 37377," + NEWLINE +
+                "        \"dataType\" : 10," + NEWLINE +
+                "        \"value\" : [ 117, 16 ]" + NEWLINE +
+                "      }, {" + NEWLINE +
+                "        \"tag\" : 40962," + NEWLINE +
+                "        \"dataType\" : 4," + NEWLINE +
+                "        \"value\" : 64" + NEWLINE +
+                "      } ]" + NEWLINE +
+                "    }" + NEWLINE +
+                "  } ]" + NEWLINE +
                 "}";
 
         String actual = new ObjectMapper().writer()
