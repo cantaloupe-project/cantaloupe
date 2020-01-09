@@ -139,9 +139,7 @@ release branch for that release, and merged back into `develop`.
 1. Run the Maven Verifier plugin (`mvn verify -DskipTests=true`)
 2. Run an OWASP dependency check (`mvn org.owasp:dependency-check-maven:check`)
 3. Run Findbugs (`mvn clean compile findbugs:findbugs findbugs:gui`)
-4. Run the tests:
-   * JUnit
-   * [Endpoint tests](https://github.com/cantaloupe-project/output-tester)
+4. Run the [Endpoint tests](https://github.com/cantaloupe-project/output-tester)
 5. Finalize the code to be released, addressing any relevant milestone issues,
    TODOs, etc.
 6. Finalize the documentation, including the website, user manual, and change
@@ -154,13 +152,11 @@ release branch for that release, and merged back into `develop`.
 3. Merge into `master`
 4. Push the code: `git push origin master; git push origin release/x.x`
 5. Wait for CI tests to pass
-6. Create the release `.zip` archive with `mvn clean package -DskipTests`
-7. Verify that the `.zip` archive is as expected
-8. Tag the release: `git tag -a v{version} -m 'Tag v{version}'`
-9. git push --tags
-10. Add the `.zip` archive and change log info to the release tag on GitHub
-11. Deploy the updated website (usually not necessary for bugfix releases)
-12. Close the release's GitHub milestone
+6. Tag the release: `git tag -a v{version} -m 'Tag v{version}'`
+7. `git push --tags`
+8. Add the change log to the release on GitHub
+9. Deploy the updated website (usually not necessary for bugfix releases)
+10. Close the release's GitHub milestone
 
 ## License
 
