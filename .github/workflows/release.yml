@@ -8,9 +8,14 @@ jobs:
     name: Upload Release Asset
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/setup-java@v1
+        with:
+          java-version: '11'
+          java-package: jdk
+          architecture: x64
       - name: Checkout Code
         uses: actions/checkout@v2
-      - name: Build project
+      - name: Build Project
         # we assume that the tests for this tag have already passed
         # (otherwise the tag wouldn't have been pushed)
         run: mvn clean package -DskipTests
