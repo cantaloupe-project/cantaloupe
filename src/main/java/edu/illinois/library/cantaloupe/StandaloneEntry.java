@@ -28,6 +28,8 @@ public class StandaloneEntry {
      */
     static final String LIST_FONTS_ARGUMENT = "-list-fonts";
 
+    private static final String NEWLINE = System.getProperty("line.separator");
+
     private static ApplicationServer appServer;
 
     static {
@@ -134,21 +136,27 @@ public class StandaloneEntry {
      * Prints program usage to {@link System#out}.
      */
     private static void printUsage() {
-        System.out.println("\n" + usage());
+        System.out.println(NEWLINE + usage());
     }
 
     /**
      * @return Program usage message.
      */
     static String usage() {
-        return "Usage: java <VM args> -jar " + getWARFile().getName() + " <command args>" +
-                "\n\n" +
-                "VM arguments:\n" +
-                "-D" + ConfigurationFactory.CONFIG_VM_ARGUMENT + "=<path>" +
-                "       Configuration file (REQUIRED)\n\n" +
-                "Command arguments:\n" +
-                LIST_FONTS_ARGUMENT +
-                "                      List fonts\n";
+        return String.format("Usage: java <VM args> -jar %s <command args>%s" + // 1
+                "%s" +                                                  // 2
+                "VM arguments:%s" +                                     // 3
+                "  -D%s=<path>       Configuration file (REQUIRED)%s" + // 4
+                "%s" +                                                  // 5
+                "Command arguments:%s" +                                // 6
+                "  %s                      List fonts%s",               // 7
+                getWARFile().getName(), NEWLINE,                  // 1
+                NEWLINE,                                          // 2
+                NEWLINE,                                          // 3
+                ConfigurationFactory.CONFIG_VM_ARGUMENT, NEWLINE, // 4
+                NEWLINE,                                          // 5
+                NEWLINE,                                          // 6
+                LIST_FONTS_ARGUMENT, NEWLINE);                    // 7
     }
 
 }
