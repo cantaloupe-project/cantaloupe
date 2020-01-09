@@ -5,8 +5,8 @@ jobs:
     name: Test in JDK 13
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v2
       - name: Build & run Docker container
-        uses: actions/checkout@v2
         run: |
           docker pull amazon/dynamodb-local
           docker build -f docker/test/Dockerfile -t cantaloupe/tests .
