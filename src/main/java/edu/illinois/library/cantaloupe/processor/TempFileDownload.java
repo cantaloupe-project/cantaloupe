@@ -2,7 +2,7 @@ package edu.illinois.library.cantaloupe.processor;
 
 import edu.illinois.library.cantaloupe.async.ThreadPool;
 import edu.illinois.library.cantaloupe.source.StreamFactory;
-import edu.illinois.library.cantaloupe.source.StreamSource;
+import edu.illinois.library.cantaloupe.source.Source;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -19,8 +19,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
- * Asynchronously downloads content from a {@link StreamSource} to a
- * temporary file.
+ * Asynchronously downloads content from a {@link Source} to a temporary file.
  */
 final class TempFileDownload implements Future<Path> {
 

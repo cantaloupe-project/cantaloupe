@@ -41,7 +41,7 @@ import java.util.NoSuchElementException;
  *
  * <p>See {@link FormatIterator}.</p>
  */
-class JdbcSource extends AbstractSource implements StreamSource {
+class JdbcSource extends AbstractSource implements Source {
 
     /**
      * <ol>

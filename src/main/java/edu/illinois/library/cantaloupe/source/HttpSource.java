@@ -108,7 +108,7 @@ import java.util.concurrent.TimeUnit;
  *
  * @author Alex Dolski UIUC
  */
-class HttpSource extends AbstractSource implements StreamSource {
+class HttpSource extends AbstractSource implements Source {
 
     /**
      * Encapsulates the status code and headers of a HEAD response.

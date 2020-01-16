@@ -6,7 +6,7 @@ import org.apache.commons.io.input.NullInputStream;
 import java.util.Collections;
 import java.util.Iterator;
 
-public class MockStreamSource extends AbstractSource implements StreamSource {
+public class MockStreamSource extends AbstractSource implements Source {
 
     @Override
     public void checkAccess() {

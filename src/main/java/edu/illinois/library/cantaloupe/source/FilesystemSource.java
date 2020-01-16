@@ -38,8 +38,7 @@ import java.util.NoSuchElementException;
  * ScriptLookupStrategy invokes a delegate method to retrieve a pathname
  * dynamically.</p>
  */
-class FilesystemSource extends AbstractSource
-        implements StreamSource, FileSource {
+class FilesystemSource extends AbstractSource implements Source {
 
     /**
      * <ol>
@@ -59,7 +58,7 @@ class FilesystemSource extends AbstractSource
         private class ByteChecker implements FormatChecker {
             @Override
             public Format check() throws IOException {
-                final Path path = getPath();
+                final Path path = getFile();
                 List<MediaType> detectedTypes = MediaType.detectMediaTypes(path);
                 if (!detectedTypes.isEmpty()) {
                     return detectedTypes.get(0).toFormat();
@@ -81,7 +80,7 @@ class FilesystemSource extends AbstractSource
         public T next() {
             if (formatChecker == null) {
                 try {
-                    formatChecker = new NameFormatChecker(getPath().getFileName().toString());
+                    formatChecker = new NameFormatChecker(getFile().getFileName().toString());
                 } catch (IOException e) {
                     LOGGER.warn("FormatIterator.next(): {}", e.getMessage(), e);
                     formatChecker = new NameFormatChecker("***BOGUS***");
@@ -114,24 +113,19 @@ class FilesystemSource extends AbstractSource
     private FormatIterator<Format> formatIterator = new FormatIterator<>();
 
     /**
-     * Lazy-loaded by {@link #getPath}.
+     * Lazy-loaded by {@link #getFile}.
      */
     private Path path;
 
     @Override
     public void checkAccess() throws IOException {
-        final Path path = getPath();
-        if (!Files.exists(path)) {
+        final Path file = getFile();
+        if (!Files.exists(file)) {
             throw new NoSuchFileException("Failed to resolve " +
-                    identifier + " to " + path);
-        } else if (!Files.isReadable(path)) {
-            throw new AccessDeniedException("File is not readable: " + path);
+                    identifier + " to " + file);
+        } else if (!Files.isReadable(file)) {
+            throw new AccessDeniedException("File is not readable: " + file);
         }
-    }
-
-    @Override
-    public FormatIterator<Format> getFormatIterator() {
-        return formatIterator;
     }
 
     /**
@@ -141,7 +135,7 @@ class FilesystemSource extends AbstractSource
      *         cached.
      */
     @Override
-    public Path getPath() throws IOException {
+    public Path getFile() throws IOException {
         if (path == null) {
             final LookupStrategy strategy =
                     LookupStrategy.from(Key.FILESYSTEMSOURCE_LOOKUP_STRATEGY);
@@ -161,6 +155,11 @@ class FilesystemSource extends AbstractSource
             LOGGER.debug("Resolved {} to {}", identifier, path);
         }
         return path;
+    }
+
+    @Override
+    public FormatIterator<Format> getFormatIterator() {
+        return formatIterator;
     }
 
     private Path getPathWithBasicStrategy() {
@@ -195,7 +194,7 @@ class FilesystemSource extends AbstractSource
 
     @Override
     public StreamFactory newStreamFactory() throws IOException {
-        return new PathStreamFactory(getPath());
+        return new PathStreamFactory(getFile());
     }
 
     /**
@@ -229,6 +228,11 @@ class FilesystemSource extends AbstractSource
     private void reset() {
         path           = null;
         formatIterator = new FormatIterator<>();
+    }
+
+    @Override
+    public boolean supportsFileAccess() {
+        return true;
     }
 
 }

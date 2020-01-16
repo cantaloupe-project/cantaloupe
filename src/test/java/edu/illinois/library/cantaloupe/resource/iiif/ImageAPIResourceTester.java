@@ -14,10 +14,9 @@ import edu.illinois.library.cantaloupe.http.Transport;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.source.AccessDeniedSource;
-import edu.illinois.library.cantaloupe.source.FileSource;
 import edu.illinois.library.cantaloupe.source.PathStreamFactory;
+import edu.illinois.library.cantaloupe.source.Source;
 import edu.illinois.library.cantaloupe.source.StreamFactory;
-import edu.illinois.library.cantaloupe.source.StreamSource;
 import edu.illinois.library.cantaloupe.script.DelegateProxy;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 
@@ -308,7 +307,7 @@ public class ImageAPIResourceTester {
     /**
      * Used by {@link #testSourceCheckAccessNotCalledWithSourceCacheHit}.
      */
-    public static class NotCheckingAccessSource implements StreamSource {
+    public static class NotCheckingAccessSource implements Source {
 
         @Override
         public void checkAccess() throws IOException {
@@ -336,7 +335,7 @@ public class ImageAPIResourceTester {
         }
 
         @Override
-        public StreamFactory newStreamFactory() throws IOException {
+        public StreamFactory newStreamFactory() {
             return new PathStreamFactory(TestUtil.getImage("jpg"));
         }
 
@@ -383,7 +382,7 @@ public class ImageAPIResourceTester {
     /**
      * Used by {@link #testSourceGetFormatNotCalledWithSourceCacheHit(Identifier, URI)}.
      */
-    public static class NotReadingSourceFormatSource implements StreamSource {
+    public static class NotReadingSourceFormatSource implements Source {
 
         @Override
         public void checkAccess() {}
@@ -454,10 +453,10 @@ public class ImageAPIResourceTester {
     }
 
     /**
-     * Tests that the server responds with HTTP 500 when a non-
-     * {@link FileSource} is
-     * used with a non-
-     * {@link edu.illinois.library.cantaloupe.processor.StreamProcessor}.
+     * Tests that the server responds with HTTP 500 when a {@link Source} that
+     * {@link Source#supportsFileAccess() doesn't support file access} is used
+     * with a non-{@link
+     * edu.illinois.library.cantaloupe.processor.StreamProcessor}.
      */
     public void testSourceProcessorCompatibility(URI uri,
                                                  String appServerHost,
