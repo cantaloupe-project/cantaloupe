@@ -246,6 +246,8 @@ public class AdminResourceUITest extends AbstractAdminResourceTest {
         inputNamed(Key.BASE_URI).sendKeys("http://bla/bla/");
         inputNamed(Key.SLASH_SUBSTITUTE).sendKeys("^");
         inputNamed(Key.PRINT_STACK_TRACE_ON_ERROR_PAGES).click();
+        inputNamed(Key.APPLICATION_MONITORING_ENABLED).click();
+        inputNamed(Key.APPLICATION_MONITORING_REMOTE_PORT).sendKeys("5432");
 
         // Submit the form
         css("#cl-http input[type=\"submit\"]").click();
@@ -268,6 +270,8 @@ public class AdminResourceUITest extends AbstractAdminResourceTest {
         assertEquals("http://bla/bla/", config.getString(Key.BASE_URI));
         assertEquals("^", config.getString(Key.SLASH_SUBSTITUTE));
         assertTrue(config.getBoolean(Key.PRINT_STACK_TRACE_ON_ERROR_PAGES));
+        assertTrue(config.getBoolean(Key.APPLICATION_MONITORING_ENABLED));
+        assertEquals(5432, config.getInt(Key.APPLICATION_MONITORING_REMOTE_PORT));
     }
 
     @Test
