@@ -23,9 +23,9 @@ public class TaskQueueTest extends BaseTest {
 
     @Test
     void testQueuedTasks() throws Exception {
-        MockCallable<?> task1 = new MockCallable();
-        MockCallable<?> task2 = new MockCallable();
-        MockCallable<?> task3 = new MockCallable();
+        MockCallable<?> task1 = new MockCallable<>();
+        MockCallable<?> task2 = new MockCallable<>();
+        MockCallable<?> task3 = new MockCallable<>();
         FutureTask<?> future1 = new FutureTask<>(task1);
         FutureTask<?> future2 = new FutureTask<>(task2);
         FutureTask<?> future3 = new FutureTask<>(task3);
@@ -43,9 +43,9 @@ public class TaskQueueTest extends BaseTest {
 
     @Test
     void testSubmitCallable() throws Exception {
-        MockCallable<?> callable1 = new MockCallable();
-        MockCallable<?> callable2 = new MockCallable();
-        MockCallable<?> callable3 = new MockCallable();
+        MockCallable<?> callable1 = new MockCallable<>();
+        MockCallable<?> callable2 = new MockCallable<>();
+        MockCallable<?> callable3 = new MockCallable<>();
 
         instance.submit(callable1);
         instance.submit(callable2);
@@ -56,7 +56,7 @@ public class TaskQueueTest extends BaseTest {
         // The first has been taken out and is running.
         assertEquals(2, instance.queuedTasks().size());
 
-        Thread.sleep(400); // wait for them all to complete
+        Thread.sleep(500); // wait for them all to complete
         assertTrue(callable1.ran());
         assertTrue(callable2.ran());
         assertTrue(callable3.ran());
@@ -106,7 +106,7 @@ public class TaskQueueTest extends BaseTest {
 
     @Test
     void testSubmitAuditableFutureTaskSetsRunningTaskStatus() throws Exception {
-        MockCallable<?> task = new MockCallable();
+        MockCallable<?> task = new MockCallable<>();
         AuditableFutureTask<?> future = new AuditableFutureTask<>(task);
         assertEquals(TaskStatus.NEW, future.getStatus());
 
@@ -117,7 +117,7 @@ public class TaskQueueTest extends BaseTest {
 
     @Test
     void testSubmitAuditableFutureTaskSetsInstantQueued() {
-        MockCallable<?> task = new MockCallable();
+        MockCallable<?> task = new MockCallable<>();
         AuditableFutureTask<?> future = new AuditableFutureTask<>(task);
         instance.submit(future);
         assertNotNull(future.getInstantQueued());
@@ -125,7 +125,7 @@ public class TaskQueueTest extends BaseTest {
 
     @Test
     void testSubmitAuditableFutureTaskSetsInstantStarted() throws Exception {
-        MockCallable<?> task = new MockCallable();
+        MockCallable<?> task = new MockCallable<>();
         AuditableFutureTask<?> future = new AuditableFutureTask<>(task);
         instance.submit(future);
         Thread.sleep(50);
@@ -134,7 +134,7 @@ public class TaskQueueTest extends BaseTest {
 
     @Test
     void testSubmitAuditableFutureTaskSetsInstantStopped() throws Exception {
-        MockCallable<?> task = new MockCallable();
+        MockCallable<?> task = new MockCallable<>();
         AuditableFutureTask<?> future = new AuditableFutureTask<>(task);
         instance.submit(future);
         Thread.sleep(150);
@@ -144,7 +144,7 @@ public class TaskQueueTest extends BaseTest {
     @Test
     void testSubmitAuditableFutureTaskSetsSuccessfulTaskStatus()
             throws Exception {
-        MockCallable<?> task = new MockCallable();
+        MockCallable<?> task = new MockCallable<>();
         AuditableFutureTask<?> future = new AuditableFutureTask<>(task);
         assertEquals(TaskStatus.NEW, future.getStatus());
 
@@ -155,7 +155,7 @@ public class TaskQueueTest extends BaseTest {
 
     @Test
     void testSubmitAuditableFutureTaskSetsFailedTaskStatus() throws Exception {
-        MockFailingCallable<?> task = new MockFailingCallable();
+        MockFailingCallable<?> task = new MockFailingCallable<>();
         AuditableFutureTask<?> future = new AuditableFutureTask<>(task);
         assertEquals(TaskStatus.NEW, future.getStatus());
 

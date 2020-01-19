@@ -352,7 +352,7 @@ public final class Java2DUtil {
     static BufferedImage getOverlayImage(ImageOverlay overlay) {
         ImageReader reader = null;
         try (InputStream is = overlay.openStream()) {
-            reader = new ImageReaderFactory().newImageReader(is, Format.PNG);
+            reader = new ImageReaderFactory().newImageReader(Format.PNG, is);
             return reader.read();
         } catch (IOException e) {
             LOGGER.warn("{} (skipping overlay)", e.getMessage());

@@ -515,7 +515,7 @@ class OpenJpegProcessor extends AbstractProcessor implements FileProcessor {
 
         try (InputStream is = Files.newInputStream(intermediateFile)) {
             final ImageReader reader =
-                    new ImageReaderFactory().newImageReader(is, Format.BMP);
+                    new ImageReaderFactory().newImageReader(Format.BMP, is);
             try {
                 final BufferedImage image = reader.read();
                 final Set<ReaderHint> hints =
@@ -560,7 +560,7 @@ class OpenJpegProcessor extends AbstractProcessor implements FileProcessor {
                     new StreamCopier(processErrorStream, errorOutput));
 
             final ImageReader reader = new ImageReaderFactory().newImageReader(
-                    processInputStream, Format.BMP);
+                    Format.BMP, processInputStream);
             try {
                 final Set<ReaderHint> hints =
                         EnumSet.of(ReaderHint.ALREADY_CROPPED);

@@ -9,6 +9,8 @@ current version.
 2.  Rename the following configuration keys:
     * `endpoint.iiif.2.restrict_to_sizes` to `endpoint.iiif.restrict_to_sizes`
 3.  Add the following keys from the sample configuration:
+    * `processor.ManualSelectionStrategy.xpm`
+    * `processor.imageio.xpm.reader`
     * `DynamoDBCache.*`
     * `log.application.ConsoleAppender.logstash.enabled`
     * `log.application.FileAppender.logstash.enabled`
@@ -16,6 +18,8 @@ current version.
     * `log.error.FileAppender.logstash.enabled`
     * `log.error.RollingFileAppender.logstash.enabled`
 4.  Remove the following configuration keys:
+    * `http.http2.enabled`
+    * `https.http2.enabled`
     * `http.accept_queue_limit`
     * `endpoint.iiif.content_disposition`
     * `processor.metadata.*`

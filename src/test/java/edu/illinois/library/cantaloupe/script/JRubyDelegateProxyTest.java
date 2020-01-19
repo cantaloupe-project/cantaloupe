@@ -14,9 +14,9 @@ import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class DelegateProxyTest extends BaseTest {
+public class JRubyDelegateProxyTest extends BaseTest {
 
-    private DelegateProxy instance;
+    private JRubyDelegateProxy instance;
 
     @BeforeEach
     public void setUp() throws Exception {
@@ -27,9 +27,9 @@ public class DelegateProxyTest extends BaseTest {
 
         Path scriptFile = TestUtil.getFixture("delegates.rb");
         String code = Files.readString(scriptFile);
-        DelegateProxy.load(code);
+        JRubyDelegateProxy.load(code);
 
-        instance = new DelegateProxy(context);
+        instance = new JRubyDelegateProxy(context);
     }
 
     /* authorize() */

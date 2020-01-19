@@ -157,6 +157,11 @@
             <artifactId>commons-io</artifactId>
             <version>2.4</version>
         </dependency>
+        <dependency>
+            <groupId>edu.illinois.library</groupId>
+            <artifactId>imageio-xpm</artifactId>
+            <version>1.0</version>
+        </dependency>
         <!-- Used by S3SourceTest and S3CacheTest -->
         <dependency>
             <groupId>io.findify</groupId>
@@ -321,12 +326,6 @@
             <artifactId>jetty-jmx</artifactId>
             <version>${jetty.version}</version>
         </dependency>
-        <!-- Enables colorized Logback console output in Windows -->
-        <dependency>
-            <groupId>org.fusesource.jansi</groupId>
-            <artifactId>jansi</artifactId>
-            <version>1.13</version>
-        </dependency>
         <!-- JRuby is used to execute delegate script methods. -->
         <dependency>
             <groupId>org.jruby</groupId>
@@ -448,7 +447,8 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.8.1</version>
                 <configuration>
-                    <release>11</release>
+                    <source>11</source>
+                    <target>11</target>
                     <useIncrementalCompilation>false</useIncrementalCompilation>
                 </configuration>
             </plugin>

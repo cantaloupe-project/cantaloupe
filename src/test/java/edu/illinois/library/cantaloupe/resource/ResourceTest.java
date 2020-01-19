@@ -56,11 +56,9 @@ public abstract class ResourceTest extends BaseTest {
 
         new CacheFacade().purge();
 
-        // Enable HTTP and HTTPS over HTTP/1.1 and HTTP/2
         appServer = StandaloneEntry.getAppServer();
         appServer.setHTTPEnabled(true);
         appServer.setHTTPPort(HTTP_PORT);
-        appServer.setInsecureHTTP2Enabled(true);
 
         appServer.setHTTPSEnabled(true);
         appServer.setHTTPSPort(HTTPS_PORT);

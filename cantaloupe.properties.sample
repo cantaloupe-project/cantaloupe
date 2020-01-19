@@ -17,14 +17,11 @@ temp_pathname =
 http.enabled = true
 http.host = 0.0.0.0
 http.port = 8182
-http.http2.enabled = false
 
 # !! Configures the HTTPS server. (Standalone mode only.)
 https.enabled = false
 https.host = 0.0.0.0
 https.port = 8183
-# Secure HTTP/2 requires Java 9 or later.
-https.http2.enabled = false
 
 # !! Available values are `JKS` and `PKCS12`. (Standalone mode only.)
 https.key_store_type = JKS
@@ -312,6 +309,7 @@ processor.ManualSelectionStrategy.pdf = PdfBoxProcessor
 processor.ManualSelectionStrategy.png =
 processor.ManualSelectionStrategy.tif =
 processor.ManualSelectionStrategy.webm = FfmpegProcessor
+processor.ManualSelectionStrategy.xpm =
 
 # Fall back to this processor for any formats not assigned above.
 processor.ManualSelectionStrategy.fallback = Java2dProcessor
@@ -378,6 +376,7 @@ processor.imageio.png.reader =
 processor.imageio.png.writer =
 processor.imageio.tif.reader =
 processor.imageio.tif.writer =
+processor.imageio.xpm.reader =
 
 #----------------------------------------
 # FfmpegProcessor
@@ -604,7 +603,7 @@ overlays.BasicStrategy.image = /path/to/overlay.png
 # Overlay text.
 overlays.BasicStrategy.string = Copyright © My Great Organization\nAll rights reserved.
 
-# For possible values, launch with the -Dcantaloupe.list_fonts option.
+# For a list of possible values, launch with the -list-fonts argument.
 overlays.BasicStrategy.string.font = Helvetica
 
 # Font size in points.

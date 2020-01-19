@@ -3,7 +3,7 @@ package edu.illinois.library.cantaloupe.status;
 import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.cache.InfoCache;
 import edu.illinois.library.cantaloupe.cache.InfoService;
-import edu.illinois.library.cantaloupe.script.DelegateProxy;
+import edu.illinois.library.cantaloupe.script.DelegateProxyService;
 import edu.illinois.library.cantaloupe.script.InvocationCache;
 
 import java.lang.management.ManagementFactory;
@@ -25,7 +25,7 @@ public final class ApplicationStatus {
      * @return Max delegate method invocation cache size.
      */
     public long getDMICMaxSize() {
-        InvocationCache cache = DelegateProxy.getInvocationCache();
+        InvocationCache cache = DelegateProxyService.getInvocationCache();
         return cache.maxSize();
     }
 
@@ -33,7 +33,7 @@ public final class ApplicationStatus {
      * @return Current delegate method invocation cache size.
      */
     public long getDMICSize() {
-        InvocationCache cache = DelegateProxy.getInvocationCache();
+        InvocationCache cache = DelegateProxyService.getInvocationCache();
         return cache.size();
     }
 
