@@ -225,6 +225,9 @@ public class AdminResourceUITest extends AbstractAdminResourceTest {
                 config.getString(Key.ACCESS_LOG_SYSLOGAPPENDER_PORT));
         assertEquals("foxes",
                 config.getString(Key.ACCESS_LOG_SYSLOGAPPENDER_FACILITY));
+
+        assertTrue(config.getBoolean(Key.APPLICATION_MONITORING_ENABLED));
+        assertEquals(5432, config.getInt(Key.APPLICATION_MONITORING_REMOTE_PORT));
     }
 
     @Test
@@ -270,8 +273,6 @@ public class AdminResourceUITest extends AbstractAdminResourceTest {
         assertEquals("http://bla/bla/", config.getString(Key.BASE_URI));
         assertEquals("^", config.getString(Key.SLASH_SUBSTITUTE));
         assertTrue(config.getBoolean(Key.PRINT_STACK_TRACE_ON_ERROR_PAGES));
-        assertTrue(config.getBoolean(Key.APPLICATION_MONITORING_ENABLED));
-        assertEquals(5432, config.getInt(Key.APPLICATION_MONITORING_REMOTE_PORT));
     }
 
     @Test
