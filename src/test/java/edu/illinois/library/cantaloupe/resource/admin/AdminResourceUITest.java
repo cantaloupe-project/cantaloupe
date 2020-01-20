@@ -149,6 +149,8 @@ public class AdminResourceUITest extends AbstractAdminResourceTest {
         inputNamed(Key.ACCESS_LOG_SYSLOGAPPENDER_HOST).sendKeys("host2");
         inputNamed(Key.ACCESS_LOG_SYSLOGAPPENDER_PORT).sendKeys("251");
         inputNamed(Key.ACCESS_LOG_SYSLOGAPPENDER_FACILITY).sendKeys("foxes");
+        inputNamed(Key.APPLICATION_MONITORING_ENABLED).click();
+        inputNamed(Key.APPLICATION_MONITORING_REMOTE_PORT).sendKeys("5432");
 
         // Submit the form
         css("#cl-application input[type=\"submit\"]").click();
@@ -247,8 +249,6 @@ public class AdminResourceUITest extends AbstractAdminResourceTest {
         inputNamed(Key.BASE_URI).sendKeys("http://bla/bla/");
         inputNamed(Key.SLASH_SUBSTITUTE).sendKeys("^");
         inputNamed(Key.PRINT_STACK_TRACE_ON_ERROR_PAGES).click();
-        inputNamed(Key.APPLICATION_MONITORING_ENABLED).click();
-        inputNamed(Key.APPLICATION_MONITORING_REMOTE_PORT).sendKeys("5432");
 
         // Submit the form
         css("#cl-http input[type=\"submit\"]").click();
