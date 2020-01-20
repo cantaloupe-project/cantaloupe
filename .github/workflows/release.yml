@@ -1,0 +1,40 @@
+on:
+  push:
+    tags:
+      - 'v*'
+name: Upload Release Asset
+jobs:
+  build:
+    name: Upload Release Asset
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v2
+      - name: Build project
+        # we assume that the tests for this tag have already passed
+        # (otherwise the tag wouldn't have been pushed)
+        run: mvn clean package -DskipTests
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1.0.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: ${{ github.ref }}
+          draft: false
+          prerelease: false
+      - id: getpathname
+        run: echo "::set-output name=file::$(ls target/cantaloupe-*.zip)"
+      - id: getbasename
+        run: echo "::set-output name=file::$(basename target/cantaloupe-*.zip)"
+      - name: Upload Release Asset
+        id: upload-release-asset
+        uses: actions/upload-release-asset@v1.0.1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./${{ steps.getpathname.outputs.file }}
+          asset_name: ${{ steps.getbasename.outputs.file }}
+          asset_content_type: application/zip

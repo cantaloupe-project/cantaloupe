@@ -20,6 +20,7 @@ import java.io.PrintStream;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -28,6 +29,7 @@ public class StandaloneEntryTest extends BaseTest {
     private static final PrintStream CONSOLE_OUTPUT = System.out;
     private static final PrintStream CONSOLE_ERROR = System.err;
     private static final int HTTP_PORT = SocketUtils.getOpenPort();
+    private static final String NEWLINE = System.getProperty("line.separator");
 
     private Client httpClient = new Client();
 
@@ -87,7 +89,7 @@ public class StandaloneEntryTest extends BaseTest {
         httpClient.stop();
         deleteCacheDir();
         System.clearProperty(ConfigurationFactory.CONFIG_VM_ARGUMENT);
-        System.clearProperty(StandaloneEntry.LIST_FONTS_VM_ARGUMENT);
+        System.clearProperty(StandaloneEntry.LIST_FONTS_ARGUMENT);
         resetOutput();
     }
 
@@ -96,18 +98,17 @@ public class StandaloneEntryTest extends BaseTest {
     @Test
     void mainWithListFontsOption() throws Exception {
         redirectOutput();
-        System.setProperty(StandaloneEntry.LIST_FONTS_VM_ARGUMENT, "");
-        StandaloneEntry.main("");
+        StandaloneEntry.main(StandaloneEntry.LIST_FONTS_ARGUMENT);
         assertTrue(redirectedOutput.toString().contains("SansSerif"));
     }
 
     @Test
-    @Disabled // broken in junit 5
+    @Disabled // TODO: broken in junit 5
     void mainWithListFontsOptionExits() throws Exception {
         //exit.expectSystemExitWithStatus(0);
         System.clearProperty(Application.TEST_VM_ARGUMENT);
 
-        System.setProperty(StandaloneEntry.LIST_FONTS_VM_ARGUMENT, "");
+        System.setProperty(StandaloneEntry.LIST_FONTS_ARGUMENT, "");
         StandaloneEntry.main("");
     }
 
@@ -123,7 +124,7 @@ public class StandaloneEntryTest extends BaseTest {
     }
 
     @Test
-    @Disabled // broken in junit 5
+    @Disabled // TODO: broken in junit 5
     void mainWithMissingConfigOptionExits() throws Exception {
         System.clearProperty(Application.TEST_VM_ARGUMENT);
         //exit.expectSystemExitWithStatus(-1);
@@ -141,7 +142,7 @@ public class StandaloneEntryTest extends BaseTest {
     }
 
     @Test
-    @Disabled // broken in junit 5
+    @Disabled // TODO: broken in junit 5
     void mainWithEmptyConfigOptionExits() throws Exception {
         System.clearProperty(Application.TEST_VM_ARGUMENT);
         //exit.expectSystemExitWithStatus(-1);
@@ -154,15 +155,16 @@ public class StandaloneEntryTest extends BaseTest {
     @Test
     void mainWithInvalidConfigFileArgumentPrintsUsage() throws Exception {
         redirectOutput();
-        String path = "/bla/bla/bla";
+        String path = Paths.get("bla").toAbsolutePath().toString();
         System.setProperty(ConfigurationFactory.CONFIG_VM_ARGUMENT, path);
         StandaloneEntry.main("");
-        assertEquals("Does not exist: " + path + "\n\n" + StandaloneEntry.usage().trim(),
-                redirectedOutput.toString().trim());
+        assertEquals("Does not exist: " + path + NEWLINE + NEWLINE +
+                        StandaloneEntry.usage() + NEWLINE,
+                redirectedOutput.toString());
     }
 
     @Test
-    @Disabled // broken in junit 5
+    @Disabled // TODO: broken in junit 5
     void mainWithInvalidConfigFileArgumentExits() throws Exception {
         System.clearProperty(Application.TEST_VM_ARGUMENT);
         //exit.expectSystemExitWithStatus(-1);
@@ -178,12 +180,15 @@ public class StandaloneEntryTest extends BaseTest {
         String path = TestUtil.getFixture("bla").getParent().toString();
         System.setProperty(ConfigurationFactory.CONFIG_VM_ARGUMENT, path);
         StandaloneEntry.main("");
-        assertEquals("Not a file: " + path + "\n\n" + StandaloneEntry.usage().trim(),
-                redirectedOutput.toString().trim());
+
+        String expected = "Not a file: " + path + NEWLINE + NEWLINE +
+                StandaloneEntry.usage() + NEWLINE;
+        String actual = redirectedOutput.toString();
+        assertEquals(expected, actual);
     }
 
     @Test
-    @Disabled // broken in junit 5
+    @Disabled // TODO: broken in junit 5
     void mainWithDirectoryConfigFileArgumentExits() throws Exception {
         System.clearProperty(Application.TEST_VM_ARGUMENT);
         //exit.expectSystemExitWithStatus(-1);

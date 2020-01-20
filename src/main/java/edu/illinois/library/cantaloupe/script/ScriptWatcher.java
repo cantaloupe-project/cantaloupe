@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.script.ScriptException;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
@@ -59,8 +60,8 @@ final class ScriptWatcher implements Runnable {
                     if (!Arrays.equals(newChecksum, currentChecksum)) {
                         LOGGER.debug("Script checksums differ; reloading");
                         currentChecksum = newChecksum;
-                        final String code = new String(fileBytes, "UTF-8");
-                        DelegateProxy.load(code);
+                        final String code = new String(fileBytes, StandardCharsets.UTF_8);
+                        DelegateProxyService.load(code);
                     } else {
                         LOGGER.debug("Script checksums match; skipping reload");
                     }

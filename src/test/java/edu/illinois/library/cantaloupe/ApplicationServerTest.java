@@ -131,24 +131,6 @@ public class ApplicationServerTest extends BaseTest {
     }
 
     @Test
-    void isInsecureHTTP2Enabled() {
-        // default
-        assertFalse(instance.isInsecureHTTP2Enabled());
-        // explicitly set
-        instance.setInsecureHTTP2Enabled(true);
-        assertTrue(instance.isInsecureHTTP2Enabled());
-    }
-
-    @Test
-    void isSecureHTTP2Enabled() {
-        // default
-        assertFalse(instance.isSecureHTTP2Enabled());
-        // explicitly set
-        instance.setSecureHTTP2Enabled(true);
-        assertTrue(instance.isSecureHTTP2Enabled());
-    }
-
-    @Test
     void isStarted() throws Exception {
         assertFalse(instance.isStarted());
         assertTrue(instance.isStopped());

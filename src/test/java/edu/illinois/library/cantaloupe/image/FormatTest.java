@@ -15,8 +15,8 @@ class FormatTest extends BaseTest {
         Set<Format> expected = Set.of(Format.AVI, Format.BMP, Format.DCM,
                 Format.FLV, Format.GIF, Format.JP2, Format.JPG, Format.MOV,
                 Format.MP4, Format.MPG,Format.PDF, Format.PNG, Format.TIF,
-                Format.UNKNOWN, Format.WEBM, Format.WEBP);
-        assertEquals(expected, Format.getAllFormats());
+                Format.UNKNOWN, Format.WEBM, Format.WEBP, Format.XPM);
+        assertEquals(expected, Format.knownFormats());
     }
 
     @Test
@@ -64,15 +64,18 @@ class FormatTest extends BaseTest {
         // TIF
         assertEquals(Format.TIF,
                 Format.inferFormat(new Identifier("bla.tif")));
+        // UNKNOWN
+        assertEquals(Format.UNKNOWN,
+                Format.inferFormat(new Identifier("bla.bogus")));
         // WEBM
         assertEquals(Format.WEBM,
                 Format.inferFormat(new Identifier("bla.webm")));
         // WEBP
         assertEquals(Format.WEBP,
                 Format.inferFormat(new Identifier("bla.webp")));
-        // UNKNOWN
-        assertEquals(Format.UNKNOWN,
-                Format.inferFormat(new Identifier("bla.bogus")));
+        // XPM
+        assertEquals(Format.XPM,
+                Format.inferFormat(new Identifier("bla.xpm")));
     }
 
     @Test
@@ -105,12 +108,14 @@ class FormatTest extends BaseTest {
         assertEquals(Format.PNG, Format.inferFormat("bla.png"));
         // TIF
         assertEquals(Format.TIF, Format.inferFormat("bla.tif"));
+        // UNKNOWN
+        assertEquals(Format.UNKNOWN, Format.inferFormat("bla.bogus"));
         // WEBM
         assertEquals(Format.WEBM, Format.inferFormat("bla.webm"));
         // WEBP
         assertEquals(Format.WEBP, Format.inferFormat("bla.webp"));
-        // UNKNOWN
-        assertEquals(Format.UNKNOWN, Format.inferFormat("bla.bogus"));
+        // XPM
+        assertEquals(Format.XPM, Format.inferFormat("bla.xpm"));
     }
 
     @Test
@@ -158,9 +163,10 @@ class FormatTest extends BaseTest {
         assertEquals("pdf", Format.PDF.getPreferredExtension());
         assertEquals("png", Format.PNG.getPreferredExtension());
         assertEquals("tif", Format.TIF.getPreferredExtension());
+        assertEquals("unknown", Format.UNKNOWN.getPreferredExtension());
         assertEquals("webm", Format.WEBM.getPreferredExtension());
         assertEquals("webp", Format.WEBP.getPreferredExtension());
-        assertEquals("unknown", Format.UNKNOWN.getPreferredExtension());
+        assertEquals("xpm", Format.XPM.getPreferredExtension());
     }
 
     @Test
@@ -191,12 +197,14 @@ class FormatTest extends BaseTest {
                 Format.PNG.getPreferredMediaType().toString());
         assertEquals("image/tiff",
                 Format.TIF.getPreferredMediaType().toString());
+        assertEquals("unknown/unknown",
+                Format.UNKNOWN.getPreferredMediaType().toString());
         assertEquals("video/webm",
                 Format.WEBM.getPreferredMediaType().toString());
         assertEquals("image/webp",
                 Format.WEBP.getPreferredMediaType().toString());
-        assertEquals("unknown/unknown",
-                Format.UNKNOWN.getPreferredMediaType().toString());
+        assertEquals("image/x-xpixmap",
+                Format.XPM.getPreferredMediaType().toString());
     }
 
     @Test
@@ -222,7 +230,7 @@ class FormatTest extends BaseTest {
 
     @Test
     void testToString() {
-        for (Format format : Format.getAllFormats()) {
+        for (Format format : Format.knownFormats()) {
             assertEquals(format.getPreferredExtension(),
                     format.toString());
         }

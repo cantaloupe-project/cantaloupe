@@ -39,6 +39,7 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
@@ -86,7 +87,7 @@ abstract class AbstractProcessorTest extends BaseTest {
 
     private Set<Format> getSupportedSourceFormats(Processor processor) {
         Set<Format> formats = new HashSet<>();
-        for (Format format : Format.getAllFormats()) {
+        for (Format format : Format.knownFormats()) {
             try {
                 processor.setSourceFormat(format);
                 formats.add(format);
@@ -164,8 +165,9 @@ abstract class AbstractProcessorTest extends BaseTest {
             @Override
             public void run() {
                 if (this.sourceSize != null) {
-                    double expectedSize = (this.sourceSize.width() > this.sourceSize.height()) ?
-                            this.sourceSize.height() : this.sourceSize.width();
+                    double expectedSize = Math.min(
+                            this.sourceSize.width(),
+                            this.sourceSize.height());
                     assertEquals(expectedSize,
                             this.resultingImage.getWidth(), DELTA);
                     assertEquals(expectedSize,
@@ -194,10 +196,11 @@ abstract class AbstractProcessorTest extends BaseTest {
                 if (flag) {
                     // Rotated images won't work due to the way the Crop operation
                     // is set up.
-                    this.skippedFixtures.add("jpg-exif-orientation-270.jpg");
-                    this.skippedFixtures.add("jpg-xmp-orientation-90.jpg");
-                    this.skippedFixtures.add("png-rotated.png");
-                    this.skippedFixtures.add("tif-rotated.tif");
+                    this.skippedFixtures.addAll(List.of(
+                            "jpg-exif-orientation-270.jpg",
+                            "jpg-xmp-orientation-90.jpg",
+                            "png-rotated.png",
+                            "tif-rotated.tif"));
                 }
             }
             @Override
@@ -434,14 +437,15 @@ abstract class AbstractProcessorTest extends BaseTest {
         forEachFixture(ops, new ProcessorAssertion() {
             {
                 if (newInstance() instanceof JaiProcessor) {
-                    // These may be JAI bugs
-                    this.skippedFixtures.add("bmp-rgba-64x56x8.bmp");
-                    this.skippedFixtures.add("gif");
-                    this.skippedFixtures.add("gif-animated-looping.gif");
-                    this.skippedFixtures.add("gif-animated-non-looping.gif");
-                    this.skippedFixtures.add("gif-rgb-64x56x8.gif");
-                    this.skippedFixtures.add("gif-xmp.gif");
-                    this.skippedFixtures.add("gif-xmp-orientation-90.gif");
+                    // These may be JAI bugs, don't know and don't care
+                    this.skippedFixtures.addAll(List.of(
+                            "bmp-rgba-64x56x8.bmp",
+                            "gif",
+                            "gif-animated-looping.gif",
+                            "gif-animated-non-looping.gif",
+                            "gif-rgb-64x56x8.gif",
+                            "gif-xmp.gif",
+                            "gif-xmp-orientation-90.gif"));
                 }
             }
             @Override
@@ -460,14 +464,16 @@ abstract class AbstractProcessorTest extends BaseTest {
         forEachFixture(ops, new ProcessorAssertion() {
             {
                 if (newInstance() instanceof JaiProcessor) {
-                    // These may be JAI bugs
-                    this.skippedFixtures.add("bmp-rgba-64x56x8.bmp");
-                    this.skippedFixtures.add("gif");
-                    this.skippedFixtures.add("gif-animated-looping.gif");
-                    this.skippedFixtures.add("gif-animated-non-looping.gif");
-                    this.skippedFixtures.add("gif-rgb-64x56x8.gif");
-                    this.skippedFixtures.add("gif-xmp.gif");
-                    this.skippedFixtures.add("gif-xmp-orientation-90.gif");
+                    // These may be JAI bugs, don't know and don't care
+                    this.skippedFixtures.addAll(List.of(
+                            "bmp-rgba-64x56x8.bmp",
+                            "gif",
+                            "gif-animated-looping.gif",
+                            "gif-animated-non-looping.gif",
+                            "gif-rgb-64x56x8.gif",
+                            "gif-xmp.gif",
+                            "gif-xmp-orientation-90.gif",
+                            "xpm"));
                 }
             }
             @Override
@@ -538,7 +544,6 @@ abstract class AbstractProcessorTest extends BaseTest {
 
     @Test
     public void testProcessWithTurboJPEGAvailable() throws Exception {
-        TurboJPEGImageWriter.setTurboJPEGAvailable(true);
         // We don't want a failure if TurboJPEG is not actually available.
         assumeTrue(TurboJPEGImageWriter.isTurboJPEGAvailable());
 
@@ -625,7 +630,7 @@ abstract class AbstractProcessorTest extends BaseTest {
      */
     @Test
     public void testReadInfoOnAllFixtures() throws Exception {
-        for (Format format : Format.getAllFormats()) {
+        for (Format format : Format.knownFormats()) {
             for (Path fixture : TestUtil.getImageFixtures(format)) {
                 if (fixture.getFileName().toString().equals("jp2") ||
                         fixture.getFileName().toString().equals("jp2-iptc.jp2") ||
@@ -698,7 +703,7 @@ abstract class AbstractProcessorTest extends BaseTest {
 
     @Test
     public void testSetSourceFormatWithUnsupportedSourceFormat() {
-        for (Format format : Format.getAllFormats()) {
+        for (Format format : Format.knownFormats()) {
             try {
                 final Processor proc = newInstance();
                 proc.setSourceFormat(format);

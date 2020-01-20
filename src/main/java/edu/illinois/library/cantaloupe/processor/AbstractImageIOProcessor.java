@@ -113,9 +113,9 @@ abstract class AbstractImageIOProcessor extends AbstractProcessor {
         if (reader == null) {
             ImageReaderFactory rf = new ImageReaderFactory();
             if (streamFactory != null) {
-                reader = rf.newImageReader(streamFactory, getSourceFormat());
+                reader = rf.newImageReader(getSourceFormat(), streamFactory);
             } else {
-                reader = rf.newImageReader(sourceFile, getSourceFormat());
+                reader = rf.newImageReader(getSourceFormat(), sourceFile);
             }
         }
         return reader;

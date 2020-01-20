@@ -1,6 +1,7 @@
 package edu.illinois.library.cantaloupe.processor.codec;
 
 import edu.illinois.library.cantaloupe.image.Dimension;
+import edu.illinois.library.cantaloupe.image.MediaType;
 import edu.illinois.library.cantaloupe.image.Rectangle;
 import edu.illinois.library.cantaloupe.image.ScaleConstraint;
 import edu.illinois.library.cantaloupe.operation.Crop;
@@ -66,16 +67,24 @@ public abstract class AbstractIIOImageReader {
     }
 
     private List<javax.imageio.ImageReader> availableIIOReaders() {
-        final Iterator<javax.imageio.ImageReader> it;
+        Iterator<javax.imageio.ImageReader> it = null;
         if (getFormat() != null) {
-            it = ImageIO.getImageReadersByMIMEType(
-                    getFormat().getPreferredMediaType().toString());
+            // Search by media type.
+            Iterator<MediaType> types = getFormat().getMediaTypes().iterator();
+            while (types.hasNext() && (it == null || !it.hasNext())) {
+                it = ImageIO.getImageReadersByMIMEType(types.next().toString());
+            }
+            // Search by extension.
+            Iterator<String> extensions = getFormat().getExtensions().iterator();
+            while (extensions.hasNext() && (it == null || !it.hasNext())) {
+                it = ImageIO.getImageReadersBySuffix(extensions.next());
+            }
         } else {
             it = ImageIO.getImageReaders(inputStream);
         }
 
         final List<javax.imageio.ImageReader> iioReaders = new ArrayList<>();
-        while (it.hasNext()) {
+        while (it != null && it.hasNext()) {
             iioReaders.add(it.next());
         }
         return iioReaders;
@@ -94,7 +103,7 @@ public abstract class AbstractIIOImageReader {
             getLogger().debug("Using {}", iioReader.getClass().getName());
             iioReader.setInput(inputStream, false, false);
         } else {
-            throw new IOException("Unable to determine the format of the" +
+            throw new IOException("Unable to determine the format of the " +
                     "source image.");
         }
     }

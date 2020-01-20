@@ -13,7 +13,9 @@ import java.io.InputStream;
 import java.io.StringWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -28,7 +30,7 @@ public class MediaTypeTest extends BaseTest {
     @BeforeAll
     public static void beforeClass() throws Exception {
         BaseTest.beforeClass();
-        for (Format format : Format.getAllFormats()) {
+        for (Format format : Format.knownFormats()) {
             if (format.equals(Format.UNKNOWN)) {
                 continue;
             }
@@ -64,12 +66,12 @@ public class MediaTypeTest extends BaseTest {
     @Test
     void testDetectMediaTypesWithByteArray() throws Exception {
         for (Format format : FILES.keySet()) {
-            MediaType preferredMediaType = format.getPreferredMediaType();
             Path file = FILES.get(format);
-
             byte[] bytes = Files.readAllBytes(file);
-            boolean result = MediaType.detectMediaTypes(bytes).
-                    contains(preferredMediaType);
+            List<MediaType> formatMediaTypes = format.getMediaTypes();
+            boolean result = !Collections.disjoint(
+                    MediaType.detectMediaTypes(bytes),
+                    formatMediaTypes);
             if (!result) {
                 System.err.println("detection failed:" +
                         "\tformat: " + format +
@@ -89,10 +91,10 @@ public class MediaTypeTest extends BaseTest {
     void testDetectMediaTypesWithPath() throws Exception {
         for (Format format : FILES.keySet()) {
             Path file = FILES.get(format);
-            MediaType preferredMediaType = format.getPreferredMediaType();
-
-            boolean result = MediaType.detectMediaTypes(file).
-                    contains(preferredMediaType);
+            List<MediaType> formatMediaTypes = format.getMediaTypes();
+            boolean result = !Collections.disjoint(
+                    MediaType.detectMediaTypes(file),
+                    formatMediaTypes);
             if (!result) {
                 System.err.println("detection failed: " +
                         "[format: " + format + "] " +
@@ -111,12 +113,12 @@ public class MediaTypeTest extends BaseTest {
     @Test
     void testDetectMediaTypesWithInputStream() throws Exception {
         for (Format format : FILES.keySet()) {
-            MediaType preferredMediaType = format.getPreferredMediaType();
             Path file = FILES.get(format);
-
+            List<MediaType> formatMediaTypes = format.getMediaTypes();
             try (InputStream is = new BufferedInputStream(Files.newInputStream(file))) {
-                boolean result = MediaType.detectMediaTypes(is).
-                        contains(preferredMediaType);
+                boolean result = !Collections.disjoint(
+                        MediaType.detectMediaTypes(is),
+                        formatMediaTypes);
                 if (!result) {
                     System.err.println("detection failed:" +
                             "\tformat: " + format +
@@ -180,6 +182,7 @@ public class MediaTypeTest extends BaseTest {
         assertEquals(Format.TIF, new MediaType("image/tiff").toFormat());
         assertEquals(Format.WEBM, new MediaType("video/webm").toFormat());
         assertEquals(Format.WEBP, new MediaType("image/webp").toFormat());
+        assertEquals(Format.XPM, new MediaType("image/x-xpixmap").toFormat());
     }
 
     /* toString() */

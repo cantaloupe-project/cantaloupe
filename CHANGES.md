@@ -15,6 +15,8 @@
 * The IIIF Image API 1.x endpoint no longer supports content negotiation. If a
   format extension is not supplied in the URI, JPEG will be returned regardless
   of the value of the `Accept` header.
+* The `http.http2.enabled` and `https.http2.enabled` configuration keys have
+  been removed. HTTP/2 is always enabled.
 
 ### Sources
 
@@ -36,6 +38,7 @@
   EXIF `Orientation` tag.
 * KakaduNativeProcessor and OpenJpegProcessor support IPTC and XMP metadata.
 * TurboJpegProcessor supports EXIF, IPTC, and XMP metadata.
+* Java2dProcessor supports the XPM source format.
 * FfmpegProcessor, KakaduNativeProcessor, OpenJpegProcessor, and
   PdfBoxProcessor use libjpeg-turbo to write JPEGs if it is available.
 * Added the `scaled` position for image overlays.
@@ -51,6 +54,8 @@
   See the upgrade guide for more information.
 * Added configuration options for logging in Logstash format. (Thanks to
   @cmhdave)
+* The `-Dcantaloupe.list_fonts` VM argument has been replaced with the
+  `-list-fonts` command-line argument.
 * Added a `local_uri` key to the delegate script `context` hash.
 * JRuby has been updated to version 9.2, which supports Ruby 2.5.
 

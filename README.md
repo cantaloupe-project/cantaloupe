@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/cantaloupe-project/cantaloupe.svg?branch=develop)](https://travis-ci.org/cantaloupe-project/cantaloupe)
+![](https://github.com/cantaloupe-project/cantaloupe/workflows/CI/badge.svg?branch=develop)
 
 # 🍈 Cantaloupe
 

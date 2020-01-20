@@ -156,7 +156,7 @@ public class GIFImageWriterTest extends AbstractImageWriterTest {
         Path image = TestUtil.getImage("gif-animated-looping.gif");
         edu.illinois.library.cantaloupe.processor.codec.ImageReader reader = null;
         try {
-            reader = new ImageReaderFactory().newImageReader(image, Format.GIF);
+            reader = new ImageReaderFactory().newImageReader(Format.GIF, image);
             BufferedImageSequence sequence = reader.readSequence();
 
             try (ByteArrayOutputStream os = new ByteArrayOutputStream()) {
@@ -166,7 +166,7 @@ public class GIFImageWriterTest extends AbstractImageWriterTest {
                     reader.dispose();
                     reader = null;
                     try {
-                        reader = new ImageReaderFactory().newImageReader(is, Format.GIF);
+                        reader = new ImageReaderFactory().newImageReader(Format.GIF, is);
                         assertEquals(2, reader.getNumImages());
                     } finally {
                         if (reader != null) {

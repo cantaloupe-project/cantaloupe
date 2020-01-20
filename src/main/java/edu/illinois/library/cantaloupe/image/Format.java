@@ -13,7 +13,7 @@ import java.util.stream.Collectors;
  *
  * <p>Common formats recognized by the application are accessible via {@code
  * public static final} variables and automatically added to the {@link
- * #getAllFormats() format registry}.</p>
+ * #knownFormats() registry of known formats}.</p>
  *
  * <p>Instances are immutable.</p>
  */
@@ -223,7 +223,22 @@ public final class Format implements Comparable<Format> {
             Type.UNKNOWN,
             false);
 
-    private static final Set<Format> ALL_FORMATS =
+    /**
+     * XPM image format.
+     */
+    public static final Format XPM = new Format(
+            "xpm",
+            "XPM",
+            ImageType.RASTER,
+            // TODO: Tika returns image/x-xbitmap for XPMs. I thought that was
+            // the type for XBM, but since we don't support that, we can let it
+            // slide for now.
+            List.of("image/x-xpixmap", "image/x-xbitmap"),
+            List.of("xpm"),
+            Type.IMAGE,
+            true);
+
+    private static final Set<Format> KNOWN_FORMATS =
             ConcurrentHashMap.newKeySet();
 
     private List<String> extensions;
@@ -235,15 +250,8 @@ public final class Format implements Comparable<Format> {
     private Type type;
 
     static {
-        getAllFormats().addAll(Set.of(AVI, BMP, DCM, FLV, GIF, JP2, JPG, MOV,
-                MP4, MPG, PDF, PNG, TIF, UNKNOWN, WEBM, WEBP));
-    }
-
-    /**
-     * @return Thread-safe registry of all known formats.
-     */
-    public static Set<Format> getAllFormats() {
-        return ALL_FORMATS;
+        KNOWN_FORMATS.addAll(Set.of(AVI, BMP, DCM, FLV, GIF, JP2, JPG, MOV,
+                MP4, MPG, PDF, PNG, TIF, UNKNOWN, WEBM, WEBP, XPM));
     }
 
     /**
@@ -280,7 +288,7 @@ public final class Format implements Comparable<Format> {
         }
         if (extension != null) {
             extension = extension.toLowerCase();
-            for (Format format : Format.getAllFormats()) {
+            for (Format format : Format.knownFormats()) {
                 if (format.getExtensions().contains(extension)) {
                     return format;
                 }
@@ -290,7 +298,14 @@ public final class Format implements Comparable<Format> {
     }
 
     /**
-     * @return Format in the {@link #getAllFormats() registry} with the given
+     * @return Thread-safe registry of all known formats.
+     */
+    public static Set<Format> knownFormats() {
+        return KNOWN_FORMATS;
+    }
+
+    /**
+     * @return Format in the {@link #knownFormats() registry} with the given
      *         extension.
      */
     public static Format withExtension(String extension) {
@@ -298,7 +313,7 @@ public final class Format implements Comparable<Format> {
             extension = extension.substring(1);
         }
         final String lcext = extension.toLowerCase();
-        return getAllFormats()
+        return knownFormats()
                 .stream()
                 .filter(f -> f.getExtensions().contains(lcext))
                 .findAny()
@@ -420,6 +435,7 @@ public final class Format implements Comparable<Format> {
     /**
      * @return Preferred extension.
      */
+    @Override
     public String toString() {
         return getPreferredExtension();
     }

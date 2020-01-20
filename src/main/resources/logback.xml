@@ -18,7 +18,7 @@
                 </encoder>
             </else>
         </if>
-        <withJansi>true</withJansi>
+        <withJansi>false</withJansi>
     </appender>
 
     <appender name="AppStderrLog" class="ch.qos.logback.core.ConsoleAppender">
@@ -37,7 +37,7 @@
                 </encoder>
             </else>
         </if>
-        <withJansi>true</withJansi>
+        <withJansi>false</withJansi>
     </appender>
 
     <if condition='property("log.application.FileAppender.enabled").contains("true")'>

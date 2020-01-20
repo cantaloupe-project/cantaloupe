@@ -72,7 +72,7 @@ public class JPEGMetadataTest extends BaseTest {
         final String xmp = getInstance("jpg-xmp-extended.jpg").getXMP().orElseThrow();
         assertTrue(xmp.length() > 65502);
         assertTrue(xmp.startsWith("<rdf:RDF"));
-        assertTrue(xmp.endsWith("</rdf:RDF>\n"));
+        assertTrue(xmp.endsWith("</rdf:RDF>" + System.getProperty("line.separator")));
         assertFalse(xmp.contains("HasExtendedXMP"));
     }
 

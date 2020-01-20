@@ -13,12 +13,10 @@ import edu.illinois.library.cantaloupe.script.DelegateProxyService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.script.ScriptEngineManager;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
-import java.awt.GraphicsEnvironment;
-
-import static edu.illinois.library.cantaloupe.StandaloneEntry.LIST_FONTS_VM_ARGUMENT;
-import static edu.illinois.library.cantaloupe.StandaloneEntry.exitUnlessTesting;
+import java.util.stream.Collectors;
 
 /**
  * <p>Performs application initialization that cannot be performed
@@ -36,17 +34,6 @@ public class ApplicationContextListener implements ServletContextListener {
         System.setProperty("java.awt.headless", "true");
     }
 
-    private void handleVmArguments() {
-        if (System.getProperty(LIST_FONTS_VM_ARGUMENT) != null) {
-            GraphicsEnvironment ge =
-                    GraphicsEnvironment.getLocalGraphicsEnvironment();
-            for (String family : ge.getAvailableFontFamilyNames()) {
-                System.out.println(family);
-            }
-            exitUnlessTesting(0);
-        }
-    }
-
     @Override
     public void contextInitialized(ServletContextEvent sce) {
         // Logback has already initialized itself, which is a problem because
@@ -55,7 +42,6 @@ public class ApplicationContextListener implements ServletContextListener {
         LoggerUtil.reloadConfiguration();
 
         logSystemInfo();
-        handleVmArguments();
 
         // Start watching configuration files.
         ConfigurationFileWatcher.startWatching();
@@ -101,15 +87,20 @@ public class ApplicationContextListener implements ServletContextListener {
                 System.getProperty("java.vm.name") + " " +
                 System.getProperty("java.version") + " / " +
                 System.getProperty("java.vm.info"));
-        LOGGER.info("Java home: {}",
-                System.getProperty("java.home"));
-        LOGGER.info("Java library path: {}",
-                System.getProperty("java.library.path"));
         LOGGER.info("{} available processor cores",
                 runtime.availableProcessors());
         LOGGER.info("Heap total: {}MB; max: {}MB",
                 runtime.totalMemory() / mb,
                 runtime.maxMemory() / mb);
+        LOGGER.info("Java home: {}",
+                System.getProperty("java.home"));
+        LOGGER.info("Java library path: {}",
+                System.getProperty("java.library.path"));
+        LOGGER.info("JSR-223 script engines: {}",
+                new ScriptEngineManager().getEngineFactories()
+                        .stream()
+                        .map(Object::toString)
+                        .collect(Collectors.joining(", ")));
         LOGGER.info("Effective temp directory: {}",
                 Application.getTempPath());
 

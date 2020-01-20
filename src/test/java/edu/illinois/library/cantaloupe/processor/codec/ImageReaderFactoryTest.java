@@ -3,6 +3,7 @@ package edu.illinois.library.cantaloupe.processor.codec;
 import edu.illinois.library.cantaloupe.image.MediaType;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.processor.codec.bmp.BMPImageReader;
+import edu.illinois.library.cantaloupe.processor.codec.xpm.XPMImageReader;
 import edu.illinois.library.cantaloupe.processor.codec.gif.GIFImageReader;
 import edu.illinois.library.cantaloupe.processor.codec.jpeg.JPEGImageReader;
 import edu.illinois.library.cantaloupe.processor.codec.png.PNGImageReader;
@@ -35,23 +36,34 @@ public class ImageReaderFactoryTest extends BaseTest {
 
     @Test
     void testSupportedFormats() {
-        final HashSet<Format> formats = new HashSet<>();
+        final HashSet<Format> expected = new HashSet<>();
+        // Scan for Image I/O-supported formats by media type.
         for (String mediaTypeStr : ImageIO.getReaderMIMETypes()) {
-            if (mediaTypeStr.length() < 1 || mediaTypeStr.equals("image/jp2")) {
+            if (mediaTypeStr.isBlank() || mediaTypeStr.equals("image/jp2")) {
                 continue;
             }
             final Format format = new MediaType(mediaTypeStr).toFormat();
             if (format != null && !format.equals(Format.UNKNOWN)) {
-                formats.add(format);
+                expected.add(format);
             }
         }
-        assertEquals(formats, ImageReaderFactory.supportedFormats());
+        // Scan by extension, just in case the media type scan missed anything.
+        for (String extension : ImageIO.getReaderFileSuffixes()) {
+            if (extension.isBlank() || extension.equals("jp2")) {
+                continue;
+            }
+            final Format format = Format.withExtension(extension);
+            if (format != null && !format.equals(Format.UNKNOWN)) {
+                expected.add(format);
+            }
+        }
+        assertEquals(expected, ImageReaderFactory.supportedFormats());
     }
 
     @Test
     void testNewImageReaderWithFormatUnknown() {
         assertThrows(IllegalArgumentException.class,
-                () -> instance.newImageReader(Paths.get("/dev/null"), Format.UNKNOWN));
+                () -> instance.newImageReader(Format.UNKNOWN, Paths.get("/dev/null")));
     }
 
     @Test
@@ -85,28 +97,34 @@ public class ImageReaderFactoryTest extends BaseTest {
     }
 
     @Test
+    void testNewImageReaderWithFormatXPM() {
+        ImageReader reader = instance.newImageReader(Format.XPM);
+        assertTrue(reader instanceof XPMImageReader);
+    }
+
+    @Test
     void testNewImageReaderWithPath() throws Exception {
-        instance.newImageReader(Paths.get("/dev/null"), Format.JPG);
+        instance.newImageReader(Format.JPG, Paths.get("/dev/null"));
     }
 
     @Test
     void testNewImageReaderWithInputStream() throws Exception {
         try (InputStream is = Files.newInputStream(TestUtil.getImage("jpg"))) {
-            instance.newImageReader(is, Format.JPG);
+            instance.newImageReader(Format.JPG, is);
         }
     }
 
     @Test
     void testNewImageReaderWithImageInputStream() throws Exception {
         try (ImageInputStream iis = ImageIO.createImageInputStream(TestUtil.getImage("jpg").toFile())) {
-            instance.newImageReader(iis, Format.JPG);
+            instance.newImageReader(Format.JPG, iis);
         }
     }
 
     @Test
     void testNewImageReaderWithStreamSource() throws Exception {
         StreamFactory source = new PathStreamFactory(Paths.get("/dev/null"));
-        instance.newImageReader(source, Format.JPG);
+        instance.newImageReader(Format.JPG, source);
     }
 
 }

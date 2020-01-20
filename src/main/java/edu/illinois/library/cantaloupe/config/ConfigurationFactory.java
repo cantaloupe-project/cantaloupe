@@ -23,8 +23,8 @@ public final class ConfigurationFactory {
      * be empty).
      *
      * @return Shared application configuration instance.
-     * @throws RuntimeException If the {@link #CONFIG_VM_ARGUMENT} VM argument
-     *                          is not set.
+     * @throws MissingConfigurationException if the {@link #CONFIG_VM_ARGUMENT}
+     *         VM argument is not set.
      */
     static synchronized Configuration getInstance() {
         if (instance == null) {
@@ -46,8 +46,8 @@ public final class ConfigurationFactory {
                         break;
                 }
             } else {
-                throw new RuntimeException(
-                        "Missing " + CONFIG_VM_ARGUMENT + " VM option.");
+                throw new MissingConfigurationException(
+                        "Missing " + CONFIG_VM_ARGUMENT + " VM argument.");
             }
 
             configs.forEach(c -> {
