@@ -59,6 +59,11 @@
 * Added a `local_uri` key to the delegate script `context` hash.
 * JRuby has been updated to version 9.2, which supports Ruby 2.5.
 
+## 4.1.6
+
+* Fixed overridden boolean values not being recognized in inherited
+  configuration files.
+
 ## 4.1.5
 
 * Fixed the IIIF Image API 2.x endpoint's handling of identifiers containing

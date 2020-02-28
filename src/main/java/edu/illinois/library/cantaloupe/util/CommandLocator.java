@@ -8,6 +8,7 @@ public final class CommandLocator {
      * @param binaryName Binary name, excluding path information.
      * @param searchPath Path in which the binary may be expected to reside.
      *                   May be {@literal null} or empty.
+     * @return           Most specific path to {@code binaryName}.
      */
     public static String locate(String binaryName, String searchPath) {
         if (searchPath != null && !searchPath.isEmpty()) {
@@ -15,16 +16,15 @@ public final class CommandLocator {
             // also be a full path to binaryName.
             if (searchPath.endsWith(binaryName) &&
                     searchPath.length() > binaryName.length()) {
-                return binaryName;
+                return searchPath;
             } else {
                 searchPath = StringUtils.stripEnd(searchPath, File.separator);
                 searchPath = StringUtils.stripEnd(searchPath, binaryName);
             }
             return searchPath + File.separator + binaryName;
-        } else {
-            // No pathname provided, so fall back to the PATH.
-            return binaryName;
         }
+        // No search path provided, so fall back to the PATH.
+        return binaryName;
     }
 
     private CommandLocator() {}
