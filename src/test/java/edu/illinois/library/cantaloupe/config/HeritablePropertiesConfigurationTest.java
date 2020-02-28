@@ -9,10 +9,11 @@ import java.nio.file.Paths;
 import java.util.Iterator;
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import static org.junit.Assert.*;
 
 public class HeritablePropertiesConfigurationTest extends AbstractFileConfigurationTest {
+
+    private static final double DELTA = 0.00000001f;
 
     private HeritablePropertiesConfiguration instance;
 
@@ -37,6 +38,22 @@ public class HeritablePropertiesConfigurationTest extends AbstractFileConfigurat
         return instance;
     }
 
+    /* getBoolean() */
+
+    @Test
+    public void testGetBooleanUsesChildmostProperty() throws Exception {
+        instance.reload();
+        assertTrue(instance.getBoolean("common_boolean_key"));
+    }
+
+    /* getDouble() */
+
+    @Test
+    public void testGetDoubleUsesChildmostProperty() throws Exception {
+        instance.reload();
+        assertEquals(3.0f, instance.getDouble("common_integer_key"), DELTA);
+    }
+
     /* getFiles() */
 
     @Test
@@ -44,19 +61,42 @@ public class HeritablePropertiesConfigurationTest extends AbstractFileConfigurat
         assertEquals(3, instance.getFiles().size());
     }
 
+    /* getFloat() */
+
+    @Test
+    public void testGetFloatUsesChildmostProperty() throws Exception {
+        instance.reload();
+        assertEquals(3.0f, instance.getDouble("common_integer_key"), DELTA);
+    }
+
+    /* getInt() */
+
+    @Test
+    public void testGetIntUsesChildmostProperty() throws Exception {
+        instance.reload();
+        assertEquals(3, instance.getInt("common_integer_key"));
+    }
+
     /* getKeys() */
 
     @Test
     public void testGetKeysReturnsKeysFromAllAllFiles() throws Exception {
         instance.reload();
-
         Iterator<String> it = instance.getKeys();
         int count = 0;
         while (it.hasNext()) {
             it.next();
             count++;
         }
-        assertEquals(9, count);
+        assertEquals(15, count);
+    }
+
+    /* getLong() */
+
+    @Test
+    public void testGetLongUsesChildmostProperty() throws Exception {
+        instance.reload();
+        assertEquals(3, instance.getLong("common_integer_key"));
     }
 
     /* getProperty(Key) */
@@ -94,7 +134,7 @@ public class HeritablePropertiesConfigurationTest extends AbstractFileConfigurat
     @Test
     public void testGetPropertyUsesChildmostProperty() throws Exception {
         instance.reload();
-        assertEquals("birds", instance.getProperty("common_key"));
+        assertEquals("birds", instance.getProperty("common_string_key"));
     }
 
     @Test
@@ -102,6 +142,14 @@ public class HeritablePropertiesConfigurationTest extends AbstractFileConfigurat
             throws Exception {
         instance.reload();
         assertEquals("dogs", instance.getProperty("level2_key"));
+    }
+
+    /* getString() */
+
+    @Test
+    public void testGetStringUsesChildmostProperty() throws Exception {
+        instance.reload();
+        assertEquals("birds", instance.getString("common_string_key"));
     }
 
     /* setProperty() */

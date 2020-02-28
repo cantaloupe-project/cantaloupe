@@ -1,5 +1,10 @@
 # Change Log
 
+## 4.1.6
+
+* Fixed overridden boolean values not being recognized in inherited
+  configuration files.
+
 ## 4.1.5
 
 * Fixed the IIIF Image API 2.x endpoint's handling of identifiers containing
