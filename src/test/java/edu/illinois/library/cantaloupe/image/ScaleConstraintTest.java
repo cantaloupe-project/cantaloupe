@@ -1,11 +1,14 @@
 package edu.illinois.library.cantaloupe.image;
 
+import edu.illinois.library.cantaloupe.config.Configuration;
+import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -35,6 +38,24 @@ public class ScaleConstraintTest extends BaseTest {
     @Test
     void testFromIdentifierPathComponentWithNullArgument() {
         assertNull(ScaleConstraint.fromIdentifierPathComponent(null));
+    }
+
+    @Test
+    void testGetIdentifierSuffixPattern() {
+        var config = Configuration.getInstance();
+        config.setProperty(Key.SCALE_CONSTRAINT_DELIMITER, "cats");
+        Pattern expected = Pattern.compile("cats(\\d+):(\\d+)\\b");
+        Pattern actual   = ScaleConstraint.getIdentifierSuffixPattern();
+        assertEquals(expected.toString(), actual.toString());
+    }
+
+    @Test
+    void testGetIdentifierSuffixPatternWithoutConfigKeySet() {
+        var config = Configuration.getInstance();
+        config.clearProperty(Key.SCALE_CONSTRAINT_DELIMITER);
+        Pattern expected = Pattern.compile("-(\\d+):(\\d+)\\b");
+        Pattern actual   = ScaleConstraint.getIdentifierSuffixPattern();
+        assertEquals(expected.toString(), actual.toString());
     }
 
     @Test
@@ -110,7 +131,16 @@ public class ScaleConstraintTest extends BaseTest {
     }
 
     @Test
-    void testToIdentifierSuffix() {
+    void testToIdentifierSuffixWithScaleConstraintDelimiterSet() {
+        var config = Configuration.getInstance();
+        config.setProperty(Key.SCALE_CONSTRAINT_DELIMITER, "cats");
+        assertEquals("cats2:3", instance.toIdentifierSuffix());
+    }
+
+    @Test
+    void testToIdentifierSuffixWithoutScaleConstraintDelimiterSet() {
+        var config = Configuration.getInstance();
+        config.clearProperty(Key.SCALE_CONSTRAINT_DELIMITER);
         assertEquals("-2:3", instance.toIdentifierSuffix());
     }
 

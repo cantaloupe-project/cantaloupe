@@ -17,6 +17,9 @@
   of the value of the `Accept` header.
 * The `http.http2.enabled` and `https.http2.enabled` configuration keys have
   been removed. HTTP/2 is always enabled.
+* A `scale_constraints.delimiter` configuration key is available for customizing
+  the character sequence used to separate scale constraints from identifiers in
+  URIs.
 
 ### Sources
 
