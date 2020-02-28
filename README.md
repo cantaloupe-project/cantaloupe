@@ -1,5 +1,3 @@
-[![Build Status](https://travis-ci.org/cantaloupe-project/cantaloupe.svg?branch=develop)](https://travis-ci.org/cantaloupe-project/cantaloupe)
-
 # 🍈 Cantaloupe
 
 *High-performance dynamic image server in Java*
@@ -77,7 +75,8 @@ dependencies are required in addition to the ones above:
 
 Because it can be a chore to install all of the dependencies needed to get all
 of the tests in the `freedeps` profile passing, there is a Docker testing image
-available that contains all needed dependencies. See the `/.travis.yml` file.
+available that contains all needed dependencies. See
+`/.github/workflows/ci.yml`.
 
 ### Output testing
 
