@@ -9,20 +9,25 @@ import static org.junit.Assert.*;
 public class CommandLocatorTest {
 
     @Test
-    public void locate() {
-        // unix path, no trailing slash
+    public void locateWithUnixPath() {
         assertEquals("/opt/bin" + File.separator + "bin1",
                 CommandLocator.locate("bin1", "/opt/bin"));
+    }
 
-        // unix path, trailing slash
+    @Test
+    public void locateWithUnixPathAndTrailingSlash() {
         assertEquals("/opt/bin" + File.separator + "bin1",
                 CommandLocator.locate("bin1", "/opt/bin" + File.separator));
+    }
 
-        // windows path, no trailing slash
+    @Test
+    public void locateWithWindowsPath() {
         assertEquals("c:\\Program Files\\dir" + File.separator + "bin1",
                 CommandLocator.locate("bin1", "c:\\Program Files\\dir"));
+    }
 
-        // windows path, trailing slash
+    @Test
+    public void locateWithWindowsPathAndTrailingSlash() {
         assertEquals("c:\\Program Files\\dir" + File.separator + "bin1",
                 CommandLocator.locate("bin1", "c:\\Program Files\\dir" + File.separator));
     }
