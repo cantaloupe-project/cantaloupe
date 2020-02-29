@@ -6,6 +6,8 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest]
+    env:
+      JAVA_OPTS: "-Dorg.slf4j.simpleLogger.defaultLogLevel=WARN"
     steps:
       - name: Check out the repository
         uses: actions/checkout@v2
@@ -17,9 +19,9 @@ jobs:
           docker run --name cantaloupe-minio -d -p 7229:7229 cantaloupe/tests /bin/sh -c "./minio server --address :7229 /home/cantaloupe/s3"
           docker run --name cantaloupe-redis -d -p 7230:7230 cantaloupe/tests /bin/sh -c "redis-server --port 7230 --protected-mode no"
           docker run -d -p 8000:8000 amazon/dynamodb-local
-          docker run --net host --user cantaloupe cantaloupe/tests /bin/sh -c "cd /home/cantaloupe; mvn --batch-mode test -Pfreedeps"
+          docker run --net host --user cantaloupe cantaloupe/tests /bin/sh -c "cd /home/cantaloupe; mvn --no-transfer-progress test -Pfreedeps"
       - name: Test in Windows
         if: matrix.os == 'windows-latest'
         run: |
           docker build -f docker/Windows10-JDK11/Dockerfile -t cantaloupe/tests .
-          docker run cantaloupe/tests cmd /c "mvn --batch-mode test -Pnodeps"
+          docker run cantaloupe/tests cmd /c "mvn --no-transfer-progress test -Pnodeps"
