@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.Charset;
+import java.nio.file.AccessDeniedException;
 import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.FileVisitOption;
 import java.nio.file.Files;
@@ -29,6 +30,7 @@ import java.nio.file.StandardCopyOption;
 import java.nio.file.attribute.FileTime;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
@@ -300,16 +302,24 @@ class FilesystemCache implements SourceCache, DerivativeCache {
     static FileTime getLastAccessedTime(Path file) throws IOException {
         try {
             // Last-accessed time is not reliable on macOS+APFS 10.13.2.
-            // It also throws an AccessDeniedException on Windows 10. These
-            // exclusions may not be granular enough at least they're safe.
-            if (SystemUtils.IS_OS_MAC || SystemUtils.IS_OS_WINDOWS) {
-                LOGGER.trace("using file last-modified instead of last-accessed times.");
+            if (SystemUtils.IS_OS_MAC) {
+                LOGGER.trace("macOS detected; using file last-modified " +
+                        "instead of last-accessed times.");
                 return Files.getLastModifiedTime(file);
             }
             return (FileTime) Files.getAttribute(file, "lastAccessTime");
         } catch (UnsupportedOperationException e) {
             LOGGER.error("getLastAccessedTime(): {}", e.getMessage(), e);
             return Files.getLastModifiedTime(file);
+        } catch (AccessDeniedException e) {
+            // This gets thrown a lot in Windows (10 at least) for unknown
+            // reasons. Debatable whether it would be better to not catch it.
+            if (SystemUtils.IS_OS_WINDOWS) {
+                LOGGER.trace("getLastAccessedTime(): {}", e.getMessage(), e);
+                return FileTime.from(Instant.now());
+            } else {
+                throw e;
+            }
         }
     }
 
