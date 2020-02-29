@@ -13,6 +13,8 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class HeritablePropertiesConfigurationTest extends AbstractFileConfigurationTest {
 
+    private static final double DELTA = 0.00000001f;
+
     private HeritablePropertiesConfiguration instance;
 
     @BeforeEach
@@ -36,6 +38,22 @@ public class HeritablePropertiesConfigurationTest extends AbstractFileConfigurat
         return instance;
     }
 
+    /* getBoolean() */
+
+    @Test
+    void testGetBooleanUsesChildmostProperty() {
+        instance.reload();
+        assertTrue(instance.getBoolean("common_boolean_key"));
+    }
+
+    /* getDouble() */
+
+    @Test
+    void testGetDoubleUsesChildmostProperty() {
+        instance.reload();
+        assertEquals(3.0f, instance.getDouble("common_integer_key"), DELTA);
+    }
+
     /* getFiles() */
 
     @Test
@@ -43,19 +61,42 @@ public class HeritablePropertiesConfigurationTest extends AbstractFileConfigurat
         assertEquals(3, instance.getFiles().size());
     }
 
+    /* getFloat() */
+
+    @Test
+    void testGetFloatUsesChildmostProperty() {
+        instance.reload();
+        assertEquals(3.0f, instance.getDouble("common_integer_key"), DELTA);
+    }
+
+    /* getInt() */
+
+    @Test
+    void testGetIntUsesChildmostProperty() {
+        instance.reload();
+        assertEquals(3, instance.getInt("common_integer_key"));
+    }
+
     /* getKeys() */
 
     @Test
     void testGetKeysReturnsKeysFromAllAllFiles() {
         instance.reload();
-
         Iterator<String> it = instance.getKeys();
         int count = 0;
         while (it.hasNext()) {
             it.next();
             count++;
         }
-        assertEquals(9, count);
+        assertEquals(15, count);
+    }
+
+    /* getLong() */
+
+    @Test
+    public void testGetLongUsesChildmostProperty() {
+        instance.reload();
+        assertEquals(3, instance.getLong("common_integer_key"));
     }
 
     /* getProperty(Key) */
@@ -93,13 +134,21 @@ public class HeritablePropertiesConfigurationTest extends AbstractFileConfigurat
     @Test
     void testGetPropertyUsesChildmostProperty() {
         instance.reload();
-        assertEquals("birds", instance.getProperty("common_key"));
+        assertEquals("birds", instance.getProperty("common_string_key"));
     }
 
     @Test
     void testGetPropertyFallsBackToParentFileIfUndefinedInChildFile() {
         instance.reload();
         assertEquals("dogs", instance.getProperty("level2_key"));
+    }
+
+    /* getString() */
+
+    @Test
+    void testGetStringUsesChildmostProperty() {
+        instance.reload();
+        assertEquals("birds", instance.getString("common_string_key"));
     }
 
     /* setProperty() */

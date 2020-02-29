@@ -536,7 +536,7 @@ public abstract class AbstractResource {
         String identifierComponent = pathComponents.get(identifierIndex);
 
         // If the identifier already contains a scale constraint suffix...
-        Matcher matcher = ScaleConstraint.IDENTIFIER_SUFFIX_PATTERN
+        Matcher matcher = ScaleConstraint.getIdentifierSuffixPattern()
                 .matcher(identifierComponent);
         if (matcher.find()) {
             ScaleConstraint currentConstraint =

@@ -132,6 +132,7 @@ public class ImageResource extends IIIF1Resource {
                 args.get(3), args.get(4), outputFormat);
 
         final OperationList ops = params.toOperationList();
+        ops.setScaleConstraint(getScaleConstraint());
         ops.getOptions().putAll(getRequest().getReference().getQuery().toMap());
         return ops;
     }

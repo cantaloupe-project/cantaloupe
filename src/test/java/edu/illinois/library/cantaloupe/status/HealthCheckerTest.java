@@ -12,7 +12,6 @@ import edu.illinois.library.cantaloupe.processor.MockBrokenFileProcessor;
 import edu.illinois.library.cantaloupe.processor.MockFileProcessor;
 import edu.illinois.library.cantaloupe.processor.MockStreamProcessor;
 import edu.illinois.library.cantaloupe.processor.Processor;
-import edu.illinois.library.cantaloupe.source.FileSource;
 import edu.illinois.library.cantaloupe.source.MockFileSource;
 import edu.illinois.library.cantaloupe.source.MockStreamSource;
 import edu.illinois.library.cantaloupe.source.Source;
@@ -24,8 +23,8 @@ import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.Arrays;
 import java.util.Iterator;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -86,10 +85,10 @@ public class HealthCheckerTest extends BaseTest {
         Identifier identifier = new Identifier("cats");
         Path file = TestUtil.getImage("jpg");
 
-        FileSource source = new MockFileSource() {
+        Source source = new MockFileSource() {
             @Override
             public Iterator<Format> getFormatIterator() {
-                return Arrays.asList(new Format[] { Format.JPG }).iterator();
+                return List.of(Format.JPG).iterator();
             }
         };
         source.setIdentifier(identifier);

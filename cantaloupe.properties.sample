@@ -49,6 +49,10 @@ max_pixels = 100000000
 # Maximum scale to allow (1.0 = full scale; 0 = no maximum).
 max_scale = 1.0
 
+# Character sequence that separates an identifier from a scale constraint
+# in the identifier portion of a URI.
+scale_constraints.delimiter = -
+
 print_stack_trace_on_error_pages = true
 
 ###########################################################################

@@ -81,17 +81,13 @@ abstract class AbstractSourceTest extends BaseTest {
     @Test
     void testNewStreamFactoryInvokedMultipleTimes() throws Exception {
         Source instance = newInstance();
-        if (instance instanceof StreamSource) {
-            try {
-                initializeEndpoint();
-
-                StreamSource sres = (StreamSource) instance;
-                sres.newStreamFactory();
-                sres.newStreamFactory();
-                sres.newStreamFactory();
-            } finally {
-                destroyEndpoint();
-            }
+        try {
+            initializeEndpoint();
+            instance.newStreamFactory();
+            instance.newStreamFactory();
+            instance.newStreamFactory();
+        } finally {
+            destroyEndpoint();
         }
     }
 
@@ -99,25 +95,21 @@ abstract class AbstractSourceTest extends BaseTest {
     void testNewStreamFactoryReturnedInstanceIsReusable()
             throws Exception {
         Source instance = newInstance();
-        if (instance instanceof StreamSource) {
-            try {
-                initializeEndpoint();
+        try {
+            initializeEndpoint();
+            StreamFactory source = instance.newStreamFactory();
 
-                StreamSource sres = (StreamSource) instance;
-                StreamFactory source = sres.newStreamFactory();
-
-                try (InputStream is = source.newInputStream();
-                     OutputStream os = OutputStream.nullOutputStream()) {
-                    is.transferTo(os);
-                }
-
-                try (InputStream is = source.newInputStream();
-                     OutputStream os = OutputStream.nullOutputStream()) {
-                    is.transferTo(os);
-                }
-            } finally {
-                destroyEndpoint();
+            try (InputStream is = source.newInputStream();
+                 OutputStream os = OutputStream.nullOutputStream()) {
+                is.transferTo(os);
             }
+
+            try (InputStream is = source.newInputStream();
+                 OutputStream os = OutputStream.nullOutputStream()) {
+                is.transferTo(os);
+            }
+        } finally {
+            destroyEndpoint();
         }
     }
 

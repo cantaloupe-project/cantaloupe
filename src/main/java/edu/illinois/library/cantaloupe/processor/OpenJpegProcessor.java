@@ -59,11 +59,11 @@ import java.util.regex.Pattern;
  * <p>Processor using the OpenJPEG {@literal opj_decompress} command-line
  * tool.</p>
  *
- * <p>{@literal opj_decompress} is used for cropping and an initial scale
- * reduction factor, and Java 2D is used for all remaining processing steps.
- * It produces BMP output which is streamed into an ImageIO reader. (BMP does
- * not copy embedded ICC profiles into output images, but {@literal
- * opj_decompress} converts the RGB source data itself.)</p>
+ * <p>{@literal opj_decompress} is used for cropping and acquiring a scale-
+ * reduced intermediate BMP, which is streamed into an Image I/O reader. (BMP
+ * does not copy embedded ICC profiles into output images, but {@literal
+ * opj_decompress} converts the RGB source data itself.) Java 2D is used for
+ * all remaining processing steps.</p>
  *
  * <p>{@literal opj_decompress} reads and writes the files named in the
  * {@literal -i} and {@literal -o} arguments passed to it, respectively. The
@@ -75,26 +75,28 @@ import java.util.regex.Pattern;
  * <dl>
  *     <dt>Unix</dt>
  *     <dd>A symlink is created by {@link #initialize()} from {@literal
- *     /tmp/whatever.bmp} to {@literal /dev/stdout}, and set to delete on exit.
- *     {@literal opj_decompress} then effectively writes to standard output,
- *     which can be read from a {@link Process#getInputStream() process' input
- *     stream}.</dd>
+ *     /tmp/whatever.bmp} to {@literal /dev/stdout}, and set to {@link
+ *     java.io.File#deleteOnExit() delete on exit}. {@literal opj_decompress}
+ *     then effectively writes to standard output, which can be read from a
+ *     {@link Process#getInputStream() process' input stream}.</dd>
  *     <dt>Windows</dt>
- *     <dd>Windows doesn't have anything like {@literal /dev/stdout}&mdash;
- *     actually it has {@literal CON}, but experimentation reveals it won't
- *     work&mdash;so {@literal opj_decompress} instead writes to a temporary
- *     file which is deleted after being read. This is slower than the Unix
- *     technique.</dd>
+ *     <dd>Windows doesn't have anything like {@literal /dev/stdout}. (Actually
+ *     it has {@literal CON}, but experimentation reveals it won't work.) So
+ *     {@literal opj_decompress} instead writes to a temporary file which is
+ *     deleted after being read. This is slower than the Unix technique.</dd>
  * </dl>
  *
  * <p>Although {@literal opj_decompress} is used for reading images,
  * {@literal opj_dump} is <strong>not</strong> used for reading metadata.
- * The ImageIO JPEG2000 plugin is used instead, as this doesn't require
- * invoking another process and is therefore more efficient.</p>
+ * {@link JPEG2000MetadataReader} is used instead, as this doesn't require
+ * invoking a process.</p>
  *
  * <p><strong>opj_decompress version 2.2.0 is highly recommended.</strong>
  * Earlier versions echo log messages to stdout, which can cause problems with
- * some images.</p>
+ * some images. Also, newer versions have significant performance
+ * improvements.</p>
+ *
+ * @author Alex Dolski UIUC
  */
 class OpenJpegProcessor extends AbstractProcessor implements FileProcessor {
 

@@ -17,8 +17,8 @@ nbactions.xml
 # App config
 /cantaloupe.properties
 /cantaloupe*.properties
-/delegates.rb
-/delegates*.rb
+/delegates.*
+/delegates*.*
 /test.properties
 /overlay.*
 

@@ -17,6 +17,9 @@
   of the value of the `Accept` header.
 * The `http.http2.enabled` and `https.http2.enabled` configuration keys have
   been removed. HTTP/2 is always enabled.
+* A `scale_constraints.delimiter` configuration key is available for customizing
+  the character sequence used to separate scale constraints from identifiers in
+  URIs.
 
 ### Sources
 
@@ -58,6 +61,11 @@
   `-list-fonts` command-line argument.
 * Added a `local_uri` key to the delegate script `context` hash.
 * JRuby has been updated to version 9.2, which supports Ruby 2.5.
+
+## 4.1.6
+
+* Fixed overridden boolean values not being recognized in inherited
+  configuration files.
 
 ## 4.1.5
 

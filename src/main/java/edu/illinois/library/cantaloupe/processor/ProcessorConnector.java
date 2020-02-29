@@ -7,11 +7,9 @@ import edu.illinois.library.cantaloupe.cache.CacheDisabledException;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
-import edu.illinois.library.cantaloupe.source.FileSource;
 import edu.illinois.library.cantaloupe.source.PathStreamFactory;
 import edu.illinois.library.cantaloupe.source.Source;
 import edu.illinois.library.cantaloupe.source.StreamFactory;
-import edu.illinois.library.cantaloupe.source.StreamSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -60,9 +58,10 @@ public final class ProcessorConnector {
      * between a source and a processor.</p>
      *
      * <ul>
-     *     <li>If the source is a {@link FileSource}, the processor will read
-     *     from either a {@link Path} or a {@link StreamFactory}.</li>
-     *     <li>If the source is <em>only</em> a {@link StreamSource}:
+     *     <li>If the source {@link Source#supportsFileAccess() supports file
+     *     access}, the processor will read from either a {@link Path} or a
+     *     {@link StreamFactory}.</li>
+     *     <li>If the source cannot read from files:
      *         <ul>
      *             <li>If the processor is a {@link StreamProcessor}:
      *                 <ul>
@@ -142,29 +141,25 @@ public final class ProcessorConnector {
         final String sourceName    = source.getClass().getSimpleName();
         final String processorName = processor.getClass().getSimpleName();
 
-        if (source instanceof FileSource) {
+        if (source.supportsFileAccess()) {
             if (processor instanceof FileProcessor) {
-                LOGGER.debug("{} -> {} connection between {} and {}",
-                        FileSource.class.getSimpleName(),
+                LOGGER.debug("File -> {} connection between {} and {}",
                         FileProcessor.class.getSimpleName(),
                         sourceName,
                         processorName);
-                ((FileProcessor) processor).setSourceFile(
-                        ((FileSource) source).getPath());
+                ((FileProcessor) processor).setSourceFile(source.getFile());
             } else {
                 // All FileSources are also StreamSources.
-                LOGGER.debug("{} -> {} connection between {} and {}",
-                        FileSource.class.getSimpleName(),
+                LOGGER.debug("File -> {} connection between {} and {}",
                         StreamProcessor.class.getSimpleName(),
                         sourceName,
                         processorName);
                 ((StreamProcessor) processor).setStreamFactory(
-                        ((StreamSource) source).newStreamFactory());
+                        source.newStreamFactory());
             }
         } else {
             // The source is a StreamSource.
-            StreamFactory streamFactory =
-                    ((StreamSource) source).newStreamFactory();
+            StreamFactory streamFactory = source.newStreamFactory();
 
             // StreamSources and FileProcessors can't work together using
             // StreamStrategy, but they can using one of the other strategies.
@@ -172,13 +167,12 @@ public final class ProcessorConnector {
                 switch (getFallbackRetrievalStrategy()) {
                     case DOWNLOAD:
                         LOGGER.debug("Using {} to work around the " +
-                                        "incompatibility of {} (a {}) and {} (a {})",
+                                        "incompatibility of {} (which does " +
+                                        "not support file access) and {} (a {})",
                                 RetrievalStrategy.DOWNLOAD,
                                 source.getClass().getSimpleName(),
-                                StreamSource.class.getSimpleName(),
                                 processor.getClass().getSimpleName(),
                                 FileProcessor.class.getSimpleName());
-
                         TempFileDownload dl = new TempFileDownload(
                                 streamFactory, getTempFile(sourceFormat));
                         dl.downloadSync();
@@ -193,13 +187,12 @@ public final class ProcessorConnector {
                                 .orElseThrow(() -> new CacheDisabledException(
                                         "The source cache is not available."));
                         LOGGER.debug("Using {} to work around the " +
-                                        "incompatibility of {} (a {}) and {} (a {})",
+                                        "incompatibility of {} (which does " +
+                                        "not support file access) and {} (a {})",
                                 RetrievalStrategy.CACHE,
                                 source.getClass().getSimpleName(),
-                                StreamSource.class.getSimpleName(),
                                 processor.getClass().getSimpleName(),
                                 FileProcessor.class.getSimpleName());
-
                         Path file = downloadToSourceCache(
                                 streamFactory, sourceCache, identifier);
                         connect(sourceCache, file, processor);
@@ -213,8 +206,7 @@ public final class ProcessorConnector {
                 if (RetrievalStrategy.STREAM.equals(strategy) ||
                         (streamFactory.isSeekingDirect() &&
                                 ((StreamProcessor) processor).isSeeking())) {
-                    LOGGER.debug("{} -> {} connection between {} and {}",
-                            StreamSource.class.getSimpleName(),
+                    LOGGER.debug("Stream -> {} connection between {} and {}",
                             StreamProcessor.class.getSimpleName(),
                             sourceName,
                             processorName);
