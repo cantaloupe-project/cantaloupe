@@ -7,9 +7,10 @@ jobs:
       matrix:
         os: [ubuntu-latest, windows-latest]
     steps:
-      - if: matrix.os == 'ubuntu-latest'
-        name: Test in Ubuntu
+      - name: Check out the repository
         uses: actions/checkout@v2
+      - name: Test in Ubuntu
+        if: matrix.os == 'ubuntu-latest'
         run: |
           docker pull amazon/dynamodb-local
           docker build -f docker/Linux-JDK11/Dockerfile -t cantaloupe/tests .
@@ -17,9 +18,8 @@ jobs:
           docker run --name cantaloupe-redis -d -p 7230:7230 cantaloupe/tests /bin/sh -c "redis-server --port 7230 --protected-mode no"
           docker run -d -p 8000:8000 amazon/dynamodb-local
           docker run --net host --user cantaloupe cantaloupe/tests /bin/sh -c "cd /home/cantaloupe; mvn test -Pfreedeps"
-      - if: matrix.os == 'windows-latest'
-        name: Test in Windows
-        uses: actions/checkout@v2
+      - name: Test in Windows
+        if: matrix.os == 'windows-latest'
         run: |
           docker build -f docker/Windows10-JDK11/Dockerfile -t cantaloupe/tests .
           docker run cantaloupe/tests cmd /c "mvn test -Pnodeps"
