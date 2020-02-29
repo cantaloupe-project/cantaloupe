@@ -288,21 +288,22 @@ class FilesystemCache implements SourceCache, DerivativeCache {
 
     /**
      * Returns the last-accessed time of the given file. On some OS/filesystem
-     * combinations, this may be unreliable, in which case the last-modified
-     * time is returned instead.
+     * combinations, this may be unreliable or not available, in which case the
+     * last-modified time is returned instead.
      *
      * @param file File to check.
      * @return Last-accessed time of the given file, if available, or the
      *         last-modified time otherwise.
-     * @throws NoSuchFileException If the given file does not exist.
-     * @throws IOException If there is some other error.
+     * @throws NoSuchFileException if the given file does not exist.
+     * @throws IOException if there is some other error.
      */
     static FileTime getLastAccessedTime(Path file) throws IOException {
         try {
-            // Last-accessed time is not reliable on macOS+APFS as of 10.13.2.
-            if (SystemUtils.IS_OS_MAC) {
-                LOGGER.trace("macOS detected; using file last-modified " +
-                        "instead of last-accessed times.");
+            // Last-accessed time is not reliable on macOS+APFS 10.13.2.
+            // It also throws an AccessDeniedException on Windows 10. These
+            // exclusions may not be granular enough at least they're safe.
+            if (SystemUtils.IS_OS_MAC || SystemUtils.IS_OS_WINDOWS) {
+                LOGGER.trace("using file last-modified instead of last-accessed times.");
                 return Files.getLastModifiedTime(file);
             }
             return (FileTime) Files.getAttribute(file, "lastAccessTime");
