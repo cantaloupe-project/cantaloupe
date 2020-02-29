@@ -95,6 +95,7 @@ public class AdminResourceUITest extends AbstractAdminResourceTest {
     @Test
     void testApplicationSection() throws Exception {
         css("#cl-application-button > a").click();
+        Thread.sleep(100); // give the tab time to render
 
         // Fill in the form
 
@@ -230,6 +231,7 @@ public class AdminResourceUITest extends AbstractAdminResourceTest {
     @Test
     void testServerSection() throws Exception {
         css("#cl-http-button > a").click();
+        Thread.sleep(100); // give the tab time to render
 
         // Fill in the form
         inputNamed(Key.HTTP_ENABLED).click();
@@ -269,6 +271,7 @@ public class AdminResourceUITest extends AbstractAdminResourceTest {
     @Test
     void testEndpointsSection() throws Exception {
         css("#cl-endpoints-button > a").click();
+        Thread.sleep(100); // give the tab time to render
 
         // Fill in the form
         inputNamed(Key.MAX_PIXELS).sendKeys("5000");
@@ -306,6 +309,7 @@ public class AdminResourceUITest extends AbstractAdminResourceTest {
     @Test
     void testSourceSection() throws Exception {
         css("#cl-source-button > a").click();
+        Thread.sleep(100); // give the tab time to render
 
         // Fill in the form
         selectNamed(Key.SOURCE_DELEGATE).selectByValue("false");
@@ -457,6 +461,7 @@ public class AdminResourceUITest extends AbstractAdminResourceTest {
     @Test
     void testProcessorsSection() throws Exception {
         css("#cl-processors-button > a").click();
+        Thread.sleep(100); // give the tab time to render
 
         // Fill in the form
         selectNamed(Key.PROCESSOR_SELECTION_STRATEGY).
@@ -529,6 +534,7 @@ public class AdminResourceUITest extends AbstractAdminResourceTest {
     @Test
     void testCachesSection() throws Exception {
         css("#cl-caches-button > a").click();
+        Thread.sleep(100); // give the tab time to render
 
         // Fill in the form
         inputNamed(Key.CLIENT_CACHE_ENABLED).click();
@@ -667,6 +673,7 @@ public class AdminResourceUITest extends AbstractAdminResourceTest {
     @Test
     void testOverlaysSection() throws Exception {
         css("#cl-overlays-button > a").click();
+        Thread.sleep(100); // give the tab time to render
 
         // Fill in the form
         inputNamed(Key.OVERLAY_ENABLED).click();
