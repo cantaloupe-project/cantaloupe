@@ -311,15 +311,6 @@ class FilesystemCache implements SourceCache, DerivativeCache {
         } catch (UnsupportedOperationException e) {
             LOGGER.error("getLastAccessedTime(): {}", e.getMessage(), e);
             return Files.getLastModifiedTime(file);
-        } catch (AccessDeniedException e) {
-            // This gets thrown a lot in Windows (10 at least) for unknown
-            // reasons. Debatable whether it would be better to not catch it.
-            if (SystemUtils.IS_OS_WINDOWS) {
-                LOGGER.trace("getLastAccessedTime(): {}", e.getMessage(), e);
-                return FileTime.from(Instant.now());
-            } else {
-                throw e;
-            }
         }
     }
 
