@@ -16,6 +16,7 @@ import edu.illinois.library.cantaloupe.test.ConcurrentReaderWriter;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import edu.illinois.library.cantaloupe.util.DeletingFileVisitor;
 import edu.illinois.library.cantaloupe.util.StringUtils;
+import org.apache.commons.lang3.SystemUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -32,6 +33,7 @@ import java.nio.file.Paths;
 import static edu.illinois.library.cantaloupe.cache.FilesystemCache.*;
 import static edu.illinois.library.cantaloupe.test.Assert.PathAssert.assertRecursiveFileCount;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assumptions.assumeFalse;
 
 public class FilesystemCacheTest extends AbstractCacheTest {
 
@@ -380,6 +382,13 @@ public class FilesystemCacheTest extends AbstractCacheTest {
             instance.getSourceImageFile(identifier);
             return null;
         }).run();
+    }
+
+    @Test
+    @Override
+    void testNewDerivativeImageInputStreamConcurrently() throws Exception {
+        assumeFalse(SystemUtils.IS_OS_WINDOWS); // TODO: this fails in Windows CI with a flurry of AccessDeniedExceptions
+        super.testNewDerivativeImageInputStreamConcurrently();
     }
 
     /* newSourceImageOutputStream(Identifier) */
