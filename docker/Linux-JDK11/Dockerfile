@@ -36,5 +36,5 @@ RUN curl -O https://dl.minio.io/server/minio/release/linux-amd64/minio
 RUN chmod +x minio
 
 # Copy the code
-COPY --chown=cantaloupe docker/test/image_files/test.properties test.properties
+COPY --chown=cantaloupe docker/Linux-JDK11/image_files/test.properties test.properties
 COPY --chown=cantaloupe ./src src
