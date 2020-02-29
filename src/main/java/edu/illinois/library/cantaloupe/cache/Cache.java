@@ -57,7 +57,7 @@ public interface Cache {
 
         // Purge invalid content.
         try {
-            cacheFacade.purgeExpired();
+            cacheFacade.purgeInvalid();
         } catch (IOException e) {
             LOGGER.error("onCacheWorker: {}", e.getMessage(), e);
         }

@@ -190,7 +190,7 @@ public final class CacheFacade {
     /**
      * @see Cache#purgeInvalid
      */
-    public void purgeExpired() throws IOException {
+    public void purgeInvalid() throws IOException {
         // Purge the derivative cache.
         Optional<DerivativeCache> optDerivativeCache = getDerivativeCache();
         if (optDerivativeCache.isPresent()) {

@@ -380,7 +380,7 @@ public class CacheFacadeTest extends BaseTest {
     /* purgeInvalid() */
 
     @Test
-    void testPurgeExpired() throws Exception {
+    void testPurgeInvalid() throws Exception {
         assumeFalse(SystemUtils.IS_OS_WINDOWS); // TODO: this fails in Windows CI
 
         final Configuration config = Configuration.getInstance();
@@ -415,7 +415,7 @@ public class CacheFacadeTest extends BaseTest {
             assertNotNull(is);
         }
 
-        instance.purgeExpired();
+        instance.purgeInvalid();
 
         Thread.sleep(1001);
 

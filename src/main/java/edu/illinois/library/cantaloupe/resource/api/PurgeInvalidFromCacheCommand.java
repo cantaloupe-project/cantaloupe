@@ -9,7 +9,7 @@ final class PurgeInvalidFromCacheCommand<T> extends Command
 
     @Override
     public T call() throws Exception {
-        new CacheFacade().purgeExpired();
+        new CacheFacade().purgeInvalid();
         return null;
     }
 
