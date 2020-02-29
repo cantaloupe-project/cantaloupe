@@ -11,7 +11,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 # Install TurboJpegProcessor dependencies
 RUN mkdir -p /opt/libjpeg-turbo/lib
-COPY docker/test/image_files/libjpeg-turbo/lib64 /opt/libjpeg-turbo/lib
+COPY docker/Linux-JDK11/image_files/libjpeg-turbo/lib64 /opt/libjpeg-turbo/lib
 
 # Install KakaduNativeProcessor dependencies
 COPY dist/deps/Linux-x86-64/lib/* /usr/lib/
@@ -31,7 +31,7 @@ RUN mvn dependency:resolve
 # Install Minio S3 server for S3SourceTest and S3CacheTest
 ARG s3=$home/s3
 RUN mkdir -p $s3/.minio.sys/config $s3/test.cantaloupe.library.illinois.edu
-COPY docker/test/image_files/minio_config.json $s3/.minio.sys/config/config.json
+COPY docker/Linux-JDK11/image_files/minio_config.json $s3/.minio.sys/config/config.json
 RUN curl -O https://dl.minio.io/server/minio/release/linux-amd64/minio
 RUN chmod +x minio
 
