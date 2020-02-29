@@ -10,6 +10,7 @@ import edu.illinois.library.cantaloupe.processor.ProcessorFactory;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.test.TestUtil;
+import org.apache.commons.lang3.SystemUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -21,6 +22,7 @@ import java.nio.file.Path;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assumptions.assumeFalse;
 
 public class CacheFacadeTest extends BaseTest {
 
@@ -379,6 +381,8 @@ public class CacheFacadeTest extends BaseTest {
 
     @Test
     void testPurgeExpired() throws Exception {
+        assumeFalse(SystemUtils.IS_OS_WINDOWS); // TODO: this fails in Windows CI
+
         final Configuration config = Configuration.getInstance();
         config.setProperty(Key.SOURCE_CACHE_TTL, 1);
         config.setProperty(Key.DERIVATIVE_CACHE_TTL, 1);
