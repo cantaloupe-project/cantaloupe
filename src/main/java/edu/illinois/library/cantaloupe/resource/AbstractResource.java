@@ -279,15 +279,31 @@ public abstract class AbstractResource {
     }
 
     /**
-     * Uses an {@link Authorizer} to determine how to respond to the request.
-     * The response will be modified if necessary.
+     * <p>Uses an {@link Authorizer} to determine how to respond to the
+     * request. The response is modified if necessary.</p>
+     *
+     * <p>The authorization system (rooted in the {@link
+     * edu.illinois.library.cantaloupe.script.DelegateMethod#AUTHORIZE
+     * authorization delegate method} supports simple boolean authorization
+     * which maps to the HTTP 200 and 403 statuses. In the event of a 403,
+     * IIIF image information should not be included in the response body.</p>
+     *
+     * <p>Authorization can simultaneously be used in the context of the
+     * <a href="https://iiif.io/api/auth/1.0/">IIIF Authentication API, where
+     * it works a little differently. Here, HTTP 401 is returned instead of
+     * 403, and the response body <strong>does</strong> include image
+     * information. (See
+     * <a href="https://iiif.io/api/auth/1.0/#interaction-with-access-controlled-resources">
+     * Interaction with Access-Controlled Resources</a>. This means that IIIF
+     * information endpoints should swallow any {@link ResourceException}s with
+     * HTTP 401 status.</p>
      *
      * @return Whether authorization was successful. {@code false} indicates a
      *         redirect, and client code should abort.
      * @throws IOException if there was an I/O error while checking
-     *                     authorization.
+     *         authorization.
      * @throws ResourceException if authorization resulted in an HTTP 400-level
-     *                           response.
+     *         response.
      */
     protected final boolean authorize() throws IOException, ResourceException {
         final Authorizer authorizer =

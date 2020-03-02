@@ -5,9 +5,11 @@ import java.util.List;
 import java.util.Set;
 
 import edu.illinois.library.cantaloupe.http.Method;
+import edu.illinois.library.cantaloupe.http.Status;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.resource.JacksonRepresentation;
+import edu.illinois.library.cantaloupe.resource.ResourceException;
 import edu.illinois.library.cantaloupe.resource.Route;
 import edu.illinois.library.cantaloupe.resource.generic.InformationRequestHandler;
 import org.slf4j.Logger;
@@ -45,13 +47,21 @@ public class InformationResource extends IIIF2Resource {
         if (redirectToNormalizedScaleConstraint()) {
             return;
         }
-
         final Set<Format> availableOutputFormats = new HashSet<>();
 
         class CustomCallback implements InformationRequestHandler.Callback {
             @Override
             public boolean authorize() throws Exception {
-                return InformationResource.this.authorize();
+                try {
+                    // The logic here is somewhat convoluted. See the method
+                    // documentation for more information.
+                    return InformationResource.this.authorize();
+                } catch (ResourceException e) {
+                    if (Status.FORBIDDEN.equals(e.getStatus())) {
+                        throw e;
+                    }
+                }
+                return false;
             }
             @Override
             public void knowAvailableOutputFormats(Set<Format> formats) {
