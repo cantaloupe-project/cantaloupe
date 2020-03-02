@@ -175,6 +175,7 @@ public enum Key {
     REDISCACHE_PASSWORD("RedisCache.password"),
     REDISCACHE_PORT("RedisCache.port"),
     REDISCACHE_SSL("RedisCache.ssl"),
+    SCALE_CONSTRAINT_DELIMITER("scale_constraints.delimiter"),
     SOURCE_DELEGATE("source.delegate"),
     SOURCE_STATIC("source.static"),
     S3CACHE_ACCESS_KEY_ID("S3Cache.access_key_id"),

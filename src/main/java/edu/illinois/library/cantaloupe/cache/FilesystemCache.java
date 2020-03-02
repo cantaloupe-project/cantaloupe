@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.Charset;
+import java.nio.file.AccessDeniedException;
 import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.FileVisitOption;
 import java.nio.file.Files;
@@ -29,6 +30,7 @@ import java.nio.file.StandardCopyOption;
 import java.nio.file.attribute.FileTime;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
@@ -288,18 +290,18 @@ class FilesystemCache implements SourceCache, DerivativeCache {
 
     /**
      * Returns the last-accessed time of the given file. On some OS/filesystem
-     * combinations, this may be unreliable, in which case the last-modified
-     * time is returned instead.
+     * combinations, this may be unreliable or not available, in which case the
+     * last-modified time is returned instead.
      *
      * @param file File to check.
      * @return Last-accessed time of the given file, if available, or the
      *         last-modified time otherwise.
-     * @throws NoSuchFileException If the given file does not exist.
-     * @throws IOException If there is some other error.
+     * @throws NoSuchFileException if the given file does not exist.
+     * @throws IOException if there is some other error.
      */
     static FileTime getLastAccessedTime(Path file) throws IOException {
         try {
-            // Last-accessed time is not reliable on macOS+APFS as of 10.13.2.
+            // Last-accessed time is not reliable on macOS+APFS 10.13.2.
             if (SystemUtils.IS_OS_MAC) {
                 LOGGER.trace("macOS detected; using file last-modified " +
                         "instead of last-accessed times.");

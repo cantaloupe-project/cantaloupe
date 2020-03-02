@@ -79,7 +79,7 @@ public class FilesystemSourceTest extends AbstractSourceTest {
     @Test
     void testCheckAccessUsingBasicLookupStrategyWithPresentUnreadableFile()
             throws Exception {
-        Path path = instance.getPath();
+        Path path = instance.getFile();
         try {
             assumeTrue(path.toFile().setReadable(false));
             assertThrows(AccessDeniedException.class, instance::checkAccess);
@@ -119,7 +119,7 @@ public class FilesystemSourceTest extends AbstractSourceTest {
         instance.setDelegateProxy(proxy);
         instance.setIdentifier(identifier);
 
-        Path path = instance.getPath();
+        Path path = instance.getFile();
         try {
             assumeTrue(path.toFile().setReadable(false));
             Files.setPosixFilePermissions(path, Collections.emptySet());
@@ -173,26 +173,26 @@ public class FilesystemSourceTest extends AbstractSourceTest {
         assertThrows(NoSuchElementException.class, it::next);
     }
 
-    /* getPath() */
+    /* getFile() */
 
     @Test
-    void testGetPath() throws Exception {
-        assertNotNull(instance.getPath());
+    void testGetFile() throws Exception {
+        assertNotNull(instance.getFile());
     }
 
     @Test
-    void testGetPathUsingBasicLookupStrategyWithPrefix() throws Exception {
+    void testgetFileUsingBasicLookupStrategyWithPrefix() throws Exception {
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.FILESYSTEMSOURCE_PATH_PREFIX, "/prefix/");
         config.setProperty(Key.FILESYSTEMSOURCE_PATH_SUFFIX, "");
 
         instance.setIdentifier(new Identifier("id"));
         assertEquals(File.separator + "prefix" + File.separator + "id",
-                instance.getPath().toString());
+                instance.getFile().toString());
     }
 
     @Test
-    void testGetPathUsingBasicLookupStrategyWithSuffix() throws Exception {
+    void testgetFileUsingBasicLookupStrategyWithSuffix() throws Exception {
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.FILESYSTEMSOURCE_PATH_PREFIX, "/prefix/");
         config.setProperty(Key.FILESYSTEMSOURCE_PATH_SUFFIX, "/suffix");
@@ -200,18 +200,18 @@ public class FilesystemSourceTest extends AbstractSourceTest {
         instance.setIdentifier(new Identifier("id"));
         assertEquals(
                 File.separator + "prefix" + File.separator + "id" + File.separator + "suffix",
-                instance.getPath().toString());
+                instance.getFile().toString());
     }
 
     @Test
-    void testGetPathUsingBasicLookupStrategyWithoutPrefixOrSuffix()
+    void testgetFileUsingBasicLookupStrategyWithoutPrefixOrSuffix()
             throws Exception {
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.FILESYSTEMSOURCE_PATH_PREFIX, "");
         config.setProperty(Key.FILESYSTEMSOURCE_PATH_SUFFIX, "");
 
         instance.setIdentifier(new Identifier("id"));
-        assertEquals("id", instance.getPath().toString());
+        assertEquals("id", instance.getFile().toString());
     }
 
     /**
@@ -219,7 +219,7 @@ public class FilesystemSourceTest extends AbstractSourceTest {
      * to disallow ascending up the directory tree.
      */
     @Test
-    void testGetPathSanitization() throws Exception {
+    void testgetFileSanitization() throws Exception {
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.FILESYSTEMSOURCE_PATH_PREFIX, "/prefix/");
         config.setProperty(Key.FILESYSTEMSOURCE_PATH_SUFFIX, "/suffix");
@@ -227,22 +227,22 @@ public class FilesystemSourceTest extends AbstractSourceTest {
         instance.setIdentifier(new Identifier("id/../"));
         assertEquals(
                 File.separator + "prefix" + File.separator + "id" + File.separator + "suffix",
-                instance.getPath().toString());
+                instance.getFile().toString());
 
         instance.setIdentifier(new Identifier("/../id"));
         assertEquals(
                 File.separator + "prefix" + File.separator + "id" + File.separator + "suffix",
-                instance.getPath().toString());
+                instance.getFile().toString());
 
         instance.setIdentifier(new Identifier("id\\..\\"));
         assertEquals(
                 File.separator + "prefix" + File.separator + "id" + File.separator + "suffix",
-                instance.getPath().toString());
+                instance.getFile().toString());
 
         instance.setIdentifier(new Identifier("\\..\\id"));
         assertEquals(
                 File.separator + "prefix" + File.separator + "id" + File.separator + "suffix",
-                instance.getPath().toString());
+                instance.getFile().toString());
 
         // test injection-safety
         instance.setIdentifier(new Identifier("/id/../cats\\..\\dogs/../..\\foxes/.\\...\\/....\\.."));
@@ -250,11 +250,11 @@ public class FilesystemSourceTest extends AbstractSourceTest {
                 File.separator + "prefix" + File.separator + "id" +
                         File.separator + "cats" + File.separator + "dogs" +
                         File.separator + "foxes" + File.separator + "suffix",
-                instance.getPath().toString());
+                instance.getFile().toString());
     }
 
     @Test
-    void testGetPathWithScriptLookupStrategy() throws Exception {
+    void testgetFileWithScriptLookupStrategy() throws Exception {
         useScriptLookupStrategy();
 
         RequestContext context = new RequestContext();
@@ -263,7 +263,7 @@ public class FilesystemSourceTest extends AbstractSourceTest {
         DelegateProxy proxy = service.newDelegateProxy(context);
         instance.setDelegateProxy(proxy);
 
-        assertEquals(IDENTIFIER.toString(), instance.getPath().toString());
+        assertEquals(IDENTIFIER.toString(), instance.getFile().toString());
     }
 
     /* newStreamFactory() */

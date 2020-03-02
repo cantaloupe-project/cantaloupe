@@ -84,7 +84,7 @@ import java.util.regex.Pattern;
  * @see <a href="https://docs.minio.io/docs/java-client-api-reference">
  *     Minio Java Client API Reference</a>
  */
-final class S3Source extends AbstractSource implements StreamSource {
+final class S3Source extends AbstractSource implements Source {
 
     private static class S3ObjectAttributes {
         String contentType;

@@ -419,7 +419,7 @@
         <repository>
             <id>imageio-ext-repository</id>
             <name>imageio-ext Repository</name>
-            <url>http://maven.geo-solutions.it/</url>
+            <url>https://maven.geo-solutions.it/</url>
         </repository>
     </repositories>
 

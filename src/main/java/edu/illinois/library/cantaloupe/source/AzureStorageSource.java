@@ -76,22 +76,22 @@ import java.util.NoSuchElementException;
  * @see <a href="https://github.com/azure/azure-storage-java">
  *     Microsoft Azure Storage SDK for Java</a>
  */
-final class AzureStorageSource extends AbstractSource implements StreamSource {
+final class AzureStorageSource extends AbstractSource implements Source {
 
     /**
      * <ol>
-     *     <li>If the blob key has a recognized filename extension, the format is
-     *     inferred from that.</li>
+     *     <li>If the blob key has a recognized filename extension, the format
+     *     is inferred from that.</li>
      *     <li>Otherwise, if the source image's URI identifier has a recognized
      *     filename extension, the format is inferred from that.</li>
      *     <li>Otherwise, a {@literal HEAD} request will be sent. If a {@literal
-     *     Content-Type} header is present in the response, and is specific enough
-     *     (i.e. not {@literal application/octet-stream}), a format is inferred
-     *     from that.</li>
+     *     Content-Type} header is present in the response, and is specific
+     *     enough (i.e. not {@literal application/octet-stream}), a format is
+     *     inferred from that.</li>
      *     <li>Otherwise, a {@literal GET} request will be sent with a {@literal
-     *     Range} header specifying a small range of data from the beginning of the
-     *     resource, and a format is inferred from the magic bytes in the response
-     *     body.</li>
+     *     Range} header specifying a small range of data from the beginning of
+     *     the resource, and a format is inferred from the magic bytes in the
+     *     response body.</li>
      * </ol>
      *
      * @param <T> {@link Format}.

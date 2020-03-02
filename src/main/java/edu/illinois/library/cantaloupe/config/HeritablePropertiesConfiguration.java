@@ -133,6 +133,7 @@ class HeritablePropertiesConfiguration implements MultipleFileConfiguration {
         for (PropertiesDocument doc : propertiesDocs.values()) {
             if (doc.containsKey(key)) {
                 bool = StringUtils.toBoolean(doc.get(key));
+                break;
             }
         }
         return bool;

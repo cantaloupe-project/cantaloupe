@@ -104,7 +104,7 @@ public class ImageReaderFactoryTest extends BaseTest {
 
     @Test
     void testNewImageReaderWithPath() throws Exception {
-        instance.newImageReader(Format.JPG, Paths.get("/dev/null"));
+        instance.newImageReader(Format.JPG, TestUtil.getImage("jpg"));
     }
 
     @Test
@@ -123,7 +123,7 @@ public class ImageReaderFactoryTest extends BaseTest {
 
     @Test
     void testNewImageReaderWithStreamSource() throws Exception {
-        StreamFactory source = new PathStreamFactory(Paths.get("/dev/null"));
+        StreamFactory source = new PathStreamFactory(TestUtil.getImage("jpg"));
         instance.newImageReader(Format.JPG, source);
     }
 

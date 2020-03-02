@@ -7,6 +7,7 @@ import edu.illinois.library.cantaloupe.script.DelegateProxy;
 import java.io.IOException;
 import java.nio.file.AccessDeniedException;
 import java.nio.file.NoSuchFileException;
+import java.nio.file.Path;
 import java.util.Iterator;
 
 /**
@@ -51,6 +52,21 @@ public interface Source {
     void checkAccess() throws IOException;
 
     /**
+     * N.B.: This default implementation throws an {@link
+     * UnsupportedOperationException}. It must be overridden if {@link
+     * #supportsFileAccess()} returns {@code true}.
+     *
+     * @return File referencing the source image corresponding to the
+     *         identifier set with {@link #setIdentifier}; never {@code null}.
+     * @throws UnsupportedOperationException if access to files is not {@link
+     *         #supportsFileAccess() supported}.
+     * @throws IOException if anything goes wrong.
+     */
+    default Path getFile() throws IOException {
+        throw new UnsupportedOperationException();
+    }
+
+    /**
      * <p>Returns an iterator over the results of various techniques of
      * checking the format, in the order of least to most expensive. Any of the
      * calls to {@link Iterator#next()} or may return either an inaccurate
@@ -66,6 +82,13 @@ public interface Source {
     Iterator<Format> getFormatIterator();
 
     /**
+     * @return Instance from which to read the source image identified by the
+     *         identifier passed to {@link #setIdentifier}; never {@code null}.
+     * @throws IOException if anything goes wrong.
+     */
+    StreamFactory newStreamFactory() throws IOException;
+
+    /**
      * @param proxy Delegate proxy for the current request.
      */
     void setDelegateProxy(DelegateProxy proxy);
@@ -79,5 +102,18 @@ public interface Source {
      * <p>The default implementation does nothing.</p>
      */
     default void shutdown() {}
+
+    /**
+     * N.B. 1: This method's return value affects the behavior of {@link
+     * #getFile()}. See the documentation of that method for more information.
+     *
+     * N.B. 2: The default implementation returns {@code false}.
+     *
+     * @return Whether the source image can be accessed via a {@link
+     *         java.nio.file.Path}.
+     */
+    default boolean supportsFileAccess() {
+        return false;
+    }
 
 }

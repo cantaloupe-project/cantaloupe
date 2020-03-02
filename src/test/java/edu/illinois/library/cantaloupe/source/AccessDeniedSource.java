@@ -4,10 +4,9 @@ import edu.illinois.library.cantaloupe.image.Format;
 
 import java.io.IOException;
 import java.nio.file.AccessDeniedException;
-import java.nio.file.Path;
 import java.util.Iterator;
 
-public class AccessDeniedSource extends AbstractSource implements FileSource {
+public class AccessDeniedSource extends AbstractSource implements Source {
 
     @Override
     public void checkAccess() throws IOException {
@@ -20,7 +19,7 @@ public class AccessDeniedSource extends AbstractSource implements FileSource {
     }
 
     @Override
-    public Path getPath() throws IOException {
+    public StreamFactory newStreamFactory() {
         return null;
     }
 

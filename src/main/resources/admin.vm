@@ -940,6 +940,20 @@
                                                data-requires-restart="false">
                                     </td>
                                 </tr>
+                                <tr>
+                                    <td>Scale Constraint Delimiter
+                                        <a tabindex="0" class="btn btn-sm cl-help"
+                                           role="button" data-toggle="popover"
+                                           data-trigger="focus"
+                                           data-content="Character sequence that separates an identifier from
+                                           a scale constraint in the identifier portion of a URI.">?</a>
+                                    </td>
+                                    <td>
+                                        <input class="form-control" type="text"
+                                               name="scale_constraints.delimiter" min="0"
+                                               data-requires-restart="false">
+                                    </td>
+                                </tr>
                             </table>
                         </section>
 

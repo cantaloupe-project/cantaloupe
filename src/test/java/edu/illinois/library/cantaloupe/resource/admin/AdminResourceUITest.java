@@ -95,6 +95,7 @@ public class AdminResourceUITest extends AbstractAdminResourceTest {
     @Test
     void testApplicationSection() throws Exception {
         css("#cl-application-button > a").click();
+        Thread.sleep(100); // give the tab time to render
 
         // Fill in the form
 
@@ -230,6 +231,7 @@ public class AdminResourceUITest extends AbstractAdminResourceTest {
     @Test
     void testServerSection() throws Exception {
         css("#cl-http-button > a").click();
+        Thread.sleep(100); // give the tab time to render
 
         // Fill in the form
         inputNamed(Key.HTTP_ENABLED).click();
@@ -269,10 +271,12 @@ public class AdminResourceUITest extends AbstractAdminResourceTest {
     @Test
     void testEndpointsSection() throws Exception {
         css("#cl-endpoints-button > a").click();
+        Thread.sleep(100); // give the tab time to render
 
         // Fill in the form
         inputNamed(Key.MAX_PIXELS).sendKeys("5000");
         inputNamed(Key.MAX_SCALE).sendKeys("1.1");
+        inputNamed(Key.SCALE_CONSTRAINT_DELIMITER).sendKeys("---");
         inputNamed(Key.IIIF_MIN_SIZE).sendKeys("75");
         inputNamed(Key.IIIF_MIN_TILE_SIZE).sendKeys("250");
         inputNamed(Key.IIIF_RESTRICT_TO_SIZES).click();
@@ -291,6 +295,7 @@ public class AdminResourceUITest extends AbstractAdminResourceTest {
         final Configuration config = Configuration.getInstance();
         assertEquals(5000, config.getLong(Key.MAX_PIXELS));
         assertEquals(1.1, config.getDouble(Key.MAX_SCALE), DELTA);
+        assertEquals("---", config.getString(Key.SCALE_CONSTRAINT_DELIMITER));
         assertEquals(75, config.getInt(Key.IIIF_MIN_SIZE));
         assertEquals(250, config.getInt(Key.IIIF_MIN_TILE_SIZE));
         assertTrue(config.getBoolean(Key.IIIF_RESTRICT_TO_SIZES));
@@ -304,6 +309,7 @@ public class AdminResourceUITest extends AbstractAdminResourceTest {
     @Test
     void testSourceSection() throws Exception {
         css("#cl-source-button > a").click();
+        Thread.sleep(100); // give the tab time to render
 
         // Fill in the form
         selectNamed(Key.SOURCE_DELEGATE).selectByValue("false");
@@ -455,6 +461,7 @@ public class AdminResourceUITest extends AbstractAdminResourceTest {
     @Test
     void testProcessorsSection() throws Exception {
         css("#cl-processors-button > a").click();
+        Thread.sleep(100); // give the tab time to render
 
         // Fill in the form
         selectNamed(Key.PROCESSOR_SELECTION_STRATEGY).
@@ -527,6 +534,7 @@ public class AdminResourceUITest extends AbstractAdminResourceTest {
     @Test
     void testCachesSection() throws Exception {
         css("#cl-caches-button > a").click();
+        Thread.sleep(100); // give the tab time to render
 
         // Fill in the form
         inputNamed(Key.CLIENT_CACHE_ENABLED).click();
@@ -665,6 +673,7 @@ public class AdminResourceUITest extends AbstractAdminResourceTest {
     @Test
     void testOverlaysSection() throws Exception {
         css("#cl-overlays-button > a").click();
+        Thread.sleep(100); // give the tab time to render
 
         // Fill in the form
         inputNamed(Key.OVERLAY_ENABLED).click();

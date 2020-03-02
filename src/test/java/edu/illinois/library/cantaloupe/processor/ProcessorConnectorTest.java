@@ -10,12 +10,10 @@ import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
-import edu.illinois.library.cantaloupe.source.FileSource;
 import edu.illinois.library.cantaloupe.source.MockStreamSource;
 import edu.illinois.library.cantaloupe.source.Source;
 import edu.illinois.library.cantaloupe.source.SourceFactory;
 import edu.illinois.library.cantaloupe.source.StreamFactory;
-import edu.illinois.library.cantaloupe.source.StreamSource;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import edu.illinois.library.cantaloupe.test.WebServer;
@@ -41,7 +39,7 @@ public class ProcessorConnectorTest extends BaseTest {
     private ProcessorConnector instance;
 
     private static void recursiveDeleteOnExit(Path dir) throws IOException {
-        Files.walkFileTree(dir, new SimpleFileVisitor<Path>() {
+        Files.walkFileTree(dir, new SimpleFileVisitor<>() {
             @Override
             public FileVisitResult visitFile(Path file,
                                              BasicFileAttributes attrs) {
@@ -135,8 +133,7 @@ public class ProcessorConnectorTest extends BaseTest {
 
         assertNull(instance.connect(source, processor, IDENTIFIER, Format.JPG));
 
-        assertEquals(
-                ((FileSource) source).getPath(),
+        assertEquals(source.getFile(),
                 ((FileProcessor) processor).getSourceFile());
     }
 
@@ -151,7 +148,7 @@ public class ProcessorConnectorTest extends BaseTest {
 
         assertNull(instance.connect(source, processor, IDENTIFIER, Format.JPG));
 
-        StreamFactory ss1 = ((StreamSource) source).newStreamFactory();
+        StreamFactory ss1 = source.newStreamFactory();
         StreamFactory ss2 = ((StreamProcessor) processor).getStreamFactory();
 
         assertEqualSources(ss1, ss2);
@@ -304,7 +301,7 @@ public class ProcessorConnectorTest extends BaseTest {
 
             assertNull(instance.connect(source, processor, IDENTIFIER, Format.JPG));
 
-            StreamFactory ss1 = ((StreamSource) source).newStreamFactory();
+            StreamFactory ss1 = source.newStreamFactory();
             StreamFactory ss2 = processor.getStreamFactory();
 
             assertEqualSources(ss1, ss2);
@@ -399,7 +396,7 @@ public class ProcessorConnectorTest extends BaseTest {
 
             assertNull(instance.connect(source, processor, IDENTIFIER, Format.JPG));
 
-            StreamFactory ss1 = ((StreamSource) source).newStreamFactory();
+            StreamFactory ss1 = source.newStreamFactory();
             StreamFactory ss2 = processor.getStreamFactory();
 
             assertEqualSources(ss1, ss2);

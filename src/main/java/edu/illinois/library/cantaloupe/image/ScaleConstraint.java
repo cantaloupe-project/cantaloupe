@@ -1,5 +1,7 @@
 package edu.illinois.library.cantaloupe.image;
 
+import edu.illinois.library.cantaloupe.config.Configuration;
+import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.http.Reference;
 import edu.illinois.library.cantaloupe.util.Rational;
 
@@ -24,24 +26,26 @@ import java.util.regex.Pattern;
 public final class ScaleConstraint {
 
     /**
-     * <p>Format of a scale constraint suffix appended to an identifier in a
-     * URI path component.</p>
-     *
-     * <p>N.B.: This must be kept in sync with {@link
-     * #toIdentifierSuffix()}.</p>
+     * Default character sequence separating an identifier from a scale
+     * constraint in the identifier portion of a URI.
      */
-    public static final Pattern IDENTIFIER_SUFFIX_PATTERN =
-            Pattern.compile("-(\\d+):(\\d+)\\b");
+    private static final String DEFAULT_IDENTIFIER_DELIMITER = "-";
+
+    /**
+     * Pattern describing a scale constraint in the identifier portion of a
+     * URI, not including the {@link #DEFAULT_IDENTIFIER_DELIMITER}.
+     */
+    private static final String URI_PATTERN = "(\\d+):(\\d+)\\b";
 
     private Rational rational;
 
     /**
      * An identifier URI path component may contain a {@link
-     * #IDENTIFIER_SUFFIX_PATTERN scale constraint suffix}. If so, this method
-     * will parse it and return an instance reflecting it.
+     * #getIdentifierSuffixPattern()} scale constraint suffix}. If so, this
+     * method will parse it and return an instance reflecting it.
      *
      * @param pathComponent Identifier path component, not URI-decoded.
-     * @return              New instance, or {@literal null} if the given path
+     * @return              New instance, or {@code null} if the given path
      *                      component does not contain a scale constraint
      *                      suffix.
      */
@@ -49,7 +53,7 @@ public final class ScaleConstraint {
         if (pathComponent != null) {
             final String decodedComponent = Reference.decode(pathComponent);
             final Matcher matcher =
-                    IDENTIFIER_SUFFIX_PATTERN.matcher(decodedComponent);
+                    getIdentifierSuffixPattern().matcher(decodedComponent);
             if (matcher.find() && matcher.groupCount() == 2) {
                 return new ScaleConstraint(
                         Long.parseLong(matcher.group(1)),
@@ -57,6 +61,20 @@ public final class ScaleConstraint {
             }
         }
         return null;
+    }
+
+    /**
+     * N.B.: This must be kept in sync with {@link #toIdentifierSuffix()}
+     *
+     * @return Format of a full scale constraint suffix appended to an
+     *         identifier in a URI path component.
+     */
+    public static Pattern getIdentifierSuffixPattern() {
+        var config = Configuration.getInstance();
+        return Pattern.compile(
+                config.getString(Key.SCALE_CONSTRAINT_DELIMITER,
+                        DEFAULT_IDENTIFIER_DELIMITER) +
+                        URI_PATTERN);
     }
 
     /**
@@ -136,14 +154,18 @@ public final class ScaleConstraint {
     }
 
     /**
-     * N.B.: This must be kept in sync with {@link #IDENTIFIER_SUFFIX_PATTERN}.
+     * N.B.: This must be kept in sync with {@link
+     * #getIdentifierSuffixPattern()}.
      */
     public String toIdentifierSuffix() {
-        return "-" + rational.getNumerator() + ":" + rational.getDenominator();
+        var config = Configuration.getInstance();
+        return config.getString(Key.SCALE_CONSTRAINT_DELIMITER,
+                DEFAULT_IDENTIFIER_DELIMITER) +
+                rational.getNumerator() + ":" + rational.getDenominator();
     }
 
     /**
-     * @return Map with {@literal numerator} and {@literal denominator} keys.
+     * @return Map with {@code numerator} and {@code denominator} keys.
      */
     public Map<String,Long> toMap() {
         final Map<String,Long> map = new HashMap<>();

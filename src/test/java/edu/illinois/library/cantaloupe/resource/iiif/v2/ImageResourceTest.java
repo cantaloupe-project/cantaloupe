@@ -126,7 +126,6 @@ public class ImageResourceTest extends ResourceTest {
     @Test
     void testGETCachingWhenCachesAreEnabledButNegativeCacheQueryArgumentIsSupplied2()
             throws Exception {
-        assumeFalse(SystemUtils.IS_OS_WINDOWS); // TODO: this fails in Windows
         URI uri = getHTTPURI("/" + IMAGE + "/full/full/0/color.png?cache=false");
         tester.testCachingWhenCachesAreEnabledButNegativeCacheQueryArgumentIsSupplied(uri);
     }
@@ -134,6 +133,7 @@ public class ImageResourceTest extends ResourceTest {
     @Test
     void testGETCachingWhenCachesAreEnabledAndRecacheQueryArgumentIsSupplied()
             throws Exception {
+        assumeFalse(SystemUtils.IS_OS_WINDOWS); // TODO: this fails in Windows
         URI uri = getHTTPURI("/" + IMAGE + "/full/full/0/color.png?cache=recache");
         tester.testCachingWhenCachesAreEnabledAndRecacheQueryArgumentIsSupplied(uri);
     }
