@@ -6,6 +6,7 @@ import org.eclipse.jetty.alpn.server.ALPNServerConnectionFactory;
 import org.eclipse.jetty.http2.HTTP2Cipher;
 import org.eclipse.jetty.http2.server.HTTP2CServerConnectionFactory;
 import org.eclipse.jetty.http2.server.HTTP2ServerConnectionFactory;
+import org.eclipse.jetty.jmx.MBeanContainer;
 import org.eclipse.jetty.server.HttpConfiguration;
 import org.eclipse.jetty.server.HttpConnectionFactory;
 import org.eclipse.jetty.server.SecureRequestCustomizer;
@@ -17,6 +18,7 @@ import org.eclipse.jetty.webapp.WebAppContext;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.management.ManagementFactory;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Comparator;
@@ -32,6 +34,7 @@ public class ApplicationServer {
     // have access to a logger.
 
     private static final int IDLE_TIMEOUT = 30000;
+    private static final String REMOTE_JMX_PORT_PARAMETER = "com.sun.management.jmxremote.port";
 
     static final String DEFAULT_HTTP_HOST = "0.0.0.0";
 
@@ -281,6 +284,15 @@ public class ApplicationServer {
                 connector.setIdleTimeout(IDLE_TIMEOUT);
                 server.addConnector(connector);
             }
+
+            // If the Cantaloupe server is started with jmxremote, add the Jetty
+            // jmx extensions to the MBeanServer
+            if (System.getProperties().containsKey(REMOTE_JMX_PORT_PARAMETER) &&
+                    !"".equals(System.getProperty(REMOTE_JMX_PORT_PARAMETER))) {
+                MBeanContainer mbeanContainer = new MBeanContainer(ManagementFactory.getPlatformMBeanServer());
+                server.addBean(mbeanContainer);
+            }
+
             server.start();
             isStarted = true;
         }
