@@ -48,6 +48,8 @@ public final class HTTPAssert {
             client.setURI(new URI(uri));
             Response response = client.send();
             assertTrue(response.getBodyAsString().contains(contains));
+        } catch (ResourceException e) {
+            assertTrue(e.getResponse().getContentAsString().contains(contains));
         } catch (Exception e) {
             fail(e.getMessage());
         } finally {
