@@ -9,6 +9,7 @@ import edu.illinois.library.cantaloupe.cache.CacheFacade;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.http.Method;
+import edu.illinois.library.cantaloupe.http.Status;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.Info;
@@ -56,14 +57,16 @@ public class InformationResource extends IIIF1Resource {
         if (redirectToNormalizedScaleConstraint()) {
             return;
         }
-
-        // An authorization check is needed in the context of the IIIF
-        // Authentication API.
         try {
+            // The logic here is somewhat convoluted. See the method
+            // documentation for more information.
             if (!authorize()) {
                 return;
             }
-        } catch (ResourceException ignore) {
+        } catch (ResourceException e) {
+            if (Status.FORBIDDEN.equals(e.getStatus())) {
+                throw e;
+            }
             // Continue anyway. All we needed was to set the response status:
             // https://iiif.io/api/auth/1.0/#interaction-with-access-controlled-resources
         }

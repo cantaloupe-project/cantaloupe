@@ -2,6 +2,8 @@
 
 ## 4.1.6
 
+* Image information is no longer included in IIIF information responses with
+  an HTTP 403 status.
 * Fixed overridden boolean values not being recognized in inherited
   configuration files.
 

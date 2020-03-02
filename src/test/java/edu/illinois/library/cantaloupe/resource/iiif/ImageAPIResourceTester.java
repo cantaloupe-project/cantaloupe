@@ -53,6 +53,7 @@ public class ImageAPIResourceTester {
         // This may vary depending on the return value of a delegate method,
         // but the way the tests are set up, it's 403.
         assertStatus(403, uri);
+        assertRepresentationContains("403 Forbidden", uri);
     }
 
     public void testAuthorizationWhenScaleConstraining(URI uri)
