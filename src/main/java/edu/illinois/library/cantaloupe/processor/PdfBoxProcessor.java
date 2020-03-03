@@ -21,6 +21,7 @@ import org.apache.commons.io.IOUtils;
 import org.apache.pdfbox.cos.COSObject;
 import org.apache.pdfbox.pdmodel.DefaultResourceCache;
 import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.pdmodel.PDDocumentInformation;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.common.PDMetadata;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
@@ -37,6 +38,7 @@ import java.io.OutputStream;
 import java.nio.file.Path;
 import java.util.Collections;
 import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
@@ -178,14 +180,24 @@ class PdfBoxProcessor extends AbstractProcessor
                 }
             });
 
-            // Read the document's XMP metadata.
-            final PDMetadata pdfMetadata = doc.getDocumentCatalog().getMetadata();
-            if (pdfMetadata != null) {
-                try (InputStream is = pdfMetadata.exportXMPMetadata()) {
-                    ByteArrayOutputStream os = new ByteArrayOutputStream();
-                    is.transferTo(os);
-                    metadata = new Metadata();
-                    metadata.setXMP(os.toByteArray());
+            metadata = new Metadata();
+            { // Read the document's native metadata.
+                PDDocumentInformation info = doc.getDocumentInformation();
+                Map<String, String> pdfMetadata = new HashMap<>();
+                for (String key : info.getMetadataKeys()) {
+                    pdfMetadata.put(key, info.getPropertyStringValue(key).toString());
+                }
+                metadata.setNativeMetadata(pdfMetadata);
+            }
+            { // Read the document's XMP metadata.
+                PDMetadata pdfMetadata = doc.getDocumentCatalog().getMetadata();
+                if (pdfMetadata != null) {
+                    try (InputStream is = pdfMetadata.exportXMPMetadata()) {
+                        ByteArrayOutputStream os = new ByteArrayOutputStream();
+                        is.transferTo(os);
+
+                        metadata.setXMP(os.toByteArray());
+                    }
                 }
             }
 

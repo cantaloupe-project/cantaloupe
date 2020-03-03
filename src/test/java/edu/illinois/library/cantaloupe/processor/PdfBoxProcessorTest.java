@@ -89,6 +89,13 @@ public class PdfBoxProcessorTest extends AbstractProcessorTest {
     }
 
     @Test
+    void testReadInfoNativeMetadataAwareness() throws Exception {
+        instance.setSourceFile(TestUtil.getImage("pdf-xmp.pdf"));
+        Info info = instance.readInfo();
+        assertTrue(info.getMetadata().getNativeMetadata().isPresent());
+    }
+
+    @Test
     void testReadInfoXMPAwareness() throws Exception {
         instance.setSourceFile(TestUtil.getImage("pdf-xmp.pdf"));
         Info info = instance.readInfo();
