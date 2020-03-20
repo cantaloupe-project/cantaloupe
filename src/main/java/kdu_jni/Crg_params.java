@@ -16,4 +16,8 @@ public class Crg_params extends Kdu_params {
         Native_destroy();
       }
   }
+  private static native long Native_create();
+  public Crg_params() {
+    this(Native_create());
+  }
 }

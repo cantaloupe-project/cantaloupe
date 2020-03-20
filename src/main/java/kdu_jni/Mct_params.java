@@ -16,4 +16,8 @@ public class Mct_params extends Kdu_params {
         Native_destroy();
       }
   }
+  private static native long Native_create();
+  public Mct_params() {
+    this(Native_create());
+  }
 }

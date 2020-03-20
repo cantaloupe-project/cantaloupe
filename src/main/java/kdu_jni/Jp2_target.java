@@ -37,6 +37,7 @@ public class Jp2_target extends Jp2_output_box {
     Open(_super_box,_box_type,(boolean) false);
   }
   public native boolean Close_box() throws KduException;
+  public native long Get_brand() throws KduException;
   public native void Write_header() throws KduException;
   public native void Open_codestream(boolean _rubber_length) throws KduException;
   public void Open_codestream() throws KduException

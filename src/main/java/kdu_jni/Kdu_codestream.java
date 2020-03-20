@@ -78,6 +78,8 @@ public class Kdu_codestream {
   public native void Share_buffering(Kdu_codestream _existing) throws KduException;
   public native void Destroy() throws KduException;
   public native void Enable_restart() throws KduException;
+  public native void Configure_simultaneous_processing_fragments(int _ideal_frag_width, int _max_frag_depth, int _max_fragments) throws KduException;
+  public native void Configure_simultaneous_processing_fragments(Kdu_codestream _src) throws KduException;
   public native void Set_persistent() throws KduException;
   public native long Augment_cache_threshold(int _extra_bytes) throws KduException;
   public native int Set_tile_unloading_threshold(int _max_tiles_on_list, Kdu_thread_env _env) throws KduException;
@@ -145,6 +147,7 @@ public class Kdu_codestream {
   }
   public native int Get_max_tile_layers() throws KduException;
   public native int Get_min_dwt_levels() throws KduException;
+  public native int Get_ht_usage() throws KduException;
   public native boolean Can_flip(boolean _check_current_appearance_only) throws KduException;
   public native boolean Cbr_flushing() throws KduException;
   public native void Map_region(int _comp_idx, Kdu_dims _comp_region, Kdu_dims _hires_region, boolean _want_output_comps) throws KduException;
@@ -153,6 +156,7 @@ public class Kdu_codestream {
     Map_region(_comp_idx,_comp_region,_hires_region,(boolean) false);
   }
   public native void Set_textualization(Kdu_message _output) throws KduException;
+  public native void Set_slope_hint_policy(int _flags) throws KduException;
   public native void Set_max_bytes(long _max_bytes, boolean _simulate_parsing, boolean _allow_periodic_trimming) throws KduException;
   public void Set_max_bytes(long _max_bytes) throws KduException
   {
@@ -163,6 +167,7 @@ public class Kdu_codestream {
     Set_max_bytes(_max_bytes,_simulate_parsing,(boolean) true);
   }
   public native void Set_min_slope_threshold(int _min_slope) throws KduException;
+  public native void Set_max_slope_threshold(int _max_slope) throws KduException;
   public native void Set_resilient(boolean _expect_ubiquitous_sops) throws KduException;
   public void Set_resilient() throws KduException
   {
@@ -223,6 +228,7 @@ public class Kdu_codestream {
     Kdu_thread_env env = null;
     return Add_comment(env);
   }
+  public native void Set_disabled_auto_comments(long _flags) throws KduException;
   public native void Flush(long[] _layer_bytes, int _num_layer_specs, int[] _layer_thresholds, boolean _trim_to_rate, boolean _record_in_comseg, double _tolerance, Kdu_thread_env _env, int _flags) throws KduException;
   public void Flush(long[] _layer_bytes, int _num_layer_specs) throws KduException
   {
@@ -321,7 +327,7 @@ public class Kdu_codestream {
     Kdu_thread_env env = null;
     Auto_trans_out(_first_tile_comp_trigger_point,_tile_comp_trigger_interval,_first_incr_trigger_point,_incr_trigger_interval,_max_bytes,_record_in_comseg,env);
   }
-  public native Kdu_flush_stats Add_flush_stats(int _initial_frame_idx) throws KduException;
+  public native Kdu_flush_stats Add_flush_stats(int _initial_frame_idx, int _max_passes, int _nominal_start_plane, int _extra_start_passes) throws KduException;
   public native void Attach_flush_stats(Kdu_flush_stats _flush_stats) throws KduException;
   public native long Get_total_bytes(boolean _exclude_main_header) throws KduException;
   public long Get_total_bytes() throws KduException

@@ -24,6 +24,7 @@ public class Kdu_block {
   }
   public native void Set_max_samples(int _new_samples) throws KduException;
   public native void Set_max_contexts(int _new_contexts) throws KduException;
+  public native void Set_max_ictxts(int _new_ictxts) throws KduException;
   public native int Map_storage(int _contexts, int _samples, int _retained_state, boolean _pre_write_required) throws KduException;
   public int Map_storage(int _contexts, int _samples, int _retained_state) throws KduException
   {
@@ -33,6 +34,9 @@ public class Kdu_block {
   public native void Set_size(Kdu_coords _new_size) throws KduException;
   public native Kdu_dims Get_region() throws KduException;
   public native void Set_region(Kdu_dims _new_region) throws KduException;
+  public native Kdu_coords Get_inset() throws KduException;
+  public native void Set_inset(Kdu_coords _new_inset) throws KduException;
+  public native Kdu_coords Get_coding_origin() throws KduException;
   public native boolean Get_transpose() throws KduException;
   public native void Set_transpose(boolean _new_transpose) throws KduException;
   public native boolean Get_vflip() throws KduException;

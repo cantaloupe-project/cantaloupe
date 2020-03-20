@@ -14,16 +14,31 @@ public class Kdu_multi_synthesis {
       this(0);
   }
   public native boolean Exists() throws KduException;
-  public native long Create(Kdu_codestream _codestream, Kdu_tile _tile, Kdu_thread_env _env, Kdu_thread_queue _env_queue, int _flags, int _buffer_rows, Kdu_sample_allocator _external_sample_allocator) throws KduException;
+  public native long Create(Kdu_codestream _codestream, Kdu_tile _tile, Kdu_thread_env _env, Kdu_thread_queue _env_queue, int _flags, int _buffer_rows, Kdu_sample_allocator _external_sample_allocator, Kdu_push_pull_params _extra_params, Kdu_membroker _membroker) throws KduException;
   public long Create(Kdu_codestream _codestream, Kdu_tile _tile, Kdu_thread_env _env, Kdu_thread_queue _env_queue, int _flags) throws KduException
   {
     Kdu_sample_allocator external_sample_allocator = null;
-    return Create(_codestream,_tile,_env,_env_queue,_flags,(int) 1,external_sample_allocator);
+    Kdu_push_pull_params extra_params = null;
+    Kdu_membroker membroker = null;
+    return Create(_codestream,_tile,_env,_env_queue,_flags,(int) 1,external_sample_allocator,extra_params,membroker);
   }
   public long Create(Kdu_codestream _codestream, Kdu_tile _tile, Kdu_thread_env _env, Kdu_thread_queue _env_queue, int _flags, int _buffer_rows) throws KduException
   {
     Kdu_sample_allocator external_sample_allocator = null;
-    return Create(_codestream,_tile,_env,_env_queue,_flags,_buffer_rows,external_sample_allocator);
+    Kdu_push_pull_params extra_params = null;
+    Kdu_membroker membroker = null;
+    return Create(_codestream,_tile,_env,_env_queue,_flags,_buffer_rows,external_sample_allocator,extra_params,membroker);
+  }
+  public long Create(Kdu_codestream _codestream, Kdu_tile _tile, Kdu_thread_env _env, Kdu_thread_queue _env_queue, int _flags, int _buffer_rows, Kdu_sample_allocator _external_sample_allocator) throws KduException
+  {
+    Kdu_push_pull_params extra_params = null;
+    Kdu_membroker membroker = null;
+    return Create(_codestream,_tile,_env,_env_queue,_flags,_buffer_rows,_external_sample_allocator,extra_params,membroker);
+  }
+  public long Create(Kdu_codestream _codestream, Kdu_tile _tile, Kdu_thread_env _env, Kdu_thread_queue _env_queue, int _flags, int _buffer_rows, Kdu_sample_allocator _external_sample_allocator, Kdu_push_pull_params _extra_params) throws KduException
+  {
+    Kdu_membroker membroker = null;
+    return Create(_codestream,_tile,_env,_env_queue,_flags,_buffer_rows,_external_sample_allocator,_extra_params,membroker);
   }
   public native long Create(Kdu_codestream _codestream, Kdu_tile _tile, boolean _force_precise, boolean _skip_ycc, boolean _want_fastest, int _buffer_rows, Kdu_thread_env _env, Kdu_thread_queue _env_queue, boolean _multi_threaded_dwt) throws KduException;
   public long Create(Kdu_codestream _codestream, Kdu_tile _tile) throws KduException
@@ -86,4 +101,5 @@ public class Kdu_multi_synthesis {
   }
   public native boolean Is_line_precise(int _comp_idx) throws KduException;
   public native boolean Is_line_absolute(int _comp_idx) throws KduException;
+  public native byte Get_line_flags(int _comp_idx) throws KduException;
 }

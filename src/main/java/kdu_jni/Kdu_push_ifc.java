@@ -24,10 +24,11 @@ public class Kdu_push_ifc {
   public native void Destroy() throws KduException;
   public native void Start(Kdu_thread_env _env) throws KduException;
   public native boolean Exists() throws KduException;
-  public native void Push(Kdu_line_buf _line, Kdu_thread_env _env) throws KduException;
-  public void Push(Kdu_line_buf _line) throws KduException
+  public native boolean Push(Kdu_line_buf _line, Kdu_thread_env _env) throws KduException;
+  public boolean Push(Kdu_line_buf _line) throws KduException
   {
     Kdu_thread_env env = null;
-    Push(_line,env);
+    return Push(_line,env);
   }
+  public native boolean Finish(Kdu_thread_env _env) throws KduException;
 }

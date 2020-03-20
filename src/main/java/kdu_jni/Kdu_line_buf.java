@@ -23,6 +23,7 @@ public class Kdu_line_buf {
   }
   public native void Destroy() throws KduException;
   public native void Pre_create(Kdu_sample_allocator _allocator, int _width, boolean _absolute, boolean _use_shorts, int _extend_left, int _extend_right) throws KduException;
+  public native void Pre_create(Kdu_sample_allocator _allocator, int _width, byte _flags, int _extend_left, int _extend_right) throws KduException;
   public native void Create() throws KduException;
   public native int Check_status() throws KduException;
   public native void Set_exchangeable() throws KduException;

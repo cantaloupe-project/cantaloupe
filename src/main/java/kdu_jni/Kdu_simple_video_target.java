@@ -39,6 +39,12 @@ public class Kdu_simple_video_target extends Kdu_compressed_video_target {
     Kdu_membroker broker = null;
     Open(_fname,_timescale,_frame_period,_flags,broker);
   }
+  public native void Open(Kdu_platform_file _file, long _timescale, long _frame_period, long _flags, Kdu_membroker _broker) throws KduException;
+  public void Open(Kdu_platform_file _file, long _timescale, long _frame_period, long _flags) throws KduException
+  {
+    Kdu_membroker broker = null;
+    Open(_file,_timescale,_frame_period,_flags,broker);
+  }
   public native void Set_fixed_length(long _fixed_length) throws KduException;
   public native boolean Attach_as_view(Kdu_simple_video_target _master_target) throws KduException;
 }

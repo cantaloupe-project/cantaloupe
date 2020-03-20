@@ -19,14 +19,15 @@ document for detailed terms of use.
 The Linux binaries were compiled on CentOS 7 x86 64-bit with gcc 4.8.5.
 
 ```
+export JAVA_HOME=/usr/lib/jvm/java
 cd coresys/make
 make -f Makefile-Linux-x86-64-gcc
 cd ../../managed/make
 make -f Makefile-Linux-x86-64-gcc
 cd ../../lib/Linux-x86-64-gcc
 
-# Builds libkdu_vNXX.so & libkdu_jni.so
-# Java class files are in ../../../java/kdu_jni
+# Builds `libkdu_vNXX.so` & `libkdu_jni.so`
+# Java class files are in `../../../java/kdu_jni`
 ```
 
 ## macOS
@@ -42,6 +43,9 @@ xcodebuild -project managed.xcodeproj -target kdu_jni -configuration Release
 # Resulting binaries are in ../../bin
 # Java class files are in ../../java/kdu_jni
 ```
+
+(Future note: for Catalina, add `-UseModernBuildSystem=NO` to the `xcodebuild`
+commands.)
 
 ## Windows
 
@@ -62,11 +66,12 @@ Studio Community 2015.
     2. Add the JDK headers to the include path
         1. Right-click on the `kdu_jni` solution
         2. Go to Properties -> VC++ Directories -> Include Directories
-        3. Add path to JDK headers
+        3. Add `jdk-x.x.x\include` and `jdk-x.x.x\include\win32` paths to JDK
+           headers
     3. Retarget solution to the 8.1 platform version
     4. Build with Release configuration & x64 platform
 
 The resulting files are in `..\..\bin_x64`:
-  * `kdu_v7AR.dll`
-  * `kdu_a7AR.dll`
+  * `kdu_v80R.dll`
+  * `kdu_a80R.dll`
   * `kdu_jni.dll`

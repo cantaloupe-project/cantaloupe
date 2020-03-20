@@ -16,5 +16,9 @@ public class Atk_params extends Kdu_params {
         Native_destroy();
       }
   }
+  private static native long Native_create();
+  public Atk_params() {
+    this(Native_create());
+  }
   public native boolean Is_predef_kernel_symmetric(int _kernel_idx) throws KduException;
 }

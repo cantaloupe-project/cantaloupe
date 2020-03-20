@@ -16,4 +16,8 @@ public class Org_params extends Kdu_params {
         Native_destroy();
       }
   }
+  private static native long Native_create();
+  public Org_params() {
+    this(Native_create());
+  }
 }

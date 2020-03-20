@@ -190,6 +190,7 @@ public class Kdu_region_compositor {
   public native void Flush_composition_queue() throws KduException;
   public native void Set_max_quality_layers(int _quality_layers) throws KduException;
   public native int Get_max_available_quality_layers() throws KduException;
+  public native int Get_ht_usage() throws KduException;
   public native Kdu_thread_env Set_thread_env(Kdu_thread_env _env, Kdu_thread_queue _env_queue) throws KduException;
   public native boolean Process(int _suggested_increment, Kdu_dims _new_rendered_region, int _flags) throws KduException;
   public boolean Process(int _suggested_increment, Kdu_dims _new_rendered_region) throws KduException

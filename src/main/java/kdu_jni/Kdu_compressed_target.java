@@ -30,4 +30,5 @@ public class Kdu_compressed_target {
   public native boolean End_rewrite() throws KduException;
   public native boolean Write(byte[] _buf, int _num_bytes) throws KduException;
   public native void Set_target_size(long _num_bytes) throws KduException;
+  public native boolean Prefer_large_writes() throws KduException;
 }

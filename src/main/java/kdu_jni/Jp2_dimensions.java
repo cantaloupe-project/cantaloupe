@@ -22,7 +22,7 @@ public class Jp2_dimensions {
     Init(_siz,(boolean) true);
   }
   public native void Finalize_compatibility(Kdu_params _root) throws KduException;
-  public native void Finalize_compatibility(int _profile, boolean _is_jpx_baseline) throws KduException;
+  public native void Finalize_compatibility(int _profile, int _scap_val, int _extensions, int _mct_attributes, int _part2_caps) throws KduException;
   public native void Finalize_compatibility(Jp2_dimensions _src) throws KduException;
   public native boolean Set_precision(int _component_idx, int _bit_depth, boolean _is_signed) throws KduException;
   public boolean Set_precision(int _component_idx, int _bit_depth) throws KduException
@@ -30,6 +30,8 @@ public class Jp2_dimensions {
     return Set_precision(_component_idx,_bit_depth,(boolean) false);
   }
   public native void Set_ipr_box_available() throws KduException;
+  public native boolean Is_jp2_compatible(boolean _result_if_unknown) throws KduException;
+  public native boolean Is_jph_compatible(boolean _result_if_unknown) throws KduException;
   public native Kdu_coords Get_size() throws KduException;
   public native int Get_num_components() throws KduException;
   public native boolean Colour_space_known() throws KduException;

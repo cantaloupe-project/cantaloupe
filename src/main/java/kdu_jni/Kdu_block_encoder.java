@@ -1,16 +1,15 @@
 package kdu_jni;
 
-public class Kdu_block_encoder {
+public class Kdu_block_encoder extends Kdu_block_encoder_base {
   static {
     System.loadLibrary("kdu_jni");
     Native_init_class();
   }
   private static native void Native_init_class();
-  protected long _native_ptr = 0;
   protected Kdu_block_encoder(long ptr) {
-    _native_ptr = ptr;
+    super(ptr);
   }
-  public native void Native_destroy();
+  private native void Native_destroy();
   public void finalize() {
     if ((_native_ptr & 1) != 0)
       { // Resource created and not donated
@@ -21,18 +20,17 @@ public class Kdu_block_encoder {
   public Kdu_block_encoder() {
     this(Native_create());
   }
-  public native void Encode(Kdu_block _block, boolean _reversible, double _msb_wmse, int _estimated_slope_threshold) throws KduException;
-  public void Encode(Kdu_block _block) throws KduException
+  public native void Speedpack_config(Kdu_coords _nominal_block_size, int _K_max_prime) throws KduException;
+  public native void Encode(Kdu_block _block, boolean _reversible, double _msb_wmse, int _min_slope_threshold, int _max_slope_threshold, boolean _use_existing_slopes) throws KduException;
+  public void Encode(Kdu_block _block, boolean _reversible, double _msb_wmse, int _min_slope_threshold, int _max_slope_threshold) throws KduException
   {
-    Encode(_block,(boolean) false,(double) 0.0F,(int) 0);
+    Encode(_block,_reversible,_msb_wmse,_min_slope_threshold,_max_slope_threshold,(boolean) false);
   }
-  public void Encode(Kdu_block _block, boolean _reversible) throws KduException
+  public native void Cellular_encode(Kdu_block _block, boolean _reversible, double _msb_wmse, float[] _cell_weights, int _first_cell_cols, int _first_cell_rows, int _min_slope_threshold, int _max_slope_threshold, boolean _use_existing_slopes) throws KduException;
+  public void Cellular_encode(Kdu_block _block, boolean _reversible, double _msb_wmse, float[] _cell_weights, int _first_cell_cols, int _first_cell_rows, int _min_slope_threshold, int _max_slope_threshold) throws KduException
   {
-    Encode(_block,_reversible,(double) 0.0F,(int) 0);
+    Cellular_encode(_block,_reversible,_msb_wmse,_cell_weights,_first_cell_cols,_first_cell_rows,_min_slope_threshold,_max_slope_threshold,(boolean) false);
   }
-  public void Encode(Kdu_block _block, boolean _reversible, double _msb_wmse) throws KduException
-  {
-    Encode(_block,_reversible,_msb_wmse,(int) 0);
-  }
-  public native void Cellular_encode(Kdu_block _block, boolean _reversible, double _msb_wmse, float[] _cell_weights, int _first_cell_cols, int _first_cell_rows, int _estimated_slope_threshold) throws KduException;
+  public native boolean Encode16(Kdu_block _block, int[] _data, boolean _reversible, double _msb_wmse, int _min_slope_threshold, int _max_slope_threshold) throws KduException;
+  public native boolean Encode32(Kdu_block _block, long[] _data, boolean _reversible, double _msb_wmse, int _min_slope_threshold, int _max_slope_threshold) throws KduException;
 }

@@ -37,6 +37,8 @@
     * XMP metadata can be copied or edited using a delegate method.
     * The `processor.metadata.respect_orientation` configuration key has been
       removed and EXIF Orientation values are always respected.
+* The included Kakadu library used by KakaduNativeProcessor has been updated
+  to version 8.0.3.
 * KakaduNativeProcessor, OpenJpegProcessor, and TurboJpegProcessor respect the
   EXIF `Orientation` tag.
 * KakaduNativeProcessor and OpenJpegProcessor support IPTC and XMP metadata.

@@ -16,6 +16,10 @@ public class Nlt_params extends Kdu_params {
         Native_destroy();
       }
   }
+  private static native long Native_create();
+  public Nlt_params() {
+    this(Native_create());
+  }
   public native void Make_gamma_params(float _p1, float _p2, float[] _gamma) throws KduException;
   public native void Apply_fwd_gamma(float[] _lut, int _num_entries, float[] _gamma) throws KduException;
   public native void Apply_rev_gamma(float[] _lut, int _num_entries, float[] _gamma) throws KduException;

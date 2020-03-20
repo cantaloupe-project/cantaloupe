@@ -104,4 +104,5 @@ public class Kdu_tile {
   }
   public native Kdu_tile_comp Access_component(int _component_idx) throws KduException;
   public native float Find_component_gain_info(int _comp_idx, boolean _restrict_to_interest) throws KduException;
+  public native int Get_global_attributes(long[] _mct_hash) throws KduException;
 }

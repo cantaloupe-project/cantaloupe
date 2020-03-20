@@ -17,18 +17,10 @@ public class Kdu_params {
         Native_destroy();
       }
   }
-  private static native long Native_create(String _cluster_name, boolean _allow_tile_diversity, boolean _allow_component_diversity, boolean _allow_instance_diversity, boolean _force_component_specific_forms, boolean _treat_instances_like_components, long _cmem);
-  public Kdu_params(String _cluster_name, boolean _allow_tile_diversity, boolean _allow_component_diversity, boolean _allow_instance_diversity, boolean _force_component_specific_forms, boolean _treat_instances_like_components, long _cmem) {
-    this(Native_create(_cluster_name, _allow_tile_diversity, _allow_component_diversity, _allow_instance_diversity, _force_component_specific_forms, _treat_instances_like_components, _cmem));
-  }
-  private static long Native_create(String _cluster_name, boolean _allow_tile_diversity, boolean _allow_component_diversity, boolean _allow_instance_diversity, boolean _force_component_specific_forms, boolean _treat_instances_like_components)
-  {
-    return Native_create(_cluster_name,_allow_tile_diversity,_allow_component_diversity,_allow_instance_diversity,_force_component_specific_forms,_treat_instances_like_components,0);
-  }
+  private static native long Native_create(String _cluster_name, boolean _allow_tile_diversity, boolean _allow_component_diversity, boolean _allow_instance_diversity, boolean _force_component_specific_forms, boolean _treat_instances_like_components);
   public Kdu_params(String _cluster_name, boolean _allow_tile_diversity, boolean _allow_component_diversity, boolean _allow_instance_diversity, boolean _force_component_specific_forms, boolean _treat_instances_like_components) {
     this(Native_create(_cluster_name, _allow_tile_diversity, _allow_component_diversity, _allow_instance_diversity, _force_component_specific_forms, _treat_instances_like_components));
   }
-  public native Kdu_params New_object() throws KduException;
   public native Kdu_params Link(Kdu_params _existing, int _tile_idx, int _comp_idx, int _num_tiles, int _num_comps) throws KduException;
   public native Kdu_params New_instance() throws KduException;
   public native void Copy_from(Kdu_params _source, int _source_tile, int _target_tile, int _instance, int _skip_components, int _discard_levels, boolean _transpose, boolean _vflip, boolean _hflip) throws KduException;
@@ -105,8 +97,9 @@ public class Kdu_params {
   {
     return Check_typical_tile(_tile_idx,null);
   }
-  public native boolean Translate_marker_segment(int _code, int _num_bytes, byte[] _bytes, int _which_tile, int _tpart_idx) throws KduException;
+  public native int Translate_marker_segment(int _code, int _num_bytes, byte[] _bytes, int _which_tile, int _tpart_idx) throws KduException;
   public native int Generate_marker_segments(Kdu_output _out, int _which_tile, int _tpart_idx) throws KduException;
+  public native int Generate_marker_segments(Kdu_output _out, int _which_tile, int _tpart_idx, int[] _class_flags) throws KduException;
   public native boolean Get(String _name, int _record_idx, int _field_idx, int[] _value, boolean _allow_inherit, boolean _allow_extend, boolean _allow_derived) throws KduException;
   public boolean Get(String _name, int _record_idx, int _field_idx, int[] _value) throws KduException
   {
@@ -146,12 +139,25 @@ public class Kdu_params {
   {
     return Get(_name,_record_idx,_field_idx,_value,_allow_inherit,_allow_extend,(boolean) true);
   }
+  public native int Count_records(String _name, boolean _allow_inherit, boolean _allow_derived) throws KduException;
+  public int Count_records(String _name) throws KduException
+  {
+    return Count_records(_name,(boolean) true,(boolean) true);
+  }
+  public int Count_records(String _name, boolean _allow_inherit) throws KduException
+  {
+    return Count_records(_name,_allow_inherit,(boolean) true);
+  }
   public native boolean Compare(String _name, int _record_idx, int _field_idx, int _value) throws KduException;
   public native boolean Compare(String _name, int _record_idx, int _field_idx, boolean _value) throws KduException;
   public native boolean Compare(String _name, int _record_idx, int _field_idx, float _value) throws KduException;
   public native void Set(String _name, int _record_idx, int _field_idx, int _value) throws KduException;
   public native void Set(String _name, int _record_idx, int _field_idx, boolean _value) throws KduException;
-  public native void Set(String _name, int _record_idx, int _field_idx, double _value) throws KduException;
+  public native void Set(String _name, int _record_idx, int _field_idx, double _value, boolean _preserve_derived) throws KduException;
+  public void Set(String _name, int _record_idx, int _field_idx, double _value) throws KduException
+  {
+    Set(_name,_record_idx,_field_idx,_value,(boolean) false);
+  }
   public native void Set_derived(String _name) throws KduException;
   public native boolean Parse_string(String _string) throws KduException;
   public native boolean Parse_string(String _string, int _tile_idx) throws KduException;
@@ -176,6 +182,7 @@ public class Kdu_params {
     Describe_attribute(_name,_output,(boolean) true);
   }
   public native void Delete_unparsed_attribute(String _name) throws KduException;
+  public native boolean Truncate_records(String _name, int _max_records) throws KduException;
   public native int Custom_parse_field(String _string, String _name, int _field_idx, int[] _val) throws KduException;
   public native void Custom_textualize_field(Kdu_message _output, String _name, int _field_idx, int _val) throws KduException;
   public native void Finalize(boolean _after_reading) throws KduException;

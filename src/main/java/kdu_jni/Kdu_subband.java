@@ -7,11 +7,13 @@ public class Kdu_subband {
   }
   private static native void Native_init_class();
   protected long _native_ptr = 0;
-  protected Kdu_subband(long ptr) {
+  protected long _native_param = 0;
+  protected Kdu_subband(long ptr, long param) {
     _native_ptr = ptr;
+    _native_param = param;
   }
   public Kdu_subband() {
-      this(0);
+      this(0,0);
   }
   public native boolean Exists() throws KduException;
   public native int Get_band_idx() throws KduException;
@@ -19,18 +21,26 @@ public class Kdu_subband {
   public native boolean Is_top_level_band() throws KduException;
   public native int Get_K_max() throws KduException;
   public native int Get_K_max_prime() throws KduException;
+  public native int Get_fast_mag_bound() throws KduException;
   public native boolean Get_reversible() throws KduException;
   public native float Get_delta() throws KduException;
+  public native int Get_eps_mu() throws KduException;
   public native float Get_msb_wmse() throws KduException;
   public native boolean Get_roi_weight(float[] _energy_weight) throws KduException;
   public native boolean Get_masking_params(float[] _visibility_floor, float[] _masking_exponent, float[] _visual_scale) throws KduException;
   public native void Get_dims(Kdu_dims _dims) throws KduException;
+  public native void Get_parent_dims(Kdu_dims _dims, boolean _ignore_region_constraints) throws KduException;
+  public void Get_parent_dims(Kdu_dims _dims) throws KduException
+  {
+    Get_parent_dims(_dims,(boolean) false);
+  }
+  public native void Get_valid_block_span(Kdu_dims _span) throws KduException;
   public native void Get_valid_blocks(Kdu_dims _indices) throws KduException;
   public native void Get_block_size(Kdu_coords _nominal_size, Kdu_coords _first_size) throws KduException;
   public native int Get_block_geometry(boolean[] _transpose, boolean[] _vflip, boolean[] _hflip) throws KduException;
   public native void Block_row_generated(int _block_height, boolean _subband_finished, Kdu_thread_env _env) throws KduException;
   public native boolean Attach_block_notifier(Kdu_thread_queue _client_queue, Kdu_thread_env _env) throws KduException;
-  public native void Advance_block_rows_needed(Kdu_thread_queue _client_queue, long _delta_rows_needed, long _quantum_bits, long _num_quantum_blocks, Kdu_thread_env _env) throws KduException;
+  public native void Advance_block_rows_needed(Kdu_thread_queue _client_queue, long _delta_Q, Kdu_thread_env _env) throws KduException;
   public native boolean Detach_block_notifier(Kdu_thread_queue _client_queue, Kdu_thread_env _env) throws KduException;
   public native Kdu_block Open_block(Kdu_coords _block_idx, int[] _return_tpart, Kdu_thread_env _env, int _hscan_length, boolean _hscan_start) throws KduException;
   public Kdu_block Open_block(Kdu_coords _block_idx) throws KduException
@@ -58,4 +68,5 @@ public class Kdu_subband {
     Close_block(_block,env);
   }
   public native int Get_conservative_slope_threshold() throws KduException;
+  public native void Get_global_coding_hints(int[] _conservative_slope_threshold, int[] _max_slope_threshold) throws KduException;
 }

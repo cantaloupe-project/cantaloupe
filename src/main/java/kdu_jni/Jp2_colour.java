@@ -45,6 +45,8 @@ public class Jp2_colour {
   {
     Init(_xy_red,_xy_green,_xy_blue,_gamma,_beta,_num_points,(boolean) false);
   }
+  public native boolean Is_jp2_compatible() throws KduException;
+  public native boolean Is_jph_compatible() throws KduException;
   public native int Get_num_colours() throws KduException;
   public native int Get_space() throws KduException;
   public native boolean Is_opponent_space() throws KduException;

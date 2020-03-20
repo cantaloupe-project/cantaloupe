@@ -22,93 +22,114 @@ public class Kdu_stripe_compressor {
     this(Native_create());
   }
   public native void Mem_configure(Kdu_membroker _membroker, int _frag_bits) throws KduException;
-  public native void Start(Kdu_codestream _codestream, int _num_layer_specs, long[] _layer_sizes, int[] _layer_slopes, int _min_slope_threshold, boolean _no_prediction, boolean _force_precise, boolean _record_layer_info_in_comment, double _size_tolerance, int _num_components, boolean _want_fastest, Kdu_thread_env _env, Kdu_thread_queue _env_queue, int _env_dbuf_height, int _env_tile_concurrency, boolean _trim_to_rate, int _flush_flags) throws KduException;
+  public native void Start(Kdu_codestream _codestream, int _num_layer_specs, long[] _layer_sizes, int[] _layer_slopes, int _min_slope_threshold, boolean _no_auto_complexity_control, boolean _force_precise, boolean _record_layer_info_in_comment, double _size_tolerance, int _num_components, boolean _want_fastest, Kdu_thread_env _env, Kdu_thread_queue _env_queue, int _env_dbuf_height, int _env_tile_concurrency, boolean _trim_to_rate, int _flush_flags, Kdu_push_pull_params _multi_xform_extra_params) throws KduException;
   public void Start(Kdu_codestream _codestream) throws KduException
   {
     Kdu_thread_env env = null;
     Kdu_thread_queue env_queue = null;
-    Start(_codestream,(int) 0,null,null,(int) 0,(boolean) false,(boolean) false,(boolean) true,(double) 0.0,(int) 0,(boolean) false,env,env_queue,(int) -1,(int) -1,(boolean) true,(int) 0);
+    Kdu_push_pull_params multi_xform_extra_params = null;
+    Start(_codestream,(int) 0,null,null,(int) 0,(boolean) false,(boolean) false,(boolean) true,(double) 0.0,(int) 0,(boolean) false,env,env_queue,(int) -1,(int) -1,(boolean) true,(int) 0,multi_xform_extra_params);
   }
   public void Start(Kdu_codestream _codestream, int _num_layer_specs) throws KduException
   {
     Kdu_thread_env env = null;
     Kdu_thread_queue env_queue = null;
-    Start(_codestream,_num_layer_specs,null,null,(int) 0,(boolean) false,(boolean) false,(boolean) true,(double) 0.0,(int) 0,(boolean) false,env,env_queue,(int) -1,(int) -1,(boolean) true,(int) 0);
+    Kdu_push_pull_params multi_xform_extra_params = null;
+    Start(_codestream,_num_layer_specs,null,null,(int) 0,(boolean) false,(boolean) false,(boolean) true,(double) 0.0,(int) 0,(boolean) false,env,env_queue,(int) -1,(int) -1,(boolean) true,(int) 0,multi_xform_extra_params);
   }
   public void Start(Kdu_codestream _codestream, int _num_layer_specs, long[] _layer_sizes) throws KduException
   {
     Kdu_thread_env env = null;
     Kdu_thread_queue env_queue = null;
-    Start(_codestream,_num_layer_specs,_layer_sizes,null,(int) 0,(boolean) false,(boolean) false,(boolean) true,(double) 0.0,(int) 0,(boolean) false,env,env_queue,(int) -1,(int) -1,(boolean) true,(int) 0);
+    Kdu_push_pull_params multi_xform_extra_params = null;
+    Start(_codestream,_num_layer_specs,_layer_sizes,null,(int) 0,(boolean) false,(boolean) false,(boolean) true,(double) 0.0,(int) 0,(boolean) false,env,env_queue,(int) -1,(int) -1,(boolean) true,(int) 0,multi_xform_extra_params);
   }
   public void Start(Kdu_codestream _codestream, int _num_layer_specs, long[] _layer_sizes, int[] _layer_slopes) throws KduException
   {
     Kdu_thread_env env = null;
     Kdu_thread_queue env_queue = null;
-    Start(_codestream,_num_layer_specs,_layer_sizes,_layer_slopes,(int) 0,(boolean) false,(boolean) false,(boolean) true,(double) 0.0,(int) 0,(boolean) false,env,env_queue,(int) -1,(int) -1,(boolean) true,(int) 0);
+    Kdu_push_pull_params multi_xform_extra_params = null;
+    Start(_codestream,_num_layer_specs,_layer_sizes,_layer_slopes,(int) 0,(boolean) false,(boolean) false,(boolean) true,(double) 0.0,(int) 0,(boolean) false,env,env_queue,(int) -1,(int) -1,(boolean) true,(int) 0,multi_xform_extra_params);
   }
   public void Start(Kdu_codestream _codestream, int _num_layer_specs, long[] _layer_sizes, int[] _layer_slopes, int _min_slope_threshold) throws KduException
   {
     Kdu_thread_env env = null;
     Kdu_thread_queue env_queue = null;
-    Start(_codestream,_num_layer_specs,_layer_sizes,_layer_slopes,_min_slope_threshold,(boolean) false,(boolean) false,(boolean) true,(double) 0.0,(int) 0,(boolean) false,env,env_queue,(int) -1,(int) -1,(boolean) true,(int) 0);
+    Kdu_push_pull_params multi_xform_extra_params = null;
+    Start(_codestream,_num_layer_specs,_layer_sizes,_layer_slopes,_min_slope_threshold,(boolean) false,(boolean) false,(boolean) true,(double) 0.0,(int) 0,(boolean) false,env,env_queue,(int) -1,(int) -1,(boolean) true,(int) 0,multi_xform_extra_params);
   }
-  public void Start(Kdu_codestream _codestream, int _num_layer_specs, long[] _layer_sizes, int[] _layer_slopes, int _min_slope_threshold, boolean _no_prediction) throws KduException
+  public void Start(Kdu_codestream _codestream, int _num_layer_specs, long[] _layer_sizes, int[] _layer_slopes, int _min_slope_threshold, boolean _no_auto_complexity_control) throws KduException
   {
     Kdu_thread_env env = null;
     Kdu_thread_queue env_queue = null;
-    Start(_codestream,_num_layer_specs,_layer_sizes,_layer_slopes,_min_slope_threshold,_no_prediction,(boolean) false,(boolean) true,(double) 0.0,(int) 0,(boolean) false,env,env_queue,(int) -1,(int) -1,(boolean) true,(int) 0);
+    Kdu_push_pull_params multi_xform_extra_params = null;
+    Start(_codestream,_num_layer_specs,_layer_sizes,_layer_slopes,_min_slope_threshold,_no_auto_complexity_control,(boolean) false,(boolean) true,(double) 0.0,(int) 0,(boolean) false,env,env_queue,(int) -1,(int) -1,(boolean) true,(int) 0,multi_xform_extra_params);
   }
-  public void Start(Kdu_codestream _codestream, int _num_layer_specs, long[] _layer_sizes, int[] _layer_slopes, int _min_slope_threshold, boolean _no_prediction, boolean _force_precise) throws KduException
+  public void Start(Kdu_codestream _codestream, int _num_layer_specs, long[] _layer_sizes, int[] _layer_slopes, int _min_slope_threshold, boolean _no_auto_complexity_control, boolean _force_precise) throws KduException
   {
     Kdu_thread_env env = null;
     Kdu_thread_queue env_queue = null;
-    Start(_codestream,_num_layer_specs,_layer_sizes,_layer_slopes,_min_slope_threshold,_no_prediction,_force_precise,(boolean) true,(double) 0.0,(int) 0,(boolean) false,env,env_queue,(int) -1,(int) -1,(boolean) true,(int) 0);
+    Kdu_push_pull_params multi_xform_extra_params = null;
+    Start(_codestream,_num_layer_specs,_layer_sizes,_layer_slopes,_min_slope_threshold,_no_auto_complexity_control,_force_precise,(boolean) true,(double) 0.0,(int) 0,(boolean) false,env,env_queue,(int) -1,(int) -1,(boolean) true,(int) 0,multi_xform_extra_params);
   }
-  public void Start(Kdu_codestream _codestream, int _num_layer_specs, long[] _layer_sizes, int[] _layer_slopes, int _min_slope_threshold, boolean _no_prediction, boolean _force_precise, boolean _record_layer_info_in_comment) throws KduException
+  public void Start(Kdu_codestream _codestream, int _num_layer_specs, long[] _layer_sizes, int[] _layer_slopes, int _min_slope_threshold, boolean _no_auto_complexity_control, boolean _force_precise, boolean _record_layer_info_in_comment) throws KduException
   {
     Kdu_thread_env env = null;
     Kdu_thread_queue env_queue = null;
-    Start(_codestream,_num_layer_specs,_layer_sizes,_layer_slopes,_min_slope_threshold,_no_prediction,_force_precise,_record_layer_info_in_comment,(double) 0.0,(int) 0,(boolean) false,env,env_queue,(int) -1,(int) -1,(boolean) true,(int) 0);
+    Kdu_push_pull_params multi_xform_extra_params = null;
+    Start(_codestream,_num_layer_specs,_layer_sizes,_layer_slopes,_min_slope_threshold,_no_auto_complexity_control,_force_precise,_record_layer_info_in_comment,(double) 0.0,(int) 0,(boolean) false,env,env_queue,(int) -1,(int) -1,(boolean) true,(int) 0,multi_xform_extra_params);
   }
-  public void Start(Kdu_codestream _codestream, int _num_layer_specs, long[] _layer_sizes, int[] _layer_slopes, int _min_slope_threshold, boolean _no_prediction, boolean _force_precise, boolean _record_layer_info_in_comment, double _size_tolerance) throws KduException
+  public void Start(Kdu_codestream _codestream, int _num_layer_specs, long[] _layer_sizes, int[] _layer_slopes, int _min_slope_threshold, boolean _no_auto_complexity_control, boolean _force_precise, boolean _record_layer_info_in_comment, double _size_tolerance) throws KduException
   {
     Kdu_thread_env env = null;
     Kdu_thread_queue env_queue = null;
-    Start(_codestream,_num_layer_specs,_layer_sizes,_layer_slopes,_min_slope_threshold,_no_prediction,_force_precise,_record_layer_info_in_comment,_size_tolerance,(int) 0,(boolean) false,env,env_queue,(int) -1,(int) -1,(boolean) true,(int) 0);
+    Kdu_push_pull_params multi_xform_extra_params = null;
+    Start(_codestream,_num_layer_specs,_layer_sizes,_layer_slopes,_min_slope_threshold,_no_auto_complexity_control,_force_precise,_record_layer_info_in_comment,_size_tolerance,(int) 0,(boolean) false,env,env_queue,(int) -1,(int) -1,(boolean) true,(int) 0,multi_xform_extra_params);
   }
-  public void Start(Kdu_codestream _codestream, int _num_layer_specs, long[] _layer_sizes, int[] _layer_slopes, int _min_slope_threshold, boolean _no_prediction, boolean _force_precise, boolean _record_layer_info_in_comment, double _size_tolerance, int _num_components) throws KduException
+  public void Start(Kdu_codestream _codestream, int _num_layer_specs, long[] _layer_sizes, int[] _layer_slopes, int _min_slope_threshold, boolean _no_auto_complexity_control, boolean _force_precise, boolean _record_layer_info_in_comment, double _size_tolerance, int _num_components) throws KduException
   {
     Kdu_thread_env env = null;
     Kdu_thread_queue env_queue = null;
-    Start(_codestream,_num_layer_specs,_layer_sizes,_layer_slopes,_min_slope_threshold,_no_prediction,_force_precise,_record_layer_info_in_comment,_size_tolerance,_num_components,(boolean) false,env,env_queue,(int) -1,(int) -1,(boolean) true,(int) 0);
+    Kdu_push_pull_params multi_xform_extra_params = null;
+    Start(_codestream,_num_layer_specs,_layer_sizes,_layer_slopes,_min_slope_threshold,_no_auto_complexity_control,_force_precise,_record_layer_info_in_comment,_size_tolerance,_num_components,(boolean) false,env,env_queue,(int) -1,(int) -1,(boolean) true,(int) 0,multi_xform_extra_params);
   }
-  public void Start(Kdu_codestream _codestream, int _num_layer_specs, long[] _layer_sizes, int[] _layer_slopes, int _min_slope_threshold, boolean _no_prediction, boolean _force_precise, boolean _record_layer_info_in_comment, double _size_tolerance, int _num_components, boolean _want_fastest) throws KduException
+  public void Start(Kdu_codestream _codestream, int _num_layer_specs, long[] _layer_sizes, int[] _layer_slopes, int _min_slope_threshold, boolean _no_auto_complexity_control, boolean _force_precise, boolean _record_layer_info_in_comment, double _size_tolerance, int _num_components, boolean _want_fastest) throws KduException
   {
     Kdu_thread_env env = null;
     Kdu_thread_queue env_queue = null;
-    Start(_codestream,_num_layer_specs,_layer_sizes,_layer_slopes,_min_slope_threshold,_no_prediction,_force_precise,_record_layer_info_in_comment,_size_tolerance,_num_components,_want_fastest,env,env_queue,(int) -1,(int) -1,(boolean) true,(int) 0);
+    Kdu_push_pull_params multi_xform_extra_params = null;
+    Start(_codestream,_num_layer_specs,_layer_sizes,_layer_slopes,_min_slope_threshold,_no_auto_complexity_control,_force_precise,_record_layer_info_in_comment,_size_tolerance,_num_components,_want_fastest,env,env_queue,(int) -1,(int) -1,(boolean) true,(int) 0,multi_xform_extra_params);
   }
-  public void Start(Kdu_codestream _codestream, int _num_layer_specs, long[] _layer_sizes, int[] _layer_slopes, int _min_slope_threshold, boolean _no_prediction, boolean _force_precise, boolean _record_layer_info_in_comment, double _size_tolerance, int _num_components, boolean _want_fastest, Kdu_thread_env _env) throws KduException
+  public void Start(Kdu_codestream _codestream, int _num_layer_specs, long[] _layer_sizes, int[] _layer_slopes, int _min_slope_threshold, boolean _no_auto_complexity_control, boolean _force_precise, boolean _record_layer_info_in_comment, double _size_tolerance, int _num_components, boolean _want_fastest, Kdu_thread_env _env) throws KduException
   {
     Kdu_thread_queue env_queue = null;
-    Start(_codestream,_num_layer_specs,_layer_sizes,_layer_slopes,_min_slope_threshold,_no_prediction,_force_precise,_record_layer_info_in_comment,_size_tolerance,_num_components,_want_fastest,_env,env_queue,(int) -1,(int) -1,(boolean) true,(int) 0);
+    Kdu_push_pull_params multi_xform_extra_params = null;
+    Start(_codestream,_num_layer_specs,_layer_sizes,_layer_slopes,_min_slope_threshold,_no_auto_complexity_control,_force_precise,_record_layer_info_in_comment,_size_tolerance,_num_components,_want_fastest,_env,env_queue,(int) -1,(int) -1,(boolean) true,(int) 0,multi_xform_extra_params);
   }
-  public void Start(Kdu_codestream _codestream, int _num_layer_specs, long[] _layer_sizes, int[] _layer_slopes, int _min_slope_threshold, boolean _no_prediction, boolean _force_precise, boolean _record_layer_info_in_comment, double _size_tolerance, int _num_components, boolean _want_fastest, Kdu_thread_env _env, Kdu_thread_queue _env_queue) throws KduException
+  public void Start(Kdu_codestream _codestream, int _num_layer_specs, long[] _layer_sizes, int[] _layer_slopes, int _min_slope_threshold, boolean _no_auto_complexity_control, boolean _force_precise, boolean _record_layer_info_in_comment, double _size_tolerance, int _num_components, boolean _want_fastest, Kdu_thread_env _env, Kdu_thread_queue _env_queue) throws KduException
   {
-    Start(_codestream,_num_layer_specs,_layer_sizes,_layer_slopes,_min_slope_threshold,_no_prediction,_force_precise,_record_layer_info_in_comment,_size_tolerance,_num_components,_want_fastest,_env,_env_queue,(int) -1,(int) -1,(boolean) true,(int) 0);
+    Kdu_push_pull_params multi_xform_extra_params = null;
+    Start(_codestream,_num_layer_specs,_layer_sizes,_layer_slopes,_min_slope_threshold,_no_auto_complexity_control,_force_precise,_record_layer_info_in_comment,_size_tolerance,_num_components,_want_fastest,_env,_env_queue,(int) -1,(int) -1,(boolean) true,(int) 0,multi_xform_extra_params);
   }
-  public void Start(Kdu_codestream _codestream, int _num_layer_specs, long[] _layer_sizes, int[] _layer_slopes, int _min_slope_threshold, boolean _no_prediction, boolean _force_precise, boolean _record_layer_info_in_comment, double _size_tolerance, int _num_components, boolean _want_fastest, Kdu_thread_env _env, Kdu_thread_queue _env_queue, int _env_dbuf_height) throws KduException
+  public void Start(Kdu_codestream _codestream, int _num_layer_specs, long[] _layer_sizes, int[] _layer_slopes, int _min_slope_threshold, boolean _no_auto_complexity_control, boolean _force_precise, boolean _record_layer_info_in_comment, double _size_tolerance, int _num_components, boolean _want_fastest, Kdu_thread_env _env, Kdu_thread_queue _env_queue, int _env_dbuf_height) throws KduException
   {
-    Start(_codestream,_num_layer_specs,_layer_sizes,_layer_slopes,_min_slope_threshold,_no_prediction,_force_precise,_record_layer_info_in_comment,_size_tolerance,_num_components,_want_fastest,_env,_env_queue,_env_dbuf_height,(int) -1,(boolean) true,(int) 0);
+    Kdu_push_pull_params multi_xform_extra_params = null;
+    Start(_codestream,_num_layer_specs,_layer_sizes,_layer_slopes,_min_slope_threshold,_no_auto_complexity_control,_force_precise,_record_layer_info_in_comment,_size_tolerance,_num_components,_want_fastest,_env,_env_queue,_env_dbuf_height,(int) -1,(boolean) true,(int) 0,multi_xform_extra_params);
   }
-  public void Start(Kdu_codestream _codestream, int _num_layer_specs, long[] _layer_sizes, int[] _layer_slopes, int _min_slope_threshold, boolean _no_prediction, boolean _force_precise, boolean _record_layer_info_in_comment, double _size_tolerance, int _num_components, boolean _want_fastest, Kdu_thread_env _env, Kdu_thread_queue _env_queue, int _env_dbuf_height, int _env_tile_concurrency) throws KduException
+  public void Start(Kdu_codestream _codestream, int _num_layer_specs, long[] _layer_sizes, int[] _layer_slopes, int _min_slope_threshold, boolean _no_auto_complexity_control, boolean _force_precise, boolean _record_layer_info_in_comment, double _size_tolerance, int _num_components, boolean _want_fastest, Kdu_thread_env _env, Kdu_thread_queue _env_queue, int _env_dbuf_height, int _env_tile_concurrency) throws KduException
   {
-    Start(_codestream,_num_layer_specs,_layer_sizes,_layer_slopes,_min_slope_threshold,_no_prediction,_force_precise,_record_layer_info_in_comment,_size_tolerance,_num_components,_want_fastest,_env,_env_queue,_env_dbuf_height,_env_tile_concurrency,(boolean) true,(int) 0);
+    Kdu_push_pull_params multi_xform_extra_params = null;
+    Start(_codestream,_num_layer_specs,_layer_sizes,_layer_slopes,_min_slope_threshold,_no_auto_complexity_control,_force_precise,_record_layer_info_in_comment,_size_tolerance,_num_components,_want_fastest,_env,_env_queue,_env_dbuf_height,_env_tile_concurrency,(boolean) true,(int) 0,multi_xform_extra_params);
   }
-  public void Start(Kdu_codestream _codestream, int _num_layer_specs, long[] _layer_sizes, int[] _layer_slopes, int _min_slope_threshold, boolean _no_prediction, boolean _force_precise, boolean _record_layer_info_in_comment, double _size_tolerance, int _num_components, boolean _want_fastest, Kdu_thread_env _env, Kdu_thread_queue _env_queue, int _env_dbuf_height, int _env_tile_concurrency, boolean _trim_to_rate) throws KduException
+  public void Start(Kdu_codestream _codestream, int _num_layer_specs, long[] _layer_sizes, int[] _layer_slopes, int _min_slope_threshold, boolean _no_auto_complexity_control, boolean _force_precise, boolean _record_layer_info_in_comment, double _size_tolerance, int _num_components, boolean _want_fastest, Kdu_thread_env _env, Kdu_thread_queue _env_queue, int _env_dbuf_height, int _env_tile_concurrency, boolean _trim_to_rate) throws KduException
   {
-    Start(_codestream,_num_layer_specs,_layer_sizes,_layer_slopes,_min_slope_threshold,_no_prediction,_force_precise,_record_layer_info_in_comment,_size_tolerance,_num_components,_want_fastest,_env,_env_queue,_env_dbuf_height,_env_tile_concurrency,_trim_to_rate,(int) 0);
+    Kdu_push_pull_params multi_xform_extra_params = null;
+    Start(_codestream,_num_layer_specs,_layer_sizes,_layer_slopes,_min_slope_threshold,_no_auto_complexity_control,_force_precise,_record_layer_info_in_comment,_size_tolerance,_num_components,_want_fastest,_env,_env_queue,_env_dbuf_height,_env_tile_concurrency,_trim_to_rate,(int) 0,multi_xform_extra_params);
+  }
+  public void Start(Kdu_codestream _codestream, int _num_layer_specs, long[] _layer_sizes, int[] _layer_slopes, int _min_slope_threshold, boolean _no_auto_complexity_control, boolean _force_precise, boolean _record_layer_info_in_comment, double _size_tolerance, int _num_components, boolean _want_fastest, Kdu_thread_env _env, Kdu_thread_queue _env_queue, int _env_dbuf_height, int _env_tile_concurrency, boolean _trim_to_rate, int _flush_flags) throws KduException
+  {
+    Kdu_push_pull_params multi_xform_extra_params = null;
+    Start(_codestream,_num_layer_specs,_layer_sizes,_layer_slopes,_min_slope_threshold,_no_auto_complexity_control,_force_precise,_record_layer_info_in_comment,_size_tolerance,_num_components,_want_fastest,_env,_env_queue,_env_dbuf_height,_env_tile_concurrency,_trim_to_rate,_flush_flags,multi_xform_extra_params);
   }
   public native long Get_set_next_queue_sequence(long _min_val) throws KduException;
   public native boolean Finish(int _num_layer_specs, long[] _layer_sizes, int[] _layer_slopes, Kdu_thread_env _alt_env) throws KduException;

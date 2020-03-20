@@ -22,37 +22,48 @@ public class Kdu_stripe_decompressor {
     this(Native_create());
   }
   public native void Mem_configure(Kdu_membroker _membroker, int _frag_bits) throws KduException;
-  public native void Start(Kdu_codestream _codestream, boolean _force_precise, boolean _want_fastest, Kdu_thread_env _env, Kdu_thread_queue _env_queue, int _env_dbuf_height, int _env_tile_concurrency) throws KduException;
+  public native void Start(Kdu_codestream _codestream, boolean _force_precise, boolean _want_fastest, Kdu_thread_env _env, Kdu_thread_queue _env_queue, int _env_dbuf_height, int _env_tile_concurrency, Kdu_push_pull_params _multi_xform_extra_params) throws KduException;
   public void Start(Kdu_codestream _codestream) throws KduException
   {
     Kdu_thread_env env = null;
     Kdu_thread_queue env_queue = null;
-    Start(_codestream,(boolean) false,(boolean) false,env,env_queue,(int) -1,(int) -1);
+    Kdu_push_pull_params multi_xform_extra_params = null;
+    Start(_codestream,(boolean) false,(boolean) false,env,env_queue,(int) -1,(int) -1,multi_xform_extra_params);
   }
   public void Start(Kdu_codestream _codestream, boolean _force_precise) throws KduException
   {
     Kdu_thread_env env = null;
     Kdu_thread_queue env_queue = null;
-    Start(_codestream,_force_precise,(boolean) false,env,env_queue,(int) -1,(int) -1);
+    Kdu_push_pull_params multi_xform_extra_params = null;
+    Start(_codestream,_force_precise,(boolean) false,env,env_queue,(int) -1,(int) -1,multi_xform_extra_params);
   }
   public void Start(Kdu_codestream _codestream, boolean _force_precise, boolean _want_fastest) throws KduException
   {
     Kdu_thread_env env = null;
     Kdu_thread_queue env_queue = null;
-    Start(_codestream,_force_precise,_want_fastest,env,env_queue,(int) -1,(int) -1);
+    Kdu_push_pull_params multi_xform_extra_params = null;
+    Start(_codestream,_force_precise,_want_fastest,env,env_queue,(int) -1,(int) -1,multi_xform_extra_params);
   }
   public void Start(Kdu_codestream _codestream, boolean _force_precise, boolean _want_fastest, Kdu_thread_env _env) throws KduException
   {
     Kdu_thread_queue env_queue = null;
-    Start(_codestream,_force_precise,_want_fastest,_env,env_queue,(int) -1,(int) -1);
+    Kdu_push_pull_params multi_xform_extra_params = null;
+    Start(_codestream,_force_precise,_want_fastest,_env,env_queue,(int) -1,(int) -1,multi_xform_extra_params);
   }
   public void Start(Kdu_codestream _codestream, boolean _force_precise, boolean _want_fastest, Kdu_thread_env _env, Kdu_thread_queue _env_queue) throws KduException
   {
-    Start(_codestream,_force_precise,_want_fastest,_env,_env_queue,(int) -1,(int) -1);
+    Kdu_push_pull_params multi_xform_extra_params = null;
+    Start(_codestream,_force_precise,_want_fastest,_env,_env_queue,(int) -1,(int) -1,multi_xform_extra_params);
   }
   public void Start(Kdu_codestream _codestream, boolean _force_precise, boolean _want_fastest, Kdu_thread_env _env, Kdu_thread_queue _env_queue, int _env_dbuf_height) throws KduException
   {
-    Start(_codestream,_force_precise,_want_fastest,_env,_env_queue,_env_dbuf_height,(int) -1);
+    Kdu_push_pull_params multi_xform_extra_params = null;
+    Start(_codestream,_force_precise,_want_fastest,_env,_env_queue,_env_dbuf_height,(int) -1,multi_xform_extra_params);
+  }
+  public void Start(Kdu_codestream _codestream, boolean _force_precise, boolean _want_fastest, Kdu_thread_env _env, Kdu_thread_queue _env_queue, int _env_dbuf_height, int _env_tile_concurrency) throws KduException
+  {
+    Kdu_push_pull_params multi_xform_extra_params = null;
+    Start(_codestream,_force_precise,_want_fastest,_env,_env_queue,_env_dbuf_height,_env_tile_concurrency,multi_xform_extra_params);
   }
   public native boolean Finish() throws KduException;
   public native void Reset(boolean _free_memory) throws KduException;

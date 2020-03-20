@@ -17,6 +17,7 @@ public class Kdu_resolution {
   public native Kdu_resolution Access_next() throws KduException;
   public native int Which() throws KduException;
   public native int Get_dwt_level() throws KduException;
+  public native long Get_decomp_structure(Kdu_coords _depth, int[] _level_bands) throws KduException;
   public native void Get_dims(Kdu_dims _dims) throws KduException;
   public native void Get_valid_precincts(Kdu_dims _indices) throws KduException;
   public native Kdu_precinct Open_precinct(Kdu_coords _precinct_idx, Kdu_thread_env _env) throws KduException;
@@ -38,9 +39,16 @@ public class Kdu_resolution {
     return Get_precinct_packets(_precinct_idx,_env,(boolean) true);
   }
   public native long Get_precinct_samples(Kdu_coords _precinct_idx) throws KduException;
-  public native Kdu_node Access_node() throws KduException;
+  public native Kdu_tile_comp Access_tile_comp() throws KduException;
+  public native Kdu_node Access_node(int _spf_idx) throws KduException;
+  public Kdu_node Access_node() throws KduException
+  {
+    return Access_node((int) -1);
+  }
+  public native int Get_num_simultaneous_processing_fragments() throws KduException;
   public native int Get_valid_band_indices(int[] _min_idx) throws KduException;
   public native Kdu_subband Access_subband(int _band_idx) throws KduException;
   public native boolean Get_reversible() throws KduException;
   public native boolean Propagate_roi() throws KduException;
+  public native void Get_coding_origin(Kdu_coords _origin) throws KduException;
 }

@@ -15,6 +15,7 @@ public class Kdu_flush_stats {
   }
   public native boolean Exists() throws KduException;
   public native boolean Equals(Kdu_flush_stats _rhs) throws KduException;
+  public native void Set_max_passes(boolean _for_hr, boolean _for_lr, int _comp_idx, int _max_passes) throws KduException;
   public native int Advance(int _frame_sep) throws KduException;
   public native void Auto_advance(int _frame_sep) throws KduException;
 }

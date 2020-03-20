@@ -41,9 +41,11 @@ current version.
 10. Note that the IIIF Image API 1.x endpoint no longer supports content
     negotiation. If a format extension is not supplied in the URI, JPEG will be
     returned regardless of the value of the `Accept` header.
-11. KakaduDemoProcessor is no longer available. If you were using it, you must
+11. If you are using KakaduNativeProcessor, you must install the updated Kakadu
+    shared library, contained in the `deps` folder.
+12. KakaduDemoProcessor is no longer available. If you were using it, you must
     switch to either OpenJpegProcessor or KakaduNativeProcessor.
-12. Note that the `false` value supplied to the `cache` URL query argument
+13. Note that the `false` value supplied to the `cache` URL query argument
     (e.g. `?cache=false`) has been replaced by `nocache`. `false` can still be
     used, but it is deprecated and may be removed in a future version.
 

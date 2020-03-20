@@ -16,6 +16,10 @@ public class Cod_params extends Kdu_params {
         Native_destroy();
       }
   }
+  private static native long Native_create();
+  public Cod_params() {
+    this(Native_create());
+  }
   public native boolean Is_valid_decomp_terminator(int _val) throws KduException;
   public native int Transpose_decomp(int _val) throws KduException;
   public native int Expand_decomp_bands(int _decomp_val, short[] _band_descriptors) throws KduException;
