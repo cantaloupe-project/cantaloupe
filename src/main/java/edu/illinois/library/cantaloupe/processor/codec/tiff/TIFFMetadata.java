@@ -65,6 +65,11 @@ class TIFFMetadata extends IIOMetadata {
                 iptcDataSets = reader.read();
             } catch (IOException e) {
                 LOGGER.info("getIPTC(): {}", e.getMessage(), e);
+            } catch (ClassCastException e) {
+                // TODO: possible bug in the GeoSolutions TIFF reader:
+                // class [J cannot be cast to class [B ([J and [B are in module java.base of loader 'bootstrap')
+                // at it.geosolutions.imageio.plugins.tiff.TIFFField.getAsBytes(TIFFField.java:821)
+                LOGGER.warn("getIPTC(): {}", e.getMessage(), e);
             }
         }
         return Optional.ofNullable(iptcDataSets);
