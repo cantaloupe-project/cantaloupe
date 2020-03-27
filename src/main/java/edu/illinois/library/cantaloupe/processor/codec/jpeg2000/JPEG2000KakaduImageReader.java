@@ -22,12 +22,12 @@ import kdu_jni.Kdu_compressed_source_nonnative;
 import kdu_jni.Kdu_coords;
 import kdu_jni.Kdu_dims;
 import kdu_jni.Kdu_global;
-import kdu_jni.Kdu_message;
 import kdu_jni.Kdu_message_formatter;
 import kdu_jni.Kdu_quality_limiter;
 import kdu_jni.Kdu_region_decompressor;
 import kdu_jni.Kdu_simple_file_source;
 import kdu_jni.Kdu_thread_env;
+import kdu_jni.Kdu_thread_safe_message;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -127,7 +127,8 @@ public final class JPEG2000KakaduImageReader implements AutoCloseable {
 
     }
 
-    private static abstract class AbstractKduMessage extends Kdu_message {
+    private static abstract class AbstractKduMessage
+            extends Kdu_thread_safe_message {
 
         final StringBuilder builder = new StringBuilder();
 
