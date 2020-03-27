@@ -100,8 +100,7 @@ public class ImageResource extends IIIF2Resource {
                 .withOperationList(ops)
                 .withBypassingCache(isBypassingCache())
                 .withBypassingCacheRead(isBypassingCacheRead())
-                .withDelegateProxy(getDelegateProxy())
-                .withRequestContext(getRequestContext())
+                .optionallyWithDelegateProxy(getDelegateProxy(), getRequestContext())
                 .withPageIndex(pageIndex)
                 .withCallback(new CustomCallback())
                 .build()) {

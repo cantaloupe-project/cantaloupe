@@ -65,6 +65,28 @@ public class ImageRequestHandler extends AbstractRequestHandler
         }
 
         /**
+         * Variant of {@link #withDelegateProxy(DelegateProxy, RequestContext)}
+         * that does nothing if either argument is {@code null}.
+         *
+         * @param delegateProxy  Delegate proxy. If {@code null}, both it and
+         *                       {@code requestContext} are set to {@code null}.
+         * @param requestContext Request context. If {@code null}, both it and
+         *                       {@code delegateProxy} are set to {@code null}.
+         * @see #withDelegateProxy(DelegateProxy, RequestContext)
+         */
+        public Builder optionallyWithDelegateProxy(DelegateProxy delegateProxy,
+                                                   RequestContext requestContext) {
+            if (delegateProxy != null && requestContext != null) {
+                handler.delegateProxy  = delegateProxy;
+                handler.requestContext = requestContext;
+            } else {
+                handler.delegateProxy  = null;
+                handler.requestContext = null;
+            }
+            return this;
+        }
+
+        /**
          * @param isBypassingCache Supply {@code true} to bypass cache reads
          *                         and writes.
          */
@@ -91,13 +113,23 @@ public class ImageRequestHandler extends AbstractRequestHandler
         }
 
         /**
-         * @param delegateProxy Delegate proxy. If set to a non-{@code null}
-         *                      value, a {@link
-         *                      #withRequestContext(RequestContext) request
-         *                      context must also be set}.
+         * Variant of {@link #optionallyWithDelegateProxy(DelegateProxy,
+         * RequestContext)} for which both arguments must be either {@code
+         * null} or not-{@code null}.
+         *
+         * @see #optionallyWithDelegateProxy(DelegateProxy, RequestContext)
          */
-        public Builder withDelegateProxy(DelegateProxy delegateProxy) {
-            handler.delegateProxy = delegateProxy;
+        public Builder withDelegateProxy(DelegateProxy delegateProxy,
+                                         RequestContext requestContext) {
+            if (delegateProxy != null && requestContext == null) {
+                throw new NullPointerException("If a delegate proxy is set, " +
+                        "a request context must also be set.");
+            } else if (delegateProxy == null && requestContext != null) {
+                throw new NullPointerException("If a request context is set, " +
+                        "a delegate proxy must also be set.");
+            }
+            handler.delegateProxy  = delegateProxy;
+            handler.requestContext = requestContext;
             return this;
         }
 
@@ -112,17 +144,6 @@ public class ImageRequestHandler extends AbstractRequestHandler
         }
 
         /**
-         * @param requestContext Request context. If set to a non-{@code null}
-         *                       value, a {@link
-         *                       #withDelegateProxy(DelegateProxy) delegate
-         *                       proxy must also be set}.
-         */
-        public Builder withRequestContext(RequestContext requestContext) {
-            handler.requestContext = requestContext;
-            return this;
-        }
-
-        /**
          * @return New instance.
          * @throws NullPointerException if any of the required builder methods
          *                              have not been called.
@@ -130,16 +151,10 @@ public class ImageRequestHandler extends AbstractRequestHandler
         public ImageRequestHandler build() {
             if (handler.operationList == null) {
                 throw new NullPointerException("Operation list cannot be null.");
-            } else if (handler.delegateProxy != null &&
-                    handler.requestContext == null) {
-                throw new NullPointerException("If a delegate proxy is set, " +
-                        "a request context must also be set.");
-            } else if (handler.delegateProxy == null &&
-                    handler.requestContext != null) {
-                throw new NullPointerException("If a request context is set, " +
-                        "a delegate proxy must also be set.");
             }
             if (handler.requestContext == null) {
+                // Set the requestContext to an unused object that will prevent
+                // having to do null checks.
                 handler.requestContext = new RequestContext();
             }
             return handler;
