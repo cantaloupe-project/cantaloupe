@@ -8,7 +8,6 @@ import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.MediaType;
 import edu.illinois.library.cantaloupe.script.DelegateMethod;
 import edu.illinois.library.cantaloupe.script.DelegateProxy;
-import okhttp3.ConnectionSpec;
 import okhttp3.Headers;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -29,7 +28,6 @@ import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.security.cert.X509Certificate;
 import java.time.Duration;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -362,7 +360,6 @@ class HttpSource extends AbstractSource implements Source {
         if (httpClient == null) {
             final OkHttpClient.Builder builder = new OkHttpClient.Builder()
                     .followRedirects(true)
-                    .connectionSpecs(Arrays.asList(ConnectionSpec.MODERN_TLS, ConnectionSpec.COMPATIBLE_TLS))
                     .connectTimeout(getRequestTimeout().getSeconds(), TimeUnit.SECONDS)
                     .readTimeout(getRequestTimeout().getSeconds(), TimeUnit.SECONDS)
                     .writeTimeout(getRequestTimeout().getSeconds(), TimeUnit.SECONDS);
