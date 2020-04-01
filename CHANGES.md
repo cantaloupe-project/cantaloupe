@@ -6,6 +6,7 @@
   an HTTP 403 status.
 * Fixed overridden boolean values not being recognized in inherited
   configuration files.
+* Fixed information responses failing to respect the `page` URL query argument.
 
 ## 4.1.5
 

@@ -19,6 +19,13 @@ public final class Query implements Iterable<KeyValuePair> {
 
     public Query() {}
 
+    /**
+     * Copy constructor.
+     */
+    public Query(Query query) {
+        this(query.toString());
+    }
+
     public Query(String query) {
         String[] pairs = query.split("&");
         for (String pair : pairs) {

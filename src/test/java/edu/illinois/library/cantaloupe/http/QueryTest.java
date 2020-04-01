@@ -20,6 +20,13 @@ public class QueryTest {
     }
 
     @Test
+    public void testCopyConstructor() {
+        Query query2 = new Query(instance);
+        assertEquals("value1", query2.getFirstValue("key1"));
+        assertEquals("value2", query2.getFirstValue("key2"));
+    }
+
+    @Test
     public void testConstructorWithString() {
         assertEquals("value1", instance.getFirstValue("key1"));
         assertEquals("value2", instance.getFirstValue("key2"));

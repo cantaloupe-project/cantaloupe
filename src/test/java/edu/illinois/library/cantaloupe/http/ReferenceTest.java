@@ -31,6 +31,12 @@ public class ReferenceTest {
     }
 
     @Test
+    public void testCopyConstructorClonesQuery() {
+        Reference copy = new Reference(instance);
+        assertNotSame(instance.getQuery(), copy.getQuery());
+    }
+
+    @Test
     public void testStringConstructor() {
         String uri = "http://example.org/cats/dogs?cats=dogs";
         Reference ref = new Reference(uri);
