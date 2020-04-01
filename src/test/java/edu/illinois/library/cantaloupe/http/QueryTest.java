@@ -27,7 +27,13 @@ public class QueryTest {
     }
 
     @Test
-    public void testConstructorWithString() {
+    public void testConstructorWithEmptyString() {
+        instance = new Query("");
+        assertTrue(instance.isEmpty());
+    }
+
+    @Test
+    public void testConstructorWithNonEmptyString() {
         assertEquals("value1", instance.getFirstValue("key1"));
         assertEquals("value2", instance.getFirstValue("key2"));
     }
