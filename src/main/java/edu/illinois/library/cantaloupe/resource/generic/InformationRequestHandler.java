@@ -117,15 +117,15 @@ public class InformationRequestHandler extends AbstractRequestHandler
          */
         public InformationRequestHandler build() {
             if (handler.identifier == null) {
-                throw new NullPointerException("Identifier cannot be null.");
+                throw new IllegalArgumentException("Identifier cannot be null.");
             } else if (handler.delegateProxy != null &&
                     handler.requestContext == null) {
-                throw new NullPointerException("If a delegate proxy is set, " +
-                        "a request context must also be set.");
+                throw new IllegalArgumentException("If a delegate proxy is " +
+                        "set, a request context must also be set.");
             } else if (handler.delegateProxy == null &&
                     handler.requestContext != null) {
-                throw new NullPointerException("If a request context is set, " +
-                        "a delegate proxy must also be set.");
+                throw new IllegalArgumentException("If a request context is " +
+                        "set, a delegate proxy must also be set.");
             }
             if (handler.requestContext == null) {
                 handler.requestContext = new RequestContext();

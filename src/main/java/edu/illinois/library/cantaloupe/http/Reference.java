@@ -267,10 +267,11 @@ public final class Reference {
 
     /**
      * @param query Cannot be {@code null}.
+     * @throws IllegalArgumentException if the argument is {@code null}.
      */
     public void setQuery(Query query) {
         if (query == null) {
-            throw new NullPointerException("Argument cannot be null");
+            throw new IllegalArgumentException("Argument cannot be null");
         }
         this.query = query;
     }

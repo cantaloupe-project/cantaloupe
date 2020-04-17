@@ -94,7 +94,7 @@ public class ImageRequestHandlerTest extends BaseTest {
 
         @Test
         void testWithDelegateProxyWithNullDelegateProxy() {
-            assertThrows(NullPointerException.class, () ->
+            assertThrows(IllegalArgumentException.class, () ->
                     ImageRequestHandler.builder()
                             .withDelegateProxy(null, new RequestContext()));
         }
@@ -107,7 +107,7 @@ public class ImageRequestHandlerTest extends BaseTest {
             RequestContext context = new RequestContext();
             DelegateProxy delegateProxy =
                     DelegateProxyService.getInstance().newDelegateProxy(context);
-            assertThrows(NullPointerException.class, () ->
+            assertThrows(IllegalArgumentException.class, () ->
                     ImageRequestHandler.builder()
                             .withDelegateProxy(delegateProxy, null));
         }

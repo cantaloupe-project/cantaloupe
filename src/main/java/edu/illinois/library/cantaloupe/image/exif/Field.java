@@ -11,10 +11,10 @@ public final class Field implements Comparable<Field> {
 
     Field(Tag tag, DataType dataType) {
         if (tag == null) {
-            throw new NullPointerException(
+            throw new IllegalArgumentException(
                     Tag.class.getSimpleName() + " argument is null");
         } else if (dataType == null) {
-            throw new NullPointerException(
+            throw new IllegalArgumentException(
                     DataType.class.getSimpleName() + " argument is null");
         }
         this.tag = tag;

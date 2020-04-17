@@ -122,11 +122,11 @@ public class ImageRequestHandler extends AbstractRequestHandler
         public Builder withDelegateProxy(DelegateProxy delegateProxy,
                                          RequestContext requestContext) {
             if (delegateProxy != null && requestContext == null) {
-                throw new NullPointerException("If a delegate proxy is set, " +
-                        "a request context must also be set.");
+                throw new IllegalArgumentException("If a delegate proxy is " +
+                        "set, a request context must also be set.");
             } else if (delegateProxy == null && requestContext != null) {
-                throw new NullPointerException("If a request context is set, " +
-                        "a delegate proxy must also be set.");
+                throw new IllegalArgumentException("If a request context is " +
+                        "set, a delegate proxy must also be set.");
             }
             handler.delegateProxy  = delegateProxy;
             handler.requestContext = requestContext;

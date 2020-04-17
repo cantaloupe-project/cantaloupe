@@ -24,7 +24,7 @@ public class InformationRequestHandlerTest extends BaseTest {
 
         @Test
         void testBuildWithNoIdentifierSet() {
-            assertThrows(NullPointerException.class, () ->
+            assertThrows(IllegalArgumentException.class, () ->
                     InformationRequestHandler.builder().build());
         }
 
@@ -36,7 +36,7 @@ public class InformationRequestHandlerTest extends BaseTest {
             RequestContext context = new RequestContext();
             DelegateProxy delegateProxy =
                     DelegateProxyService.getInstance().newDelegateProxy(context);
-            assertThrows(NullPointerException.class, () ->
+            assertThrows(IllegalArgumentException.class, () ->
                     InformationRequestHandler.builder()
                             .withIdentifier(new Identifier("cats"))
                             .withDelegateProxy(delegateProxy)
@@ -45,7 +45,7 @@ public class InformationRequestHandlerTest extends BaseTest {
 
         @Test
         void testBuildWithRequestContextButNoDelegateProxySet() {
-            assertThrows(NullPointerException.class, () ->
+            assertThrows(IllegalArgumentException.class, () ->
                     InformationRequestHandler.builder()
                             .withIdentifier(new Identifier("cats"))
                             .withRequestContext(new RequestContext())

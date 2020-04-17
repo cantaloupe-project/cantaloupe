@@ -18,12 +18,14 @@ public class FieldTest extends BaseTest {
 
     @Test
     void testConstructorWithNullTagArgument() {
-        assertThrows(NullPointerException.class, () -> new Field(null, DataType.SHORT));
+        assertThrows(IllegalArgumentException.class,
+                () -> new Field(null, DataType.SHORT));
     }
 
     @Test
     void testConstructorWithNullDataTypeArgument() {
-        assertThrows(NullPointerException.class, () -> new Field(Tag.MAKE, null));
+        assertThrows(IllegalArgumentException.class,
+                () -> new Field(Tag.MAKE, null));
     }
 
     @Test

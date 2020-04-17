@@ -18,7 +18,7 @@ final class DelegateAuthorizer implements Authorizer {
      */
     DelegateAuthorizer(Object... args) {
         if (args.length < 1) {
-            throw new NullPointerException(
+            throw new IllegalArgumentException(
                     DelegateProxy.class.getSimpleName() + " argument is required");
         }
         this.delegateProxy = (DelegateProxy) args[0];

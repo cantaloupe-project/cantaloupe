@@ -37,7 +37,7 @@ public class DelegateAuthorizerTest extends BaseTest {
 
     @Test
     void testConstructorWithEmptyArgument() {
-        Assertions.assertThrows(NullPointerException.class,
+        Assertions.assertThrows(IllegalArgumentException.class,
                 DelegateAuthorizer::new);
     }
 
