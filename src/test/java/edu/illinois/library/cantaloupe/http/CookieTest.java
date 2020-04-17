@@ -87,7 +87,7 @@ public class CookieTest extends BaseTest {
 
     @Test
     void testToString() {
-        assertEquals(instance.getName() + ": " + instance.getValue(),
+        assertEquals(instance.getName() + "=" + instance.getValue(),
                 instance.toString());
     }
 

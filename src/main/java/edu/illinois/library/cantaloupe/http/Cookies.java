@@ -158,9 +158,9 @@ public final class Cookies implements Iterable<Cookie> {
     @Override
     public String toString() {
         if (cookies.isEmpty()) {
-            return "(none)";
+            return "";
         }
-        return stream().map(Cookie::toString).collect(Collectors.joining(" | "));
+        return stream().map(Cookie::toString).collect(Collectors.joining("; "));
     }
 
 }

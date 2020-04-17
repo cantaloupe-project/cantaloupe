@@ -216,20 +216,32 @@ public class CookiesTest extends BaseTest {
 
     @Test
     void testToStringWithNoCookies() {
-        assertEquals("(none)", instance.toString());
+        assertEquals("", instance.toString());
     }
 
     @Test
     void testToStringWithOneCookie() {
-        instance.add("X-Cats", "yes");
-        assertEquals("X-Cats: yes", instance.toString());
+        instance.add("cats", "yes");
+        assertEquals("cats=yes", instance.toString());
     }
 
     @Test
     void testToStringWithMultipleCookies() {
-        instance.add("X-Cats", "yes");
-        instance.add("X-Dogs", "yes");
-        assertEquals("X-Cats: yes | X-Dogs: yes", instance.toString());
+        instance.add("cats", "yes");
+        instance.add("dogs", "yes");
+        assertEquals("cats=yes; dogs=yes", instance.toString());
+    }
+
+    @Test
+    void testToStringWithEmptyCookieName() {
+        instance.add("", "yes");
+        assertEquals("yes", instance.toString());
+    }
+
+    @Test
+    void testToStringWithEmptyCookieValue() {
+        instance.add("key", "");
+        assertEquals("key=", instance.toString());
     }
 
 }

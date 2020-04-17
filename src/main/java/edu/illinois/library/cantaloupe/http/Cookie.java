@@ -63,7 +63,15 @@ public final class Cookie {
 
     @Override
     public String toString() {
-        return getName() + ": " + getValue();
+        StringBuilder builder = new StringBuilder();
+        if (getName() != null && !getName().isBlank()) {
+            builder.append(getName());
+            builder.append("=");
+        }
+        if (getValue() != null) {
+            builder.append(getValue());
+        }
+        return builder.toString();
     }
 
 }
