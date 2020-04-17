@@ -4,6 +4,8 @@ import edu.illinois.library.cantaloupe.test.BaseTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.util.Arrays;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 public class CookieTest extends BaseTest {
@@ -82,7 +84,9 @@ public class CookieTest extends BaseTest {
 
     @Test
     void testHashCode() {
-        assertEquals(instance.toString().hashCode(), instance.hashCode());
+        int expected = Arrays.hashCode(
+                new String[] { instance.getName(), instance.getValue() });
+        assertEquals(expected, instance.hashCode());
     }
 
     @Test

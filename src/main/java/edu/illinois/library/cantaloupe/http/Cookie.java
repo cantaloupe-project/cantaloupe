@@ -1,5 +1,6 @@
 package edu.illinois.library.cantaloupe.http;
 
+import java.util.Arrays;
 import java.util.Objects;
 
 /**
@@ -40,7 +41,7 @@ public final class Cookie {
 
     @Override
     public int hashCode() {
-        return toString().hashCode();
+        return Arrays.hashCode(new String[] { getName(), getValue() });
     }
 
     private void setName(String name) {
