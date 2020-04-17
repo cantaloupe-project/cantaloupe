@@ -4,13 +4,25 @@ import java.util.Arrays;
 import java.util.Objects;
 
 /**
- * Immutable class encapsulating a cookie.
+ * <p>Immutable class encapsulating a cookie.</p>
+ *
+ * <p>Instances are typically created from client input, and not used for
+ * output. Therefore, compatibility is preferred over strictness. In practice
+ * this means that any UTF-8 character is allowed in the name or value except
+ * {@literal ;} or {@literal =}.</p>
+ *
+ * @see <a href="http://www.ietf.org/rfc/rfc6265.txt">RFC 6265: HTTP State
+ *   Management Mechanism</a>
  */
 public final class Cookie {
 
-    private String name;
-    private String value;
+    private String name, value;
 
+    /**
+     * @param name  May be empty but not {@code null}.
+     * @param value May be empty but not {@code null}.
+     * @throws IllegalArgumentException if either argument is {@code null}.
+     */
     public Cookie(String name, String value) {
         setName(name);
         setValue(value);
@@ -45,8 +57,10 @@ public final class Cookie {
     }
 
     private void setName(String name) {
-        if (name == null || name.isBlank()) {
-            throw new IllegalArgumentException("Illegal name: " + name);
+        if (name == null) {
+            throw new IllegalArgumentException("Name is null");
+        } else if (name.contains(";") || name.contains("=")) {
+            throw new IllegalArgumentException("Name contains illegal characters");
         }
         this.name = name;
     }
@@ -57,7 +71,9 @@ public final class Cookie {
 
     private void setValue(String value) {
         if (value == null) {
-            throw new IllegalArgumentException("Illegal value: " + name);
+            throw new IllegalArgumentException("Value is null");
+        } else if (value.contains(";") || value.contains("=")) {
+            throw new IllegalArgumentException("Value contains illegal characters");
         }
         this.value = value;
     }

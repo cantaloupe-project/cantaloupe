@@ -25,16 +25,21 @@ public class CookieTest extends BaseTest {
     }
 
     @Test
-    void testCopyConstructor() {
-        Cookie other = new Cookie(instance);
-        assertEquals("name", other.getName());
-        assertEquals("value", other.getValue());
-    }
-
-    @Test
     void testConstructorWithNullNameArgument() {
         assertThrows(IllegalArgumentException.class,
                 () -> new Cookie(null, "value"));
+    }
+
+    @Test
+    void testConstructorWithZeroLengthNameArgument() {
+        instance = new Cookie("", "value");
+        assertEquals("", instance.getName());
+    }
+
+    @Test
+    void testConstructorWithIllegalNameArgument() {
+        assertThrows(IllegalArgumentException.class,
+                () -> new Cookie("name;", "value"));
     }
 
     @Test
@@ -44,15 +49,22 @@ public class CookieTest extends BaseTest {
     }
 
     @Test
-    void testConstructorWithZeroLengthNameArgument() {
-        assertThrows(IllegalArgumentException.class,
-                () -> new Cookie("", "value"));
-    }
-
-    @Test
     void testConstructorWithZeroLengthValueArgument() {
         instance = new Cookie("name", "");
         assertEquals("", instance.getValue());
+    }
+
+    @Test
+    void testConstructorWithIllegalValueArgument() {
+        assertThrows(IllegalArgumentException.class,
+                () -> new Cookie("name", "value;"));
+    }
+
+    @Test
+    void testCopyConstructor() {
+        Cookie other = new Cookie(instance);
+        assertEquals("name", other.getName());
+        assertEquals("value", other.getValue());
     }
 
     @Test

@@ -7,8 +7,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -16,9 +14,6 @@ import java.util.stream.Stream;
  * Encapsulates a collection of request or response cookies.
  */
 public final class Cookies implements Iterable<Cookie> {
-
-    private static final Pattern HEADER_VALUE_PATTERN =
-            Pattern.compile("(\\w+)=(\\w+)");
 
     private final List<Cookie> cookies = new ArrayList<>();
 
@@ -29,15 +24,19 @@ public final class Cookies implements Iterable<Cookie> {
      *         parsed.
      */
     public static Cookies fromHeaderValue(String headerValue) {
-        final Cookies cookies = new Cookies();
-        final Matcher matcher = HEADER_VALUE_PATTERN.matcher(headerValue);
-        while (matcher.find()) {
-            for (int i = 1; i <= matcher.groupCount(); i += 2) {
-                Cookie cookie = new Cookie(matcher.group(i), matcher.group(i + 1));
-                cookies.add(cookie);
+        final Cookies cookieJar = new Cookies();
+        for (String cookiePattern : headerValue.split(";")) {
+            Cookie cookie;
+            String[] pair = cookiePattern.split("=");
+            if (pair.length > 1) {
+                cookie = new Cookie(pair[0].trim(), pair[1].trim());
+            } else {
+                // cookie does not contain an `=`; treat it as a nameless value
+                cookie = new Cookie("", pair[0].trim());
             }
+            cookieJar.add(cookie);
         }
-        return cookies;
+        return cookieJar;
     }
 
     public Cookies() {}

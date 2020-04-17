@@ -29,6 +29,26 @@ public class CookiesTest extends BaseTest {
     }
 
     @Test
+    void testFromHeaderValueWithNoName() {
+        Cookies expected = new Cookies();
+        expected.add("", "value1");
+        Cookies actual = Cookies.fromHeaderValue("value1");
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    void testFromHeaderValuePermissiveness() {
+        final String torture = "abcABC012 !#$%&'()*+-./:<>?@[]^_`{|}~ 简体中文网页";
+
+        Cookies expected = new Cookies();
+        expected.add("name1", torture);
+        expected.add("name2", torture);
+        Cookies actual = Cookies.fromHeaderValue(
+                "name1=" + torture + "; name2=" + torture);
+        assertEquals(expected, actual);
+    }
+
+    @Test
     void testCopyConstructor() {
         instance.add("cookie1", "cats");
         instance.add("cookie1", "dogs");
