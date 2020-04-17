@@ -1,5 +1,6 @@
 package edu.illinois.library.cantaloupe.resource;
 
+import edu.illinois.library.cantaloupe.http.Cookies;
 import edu.illinois.library.cantaloupe.http.Headers;
 import edu.illinois.library.cantaloupe.http.Method;
 import edu.illinois.library.cantaloupe.http.Query;
@@ -9,22 +10,15 @@ import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * Wraps an {@link HttpServletRequest}, adding some convenience methods.
  */
 public final class Request {
 
-    private static final Pattern COOKIE_PATTERN =
-            Pattern.compile("(\\w+)=(\\w+)");
-
     private HttpServletRequest wrappedRequest;
 
-    private Map<String,String> cookies;
+    private Cookies cookies;
     private Headers headers;
     private Reference reference;
 
@@ -39,18 +33,14 @@ public final class Request {
         return wrappedRequest.getContextPath();
     }
 
-    public Map<String,String> getCookies() {
+    public Cookies getCookies() {
         if (cookies == null) {
-            cookies = new HashMap<>();
-            final Enumeration<String> values = wrappedRequest.getHeaders("Cookie");
-            while (values.hasMoreElements()) {
-                String value = values.nextElement();
-                Matcher matcher = COOKIE_PATTERN.matcher(value);
-                while (matcher.find()) {
-                    for (int i = 1; i <= matcher.groupCount(); i += 2) {
-                        cookies.put(matcher.group(i), matcher.group(i + 1));
-                    }
-                }
+            cookies = new Cookies();
+            final Enumeration<String> headers = wrappedRequest.getHeaders("Cookie");
+            while (headers.hasMoreElements()) {
+                String value = headers.nextElement();
+                Cookies batch = Cookies.fromHeaderValue(value);
+                cookies.addAll(batch);
             }
         }
         return cookies;

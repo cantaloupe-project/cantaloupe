@@ -1,5 +1,6 @@
 package edu.illinois.library.cantaloupe.resource;
 
+import edu.illinois.library.cantaloupe.http.Cookies;
 import edu.illinois.library.cantaloupe.http.Headers;
 import edu.illinois.library.cantaloupe.http.Method;
 import edu.illinois.library.cantaloupe.http.Reference;
@@ -8,7 +9,6 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
-import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -32,12 +32,12 @@ class RequestTest extends BaseTest {
                 "shape=cube; car=ford"));
         instance = new Request(sr);
 
-        Map<String, String> cookies = instance.getCookies();
+        Cookies cookies = instance.getCookies();
         assertEquals(4, cookies.size());
-        assertEquals("apples", cookies.get("fruit"));
-        assertEquals("cats", cookies.get("animal"));
-        assertEquals("cube", cookies.get("shape"));
-        assertEquals("ford", cookies.get("car"));
+        assertEquals("apples", cookies.getFirstValue("fruit"));
+        assertEquals("cats", cookies.getFirstValue("animal"));
+        assertEquals("cube", cookies.getFirstValue("shape"));
+        assertEquals("ford", cookies.getFirstValue("car"));
     }
 
     @Test

@@ -152,7 +152,7 @@ public abstract class AbstractResource {
             requestContext.setRequestURI(getPublicReference().toURI());
             requestContext.setRequestHeaders(request.getHeaders().toMap());
             requestContext.setClientIP(getCanonicalClientIPAddress());
-            requestContext.setCookies(request.getCookies());
+            requestContext.setCookies(request.getCookies().toMap());
             requestContext.setIdentifier(getIdentifier());
 
             ScaleConstraint scaleConstraint =
