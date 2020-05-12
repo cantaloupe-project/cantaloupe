@@ -58,7 +58,7 @@ public class HTTPImageInputStream extends ImageInputStreamImpl
     private long streamLength   = -1;
     private int windowPos;
     private int windowSize      = DEFAULT_WINDOW_SIZE;
-    private int windowIndex     = -1;
+    private long windowIndex    = -1;
     private byte[] windowBuffer = new byte[windowSize];
 
     private int numChunkDownloads, numChunkCacheHits, numChunkCacheMisses;
@@ -304,7 +304,7 @@ public class HTTPImageInputStream extends ImageInputStreamImpl
      * and fills it with more if not.
      */
     private void prepareWindowBuffer() throws IOException {
-        final int neededWindowIndex = getStreamWindowIndex();
+        final long neededWindowIndex = getStreamWindowIndex();
         if (neededWindowIndex != windowIndex) {
             Range range  = getRange(neededWindowIndex);
             windowBuffer = fetchChunk(range);
@@ -345,7 +345,7 @@ public class HTTPImageInputStream extends ImageInputStreamImpl
         return entity;
     }
 
-    private Range getRange(int windowIndex) {
+    private Range getRange(long windowIndex) {
         final Range range = new Range();
         range.start       = windowIndex * windowSize;
         range.end         = Math.min(range.start + windowSize, streamLength) - 1;
@@ -361,8 +361,8 @@ public class HTTPImageInputStream extends ImageInputStreamImpl
      * Calculates the current window index based on {@link #streamPos}, but
      * does not update {@link #windowIndex}.
      */
-    private int getStreamWindowIndex() {
-        return (int) Math.floor(streamPos / (double) windowSize);
+    private long getStreamWindowIndex() {
+        return (long) Math.floor(streamPos / (double) windowSize);
     }
 
 }
