@@ -71,6 +71,8 @@
 * Fixed overridden boolean values not being recognized in inherited
   configuration files.
 * Fixed information responses failing to respect the `page` URL query argument.
+* Fixed a bug that caused requests for data beyond an offset of 2^31 from
+  S3Source and AzureStorageSource to fail when chunking is enabled.
 
 ## 4.1.5
 

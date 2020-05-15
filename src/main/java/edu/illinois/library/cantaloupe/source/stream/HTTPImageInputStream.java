@@ -347,7 +347,7 @@ public class HTTPImageInputStream extends ImageInputStreamImpl
 
     private Range getRange(int windowIndex) {
         final Range range = new Range();
-        range.start       = windowIndex * windowSize;
+        range.start       = (long) windowIndex * windowSize;
         range.end         = Math.min(range.start + windowSize, streamLength) - 1;
         range.length      = streamLength;
         return range;
