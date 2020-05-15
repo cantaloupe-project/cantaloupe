@@ -14,10 +14,11 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <aws-sdk.version>1.11.538</aws-sdk.version>
-        <jackson.version>2.9.10</jackson.version>
-        <jackson.databind.version>2.9.10.1</jackson.databind.version>
+        <jackson.version>2.11.0</jackson.version>
+        <!-- N.B.: Jetty does not use semantic versioning. New x.x.x releases
+        often break API. -->
         <jetty.version>9.4.24.v20191120</jetty.version>
-        <jruby.version>9.2.9.0</jruby.version>
+        <jruby.version>9.2.11.1</jruby.version>
         <surefire.version>3.0.0-M3</surefire.version>
     </properties>
 
@@ -353,7 +354,7 @@
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
-            <version>${jackson.databind.version}</version>
+            <version>${jackson.version}</version>
         </dependency>
         <!-- Makes Jackson aware of JDK8 date/time objects -->
         <dependency>

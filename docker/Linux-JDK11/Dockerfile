@@ -24,6 +24,13 @@ RUN chown -R $user $home
 USER $user
 WORKDIR $home
 
+# Add mirrors for maven central since they were offline
+# Thanks to https://github.com/Amsterdam/iiif-image-server/pull/23/commits/9a356ce27b44313b28fd62d38ea346a18b3540ce
+# TODO: come back in the future and check whether this is still necessary
+RUN mkdir ~/.m2 && cp /etc/maven/settings.xml ~/.m2/settings.xml && \
+    MIRRORS="\n    <mirror>\n      <id>central<\/id>\n      <name>central<\/name>\n      <url>https:\/\/repo1.maven.org\/maven2<\/url>\n      <mirrorOf>central.maven.org<\/mirrorOf>\n    <\/mirror>\n    <mirror>\n      <id>osgeo-release<\/id>\n      <name>OSGeo Repository<\/name>\n      <url>https:\/\/repo.osgeo.org\/repository\/release\/<\/url>\n      <mirrorOf>osgeo<\/mirrorOf>\n    <\/mirror>\n    <mirror>\n      <id>geoserver-releases<\/id>\n      <name>Boundless Repository<\/name>\n      <url>https:\/\/repo.osgeo.org\/repository\/Geoserver-releases\/<\/url>\n      <mirrorOf>boundless<\/mirrorOf>\n    <\/mirror>\n" && \
+    sed -i "s/<mirrors>/<mirrors>\n$MIRRORS/" ~/.m2/settings.xml
+
 # Install application dependencies
 COPY ./pom.xml pom.xml
 RUN mvn dependency:resolve
