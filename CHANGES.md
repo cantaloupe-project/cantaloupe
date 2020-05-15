@@ -9,6 +9,7 @@
 * Fixed information responses failing to respect the `page` URL query argument.
 * Fixed a bug that caused requests for data beyond an offset of 2^31 from
   S3Source and AzureStorageSource to fail when chunking is enabled.
+* Updated JRuby to version 9.2.11.1.
 
 ## 4.1.5
 
