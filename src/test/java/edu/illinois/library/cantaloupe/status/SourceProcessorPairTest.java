@@ -6,16 +6,16 @@ import edu.illinois.library.cantaloupe.operation.ScaleByPercent;
 import edu.illinois.library.cantaloupe.source.Source;
 import edu.illinois.library.cantaloupe.source.SourceFactory;
 import edu.illinois.library.cantaloupe.test.BaseTest;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class SourceProcessorPairTest extends BaseTest {
 
     private SourceProcessorPair instance;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         super.setUp();
         Source source = new SourceFactory().newSource("FilesystemSource");

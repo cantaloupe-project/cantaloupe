@@ -15,11 +15,8 @@ import org.junit.jupiter.api.Test;
 import java.net.URI;
 import java.util.List;
 
+import static org.junit.jupiter.api.Assertions.*;
 import static edu.illinois.library.cantaloupe.test.Assert.HTTPAssert.*;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 /**
  * Functional test of LandingResource.

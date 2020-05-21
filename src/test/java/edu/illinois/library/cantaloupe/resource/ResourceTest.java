@@ -15,7 +15,7 @@ import org.junit.jupiter.api.BeforeEach;
 import java.net.URI;
 import java.net.URISyntaxException;
 
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Abstract base class for functional HTTP endpoint tests.
