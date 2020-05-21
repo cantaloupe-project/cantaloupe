@@ -100,13 +100,6 @@
             <artifactId>caffeine</artifactId>
             <version>2.5.6</version>
         </dependency>
-        <!-- Used in tests to test that System.exit() is called -->
-        <dependency>
-            <groupId>com.github.stefanbirkner</groupId>
-            <artifactId>system-rules</artifactId>
-            <version>1.19.0</version>
-            <scope>test</scope>
-        </dependency>
         <!-- Used by HeapCache -->
         <dependency>
             <groupId>com.google.protobuf</groupId>

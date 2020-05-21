@@ -9,9 +9,9 @@ import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import edu.illinois.library.cantaloupe.util.DeletingFileVisitor;
 import edu.illinois.library.cantaloupe.util.SocketUtils;
+import edu.illinois.library.cantaloupe.util.SystemUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayOutputStream;
@@ -31,7 +31,7 @@ public class StandaloneEntryTest extends BaseTest {
     private static final int HTTP_PORT = SocketUtils.getOpenPort();
     private static final String NEWLINE = System.getProperty("line.separator");
 
-    private Client httpClient = new Client();
+    private final Client httpClient = new Client();
 
     private Path cacheDir;
     private final ByteArrayOutputStream redirectedOutput =
@@ -67,6 +67,8 @@ public class StandaloneEntryTest extends BaseTest {
     public void setUp() throws Exception {
         super.setUp();
 
+        SystemUtils.clearExitRequest();
+
         System.setProperty(ConfigurationFactory.CONFIG_VM_ARGUMENT,
                 TestUtil.getFixture("config.properties").toString());
 
@@ -96,20 +98,17 @@ public class StandaloneEntryTest extends BaseTest {
     // list fonts
 
     @Test
-    void mainWithListFontsOption() throws Exception {
+    void mainWithListFontsArgument() throws Exception {
         redirectOutput();
         StandaloneEntry.main(StandaloneEntry.LIST_FONTS_ARGUMENT);
         assertTrue(redirectedOutput.toString().contains("SansSerif"));
     }
 
     @Test
-    @Disabled // TODO: broken in junit 5
-    void mainWithListFontsOptionExits() throws Exception {
-        //exit.expectSystemExitWithStatus(0);
-        System.clearProperty(Application.TEST_VM_ARGUMENT);
-
-        System.setProperty(StandaloneEntry.LIST_FONTS_ARGUMENT, "");
-        StandaloneEntry.main("");
+    void mainWithListFontsArgumentExits() throws Exception {
+        StandaloneEntry.main(StandaloneEntry.LIST_FONTS_ARGUMENT);
+        assertTrue(SystemUtils.exitRequested());
+        assertEquals(0, SystemUtils.requestedExitCode());
     }
 
     // missing config
@@ -124,12 +123,12 @@ public class StandaloneEntryTest extends BaseTest {
     }
 
     @Test
-    @Disabled // TODO: broken in junit 5
     void mainWithMissingConfigOptionExits() throws Exception {
-        System.clearProperty(Application.TEST_VM_ARGUMENT);
-        //exit.expectSystemExitWithStatus(-1);
         System.clearProperty(ConfigurationFactory.CONFIG_VM_ARGUMENT);
+
         StandaloneEntry.main("");
+        assertTrue(SystemUtils.exitRequested());
+        assertEquals(-1, SystemUtils.requestedExitCode());
     }
 
     // empty config VM option
@@ -142,12 +141,12 @@ public class StandaloneEntryTest extends BaseTest {
     }
 
     @Test
-    @Disabled // TODO: broken in junit 5
     void mainWithEmptyConfigOptionExits() throws Exception {
-        System.clearProperty(Application.TEST_VM_ARGUMENT);
-        //exit.expectSystemExitWithStatus(-1);
         System.setProperty(ConfigurationFactory.CONFIG_VM_ARGUMENT, "");
+
         StandaloneEntry.main("");
+        assertTrue(SystemUtils.exitRequested());
+        assertEquals(-1, SystemUtils.requestedExitCode());
     }
 
     // missing config file
@@ -157,6 +156,7 @@ public class StandaloneEntryTest extends BaseTest {
         redirectOutput();
         String path = Paths.get("bla").toAbsolutePath().toString();
         System.setProperty(ConfigurationFactory.CONFIG_VM_ARGUMENT, path);
+
         StandaloneEntry.main("");
         assertEquals("Does not exist: " + path + NEWLINE + NEWLINE +
                         StandaloneEntry.usage() + NEWLINE,
@@ -164,12 +164,12 @@ public class StandaloneEntryTest extends BaseTest {
     }
 
     @Test
-    @Disabled // TODO: broken in junit 5
     void mainWithInvalidConfigFileArgumentExits() throws Exception {
-        System.clearProperty(Application.TEST_VM_ARGUMENT);
-        //exit.expectSystemExitWithStatus(-1);
         System.setProperty(ConfigurationFactory.CONFIG_VM_ARGUMENT, "/bla/bla/bla");
+
         StandaloneEntry.main("");
+        assertTrue(SystemUtils.exitRequested());
+        assertEquals(-1, SystemUtils.requestedExitCode());
     }
 
     // config file is a directory
@@ -188,13 +188,13 @@ public class StandaloneEntryTest extends BaseTest {
     }
 
     @Test
-    @Disabled // TODO: broken in junit 5
     void mainWithDirectoryConfigFileArgumentExits() throws Exception {
-        System.clearProperty(Application.TEST_VM_ARGUMENT);
-        //exit.expectSystemExitWithStatus(-1);
         System.setProperty(ConfigurationFactory.CONFIG_VM_ARGUMENT,
                 TestUtil.getFixture("bla").getParent().toString());
+
         StandaloneEntry.main("");
+        assertTrue(SystemUtils.exitRequested());
+        assertEquals(-1, SystemUtils.requestedExitCode());
     }
 
     // valid config file

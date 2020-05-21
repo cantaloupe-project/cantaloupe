@@ -3,6 +3,7 @@ package edu.illinois.library.cantaloupe;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.config.MissingConfigurationException;
+import edu.illinois.library.cantaloupe.util.SystemUtils;
 
 import java.awt.GraphicsEnvironment;
 import java.io.File;
@@ -38,18 +39,6 @@ public class StandaloneEntry {
     }
 
     /**
-     * Calls {@link System#exit(int)} unless {@link Application#isTesting()}
-     * returns {@literal true}.
-     *
-     * @param status Process return status.
-     */
-    static void exitUnlessTesting(int status) {
-        if (!Application.isTesting()) {
-            System.exit(status);
-        }
-    }
-
-    /**
      * <p>Checks the configuration VM option and starts the embedded web
      * container. The following configuration options are available:</p>
      *
@@ -73,28 +62,28 @@ public class StandaloneEntry {
             Optional<Path> optConfigFile = getConfigFile();
             if (optConfigFile.isEmpty()) {
                 printUsage();
-                exitUnlessTesting(-1);
+                SystemUtils.exit(-1);
             } else {
                 final Path configFile = optConfigFile.get();
                 if (!Files.exists(configFile)) {
                     System.out.println("Does not exist: " + configFile);
                     printUsage();
-                    exitUnlessTesting(-1);
+                    SystemUtils.exit(-1);
                 } else if (!Files.isRegularFile(configFile) &&
                         !Files.isSymbolicLink(configFile)) {
                     System.out.println("Not a file: " + configFile);
                     printUsage();
-                    exitUnlessTesting(-1);
+                    SystemUtils.exit(-1);
                 } else if (!Files.isReadable(configFile)) {
                     System.out.println("Not readable: " + configFile);
                     printUsage();
-                    exitUnlessTesting(-1);
+                    SystemUtils.exit(-1);
                 }
             }
             getAppServer().start();
         } catch (MissingConfigurationException e) {
             printUsage();
-            exitUnlessTesting(-1);
+            SystemUtils.exit(-1);
         }
     }
 
@@ -106,7 +95,7 @@ public class StandaloneEntry {
                 for (String family : ge.getAvailableFontFamilyNames()) {
                     System.out.println(family);
                 }
-                exitUnlessTesting(0);
+                SystemUtils.exit(0);
             }
         }
     }
