@@ -26,6 +26,10 @@ public class ClosingMemoryCacheImageInputStream
     public void close() throws IOException {
         try {
             super.close();
+        } catch (IOException e) {
+            if (!"closed".equals(e.getMessage())) {
+                throw e;
+            }
         } finally {
             wrappedStream.close();
         }
