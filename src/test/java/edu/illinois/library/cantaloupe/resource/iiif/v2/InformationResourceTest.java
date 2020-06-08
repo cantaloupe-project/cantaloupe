@@ -53,6 +53,13 @@ public class InformationResourceTest extends ResourceTest {
     }
 
     @Test
+    void testGETAuthorizationWhenNotAuthorizedWhenAccessingCachedResource()
+            throws Exception {
+        URI uri = getHTTPURI("/forbidden.jpg/info.json");
+        tester.testAuthorizationWhenNotAuthorizedWhenAccessingCachedResource(uri);
+    }
+
+    @Test
     void testGETAuthorizationWhenScaleConstraining() throws Exception {
         URI uri = getHTTPURI("/reduce.jpg/info.json");
         tester.testAuthorizationWhenScaleConstraining(uri);

@@ -49,6 +49,13 @@ public class ImageResourceTest extends ResourceTest {
     }
 
     @Test
+    void testGETAuthorizationWhenNotAuthorizedWhenAccessingCachedResource()
+            throws Exception {
+        URI uri = getHTTPURI("/forbidden.jpg/full/full/0/color.jpg");
+        tester.testAuthorizationWhenNotAuthorizedWhenAccessingCachedResource(uri);
+    }
+
+    @Test
     void testGETAuthorizationWhenRedirecting() throws Exception {
         URI uri = getHTTPURI("/redirect.jpg/full/full/0/color.jpg");
         tester.testAuthorizationWhenRedirecting(uri);

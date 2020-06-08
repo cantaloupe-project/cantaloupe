@@ -36,7 +36,7 @@ import static edu.illinois.library.cantaloupe.test.Assert.PathAssert.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * Collection of tests shareable between major versions of IIIF Image and
+ * Collection of tests common across major versions of IIIF Image and
  * Information endpoints.
  */
 public class ImageAPIResourceTester {
@@ -56,6 +56,26 @@ public class ImageAPIResourceTester {
         // but the way the tests are set up, it's 403.
         assertStatus(403, uri);
         assertRepresentationContains("403 Forbidden", uri);
+    }
+
+    public void testAuthorizationWhenNotAuthorizedWhenAccessingCachedResource(URI uri)
+            throws Exception {
+        initializeFilesystemCache();
+        Configuration config = Configuration.getInstance();
+        config.setProperty(Key.DERIVATIVE_CACHE_ENABLED, true);
+        config.setProperty(Key.DERIVATIVE_CACHE_TTL, 10);
+        config.setProperty(Key.INFO_CACHE_ENABLED, false);
+
+        // Request the resource to cache it.
+        // This status code may vary depending on the return value of a
+        // delegate method, but the way the tests are set up, it's 403.
+        assertStatus(403, uri);
+
+        Thread.sleep(1000); // the resource may write asynchronously
+
+        // Request it again. We expect to receive the same response. Any
+        // different response would indicate a logic error.
+        assertStatus(403, uri);
     }
 
     public void testAuthorizationWhenScaleConstraining(URI uri)

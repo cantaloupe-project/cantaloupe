@@ -29,7 +29,7 @@ public class ImageResourceTest extends ResourceTest {
 
     private static final String IMAGE = "jpg-rgb-64x56x8-baseline.jpg";
 
-    private ImageResourceTester tester = new ImageResourceTester();
+    private final ImageResourceTester tester = new ImageResourceTester();
 
     @Override
     protected String getEndpointPath() {
@@ -46,6 +46,13 @@ public class ImageResourceTest extends ResourceTest {
     void testGETAuthorizationWhenNotAuthorized() {
         URI uri = getHTTPURI("/forbidden.jpg/full/full/0/color.jpg");
         tester.testAuthorizationWhenNotAuthorized(uri);
+    }
+
+    @Test
+    void testGETAuthorizationWhenNotAuthorizedWhenAccessingCachedResource()
+            throws Exception {
+        URI uri = getHTTPURI("/forbidden.jpg/full/full/0/color.jpg");
+        tester.testAuthorizationWhenNotAuthorizedWhenAccessingCachedResource(uri);
     }
 
     @Test
