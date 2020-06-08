@@ -12,9 +12,9 @@
 
 ### Command line
 
-* `mvn exec:java -Dcantaloupe.config=...` will build the project and run in
-  standalone mode, using the embedded Servlet container listening on the
-  port(s) specified in `cantaloupe.properties`.
+* `mvn clean compile exec:java -Dcantaloupe.config=...` will build the project
+  and run in standalone mode, using the embedded Servlet container listening on
+  the port(s) specified in `cantaloupe.properties`.
 * `mvn clean package -DskipTests` will build a release WAR in the `target`
   folder, which can be run like any other.
 
