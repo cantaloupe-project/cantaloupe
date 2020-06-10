@@ -18,7 +18,6 @@ import edu.illinois.library.cantaloupe.processor.codec.ImageWriterFacade;
 import edu.illinois.library.cantaloupe.source.StreamFactory;
 import edu.illinois.library.cantaloupe.util.Stopwatch;
 import org.apache.commons.io.IOUtils;
-import org.apache.pdfbox.cos.COSBase;
 import org.apache.pdfbox.cos.COSObject;
 import org.apache.pdfbox.pdmodel.DefaultResourceCache;
 import org.apache.pdfbox.pdmodel.PDDocument;
