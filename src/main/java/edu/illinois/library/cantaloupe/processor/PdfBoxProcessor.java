@@ -18,6 +18,7 @@ import edu.illinois.library.cantaloupe.processor.codec.ImageWriterFacade;
 import edu.illinois.library.cantaloupe.source.StreamFactory;
 import edu.illinois.library.cantaloupe.util.Stopwatch;
 import org.apache.commons.io.IOUtils;
+import org.apache.pdfbox.cos.COSBase;
 import org.apache.pdfbox.cos.COSObject;
 import org.apache.pdfbox.pdmodel.DefaultResourceCache;
 import org.apache.pdfbox.pdmodel.PDDocument;
@@ -185,7 +186,9 @@ class PdfBoxProcessor extends AbstractProcessor
                 PDDocumentInformation info = doc.getDocumentInformation();
                 Map<String, String> pdfMetadata = new HashMap<>();
                 for (String key : info.getMetadataKeys()) {
-                    pdfMetadata.put(key, info.getCOSObject().getItem(key).toString());
+                    if (info.getPropertyStringValue(key) != null) {
+                        pdfMetadata.put(key, info.getPropertyStringValue(key).toString());
+                    }
                 }
                 metadata.setNativeMetadata(pdfMetadata);
             }
