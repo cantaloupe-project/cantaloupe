@@ -185,7 +185,7 @@ class PdfBoxProcessor extends AbstractProcessor
                 PDDocumentInformation info = doc.getDocumentInformation();
                 Map<String, String> pdfMetadata = new HashMap<>();
                 for (String key : info.getMetadataKeys()) {
-                    pdfMetadata.put(key, info.getPropertyStringValue(key).toString());
+                    pdfMetadata.put(key, info.getCOSObject().getItem(key).toString());
                 }
                 metadata.setNativeMetadata(pdfMetadata);
             }
