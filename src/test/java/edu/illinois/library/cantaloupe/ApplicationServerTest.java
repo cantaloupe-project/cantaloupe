@@ -127,6 +127,26 @@ public class ApplicationServerTest extends BaseTest {
     }
 
     @Test
+    public void getMaxThreads() {
+        // default
+        assertEquals(ApplicationServer.DEFAULT_MAX_THREADS,
+                instance.getMaxThreads());
+        // explicitly set
+        instance.setMaxThreads(45);
+        assertEquals(45, instance.getMaxThreads());
+    }
+
+    @Test
+    public void getMinThreads() {
+        // default
+        assertEquals(ApplicationServer.DEFAULT_MIN_THREADS,
+                instance.getMinThreads());
+        // explicitly set
+        instance.setMinThreads(45);
+        assertEquals(45, instance.getMinThreads());
+    }
+
+    @Test
     public void isHTTPEnabled() {
         // default
         assertFalse(instance.isHTTPEnabled());

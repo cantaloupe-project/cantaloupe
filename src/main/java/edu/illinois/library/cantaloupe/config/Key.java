@@ -99,6 +99,8 @@ public enum Key {
     HTTP_ENABLED("http.enabled"),
     HTTP_HTTP2_ENABLED("http.http2.enabled"),
     HTTP_HOST("http.host"),
+    HTTP_MAX_THREADS("http.max_threads"),
+    HTTP_MIN_THREADS("http.min_threads"),
     HTTP_PORT("http.port"),
     HTTPSOURCE_ALLOW_INSECURE("HttpSource.allow_insecure"),
     HTTPSOURCE_BASIC_AUTH_SECRET("HttpSource.BasicLookupStrategy.auth.basic.secret"),
