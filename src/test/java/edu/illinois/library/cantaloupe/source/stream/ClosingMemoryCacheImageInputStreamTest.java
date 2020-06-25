@@ -1,7 +1,7 @@
 package edu.illinois.library.cantaloupe.source.stream;
 
 import edu.illinois.library.cantaloupe.test.BaseTest;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import javax.imageio.stream.ImageInputStream;
 import java.io.ByteArrayInputStream;
