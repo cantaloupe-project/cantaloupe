@@ -4,6 +4,8 @@
 
 ### Endpoints
 
+* The minimum and maximum size of the built-in web server's thread pool is
+  configurable.
 * A `cache=recache` URL query argument is available that reprocesses and
   recaches the derivative image before delivering it.
 * The `X-IIIF-ID` reverse proxy header is no longer supported. `X-Forwarded-ID`

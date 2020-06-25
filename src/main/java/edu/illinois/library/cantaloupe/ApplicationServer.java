@@ -14,6 +14,7 @@ import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.server.SslConnectionFactory;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
+import org.eclipse.jetty.util.thread.QueuedThreadPool;
 import org.eclipse.jetty.webapp.WebAppContext;
 
 import java.io.File;
@@ -44,6 +45,19 @@ public class ApplicationServer {
 
     static final int DEFAULT_HTTPS_PORT = 8183;
 
+    /**
+     * Minimum number of threads in the pool. {@literal 8} is the default in
+     * Jetty 9.4.
+     */
+    static final int DEFAULT_MIN_THREADS = 8;
+
+    /**
+     * Maximum number of threads in the pool. {@literal 200} is the default in
+     * Jetty 9.4, but, this being a resource-intensive application, we will
+     * lower that a bit.
+     */
+    static final int DEFAULT_MAX_THREADS = 150;
+
     private boolean isHTTPEnabled;
     private String httpHost                 = DEFAULT_HTTP_HOST;
     private int httpPort                    = DEFAULT_HTTP_PORT;
@@ -55,6 +69,8 @@ public class ApplicationServer {
     private String httpsKeyStoreType;
     private int httpsPort                   = DEFAULT_HTTPS_PORT;
     private boolean isStarted;
+    private int minThreads                  = DEFAULT_MIN_THREADS;
+    private int maxThreads                  = DEFAULT_MAX_THREADS;
     private Server server;
 
     /**
@@ -84,6 +100,8 @@ public class ApplicationServer {
         setHTTPSKeyStoreType(
                 config.getString(Key.HTTPS_KEY_STORE_TYPE));
         setHTTPSPort(config.getInt(Key.HTTPS_PORT, DEFAULT_HTTPS_PORT));
+        setMaxThreads(config.getInt(Key.HTTP_MAX_THREADS, DEFAULT_MAX_THREADS));
+        setMinThreads(config.getInt(Key.HTTP_MIN_THREADS, DEFAULT_MIN_THREADS));
     }
 
     private void createServer() {
@@ -133,7 +151,10 @@ public class ApplicationServer {
             context.setWar("src/main/webapp");
         }
 
-        server = new Server();
+        QueuedThreadPool pool = new QueuedThreadPool(
+                getMaxThreads(), getMinThreads());
+
+        server = new Server(pool);
         context.setServer(server);
         server.setHandler(context);
     }
@@ -168,6 +189,14 @@ public class ApplicationServer {
 
     public int getHTTPSPort() {
         return httpsPort;
+    }
+
+    public int getMaxThreads() {
+        return maxThreads;
+    }
+
+    public int getMinThreads() {
+        return minThreads;
     }
 
     public boolean isHTTPEnabled() {
@@ -224,6 +253,14 @@ public class ApplicationServer {
 
     public void setHTTPSPort(int port) {
         this.httpsPort = port;
+    }
+
+    public void setMaxThreads(int maxThreads) {
+        this.maxThreads = maxThreads;
+    }
+
+    public void setMinThreads(int minThreads) {
+        this.minThreads = minThreads;
     }
 
     /**

@@ -9,6 +9,8 @@ current version.
 2.  Rename the following configuration keys:
     * `endpoint.iiif.2.restrict_to_sizes` to `endpoint.iiif.restrict_to_sizes`
 3.  Add the following keys from the sample configuration:
+    * `http.min_threads`
+    * `http.max_threads`
     * `scale_constraints.delimiter`
     * `processor.ManualSelectionStrategy.xpm`
     * `processor.imageio.xpm.reader`

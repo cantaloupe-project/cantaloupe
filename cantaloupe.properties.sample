@@ -29,6 +29,11 @@ https.key_store_password = myPassword
 https.key_store_path = /path/to/keystore.jks
 https.key_password = myPassword
 
+# !! Constrains the size of the web server's thread pool. Leave blank to
+# use the defaults.
+http.min_threads =
+http.max_threads =
+
 # Base URI to use for internal links, such as Link headers and JSON-LD
 # @id values, in a reverse-proxy context. This should only be used when
 # X-Forwarded-* headers cannot be used instead. (See the user manual.)
