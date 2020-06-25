@@ -34,6 +34,9 @@ https.key_password = myPassword
 http.min_threads =
 http.max_threads =
 
+# !! Maximum size of the request queue. Leave blank to use the default.
+http.accept_queue_limit =
+
 # Base URI to use for internal links, such as Link headers and JSON-LD
 # @id values, in a reverse-proxy context. This should only be used when
 # X-Forwarded-* headers cannot be used instead. (See the user manual.)

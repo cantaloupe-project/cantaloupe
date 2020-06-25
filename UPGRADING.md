@@ -23,7 +23,6 @@ current version.
 4.  Remove the following configuration keys:
     * `http.http2.enabled`
     * `https.http2.enabled`
-    * `http.accept_queue_limit`
     * `endpoint.iiif.content_disposition`
     * `processor.metadata.*`
     * `GraphicsMagickProcessor.path_to_binaries`

@@ -37,6 +37,15 @@ public class ApplicationServerTest extends BaseTest {
     }
 
     @Test
+    public void getAcceptQueueLimit() {
+        // default
+        assertEquals(0, instance.getAcceptQueueLimit());
+        // explicitly set
+        instance.setAcceptQueueLimit(0);
+        assertEquals(0, instance.getAcceptQueueLimit());
+    }
+
+    @Test
     void getHTTPHost() {
         // default
         assertEquals(ApplicationServer.DEFAULT_HTTP_HOST,

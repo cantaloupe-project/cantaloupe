@@ -98,6 +98,7 @@ public enum Key {
     HEAPCACHE_PATHNAME("HeapCache.persist.filesystem.pathname"),
     HEAPCACHE_PERSIST("HeapCache.persist"),
     HEAPCACHE_TARGET_SIZE("HeapCache.target_size"),
+    HTTP_ACCEPT_QUEUE_LIMIT("http.accept_queue_limit"),
     HTTP_ENABLED("http.enabled"),
     HTTP_HOST("http.host"),
     HTTP_MAX_THREADS("http.max_threads"),
