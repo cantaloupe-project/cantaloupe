@@ -182,6 +182,13 @@
             <groupId>it.geosolutions.imageio-ext</groupId>
             <artifactId>imageio-ext-tiff</artifactId>
             <version>1.3.2</version>
+            <exclusions>
+                <!-- jai_imageio jar is already included in formats-gpl -->
+                <exclusion>
+                    <groupId>javax.media</groupId>
+                    <artifactId>jai_imageio</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>javax.servlet</groupId>
@@ -406,6 +413,12 @@
             <version>3.1.1</version>
             <type>maven-plugin</type>
         </dependency>
+        <!-- Provides Bio-formats for microscopy images support -->
+        <dependency>
+            <groupId>ome</groupId>
+            <artifactId>formats-gpl</artifactId>
+            <version>6.5.0</version>
+        </dependency>
     </dependencies>
 
     <repositories>
@@ -414,6 +427,18 @@
             <id>imageio-ext-repository</id>
             <name>imageio-ext Repository</name>
             <url>https://maven.geo-solutions.it/</url>
+        </repository>
+        <!-- Provides javax.media:jai_codec -->
+        <repository>
+            <id>geotoolkit-repository</id>
+            <name>geotoolkit Repository</name>
+            <url>http://maven.geotoolkit.org/</url>
+        </repository>
+        <!-- Provides formats-gpl -->
+        <repository>
+            <id>ome</id>
+            <name>OME Artifactory</name>
+            <url>https://artifacts.openmicroscopy.org/artifactory/maven/</url>
         </repository>
     </repositories>
 
@@ -607,7 +632,7 @@
                         </goals>
                     </execution>
                 </executions>
-              </plugin>
+            </plugin>
         </plugins>
     </build>
 

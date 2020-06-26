@@ -16,6 +16,8 @@ class AutomaticSelectionStrategy implements SelectionStrategy {
     private static final List<Class<? extends Processor>> JPG_CANDIDATES = List.of(
             TurboJpegProcessor.class,
             Java2dProcessor.class);
+    private static final List<Class<? extends Processor>> MICROSCOPY_CANDIDATES = List.of(
+            MicroscopyProcessor.class);
     private static final List<Class<? extends Processor>> PDF_CANDIDATES = List.of(
             PdfBoxProcessor.class);
     private static final List<Class<? extends Processor>> VIDEO_CANDIDATES = List.of(
@@ -29,6 +31,8 @@ class AutomaticSelectionStrategy implements SelectionStrategy {
             return JP2_CANDIDATES;
         } else if (Format.JPG.equals(sourceFormat)) {
             return JPG_CANDIDATES;
+        } else if (Format.Type.MICROSCOPY.equals(sourceFormat.getType())) {
+            return MICROSCOPY_CANDIDATES;
         } else if (Format.PDF.equals(sourceFormat)) {
             return PDF_CANDIDATES;
         } else if (Format.Type.VIDEO.equals(sourceFormat.getType())) {

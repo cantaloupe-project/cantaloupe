@@ -24,7 +24,7 @@ public final class Format implements Comparable<Format> {
     }
 
     public enum Type {
-        IMAGE, UNKNOWN, VIDEO
+        IMAGE, MICROSCOPY, UNKNOWN, VIDEO
     }
 
     // N.B.: For each one of these constants, there should be a corresponding
@@ -44,6 +44,18 @@ public final class Format implements Comparable<Format> {
             false);
 
     /**
+     * Ventana BIF.
+     */
+    public static final Format BIF = new Format(
+            "bif",
+            "BIF",
+            ImageType.RASTER,
+            List.of("application/octet-stream"),
+            List.of("bif"),
+            Type.MICROSCOPY,
+            true);
+
+    /**
      * Windows Bitmap image format.
      */
     public static final Format BMP = new Format(
@@ -53,6 +65,18 @@ public final class Format implements Comparable<Format> {
             List.of("image/bmp", "image/x-bmp", "image/x-ms-bmp"),
             List.of("bmp", "dib"),
             Type.IMAGE,
+            true);
+
+    /**
+     * Zeiss CZI.
+     */
+    public static final Format CZI = new Format(
+            "czi",
+            "CZI",
+            ImageType.RASTER,
+            List.of("application/octet-stream"),
+            List.of("czi"),
+            Type.MICROSCOPY,
             true);
 
     /**
@@ -92,6 +116,18 @@ public final class Format implements Comparable<Format> {
             true);
 
     /**
+     * Bitplane Imaris.
+     */
+    public static final Format IMS = new Format(
+            "ims",
+            "IMS",
+            ImageType.RASTER,
+            List.of("application/octet-stream"),
+            List.of("ims"),
+            Type.MICROSCOPY,
+            true);
+
+    /**
      * JPEG2000 image format.
      */
     public static final Format JP2 = new Format(
@@ -114,6 +150,18 @@ public final class Format implements Comparable<Format> {
             List.of("jpg", "jpeg"),
             Type.IMAGE,
             false);
+
+    /**
+     * Keller Lab Block.
+     */
+    public static final Format KLB = new Format(
+            "klb",
+            "KLB",
+            ImageType.RASTER,
+            List.of("application/octet-stream"),
+            List.of("klb"),
+            Type.MICROSCOPY,
+            true);
 
     /**
      * Apple QuickTime video format.
@@ -152,6 +200,18 @@ public final class Format implements Comparable<Format> {
             false);
 
     /**
+     * Hamamatsu ndpi.
+     */
+    public static final Format NDPI = new Format(
+            "ndpi",
+            "ndpi",
+            ImageType.RASTER,
+            List.of("application/octet-stream"),
+            List.of("ndpi", "ndpis"),
+            Type.MICROSCOPY,
+            true);
+
+    /**
      * Portable Document Format.
      */
     public static final Format PDF = new Format(
@@ -176,6 +236,42 @@ public final class Format implements Comparable<Format> {
             true);
 
     /**
+     * PerkinElmer Vectra QPTIFF.
+     */
+    public static final Format QPTIFF = new Format(
+            "qptiff",
+            "QPTIFF",
+            ImageType.RASTER,
+            List.of("application/octet-stream"),
+            List.of("qptiff"),
+            Type.MICROSCOPY,
+            true);
+
+    /**
+     * Leica SCN.
+     */
+    public static final Format SCN = new Format(
+            "scn",
+            "SCN",
+            ImageType.RASTER,
+            List.of("application/octet-stream"),
+            List.of("scn"),
+            Type.MICROSCOPY,
+            true);
+
+    /**
+     * Aperio SVS TIFF.
+     */
+    public static final Format SVS = new Format(
+            "svs",
+            "SVS",
+            ImageType.RASTER,
+            List.of("application/octet-stream"),
+            List.of("svs"),
+            Type.MICROSCOPY,
+            true);
+
+    /**
      * Tagged Image File Format.
      */
     public static final Format TIF = new Format(
@@ -186,6 +282,19 @@ public final class Format implements Comparable<Format> {
             List.of("tif", "ptif", "tiff"),
             Type.IMAGE,
             true);
+
+    /**
+     * cellSens VSI.
+     */
+    public static final Format VSI = new Format(
+            "VSI",
+            "vsi",
+            ImageType.RASTER,
+            List.of("application/octet-stream"),
+            List.of("vsi"),
+            Type.MICROSCOPY,
+            true);
+
 
     /**
      * WebM video format.
@@ -250,8 +359,8 @@ public final class Format implements Comparable<Format> {
     private Type type;
 
     static {
-        KNOWN_FORMATS.addAll(Set.of(AVI, BMP, DCM, FLV, GIF, JP2, JPG, MOV,
-                MP4, MPG, PDF, PNG, TIF, UNKNOWN, WEBM, WEBP, XPM));
+        KNOWN_FORMATS.addAll(Set.of(AVI, BIF, BMP, CZI, DCM, FLV, GIF, IMS, JP2, JPG, KLB, MOV,
+                MP4, MPG, NDPI, PDF, PNG, QPTIFF, SCN, SVS, TIF, VSI, UNKNOWN, WEBM, WEBP, XPM));
     }
 
     /**
