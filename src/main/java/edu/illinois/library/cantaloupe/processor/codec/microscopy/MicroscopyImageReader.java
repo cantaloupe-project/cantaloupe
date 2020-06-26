@@ -23,7 +23,6 @@ import java.awt.image.RenderedImage;
 import java.awt.image.WritableRaster;
 import java.io.IOException;
 import java.nio.file.Path;
-import java.text.MessageFormat;
 import java.util.Set;
 
 public class MicroscopyImageReader implements edu.illinois.library.cantaloupe.processor.codec.ImageReader {
@@ -206,9 +205,6 @@ public class MicroscopyImageReader implements edu.illinois.library.cantaloupe.pr
                     } else {
                         // image has multiple channels (e.g. fluorescence microscopy image)
                         // assign a different color to each channel and merge them using alpha compositing
-                        if (reader.getEffectiveSizeC() > channels_colors.length) {
-                            throw new IOException(MessageFormat.format("A maximum of {0} channels is supported (image has {1} channels)", channels_colors.length, reader.getEffectiveSizeC()));
-                        }
                         bestImage = new BufferedImage(reducedRect.intWidth(), reducedRect.intHeight(), BufferedImage.TYPE_INT_ARGB);
                         Graphics2D g = bestImage.createGraphics();
                         g.setBackground(Color.BLACK);
@@ -218,7 +214,16 @@ public class MicroscopyImageReader implements edu.illinois.library.cantaloupe.pr
                         for (int c = 0; c < reader.getEffectiveSizeC(); c++) {
                             int plane = reader.getIndex(0, c, 0);
                             BufferedImage image = reader.openImage(plane, reducedRect.intX(), reducedRect.intY(), reducedRect.intWidth(), reducedRect.intHeight());
-                            image = gray_to_RGBA(image, channels_colors[c]);
+                            Color color;
+                            if (c < channels_colors.length) {
+                                color = channels_colors[c];
+                            } else {
+                                color = Color.WHITE;
+                                LOGGER.warn("Maximum number of channels exceeded ({}): " +
+                                        "cannot assign color to channel {}, defaulting to grayscale",
+                                        channels_colors.length, c);
+                            }
+                            image = gray_to_RGBA(image, color);
                             g.drawImage(image, 0, 0, null);
                         }
                         g.dispose();
