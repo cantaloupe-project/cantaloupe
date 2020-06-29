@@ -7,7 +7,10 @@ import edu.illinois.library.cantaloupe.operation.*;
 import edu.illinois.library.cantaloupe.processor.codec.BufferedImageSequence;
 import edu.illinois.library.cantaloupe.processor.codec.ReaderHint;
 import edu.illinois.library.cantaloupe.source.StreamFactory;
+import loci.common.DataTools;
 import loci.formats.FormatException;
+import loci.formats.FormatTools;
+import loci.formats.ImageTools;
 import loci.formats.MetadataTools;
 import loci.formats.gui.BufferedImageReader;
 import loci.formats.meta.IMetadata;
@@ -18,10 +21,9 @@ import javax.imageio.stream.ImageInputStream;
 import java.awt.AlphaComposite;
 import java.awt.Color;
 import java.awt.Graphics2D;
-import java.awt.image.BufferedImage;
-import java.awt.image.RenderedImage;
-import java.awt.image.WritableRaster;
+import java.awt.image.*;
 import java.io.IOException;
+import java.nio.*;
 import java.nio.file.Path;
 import java.util.Set;
 
@@ -31,7 +33,7 @@ public class MicroscopyImageReader implements edu.illinois.library.cantaloupe.pr
 
     private static final Logger LOGGER =
             LoggerFactory.getLogger(MicroscopyImageReader.class);
-    private final Color[] channels_colors = {
+    private final Color[] defaultChannelsColors = {
             new Color(0xFF0000),
             new Color(0x00FF00),
             new Color(0x0000FF),
@@ -196,34 +198,79 @@ public class MicroscopyImageReader implements edu.illinois.library.cantaloupe.pr
                 width = (x + width > subimageWidth) ? subimageWidth - x : width;
                 height = (y + height > subimageHeight) ? subimageWidth - y : height;
 
-                final Rectangle reducedRect = new Rectangle(x, y, width, height);
-
                 try {
-                    if (reader.getEffectiveSizeC() == 1) {
-                        // image is grayscale or RGB
-                        bestImage = reader.openImage(0, reducedRect.intX(), reducedRect.intY(), reducedRect.intWidth(), reducedRect.intHeight());
+                    if (isSingleChannelImage()) {
+                        // image is grayscale, RGB or RGBA
+                        bestImage = reader.openImage(0, x, y, width, height);
                     } else {
                         // image has multiple channels (e.g. fluorescence microscopy image)
                         // assign a different color to each channel and merge them using alpha compositing
-                        bestImage = new BufferedImage(reducedRect.intWidth(), reducedRect.intHeight(), BufferedImage.TYPE_INT_ARGB);
+                        bestImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
                         Graphics2D g = bestImage.createGraphics();
                         g.setBackground(Color.BLACK);
-                        g.clearRect(0,0,reducedRect.intWidth(), reducedRect.intHeight());
-                        g.setComposite(AlphaComposite.SrcAtop);
+                        g.clearRect(0, 0, width, height);
+                        g.setComposite(AlphaComposite.SrcOver);
 
-                        for (int c = 0; c < reader.getEffectiveSizeC(); c++) {
-                            int plane = reader.getIndex(0, c, 0);
-                            BufferedImage image = reader.openImage(plane, reducedRect.intX(), reducedRect.intY(), reducedRect.intWidth(), reducedRect.intHeight());
+                        ByteOrder byteOrder = reader.isLittleEndian() ? ByteOrder.LITTLE_ENDIAN : ByteOrder.BIG_ENDIAN;
+                        int pixelType = reader.getPixelType();
+                        byte[][] bytes_channels = new byte[reader.getSizeC()][];
+                        Color[] channelsColors = null;
+
+                        if (reader.getEffectiveSizeC() > 1) {
+                            // channels are stored in separate planes
+
+                            // check if channels colors are defined in the metadata
+                            ome.xml.model.primitives.Color testOmeColor = ((IMetadata) reader.getMetadataStore()).getChannelColor(1, 0);
+                            if (testOmeColor != null) {
+                                channelsColors = new Color[reader.getSizeC()];
+                            } else {
+                                LOGGER.warn("No channels colors defined, using defaults");
+                            }
+
+                            for (int c = 0; c < reader.getEffectiveSizeC(); c++) {
+                                int plane = reader.getIndex(0, c, 0);
+                                bytes_channels[c] = reader.openBytes(plane, x, y, width, height);
+                                if (channelsColors != null) {
+                                    ome.xml.model.primitives.Color omeColor = ((IMetadata) reader.getMetadataStore()).getChannelColor(plane, 0);
+                                    LOGGER.warn("{} {}", c, omeColor);
+                                    channelsColors[c] = new Color(omeColor.getRed(), omeColor.getGreen(), omeColor.getBlue());
+                                }
+                            }
+                        } else {
+                            // channels are stored in the same plane
+
+                            // check if channels colors are defined in the metadata
+                            ome.xml.model.primitives.Color testOmeColor = ((IMetadata) reader.getMetadataStore()).getChannelColor(0, 1);
+                            if (testOmeColor != null) {
+                                channelsColors = new Color[reader.getSizeC()];
+                            } else {
+                                LOGGER.warn("No channels colors defined, using defaults");
+                            }
+
+                            int plane = reader.getIndex(0, 0, 0);
+                            byte[] bytes = reader.openBytes(plane, x, y, width, height);
+                            for (int c = 0; c < reader.getRGBChannelCount(); c++) {
+                                bytes_channels[c] = ImageTools.splitChannels(bytes, c, reader.getRGBChannelCount(), FormatTools.getBytesPerPixel(pixelType), false, reader.isInterleaved());
+                                if (channelsColors != null) {
+                                    ome.xml.model.primitives.Color omeColor = ((IMetadata) reader.getMetadataStore()).getChannelColor(plane, c);
+                                    channelsColors[c] = new Color(omeColor.getRed(), omeColor.getGreen(), omeColor.getBlue());
+                                }
+                            }
+                        }
+                        for (int c = 0; c < reader.getSizeC(); c++) {
+                            DataBuffer dataBuffer = getDataBuffer(bytes_channels[c], pixelType, byteOrder);
                             Color color;
-                            if (c < channels_colors.length) {
-                                color = channels_colors[c];
+                            if (channelsColors != null) {
+                                color = channelsColors[c];
+                            } else if (c < defaultChannelsColors.length) {
+                                color = defaultChannelsColors[c];
                             } else {
                                 color = Color.WHITE;
                                 LOGGER.warn("Maximum number of channels exceeded ({}): " +
-                                        "cannot assign color to channel {}, defaulting to grayscale",
-                                        channels_colors.length, c);
+                                                "cannot assign color to channel {}, defaulting to grayscale",
+                                        defaultChannelsColors.length, c);
                             }
-                            image = gray_to_RGBA(image, color);
+                            BufferedImage image = makeRGBAImage(dataBuffer, width, height, color);
                             g.drawImage(image, 0, 0, null);
                         }
                         g.dispose();
@@ -291,27 +338,88 @@ public class MicroscopyImageReader implements edu.illinois.library.cantaloupe.pr
         }
     }
 
-    private BufferedImage gray_to_RGBA(BufferedImage srcImage, Color color) {
-        int w = srcImage.getWidth();
-        int h = srcImage.getHeight();
-        float[] RGBA = new float[4];
-        color.getRGBComponents(RGBA);
+    private boolean isSingleChannelImage() {
+        int pixelType = reader.getPixelType();
+        int c = reader.getSizeC();
+        return (reader.getEffectiveSizeC() == 1 &&
+                (c == 1 || ((c == 3 || c == 4) && FormatTools.UINT8 == pixelType)));
+    }
 
-        BufferedImage destImage = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
-        WritableRaster srcRaster = srcImage.getRaster();
-        WritableRaster destRaster = destImage.getRaster();
-        int[] srcSamples = new int[w*h];
-        int[][] destSamples = new int[4][w*h];
-        srcRaster.getSamples(0,0,w, h, 0, srcSamples);
-
-        for (int i=0; i<srcSamples.length; i++) {
-            int gray = srcSamples[i];
-            for (int c=0; c<4; c++) {
-                destSamples[c][i] = (int)(gray*RGBA[c]);
-            }
+    private DataBuffer getDataBuffer(byte[] bytes, int pixelType, ByteOrder byteOrder) throws UnsupportedOperationException {
+        DataBuffer dataBuffer;
+        int size = bytes.length;
+        switch (pixelType) {
+            case (FormatTools.UINT8):
+                dataBuffer = new DataBufferByte(bytes, size);
+                break;
+            case (FormatTools.UINT16):
+            case (FormatTools.INT16):
+                size /= 2;
+                ShortBuffer buffer = ByteBuffer.wrap(bytes).order(byteOrder).asShortBuffer();
+                short[] shortArray = new short[size];
+                buffer.get(shortArray);
+                dataBuffer = new DataBufferUShort(shortArray, size);
+                break;
+            case (FormatTools.INT32):
+                size /= 4;
+                IntBuffer intBuffer = ByteBuffer.wrap(bytes).order(byteOrder).asIntBuffer();
+                int[] intArray = new int[size];
+                intBuffer.get(intArray);
+                dataBuffer = new DataBufferInt(intArray, size);
+                break;
+            case (FormatTools.FLOAT):
+                size /= 4;
+                FloatBuffer byteBuffer = ByteBuffer.wrap(bytes).order(byteOrder).asFloatBuffer();
+                float[] floatArray = new float[size];
+                byteBuffer.get(floatArray);
+                if (!reader.isNormalized())
+                    floatArray = DataTools.normalizeFloats(floatArray);
+                dataBuffer = new DataBufferFloat(floatArray, size);
+                break;
+            case (FormatTools.DOUBLE):
+                size /= 8;
+                DoubleBuffer doubleBuffer = ByteBuffer.wrap(bytes).order(byteOrder).asDoubleBuffer();
+                double[] doubleArray = new double[size];
+                doubleBuffer.get(doubleArray);
+                if (!reader.isNormalized())
+                    doubleArray = DataTools.normalizeDoubles(doubleArray);
+                dataBuffer = new DataBufferDouble(doubleArray, size);
+                break;
+            default:
+                throw new UnsupportedOperationException("Unsupported pixel type " + pixelType);
         }
-        for (int c=0; c<4; c++) {
-            destRaster.setSamples(0,0,w,h, c, destSamples[c]);
+        return dataBuffer;
+    }
+
+    private BufferedImage makeRGBAImage(DataBuffer dataBuffer, int w, int h, Color color) throws UnsupportedOperationException {
+        BufferedImage destImage = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
+        WritableRaster destRaster = destImage.getRaster();
+        int[][] destSamples = new int[4][w * h];
+
+        for (int i = 0; i < w * h; i++) {
+            int luminance;
+            switch (dataBuffer.getDataType()) {
+                case (DataBuffer.TYPE_BYTE):
+                case (DataBuffer.TYPE_SHORT):
+                case (DataBuffer.TYPE_INT):
+                    luminance = dataBuffer.getElem(i);
+                    break;
+                case (DataBuffer.TYPE_FLOAT):
+                    luminance = (int) (dataBuffer.getElemFloat(i) * 255);
+                    break;
+                case (DataBuffer.TYPE_DOUBLE):
+                    luminance = (int) (dataBuffer.getElemDouble(i) * 255);
+                    break;
+                default:
+                    throw new UnsupportedOperationException("Unsupported data type " + dataBuffer.getDataType());
+            }
+            destSamples[0][i] = color.getRed();
+            destSamples[1][i] = color.getGreen();
+            destSamples[2][i] = color.getBlue();
+            destSamples[3][i] = luminance;
+        }
+        for (int c = 0; c < 4; c++) {
+            destRaster.setSamples(0, 0, w, h, c, destSamples[c]);
         }
         return destImage;
     }
