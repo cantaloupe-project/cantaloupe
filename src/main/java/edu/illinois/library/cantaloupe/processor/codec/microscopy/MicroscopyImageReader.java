@@ -23,7 +23,6 @@ import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.image.*;
 import java.io.IOException;
-import java.nio.*;
 import java.nio.file.Path;
 import java.util.Set;
 
@@ -211,9 +210,9 @@ public class MicroscopyImageReader implements edu.illinois.library.cantaloupe.pr
                         g.clearRect(0, 0, width, height);
                         g.setComposite(AlphaComposite.SrcOver);
 
-                        ByteOrder byteOrder = reader.isLittleEndian() ? ByteOrder.LITTLE_ENDIAN : ByteOrder.BIG_ENDIAN;
                         int pixelType = reader.getPixelType();
-                        byte[][] bytes_channels = new byte[reader.getSizeC()][];
+                        int pixelSize = FormatTools.getBytesPerPixel(pixelType);
+                        byte[][] bytesChannels = new byte[reader.getSizeC()][];
                         Color[] channelsColors = null;
 
                         if (reader.getEffectiveSizeC() > 1) {
@@ -229,7 +228,7 @@ public class MicroscopyImageReader implements edu.illinois.library.cantaloupe.pr
 
                             for (int c = 0; c < reader.getEffectiveSizeC(); c++) {
                                 int plane = reader.getIndex(0, c, 0);
-                                bytes_channels[c] = reader.openBytes(plane, x, y, width, height);
+                                bytesChannels[c] = reader.openBytes(plane, x, y, width, height);
                                 if (channelsColors != null) {
                                     ome.xml.model.primitives.Color omeColor = ((IMetadata) reader.getMetadataStore()).getChannelColor(plane, 0);
                                     LOGGER.warn("{} {}", c, omeColor);
@@ -250,7 +249,7 @@ public class MicroscopyImageReader implements edu.illinois.library.cantaloupe.pr
                             int plane = reader.getIndex(0, 0, 0);
                             byte[] bytes = reader.openBytes(plane, x, y, width, height);
                             for (int c = 0; c < reader.getRGBChannelCount(); c++) {
-                                bytes_channels[c] = ImageTools.splitChannels(bytes, c, reader.getRGBChannelCount(), FormatTools.getBytesPerPixel(pixelType), false, reader.isInterleaved());
+                                bytesChannels[c] = ImageTools.splitChannels(bytes, c, reader.getRGBChannelCount(), FormatTools.getBytesPerPixel(pixelType), false, reader.isInterleaved());
                                 if (channelsColors != null) {
                                     ome.xml.model.primitives.Color omeColor = ((IMetadata) reader.getMetadataStore()).getChannelColor(plane, c);
                                     channelsColors[c] = new Color(omeColor.getRed(), omeColor.getGreen(), omeColor.getBlue());
@@ -258,7 +257,6 @@ public class MicroscopyImageReader implements edu.illinois.library.cantaloupe.pr
                             }
                         }
                         for (int c = 0; c < reader.getSizeC(); c++) {
-                            DataBuffer dataBuffer = getDataBuffer(bytes_channels[c], pixelType, byteOrder);
                             Color color;
                             if (channelsColors != null) {
                                 color = channelsColors[c];
@@ -270,7 +268,7 @@ public class MicroscopyImageReader implements edu.illinois.library.cantaloupe.pr
                                                 "cannot assign color to channel {}, defaulting to grayscale",
                                         defaultChannelsColors.length, c);
                             }
-                            BufferedImage image = makeRGBAImage(dataBuffer, width, height, color);
+                            BufferedImage image = makeRGBAImage(bytesChannels[c], pixelType, pixelSize, reader.isLittleEndian(), width, height, color);
                             g.drawImage(image, 0, 0, null);
                         }
                         g.dispose();
@@ -345,73 +343,32 @@ public class MicroscopyImageReader implements edu.illinois.library.cantaloupe.pr
                 (c == 1 || ((c == 3 || c == 4) && FormatTools.UINT8 == pixelType)));
     }
 
-    private DataBuffer getDataBuffer(byte[] bytes, int pixelType, ByteOrder byteOrder) throws UnsupportedOperationException {
-        DataBuffer dataBuffer;
-        int size = bytes.length;
-        switch (pixelType) {
-            case (FormatTools.UINT8):
-                dataBuffer = new DataBufferByte(bytes, size);
-                break;
-            case (FormatTools.UINT16):
-            case (FormatTools.INT16):
-                size /= 2;
-                ShortBuffer buffer = ByteBuffer.wrap(bytes).order(byteOrder).asShortBuffer();
-                short[] shortArray = new short[size];
-                buffer.get(shortArray);
-                dataBuffer = new DataBufferUShort(shortArray, size);
-                break;
-            case (FormatTools.INT32):
-                size /= 4;
-                IntBuffer intBuffer = ByteBuffer.wrap(bytes).order(byteOrder).asIntBuffer();
-                int[] intArray = new int[size];
-                intBuffer.get(intArray);
-                dataBuffer = new DataBufferInt(intArray, size);
-                break;
-            case (FormatTools.FLOAT):
-                size /= 4;
-                FloatBuffer byteBuffer = ByteBuffer.wrap(bytes).order(byteOrder).asFloatBuffer();
-                float[] floatArray = new float[size];
-                byteBuffer.get(floatArray);
-                if (!reader.isNormalized())
-                    floatArray = DataTools.normalizeFloats(floatArray);
-                dataBuffer = new DataBufferFloat(floatArray, size);
-                break;
-            case (FormatTools.DOUBLE):
-                size /= 8;
-                DoubleBuffer doubleBuffer = ByteBuffer.wrap(bytes).order(byteOrder).asDoubleBuffer();
-                double[] doubleArray = new double[size];
-                doubleBuffer.get(doubleArray);
-                if (!reader.isNormalized())
-                    doubleArray = DataTools.normalizeDoubles(doubleArray);
-                dataBuffer = new DataBufferDouble(doubleArray, size);
-                break;
-            default:
-                throw new UnsupportedOperationException("Unsupported pixel type " + pixelType);
-        }
-        return dataBuffer;
-    }
-
-    private BufferedImage makeRGBAImage(DataBuffer dataBuffer, int w, int h, Color color) throws UnsupportedOperationException {
+    private BufferedImage makeRGBAImage(byte[] bytes, int pixelType, int pixelSize, boolean isLittleEndian, int w, int h, Color color) throws UnsupportedOperationException {
         BufferedImage destImage = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
         WritableRaster destRaster = destImage.getRaster();
-        int[][] destSamples = new int[4][w * h];
-
-        for (int i = 0; i < w * h; i++) {
+        int size = bytes.length / pixelSize;
+        int[][] destSamples = new int[4][size];
+        for (int i = 0; i < size; i++) {
             int luminance;
-            switch (dataBuffer.getDataType()) {
-                case (DataBuffer.TYPE_BYTE):
-                case (DataBuffer.TYPE_SHORT):
-                case (DataBuffer.TYPE_INT):
-                    luminance = dataBuffer.getElem(i);
+            switch (pixelType) {
+                case (FormatTools.UINT8):
+                    luminance = bytes[i];
                     break;
-                case (DataBuffer.TYPE_FLOAT):
-                    luminance = (int) (dataBuffer.getElemFloat(i) * 255);
+                case (FormatTools.UINT16):
+                case (FormatTools.INT16):
+                    luminance = DataTools.bytesToShort(bytes, i*pixelSize, isLittleEndian);
                     break;
-                case (DataBuffer.TYPE_DOUBLE):
-                    luminance = (int) (dataBuffer.getElemDouble(i) * 255);
+                case (FormatTools.INT32):
+                    luminance = DataTools.bytesToInt(bytes, i*pixelSize, isLittleEndian);
+                    break;
+                case (FormatTools.FLOAT):
+                    luminance = (int) (DataTools.bytesToFloat(bytes, i*pixelSize, isLittleEndian) * 255);
+                    break;
+                case (FormatTools.DOUBLE):
+                    luminance = (int) (DataTools.bytesToDouble(bytes, i*pixelSize, isLittleEndian) * 255);
                     break;
                 default:
-                    throw new UnsupportedOperationException("Unsupported data type " + dataBuffer.getDataType());
+                    throw new UnsupportedOperationException("Unsupported pixel type " + pixelType);
             }
             destSamples[0][i] = color.getRed();
             destSamples[1][i] = color.getGreen();
