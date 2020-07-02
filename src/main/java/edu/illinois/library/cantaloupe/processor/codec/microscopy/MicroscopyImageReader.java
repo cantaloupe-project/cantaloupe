@@ -195,7 +195,7 @@ public class MicroscopyImageReader implements edu.illinois.library.cantaloupe.pr
                 // crop requested region if it exceeds image dimensions
                 // otherwise the Bio-formats reader will return an invalid tile size error
                 width = (x + width > subimageWidth) ? subimageWidth - x : width;
-                height = (y + height > subimageHeight) ? subimageWidth - y : height;
+                height = (y + height > subimageHeight) ? subimageHeight - y : height;
 
                 try {
                     if (isSingleChannelImage()) {
@@ -219,7 +219,7 @@ public class MicroscopyImageReader implements edu.illinois.library.cantaloupe.pr
                             // channels are stored in separate planes
 
                             // check if channels colors are defined in the metadata
-                            ome.xml.model.primitives.Color testOmeColor = ((IMetadata) reader.getMetadataStore()).getChannelColor(1, 0);
+                            ome.xml.model.primitives.Color testOmeColor = ((IMetadata) reader.getMetadataStore()).getChannelColor(reader.getSeries(), 0);
                             if (testOmeColor != null) {
                                 channelsColors = new Color[reader.getSizeC()];
                             } else {
@@ -230,8 +230,7 @@ public class MicroscopyImageReader implements edu.illinois.library.cantaloupe.pr
                                 int plane = reader.getIndex(0, c, 0);
                                 bytesChannels[c] = reader.openBytes(plane, x, y, width, height);
                                 if (channelsColors != null) {
-                                    ome.xml.model.primitives.Color omeColor = ((IMetadata) reader.getMetadataStore()).getChannelColor(plane, 0);
-                                    LOGGER.warn("{} {}", c, omeColor);
+                                    ome.xml.model.primitives.Color omeColor = ((IMetadata) reader.getMetadataStore()).getChannelColor(reader.getSeries(), c);
                                     channelsColors[c] = new Color(omeColor.getRed(), omeColor.getGreen(), omeColor.getBlue());
                                 }
                             }
@@ -239,7 +238,7 @@ public class MicroscopyImageReader implements edu.illinois.library.cantaloupe.pr
                             // channels are stored in the same plane
 
                             // check if channels colors are defined in the metadata
-                            ome.xml.model.primitives.Color testOmeColor = ((IMetadata) reader.getMetadataStore()).getChannelColor(0, 1);
+                            ome.xml.model.primitives.Color testOmeColor = ((IMetadata) reader.getMetadataStore()).getChannelColor(reader.getSeries(), 0);
                             if (testOmeColor != null) {
                                 channelsColors = new Color[reader.getSizeC()];
                             } else {
@@ -251,7 +250,7 @@ public class MicroscopyImageReader implements edu.illinois.library.cantaloupe.pr
                             for (int c = 0; c < reader.getRGBChannelCount(); c++) {
                                 bytesChannels[c] = ImageTools.splitChannels(bytes, c, reader.getRGBChannelCount(), FormatTools.getBytesPerPixel(pixelType), false, reader.isInterleaved());
                                 if (channelsColors != null) {
-                                    ome.xml.model.primitives.Color omeColor = ((IMetadata) reader.getMetadataStore()).getChannelColor(plane, c);
+                                    ome.xml.model.primitives.Color omeColor = ((IMetadata) reader.getMetadataStore()).getChannelColor(reader.getSeries(), c);
                                     channelsColors[c] = new Color(omeColor.getRed(), omeColor.getGreen(), omeColor.getBlue());
                                 }
                             }
