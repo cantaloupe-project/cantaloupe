@@ -21,7 +21,9 @@ import javax.imageio.stream.ImageInputStream;
 import java.awt.AlphaComposite;
 import java.awt.Color;
 import java.awt.Graphics2D;
-import java.awt.image.*;
+import java.awt.image.BufferedImage;
+import java.awt.image.RenderedImage;
+import java.awt.image.WritableRaster;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Set;
@@ -176,8 +178,8 @@ public class MicroscopyImageReader implements edu.illinois.library.cantaloupe.pr
 
         int numResolutions = reader.getResolutionCount();
 
-        for (int i = numResolutions - 1; i >= 0; i--) {
-            reader.setResolution(i);
+        for (int resolution = numResolutions - 1; resolution >= 0; resolution--) {
+            reader.setResolution(resolution);
             final int subimageWidth = reader.getSizeX();
             final int subimageHeight = reader.getSizeY();
 
@@ -185,7 +187,7 @@ public class MicroscopyImageReader implements edu.illinois.library.cantaloupe.pr
             if (fits(regionRect.size(), scale, scaleConstraint, reducedScale)) {
                 reductionFactor.factor = ReductionFactor.forScale(reducedScale).factor;
                 LOGGER.debug("Subimage {}: {}x{} - fits! " + "({}x reduction factor)",
-                        i, subimageWidth, subimageHeight,
+                        resolution, subimageWidth, subimageHeight,
                         reductionFactor.factor);
                 int x = (int)(regionRect.x() * reducedScale);
                 int y = (int)(regionRect.y() * reducedScale);
@@ -213,61 +215,24 @@ public class MicroscopyImageReader implements edu.illinois.library.cantaloupe.pr
                         int pixelType = reader.getPixelType();
                         int pixelSize = FormatTools.getBytesPerPixel(pixelType);
                         byte[][] bytesChannels = new byte[reader.getSizeC()][];
-                        Color[] channelsColors = null;
 
                         if (reader.getEffectiveSizeC() > 1) {
                             // channels are stored in separate planes
-
-                            // check if channels colors are defined in the metadata
-                            ome.xml.model.primitives.Color testOmeColor = ((IMetadata) reader.getMetadataStore()).getChannelColor(reader.getSeries(), 0);
-                            if (testOmeColor != null) {
-                                channelsColors = new Color[reader.getSizeC()];
-                            } else {
-                                LOGGER.warn("No channels colors defined, using defaults");
-                            }
-
                             for (int c = 0; c < reader.getEffectiveSizeC(); c++) {
                                 int plane = reader.getIndex(0, c, 0);
                                 bytesChannels[c] = reader.openBytes(plane, x, y, width, height);
-                                if (channelsColors != null) {
-                                    ome.xml.model.primitives.Color omeColor = ((IMetadata) reader.getMetadataStore()).getChannelColor(reader.getSeries(), c);
-                                    channelsColors[c] = new Color(omeColor.getRed(), omeColor.getGreen(), omeColor.getBlue());
-                                }
                             }
                         } else {
                             // channels are stored in the same plane
-
-                            // check if channels colors are defined in the metadata
-                            ome.xml.model.primitives.Color testOmeColor = ((IMetadata) reader.getMetadataStore()).getChannelColor(reader.getSeries(), 0);
-                            if (testOmeColor != null) {
-                                channelsColors = new Color[reader.getSizeC()];
-                            } else {
-                                LOGGER.warn("No channels colors defined, using defaults");
-                            }
-
                             int plane = reader.getIndex(0, 0, 0);
                             byte[] bytes = reader.openBytes(plane, x, y, width, height);
                             for (int c = 0; c < reader.getRGBChannelCount(); c++) {
                                 bytesChannels[c] = ImageTools.splitChannels(bytes, c, reader.getRGBChannelCount(), FormatTools.getBytesPerPixel(pixelType), false, reader.isInterleaved());
-                                if (channelsColors != null) {
-                                    ome.xml.model.primitives.Color omeColor = ((IMetadata) reader.getMetadataStore()).getChannelColor(reader.getSeries(), c);
-                                    channelsColors[c] = new Color(omeColor.getRed(), omeColor.getGreen(), omeColor.getBlue());
-                                }
                             }
                         }
+                        Color[] channelsColors = getChannelsColors();
                         for (int c = 0; c < reader.getSizeC(); c++) {
-                            Color color;
-                            if (channelsColors != null) {
-                                color = channelsColors[c];
-                            } else if (c < defaultChannelsColors.length) {
-                                color = defaultChannelsColors[c];
-                            } else {
-                                color = Color.WHITE;
-                                LOGGER.warn("Maximum number of channels exceeded ({}): " +
-                                                "cannot assign color to channel {}, defaulting to grayscale",
-                                        defaultChannelsColors.length, c);
-                            }
-                            BufferedImage image = makeRGBAImage(bytesChannels[c], pixelType, pixelSize, reader.isLittleEndian(), width, height, color);
+                            BufferedImage image = makeRGBAImage(bytesChannels[c], pixelType, pixelSize, reader.isLittleEndian(), width, height, channelsColors[c]);
                             g.drawImage(image, 0, 0, null);
                         }
                         g.dispose();
@@ -278,7 +243,7 @@ public class MicroscopyImageReader implements edu.illinois.library.cantaloupe.pr
                 break;
             } else {
                 LOGGER.trace("Subimage {}: {}x{} - too small",
-                        i, subimageWidth, subimageHeight);
+                        resolution, subimageWidth, subimageHeight);
             }
         }
         reader.setResolution(0);
@@ -340,6 +305,33 @@ public class MicroscopyImageReader implements edu.illinois.library.cantaloupe.pr
         int c = reader.getSizeC();
         return (reader.getEffectiveSizeC() == 1 &&
                 (c == 1 || ((c == 3 || c == 4) && FormatTools.UINT8 == pixelType)));
+    }
+
+    private Color[] getChannelsColors() {
+        int nChannels = reader.getSizeC();
+        Color[] channelsColors = new Color[nChannels];
+
+        // check if channels colors are defined in the metadata, if not use default colors
+        boolean hasChannelsColors = ((IMetadata) reader.getMetadataStore()).getChannelColor(reader.getSeries(), 0) != null;
+        if (hasChannelsColors) {
+            for (int c=0; c < nChannels; c++) {
+                ome.xml.model.primitives.Color omeColor = ((IMetadata) reader.getMetadataStore()).getChannelColor(reader.getSeries(), c);
+                channelsColors[c] = new Color(omeColor.getRed(), omeColor.getGreen(), omeColor.getBlue());
+            }
+        } else {
+            LOGGER.warn("No channels colors defined, using defaults");
+            for (int c=0; c < nChannels; c++) {
+                if (c < defaultChannelsColors.length) {
+                    channelsColors[c] = defaultChannelsColors[c];
+                } else {
+                    channelsColors[c] = Color.WHITE;
+                    LOGGER.warn("Maximum number of channels exceeded ({}): " +
+                                    "cannot assign color to channel {}, defaulting to grayscale",
+                            defaultChannelsColors.length, c);
+                }
+            }
+        }
+        return channelsColors;
     }
 
     private BufferedImage makeRGBAImage(byte[] bytes, int pixelType, int pixelSize, boolean isLittleEndian, int w, int h, Color color) throws UnsupportedOperationException {
