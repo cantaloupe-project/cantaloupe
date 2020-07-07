@@ -104,7 +104,7 @@ public class StandaloneEntry {
         return Configuration.getInstance().getFile();
     }
 
-    static File getWARFile() {
+    static File getJARFile() {
         ProtectionDomain protectionDomain =
                 ApplicationServer.class.getProtectionDomain();
         URL location = protectionDomain.getCodeSource().getLocation();
@@ -139,7 +139,7 @@ public class StandaloneEntry {
                 "%s" +                                                  // 5
                 "Command arguments:%s" +                                // 6
                 "  %s                      List fonts%s",               // 7
-                getWARFile().getName(), NEWLINE,                  // 1
+                getJARFile().getName(), NEWLINE,                  // 1
                 NEWLINE,                                          // 2
                 NEWLINE,                                          // 3
                 ConfigurationFactory.CONFIG_VM_ARGUMENT, NEWLINE, // 4

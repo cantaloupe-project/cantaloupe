@@ -2,6 +2,8 @@ package edu.illinois.library.cantaloupe;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -19,13 +21,13 @@ import java.util.jar.Manifest;
  */
 public final class Application {
 
-    // N.B.: Due to the way the application is packaged, this class does not
-    // have access to a logger.
-
     /**
      * Reads information from the manifest.
      */
     private static class ManifestReader {
+
+        private static final Logger LOGGER =
+                LoggerFactory.getLogger(ManifestReader.class);
 
         private static String name, version;
 
@@ -60,15 +62,18 @@ public final class Application {
                         name = attr.getValue(Attributes.Name.IMPLEMENTATION_TITLE);
                         version = attr.getValue(Attributes.Name.IMPLEMENTATION_VERSION);
                     } catch (IOException e) {
-                        System.err.println(e.getMessage());
+                        LOGGER.error("readManifest(): {}", e.getMessage(), e);
                     }
                 }
             }
         }
     }
 
+    private static final Logger LOGGER =
+            LoggerFactory.getLogger(Application.class);
+
     /**
-     * Set to {@literal true} during testing.
+     * Set to {@code true} during testing.
      *
      * @see #isTesting()
      */
@@ -76,7 +81,7 @@ public final class Application {
 
     /**
      * @return The application title from {@literal MANIFEST.MF}, or some other
-     *         string if not running from a JAR/WAR.
+     *         string if not running from a JAR.
      */
     public static String getName() {
         return ManifestReader.name;
@@ -84,7 +89,7 @@ public final class Application {
 
     /**
      * @return The application version from {@literal MANIFEST.MF}, or some
-     *         other string if not running from a JAR/WAR.
+     *         other string if not running from a JAR.
      */
     public static String getVersion() {
         return ManifestReader.version;
@@ -93,7 +98,6 @@ public final class Application {
     /**
      * @return Path to the temp directory used by the application. If it does
      *         not exist, it will be created.
-     * @see #isUsingSystemTempPath()
      */
     public static Path getTempPath() {
         final Configuration config = Configuration.getInstance();
@@ -107,9 +111,8 @@ public final class Application {
             } catch (FileAlreadyExistsException ignore) {
                 // This is fine.
             } catch (IOException e) {
-                System.err.println("Application.getTempPath(): " + e.getMessage());
-                System.err.println("Application.getTempPath(): " +
-                        "falling back to java.io.tmpdir");
+                LOGGER.error("getTempPath(): falling back to java.io.tmpdir: {}",
+                        e.getMessage(), e);
             }
         }
         return Paths.get(System.getProperty("java.io.tmpdir"));
@@ -121,13 +124,6 @@ public final class Application {
      */
     public static boolean isTesting() {
         return "true".equals(System.getProperty(TEST_VM_ARGUMENT));
-    }
-
-    /**
-     * @see #getTempPath()
-     */
-    public static boolean isUsingSystemTempPath() {
-        return Paths.get(System.getProperty("java.io.tmpdir")).equals(getTempPath());
     }
 
     private Application() {}

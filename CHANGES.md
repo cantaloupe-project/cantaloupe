@@ -56,6 +56,10 @@
 
 ### Other
 
+* The application is now packaged as a JAR file and can no longer work in a
+  Servlet container. (See
+  [#339](https://github.com/cantaloupe-project/cantaloupe/issues/339) for
+  background.)
 * Java 11 is required.
 * Corrected the structure of the `cookie` key in the delegate script context.
   See the upgrade guide for more information.

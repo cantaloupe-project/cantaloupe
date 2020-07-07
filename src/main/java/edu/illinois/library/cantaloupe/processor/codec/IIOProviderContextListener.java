@@ -50,10 +50,6 @@ public final class IIOProviderContextListener implements ServletContextListener 
     }
 
     public void contextInitialized(final ServletContextEvent event) {
-        // ImageIO will automatically scan for plugins once, the first time
-        // it's used. If our app is initialized after another ImageIO-using
-        // app in the same JVM, any additional plugins bundled within our
-        // app won't be picked up unless we scan again.
         ImageIO.scanForPlugins();
 
         // The application will handle caching itself, if so configured. The

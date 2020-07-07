@@ -2,6 +2,8 @@ package edu.illinois.library.cantaloupe.config;
 
 import edu.illinois.library.cantaloupe.async.ThreadPool;
 import edu.illinois.library.cantaloupe.util.FilesystemWatcher;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -20,6 +22,9 @@ public final class ConfigurationFileWatcher {
      */
     private static class FileChangeHandlerRunner implements Runnable {
 
+        private static final Logger LOGGER =
+                LoggerFactory.getLogger(FileChangeHandlerRunner.class);
+
         private Path file;
         private FilesystemWatcher filesystemWatcher;
 
@@ -34,7 +39,7 @@ public final class ConfigurationFileWatcher {
                 filesystemWatcher = new FilesystemWatcher(path, new FileChangeHandler());
                 filesystemWatcher.start();
             } catch (IOException e) {
-                System.err.println("FileChangeHandlerRunner.run(): " + e.getMessage());
+                LOGGER.error("run(): {}", e.getMessage());
             }
         }
 

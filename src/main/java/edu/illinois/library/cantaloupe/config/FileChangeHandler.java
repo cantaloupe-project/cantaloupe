@@ -2,11 +2,16 @@ package edu.illinois.library.cantaloupe.config;
 
 import edu.illinois.library.cantaloupe.logging.LoggerUtil;
 import edu.illinois.library.cantaloupe.util.FilesystemWatcher;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.FileNotFoundException;
 import java.nio.file.Path;
 
 class FileChangeHandler implements FilesystemWatcher.Callback {
+
+    private static final Logger LOGGER =
+            LoggerFactory.getLogger(FileChangeHandler.class);
 
     @Override
     public void created(Path path) {
@@ -33,7 +38,7 @@ class FileChangeHandler implements FilesystemWatcher.Callback {
                         if (((MultipleFileConfiguration) c).getFiles().contains(path)) {
                             reload(c);
                         }
-                    } else if (path.equals(((FileConfiguration) c).getFile())) {
+                    } else if (path.equals(c.getFile().get())) {
                         reload(c);
                     }
                 });
@@ -44,11 +49,9 @@ class FileChangeHandler implements FilesystemWatcher.Callback {
             config.reload();
             LoggerUtil.reloadConfiguration();
         } catch (FileNotFoundException e) {
-            System.err.println("FileChangeHandlerRunner$CallbackImpl: " +
-                    "file not found: " + e.getMessage());
+            LOGGER.error("reload(): file not found: {}", e.getMessage());
         } catch (Exception e) {
-            System.err.println("FileChangeHandlerRunner$CallbackImpl: " +
-                    e.getMessage());
+            LOGGER.error("reload(): {}", e.getMessage());
         }
     }
 

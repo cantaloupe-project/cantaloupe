@@ -51,19 +51,4 @@ public class ApplicationTest extends BaseTest {
         assertEquals("Unknown", Application.getVersion());
     }
 
-    @Test
-    void testIsUsingSystemTempPath() {
-        System.setProperty("java.io.tmpdir", "/default");
-        final Configuration config = Configuration.getInstance();
-
-        config.clearProperty(Key.TEMP_PATHNAME);
-        assertTrue(Application.isUsingSystemTempPath());
-
-        config.setProperty(Key.TEMP_PATHNAME, "/default");
-        assertTrue(Application.isUsingSystemTempPath());
-
-        config.setProperty(Key.TEMP_PATHNAME, System.getProperty("user.dir"));
-        assertFalse(Application.isUsingSystemTempPath());
-    }
-
 }

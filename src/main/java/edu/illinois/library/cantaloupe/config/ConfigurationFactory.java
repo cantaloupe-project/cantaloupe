@@ -1,9 +1,15 @@
 package edu.illinois.library.cantaloupe.config;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.ArrayList;
 import java.util.List;
 
 public final class ConfigurationFactory {
+
+    private static final Logger LOGGER =
+            LoggerFactory.getLogger(ConfigurationFactory.class);
 
     public static final String CONFIG_VM_ARGUMENT = "cantaloupe.config";
 
@@ -54,8 +60,7 @@ public final class ConfigurationFactory {
                 try {
                     c.reload();
                 } catch (Exception e) {
-                    System.err.println("ConfigurationFactory.getInstance(): " +
-                            e.getMessage());
+                    LOGGER.error("getInstance(): {}", e.getMessage(), e);
                 }
             });
             instance = new ConfigurationProvider(configs);

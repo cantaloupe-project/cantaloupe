@@ -2,27 +2,29 @@ package edu.illinois.library.cantaloupe;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
+import edu.illinois.library.cantaloupe.processor.codec.IIOProviderContextListener;
+import edu.illinois.library.cantaloupe.resource.FileServlet;
+import edu.illinois.library.cantaloupe.resource.HandlerServlet;
 import org.eclipse.jetty.alpn.server.ALPNServerConnectionFactory;
 import org.eclipse.jetty.http2.HTTP2Cipher;
 import org.eclipse.jetty.http2.server.HTTP2CServerConnectionFactory;
 import org.eclipse.jetty.http2.server.HTTP2ServerConnectionFactory;
 import org.eclipse.jetty.jmx.MBeanContainer;
+import org.eclipse.jetty.server.CustomRequestLog;
 import org.eclipse.jetty.server.HttpConfiguration;
 import org.eclipse.jetty.server.HttpConnectionFactory;
+import org.eclipse.jetty.server.RequestLog;
 import org.eclipse.jetty.server.SecureRequestCustomizer;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
+import org.eclipse.jetty.server.Slf4jRequestLogWriter;
 import org.eclipse.jetty.server.SslConnectionFactory;
+import org.eclipse.jetty.servlet.ListenerHolder;
+import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.eclipse.jetty.util.thread.QueuedThreadPool;
-import org.eclipse.jetty.webapp.WebAppContext;
 
-import java.io.File;
-import java.io.IOException;
 import java.lang.management.ManagementFactory;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.Comparator;
 
 /**
  * <p>Provides the embedded Servlet container in standalone mode.</p>
@@ -113,51 +115,18 @@ public class ApplicationServer {
     }
 
     private void createServer() {
-        final WebAppContext context = new WebAppContext();
-        context.setContextPath("/");
+        final ServletContextHandler context = new ServletContextHandler(
+                ServletContextHandler.NO_SESSIONS);
 
         // Disable directory listing.
         context.setInitParameter("org.eclipse.jetty.servlet.Default.dirAllowed",
                 "false");
 
-        // Jetty will extract the app into a temp directory that is, by
-        // default, the same as java.io.tmpdir. The OS may periodically clean
-        // out this directory, which will cause havoc if it happens while the
-        // application is running, so here we can override Jetty's temp
-        // directory location.
-        // See: http://www.eclipse.org/jetty/documentation/current/ref-temporary-directories.html
-        context.setAttribute("org.eclipse.jetty.webapp.basetempdir",
-                Application.getTempPath().toString());
-
-        // We also set it to NOT persist to avoid accumulating a bunch of
-        // stale exploded apps.
-        // N.B.: WebAppContext.setPersistTempDirectory() is supposed to be the
-        // way to accomplish this, but testing indicates that it does not work
-        // reliably as of Jetty 9.4.9.v20180320, after sending either SIGINT
-        // or SIGTERM. So, we will do it ourselves in a shutdown hook instead.
-        // See: http://www.eclipse.org/jetty/documentation/current/ref-temporary-directories.html#_setting_a_specific_temp_directory
-        //context.setPersistTempDirectory(false);
-        if (!"true".equals(System.getProperty(Application.TEST_VM_ARGUMENT))) {
-            Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-                try {
-                    Files.walk(context.getTempDirectory().toPath())
-                            .sorted(Comparator.reverseOrder())
-                            .map(Path::toFile)
-                            .forEach(File::delete);
-                } catch (IOException e) {
-                    System.err.println(e.getMessage());
-                }
-            }));
-        }
-
-        // Give the WebAppContext a different "WAR" to use depending on
-        // whether we are running from a WAR file or an IDE.
-        final String warPath = StandaloneEntry.getWARFile().getAbsolutePath();
-        if (warPath.endsWith(".war")) {
-            context.setWar(warPath);
-        } else {
-            context.setWar("src/main/webapp");
-        }
+        context.setContextPath("/");
+        context.addServlet(HandlerServlet.class, "/*");
+        context.addServlet(FileServlet.class, "/static/*");
+        context.getServletHandler().addListener(new ListenerHolder(ApplicationContextListener.class));
+        context.getServletHandler().addListener(new ListenerHolder(IIOProviderContextListener.class));
 
         QueuedThreadPool pool = new QueuedThreadPool(
                 getMaxThreads(), getMinThreads());
@@ -165,6 +134,12 @@ public class ApplicationServer {
         server = new Server(pool);
         context.setServer(server);
         server.setHandler(context);
+
+        // This is technically "NCSA Combined" format.
+        RequestLog log = new CustomRequestLog(
+                new Slf4jRequestLogWriter(),
+                CustomRequestLog.EXTENDED_NCSA_FORMAT);
+        server.setRequestLog(log);
     }
 
     public int getAcceptQueueLimit() {

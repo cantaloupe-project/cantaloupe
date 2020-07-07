@@ -1,6 +1,8 @@
 package edu.illinois.library.cantaloupe.config;
 
 import edu.illinois.library.cantaloupe.util.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -30,6 +32,9 @@ import java.util.concurrent.locks.StampedLock;
  * performance.</p>
  */
 class HeritablePropertiesConfiguration implements MultipleFileConfiguration {
+
+    private static final Logger LOGGER =
+            LoggerFactory.getLogger(HeritablePropertiesConfiguration.class);
 
     private static final String EXTENDS_KEY = "extends";
 
@@ -447,7 +452,7 @@ class HeritablePropertiesConfiguration implements MultipleFileConfiguration {
                 propertiesDocs.clear();
                 loadFileAndAncestors(mainConfigFile);
             } catch (IOException | NoSuchAlgorithmException e) {
-                System.err.println(e.getMessage());
+                LOGGER.error("reload(): {}", e.getMessage(), e);
             } finally {
                 lock.unlock(stamp);
             }
@@ -523,10 +528,10 @@ class HeritablePropertiesConfiguration implements MultipleFileConfiguration {
                             File.separator + new File(parent).getName();
                 }
                 Path parentFile = Paths.get(parent).toAbsolutePath();
-                if (!propertiesDocs.keySet().contains(parentFile)) {
+                if (!propertiesDocs.containsKey(parentFile)) {
                     loadFileAndAncestors(parentFile);
                 } else {
-                    System.err.println("WARNING: inheritance loop in " + parent);
+                    LOGGER.error("Inheritance loop in {}", parent);
                 }
             }
         } catch (IOException e) {

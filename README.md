@@ -12,26 +12,20 @@
 
 ### Command line
 
-* `mvn clean compile exec:java -Dcantaloupe.config=...` will build the project
-  and run in standalone mode, using the embedded Servlet container listening on
-  the port(s) specified in `cantaloupe.properties`.
-* `mvn clean package -DskipTests` will build a release WAR in the `target`
-  folder, which can be run like any other.
+* `mvn clean compile exec:java -Dcantaloupe.config=...` will build and run the
+  project using the embedded web server listening on the port(s) specified in
+  `cantaloupe.properties`.
+* `mvn clean package -DskipTests` will build a release JAR in the `target`
+  folder, which can be run using either of the following invocations:
+    * `java -cp cantaloupe-{version}.jar -Dcantaloupe.config=... edu.illinois.library.cantaloupe.StandaloneEntry`
+    * `java -Dcantaloupe.config=... -jar cantaloupe-{version}.jar`
 
 ### IDE
 
-There are a few ways to do this. The simplest is probably:
-
-1. Add a new run configuration using the "Java Application" template or its
-   equivalent.
+1. Add a new run configuration using the "Java Application" template or
+   similar.
 2. Set the main class to `edu.illinois.library.cantaloupe.StandaloneEntry` and
    add the `-Dcantaloupe.config=...` VM option.
-3. Set the run configuration to include dependencies with `provided` scope.
-   (IntelliJ has a checkbox for this.) Alternatively, download
-   [servlet-api-3.1.jar](http://central.maven.org/maven2/javax/servlet/javax.servlet-api/3.1.0/javax.servlet-api-3.1.0.jar)
-   and add it to your classpath: `--class-path=/path/to/servlet-api-3.1.jar`
-
-   Or, in Java 9+, your module path: `--module-path=/path/to/containing/dir`
 
 ## Test
 

@@ -19,9 +19,7 @@ import javax.servlet.ServletContextListener;
 import java.util.stream.Collectors;
 
 /**
- * <p>Performs application initialization that cannot be performed
- * in {@link StandaloneEntry} as that class is not available in a container
- * context.</p>
+ * <p>Performs various application initialization.</p>
  */
 public class ApplicationContextListener implements ServletContextListener {
 
@@ -103,13 +101,6 @@ public class ApplicationContextListener implements ServletContextListener {
                         .collect(Collectors.joining(", ")));
         LOGGER.info("Effective temp directory: {}",
                 Application.getTempPath());
-
-        if (Application.isUsingSystemTempPath()) {
-            LOGGER.warn("The effective temp directory is the system temp " +
-                    "directory. Severe errors may result if the application " +
-                    "is left running for a long time. Consider setting `" +
-                    Key.TEMP_PATHNAME + "` for long-running servers.");
-        }
 
         LOGGER.info("\uD83C\uDF48 Starting Cantaloupe {}",
                 Application.getVersion());
