@@ -235,7 +235,7 @@ public class AdminResource extends AbstractAdminResource {
         // image source formats
         List<FormatProxy> imageFormats = Format.knownFormats()
                 .stream()
-                .filter(f -> Format.Type.IMAGE.equals(f.getType()) && !Format.DCM.equals(f))
+                .filter(f -> Format.Type.IMAGE.equals(f.getType()))
                 .sorted(Comparator.comparing(Format::getName))
                 .map(FormatProxy::new)
                 .collect(Collectors.toUnmodifiableList());

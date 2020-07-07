@@ -12,7 +12,7 @@ class FormatTest extends BaseTest {
 
     @Test
     void testGetRegistryInitialValues() {
-        Set<Format> expected = Set.of(Format.AVI, Format.BMP, Format.DCM,
+        Set<Format> expected = Set.of(Format.AVI, Format.BMP,
                 Format.FLV, Format.GIF, Format.JP2, Format.JPG, Format.MOV,
                 Format.MP4, Format.MPG,Format.PDF, Format.PNG, Format.TIF,
                 Format.UNKNOWN, Format.WEBM, Format.WEBP, Format.XPM);
@@ -29,9 +29,6 @@ class FormatTest extends BaseTest {
         // BMP
         assertEquals(Format.BMP,
                 Format.inferFormat(new Identifier("bla.bmp")));
-        // DCM
-        assertEquals(Format.DCM,
-                Format.inferFormat(new Identifier("bla.dcm")));
         // FLV
         assertEquals(Format.FLV,
                 Format.inferFormat(new Identifier("bla.flv")));
@@ -85,8 +82,6 @@ class FormatTest extends BaseTest {
         assertEquals(Format.AVI, Format.inferFormat("bla.AVI"));
         // BMP
         assertEquals(Format.BMP, Format.inferFormat("bla.bmp"));
-        // DCM
-        assertEquals(Format.DCM, Format.inferFormat("bla.dcm"));
         // FLV
         assertEquals(Format.FLV, Format.inferFormat("bla.flv"));
         // GIF
@@ -152,7 +147,6 @@ class FormatTest extends BaseTest {
     void testGetPreferredExtension() {
         assertEquals("avi", Format.AVI.getPreferredExtension());
         assertEquals("bmp", Format.BMP.getPreferredExtension());
-        assertEquals("dcm", Format.DCM.getPreferredExtension());
         assertEquals("flv", Format.FLV.getPreferredExtension());
         assertEquals("gif", Format.GIF.getPreferredExtension());
         assertEquals("jp2", Format.JP2.getPreferredExtension());
@@ -175,8 +169,6 @@ class FormatTest extends BaseTest {
                 Format.AVI.getPreferredMediaType().toString());
         assertEquals("image/bmp",
                 Format.BMP.getPreferredMediaType().toString());
-        assertEquals("application/dicom",
-                Format.DCM.getPreferredMediaType().toString());
         assertEquals("video/x-flv",
                 Format.FLV.getPreferredMediaType().toString());
         assertEquals("image/gif",

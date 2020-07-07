@@ -56,18 +56,6 @@ public final class Format implements Comparable<Format> {
             true);
 
     /**
-     * DICOM image format.
-     */
-    public static final Format DCM = new Format(
-            "dcm",
-            "DICOM",
-            ImageType.RASTER,
-            List.of("application/dicom"),
-            List.of("dcm", "dic"),
-            Type.IMAGE,
-            false);
-
-    /**
      * Flash Video format.
      */
     public static final Format FLV = new Format(
@@ -250,7 +238,7 @@ public final class Format implements Comparable<Format> {
     private Type type;
 
     static {
-        KNOWN_FORMATS.addAll(Set.of(AVI, BMP, DCM, FLV, GIF, JP2, JPG, MOV,
+        KNOWN_FORMATS.addAll(Set.of(AVI, BMP, FLV, GIF, JP2, JPG, MOV,
                 MP4, MPG, PDF, PNG, TIF, UNKNOWN, WEBM, WEBP, XPM));
     }
 

@@ -170,7 +170,6 @@ public class MediaTypeTest extends BaseTest {
     void testToFormat() {
         assertEquals(Format.AVI, new MediaType("video/avi").toFormat());
         assertEquals(Format.BMP, new MediaType("image/bmp").toFormat());
-        assertEquals(Format.DCM, new MediaType("application/dicom").toFormat());
         assertEquals(Format.GIF, new MediaType("image/gif").toFormat());
         assertEquals(Format.JP2, new MediaType("image/jp2").toFormat());
         assertEquals(Format.JPG, new MediaType("image/jpeg").toFormat());
