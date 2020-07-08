@@ -1,5 +1,10 @@
 # Change Log
 
+## 4.1.7
+
+* Fixed a `NumberFormatException` caused by incorrect Java version parsing when
+  running in a beta or early-access JVM.
+
 ## 4.1.6
 
 * Image information is no longer included in IIIF information responses with
