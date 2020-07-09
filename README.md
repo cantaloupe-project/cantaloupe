@@ -66,9 +66,10 @@ dependencies are required in addition to the ones above:
 #### Docker
 
 Because it can be a chore to install all of the dependencies needed to get all
-of the tests in the `freedeps` profile passing, there is a Docker testing image
-available that contains all needed dependencies. See
-`/.github/workflows/ci.yml`.
+of the tests in the `freedeps` profile passing, there is a `docker-compose.yml`
+file available that will spin up all needed dependencies in separate
+containers, and run the tests in another container. From the project root
+directory, invoke `docker-compose -f docker/{platform}/docker-compose.yml up`.
 
 ### Output testing
 

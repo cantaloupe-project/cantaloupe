@@ -6,7 +6,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 		ffmpeg \
 		maven \
 		libopenjp2-tools \
-		redis-server \
   && rm -rf /var/lib/apt/lists/*
 
 # Install TurboJpegProcessor dependencies
@@ -31,15 +30,10 @@ COPY docker/Linux-JDK11/image_files/.m2/settings.xml $home/.m2/settings.xml
 
 # Install application dependencies
 COPY ./pom.xml pom.xml
-RUN mvn dependency:resolve
-
-# Install Minio S3 server for S3SourceTest and S3CacheTest
-ARG s3=$home/s3
-RUN mkdir -p $s3/.minio.sys/config $s3/test.cantaloupe.library.illinois.edu
-COPY docker/Linux-JDK11/image_files/minio_config.json $s3/.minio.sys/config/config.json
-RUN curl -O https://dl.minio.io/server/minio/release/linux-amd64/minio
-RUN chmod +x minio
+RUN mvn --quiet dependency:resolve
 
 # Copy the code
 COPY --chown=cantaloupe docker/Linux-JDK11/image_files/test.properties test.properties
 COPY --chown=cantaloupe ./src src
+
+ENTRYPOINT mvn test -Pfreedeps
