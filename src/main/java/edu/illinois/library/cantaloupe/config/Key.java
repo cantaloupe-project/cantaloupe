@@ -71,7 +71,6 @@ public enum Key {
     CLIENT_CACHE_PROXY_REVALIDATE("cache.client.proxy_revalidate"),
     CLIENT_CACHE_PUBLIC("cache.client.public"),
     CLIENT_CACHE_SHARED_MAX_AGE("cache.client.shared_max_age"),
-    DELEGATE_METHOD_INVOCATION_CACHE_ENABLED("delegate_script.cache.enabled"),
     DELEGATE_SCRIPT_ENABLED("delegate_script.enabled"),
     DELEGATE_SCRIPT_PATHNAME("delegate_script.pathname"),
     DERIVATIVE_CACHE("cache.server.derivative"),

@@ -30,7 +30,7 @@ public class TaskMonitorTest extends BaseTest {
 
     @Test
     void testAdd() {
-        Callable<?> callable = new PurgeDelegateMethodInvocationCacheCommand();
+        Callable<?> callable = new PurgeInfoCacheCommand<>();
         APITask<?> message = new APITask<>(callable);
         assertNull(instance.get(message.getUUID()));
         instance.add(message);
@@ -41,7 +41,7 @@ public class TaskMonitorTest extends BaseTest {
 
     @Test
     void testGet() {
-        Callable<?> callable = new PurgeDelegateMethodInvocationCacheCommand();
+        Callable<?> callable = new PurgeInfoCacheCommand<>();
         APITask<?> message = new APITask<>(callable);
         instance.add(message);
         assertNotNull(instance.get(message.getUUID()));
@@ -51,7 +51,7 @@ public class TaskMonitorTest extends BaseTest {
 
     @Test
     void testGetAll() {
-        Callable<?> callable = new PurgeDelegateMethodInvocationCacheCommand();
+        Callable<?> callable = new PurgeInfoCacheCommand<>();
         APITask<?> message = new APITask<>(callable);
         instance.add(message);
         assertEquals(1, instance.getAll().size());

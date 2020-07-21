@@ -12,7 +12,6 @@ import javax.script.ScriptException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.locks.StampedLock;
@@ -87,25 +86,6 @@ final class JRubyDelegateProxy implements DelegateProxy {
         }
     }
 
-    /**
-     * @param requestContext Request context.
-     * @param methodName     Name of the method being invoked.
-     * @param args           Method arguments.
-     * @return               Cache key corresponding to the given arguments.
-     */
-    private static Object getCacheKey(RequestContext requestContext,
-                                      String methodName,
-                                      Object... args) {
-        // The cache key is comprised of the method name at position 0, the
-        // request context at position 1, and the arguments at succeeding
-        // positions.
-        List<Object> key = List.of(args);
-        key = new LinkedList<>(key);
-        key.add(0, methodName);
-        key.add(1, requestContext);
-        return key;
-    }
-
     JRubyDelegateProxy(RequestContext context) {
         instantiateDelegate(context);
     }
@@ -135,7 +115,7 @@ final class JRubyDelegateProxy implements DelegateProxy {
     @Override
     public void setRequestContext(RequestContext context)
             throws ScriptException {
-        invokeUncached(RUBY_REQUEST_CONTEXT_SETTER,
+        invoke(RUBY_REQUEST_CONTEXT_SETTER,
                 Collections.unmodifiableMap(context.toMap()));
         requestContext = context;
     }
@@ -319,30 +299,6 @@ final class JRubyDelegateProxy implements DelegateProxy {
      */
     private Object invoke(String method,
                           Object... args) throws ScriptException {
-        return DelegateProxyService.isInvocationCacheEnabled() ?
-                retrieveFromCacheOrInvoke(method, args) :
-                invokeUncached(method, args);
-    }
-
-    private Object retrieveFromCacheOrInvoke(String method, Object... args)
-            throws ScriptException {
-        final Object cacheKey = getCacheKey(requestContext, method, args);
-        Object returnValue = DelegateProxyService.getInvocationCache().get(cacheKey);
-
-        if (returnValue != null) {
-            LOGGER.trace("invoke({}): cache hit (skipping invocation)", method);
-        } else {
-            LOGGER.trace("invoke({}): cache miss", method);
-            returnValue = invokeUncached(method, args);
-            if (returnValue != null) {
-                DelegateProxyService.getInvocationCache().put(cacheKey, returnValue);
-            }
-        }
-        return returnValue;
-    }
-
-    private Object invokeUncached(String methodName,
-                                  Object... args) throws ScriptException {
         final long stamp = lock.readLock();
 
         final String argsList = (args.length > 0) ?
@@ -350,16 +306,16 @@ final class JRubyDelegateProxy implements DelegateProxy {
                         .map(Object::toString)
                         .collect(Collectors.joining(", ")) : "none";
         LOGGER.trace("invokeUncached(): invoking {}() with args: ({})",
-                methodName, argsList);
+                method, argsList);
 
         final Stopwatch watch = new Stopwatch();
         try {
             final Object retval = ((Invocable) scriptEngine).invokeMethod(
-                    delegate, methodName, args);
+                    delegate, method, args);
 
-            if (!RUBY_REQUEST_CONTEXT_SETTER.equals(methodName)) {
+            if (!RUBY_REQUEST_CONTEXT_SETTER.equals(method)) {
                 LOGGER.trace("invokeUncached(): {}() returned {} for args: ({}) in {}",
-                        methodName, retval, argsList, watch);
+                        method, retval, argsList, watch);
             }
             return retval;
         } catch (NoSuchMethodException e) {

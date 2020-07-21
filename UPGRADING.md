@@ -24,6 +24,7 @@ current version.
     * `http.http2.enabled`
     * `https.http2.enabled`
     * `endpoint.iiif.content_disposition`
+    * `delegate_script.cache.enabled`
     * `processor.metadata.*`
     * `GraphicsMagickProcessor.path_to_binaries`
     * `KakaduDemoProcessor.path_to_binaries`

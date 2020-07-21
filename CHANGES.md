@@ -53,6 +53,7 @@
 ### Caches
 
 * Added DynamoDBCache.
+* The delegate method invocation cache has been removed. 
 
 ### Other
 

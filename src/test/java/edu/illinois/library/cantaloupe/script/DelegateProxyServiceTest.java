@@ -31,13 +31,6 @@ public class DelegateProxyServiceTest extends BaseTest {
         instance = DelegateProxyService.getInstance();
     }
 
-    /* getInvocationCache() */
-
-    @Test
-    void testGetInvocationCacheReturnsAnInstance() {
-        assertNotNull(DelegateProxyService.getInvocationCache());
-    }
-
     /* getScriptFile() */
 
     @Test
@@ -84,18 +77,6 @@ public class DelegateProxyServiceTest extends BaseTest {
 
         config.setProperty(Key.DELEGATE_SCRIPT_ENABLED, true);
         assertTrue(DelegateProxyService.isEnabled());
-    }
-
-    /* isEnabled() */
-
-    @Test
-    void testIsInvocationCacheEnabled() {
-        Configuration config = Configuration.getInstance();
-        config.setProperty(Key.DELEGATE_METHOD_INVOCATION_CACHE_ENABLED, false);
-        assertFalse(DelegateProxyService.isInvocationCacheEnabled());
-
-        config.setProperty(Key.DELEGATE_METHOD_INVOCATION_CACHE_ENABLED, true);
-        assertTrue(DelegateProxyService.isInvocationCacheEnabled());
     }
 
     /* newDelegateProxy() */

@@ -76,10 +76,6 @@ delegate_script.enabled = false
 # then the current working directory.
 delegate_script.pathname = delegates.rb
 
-# Enables the invocation cache, which caches method invocations and return
-# values in memory. See the user manual for more information.
-delegate_script.cache.enabled = false
-
 ###########################################################################
 # ENDPOINTS
 ###########################################################################

@@ -105,7 +105,6 @@ public class AdminResourceUITest extends AbstractAdminResourceTest {
         // Delegate Script
         inputNamed(Key.DELEGATE_SCRIPT_ENABLED).click();
         inputNamed(Key.DELEGATE_SCRIPT_PATHNAME).sendKeys("file");
-        inputNamed(Key.DELEGATE_METHOD_INVOCATION_CACHE_ENABLED).click();
 
         // Application log
         selectNamed(Key.APPLICATION_LOG_LEVEL).selectByValue("warn");
@@ -165,7 +164,6 @@ public class AdminResourceUITest extends AbstractAdminResourceTest {
         // Delegate Script
         assertTrue(config.getBoolean(Key.DELEGATE_SCRIPT_ENABLED));
         assertEquals("file", config.getString(Key.DELEGATE_SCRIPT_PATHNAME));
-        assertTrue(config.getBoolean(Key.DELEGATE_METHOD_INVOCATION_CACHE_ENABLED));
 
         // Application log
         assertEquals("warn", config.getString(Key.APPLICATION_LOG_LEVEL));

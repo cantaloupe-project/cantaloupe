@@ -27,12 +27,6 @@ public final class DelegateProxyService {
 
     private static DelegateProxyService instance;
 
-    /**
-     * Caches delegate method invocations (arguments + return values).
-     */
-    private static final InvocationCache invocationCache =
-            new HeapInvocationCache();
-
     private static boolean isCodeLoaded;
 
     private ScriptWatcher scriptWatcher;
@@ -41,21 +35,12 @@ public final class DelegateProxyService {
 
     private Future<?> watcherFuture;
 
-    public static InvocationCache getInvocationCache() {
-        return invocationCache;
-    }
-
     /**
      * @return Whether the delegate script is enabled.
      */
     public static boolean isEnabled() {
         var config = Configuration.getInstance();
         return config.getBoolean(Key.DELEGATE_SCRIPT_ENABLED, false);
-    }
-
-    static boolean isInvocationCacheEnabled() {
-        var config = Configuration.getInstance();
-        return config.getBoolean(Key.DELEGATE_METHOD_INVOCATION_CACHE_ENABLED, false);
     }
 
     /**

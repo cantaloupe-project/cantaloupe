@@ -17,16 +17,6 @@ public class ApplicationStatusTest extends BaseTest {
     }
 
     @Test
-    void testGetDMICMaxSize() {
-        assertTrue(instance.getDMICMaxSize() > 100);
-    }
-
-    @Test
-    void testGetDMICSize() {
-        assertEquals(0, instance.getDMICSize());
-    }
-
-    @Test
     void testGetInfoCacheMaxSize() {
         assertTrue(instance.getInfoCacheMaxSize() > 100);
     }
