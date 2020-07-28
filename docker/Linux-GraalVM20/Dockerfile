@@ -12,6 +12,8 @@ RUN yum -y -q install https://dl.fedoraproject.org/pub/epel/epel-release-latest-
         && yum  -y -q localinstall --nogpgcheck https://download1.rpmfusion.org/free/el/rpmfusion-free-release-7.noarch.rpm \
                 https://download1.rpmfusion.org/nonfree/el/rpmfusion-nonfree-release-7.noarch.rpm
 
+RUN /usr/bin/ol_yum_configure.sh
+
 # Install various dependencies
 RUN yum -y -q update && yum -y -q install \
         apache-maven \
