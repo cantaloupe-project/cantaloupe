@@ -108,17 +108,6 @@ public class TasksResourceTest extends AbstractAPIResourceTest {
     }
 
     @Test
-    void testPOSTWithPurgeDelegateMethodInvocationCacheVerb()
-            throws Exception {
-        client.setEntity("{ \"verb\": \"PurgeDelegateMethodInvocationCache\" }");
-        client.setContentType(MediaType.APPLICATION_JSON);
-        Response response = client.send();
-
-        assertEquals(202, response.getStatus());
-        assertNotNull(response.getHeaders().getFirstValue("Location"));
-    }
-
-    @Test
     void testPOSTWithPurgeInfoCacheVerb() throws Exception {
         client.setEntity("{ \"verb\": \"PurgeInfoCache\" }");
         client.setContentType(MediaType.APPLICATION_JSON);
@@ -150,7 +139,7 @@ public class TasksResourceTest extends AbstractAPIResourceTest {
 
     @Test
     void testPOSTResponseHeaders() throws Exception {
-        client.setEntity("{ \"verb\": \"PurgeDelegateMethodInvocationCache\" }");
+        client.setEntity("{ \"verb\": \"PurgeInfoCache\" }");
         client.setContentType(MediaType.APPLICATION_JSON);
         Response response = client.send();
         Headers headers = response.getHeaders();
