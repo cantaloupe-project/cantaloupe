@@ -1,27 +1,33 @@
 # (This is Oracle Linux)
 FROM oracle/graalvm-ce:20.1.0-java11
 
+ENV M2_HOME="/opt/maven"
+ENV PATH="${M2_HOME}/bin:${PATH}"
+
 # Install wget
 RUN yum -y -q install wget
 
-# Install repos for Maven && FFmpeg
-RUN wget https://repos.fedorapeople.org/repos/dchen/apache-maven/epel-apache-maven.repo -O /etc/yum.repos.d/epel-apache-maven.repo \
-        && wget https://yum.oracle.com/public-yum-ol7.repo -O /etc/yum.repos.d/public-yum-ol7.repo
+# Install repo for FFmpeg
+RUN wget https://yum.oracle.com/public-yum-ol7.repo -O /etc/yum.repos.d/public-yum-ol7.repo
 
 RUN yum -y -q install https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm \
         && yum  -y -q localinstall --nogpgcheck https://download1.rpmfusion.org/free/el/rpmfusion-free-release-7.noarch.rpm \
                 https://download1.rpmfusion.org/nonfree/el/rpmfusion-nonfree-release-7.noarch.rpm
 
-RUN /usr/bin/ol_yum_configure.sh
-
 # Install various dependencies
 RUN yum -y -q update && yum -y -q install \
-        apache-maven \
         curl \
 		ffmpeg \
 		openjpeg2-tools
 
 RUN ln -s /usr/bin/opj2_decompress /usr/bin/opj_decompress
+
+# Install Maven
+RUN cd /opt \
+        && wget -q https://www-us.apache.org/dist/maven/maven-3/3.6.3/binaries/apache-maven-3.6.3-bin.tar.gz \
+        && tar xzf apache-maven-3.6.3-bin.tar.gz \
+        && ln -s apache-maven-3.6.3 maven \
+        && export PATH=${M2_HOME}/bin:${PATH}
 
 # Install TurboJpegProcessor dependencies
 RUN mkdir -p /opt/libjpeg-turbo/lib
