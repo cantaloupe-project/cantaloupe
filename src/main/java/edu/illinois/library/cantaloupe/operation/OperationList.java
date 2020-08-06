@@ -250,7 +250,12 @@ public final class OperationList implements Iterable<Operation> {
             if (service.isEnabled() &&
                     service.shouldApplyToImage(getResultingSize(sourceImageSize))) {
                 final Overlay overlay = service.newOverlay(delegateProxy);
-                addBefore(overlay, Encode.class);
+                if (overlay != null) {
+                    addBefore(overlay, Encode.class);
+                } else {
+                    LOGGER.trace("applyNonEndpointMutations(): delegate " +
+                            "requested no overlay.");
+                }
             } else {
                 LOGGER.trace("applyNonEndpointMutations(): overlays are " +
                         "disabled; skipping.");
