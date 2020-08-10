@@ -4,6 +4,8 @@
 
 * Fixed a `NumberFormatException` caused by incorrect Java version parsing when
   running in a beta or early-access JVM.
+* Fixed a `NullPointerException` when returning `nil` from the `overlay()`
+  delegate method. (Thanks to @ccare)
 
 ## 4.1.6
 
