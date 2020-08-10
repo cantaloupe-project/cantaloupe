@@ -24,13 +24,13 @@ public class Version2_1ConformanceTest extends Version2_0ConformanceTest {
      */
     @Test
     void testSquareRegion() throws Exception {
-        client = newClient("/" + IMAGE + "/full/full/0/default.jpg");
+        client = newClient("/" + IMAGE + "/square/full/0/default.jpg");
         Response response = client.send();
         assertEquals(200, response.getStatus());
 
         try (InputStream is = new ByteArrayInputStream(response.getBody())) {
             BufferedImage image = ImageIO.read(is);
-            assertEquals(64, image.getWidth());
+            assertEquals(56, image.getWidth());
             assertEquals(56, image.getHeight());
         }
     }
