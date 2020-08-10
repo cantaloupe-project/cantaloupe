@@ -310,7 +310,8 @@ public final class JPEG2000MetadataReader implements AutoCloseable {
         // A UUID box can contain any kind of data, signified by the UUID.
         // This reader supports IPTC and XMP.
         if (Arrays.equals(uuid, XMP_UUID)) {
-            byte[] data = read((int)dataLength  - 16);
+            byte[] data = new byte[(int)dataLength  - 16];
+            inputStream.readFully(data,  0, (int) dataLength - 16);
             xmp = new String(data, StandardCharsets.UTF_8);
             xmp = xmp.substring(xmp.indexOf("<rdf:RDF "),
                     xmp.indexOf("</rdf:RDF>") + 10);
@@ -421,7 +422,11 @@ public final class JPEG2000MetadataReader implements AutoCloseable {
 
     private byte[] read(int length) throws IOException {
         byte[] data = new byte[length];
-        inputStream.readFully(data, 0, length);
+        int n, offset = 0;
+        while ((n = inputStream.read(
+                data, offset, data.length - offset)) < offset) {
+            offset += n;
+        }
         return data;
     }
 
