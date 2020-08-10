@@ -110,6 +110,9 @@ public final class OperationList implements Iterable<Operation> {
     public void addAfter(Operation op,
                          Class<? extends Operation> afterClass) {
         checkFrozen();
+        if (op == null) {
+            return;
+        }
         final int index = lastIndexOf(afterClass);
         if (index >= 0) {
             operations.add(index + 1, op);
@@ -131,6 +134,9 @@ public final class OperationList implements Iterable<Operation> {
     public void addBefore(Operation op,
                           Class<? extends Operation> beforeClass) {
         checkFrozen();
+        if (op == null) {
+            return;
+        }
         int index = firstIndexOf(beforeClass);
         if (index >= 0) {
             operations.add(index, op);
@@ -244,7 +250,12 @@ public final class OperationList implements Iterable<Operation> {
             if (service.isEnabled() &&
                     service.shouldApplyToImage(getResultingSize(sourceImageSize))) {
                 final Overlay overlay = service.newOverlay(delegateProxy);
-                addBefore(overlay, Encode.class);
+                if (overlay != null) {
+                    addBefore(overlay, Encode.class);
+                } else {
+                    LOGGER.trace("applyNonEndpointMutations(): delegate " +
+                            "requested no overlay.");
+                }
             } else {
                 LOGGER.trace("applyNonEndpointMutations(): overlays are " +
                         "disabled; skipping.");

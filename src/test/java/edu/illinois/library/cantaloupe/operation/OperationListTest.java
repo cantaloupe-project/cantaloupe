@@ -66,6 +66,15 @@ public class OperationListTest extends BaseTest {
     }
 
     @Test
+    public void addWithNull() {
+        instance = new OperationList();
+        assertFalse(instance.iterator().hasNext());
+
+        instance.add(null);
+        assertFalse(instance.iterator().hasNext());
+    }
+
+    @Test
     public void addAfterWithExistingClass() {
         instance = new OperationList(new Rotate());
         instance.addAfter(new Scale(), Rotate.class);
@@ -106,6 +115,15 @@ public class OperationListTest extends BaseTest {
     }
 
     @Test
+    public void addAfterWithNull() {
+        instance = new OperationList();
+        assertFalse(instance.iterator().hasNext());
+
+        instance.addAfter(null, Crop.class);
+        assertFalse(instance.iterator().hasNext());
+    }
+
+    @Test
     public void addBeforeWithExistingClass() {
         instance = new OperationList();
         instance.add(new Rotate());
@@ -138,6 +156,15 @@ public class OperationListTest extends BaseTest {
         instance = new OperationList();
         instance.freeze();
         instance.addBefore(new Rotate(), Crop.class);
+    }
+
+    @Test
+    public void addBeforeWithNull() {
+        instance = new OperationList();
+        assertFalse(instance.iterator().hasNext());
+
+        instance.addAfter(null, Crop.class);
+        assertFalse(instance.iterator().hasNext());
     }
 
     @Test
