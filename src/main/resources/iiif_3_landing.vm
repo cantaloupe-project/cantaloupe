@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        #parse("head_common.vm")
+
+        <title>Cantaloupe Image Server</title>
+    </head>
+
+    <body id="cl-landing">
+        <div class="container-fluid">
+            <h1>IIIF Image API 3.x Endpoint</h1>
+
+            <ul>
+                <li>Documentation
+                    <ul>
+                        <li><a href="http://iiif.io/api/image/3.0/">3.0</a></li>
+                    </ul>
+                </li>
+                <li>Sample Requests
+                    <ul>
+                        <li>$baseUri/iiif/3/{identifier}/info.json</li>
+                        <li>$baseUri/iiif/3/{identifier}/full/max/0/default.jpg</li>
+                    </ul>
+                </li>
+                <li>Also Available:
+                    <ul>
+                        <li><a href="$baseUri/iiif/1">IIIF Image API 1.x endpoint</a></li>
+                        <li><a href="$baseUri/iiif/2">IIIF Image API 2.x endpoint</a></li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+    </body>
+</html>

@@ -1065,6 +1065,24 @@
                                     </td>
                                 </tr>
                             </table>
+
+                            <h3>3.x</h3>
+                            <table class="table table-striped">
+                                <tr>
+                                    <td></td>
+                                    <td>
+                                        <div class="checkbox">
+                                            <label>
+                                                <input type="checkbox"
+                                                       name="endpoint.iiif.3.enabled"
+                                                       value="true"
+                                                       data-requires-restart="false">
+                                                Enabled
+                                            </label>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </table>
                         </section>
 
                         <section>

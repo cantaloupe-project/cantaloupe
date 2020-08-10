@@ -8,15 +8,10 @@ import java.util.Map;
 
 /**
  * <p>Proxy for a delegate object, which is supplied by the user in a script
- * file. Invokes methods on that object, {@link
- * DelegateProxyService#isInvocationCacheEnabled() optionally} {@link
- * DelegateProxyService#getInvocationCache() caching the invocations}.</p>
+ * file.</p>
  *
  * <p>Instances should be acquired via {@link
  * DelegateProxyService#newDelegateProxy(RequestContext)}.</p>
- *
- * <p>N.B.: Method return values should not be modified as this could disrupt
- * the {@link InvocationCache}.</p>
  */
 public interface DelegateProxy {
 
@@ -37,10 +32,18 @@ public interface DelegateProxy {
 
     /**
      * @return Return value of {@link
-     *         DelegateMethod#EXTRA_IIIF_INFORMATION_RESPONSE_KEYS}, or an
+     *         DelegateMethod#EXTRA_IIIF2_INFORMATION_RESPONSE_KEYS}, or an
      *         empty map if it returned {@code null}.
      */
-    Map<String, Object> getExtraIIIFInformationResponseKeys()
+    Map<String, Object> getExtraIIIF2InformationResponseKeys()
+            throws ScriptException;
+
+    /**
+     * @return Return value of {@link
+     *         DelegateMethod#EXTRA_IIIF3_INFORMATION_RESPONSE_KEYS}, or an
+     *         empty map if it returned {@code null}.
+     */
+    Map<String, Object> getExtraIIIF3InformationResponseKeys()
             throws ScriptException;
 
     /**

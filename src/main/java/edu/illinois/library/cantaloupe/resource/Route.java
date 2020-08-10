@@ -20,12 +20,13 @@ public final class Route {
     public static final String HEALTH_PATH        = "/health";
     public static final String IIIF_1_PATH        = "/iiif/1";
     public static final String IIIF_2_PATH        = "/iiif/2";
+    public static final String IIIF_3_PATH        = "/iiif/3";
     public static final String STATUS_PATH        = "/status";
     public static final String TASKS_PATH         = "/tasks";
 
     /**
-     * N.B.: the LinkedHashMap preserves order as each mapping will be checked
-     * sequentially and the first match used.
+     * N.B.: the {@link LinkedHashMap} preserves order as each mapping will be
+     * checked sequentially and the first match used.
      */
     private static final Map<Pattern,Class<? extends AbstractResource>> MAPPINGS =
             new LinkedHashMap<>();
@@ -34,8 +35,7 @@ public final class Route {
     private final List<String> pathArguments = new ArrayList<>();
 
     static {
-        // N.B.: some of these regexes have groups, which are considered the
-        // URI path arguments.
+        // N.B.: Regex groups are used to extract the URI path arguments.
         MAPPINGS.put(Pattern.compile("\\A\\z"),
                 LandingResource.class);
         MAPPINGS.put(Pattern.compile("^/$"),
@@ -62,6 +62,16 @@ public final class Route {
                 edu.illinois.library.cantaloupe.resource.api.TasksResource.class);
         MAPPINGS.put(Pattern.compile("^" + TASKS_PATH + "/([^/]+)$"),
                 edu.illinois.library.cantaloupe.resource.api.TaskResource.class);
+
+        // IIIF Image API v3 routes
+        MAPPINGS.put(Pattern.compile("^" + IIIF_3_PATH + "$"),
+                edu.illinois.library.cantaloupe.resource.iiif.v3.LandingResource.class);
+        MAPPINGS.put(Pattern.compile("^" + IIIF_3_PATH + "/([^/]+)/info\\.json$"),
+                edu.illinois.library.cantaloupe.resource.iiif.v3.InformationResource.class);
+        MAPPINGS.put(Pattern.compile("^" + IIIF_3_PATH + "/([^/]+)$"),
+                edu.illinois.library.cantaloupe.resource.iiif.v3.IdentifierResource.class);
+        MAPPINGS.put(Pattern.compile("^" + IIIF_3_PATH + "/([^/]+)/([^/]+)/([^/]+)/([^/]+)/([^/]+)\\.([a-z0-9]+)$"),
+                edu.illinois.library.cantaloupe.resource.iiif.v3.ImageResource.class);
 
         // IIIF Image API v2 routes
         MAPPINGS.put(Pattern.compile("^" + IIIF_2_PATH + "$"),

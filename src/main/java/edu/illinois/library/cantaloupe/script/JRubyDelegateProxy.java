@@ -130,14 +130,30 @@ final class JRubyDelegateProxy implements DelegateProxy {
 
     /**
      * @return Return value of {@link
-     *         DelegateMethod#EXTRA_IIIF_INFORMATION_RESPONSE_KEYS}, or an
+     *         DelegateMethod#EXTRA_IIIF2_INFORMATION_RESPONSE_KEYS}, or an
      *         empty map if it returned {@literal nil}.
      */
     @SuppressWarnings("unchecked")
     @Override
-    public Map<String, Object> getExtraIIIFInformationResponseKeys()
+    public Map<String, Object> getExtraIIIF2InformationResponseKeys()
             throws ScriptException {
-        Object result = invoke(DelegateMethod.EXTRA_IIIF_INFORMATION_RESPONSE_KEYS);
+        Object result = invoke(DelegateMethod.EXTRA_IIIF2_INFORMATION_RESPONSE_KEYS);
+        if (result != null) {
+            return (Map<String, Object>) result;
+        }
+        return Collections.emptyMap();
+    }
+
+    /**
+     * @return Return value of {@link
+     *         DelegateMethod#EXTRA_IIIF3_INFORMATION_RESPONSE_KEYS}, or an
+     *         empty map if it returned {@literal nil}.
+     */
+    @SuppressWarnings("unchecked")
+    @Override
+    public Map<String, Object> getExtraIIIF3InformationResponseKeys()
+            throws ScriptException {
+        Object result = invoke(DelegateMethod.EXTRA_IIIF3_INFORMATION_RESPONSE_KEYS);
         if (result != null) {
             return (Map<String, Object>) result;
         }

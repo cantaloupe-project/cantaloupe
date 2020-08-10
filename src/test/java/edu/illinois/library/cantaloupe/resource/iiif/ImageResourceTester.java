@@ -374,11 +374,11 @@ public class ImageResourceTester extends ImageAPIResourceTester {
         assertStatus(200, uri);
     }
 
-    public void testGreaterThanMaxScale(URI uri) {
+    public void testGreaterThanMaxScale(URI uri, int expectedStatus) {
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.MAX_SCALE, 1.0);
 
-        assertStatus(403, uri);
+        assertStatus(expectedStatus, uri);
     }
 
     public void testMinPixels(URI uri) {

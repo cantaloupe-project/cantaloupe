@@ -384,7 +384,7 @@ public class ImageResourceTest extends ResourceTest {
     @Test
     void testGETGreaterThanFullScale() {
         URI uri = getHTTPURI("/" + IMAGE + "/full/pct:101/0/color.png");
-        tester.testGreaterThanMaxScale(uri);
+        tester.testGreaterThanMaxScale(uri, 403);
     }
 
     @Test

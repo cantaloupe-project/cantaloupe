@@ -83,36 +83,69 @@ public class JRubyDelegateProxyTest extends BaseTest {
         assertNull(instance.getAzureStorageSourceBlobKey());
     }
 
-    /* getExtraIIIFInformationResponseKeys() */
+    /* getExtraIIIF2InformationResponseKeys() */
 
     @Test
-    void testGetExtraIIIFInformationResponseKeys() throws Exception {
+    void testGetExtraIIIF2InformationResponseKeys() throws Exception {
         Map<String, Object> result =
-                instance.getExtraIIIFInformationResponseKeys();
+                instance.getExtraIIIF2InformationResponseKeys();
         assertEquals(3, result.size());
     }
 
     @Test
-    void testGetExtraIIIFInformationResponseKeysReturningEmptyHash()
+    void testGetExtraIIIF2InformationResponseKeysReturningEmptyHash()
             throws Exception {
         RequestContext context = new RequestContext();
         context.setIdentifier(new Identifier("empty"));
         instance.setRequestContext(context);
 
         Map<String, Object> result =
-                instance.getExtraIIIFInformationResponseKeys();
+                instance.getExtraIIIF2InformationResponseKeys();
         assertTrue(result.isEmpty());
     }
 
     @Test
-    void testGetExtraIIIFInformationResponseKeysReturningNil()
+    void testGetExtraIIIF2InformationResponseKeysReturningNil()
             throws Exception {
         RequestContext context = new RequestContext();
         context.setIdentifier(new Identifier("bogus"));
         instance.setRequestContext(context);
 
         Map<String, Object> result =
-                instance.getExtraIIIFInformationResponseKeys();
+                instance.getExtraIIIF2InformationResponseKeys();
+        assertTrue(result.isEmpty());
+    }
+
+    /* getExtraIIIF3InformationResponseKeys() */
+
+    @Test
+    void testGetExtraIIIF3InformationResponseKeys() throws Exception {
+        Map<String, Object> result =
+                instance.getExtraIIIF3InformationResponseKeys();
+        assertEquals(3, result.size());
+    }
+
+    @Test
+    void testGetExtraIIIF3InformationResponseKeysReturningEmptyHash()
+            throws Exception {
+        RequestContext context = new RequestContext();
+        context.setIdentifier(new Identifier("empty"));
+        instance.setRequestContext(context);
+
+        Map<String, Object> result =
+                instance.getExtraIIIF3InformationResponseKeys();
+        assertTrue(result.isEmpty());
+    }
+
+    @Test
+    void testGetExtraIIIF3InformationResponseKeysReturningNil()
+            throws Exception {
+        RequestContext context = new RequestContext();
+        context.setIdentifier(new Identifier("bogus"));
+        instance.setRequestContext(context);
+
+        Map<String, Object> result =
+                instance.getExtraIIIF3InformationResponseKeys();
         assertTrue(result.isEmpty());
     }
 

@@ -86,6 +86,9 @@ endpoint.iiif.1.enabled = false
 # Enables the IIIF Image API 2.x endpoint, at /iiif/2.
 endpoint.iiif.2.enabled = true
 
+# Enables the IIIF Image API 3.x endpoint, at /iiif/3.
+endpoint.iiif.3.enabled = true
+
 # Minimum size that will be used in info.json `sizes` keys.
 endpoint.iiif.min_size = 64
 

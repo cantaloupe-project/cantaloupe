@@ -4,6 +4,7 @@
 
 ### Endpoints
 
+* Added an endpoint supporting the IIIF Image API version 3.0 at `/iiif/3`.
 * The minimum and maximum size of the built-in web server's thread pool is
   configurable.
 * A `cache=recache` URL query argument is available that reprocesses and

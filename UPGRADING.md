@@ -12,6 +12,7 @@ current version.
     * `http.min_threads`
     * `http.max_threads`
     * `scale_constraints.delimiter`
+    * `endpoint.iiif.3.enabled`
     * `processor.ManualSelectionStrategy.xpm`
     * `processor.imageio.xpm.reader`
     * `DynamoDBCache.*`
@@ -31,8 +32,8 @@ current version.
     * `ImageMagickProcessor.path_to_binaries`
 5.  Rename the following configuration keys:
     * `endpoint.iiif.2.restrict_to_sizes` to `endpoint.iiif.restrict_to_sizes`
-6.  Rename the `extra_iiif2_information_response_keys()` delegate method to
-    `extra_iiif_information_response_keys()`.
+6. Add the following methods from the sample delegate script:
+    * `extra_iiif3_information_response_keys()`
 7.  The `X-IIIF-ID` reverse proxy header is no longer supported. Use
     `X-Forwarded-ID` instead.
 8.  Purge your derivative cache.

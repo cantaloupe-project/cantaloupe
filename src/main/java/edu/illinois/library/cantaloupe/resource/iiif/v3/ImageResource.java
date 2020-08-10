@@ -1,4 +1,4 @@
-package edu.illinois.library.cantaloupe.resource.iiif.v2;
+package edu.illinois.library.cantaloupe.resource.iiif.v3;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
@@ -21,12 +21,12 @@ import org.slf4j.LoggerFactory;
 import java.util.List;
 
 /**
- * Handles IIIF Image API 2.x image requests.
+ * Handles IIIF Image API 3.x image requests.
  *
- * @see <a href="http://iiif.io/api/image/2.1/#image-request-parameters">Image
- * Request Operations</a>
+ * @see <a href="https://iiif.io/api/image/3.0/#4-image-requests">Image
+ * Requests</a>
  */
-public class ImageResource extends IIIF2Resource {
+public class ImageResource extends IIIF3Resource {
 
     private static final Logger LOGGER =
             LoggerFactory.getLogger(ImageResource.class);
@@ -59,8 +59,7 @@ public class ImageResource extends IIIF2Resource {
                 getIdentifier(), args.get(1), args.get(2),
                 args.get(3), args.get(4), args.get(5));
         // Convert it into an OperationList.
-        final OperationList ops = params.toOperationList();
-        ops.setScaleConstraint(getScaleConstraint());
+        final OperationList ops = params.toOperationList(getMaxScale());
         ops.getOptions().putAll(getRequest().getReference().getQuery().toMap());
         final int pageIndex = getPageIndex();
         final String disposition = getRepresentationDisposition(
@@ -82,15 +81,15 @@ public class ImageResource extends IIIF2Resource {
             @Override
             public void willProcessImage(Processor processor,
                                          Info info) throws Exception {
-                final Metadata metadata = info.getMetadata();
+                final Metadata metadata       = info.getMetadata();
                 final Orientation orientation = (metadata != null) ?
                         metadata.getOrientation() : Orientation.ROTATE_0;
-                final Dimension virtualSize = orientation.adjustedSize(info.getSize(pageIndex));
+                final Dimension virtualSize   = orientation.adjustedSize(info.getSize(pageIndex));
                 final Dimension resultingSize = ops.getResultingSize(info.getSize());
                 validateScale(
                         virtualSize,
                         (Scale) ops.getFirst(Scale.class),
-                        Status.FORBIDDEN);
+                        Status.BAD_REQUEST);
                 validateSize(resultingSize, virtualSize);
 
                 addHeaders(params,
@@ -127,7 +126,7 @@ public class ImageResource extends IIIF2Resource {
     }
 
     /**
-     * Invokes {@link #addHeaders(String, String)} and also adds a {@code Link}
+     * Invokes {@link #addHeaders(String, String)} and also adds an {@code Link}
      * header.
      */
     private void addHeaders(Parameters params,
@@ -142,13 +141,17 @@ public class ImageResource extends IIIF2Resource {
         getResponse().setHeader("Link",
                 String.format("<%s%s/%s>;rel=\"canonical\"",
                         getPublicRootReference(),
-                        Route.IIIF_2_PATH,
+                        Route.IIIF_3_PATH,
                         paramsStr));
+    }
+
+    private static double getMaxScale() {
+        return Configuration.getInstance().getDouble(Key.MAX_SCALE, 1);
     }
 
     private void validateSize(Dimension resultingSize,
                               Dimension virtualSize) throws SizeRestrictedException {
-        final var config = Configuration.getInstance();
+        final Configuration config = Configuration.getInstance();
         if (config.getBoolean(Key.IIIF_RESTRICT_TO_SIZES, false)) {
             var factory = new ImageInfoFactory();
             factory.getSizes(virtualSize).stream()

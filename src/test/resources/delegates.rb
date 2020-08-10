@@ -32,7 +32,7 @@ class CustomDelegate
     end
   end
 
-  def extra_iiif_information_response_keys(options = {})
+  def extra_iiif2_information_response_keys(options = {})
     case context['identifier']
       when 'bogus'
         return nil
@@ -50,6 +50,10 @@ class CustomDelegate
             }
         }
     end
+  end
+
+  def extra_iiif3_information_response_keys(options = {})
+    extra_iiif2_information_response_keys(options)
   end
 
   def source(options = {})

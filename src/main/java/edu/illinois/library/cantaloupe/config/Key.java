@@ -123,6 +123,7 @@ public enum Key {
     HTTPS_PORT("https.port"),
     IIIF_1_ENDPOINT_ENABLED("endpoint.iiif.1.enabled"),
     IIIF_2_ENDPOINT_ENABLED("endpoint.iiif.2.enabled"),
+    IIIF_3_ENDPOINT_ENABLED("endpoint.iiif.3.enabled"),
     IIIF_MIN_SIZE("endpoint.iiif.min_size"),
     IIIF_MIN_TILE_SIZE("endpoint.iiif.min_tile_size"),
     IIIF_RESTRICT_TO_SIZES("endpoint.iiif.restrict_to_sizes"),

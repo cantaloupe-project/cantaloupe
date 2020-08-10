@@ -2,6 +2,7 @@ package edu.illinois.library.cantaloupe.resource.iiif.v1;
 
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.http.Method;
+import edu.illinois.library.cantaloupe.http.Status;
 import edu.illinois.library.cantaloupe.image.Dimension;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
@@ -76,7 +77,8 @@ public class ImageResource extends IIIF1Resource {
                                          Info info) throws Exception {
                 final Dimension fullSize = info.getSize(getPageIndex());
                 validateScale(info.getMetadata().getOrientation().adjustedSize(fullSize),
-                        (Scale) opList.getFirst(Scale.class));
+                        (Scale) opList.getFirst(Scale.class),
+                        Status.FORBIDDEN);
 
                 final String disposition = getRepresentationDisposition(
                         getIdentifier(), opList.getOutputFormat());

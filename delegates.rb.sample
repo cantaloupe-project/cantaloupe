@@ -94,29 +94,28 @@ class CustomDelegate
   end
 
   ##
-  # Used to add additional keys to an information JSON response. See the
-  # [Image API specification](http://iiif.io/api/image/2.1/#image-information).
+  # Adds additional keys to an Image API 2.x information response. See the
+  # [IIIF Image API 2.1](http://iiif.io/api/image/2.1/#image-information)
+  # specification and "endpoints" section of the user manual.
   #
   # @param options [Hash] Empty hash.
-  # @return [Hash] Hash that will be merged into an IIIF Image API 2.x
-  #                information response. Return an empty hash to add nothing.
+  # @return [Hash] Hash to merge into an Image API 2.x information response.
+  #                Return an empty hash to add nothing.
   #
-  def extra_iiif_information_response_keys(options = {})
-=begin
-    Example:
-    {
-        'attribution' =>  'Copyright My Great Organization. All rights '\
-                          'reserved.',
-        'license' =>  'http://example.org/license.html',
-        'logo' =>  'http://example.org/logo.png',
-        'service' => {
-            '@context' => 'http://iiif.io/api/annex/services/physdim/1/context.json',
-            'profile' => 'http://iiif.io/api/annex/services/physdim',
-            'physicalScale' => 0.0025,
-            'physicalUnits' => 'in'
-        }
-    }
-=end
+  def extra_iiif2_information_response_keys(options = {})
+    {}
+  end
+
+  ##
+  # Adds additional keys to an Image API 3.x information response. See the
+  # [IIIF Image API 3.0](http://iiif.io/api/image/3.0/#image-information)
+  # specification and "endpoints" section of the user manual.
+  #
+  # @param options [Hash] Empty hash.
+  # @return [Hash] Hash to merge into an Image API 3.x information response.
+  #                Return an empty hash to add nothing.
+  #
+  def extra_iiif3_information_response_keys(options = {})
     {}
   end
 

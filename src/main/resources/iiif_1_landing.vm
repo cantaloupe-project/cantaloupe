@@ -26,6 +26,7 @@
             <li>Also Available:
                 <ul>
                     <li><a href="$baseUri/iiif/2">IIIF Image API 2.x endpoint</a></li>
+                    <li><a href="$baseUri/iiif/3">IIIF Image API 3.x endpoint</a></li>
                 </ul>
             </li>
         </ul>

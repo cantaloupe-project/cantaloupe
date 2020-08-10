@@ -286,6 +286,7 @@ public class AdminResourceUITest extends AbstractAdminResourceTest {
         inputNamed(Key.IIIF_RESTRICT_TO_SIZES).click();
         inputNamed(Key.IIIF_1_ENDPOINT_ENABLED).click();
         inputNamed(Key.IIIF_2_ENDPOINT_ENABLED).click();
+        inputNamed(Key.IIIF_3_ENDPOINT_ENABLED).click();
         inputNamed(Key.API_ENABLED).click();
         inputNamed(Key.API_USERNAME).sendKeys("cats");
         inputNamed(Key.API_SECRET).sendKeys("dogs");
@@ -305,6 +306,7 @@ public class AdminResourceUITest extends AbstractAdminResourceTest {
         assertTrue(config.getBoolean(Key.IIIF_RESTRICT_TO_SIZES));
         assertTrue(config.getBoolean(Key.IIIF_1_ENDPOINT_ENABLED));
         assertTrue(config.getBoolean(Key.IIIF_2_ENDPOINT_ENABLED));
+        assertTrue(config.getBoolean(Key.IIIF_3_ENDPOINT_ENABLED));
         assertTrue(config.getBoolean(Key.API_ENABLED));
         assertEquals("cats", config.getString(Key.API_USERNAME));
         assertEquals("dogs", config.getString(Key.API_SECRET));

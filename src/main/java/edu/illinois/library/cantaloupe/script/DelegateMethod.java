@@ -16,9 +16,14 @@ public enum DelegateMethod {
     AZURESTORAGESOURCE_BLOB_KEY("azurestoragesource_blob_key"),
 
     /**
-     * Called by {@link DelegateProxy#getExtraIIIFInformationResponseKeys()}.
+     * Called by {@link DelegateProxy#getExtraIIIF2InformationResponseKeys()}.
      */
-    EXTRA_IIIF_INFORMATION_RESPONSE_KEYS("extra_iiif_information_response_keys"),
+    EXTRA_IIIF2_INFORMATION_RESPONSE_KEYS("extra_iiif2_information_response_keys"),
+
+    /**
+     * Called by {@link DelegateProxy#getExtraIIIF3InformationResponseKeys()}.
+     */
+    EXTRA_IIIF3_INFORMATION_RESPONSE_KEYS("extra_iiif3_information_response_keys"),
 
     /**
      * Called by {@link DelegateProxy#getFilesystemSourcePathname()}.
