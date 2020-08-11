@@ -36,4 +36,4 @@ RUN mvn --quiet dependency:resolve
 COPY --chown=cantaloupe docker/Linux-JDK11/image_files/test.properties test.properties
 COPY --chown=cantaloupe ./src src
 
-ENTRYPOINT mvn test -Pfreedeps
+ENTRYPOINT mvn --batch-mode test -Pfreedeps
