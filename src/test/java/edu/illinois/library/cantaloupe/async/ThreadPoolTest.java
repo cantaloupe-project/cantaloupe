@@ -11,6 +11,8 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class ThreadPoolTest extends BaseTest {
 
+    private static final int ASYNC_WAIT = 50;
+
     private ThreadPool instance;
 
     @BeforeEach
@@ -47,7 +49,7 @@ public class ThreadPoolTest extends BaseTest {
             atomicInt.incrementAndGet();
             return null;
         });
-        Thread.sleep(20); // wait for it to happen
+        Thread.sleep(ASYNC_WAIT);
         assertEquals(1, atomicInt.get());
     }
 
@@ -58,7 +60,7 @@ public class ThreadPoolTest extends BaseTest {
             atomicInt.incrementAndGet();
             return null;
         }, ThreadPool.Priority.HIGH);
-        Thread.sleep(20); // wait for it to happen
+        Thread.sleep(ASYNC_WAIT);
         assertEquals(1, atomicInt.get());
     }
 
@@ -66,7 +68,7 @@ public class ThreadPoolTest extends BaseTest {
     void testSubmitRunnable() throws Exception {
         final AtomicInteger atomicInt = new AtomicInteger(0);
         instance.submit(atomicInt::incrementAndGet);
-        Thread.sleep(10); // wait for it to happen
+        Thread.sleep(ASYNC_WAIT);
         assertEquals(1, atomicInt.get());
     }
 
@@ -74,7 +76,7 @@ public class ThreadPoolTest extends BaseTest {
     void testSubmitRunnableWithPriority() throws Exception {
         final AtomicInteger atomicInt = new AtomicInteger(0);
         instance.submit(atomicInt::incrementAndGet, ThreadPool.Priority.HIGH);
-        Thread.sleep(50); // wait for it to happen
+        Thread.sleep(ASYNC_WAIT);
         assertEquals(1, atomicInt.get());
     }
 
