@@ -6,6 +6,8 @@
   running in a beta or early-access JVM.
 * Fixed a `NullPointerException` when returning `nil` from the `overlay()`
   delegate method. (Thanks to @ccare)
+* Fixed an error from the embedded Jetty server when trying to use a key store
+  with multiple certificates.
 
 ## 4.1.6
 
