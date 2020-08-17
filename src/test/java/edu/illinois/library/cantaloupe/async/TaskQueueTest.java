@@ -23,17 +23,11 @@ public class TaskQueueTest extends BaseTest {
 
     @Test
     void testQueuedTasks() throws Exception {
-        MockCallable<?> task1 = new MockCallable<>();
-        MockCallable<?> task2 = new MockCallable<>();
-        MockCallable<?> task3 = new MockCallable<>();
-        FutureTask<?> future1 = new FutureTask<>(task1);
-        FutureTask<?> future2 = new FutureTask<>(task2);
-        FutureTask<?> future3 = new FutureTask<>(task3);
-        instance.submit(future1);
-        instance.submit(future2);
-        instance.submit(future3);
+        for (int i = 0; i < 3; i++) {
+            instance.submit(new FutureTask<>(new MockCallable<>()));
+        }
 
-        Thread.sleep(40);
+        Thread.sleep(Math.round(MockCallable.WAIT / 2.0));
 
         // The first has been taken out and is running.
         assertEquals(2, instance.queuedTasks().size());
@@ -51,12 +45,12 @@ public class TaskQueueTest extends BaseTest {
         instance.submit(callable2);
         instance.submit(callable3);
 
-        Thread.sleep(20);
+        Thread.sleep(Math.round(MockCallable.WAIT / 4.0));
 
         // The first has been taken out and is running.
         assertEquals(2, instance.queuedTasks().size());
 
-        Thread.sleep(500); // wait for them all to complete
+        Thread.sleep(MockCallable.WAIT * 4); // wait for them all to complete
         assertTrue(callable1.ran());
         assertTrue(callable2.ran());
         assertTrue(callable3.ran());
@@ -74,12 +68,12 @@ public class TaskQueueTest extends BaseTest {
         instance.submit(runnable2);
         instance.submit(runnable3);
 
-        Thread.sleep(20);
+        Thread.sleep(Math.round(MockRunnable.WAIT / 2.0));
 
         // The first has been taken out and is running.
         assertEquals(2, instance.queuedTasks().size());
 
-        Thread.sleep(400); // wait for them all to complete
+        Thread.sleep(MockRunnable.WAIT * 4); // wait for them all to complete
         assertTrue(runnable1.ran());
         assertTrue(runnable2.ran());
         assertTrue(runnable3.ran());
@@ -99,7 +93,8 @@ public class TaskQueueTest extends BaseTest {
         instance.submit(future1);
         instance.submit(future2);
 
-        Thread.sleep(80);
+        Thread.sleep(Math.round(MockCallable.WAIT / 1.5));
+
         assertEquals(TaskStatus.RUNNING, future1.getStatus());
         assertEquals(TaskStatus.QUEUED, future2.getStatus());
     }
@@ -111,7 +106,7 @@ public class TaskQueueTest extends BaseTest {
         assertEquals(TaskStatus.NEW, future.getStatus());
 
         instance.submit(future);
-        Thread.sleep(50);
+        Thread.sleep(Math.round(MockCallable.WAIT / 2.0));
         assertEquals(TaskStatus.RUNNING, future.getStatus());
     }
 
@@ -128,7 +123,7 @@ public class TaskQueueTest extends BaseTest {
         MockCallable<?> task = new MockCallable<>();
         AuditableFutureTask<?> future = new AuditableFutureTask<>(task);
         instance.submit(future);
-        Thread.sleep(50);
+        Thread.sleep(Math.round(MockCallable.WAIT / 2.0));
         assertNotNull(future.getInstantStarted());
     }
 
@@ -137,7 +132,7 @@ public class TaskQueueTest extends BaseTest {
         MockCallable<?> task = new MockCallable<>();
         AuditableFutureTask<?> future = new AuditableFutureTask<>(task);
         instance.submit(future);
-        Thread.sleep(150);
+        Thread.sleep(MockCallable.WAIT * 2);
         assertNotNull(future.getInstantStopped());
     }
 
@@ -149,7 +144,7 @@ public class TaskQueueTest extends BaseTest {
         assertEquals(TaskStatus.NEW, future.getStatus());
 
         instance.submit(future);
-        Thread.sleep(150);
+        Thread.sleep(MockCallable.WAIT * 2);
         assertEquals(TaskStatus.SUCCEEDED, future.getStatus());
     }
 
@@ -160,7 +155,7 @@ public class TaskQueueTest extends BaseTest {
         assertEquals(TaskStatus.NEW, future.getStatus());
 
         instance.submit(future);
-        Thread.sleep(150);
+        Thread.sleep(MockFailingCallable.WAIT * 2);
         assertEquals(TaskStatus.FAILED, future.getStatus());
         assertEquals("Failed, as requested",
                 future.getException().getMessage());
