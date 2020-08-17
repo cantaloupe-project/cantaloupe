@@ -215,7 +215,7 @@ public class ImageAPIResourceTester {
             time1 = timeHolder.time;
 
             // FileTime only has 1-second precision so wait at least that long.
-            Thread.sleep(1000);
+            Thread.sleep(2000);
 
             // request it again
             client.send();
