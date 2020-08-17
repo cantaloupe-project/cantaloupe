@@ -430,9 +430,15 @@
     <repositories>
         <!-- Provides imageio-ext-tiff -->
         <repository>
-            <id>imageio-ext-repository</id>
-            <name>imageio-ext Repository</name>
-            <url>https://maven.geo-solutions.it/</url>
+            <id>osgeo</id>
+            <name>OSGeo Release Repository</name>
+            <url>https://repo.osgeo.org/repository/release/</url>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
         </repository>
     </repositories>
 
