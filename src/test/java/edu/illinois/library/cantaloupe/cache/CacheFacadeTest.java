@@ -26,26 +26,27 @@ import static org.junit.jupiter.api.Assumptions.assumeFalse;
 
 public class CacheFacadeTest extends BaseTest {
 
+    private static final int ASYNC_WAIT = 2000;
+
     private CacheFacade instance;
 
     @BeforeEach
     public void setUp() {
         instance = new CacheFacade();
-
-        Configuration config = Configuration.getInstance();
-        config.setProperty(Key.SOURCE_CACHE, FilesystemCache.class.getSimpleName());
-    }
-
-    private void enableDerivativeCache() {
         try {
             Configuration config = Configuration.getInstance();
-            config.setProperty(Key.DERIVATIVE_CACHE_ENABLED, true);
-            config.setProperty(Key.DERIVATIVE_CACHE, FilesystemCache.class.getSimpleName());
+            config.setProperty(Key.SOURCE_CACHE, FilesystemCache.class.getSimpleName());
             config.setProperty(Key.FILESYSTEMCACHE_PATHNAME,
                     Files.createTempDirectory("test").toString());
         } catch (IOException e) {
             fail(e.getMessage());
         }
+    }
+
+    private void enableDerivativeCache() {
+        Configuration config = Configuration.getInstance();
+        config.setProperty(Key.DERIVATIVE_CACHE_ENABLED, true);
+        config.setProperty(Key.DERIVATIVE_CACHE, FilesystemCache.class.getSimpleName());
     }
 
     private void disableDerivativeCache() {
@@ -303,6 +304,10 @@ public class CacheFacadeTest extends BaseTest {
 
         instance.purge(identifier);
 
+        if (SystemUtils.IS_OS_WINDOWS) { // Attempt to resolve intermittent test failures in Windows
+            Thread.sleep(ASYNC_WAIT);
+        }
+
         // Assert that everything is gone.
         assertFalse(sourceCache.getSourceImageFile(identifier).isPresent());
         assertFalse(derivCache.getInfo(identifier).isPresent());
@@ -345,7 +350,7 @@ public class CacheFacadeTest extends BaseTest {
 
         instance.purgeAsync(identifier);
 
-        Thread.sleep(2000);
+        Thread.sleep(ASYNC_WAIT);
 
         // Assert that everything is gone.
         assertFalse(sourceCache.getSourceImageFile(identifier).isPresent());
@@ -417,7 +422,7 @@ public class CacheFacadeTest extends BaseTest {
 
         instance.purgeInvalid();
 
-        Thread.sleep(1001);
+        Thread.sleep(ASYNC_WAIT);
 
         // Assert that everything is gone.
         assertEquals(0, InfoService.getInstance().getInfoCache().size());
