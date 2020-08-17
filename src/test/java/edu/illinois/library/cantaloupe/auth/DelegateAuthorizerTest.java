@@ -41,6 +41,8 @@ public class DelegateAuthorizerTest extends BaseTest {
                 DelegateAuthorizer::new);
     }
 
+    /* authorize() */
+
     @Test
     void testAuthorizeWithDelegateProxyReturningTrue() throws Exception {
         AuthInfo info = instance.authorize();
@@ -96,6 +98,67 @@ public class DelegateAuthorizerTest extends BaseTest {
         instance = new DelegateAuthorizer(proxy);
 
         AuthInfo info = instance.authorize();
+        assertEquals(302, info.getResponseStatus());
+        assertEquals(new ScaleConstraint(1, 2), info.getScaleConstraint());
+    }
+
+    /* preAuthorize() */
+
+    @Test
+    void testPreAuthorizeWithDelegateProxyReturningTrue() throws Exception {
+        AuthInfo info = instance.preAuthorize();
+        assertEquals(200, info.getResponseStatus());
+        assertNull(info.getRedirectURI());
+    }
+
+    @Test
+    void testPreAuthorizeWithDelegateProxyReturningFalse() throws Exception {
+        RequestContext context = new RequestContext();
+        context.setIdentifier(new Identifier("forbidden-boolean.jpg"));
+        DelegateProxyService service = DelegateProxyService.getInstance();
+        DelegateProxy proxy = service.newDelegateProxy(context);
+        instance = new DelegateAuthorizer(proxy);
+
+        AuthInfo info = instance.preAuthorize();
+        assertEquals(403, info.getResponseStatus());
+        assertNull(info.getRedirectURI());
+    }
+
+    @Test
+    void testPreAuthorizeWithDelegateProxyReturningUnauthorizedMap() throws Exception {
+        RequestContext context = new RequestContext();
+        context.setIdentifier(new Identifier("forbidden-code.jpg"));
+        DelegateProxyService service = DelegateProxyService.getInstance();
+        DelegateProxy proxy = service.newDelegateProxy(context);
+        instance = new DelegateAuthorizer(proxy);
+
+        AuthInfo info = instance.preAuthorize();
+        assertEquals(401, info.getResponseStatus());
+        assertNull(info.getRedirectURI());
+    }
+
+    @Test
+    void testPreAuthorizeWithDelegateProxyReturningRedirectMap() throws Exception {
+        RequestContext context = new RequestContext();
+        context.setIdentifier(new Identifier("redirect.jpg"));
+        DelegateProxyService service = DelegateProxyService.getInstance();
+        DelegateProxy proxy = service.newDelegateProxy(context);
+        instance = new DelegateAuthorizer(proxy);
+
+        AuthInfo info = instance.preAuthorize();
+        assertEquals(303, info.getResponseStatus());
+        assertEquals("http://example.org/", info.getRedirectURI());
+    }
+
+    @Test
+    void testPreAuthorizeWithDelegateProxyReturningScaleConstraintMap() throws Exception {
+        RequestContext context = new RequestContext();
+        context.setIdentifier(new Identifier("reduce.jpg"));
+        DelegateProxyService service = DelegateProxyService.getInstance();
+        DelegateProxy proxy = service.newDelegateProxy(context);
+        instance = new DelegateAuthorizer(proxy);
+
+        AuthInfo info = instance.preAuthorize();
         assertEquals(302, info.getResponseStatus());
         assertEquals(new ScaleConstraint(1, 2), info.getScaleConstraint());
     }

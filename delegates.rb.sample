@@ -38,7 +38,7 @@ class CustomDelegate
   #                      position 1.
   #
   # It will contain the following additional string keys in response to image
-  # requests:
+  # requests, after the image has been accessed:
   #
   # * `full_size`      [Hash<String,Integer>] Hash with `width` and `height`
   #                    keys corresponding to the pixel dimensions of the
@@ -62,8 +62,14 @@ class CustomDelegate
   attr_accessor :context
 
   ##
-  # Returns authorization status for the current request. Will be called upon
-  # all requests to all public endpoints.
+  # Returns authorization status for the current request. This method is called
+  # upon all requests to all public endpoints early in the request cycle,
+  # before any image has been accessed. This means that some context keys (like
+  # `full_size`) will not be available yet.
+  #
+  # This method should implement all possible authorization logic except that
+  # which requires any of the context keys that aren't yet available. This will
+  # ensure efficient authorization failures.
   #
   # Implementations should assume that the underlying resource is available,
   # and not try to check for it.
@@ -88,6 +94,27 @@ class CustomDelegate
   #
   # @param options [Hash] Empty hash.
   # @return [Boolean,Hash<String,Object>] See above.
+  #
+  def pre_authorize(options = {})
+    true
+  end
+
+  ##
+  # Returns authorization status for the current request. Will be called upon
+  # all requests to all public image (not information) endpoints.
+  #
+  # This is a counterpart of `pre_authorize()` that is invoked later in the
+  # request cycle, once more information about the underlying image has become
+  # available. It should only contain logic that depends on context keys that
+  # contain information about the source image (like `full_size`, `metadata`,
+  # etc.)
+  #
+  # Implementations should assume that the underlying resource is available,
+  # and not try to check for it.
+  #
+  # @param options [Hash] Empty hash.
+  # @return [Boolean,Hash<String,Object>] See the documentation of
+  #                                       `pre_authorize()`.
   #
   def authorize(options = {})
     true

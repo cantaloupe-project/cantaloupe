@@ -56,6 +56,14 @@
 * Added DynamoDBCache.
 * The delegate method invocation cache has been removed. 
 
+### Delegate Script
+
+* Added a `pre_authorize()` delegate method that enables more efficient,
+  "fail-fast" authorization.
+* Added a `local_uri` key to the delegate script context.
+* Corrected the structure of the `cookie` key in the delegate script context.
+  See the upgrade guide for more information.
+
 ### Other
 
 * The application is now packaged as a JAR file and can no longer work in a
@@ -63,13 +71,10 @@
   [#339](https://github.com/cantaloupe-project/cantaloupe/issues/339) for
   background.)
 * Java 11 is required.
-* Corrected the structure of the `cookie` key in the delegate script context.
-  See the upgrade guide for more information.
 * Added configuration options for logging in Logstash format. (Thanks to
   @cmhdave)
 * The `-Dcantaloupe.list_fonts` VM argument has been replaced with the
   `-list-fonts` command-line argument.
-* Added a `local_uri` key to the delegate script `context` hash.
 
 ## 4.1.7
 

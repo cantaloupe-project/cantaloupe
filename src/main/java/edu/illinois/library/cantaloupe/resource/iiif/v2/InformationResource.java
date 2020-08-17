@@ -55,7 +55,7 @@ public class InformationResource extends IIIF2Resource {
                 try {
                     // The logic here is somewhat convoluted. See the method
                     // documentation for more information.
-                    return InformationResource.this.authorize();
+                    return InformationResource.this.preAuthorize();
                 } catch (ResourceException e) {
                     if (Status.FORBIDDEN.equals(e.getStatus())) {
                         throw e;

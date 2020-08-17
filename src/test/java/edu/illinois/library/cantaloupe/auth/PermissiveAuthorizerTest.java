@@ -24,4 +24,11 @@ public class PermissiveAuthorizerTest extends BaseTest {
         assertNull(info.getRedirectURI());
     }
 
+    @Test
+    void testPreAuthorize() {
+        AuthInfo info = instance.preAuthorize();
+        assertEquals(200, info.getResponseStatus());
+        assertNull(info.getRedirectURI());
+    }
+
 }

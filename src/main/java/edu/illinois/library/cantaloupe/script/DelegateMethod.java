@@ -7,6 +7,8 @@ public enum DelegateMethod {
 
     /**
      * Called by {@link DelegateProxy#authorize()}.
+     *
+     * @see #PRE_AUTHORIZE
      */
     AUTHORIZE("authorize"),
 
@@ -59,6 +61,13 @@ public enum DelegateMethod {
      * Called by {@link DelegateProxy#getOverlayProperties()}.
      */
     OVERLAY("overlay"),
+
+    /**
+     * Called by {@link DelegateProxy#preAuthorize()}.
+     *
+     * @see #AUTHORIZE
+     */
+    PRE_AUTHORIZE("pre_authorize"),
 
     /**
      * Called by {@link DelegateProxy#getRedactions()}.

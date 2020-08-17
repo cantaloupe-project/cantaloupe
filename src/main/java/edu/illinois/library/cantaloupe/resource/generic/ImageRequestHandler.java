@@ -169,6 +169,17 @@ public class ImageRequestHandler extends AbstractRequestHandler
     public interface Callback {
 
         /**
+         * <p>Performs pre-authorization using an {@link
+         * edu.illinois.library.cantaloupe.auth.Authorizer}.</p>
+         *
+         * <p>{@link #willProcessImage(Processor, Info)} has not yet been
+         * called.</p>
+         *
+         * @return Authorization result.
+         */
+        boolean preAuthorize() throws Exception;
+
+        /**
          * <p>Performs authorization using an {@link
          * edu.illinois.library.cantaloupe.auth.Authorizer}.</p>
          *
@@ -210,6 +221,10 @@ public class ImageRequestHandler extends AbstractRequestHandler
 
     // No-op callback to avoid having to check for one.
     private Callback callback = new Callback() {
+        @Override
+        public boolean preAuthorize() {
+            return true;
+        }
         @Override
         public boolean authorize() {
             return true;
@@ -263,6 +278,10 @@ public class ImageRequestHandler extends AbstractRequestHandler
      *                     closed.
      */
     public void handle(OutputStream outputStream) throws Exception {
+        if (!callback.preAuthorize()) {
+            return;
+        }
+
         final Identifier identifier   = operationList.getIdentifier();
         final Configuration config    = Configuration.getInstance();
         final CacheFacade cacheFacade = new CacheFacade();

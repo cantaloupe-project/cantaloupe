@@ -74,6 +74,11 @@ public class ImageResource extends IIIF3Resource {
             }
 
             @Override
+            public boolean preAuthorize() throws Exception {
+                return ImageResource.this.preAuthorize();
+            }
+
+            @Override
             public boolean authorize() throws Exception {
                 return ImageResource.this.authorize();
             }

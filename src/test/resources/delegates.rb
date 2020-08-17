@@ -7,7 +7,7 @@ class CustomDelegate
 
   attr_accessor :context
 
-  def authorize(options = {})
+  def pre_authorize(options = {})
     case context['identifier']
       when 'forbidden.jpg', 'forbidden-boolean.jpg'
         return false
@@ -30,6 +30,10 @@ class CustomDelegate
       else
         true
     end
+  end
+
+  def authorize(options = {})
+    pre_authorize
   end
 
   def extra_iiif2_information_response_keys(options = {})

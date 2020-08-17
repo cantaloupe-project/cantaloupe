@@ -122,6 +122,7 @@ final class JRubyDelegateProxy implements DelegateProxy {
 
     /**
      * @return Return value of {@link DelegateMethod#AUTHORIZE}.
+     * @see #preAuthorize()
      */
     @Override
     public Object authorize() throws ScriptException {
@@ -290,6 +291,15 @@ final class JRubyDelegateProxy implements DelegateProxy {
             return (Map<String, String>) result;
         }
         return Collections.emptyMap();
+    }
+
+    /**
+     * @return Return value of {@link DelegateMethod#AUTHORIZE}.
+     * @see #authorize()
+     */
+    @Override
+    public Object preAuthorize() throws ScriptException {
+        return invoke(DelegateMethod.PRE_AUTHORIZE);
     }
 
     /**

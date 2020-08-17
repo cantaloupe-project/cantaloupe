@@ -309,36 +309,78 @@ public abstract class AbstractResource {
         final Authorizer authorizer =
                 new AuthorizerFactory().newAuthorizer(getDelegateProxy());
         final AuthInfo info = authorizer.authorize();
-
         if (info != null) {
-            final int code = info.getResponseStatus();
-            final String location = info.getRedirectURI();
-            final ScaleConstraint scaleConstraint = info.getScaleConstraint();
+            return processAuthInfo(info);
+        }
+        return true;
+    }
 
-            if (location != null) {
-                getResponse().setStatus(code);
-                getResponse().setHeader("Cache-Control", "no-cache");
-                getResponse().setHeader("Location", location);
-                new StringRepresentation("Redirect: " + location)
-                        .write(getResponse().getOutputStream());
-                return false;
-            } else if (scaleConstraint != null) {
-                Reference publicRef = getPublicReference(scaleConstraint);
-                getResponse().setStatus(code);
-                getResponse().setHeader("Cache-Control", "no-cache");
-                getResponse().setHeader("Location", publicRef.toString());
-                new StringRepresentation("Redirect: " + publicRef)
-                        .write(getResponse().getOutputStream());
-                return false;
-            } else if (code >= 400) {
-                getResponse().setStatus(code);
-                getResponse().setHeader("Cache-Control", "no-cache");
-                if (code == 401) {
-                    getResponse().setHeader("WWW-Authenticate",
-                            info.getChallengeValue());
-                }
-                throw new ResourceException(new Status(code));
+    /**
+     * <p>Uses an {@link Authorizer} to determine how to respond to the
+     * request. The response is modified if necessary.</p>
+     *
+     * <p>The authorization system (rooted in the {@link
+     * edu.illinois.library.cantaloupe.script.DelegateMethod#AUTHORIZE
+     * authorization delegate method} supports simple boolean authorization
+     * which maps to the HTTP 200 and 403 statuses. In the event of a 403,
+     * IIIF image information should not be included in the response body.</p>
+     *
+     * <p>Authorization can simultaneously be used in the context of the
+     * <a href="https://iiif.io/api/auth/1.0/">IIIF Authentication API, where
+     * it works a little differently. Here, HTTP 401 is returned instead of
+     * 403, and the response body <strong>does</strong> include image
+     * information. (See
+     * <a href="https://iiif.io/api/auth/1.0/#interaction-with-access-controlled-resources">
+     * Interaction with Access-Controlled Resources</a>. This means that IIIF
+     * information endpoints should swallow any {@link ResourceException}s with
+     * HTTP 401 status.</p>
+     *
+     * @return Whether authorization was successful. {@code false} indicates a
+     *         redirect, and client code should abort.
+     * @throws IOException if there was an I/O error while checking
+     *         authorization.
+     * @throws ResourceException if authorization resulted in an HTTP 400-level
+     *         response.
+     */
+    protected final boolean preAuthorize() throws IOException, ResourceException {
+        final Authorizer authorizer =
+                new AuthorizerFactory().newAuthorizer(getDelegateProxy());
+        final AuthInfo info = authorizer.preAuthorize();
+        if (info != null) {
+            return processAuthInfo(info);
+        }
+        return true;
+    }
+
+    private boolean processAuthInfo(AuthInfo info)
+            throws IOException, ResourceException {
+        final int code = info.getResponseStatus();
+        final String location = info.getRedirectURI();
+        final ScaleConstraint scaleConstraint = info.getScaleConstraint();
+
+        if (location != null) {
+            getResponse().setStatus(code);
+            getResponse().setHeader("Cache-Control", "no-cache");
+            getResponse().setHeader("Location", location);
+            new StringRepresentation("Redirect: " + location)
+                    .write(getResponse().getOutputStream());
+            return false;
+        } else if (scaleConstraint != null) {
+            Reference publicRef = getPublicReference(scaleConstraint);
+            getResponse().setStatus(code);
+            getResponse().setHeader("Cache-Control", "no-cache");
+            getResponse().setHeader("Location", publicRef.toString());
+            new StringRepresentation("Redirect: " + publicRef)
+                    .write(getResponse().getOutputStream());
+            return false;
+        } else if (code >= 400) {
+            getResponse().setStatus(code);
+            getResponse().setHeader("Cache-Control", "no-cache");
+            if (code == 401) {
+                getResponse().setHeader("WWW-Authenticate",
+                        info.getChallengeValue());
             }
+            throw new ResourceException(new Status(code));
         }
         return true;
     }

@@ -115,9 +115,15 @@ public class ImageRequestHandlerTest extends BaseTest {
     }
 
     private static class IntrospectiveCallback implements ImageRequestHandler.Callback {
-        private boolean isAuthorizeCalled,
+        private boolean isPreAuthorizeCalled, isAuthorizeCalled,
                 isWillStreamImageFromDerivativeCacheCalled,
                 isWillProcessImageCalled;
+
+        @Override
+        public boolean preAuthorize() {
+            isPreAuthorizeCalled = true;
+            return true;
+        }
 
         @Override
         public boolean authorize() {
@@ -133,6 +139,32 @@ public class ImageRequestHandlerTest extends BaseTest {
         @Override
         public void willProcessImage(Processor processor, Info info) {
             isWillProcessImageCalled = true;
+        }
+    }
+
+    @Test
+    void testHandleCallsPreAuthorizationCallback() throws Exception {
+        {   // Configure the application.
+            final Configuration config = Configuration.getInstance();
+            config.setProperty(Key.CACHE_SERVER_RESOLVE_FIRST, false);
+            config.setProperty(Key.SOURCE_STATIC, "FilesystemSource");
+            config.setProperty(Key.FILESYSTEMSOURCE_PATH_PREFIX,
+                    TestUtil.getImagesPath().toString() + "/");
+        }
+
+        // Configure the request.
+        final OperationList opList  = new OperationList();
+        opList.setIdentifier(new Identifier("jpg-rgb-64x48x8.jpg"));
+        opList.add(new Encode(Format.JPG));
+
+        final IntrospectiveCallback callback = new IntrospectiveCallback();
+        try (ImageRequestHandler handler = ImageRequestHandler.builder()
+                .withCallback(callback)
+                .withOperationList(opList)
+                .build();
+             OutputStream outputStream = OutputStream.nullOutputStream()) {
+            handler.handle(outputStream);
+            assertTrue(callback.isPreAuthorizeCalled);
         }
     }
 
@@ -315,6 +347,45 @@ public class ImageRequestHandlerTest extends BaseTest {
     }
 
     @Test
+    void testHandleWithFailedPreAuthorization() throws Exception {
+        { // Configure the application.
+            final Configuration config = Configuration.getInstance();
+            config.setProperty(Key.SOURCE_STATIC, "FilesystemSource");
+            config.setProperty(Key.FILESYSTEMSOURCE_PATH_PREFIX,
+                    TestUtil.getImagesPath().toString() + "/");
+        }
+
+        // Configure the request.
+        final OperationList opList  = new OperationList();
+        opList.setIdentifier(new Identifier("jpg-rgb-64x48x8.jpg"));
+        opList.add(new Encode(Format.JPG));
+
+        try (ImageRequestHandler handler = ImageRequestHandler.builder()
+                .withCallback(new ImageRequestHandler.Callback() {
+                    @Override
+                    public boolean preAuthorize() {
+                        return false;
+                    }
+                    @Override
+                    public boolean authorize() {
+                        return true;
+                    }
+                    @Override
+                    public void willStreamImageFromDerivativeCache() {
+                    }
+                    @Override
+                    public void willProcessImage(Processor processor, Info info) {
+                    }
+                })
+                .withOperationList(opList)
+                .build();
+             ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
+            handler.handle(outputStream);
+            assertEquals(0, outputStream.toByteArray().length);
+        }
+    }
+
+    @Test
     void testHandleWithFailedAuthorization() throws Exception {
         { // Configure the application.
             final Configuration config = Configuration.getInstance();
@@ -330,6 +401,10 @@ public class ImageRequestHandlerTest extends BaseTest {
 
         try (ImageRequestHandler handler = ImageRequestHandler.builder()
                 .withCallback(new ImageRequestHandler.Callback() {
+                    @Override
+                    public boolean preAuthorize() {
+                        return true;
+                    }
                     @Override
                     public boolean authorize() {
                         return false;

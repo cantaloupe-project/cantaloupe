@@ -112,4 +112,9 @@ public interface DelegateProxy {
      */
     Map<String,String> getS3SourceObjectInfo() throws ScriptException;
 
+    /**
+     * @return Return value of {@link DelegateMethod#PRE_AUTHORIZE}.
+     */
+    Object preAuthorize() throws ScriptException;
+
 }

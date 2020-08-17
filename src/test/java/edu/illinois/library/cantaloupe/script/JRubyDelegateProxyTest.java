@@ -317,4 +317,36 @@ public class JRubyDelegateProxyTest extends BaseTest {
         assertTrue(result.isEmpty());
     }
 
+    /* preAuthorize() */
+
+    @Test
+    void testPreAuthorizeReturningTrue() throws Exception {
+        RequestContext context = new RequestContext();
+        context.setIdentifier(new Identifier("whatever"));
+        instance.setRequestContext(context);
+
+        assertTrue((boolean) instance.preAuthorize());
+    }
+
+    @Test
+    void testPreAuthorizeReturningFalse() throws Exception {
+        RequestContext context = new RequestContext();
+        context.setIdentifier(new Identifier("forbidden-boolean.jpg"));
+        instance.setRequestContext(context);
+
+        assertFalse((boolean) instance.preAuthorize());
+    }
+
+    @Test
+    void testPreAuthorizeReturningMap() throws Exception {
+        RequestContext context = new RequestContext();
+        context.setIdentifier(new Identifier("redirect.jpg"));
+        instance.setRequestContext(context);
+
+        @SuppressWarnings("unchecked")
+        Map<String,Object> result = (Map<String,Object>) instance.preAuthorize();
+        assertEquals("http://example.org/", result.get("location"));
+        assertEquals(303, (long) result.get("status_code"));
+    }
+
 }

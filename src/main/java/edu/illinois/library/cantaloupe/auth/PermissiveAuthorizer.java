@@ -10,4 +10,9 @@ final class PermissiveAuthorizer implements Authorizer {
         return new AuthInfo.BooleanBuilder(true).build();
     }
 
+    @Override
+    public AuthInfo preAuthorize() {
+        return new AuthInfo.BooleanBuilder(true).build();
+    }
+
 }
