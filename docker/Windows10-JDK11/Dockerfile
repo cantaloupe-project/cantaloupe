@@ -29,10 +29,6 @@ RUN choco install -y ojdkbuild11 maven ffmpeg
 # Install KakaduNativeProcessor dependencies
 COPY dist/deps/Windows-x86-64/lib/* c:/Windows/System32/
 
-# Add mirrors for Maven Central as the one referenced in ImageIO-EXT's POM is
-# offline. TODO: come back in the future and check whether this is still necessary
-COPY docker/Windows10-JDK11/image_files/.m2/settings.xml c:/Users/ContainerAdministrator/.m2/settings.xml
-
 # Install application dependencies
 COPY pom.xml pom.xml
 RUN mvn dependency:resolve

@@ -23,11 +23,6 @@ RUN chown -R $user $home
 USER $user
 WORKDIR $home
 
-# Add mirrors for maven central as the one referenced in ImageIO-EXT's POM is
-# offline. TODO: come back in the future and check whether this is still necessary
-RUN mkdir $home/.m2
-COPY docker/Linux-JDK11/image_files/.m2/settings.xml $home/.m2/settings.xml
-
 # Install application dependencies
 COPY ./pom.xml pom.xml
 RUN mvn --quiet dependency:resolve
