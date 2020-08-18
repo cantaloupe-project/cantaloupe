@@ -71,8 +71,7 @@ public class FfmpegProcessorTest extends AbstractProcessorTest {
             try {
                 instance = newInstance();
                 Set<Format> expectedFormats = new HashSet<>();
-                if (format.getType() != null &&
-                        format.getType().equals(Format.Type.VIDEO)) {
+                if (format.isVideo()) {
                     expectedFormats.addAll(ImageWriterFactory.supportedFormats());
                 }
                 instance.setSourceFormat(format);

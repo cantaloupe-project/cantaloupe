@@ -31,7 +31,7 @@ class AutomaticSelectionStrategy implements SelectionStrategy {
             return JPG_CANDIDATES;
         } else if (Format.PDF.equals(sourceFormat)) {
             return PDF_CANDIDATES;
-        } else if (Format.Type.VIDEO.equals(sourceFormat.getType())) {
+        } else if (sourceFormat.isVideo()) {
             return VIDEO_CANDIDATES;
         }
         return FALLBACK_CANDIDATES;

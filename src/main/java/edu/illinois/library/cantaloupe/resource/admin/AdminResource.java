@@ -73,11 +73,11 @@ public class AdminResource extends AbstractAdminResource {
         }
 
         public boolean isImage() {
-            return Format.Type.IMAGE.equals(((Format) object).getType());
+            return !((Format) object).isVideo();
         }
 
         public boolean isVideo() {
-            return Format.Type.VIDEO.equals(((Format) object).getType());
+            return ((Format) object).isVideo();
         }
 
         @Override
@@ -235,7 +235,7 @@ public class AdminResource extends AbstractAdminResource {
         // image source formats
         List<FormatProxy> imageFormats = Format.all()
                 .stream()
-                .filter(f -> Format.Type.IMAGE.equals(f.getType()))
+                .filter(f -> !f.isVideo())
                 .sorted(Comparator.comparing(Format::getName))
                 .map(FormatProxy::new)
                 .collect(Collectors.toUnmodifiableList());
@@ -244,7 +244,7 @@ public class AdminResource extends AbstractAdminResource {
         // video source formats
         List<FormatProxy> videoFormats = Format.all()
                 .stream()
-                .filter(f -> Format.Type.VIDEO.equals(f.getType()))
+                .filter(Format::isVideo)
                 .sorted(Comparator.comparing(Format::getName))
                 .map(FormatProxy::new)
                 .collect(Collectors.toUnmodifiableList());

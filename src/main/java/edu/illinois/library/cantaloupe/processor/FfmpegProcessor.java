@@ -110,7 +110,7 @@ class FfmpegProcessor extends AbstractProcessor implements FileProcessor {
     @Override
     public Set<Format> getAvailableOutputFormats() {
         final Set<Format> outputFormats;
-        if (Format.Type.VIDEO.equals(getSourceFormat().getType())) {
+        if (getSourceFormat().isVideo()) {
             outputFormats = ImageWriterFactory.supportedFormats();
         } else {
             outputFormats = Collections.unmodifiableSet(Collections.emptySet());

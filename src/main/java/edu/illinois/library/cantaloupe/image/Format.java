@@ -19,13 +19,6 @@ import java.util.stream.Collectors;
  */
 public final class Format implements Comparable<Format> {
 
-    public enum ImageType {
-        RASTER, UNKNOWN, VECTOR
-    }
-
-    public enum Type {
-        IMAGE, UNKNOWN, VIDEO
-    }
 
     // N.B.: For each one of these constants, there should be a corresponding
     // file with a name of the lowercased constant value present in the test
@@ -37,10 +30,10 @@ public final class Format implements Comparable<Format> {
     public static final Format AVI = new Format(
             "avi",
             "AVI",
-            ImageType.RASTER,
             List.of("video/avi", "video/msvideo", "video/x-msvideo"),
             List.of("avi"),
-            Type.VIDEO,
+            true,
+            true,
             false);
 
     /**
@@ -49,10 +42,10 @@ public final class Format implements Comparable<Format> {
     public static final Format BMP = new Format(
             "bmp",
             "BMP",
-            ImageType.RASTER,
             List.of("image/bmp", "image/x-bmp", "image/x-ms-bmp"),
             List.of("bmp", "dib"),
-            Type.IMAGE,
+            true,
+            false,
             true);
 
     /**
@@ -61,10 +54,10 @@ public final class Format implements Comparable<Format> {
     public static final Format FLV = new Format(
             "flv",
             "FLV",
-            ImageType.RASTER,
             List.of("video/x-flv"),
             List.of("flv", "f4v"),
-            Type.VIDEO,
+            true,
+            true,
             false);
 
     /**
@@ -73,10 +66,10 @@ public final class Format implements Comparable<Format> {
     public static final Format GIF = new Format(
             "gif",
             "GIF",
-            ImageType.RASTER,
             List.of("image/gif"),
             List.of("gif"),
-            Type.IMAGE,
+            true,
+            false,
             true);
 
     /**
@@ -85,10 +78,10 @@ public final class Format implements Comparable<Format> {
     public static final Format JP2 = new Format(
             "jp2",
             "JPEG2000",
-            ImageType.RASTER,
             List.of("image/jp2"),
             List.of("jp2", "j2k", "jpx", "jpf"),
-            Type.IMAGE,
+            true,
+            false,
             true);
 
     /**
@@ -97,10 +90,10 @@ public final class Format implements Comparable<Format> {
     public static final Format JPG = new Format(
             "jpg",
             "JPEG",
-            ImageType.RASTER,
             List.of("image/jpeg"),
             List.of("jpg", "jpeg"),
-            Type.IMAGE,
+            true,
+            false,
             false);
 
     /**
@@ -109,10 +102,10 @@ public final class Format implements Comparable<Format> {
     public static final Format MOV = new Format(
             "mov",
             "QuickTime",
-            ImageType.RASTER,
             List.of("video/quicktime", "video/x-quicktime"),
             List.of("mov", "qt"),
-            Type.VIDEO,
+            true,
+            true,
             false);
 
     /**
@@ -121,10 +114,10 @@ public final class Format implements Comparable<Format> {
     public static final Format MP4 = new Format(
             "mp4",
             "MPEG-4",
-            ImageType.RASTER,
             List.of("video/mp4"),
             List.of("mp4", "m4v"),
-            Type.VIDEO,
+            true,
+            true,
             false);
 
     /**
@@ -133,10 +126,10 @@ public final class Format implements Comparable<Format> {
     public static final Format MPG = new Format(
             "mpg",
             "MPEG",
-            ImageType.RASTER,
             List.of("video/mpeg"),
             List.of("mpg"),
-            Type.VIDEO,
+            true,
+            true,
             false);
 
     /**
@@ -145,10 +138,10 @@ public final class Format implements Comparable<Format> {
     public static final Format PDF = new Format(
             "pdf",
             "PDF",
-            ImageType.VECTOR,
             List.of("application/pdf"),
             List.of("pdf"),
-            Type.IMAGE,
+            false,
+            false,
             false);
 
     /**
@@ -157,10 +150,10 @@ public final class Format implements Comparable<Format> {
     public static final Format PNG = new Format(
             "png",
             "PNG",
-            ImageType.RASTER,
             List.of("image/png"),
             List.of("png"),
-            Type.IMAGE,
+            true,
+            false,
             true);
 
     /**
@@ -169,10 +162,10 @@ public final class Format implements Comparable<Format> {
     public static final Format TIF = new Format(
             "tif",
             "TIFF",
-            ImageType.RASTER,
             List.of("image/tiff"),
             List.of("tif", "ptif", "tiff"),
-            Type.IMAGE,
+            true,
+            false,
             true);
 
     /**
@@ -181,10 +174,10 @@ public final class Format implements Comparable<Format> {
     public static final Format WEBM = new Format(
             "webm",
             "WebM",
-            ImageType.RASTER,
             List.of("video/webm"),
             List.of("webm"),
-            Type.VIDEO,
+            true,
+            true,
             false);
 
     /**
@@ -193,49 +186,46 @@ public final class Format implements Comparable<Format> {
     public static final Format WEBP = new Format(
             "webp",
             "WebP",
-            ImageType.RASTER,
             List.of("image/webp"),
             List.of("webp"),
-            Type.IMAGE,
+            true,
+            false,
             true);
 
-    /**
-     * Unknown format.
-     */
-    public static final Format UNKNOWN = new Format(
-            "unknown",
-            "Unknown",
-            ImageType.UNKNOWN,
-            List.of("unknown/unknown"),
-            List.of("unknown"),
-            Type.UNKNOWN,
-            false);
-
-    /**
-     * XPM image format.
-     */
     public static final Format XPM = new Format(
             "xpm",
             "XPM",
-            ImageType.RASTER,
             // TODO: Tika returns image/x-xbitmap for XPMs. I thought that was
             // the type for XBM, but since we don't support that, we can let it
             // slide for now.
             List.of("image/x-xpixmap", "image/x-xbitmap"),
             List.of("xpm"),
-            Type.IMAGE,
+            false,
+            false,
             true);
+
+    /**
+     * Represents an unknown format, in lieu of using {@code null}.
+     */
+    public static final Format UNKNOWN = new Format(
+            "unknown",
+            "Unknown",
+            List.of("unknown/unknown"),
+            List.of("unknown"),
+            true,
+            false,
+            false);
 
     private static final Set<Format> KNOWN_FORMATS =
             ConcurrentHashMap.newKeySet();
 
     private List<String> extensions;
-    private ImageType imageType;
-    private String key;
     private List<String> mediaTypes;
+    private String key;
     private String name;
+    private boolean isRaster;
+    private boolean isVideo;
     private boolean supportsTransparency;
-    private Type type;
 
     static {
         KNOWN_FORMATS.addAll(Set.of(AVI, BMP, FLV, GIF, JP2, JPG, MOV,
@@ -310,17 +300,17 @@ public final class Format implements Comparable<Format> {
 
     public Format(String key,
                   String name,
-                  ImageType imageType,
                   List<String> mediaTypes,
                   List<String> extensions,
-                  Type type,
+                  boolean isRaster,
+                  boolean isVideo,
                   boolean supportsTransparency) {
         this.key                  = key;
         this.name                 = name;
-        this.imageType            = imageType;
         this.mediaTypes           = mediaTypes;
         this.extensions           = extensions;
-        this.type                 = type;
+        this.isRaster             = isRaster;
+        this.isVideo              = isVideo;
         this.supportsTransparency = supportsTransparency;
     }
 
@@ -351,10 +341,6 @@ public final class Format implements Comparable<Format> {
      */
     public List<String> getExtensions() {
         return extensions;
-    }
-
-    public ImageType getImageType() {
-        return imageType;
     }
 
     /**
@@ -397,13 +383,17 @@ public final class Format implements Comparable<Format> {
         return getMediaTypes().get(0);
     }
 
-    public Type getType() {
-        return type;
-    }
-
     @Override
     public int hashCode() {
         return key.hashCode();
+    }
+
+    public boolean isRaster() {
+        return isRaster;
+    }
+
+    public boolean isVideo() {
+        return isVideo;
     }
 
     public boolean supportsTransparency() {
