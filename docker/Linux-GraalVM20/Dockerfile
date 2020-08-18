@@ -1,33 +1,16 @@
-# (This is Oracle Linux)
-FROM oracle/graalvm-ce:20.1.0-java11
+FROM ubuntu:latest
 
-ENV M2_HOME="/opt/maven"
-ENV PATH="${M2_HOME}/bin:${PATH}"
-
-# Install wget
-RUN yum -y -q install wget
-
-# Install repo for FFmpeg
-RUN wget https://yum.oracle.com/public-yum-ol7.repo -O /etc/yum.repos.d/public-yum-ol7.repo
-
-RUN yum -y -q install https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm \
-        && yum  -y -q localinstall --nogpgcheck https://download1.rpmfusion.org/free/el/rpmfusion-free-release-7.noarch.rpm \
-                https://download1.rpmfusion.org/nonfree/el/rpmfusion-nonfree-release-7.noarch.rpm
+ENV JAVA_HOME=/opt/graalvm-ce-java11-20.1.0
+ENV GRAALVM_HOME=/opt/graalvm-ce-java11-20.1.0
+ENV PATH=$PATH:/opt/graalvm-ce-java11-20.1.0/bin
 
 # Install various dependencies
-RUN yum -y -q update && yum -y -q install \
+RUN apt-get update && apt-get install -y --no-install-recommends \
         curl \
 		ffmpeg \
-		openjpeg2-tools
-
-RUN ln -s /usr/bin/opj2_decompress /usr/bin/opj_decompress
-
-# Install Maven
-RUN cd /opt \
-        && wget -q https://www-us.apache.org/dist/maven/maven-3/3.6.3/binaries/apache-maven-3.6.3-bin.tar.gz \
-        && tar xzf apache-maven-3.6.3-bin.tar.gz \
-        && ln -s apache-maven-3.6.3 maven \
-        && export PATH=${M2_HOME}/bin:${PATH}
+		maven \
+		libopenjp2-tools \
+  && rm -rf /var/lib/apt/lists/*
 
 # Install TurboJpegProcessor dependencies
 RUN mkdir -p /opt/libjpeg-turbo/lib
@@ -35,6 +18,11 @@ COPY docker/Linux-JDK11/image_files/libjpeg-turbo/lib64 /opt/libjpeg-turbo/lib
 
 # Install KakaduNativeProcessor dependencies
 COPY dist/deps/Linux-x86-64/lib/* /usr/lib/
+
+# Install GraalVM
+RUN curl -OL --silent https://github.com/graalvm/graalvm-ce-builds/releases/download/vm-20.1.0/graalvm-ce-java11-linux-amd64-20.1.0.tar.gz \
+  && tar xfz graalvm-ce-java11-linux-amd64-20.1.0.tar.gz \
+  && mv graalvm-ce-java11-20.1.0 /opt
 
 # A non-root user is needed for some FilesystemSourceTest tests to work.
 ARG user=cantaloupe
