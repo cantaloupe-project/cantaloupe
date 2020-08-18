@@ -189,7 +189,7 @@ public final class MediaType {
      * @return Format corresponding with the instance.
      */
     public Format toFormat() {
-        for (Format enumValue : Format.knownFormats()) {
+        for (Format enumValue : Format.all()) {
             for (MediaType type : enumValue.getMediaTypes()) {
                 if (type.equals(this)) {
                     return enumValue;

@@ -155,7 +155,7 @@ public class ImageResource extends IIIF1Resource {
 
         Format format = null;
         if (extension != null) {
-            format = Format.knownFormats()
+            format = Format.all()
                     .stream()
                     .filter(f -> f.getPreferredExtension().equals(extension))
                     .findFirst()

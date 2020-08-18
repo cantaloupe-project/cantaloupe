@@ -67,7 +67,7 @@ public class FfmpegProcessorTest extends AbstractProcessorTest {
 
     @Test
     void testGetAvailableOutputFormats() {
-        for (Format format : Format.knownFormats()) {
+        for (Format format : Format.all()) {
             try {
                 instance = newInstance();
                 Set<Format> expectedFormats = new HashSet<>();

@@ -90,7 +90,7 @@ public final class IIOProviderContextListener implements ServletContextListener 
     }
 
     private static void logImageIOReaders() {
-        final List<Format> imageFormats = Format.knownFormats()
+        final List<Format> imageFormats = Format.all()
                 .stream()
                 .filter(f -> Format.Type.IMAGE.equals(f.getType()))
                 .collect(Collectors.toList());
@@ -115,7 +115,7 @@ public final class IIOProviderContextListener implements ServletContextListener 
     }
 
     private static void logImageIOWriters() {
-        final List<Format> imageFormats = Format.knownFormats()
+        final List<Format> imageFormats = Format.all()
                 .stream()
                 .filter(f -> Format.Type.IMAGE.equals(f.getType()))
                 .collect(Collectors.toList());

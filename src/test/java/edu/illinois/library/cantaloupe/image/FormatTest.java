@@ -11,12 +11,12 @@ import static org.junit.jupiter.api.Assertions.*;
 class FormatTest extends BaseTest {
 
     @Test
-    void testGetRegistryInitialValues() {
+    void testAll() {
         Set<Format> expected = Set.of(Format.AVI, Format.BMP,
                 Format.FLV, Format.GIF, Format.JP2, Format.JPG, Format.MOV,
                 Format.MP4, Format.MPG,Format.PDF, Format.PNG, Format.TIF,
                 Format.UNKNOWN, Format.WEBM, Format.WEBP, Format.XPM);
-        assertEquals(expected, Format.knownFormats());
+        assertEquals(expected, Format.all());
     }
 
     @Test
@@ -222,7 +222,7 @@ class FormatTest extends BaseTest {
 
     @Test
     void testToString() {
-        for (Format format : Format.knownFormats()) {
+        for (Format format : Format.all()) {
             assertEquals(format.getPreferredExtension(),
                     format.toString());
         }

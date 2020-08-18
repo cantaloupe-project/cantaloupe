@@ -13,7 +13,7 @@ import java.util.stream.Collectors;
  *
  * <p>Common formats recognized by the application are accessible via {@code
  * public static final} variables and automatically added to the {@link
- * #knownFormats() registry of known formats}.</p>
+ * #all() registry of known formats}.</p>
  *
  * <p>Instances are immutable.</p>
  */
@@ -243,6 +243,13 @@ public final class Format implements Comparable<Format> {
     }
 
     /**
+     * @return Thread-safe registry of all known formats.
+     */
+    public static Set<Format> all() {
+        return KNOWN_FORMATS;
+    }
+
+    /**
      * <p>Attempts to infer a format from the given identifier.</p>
      *
      * <p>It is usually more reliable (but also maybe more expensive) to
@@ -276,7 +283,7 @@ public final class Format implements Comparable<Format> {
         }
         if (extension != null) {
             extension = extension.toLowerCase();
-            for (Format format : Format.knownFormats()) {
+            for (Format format : Format.all()) {
                 if (format.getExtensions().contains(extension)) {
                     return format;
                 }
@@ -286,14 +293,7 @@ public final class Format implements Comparable<Format> {
     }
 
     /**
-     * @return Thread-safe registry of all known formats.
-     */
-    public static Set<Format> knownFormats() {
-        return KNOWN_FORMATS;
-    }
-
-    /**
-     * @return Format in the {@link #knownFormats() registry} with the given
+     * @return Format in the {@link #all() registry} with the given
      *         extension.
      */
     public static Format withExtension(String extension) {
@@ -301,7 +301,7 @@ public final class Format implements Comparable<Format> {
             extension = extension.substring(1);
         }
         final String lcext = extension.toLowerCase();
-        return knownFormats()
+        return all()
                 .stream()
                 .filter(f -> f.getExtensions().contains(lcext))
                 .findAny()

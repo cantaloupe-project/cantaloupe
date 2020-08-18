@@ -87,7 +87,7 @@ abstract class AbstractProcessorTest extends BaseTest {
 
     private Set<Format> getSupportedSourceFormats(Processor processor) {
         Set<Format> formats = new HashSet<>();
-        for (Format format : Format.knownFormats()) {
+        for (Format format : Format.all()) {
             try {
                 processor.setSourceFormat(format);
                 formats.add(format);
@@ -630,7 +630,7 @@ abstract class AbstractProcessorTest extends BaseTest {
      */
     @Test
     public void testReadInfoOnAllFixtures() throws Exception {
-        for (Format format : Format.knownFormats()) {
+        for (Format format : Format.all()) {
             for (Path fixture : TestUtil.getImageFixtures(format)) {
                 if (fixture.getFileName().toString().equals("jp2") ||
                         fixture.getFileName().toString().equals("jp2-iptc.jp2") ||
@@ -703,7 +703,7 @@ abstract class AbstractProcessorTest extends BaseTest {
 
     @Test
     public void testSetSourceFormatWithUnsupportedSourceFormat() {
-        for (Format format : Format.knownFormats()) {
+        for (Format format : Format.all()) {
             try {
                 final Processor proc = newInstance();
                 proc.setSourceFormat(format);
