@@ -367,6 +367,8 @@ public class ImageRequestHandler extends AbstractRequestHandler
             // Obtain an instance of the processor assigned to this format.
             String processorName = "unknown processor";
             try (Processor processor = new ProcessorFactory().newProcessor(format)) {
+                processorName = processor.getClass().getSimpleName();
+
                 // Connect it to the source.
                 tempFileFuture = new ProcessorConnector().connect(
                         source, processor, identifier, format);
@@ -405,7 +407,8 @@ public class ImageRequestHandler extends AbstractRequestHandler
             } catch (SourceFormatException e) {
                 LOGGER.debug("Format inferred by {} disagrees with the one " +
                                 "supplied by {} ({}) for {}; trying again",
-                        processorName, source, format, identifier);
+                        processorName, source.getClass().getSimpleName(),
+                        format, identifier);
             }
         }
         throw new SourceFormatException();

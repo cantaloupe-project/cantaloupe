@@ -292,7 +292,8 @@ public class InformationRequestHandler extends AbstractRequestHandler
             } catch (SourceFormatException e) {
                 LOGGER.debug("Format inferred by {} disagrees with the one " +
                                 "supplied by {} ({}) for {}; trying again",
-                        processorName, source, format, identifier);
+                        processorName, source.getClass().getSimpleName(),
+                        format, identifier);
             }
         }
         throw new SourceFormatException();
