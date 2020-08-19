@@ -3,9 +3,13 @@ FROM ubuntu:latest
 ENV JAVA_HOME=/opt/graalvm-ce-java11-20.1.0
 ENV GRAALVM_HOME=/opt/graalvm-ce-java11-20.1.0
 ENV PATH=$PATH:/opt/graalvm-ce-java11-20.1.0/bin
+ENV TZ=America/Chicago
+
+ARG DEBIAN_FRONTEND=noninteractive
 
 # Install various dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
+        tzdata \
         curl \
 		ffmpeg \
 		maven \
