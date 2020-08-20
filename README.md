@@ -51,6 +51,7 @@ continuous integration. The following dependencies are required:
   (for DynamoDBCacheTest)
 * FFmpeg (for FfmpegProcessorTest)
 * OpenJPEG (for OpenJpegProcessorTest)
+* Grok (for GrokProcessorTest)
 * Redis (for RedisCacheTest)
 * TurboJPEG with Java binding (for TurboJpegProcessorTest)
 

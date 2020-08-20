@@ -15,6 +15,7 @@ current version.
     * `endpoint.iiif.3.enabled`
     * `processor.ManualSelectionStrategy.xpm`
     * `processor.imageio.xpm.reader`
+    * `GrokProcessor.path_to_binaries`
     * `DynamoDBCache.*`
     * `log.application.ConsoleAppender.logstash.enabled`
     * `log.application.FileAppender.logstash.enabled`
@@ -56,7 +57,8 @@ current version.
 14. If you are using KakaduNativeProcessor, you must install the updated Kakadu
     shared library, contained in the `deps` folder.
 15. KakaduDemoProcessor is no longer available. If you were using it, you must
-    switch to either OpenJpegProcessor or KakaduNativeProcessor.
+    switch to either KakaduNativeProcessor, OpenJpegProcessor, or
+    GrokProcessor.
 16. Note that the `false` value supplied to the `cache` URL query argument
     (e.g. `?cache=false`) has been replaced by `nocache`. `false` can still be
     used, but it is deprecated and may be removed in a future version.

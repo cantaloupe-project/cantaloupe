@@ -35,6 +35,7 @@
 
 * ImageMagickProcessor, GraphicsMagickProcessor, and KakaduDemoProcessor have
   been removed.
+* Added GrokProcessor. (Thanks to @boxerab)
 * The metadata-handling system has been redesigned:
     * Source image metadata is cached in derivative caches.
     * XMP metadata can be copied or edited using a delegate method.
