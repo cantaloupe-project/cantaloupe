@@ -7,7 +7,7 @@ class MockPNGOnlyProcessor extends MockStreamProcessor {
     @Override
     public void setSourceFormat(Format format)
             throws SourceFormatException {
-        if (Format.PNG.equals(format)) {
+        if (Format.get("png").equals(format)) {
             super.setSourceFormat(format);
         } else {
             throw new SourceFormatException(format);

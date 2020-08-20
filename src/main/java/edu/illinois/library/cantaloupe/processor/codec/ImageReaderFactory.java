@@ -22,8 +22,8 @@ import java.util.Set;
 public final class ImageReaderFactory {
 
     private static final Set<Format> SUPPORTED_FORMATS = Set.of(
-            Format.BMP, Format.GIF, Format.JPG, Format.PNG, Format.TIF,
-            Format.XPM);
+            Format.get("bmp"), Format.get("gif"), Format.get("jpg"),
+            Format.get("png"), Format.get("tif"), Format.get("xpm"));
 
     /**
      * @return Map of available output formats for all known source formats,
@@ -34,17 +34,17 @@ public final class ImageReaderFactory {
     }
 
     public ImageReader newImageReader(Format format) {
-        if (Format.BMP.equals(format)) {
+        if (Format.get("bmp").equals(format)) {
             return new BMPImageReader();
-        } else if (Format.GIF.equals(format)) {
+        } else if (Format.get("gif").equals(format)) {
             return new GIFImageReader();
-        } else if (Format.JPG.equals(format)) {
+        } else if (Format.get("jpg").equals(format)) {
             return new JPEGImageReader();
-        } else if (Format.PNG.equals(format)) {
+        } else if (Format.get("png").equals(format)) {
             return new PNGImageReader();
-        } else if (Format.TIF.equals(format)) {
+        } else if (Format.get("tif").equals(format)) {
             return new TIFFImageReader();
-        } else if (Format.XPM.equals(format)) {
+        } else if (Format.get("xpm").equals(format)) {
             return new XPMImageReader();
         }
         throw new IllegalArgumentException("Unsupported format: " + format);

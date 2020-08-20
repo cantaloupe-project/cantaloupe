@@ -54,7 +54,7 @@ public class FfmpegProcessorTest extends AbstractProcessorTest {
     protected FfmpegProcessor newInstance() {
         FfmpegProcessor instance = new FfmpegProcessor();
         try {
-            final Format format = Format.MPG;
+            final Format format = Format.get("mpg");
             final Path fixture = TestUtil.
                     getFixture("images/" + format.getPreferredExtension());
             instance.setSourceFile(fixture);
@@ -108,7 +108,7 @@ public class FfmpegProcessorTest extends AbstractProcessorTest {
 
         // time option missing
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        OperationList ops = new OperationList(new Encode(Format.JPG));
+        OperationList ops = new OperationList(new Encode(Format.get("jpg")));
         instance.process(ops, imageInfo, outputStream);
         final byte[] frame1 = outputStream.toByteArray();
 
@@ -125,7 +125,7 @@ public class FfmpegProcessorTest extends AbstractProcessorTest {
     void testProcessWithInvalidFrameOptionThrowsException() throws Exception {
         final Info imageInfo = instance.readInfo();
 
-        OperationList ops = new OperationList(new Encode(Format.JPG));
+        OperationList ops = new OperationList(new Encode(Format.get("jpg")));
         ops.getOptions().put("time", "cats");
         OutputStream outputStream = OutputStream.nullOutputStream();
 
@@ -136,7 +136,7 @@ public class FfmpegProcessorTest extends AbstractProcessorTest {
     @Test
     void testValidateWithValidTime() throws Exception {
         OperationList ops = new OperationList(
-                new Identifier("cats"), new Encode(Format.JPG));
+                new Identifier("cats"), new Encode(Format.get("jpg")));
         Dimension fullSize = new Dimension(1000, 1000);
         ops.getOptions().put("time", "00:00:02");
 
@@ -146,7 +146,7 @@ public class FfmpegProcessorTest extends AbstractProcessorTest {
     @Test
     void testValidateWithInvalidTimeFormat() {
         OperationList ops = new OperationList(
-                new Identifier("cats"), new Encode(Format.JPG));
+                new Identifier("cats"), new Encode(Format.get("jpg")));
         Dimension fullSize = new Dimension(1000, 1000);
         ops.getOptions().put("time", "000012");
 
@@ -157,7 +157,7 @@ public class FfmpegProcessorTest extends AbstractProcessorTest {
     @Test
     void testValidateWithOutOfBoundsTime() {
         OperationList ops = new OperationList(
-                new Identifier("cats"), new Encode(Format.JPG));
+                new Identifier("cats"), new Encode(Format.get("jpg")));
         Dimension fullSize = new Dimension(1000, 1000);
         ops.getOptions().put("time", "00:38:06");
 

@@ -272,7 +272,7 @@ public class S3CacheTest extends AbstractCacheTest {
         Configuration.getInstance().setProperty(Key.DERIVATIVE_CACHE_TTL, 2);
 
         OperationList ops = new OperationList(
-                new Identifier("cats"), new Encode(Format.JPG));
+                new Identifier("cats"), new Encode(Format.get("jpg")));
         Path fixture = TestUtil.getImage(IMAGE);
 
         // Add an image.

@@ -285,15 +285,14 @@ public final class Info {
      * <p>Returns the number of resolutions contained in the image.</p>
      *
      * <ul>
-     *     <li>For formats like multi-resolution {@link Format#TIF}, this will
-     *     match the size of {@link #getImages()}.</li>
-     *     <li>For formats like {@link Format#JP2}, it will be {@literal
-     *     number of decomposition levels + 1}.</li>
-     *     <li>For more conventional formats like {@link Format#JPG},
-     *     {@link Format#PNG}, {@link Format#BMP}, etc., it will be
-     *     {@literal 1}.</li>
+     *     <li>For formats like multi-resolution TIFF, this will match the size
+     *     of {@link #getImages()}.</li>
+     *     <li>For formats like JPEG2000, it will be {@code (number of
+     *     decomposition levels) + 1}.</li>
+     *     <li>For more conventional formats like JPEG, PNG, BMP, etc., it will
+     *     be {@code 1}.</li>
      *     <li>For instances deserialized from a version older than 4.0, it
-     *     will be {@literal -1}.</li>
+     *     will be {@code -1}.</li>
      * </ul>
      *
      * @return Number of resolutions contained in the image, or {@literal -1}

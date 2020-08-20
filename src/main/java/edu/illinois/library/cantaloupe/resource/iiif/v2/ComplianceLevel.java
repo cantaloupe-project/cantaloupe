@@ -29,11 +29,11 @@ enum ComplianceLevel {
         LEVEL_1_FEATURES.add(ServiceFeature.BASE_URI_REDIRECT);
         LEVEL_1_FEATURES.add(ServiceFeature.CORS);
         LEVEL_1_FEATURES.add(ServiceFeature.JSON_LD_MEDIA_TYPE);
-        LEVEL_1_OUTPUT_FORMATS.add(Format.JPG);
+        LEVEL_1_OUTPUT_FORMATS.add(Format.get("jpg"));
 
         LEVEL_2_FEATURES.addAll(LEVEL_1_FEATURES);
         LEVEL_2_OUTPUT_FORMATS.addAll(LEVEL_1_OUTPUT_FORMATS);
-        LEVEL_2_OUTPUT_FORMATS.add(Format.PNG);
+        LEVEL_2_OUTPUT_FORMATS.add(Format.get("png"));
     }
 
     /**

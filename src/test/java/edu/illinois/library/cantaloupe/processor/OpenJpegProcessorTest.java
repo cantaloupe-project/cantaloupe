@@ -36,7 +36,7 @@ public class OpenJpegProcessorTest extends AbstractProcessorTest {
     protected OpenJpegProcessor newInstance() {
         OpenJpegProcessor proc = new OpenJpegProcessor();
         try {
-            proc.setSourceFormat(Format.JP2);
+            proc.setSourceFormat(Format.get("jp2"));
         } catch (SourceFormatException e) {
             fail("Huge bug");
         }
@@ -100,7 +100,7 @@ public class OpenJpegProcessorTest extends AbstractProcessorTest {
         Info expectedInfo = Info.builder()
                 .withSize(64, 56)
                 .withTileSize(64, 56)
-                .withFormat(Format.JP2)
+                .withFormat(Format.get("jp2"))
                 .withNumResolutions(5)
                 .build();
         assertEquals(expectedInfo, instance.readInfo());
@@ -111,7 +111,7 @@ public class OpenJpegProcessorTest extends AbstractProcessorTest {
                 .withSize(64, 56)
                 .withTileSize(32, 28)
                 .withNumResolutions(6)
-                .withFormat(Format.JP2)
+                .withFormat(Format.get("jp2"))
                 .build();
         assertEquals(expectedInfo, instance.readInfo());
     }

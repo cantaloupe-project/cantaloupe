@@ -18,7 +18,7 @@ public class JaiProcessorTest extends AbstractImageIOProcessorTest {
     @Test
     void testIsSeekingWithNonSeekableSource() throws Exception {
         try (StreamProcessor instance = newInstance()) {
-            instance.setSourceFormat(Format.BMP);
+            instance.setSourceFormat(Format.get("bmp"));
             instance.setStreamFactory(new PathStreamFactory(TestUtil.getImage("bmp")));
             assertFalse(instance.isSeeking());
         }
@@ -27,7 +27,7 @@ public class JaiProcessorTest extends AbstractImageIOProcessorTest {
     @Test
     void testIsSeekingWithSeekableSource() throws Exception {
         try (StreamProcessor instance = newInstance()) {
-            instance.setSourceFormat(Format.TIF);
+            instance.setSourceFormat(Format.get("tif"));
             instance.setStreamFactory(new PathStreamFactory(TestUtil.getImage("tif-rgb-1res-64x56x8-tiled-jpeg.tif")));
             assertTrue(instance.isSeeking());
         }

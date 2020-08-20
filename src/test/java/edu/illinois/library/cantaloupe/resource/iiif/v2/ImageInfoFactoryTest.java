@@ -24,7 +24,7 @@ import static org.junit.jupiter.api.Assertions.*;
 public class ImageInfoFactoryTest extends BaseTest {
 
     private static final Set<Format> PROCESSOR_FORMATS = Set.of(
-            Format.GIF, Format.JPG, Format.PNG);
+            Format.get("gif"), Format.get("jpg"), Format.get("png"));
 
     private ImageInfoFactory instance;
 

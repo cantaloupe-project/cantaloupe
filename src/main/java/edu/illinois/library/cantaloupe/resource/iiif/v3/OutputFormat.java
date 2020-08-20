@@ -11,25 +11,29 @@ import edu.illinois.library.cantaloupe.image.Format;
  */
 enum OutputFormat {
 
-    GIF(Format.GIF),
-    JP2(Format.JP2),
-    JPG(Format.JPG),
-    PDF(Format.PDF),
-    PNG(Format.PNG),
-    TIF(Format.TIF),
-    WEBP(Format.WEBP);
+    GIF("gif"),
+    JP2("jp2"),
+    JPG("jpg"),
+    PDF("pdf"),
+    PNG("png"),
+    TIF("tif"),
+    WEBP("webp");
 
-    private final Format format;
+    private final String formatKey;
 
-    OutputFormat(Format equivalentFormat) {
-        this.format = equivalentFormat;
+    /**
+     * @param formatKey {@link Format#getKey() Key} of an equivalent {@link
+     *                  Format}.
+     */
+    OutputFormat(String formatKey) {
+        this.formatKey = formatKey;
     }
 
     /**
      * @return Equivalent {@link Format}.
      */
     public Format toFormat() {
-        return format;
+        return Format.get(formatKey);
     }
 
     @Override

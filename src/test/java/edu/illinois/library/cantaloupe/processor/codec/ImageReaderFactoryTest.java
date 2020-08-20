@@ -68,63 +68,63 @@ public class ImageReaderFactoryTest extends BaseTest {
 
     @Test
     void testNewImageReaderWithFormatBMP() {
-        ImageReader reader = instance.newImageReader(Format.BMP);
+        ImageReader reader = instance.newImageReader(Format.get("bmp"));
         assertTrue(reader instanceof BMPImageReader);
     }
 
     @Test
     void testNewImageReaderWithFormatGIF() {
-        ImageReader reader = instance.newImageReader(Format.GIF);
+        ImageReader reader = instance.newImageReader(Format.get("gif"));
         assertTrue(reader instanceof GIFImageReader);
     }
 
     @Test
     void testNewImageReaderWithFormatJPEG() {
-        ImageReader reader = instance.newImageReader(Format.JPG);
+        ImageReader reader = instance.newImageReader(Format.get("jpg"));
         assertTrue(reader instanceof JPEGImageReader);
     }
 
     @Test
     void testNewImageReaderWithFormatPNG() {
-        ImageReader reader = instance.newImageReader(Format.PNG);
+        ImageReader reader = instance.newImageReader(Format.get("png"));
         assertTrue(reader instanceof PNGImageReader);
     }
 
     @Test
     void testNewImageReaderWithFormatTIF() {
-        ImageReader reader = instance.newImageReader(Format.TIF);
+        ImageReader reader = instance.newImageReader(Format.get("tif"));
         assertTrue(reader instanceof TIFFImageReader);
     }
 
     @Test
     void testNewImageReaderWithFormatXPM() {
-        ImageReader reader = instance.newImageReader(Format.XPM);
+        ImageReader reader = instance.newImageReader(Format.get("xpm"));
         assertTrue(reader instanceof XPMImageReader);
     }
 
     @Test
     void testNewImageReaderWithPath() throws Exception {
-        instance.newImageReader(Format.JPG, TestUtil.getImage("jpg"));
+        instance.newImageReader(Format.get("jpg"), TestUtil.getImage("jpg"));
     }
 
     @Test
     void testNewImageReaderWithInputStream() throws Exception {
         try (InputStream is = Files.newInputStream(TestUtil.getImage("jpg"))) {
-            instance.newImageReader(Format.JPG, is);
+            instance.newImageReader(Format.get("jpg"), is);
         }
     }
 
     @Test
     void testNewImageReaderWithImageInputStream() throws Exception {
         try (ImageInputStream iis = ImageIO.createImageInputStream(TestUtil.getImage("jpg").toFile())) {
-            instance.newImageReader(Format.JPG, iis);
+            instance.newImageReader(Format.get("jpg"), iis);
         }
     }
 
     @Test
     void testNewImageReaderWithStreamSource() throws Exception {
         StreamFactory source = new PathStreamFactory(TestUtil.getImage("jpg"));
-        instance.newImageReader(Format.JPG, source);
+        instance.newImageReader(Format.get("jpg"), source);
     }
 
 }

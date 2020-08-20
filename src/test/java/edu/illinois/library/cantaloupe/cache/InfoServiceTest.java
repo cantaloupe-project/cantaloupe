@@ -42,8 +42,8 @@ public class InfoServiceTest extends BaseTest {
                 "ManualSelectionStrategy");
         config.setProperty(Key.PROCESSOR_FALLBACK, "Java2dProcessor");
         try (FileProcessor proc = (FileProcessor) new ProcessorFactory().
-                newProcessor(Format.JPG)) {
-            proc.setSourceFormat(Format.JPG);
+                newProcessor(Format.get("jpg"))) {
+            proc.setSourceFormat(Format.get("jpg"));
             proc.setSourceFile(TestUtil.getImage("jpg"));
             return proc;
         }
@@ -51,7 +51,7 @@ public class InfoServiceTest extends BaseTest {
 
     private FileProcessor newMockProcessor() throws Exception {
         FileProcessor proc = new MockFileProcessor();
-        proc.setSourceFormat(Format.JPG);
+        proc.setSourceFormat(Format.get("jpg"));
         proc.setSourceFile(TestUtil.getImage("jpg"));
         return proc;
     }

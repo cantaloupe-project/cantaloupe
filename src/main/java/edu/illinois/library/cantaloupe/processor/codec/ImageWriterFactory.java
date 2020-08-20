@@ -12,7 +12,8 @@ import java.util.Set;
 public final class ImageWriterFactory {
 
     private static final Set<Format> SUPPORTED_FORMATS = Set.of(
-            Format.GIF, Format.JPG, Format.PNG, Format.TIF);
+            Format.get("gif"), Format.get("jpg"), Format.get("png"),
+            Format.get("tif"));
 
     /**
      * @return Set of supported output formats.
@@ -23,13 +24,13 @@ public final class ImageWriterFactory {
 
     public ImageWriter newImageWriter(Encode encode) {
         ImageWriter writer;
-        if (Format.GIF.equals(encode.getFormat())) {
+        if (Format.get("gif").equals(encode.getFormat())) {
             writer = new GIFImageWriter();
-        } else if (Format.JPG.equals(encode.getFormat())) {
+        } else if (Format.get("jpg").equals(encode.getFormat())) {
             writer = new JPEGImageWriter();
-        } else if (Format.PNG.equals(encode.getFormat())) {
+        } else if (Format.get("png").equals(encode.getFormat())) {
             writer = new PNGImageWriter();
-        } else if (Format.TIF.equals(encode.getFormat())) {
+        } else if (Format.get("tif").equals(encode.getFormat())) {
             writer = new TIFFImageWriter();
         } else {
             throw new IllegalArgumentException(

@@ -56,7 +56,7 @@ public class ProcessorFactoryTest extends BaseTest {
     void testNewProcessorWithFormatWithWorkingFirstPreferenceMatch() throws Exception {
         instance.setSelectionStrategy(f ->
                 List.of(PdfBoxProcessor.class, Java2dProcessor.class));
-        assertTrue(instance.newProcessor(Format.PDF) instanceof PdfBoxProcessor);
+        assertTrue(instance.newProcessor(Format.get("pdf")) instanceof PdfBoxProcessor);
     }
 
     @Test
@@ -64,14 +64,14 @@ public class ProcessorFactoryTest extends BaseTest {
             throws Exception {
         instance.setSelectionStrategy(f ->
                 List.of(MockBrokenProcessor.class, Java2dProcessor.class));
-        assertTrue(instance.newProcessor(Format.JPG) instanceof Java2dProcessor);
+        assertTrue(instance.newProcessor(Format.get("jpg")) instanceof Java2dProcessor);
     }
 
     @Test
     void testNewProcessorWithFormatWithWorkingSecondPreferenceMatch() throws Exception {
         instance.setSelectionStrategy(f ->
                 List.of(PdfBoxProcessor.class, Java2dProcessor.class));
-        assertTrue(instance.newProcessor(Format.JPG) instanceof Java2dProcessor);
+        assertTrue(instance.newProcessor(Format.get("jpg")) instanceof Java2dProcessor);
     }
 
     @Test
@@ -79,7 +79,7 @@ public class ProcessorFactoryTest extends BaseTest {
         instance.setSelectionStrategy(f ->
                 List.of(PdfBoxProcessor.class, MockBrokenProcessor.class));
         assertThrows(InitializationException.class,
-                () -> instance.newProcessor(Format.JPG));
+                () -> instance.newProcessor(Format.get("jpg")));
     }
 
     @Test
@@ -87,7 +87,7 @@ public class ProcessorFactoryTest extends BaseTest {
         instance.setSelectionStrategy(f ->
                 List.of(MockPDFOnlyProcessor.class, MockPNGOnlyProcessor.class));
         assertThrows(SourceFormatException.class,
-                () -> instance.newProcessor(Format.JPG));
+                () -> instance.newProcessor(Format.get("jpg")));
     }
 
     @Test

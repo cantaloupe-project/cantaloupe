@@ -33,14 +33,14 @@ public class Java2dProcessorTest extends AbstractImageIOProcessorTest {
 
     @Test
     void testIsSeekingWithNonSeekableSource() throws Exception {
-        instance.setSourceFormat(Format.BMP);
+        instance.setSourceFormat(Format.get("bmp"));
         instance.setSourceFile(TestUtil.getImage("bmp"));
         assertFalse(instance.isSeeking());
     }
 
     @Test
     void testIsSeekingWithSeekableSource() throws Exception {
-        instance.setSourceFormat(Format.TIF);
+        instance.setSourceFormat(Format.get("tif"));
         instance.setSourceFile(TestUtil.getImage("tif-rgb-1res-64x56x8-tiled-jpeg.tif"));
         assertTrue(instance.isSeeking());
     }
@@ -48,14 +48,14 @@ public class Java2dProcessorTest extends AbstractImageIOProcessorTest {
     @Test
     void testProcessWithAnimatedGIF() throws Exception {
         Path image = TestUtil.getImage("gif-animated-looping.gif");
-        OperationList ops = new OperationList(new Encode(Format.GIF));
+        OperationList ops = new OperationList(new Encode(Format.get("gif")));
         Info info = Info.builder()
                 .withSize(136, 200)
-                .withFormat(Format.GIF)
+                .withFormat(Format.get("gif"))
                 .build();
 
         instance.setSourceFile(image);
-        instance.setSourceFormat(Format.GIF);
+        instance.setSourceFormat(Format.get("gif"));
 
         try (ByteArrayOutputStream os = new ByteArrayOutputStream()) {
             instance.process(ops, info, os);
@@ -63,7 +63,7 @@ public class Java2dProcessorTest extends AbstractImageIOProcessorTest {
             try (ByteArrayInputStream is = new ByteArrayInputStream(os.toByteArray())) {
                 ImageReader reader = null;
                 try {
-                    reader = new ImageReaderFactory().newImageReader(Format.GIF, is);
+                    reader = new ImageReaderFactory().newImageReader(Format.get("gif"), is);
                     assertEquals(2, reader.getNumImages());
                 } finally {
                     if (reader != null) {

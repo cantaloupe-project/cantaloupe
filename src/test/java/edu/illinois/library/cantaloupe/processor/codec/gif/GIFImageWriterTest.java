@@ -73,7 +73,7 @@ public class GIFImageWriterTest extends AbstractImageWriterTest {
     @Override
     protected GIFImageWriter newInstance() {
         GIFImageWriter writer = new GIFImageWriter();
-        Encode encode = new Encode(Format.GIF);
+        Encode encode = new Encode(Format.get("gif"));
         Metadata metadata = new Metadata();
         encode.setMetadata(metadata);
         writer.setEncode(encode);
@@ -128,7 +128,7 @@ public class GIFImageWriterTest extends AbstractImageWriterTest {
     @Test
     @Disabled // this writer doesn't support XMP metadata.
     public void testWriteWithBufferedImageWritesXMPMetadata()  throws Exception {
-        Encode encode = new Encode(Format.GIF);
+        Encode encode = new Encode(Format.get("gif"));
         encode.setMetadata(metadata);
         instance.setEncode(encode);
         instance.write(bufferedImage, outputStream);
@@ -144,7 +144,7 @@ public class GIFImageWriterTest extends AbstractImageWriterTest {
     @Test
     @Disabled // this writer doesn't support XMP metadata.
     public void testWriteWithPlanarImageWritesXMPMetadata() throws Exception {
-        Encode encode = new Encode(Format.GIF);
+        Encode encode = new Encode(Format.get("gif"));
         encode.setMetadata(metadata);
         instance.setEncode(encode);
         instance.write(planarImage, outputStream);
@@ -156,7 +156,7 @@ public class GIFImageWriterTest extends AbstractImageWriterTest {
         Path image = TestUtil.getImage("gif-animated-looping.gif");
         edu.illinois.library.cantaloupe.processor.codec.ImageReader reader = null;
         try {
-            reader = new ImageReaderFactory().newImageReader(Format.GIF, image);
+            reader = new ImageReaderFactory().newImageReader(Format.get("gif"), image);
             BufferedImageSequence sequence = reader.readSequence();
 
             try (ByteArrayOutputStream os = new ByteArrayOutputStream()) {
@@ -166,7 +166,7 @@ public class GIFImageWriterTest extends AbstractImageWriterTest {
                     reader.dispose();
                     reader = null;
                     try {
-                        reader = new ImageReaderFactory().newImageReader(Format.GIF, is);
+                        reader = new ImageReaderFactory().newImageReader(Format.get("gif"), is);
                         assertEquals(2, reader.getNumImages());
                     } finally {
                         if (reader != null) {

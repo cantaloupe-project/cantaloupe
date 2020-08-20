@@ -23,8 +23,8 @@ public class InfoTest extends BaseTest {
 
         @Test
         void testWithFormat() {
-            Info info = Info.builder().withFormat(Format.PNG).build();
-            assertEquals(Format.PNG, info.getSourceFormat());
+            Info info = Info.builder().withFormat(Format.get("png")).build();
+            assertEquals(Format.get("png"), info.getSourceFormat());
         }
 
         @Test
@@ -185,7 +185,7 @@ public class InfoTest extends BaseTest {
                 .withIdentifier(new Identifier("cats"))
                 .withSize(100, 80)
                 .withTileSize(50, 40)
-                .withFormat(Format.JPG)
+                .withFormat(Format.get("jpg"))
                 .withNumResolutions(3)
                 .withMetadata(metadata)
                 .build();
@@ -251,7 +251,7 @@ public class InfoTest extends BaseTest {
         Info actual = Info.fromJSON(v4json);
 
         Info expected = Info.builder()
-                .withFormat(Format.JPG)
+                .withFormat(Format.get("jpg"))
                 .withNumResolutions(3)
                 .withSize(100, 80)
                 .withTileSize(50, 40)
@@ -279,7 +279,7 @@ public class InfoTest extends BaseTest {
 
         Info expected = Info.builder()
                 .withIdentifier(new Identifier("cats"))
-                .withFormat(Format.JPG)
+                .withFormat(Format.get("jpg"))
                 .withNumResolutions(3)
                 .withSize(100, 80)
                 .withTileSize(50, 40)
@@ -310,7 +310,7 @@ public class InfoTest extends BaseTest {
                 .withTileSize(50, 40)
                 .withNumResolutions(3)
                 .withMetadata(metadata2)
-                .withFormat(Format.JPG)
+                .withFormat(Format.get("jpg"))
                 .build();
         assertEquals(instance, info2);
     }
@@ -322,7 +322,7 @@ public class InfoTest extends BaseTest {
                 .withSize(100, 80)
                 .withTileSize(50, 40)
                 .withNumResolutions(3)
-                .withFormat(Format.JPG)
+                .withFormat(Format.get("jpg"))
                 .build();
         assertNotEquals(instance, info2);
     }
@@ -333,7 +333,7 @@ public class InfoTest extends BaseTest {
                 .withSize(99, 80)
                 .withTileSize(50, 40)
                 .withNumResolutions(3)
-                .withFormat(Format.JPG)
+                .withFormat(Format.get("jpg"))
                 .build();
         assertNotEquals(instance, info2);
     }
@@ -344,7 +344,7 @@ public class InfoTest extends BaseTest {
                 .withSize(100, 79)
                 .withTileSize(50, 40)
                 .withNumResolutions(3)
-                .withFormat(Format.JPG)
+                .withFormat(Format.get("jpg"))
                 .build();
         assertNotEquals(instance, info2);
     }
@@ -355,7 +355,7 @@ public class InfoTest extends BaseTest {
                 .withSize(100, 80)
                 .withTileSize(49, 40)
                 .withNumResolutions(3)
-                .withFormat(Format.JPG)
+                .withFormat(Format.get("jpg"))
                 .build();
         assertNotEquals(instance, info2);
     }
@@ -366,7 +366,7 @@ public class InfoTest extends BaseTest {
                 .withSize(100, 80)
                 .withTileSize(50, 39)
                 .withNumResolutions(3)
-                .withFormat(Format.JPG)
+                .withFormat(Format.get("jpg"))
                 .build();
         assertNotEquals(instance, info2);
     }
@@ -381,7 +381,7 @@ public class InfoTest extends BaseTest {
                 .withTileSize(50, 40)
                 .withMetadata(metadata2)
                 .withNumResolutions(3)
-                .withFormat(Format.JPG)
+                .withFormat(Format.get("jpg"))
                 .build();
         assertNotEquals(instance, info2);
     }
@@ -392,7 +392,7 @@ public class InfoTest extends BaseTest {
                 .withSize(100, 80)
                 .withTileSize(50, 40)
                 .withNumResolutions(2)
-                .withFormat(Format.JPG)
+                .withFormat(Format.get("jpg"))
                 .build();
         assertNotEquals(instance, info2);
     }
@@ -403,7 +403,7 @@ public class InfoTest extends BaseTest {
                 .withSize(100, 80)
                 .withTileSize(50, 40)
                 .withNumResolutions(3)
-                .withFormat(Format.GIF)
+                .withFormat(Format.get("gif"))
                 .build();
         assertNotEquals(instance, info2);
     }
@@ -457,7 +457,7 @@ public class InfoTest extends BaseTest {
 
     @Test
     void testGetSourceFormat() {
-        assertEquals(Format.JPG, instance.getSourceFormat());
+        assertEquals(Format.get("jpg"), instance.getSourceFormat());
 
         instance.setSourceFormat(null);
         assertEquals(Format.UNKNOWN, instance.getSourceFormat());
@@ -476,7 +476,7 @@ public class InfoTest extends BaseTest {
                 .withTileSize(50, 40)
                 .withNumResolutions(3)
                 .withMetadata(metadata2)
-                .withFormat(Format.JPG)
+                .withFormat(Format.get("jpg"))
                 .build();
         assertEquals(instance.hashCode(), info2.hashCode());
     }
@@ -488,7 +488,7 @@ public class InfoTest extends BaseTest {
                 .withSize(100, 80)
                 .withTileSize(50, 40)
                 .withNumResolutions(3)
-                .withFormat(Format.JPG)
+                .withFormat(Format.get("jpg"))
                 .build();
         assertNotEquals(instance.hashCode(), info2.hashCode());
     }
@@ -499,7 +499,7 @@ public class InfoTest extends BaseTest {
                 .withSize(99, 80)
                 .withTileSize(50, 40)
                 .withNumResolutions(3)
-                .withFormat(Format.JPG)
+                .withFormat(Format.get("jpg"))
                 .build();
         assertNotEquals(instance.hashCode(), info2.hashCode());
     }
@@ -510,7 +510,7 @@ public class InfoTest extends BaseTest {
                 .withSize(100, 79)
                 .withTileSize(50, 40)
                 .withNumResolutions(3)
-                .withFormat(Format.JPG)
+                .withFormat(Format.get("jpg"))
                 .build();
         assertNotEquals(instance.hashCode(), info2.hashCode());
     }
@@ -521,7 +521,7 @@ public class InfoTest extends BaseTest {
                 .withSize(100, 80)
                 .withTileSize(49, 40)
                 .withNumResolutions(3)
-                .withFormat(Format.JPG)
+                .withFormat(Format.get("jpg"))
                 .build();
         assertNotEquals(instance.hashCode(), info2.hashCode());
     }
@@ -532,7 +532,7 @@ public class InfoTest extends BaseTest {
                 .withSize(100, 80)
                 .withTileSize(50, 39)
                 .withNumResolutions(3)
-                .withFormat(Format.JPG)
+                .withFormat(Format.get("jpg"))
                 .build();
         assertNotEquals(instance.hashCode(), info2.hashCode());
     }
@@ -547,7 +547,7 @@ public class InfoTest extends BaseTest {
                 .withTileSize(50, 40)
                 .withMetadata(metadata2)
                 .withNumResolutions(3)
-                .withFormat(Format.JPG)
+                .withFormat(Format.get("jpg"))
                 .build();
         assertNotEquals(instance.hashCode(), info2.hashCode());
     }
@@ -558,7 +558,7 @@ public class InfoTest extends BaseTest {
                 .withSize(100, 80)
                 .withTileSize(50, 40)
                 .withNumResolutions(2)
-                .withFormat(Format.JPG)
+                .withFormat(Format.get("jpg"))
                 .build();
         assertNotEquals(instance.hashCode(), info2.hashCode());
     }
@@ -569,7 +569,7 @@ public class InfoTest extends BaseTest {
                 .withSize(100, 80)
                 .withTileSize(50, 40)
                 .withNumResolutions(3)
-                .withFormat(Format.GIF)
+                .withFormat(Format.get("gif"))
                 .build();
         assertNotEquals(instance.hashCode(), info2.hashCode());
     }

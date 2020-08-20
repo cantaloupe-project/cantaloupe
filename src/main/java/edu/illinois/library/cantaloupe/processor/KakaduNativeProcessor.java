@@ -125,7 +125,7 @@ class KakaduNativeProcessor implements FileProcessor, StreamProcessor {
 
     @Override
     public Format getSourceFormat() {
-        return Format.JP2;
+        return Format.get("jp2");
     }
 
     @Override
@@ -147,7 +147,7 @@ class KakaduNativeProcessor implements FileProcessor, StreamProcessor {
     @Override
     public void setSourceFormat(Format format)
             throws SourceFormatException {
-        if (!Format.JP2.equals(format)) {
+        if (!Format.get("jp2").equals(format)) {
             throw new SourceFormatException(format);
         }
     }
@@ -262,7 +262,7 @@ class KakaduNativeProcessor implements FileProcessor, StreamProcessor {
     @Override
     public Info readInfo() throws IOException {
         return Info.builder()
-                .withFormat(Format.JP2)
+                .withFormat(Format.get("jp2"))
                 .withSize(reader.getWidth(), reader.getHeight())
                 .withTileSize(reader.getTileWidth(), reader.getTileHeight())
                 .withNumResolutions(reader.getNumDecompositionLevels() + 1)

@@ -39,7 +39,7 @@ public final class BMPImageReader extends AbstractIIOImageReader
 
     @Override
     protected Format getFormat() {
-        return Format.BMP;
+        return Format.get("bmp");
     }
 
     @Override

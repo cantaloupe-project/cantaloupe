@@ -54,7 +54,7 @@ public class TurboJpegProcessor extends AbstractProcessor
             LoggerFactory.getLogger(TurboJpegProcessor.class);
 
     private static final Set<Format> SUPPORTED_OUTPUT_FORMATS =
-            Set.of(Format.JPG);
+            Set.of(Format.get("jpg"));
 
     private static boolean isClassInitialized;
 
@@ -112,7 +112,7 @@ public class TurboJpegProcessor extends AbstractProcessor
 
     @Override
     public Format getSourceFormat() {
-        return Format.JPG;
+        return Format.get("jpg");
     }
 
     @Override
@@ -128,7 +128,7 @@ public class TurboJpegProcessor extends AbstractProcessor
     @Override
     public void setSourceFormat(Format format)
             throws SourceFormatException {
-        if (!Format.JPG.equals(format)) {
+        if (!Format.get("jpg").equals(format)) {
             throw new SourceFormatException(format);
         }
     }
@@ -230,7 +230,7 @@ public class TurboJpegProcessor extends AbstractProcessor
     @Override
     public Info readInfo() throws IOException {
         return Info.builder()
-                .withFormat(Format.JPG)
+                .withFormat(Format.get("jpg"))
                 .withSize(imageReader.getWidth(), imageReader.getHeight())
                 .withTileSize(imageReader.getWidth(), imageReader.getHeight())
                 .withNumResolutions(1)

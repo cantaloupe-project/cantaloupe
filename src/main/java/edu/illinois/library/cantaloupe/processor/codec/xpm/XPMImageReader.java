@@ -36,7 +36,7 @@ public final class XPMImageReader extends AbstractIIOImageReader
 
     @Override
     protected Format getFormat() {
-        return Format.XPM;
+        return Format.get("xpm");
     }
 
     @Override

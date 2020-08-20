@@ -266,7 +266,7 @@ public final class OperationList implements Iterable<Operation> {
 
         // Encode customization
         final Encode encode = (Encode) getFirst(Encode.class);
-        if (Format.JPG.equals(encode.getFormat())) {
+        if (Format.get("jpg").equals(encode.getFormat())) {
             // Compression
             encode.setCompression(Compression.JPEG);
             // Interlacing
@@ -277,7 +277,7 @@ public final class OperationList implements Iterable<Operation> {
             final int quality =
                     config.getInt(Key.PROCESSOR_JPG_QUALITY, 80);
             encode.setQuality(quality);
-        } else if (Format.TIF.equals(encode.getFormat())) {
+        } else if (Format.get("tif").equals(encode.getFormat())) {
             // Compression
             final String compressionStr =
                     config.getString(Key.PROCESSOR_TIF_COMPRESSION, "LZW");
@@ -462,7 +462,7 @@ public final class OperationList implements Iterable<Operation> {
                 //    as the instance's output format. (This helps enable
                 //    streaming source images without re-encoding them.)
                 if (op instanceof Overlay &&
-                        getOutputFormat().equals(Format.PDF)) { // (1)
+                        getOutputFormat().equals(Format.get("pdf"))) { // (1)
                     continue;
                 } else if (op instanceof Encode &&
                         format.equals(((Encode) op).getFormat())) { // (2)

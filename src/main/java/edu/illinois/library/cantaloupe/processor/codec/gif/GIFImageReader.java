@@ -48,7 +48,7 @@ public final class GIFImageReader extends AbstractIIOImageReader
 
     @Override
     protected Format getFormat() {
-        return Format.GIF;
+        return Format.get("gif");
     }
 
     @Override

@@ -168,20 +168,20 @@ public class MediaTypeTest extends BaseTest {
 
     @Test
     void testToFormat() {
-        assertEquals(Format.AVI, new MediaType("video/avi").toFormat());
-        assertEquals(Format.BMP, new MediaType("image/bmp").toFormat());
-        assertEquals(Format.GIF, new MediaType("image/gif").toFormat());
-        assertEquals(Format.JP2, new MediaType("image/jp2").toFormat());
-        assertEquals(Format.JPG, new MediaType("image/jpeg").toFormat());
-        assertEquals(Format.MOV, new MediaType("video/quicktime").toFormat());
-        assertEquals(Format.MP4, new MediaType("video/mp4").toFormat());
-        assertEquals(Format.MPG, new MediaType("video/mpeg").toFormat());
-        assertEquals(Format.PDF, new MediaType("application/pdf").toFormat());
-        assertEquals(Format.PNG, new MediaType("image/png").toFormat());
-        assertEquals(Format.TIF, new MediaType("image/tiff").toFormat());
-        assertEquals(Format.WEBM, new MediaType("video/webm").toFormat());
-        assertEquals(Format.WEBP, new MediaType("image/webp").toFormat());
-        assertEquals(Format.XPM, new MediaType("image/x-xpixmap").toFormat());
+        assertEquals(Format.get("avi"), new MediaType("video/avi").toFormat());
+        assertEquals(Format.get("bmp"), new MediaType("image/bmp").toFormat());
+        assertEquals(Format.get("gif"), new MediaType("image/gif").toFormat());
+        assertEquals(Format.get("jp2"), new MediaType("image/jp2").toFormat());
+        assertEquals(Format.get("jpg"), new MediaType("image/jpeg").toFormat());
+        assertEquals(Format.get("mov"), new MediaType("video/quicktime").toFormat());
+        assertEquals(Format.get("mp4"), new MediaType("video/mp4").toFormat());
+        assertEquals(Format.get("mpg"), new MediaType("video/mpeg").toFormat());
+        assertEquals(Format.get("pdf"), new MediaType("application/pdf").toFormat());
+        assertEquals(Format.get("png"), new MediaType("image/png").toFormat());
+        assertEquals(Format.get("tif"), new MediaType("image/tiff").toFormat());
+        assertEquals(Format.get("webm"), new MediaType("video/webm").toFormat());
+        assertEquals(Format.get("webp"), new MediaType("image/webp").toFormat());
+        assertEquals(Format.get("xpm"), new MediaType("image/x-xpixmap").toFormat());
     }
 
     /* toString() */

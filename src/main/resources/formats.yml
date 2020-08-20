@@ -1,0 +1,208 @@
+#
+# Defines all of the formats supported by any processor.
+#
+# Additional formats can be user-defined and supplied to the application in a
+# custom file. See the documentation of the e.i.l.c.image.FormatRegistry class
+# for more information.
+#
+# N.B. 1: All keys must match the `key` properties.
+# N.B. 2: Arrays are in descending priority order.
+# N.B. 3: Each format should have a corresponding file whose name is the format
+#         key present in the test resources directory.
+#
+
+# AVI video
+avi:
+  key: avi
+  name: AVI
+  extensions:
+    - avi
+  mediaTypes:
+    - video/avi
+    - video/msvideo
+    - video/x-msvideo
+  raster: true
+  video: true
+  supportsTransparency: false
+
+# Windows Bitmap image
+bmp:
+  key: bmp
+  name: BMP
+  extensions:
+    - bmp
+    - dib
+  mediaTypes:
+    - image/bmp
+    - image/x-bmp
+    - image/x-ms-bmp
+  raster: true
+  video: false
+  supportsTransparency: true
+
+# Flash Video
+flv:
+  key: flv
+  name: FLV
+  extensions:
+    - flv
+    - f4v
+  mediaTypes:
+    - video/x-flv
+  raster: true
+  video: true
+  supportsTransparency: false
+
+# CompuServe GIF
+gif:
+  key: gif
+  name: GIF
+  extensions:
+    - gif
+  mediaTypes:
+    - image/gif
+  raster: true
+  video: false
+  supportsTransparency: true
+
+# JPEG2000
+jp2:
+  key: jp2
+  name: JPEG2000
+  extensions:
+    - jp2
+    - j2k
+    - jpx
+    - jpf
+  mediaTypes:
+    - image/jp2
+  raster: true
+  video: false
+  supportsTransparency: true
+
+# JPEG JFIF
+jpg:
+  key: jpg
+  name: JPEG
+  extensions:
+    - jpg
+    - jpeg
+  mediaTypes:
+    - image/jpeg
+  raster: true
+  video: false
+  supportsTransparency: false
+
+# Apple QuickTime video
+mov:
+  key: mov
+  name: "QuickTime"
+  extensions:
+    - mov
+    - qt
+  mediaTypes:
+    - video/quicktime
+    - video/x-quicktime
+  raster: true
+  video: true
+  supportsTransparency: false
+
+# MPEG-4 video
+mp4:
+  key: mp4
+  name: MPEG-4
+  extensions:
+    - mp4
+    - m4v
+  mediaTypes:
+    - video/mp4
+  raster: true
+  video: true
+  supportsTransparency: false
+
+# MPEG-1 video
+mpg:
+  key: mpg
+  name: MPEG
+  extensions:
+    - mpg
+  mediaTypes:
+    - video/mpeg
+  raster: true
+  video: true
+  supportsTransparency: false
+
+# Portable Document Format
+pdf:
+  key: pdf
+  name: PDF
+  extensions:
+    - pdf
+  mediaTypes:
+    - application/pdf
+  raster: false
+  video: false
+  supportsTransparency: false
+
+# Portable Network Graphics image
+png:
+  key: png
+  name: PNG
+  extensions:
+    - png
+  mediaTypes:
+    - image/png
+  raster: true
+  video: false
+  supportsTransparency: true
+
+# Tagged Image File Format.
+tif:
+  key: tif
+  name: TIFF
+  extensions:
+    - tif
+    - tiff
+    - ptif
+  mediaTypes:
+    - image/tiff
+  raster: true
+  video: false
+  supportsTransparency: true
+
+# WebM video
+webm:
+  key: webm
+  name: WebM
+  extensions:
+    - webm
+  mediaTypes:
+    - video/webm
+  raster: true
+  video: true
+  supportsTransparency: false
+
+# WebP image
+webp:
+  key: webp
+  name: WebP
+  extensions:
+    - webp
+  mediaTypes:
+    - image/webp
+  raster: true
+  video: false
+  supportsTransparency: true
+
+# X Pixmap image
+xpm:
+  key: xpm
+  name: XPM
+  extensions:
+    - xpm
+  mediaTypes:
+    - image/x-xpixmap
+    - image/x-xbitmap
+  raster: true
+  video: false
+  supportsTransparency: true

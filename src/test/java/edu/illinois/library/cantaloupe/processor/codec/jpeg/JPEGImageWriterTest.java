@@ -28,7 +28,7 @@ public class JPEGImageWriterTest extends AbstractImageWriterTest {
     @Override
     protected JPEGImageWriter newInstance() {
         JPEGImageWriter writer = new JPEGImageWriter();
-        writer.setEncode(new Encode(Format.JPG));
+        writer.setEncode(new Encode(Format.get("jpg")));
         return writer;
     }
 
@@ -80,7 +80,7 @@ public class JPEGImageWriterTest extends AbstractImageWriterTest {
             final BufferedImage image = reader.read();
 
             ByteArrayOutputStream os = new ByteArrayOutputStream();
-            Encode encode = new Encode(Format.JPG);
+            Encode encode = new Encode(Format.get("jpg"));
             Metadata outMetadata = new Metadata();
             outMetadata.setXMP(metadata.getXMP().orElseThrow());
             encode.setMetadata(outMetadata);
@@ -102,7 +102,7 @@ public class JPEGImageWriterTest extends AbstractImageWriterTest {
             final BufferedImage image = reader.read();
 
             ByteArrayOutputStream os = new ByteArrayOutputStream();
-            Encode encode = new Encode(Format.JPG);
+            Encode encode = new Encode(Format.get("jpg"));
             Metadata outMetadata = new Metadata();
             outMetadata.setXMP(metadata.getXMP().orElseThrow());
             encode.setMetadata(outMetadata);
@@ -125,7 +125,7 @@ public class JPEGImageWriterTest extends AbstractImageWriterTest {
                     reader.readRendered());
 
             ByteArrayOutputStream os = new ByteArrayOutputStream();
-            Encode encode = new Encode(Format.JPG);
+            Encode encode = new Encode(Format.get("jpg"));
             Metadata outMetadata = new Metadata();
             outMetadata.setXMP(metadata.getXMP().orElseThrow());
             encode.setMetadata(outMetadata);
@@ -148,7 +148,7 @@ public class JPEGImageWriterTest extends AbstractImageWriterTest {
                     reader.readRendered());
 
             ByteArrayOutputStream os = new ByteArrayOutputStream();
-            Encode encode = new Encode(Format.JPG);
+            Encode encode = new Encode(Format.get("jpg"));
             Metadata outMetadata = new Metadata();
             outMetadata.setXMP(metadata.getXMP().orElseThrow());
             encode.setMetadata(outMetadata);

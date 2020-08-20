@@ -36,7 +36,7 @@ import static edu.illinois.library.cantaloupe.test.PerformanceTestConstants.*;
 @Fork(value = 1, jvmArgs = { "-server", "-Xms128M", "-Xmx128M", "-Dcantaloupe.config=memory" })
 public class PdfBoxProcessorPerformance {
 
-    private static final Format OUTPUT_FORMAT = Format.PNG;
+    private static final Format OUTPUT_FORMAT = Format.get("png");
 
     private FileProcessor processor;
 
@@ -44,7 +44,7 @@ public class PdfBoxProcessorPerformance {
     public void setUp() throws Exception {
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.PROCESSOR_FALLBACK, "PdfBoxProcessor");
-        processor = (FileProcessor) new ProcessorFactory().newProcessor(Format.PDF);
+        processor = (FileProcessor) new ProcessorFactory().newProcessor(Format.get("pdf"));
     }
 
     @TearDown
@@ -54,7 +54,7 @@ public class PdfBoxProcessorPerformance {
 
     @Benchmark
     public void process() throws Exception {
-        processor.setSourceFormat(Format.PDF);
+        processor.setSourceFormat(Format.get("pdf"));
         processor.setSourceFile(TestUtil.getImage("pdf"));
         processor.process(
                 new OperationList(new Encode(OUTPUT_FORMAT)),
@@ -64,7 +64,7 @@ public class PdfBoxProcessorPerformance {
 
     @Benchmark
     public void readInfo() throws Exception {
-        processor.setSourceFormat(Format.PDF);
+        processor.setSourceFormat(Format.get("pdf"));
         processor.setSourceFile(TestUtil.getImage("pdf"));
         processor.readInfo();
     }

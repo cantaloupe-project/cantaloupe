@@ -59,7 +59,7 @@ class JaiProcessor extends AbstractImageIOProcessor
     @Override
     public Set<Format> getAvailableOutputFormats() {
         Set<Format> formats;
-        if (Format.GIF.equals(getSourceFormat())) {
+        if (Format.get("gif").equals(getSourceFormat())) {
             formats = Collections.emptySet();
         } else {
             formats = super.getAvailableOutputFormats();
@@ -94,7 +94,7 @@ class JaiProcessor extends AbstractImageIOProcessor
                     RenderedOp.wrapRenderedImage(renderedImage));
 
             Encode encode = (Encode) opList.getFirst(Encode.class);
-            if (encode != null && !Format.GIF.equals(outputFormat)) {
+            if (encode != null && !Format.get("gif").equals(outputFormat)) {
                 renderedOp = JAIUtil.rescalePixels(renderedOp);
                 renderedOp = JAIUtil.reduceTo8Bits(renderedOp);
             }
@@ -131,7 +131,7 @@ class JaiProcessor extends AbstractImageIOProcessor
                            better than nothing.
                         2) otherwise, use the SubsampleAverage operation.
                         */
-                        if (Format.TIF.equals(getSourceFormat()) &&
+                        if (Format.get("tif").equals(getSourceFormat()) &&
                                 (!Compression.UNCOMPRESSED.equals(reader.getCompression(0)) &&
                                         !Compression.UNDEFINED.equals(reader.getCompression(0)))) {
                             LOGGER.debug("process(): detected compressed TIFF; " +

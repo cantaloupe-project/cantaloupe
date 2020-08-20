@@ -129,9 +129,9 @@ public class ProcessorConnectorTest extends BaseTest {
     @Test
     void testConnectWithFileSourceAndFileProcessor() throws Exception {
         final Source source = new SourceFactory().newSource(IDENTIFIER, null);
-        final Processor processor = new ProcessorFactory().newProcessor(Format.JPG);
+        final Processor processor = new ProcessorFactory().newProcessor(Format.get("jpg"));
 
-        assertNull(instance.connect(source, processor, IDENTIFIER, Format.JPG));
+        assertNull(instance.connect(source, processor, IDENTIFIER, Format.get("jpg")));
 
         assertEquals(source.getFile(),
                 ((FileProcessor) processor).getSourceFile());
@@ -144,9 +144,9 @@ public class ProcessorConnectorTest extends BaseTest {
         config.setProperty(Key.PROCESSOR_FALLBACK, MockStreamProcessor.class.getName());
 
         final Source source = new SourceFactory().newSource(IDENTIFIER, null);
-        final Processor processor = new ProcessorFactory().newProcessor(Format.JPG);
+        final Processor processor = new ProcessorFactory().newProcessor(Format.get("jpg"));
 
-        assertNull(instance.connect(source, processor, IDENTIFIER, Format.JPG));
+        assertNull(instance.connect(source, processor, IDENTIFIER, Format.get("jpg")));
 
         StreamFactory ss1 = source.newStreamFactory();
         StreamFactory ss2 = ((StreamProcessor) processor).getStreamFactory();
@@ -175,9 +175,9 @@ public class ProcessorConnectorTest extends BaseTest {
 
             final Source source = new SourceFactory().newSource(
                     identifier, null);
-            final Processor processor = new ProcessorFactory().newProcessor(Format.JP2);
+            final Processor processor = new ProcessorFactory().newProcessor(Format.get("jp2"));
 
-            assertNotNull(instance.connect(source, processor, identifier, Format.JPG));
+            assertNotNull(instance.connect(source, processor, identifier, Format.get("jpg")));
         } finally {
             server.stop();
         }
@@ -208,9 +208,9 @@ public class ProcessorConnectorTest extends BaseTest {
                     RetrievalStrategy.CACHE.getConfigValue());
 
             final Source source = new SourceFactory().newSource(identifier, null);
-            final Processor processor = new ProcessorFactory().newProcessor(Format.JP2);
+            final Processor processor = new ProcessorFactory().newProcessor(Format.get("jp2"));
 
-            assertNull(instance.connect(source, processor, identifier, Format.JPG));
+            assertNull(instance.connect(source, processor, identifier, Format.get("jpg")));
 
             assertEquals(
                     CacheFactory.getSourceCache().get().getSourceImageFile(identifier).orElseThrow(),
@@ -233,10 +233,10 @@ public class ProcessorConnectorTest extends BaseTest {
                 RetrievalStrategy.CACHE.getConfigValue());
 
         final Source source = new SourceFactory().newSource(identifier, null);
-        final Processor processor = new ProcessorFactory().newProcessor(Format.JP2);
+        final Processor processor = new ProcessorFactory().newProcessor(Format.get("jp2"));
 
         assertThrows(CacheDisabledException.class,
-                () -> instance.connect(source, processor, identifier, Format.JPG));
+                () -> instance.connect(source, processor, identifier, Format.get("jpg")));
     }
 
     @Test
@@ -251,10 +251,10 @@ public class ProcessorConnectorTest extends BaseTest {
                 RetrievalStrategy.ABORT.getConfigValue());
 
         final Source source = new SourceFactory().newSource(identifier, null);
-        final Processor processor = new ProcessorFactory().newProcessor(Format.JP2);
+        final Processor processor = new ProcessorFactory().newProcessor(Format.get("jp2"));
 
         assertThrows(IncompatibleSourceException.class,
-                () -> instance.connect(source, processor, identifier, Format.JPG));
+                () -> instance.connect(source, processor, identifier, Format.get("jpg")));
     }
 
     @Test
@@ -274,9 +274,9 @@ public class ProcessorConnectorTest extends BaseTest {
                     MockFileProcessor.class.getName());
 
             final Source source = new SourceFactory().newSource(identifier, null);
-            final Processor processor = new ProcessorFactory().newProcessor(Format.JP2);
+            final Processor processor = new ProcessorFactory().newProcessor(Format.get("jp2"));
 
-            assertNotNull(instance.connect(source, processor, identifier, Format.JPG));
+            assertNotNull(instance.connect(source, processor, identifier, Format.get("jpg")));
         } finally {
             server.stop();
         }
@@ -299,7 +299,7 @@ public class ProcessorConnectorTest extends BaseTest {
             final Source source = new SourceFactory().newSource(IDENTIFIER, null);
             final StreamProcessor processor = new MockStreamProcessor();
 
-            assertNull(instance.connect(source, processor, IDENTIFIER, Format.JPG));
+            assertNull(instance.connect(source, processor, IDENTIFIER, Format.get("jpg")));
 
             StreamFactory ss1 = source.newStreamFactory();
             StreamFactory ss2 = processor.getStreamFactory();
@@ -331,7 +331,7 @@ public class ProcessorConnectorTest extends BaseTest {
             final Processor processor = new MockStreamProcessor();
 
             Future<Path> tempFile = instance.connect(source, processor,
-                    IDENTIFIER, Format.JPG);
+                    IDENTIFIER, Format.get("jpg"));
             Files.delete(tempFile.get());
         } finally {
             server.stop();
@@ -358,7 +358,7 @@ public class ProcessorConnectorTest extends BaseTest {
             final Source source = new SourceFactory().newSource(IDENTIFIER, null);
             final StreamProcessor processor = new MockStreamProcessor();
 
-            assertNull(instance.connect(source, processor, IDENTIFIER, Format.JPG));
+            assertNull(instance.connect(source, processor, IDENTIFIER, Format.get("jpg")));
 
             assertEqualSources(
                     CacheFactory.getSourceCache().get().getSourceImageFile(IDENTIFIER).orElseThrow(),
@@ -394,7 +394,7 @@ public class ProcessorConnectorTest extends BaseTest {
             final MockStreamProcessor processor = new MockStreamProcessor();
             processor.setSeeking(true);
 
-            assertNull(instance.connect(source, processor, IDENTIFIER, Format.JPG));
+            assertNull(instance.connect(source, processor, IDENTIFIER, Format.get("jpg")));
 
             StreamFactory ss1 = source.newStreamFactory();
             StreamFactory ss2 = processor.getStreamFactory();
@@ -431,7 +431,7 @@ public class ProcessorConnectorTest extends BaseTest {
             final MockStreamProcessor processor = new MockStreamProcessor();
             processor.setSeeking(false);
 
-            assertNull(instance.connect(source, processor, IDENTIFIER, Format.JPG));
+            assertNull(instance.connect(source, processor, IDENTIFIER, Format.get("jpg")));
 
             assertEqualSources(
                     CacheFactory.getSourceCache().get().getSourceImageFile(IDENTIFIER).orElseThrow(),
@@ -471,7 +471,7 @@ public class ProcessorConnectorTest extends BaseTest {
             final StreamProcessor processor = new MockStreamProcessor();
 
             assertThrows(IOException.class,
-                    () -> instance.connect(source, processor, IDENTIFIER, Format.JPG));
+                    () -> instance.connect(source, processor, IDENTIFIER, Format.get("jpg")));
         } finally {
             server.stop();
         }
@@ -503,7 +503,7 @@ public class ProcessorConnectorTest extends BaseTest {
             final StreamProcessor processor = new MockStreamProcessor();
 
             assertThrows(IOException.class,
-                    () -> instance.connect(source, processor, IDENTIFIER, Format.JPG));
+                    () -> instance.connect(source, processor, IDENTIFIER, Format.get("jpg")));
         } finally {
             server.stop();
         }
@@ -534,7 +534,7 @@ public class ProcessorConnectorTest extends BaseTest {
             final Source source = new SourceFactory().newSource(IDENTIFIER, null);
             final StreamProcessor processor = new MockStreamProcessor();
 
-            assertNull(instance.connect(source, processor, IDENTIFIER, Format.JPG));
+            assertNull(instance.connect(source, processor, IDENTIFIER, Format.get("jpg")));
 
             assertEqualSources(
                     CacheFactory.getSourceCache().get().getSourceImageFile(IDENTIFIER).orElseThrow(),
@@ -572,7 +572,7 @@ public class ProcessorConnectorTest extends BaseTest {
             final Source source = new SourceFactory().newSource(IDENTIFIER, null);
             final StreamProcessor processor = new MockStreamProcessor();
 
-            assertNull(instance.connect(source, processor, IDENTIFIER, Format.JPG));
+            assertNull(instance.connect(source, processor, IDENTIFIER, Format.get("jpg")));
 
             assertEqualSources(
                     CacheFactory.getSourceCache().get().getSourceImageFile(IDENTIFIER).orElseThrow(),
@@ -602,7 +602,7 @@ public class ProcessorConnectorTest extends BaseTest {
             final Processor processor = new MockStreamProcessor();
 
             assertThrows(CacheDisabledException.class,
-                    () -> instance.connect(source, processor, IDENTIFIER, Format.JPG));
+                    () -> instance.connect(source, processor, IDENTIFIER, Format.get("jpg")));
         } finally {
             server.stop();
             recursiveDeleteOnExit(cacheFolder);

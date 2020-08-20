@@ -46,8 +46,8 @@ class Java2dProcessor extends AbstractImageIOProcessor
             final Encode encode = (Encode) ops.getFirst(Encode.class);
             final ImageWriter writer = new ImageWriterFactory()
                     .newImageWriter(encode);
-            if (Format.GIF.equals(info.getSourceFormat()) &&
-                    Format.GIF.equals(ops.getOutputFormat())) {
+            if (Format.get("gif").equals(info.getSourceFormat()) &&
+                    Format.get("gif").equals(ops.getOutputFormat())) {
                 BufferedImageSequence seq = reader.readSequence();
                 Java2DPostProcessor.postProcess(seq, ops, info);
                 writer.write(seq, outputStream);

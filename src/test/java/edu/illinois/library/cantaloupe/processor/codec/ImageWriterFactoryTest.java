@@ -23,13 +23,13 @@ public class ImageWriterFactoryTest extends BaseTest {
     @Test
     void testSupportedFormats() {
         Set<Format> outputFormats = Set.of(
-                Format.GIF, Format.JPG, Format.PNG, Format.TIF);
+                Format.get("gif"), Format.get("jpg"), Format.get("png"), Format.get("tif"));
         assertEquals(outputFormats, ImageWriterFactory.supportedFormats());
     }
 
     @Test
     void testNewImageWriter() {
-        assertNotNull(instance.newImageWriter(new Encode(Format.JPG)));
+        assertNotNull(instance.newImageWriter(new Encode(Format.get("jpg"))));
     }
 
     @Test

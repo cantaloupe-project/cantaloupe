@@ -415,12 +415,12 @@ public class Version1_1ConformanceTest extends ResourceTest {
      */
     @Test
     void testFormats() throws Exception {
-        testFormat(Format.JPG);
-        testFormat(Format.TIF);
-        testFormat(Format.PNG);
-        testFormat(Format.GIF);
-        testFormat(Format.JP2);
-        testFormat(Format.PDF);
+        testFormat(Format.get("jpg"));
+        testFormat(Format.get("tif"));
+        testFormat(Format.get("png"));
+        testFormat(Format.get("gif"));
+        testFormat(Format.get("jp2"));
+        testFormat(Format.get("pdf"));
     }
 
     private void testFormat(Format outputFormat) throws Exception {

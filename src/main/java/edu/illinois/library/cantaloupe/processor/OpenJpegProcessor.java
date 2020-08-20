@@ -145,7 +145,7 @@ class OpenJpegProcessor extends AbstractProcessor implements FileProcessor {
      * @see <a href="https://github.com/cantaloupe-project/cantaloupe/issues/190">
      *     OpenJpegProcessor operating on low bit-depth images</a>
      */
-    private final static Format intermediateFormat = Format.BMP;
+    private final static Format intermediateFormat = Format.get("bmp");
 
     private Path sourceFile;
 
@@ -336,7 +336,7 @@ class OpenJpegProcessor extends AbstractProcessor implements FileProcessor {
     @Override
     public Set<Format> getAvailableOutputFormats() {
         final Set<Format> outputFormats;
-        if (Format.JP2.equals(getSourceFormat())) {
+        if (Format.get("jp2").equals(getSourceFormat())) {
             outputFormats = ImageWriterFactory.supportedFormats();
         } else {
             outputFormats = Collections.unmodifiableSet(Collections.emptySet());
@@ -517,7 +517,7 @@ class OpenJpegProcessor extends AbstractProcessor implements FileProcessor {
 
         try (InputStream is = Files.newInputStream(intermediateFile)) {
             final ImageReader reader =
-                    new ImageReaderFactory().newImageReader(Format.BMP, is);
+                    new ImageReaderFactory().newImageReader(Format.get("bmp"), is);
             try {
                 final BufferedImage image = reader.read();
                 final Set<ReaderHint> hints =
@@ -562,7 +562,7 @@ class OpenJpegProcessor extends AbstractProcessor implements FileProcessor {
                     new StreamCopier(processErrorStream, errorOutput));
 
             final ImageReader reader = new ImageReaderFactory().newImageReader(
-                    Format.BMP, processInputStream);
+                    Format.get("bmp"), processInputStream);
             try {
                 final Set<ReaderHint> hints =
                         EnumSet.of(ReaderHint.ALREADY_CROPPED);

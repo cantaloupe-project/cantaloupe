@@ -26,11 +26,11 @@ class AutomaticSelectionStrategy implements SelectionStrategy {
 
     @Override
     public List<Class<? extends Processor>> getPreferredProcessors(Format sourceFormat) {
-        if (Format.JP2.equals(sourceFormat)) {
+        if (Format.get("jp2").equals(sourceFormat)) {
             return JP2_CANDIDATES;
-        } else if (Format.JPG.equals(sourceFormat)) {
+        } else if (Format.get("jpg").equals(sourceFormat)) {
             return JPG_CANDIDATES;
-        } else if (Format.PDF.equals(sourceFormat)) {
+        } else if (Format.get("pdf").equals(sourceFormat)) {
             return PDF_CANDIDATES;
         } else if (sourceFormat.isVideo()) {
             return VIDEO_CANDIDATES;

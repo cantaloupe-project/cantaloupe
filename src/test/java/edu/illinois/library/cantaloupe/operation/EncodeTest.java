@@ -20,7 +20,7 @@ public class EncodeTest extends BaseTest {
     @BeforeEach
     public void setUp() throws Exception {
         super.setUp();
-        instance = new Encode(Format.JPG);
+        instance = new Encode(Format.get("jpg"));
         assertEquals(8, instance.getMaxComponentSize());
     }
 
@@ -61,7 +61,7 @@ public class EncodeTest extends BaseTest {
     void setFormatWhenFrozenThrowsException() {
         instance.freeze();
         assertThrows(IllegalStateException.class,
-                () -> instance.setFormat(Format.PNG));
+                () -> instance.setFormat(Format.get("png")));
     }
 
     @Test
@@ -146,7 +146,7 @@ public class EncodeTest extends BaseTest {
         assertEquals("Encode", map.get("class"));
         assertEquals("#0000FF", map.get("background_color"));
         assertEquals(Compression.JPEG.toString(), map.get("compression"));
-        assertEquals(Format.JPG.getPreferredMediaType(), map.get("format"));
+        assertEquals(Format.get("jpg").getPreferredMediaType(), map.get("format"));
         assertTrue((boolean) map.get("interlace"));
         assertEquals(50, map.get("quality"));
         assertEquals(10, map.get("max_sample_size"));

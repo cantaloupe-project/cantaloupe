@@ -26,8 +26,8 @@ abstract class AbstractImageIOProcessorTest extends AbstractProcessorTest {
         }
 
         try (Processor proc = newInstance()) {
-            proc.setSourceFormat(Format.JPG);
-            Set<Format> expectedFormats = formats.get(Format.JPG);
+            proc.setSourceFormat(Format.get("jpg"));
+            Set<Format> expectedFormats = formats.get(Format.get("jpg"));
             assertEquals(expectedFormats, proc.getAvailableOutputFormats());
         }
     }
@@ -38,7 +38,7 @@ abstract class AbstractImageIOProcessorTest extends AbstractProcessorTest {
 
         try (FileProcessor fproc = (FileProcessor) newInstance()) {
             fproc.setSourceFile(fixture);
-            fproc.setSourceFormat(Format.JPG);
+            fproc.setSourceFormat(Format.get("jpg"));
 
             final Info info = fproc.readInfo();
             assertTrue(info.getMetadata().getEXIF().isPresent());
@@ -51,7 +51,7 @@ abstract class AbstractImageIOProcessorTest extends AbstractProcessorTest {
 
         try (FileProcessor fproc = (FileProcessor) newInstance()) {
             fproc.setSourceFile(fixture);
-            fproc.setSourceFormat(Format.JPG);
+            fproc.setSourceFormat(Format.get("jpg"));
 
             final Info info = fproc.readInfo();
             assertTrue(info.getMetadata().getIPTC().isPresent());
@@ -64,7 +64,7 @@ abstract class AbstractImageIOProcessorTest extends AbstractProcessorTest {
 
         try (FileProcessor fproc = (FileProcessor) newInstance()) {
             fproc.setSourceFile(fixture);
-            fproc.setSourceFormat(Format.JPG);
+            fproc.setSourceFormat(Format.get("jpg"));
 
             final Info info = fproc.readInfo();
             assertTrue(info.getMetadata().getXMP().isPresent());
@@ -77,7 +77,7 @@ abstract class AbstractImageIOProcessorTest extends AbstractProcessorTest {
                 .withSize(64, 56)
                 .withTileSize(16, 16)
                 .withNumResolutions(1)
-                .withFormat(Format.TIF)
+                .withFormat(Format.get("tif"))
                 .build();
         final Path fixture = TestUtil.
                 getImage("tif-rgb-1res-64x56x8-tiled-uncompressed.tif");
@@ -86,7 +86,7 @@ abstract class AbstractImageIOProcessorTest extends AbstractProcessorTest {
         try (StreamProcessor sproc = (StreamProcessor) newInstance()) {
             StreamFactory streamFactory = new PathStreamFactory(fixture);
             sproc.setStreamFactory(streamFactory);
-            sproc.setSourceFormat(Format.TIF);
+            sproc.setSourceFormat(Format.get("tif"));
             Info actualInfo = sproc.readInfo();
             actualInfo.setMetadata(new Metadata()); // we don't care about this
             assertEquals(expectedInfo, actualInfo);
@@ -95,7 +95,7 @@ abstract class AbstractImageIOProcessorTest extends AbstractProcessorTest {
         // test as a FileProcessor
         try (FileProcessor fproc = (FileProcessor) newInstance()) {
             fproc.setSourceFile(fixture);
-            fproc.setSourceFormat(Format.TIF);
+            fproc.setSourceFormat(Format.get("tif"));
             Info actualInfo = fproc.readInfo();
             actualInfo.setMetadata(new Metadata()); // we don't care about this
             assertEquals(expectedInfo, actualInfo);

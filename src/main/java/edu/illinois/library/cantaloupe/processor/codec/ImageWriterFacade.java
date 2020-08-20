@@ -30,7 +30,7 @@ public final class ImageWriterFacade {
     public static void write(BufferedImage image,
                              Encode encode,
                              OutputStream outputStream) throws IOException {
-        if (Format.JPG.equals(encode.getFormat()) &&
+        if (Format.get("jpg").equals(encode.getFormat()) &&
                 TurboJPEGImageWriter.isTurboJPEGAvailable()) {
             LOGGER.debug("Writing with {}",
                     TurboJPEGImageWriter.class.getName());

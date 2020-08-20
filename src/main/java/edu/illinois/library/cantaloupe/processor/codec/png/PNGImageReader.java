@@ -40,7 +40,7 @@ public final class PNGImageReader extends AbstractIIOImageReader
 
     @Override
     protected Format getFormat() {
-        return Format.PNG;
+        return Format.get("png");
     }
 
     @Override

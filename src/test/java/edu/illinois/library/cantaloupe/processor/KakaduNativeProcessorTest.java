@@ -32,7 +32,7 @@ public class KakaduNativeProcessorTest extends AbstractProcessorTest {
     protected KakaduNativeProcessor newInstance() {
         KakaduNativeProcessor proc = new KakaduNativeProcessor();
         try {
-            proc.setSourceFormat(Format.JP2);
+            proc.setSourceFormat(Format.get("jp2"));
         } catch (SourceFormatException e) {
             fail("Huge bug");
         }
@@ -55,7 +55,7 @@ public class KakaduNativeProcessorTest extends AbstractProcessorTest {
         Info expectedInfo = Info.builder()
                 .withSize(64, 56)
                 .withTileSize(64, 56)
-                .withFormat(Format.JP2)
+                .withFormat(Format.get("jp2"))
                 .withNumResolutions(5)
                 .build();
         assertEquals(expectedInfo, instance.readInfo());
@@ -67,7 +67,7 @@ public class KakaduNativeProcessorTest extends AbstractProcessorTest {
         Info expectedInfo = Info.builder()
                 .withSize(64, 56)
                 .withTileSize(32, 28)
-                .withFormat(Format.JP2)
+                .withFormat(Format.get("jp2"))
                 .withNumResolutions(6)
                 .build();
         assertEquals(expectedInfo, instance.readInfo());

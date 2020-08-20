@@ -121,7 +121,7 @@ public class MetadataTest extends BaseTest {
     void testGetEXIFWithPresentEXIFData() throws Exception {
         Path fixture = TestUtil.getImage("jpg-exif.jpg");
         ImageReader reader = new ImageReaderFactory()
-                .newImageReader(Format.JPG, fixture);
+                .newImageReader(Format.get("jpg"), fixture);
         try {
             Metadata metadata = reader.getMetadata(0);
             assertTrue(metadata.getEXIF().isPresent());
@@ -134,7 +134,7 @@ public class MetadataTest extends BaseTest {
     void testGetEXIFWithNoEXIFData() throws Exception {
         Path fixture = TestUtil.getImage("jpg");
         ImageReader reader = new ImageReaderFactory()
-                .newImageReader(Format.JPG, fixture);
+                .newImageReader(Format.get("jpg"), fixture);
         try {
             Metadata metadata = reader.getMetadata(0);
             assertFalse(metadata.getEXIF().isPresent());
@@ -147,7 +147,7 @@ public class MetadataTest extends BaseTest {
     void testGetIPTCWithPresentIPTCData() throws Exception {
         Path fixture = TestUtil.getImage("jpg-iptc.jpg");
         ImageReader reader = new ImageReaderFactory()
-                .newImageReader(Format.JPG, fixture);
+                .newImageReader(Format.get("jpg"), fixture);
         try {
             Metadata metadata = reader.getMetadata(0);
             assertTrue(metadata.getIPTC().isPresent());
@@ -160,7 +160,7 @@ public class MetadataTest extends BaseTest {
     void testGetIPTCWithNoIPTCData() throws Exception {
         Path fixture = TestUtil.getImage("jpg");
         ImageReader reader = new ImageReaderFactory()
-                .newImageReader(Format.JPG, fixture);
+                .newImageReader(Format.get("jpg"), fixture);
         try {
             Metadata metadata = reader.getMetadata(0);
             assertFalse(metadata.getIPTC().isPresent());
@@ -173,7 +173,7 @@ public class MetadataTest extends BaseTest {
     void testGetNativeMetadataWithPresentData() throws Exception {
         Path fixture = TestUtil.getImage("png-nativemetadata.png");
         ImageReader reader = new ImageReaderFactory()
-                .newImageReader(Format.PNG, fixture);
+                .newImageReader(Format.get("png"), fixture);
         try {
             Metadata metadata = reader.getMetadata(0);
             assertTrue(metadata.getNativeMetadata().isPresent());
@@ -186,7 +186,7 @@ public class MetadataTest extends BaseTest {
     void testGetNativeMetadataWithNoData() throws Exception {
         Path fixture = TestUtil.getImage("png-rgb-1x1x8.png");
         ImageReader reader = new ImageReaderFactory()
-                .newImageReader(Format.PNG, fixture);
+                .newImageReader(Format.get("png"), fixture);
         try {
             Metadata metadata = reader.getMetadata(0);
             assertFalse(metadata.getNativeMetadata().isPresent());
@@ -204,7 +204,7 @@ public class MetadataTest extends BaseTest {
     void testGetOrientationWithOnlyEXIFOrientation() throws Exception {
         Path fixture = TestUtil.getImage("jpg-exif-orientation-270.jpg");
         ImageReader reader = new ImageReaderFactory()
-                .newImageReader(Format.JPG, fixture);
+                .newImageReader(Format.get("jpg"), fixture);
         try {
             Metadata metadata = reader.getMetadata(0);
             assertEquals(Orientation.ROTATE_270, metadata.getOrientation());
@@ -217,7 +217,7 @@ public class MetadataTest extends BaseTest {
     void testGetOrientationWithOnlyXMPOrientation() throws Exception {
         Path fixture = TestUtil.getImage("jpg-xmp-orientation-90.jpg");
         ImageReader reader = new ImageReaderFactory()
-                .newImageReader(Format.JPG, fixture);
+                .newImageReader(Format.get("jpg"), fixture);
         try {
             Metadata metadata = reader.getMetadata(0);
             assertEquals(Orientation.ROTATE_90, metadata.getOrientation());
@@ -236,7 +236,7 @@ public class MetadataTest extends BaseTest {
     void testGetXMPModelWithPresentXMPData() throws Exception {
         Path fixture = TestUtil.getImage("jpg-xmp.jpg");
         ImageReader reader = new ImageReaderFactory()
-                .newImageReader(Format.JPG, fixture);
+                .newImageReader(Format.get("jpg"), fixture);
         try {
             Metadata metadata = reader.getMetadata(0);
             Model model = metadata.getXMPModel().get();
@@ -250,7 +250,7 @@ public class MetadataTest extends BaseTest {
     void testGetXMPModelWithNoXMPData() throws Exception {
         Path fixture = TestUtil.getImage("jpg");
         ImageReader reader = new ImageReaderFactory()
-                .newImageReader(Format.JPG, fixture);
+                .newImageReader(Format.get("jpg"), fixture);
         try {
             Metadata metadata = reader.getMetadata(0);
             assertFalse(metadata.getXMPModel().isPresent());

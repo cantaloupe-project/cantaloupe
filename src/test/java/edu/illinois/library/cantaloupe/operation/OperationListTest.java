@@ -185,7 +185,7 @@ public class OperationListTest extends BaseTest {
         final OperationList opList = new OperationList(
                 new Identifier("cats"),
                 new CropByPixels(0, 0, 70, 30),
-                new Encode(Format.JPG));
+                new Encode(Format.get("jpg")));
         opList.setScaleConstraint(new ScaleConstraint(1, 2));
 
         final RequestContext context = new RequestContext();
@@ -216,7 +216,7 @@ public class OperationListTest extends BaseTest {
         final OperationList opList = new OperationList(
                 new Identifier("cats"),
                 new CropByPixels(0, 0, 70, 30),
-                new Encode(Format.JPG));
+                new Encode(Format.get("jpg")));
 
         final RequestContext context = new RequestContext();
         context.setOperationList(opList, fullSize);
@@ -248,7 +248,7 @@ public class OperationListTest extends BaseTest {
                 new Identifier("cats"),
                 new CropByPixels(0, 0, 70, 30),
                 new Rotate(45),
-                new Encode(Format.JPG));
+                new Encode(Format.get("jpg")));
 
         final RequestContext context = new RequestContext();
         context.setOperationList(opList, fullSize);
@@ -273,7 +273,7 @@ public class OperationListTest extends BaseTest {
         final OperationList opList = new OperationList(
                 new Identifier("cats"),
                 new Rotate(45),
-                new Encode(Format.JPG));
+                new Encode(Format.get("jpg")));
 
         final RequestContext context = new RequestContext();
         context.setOperationList(opList, fullSize);
@@ -295,7 +295,7 @@ public class OperationListTest extends BaseTest {
         final Dimension fullSize = new Dimension(2000, 1000);
         final Info info = Info.builder().withSize(fullSize).build();
         final OperationList opList = new OperationList(
-                new Identifier("cats"), new Encode(Format.JPG));
+                new Identifier("cats"), new Encode(Format.get("jpg")));
 
         final RequestContext context = new RequestContext();
         context.setOperationList(opList, fullSize);
@@ -319,7 +319,7 @@ public class OperationListTest extends BaseTest {
         final Dimension fullSize = new Dimension(2000, 1000);
         final Info info = Info.builder().withSize(fullSize).build();
         final OperationList opList = new OperationList(
-                new Identifier("cats"), new Encode(Format.TIF));
+                new Identifier("cats"), new Encode(Format.get("tif")));
 
         final RequestContext context = new RequestContext();
         context.setOperationList(opList, fullSize);
@@ -339,7 +339,7 @@ public class OperationListTest extends BaseTest {
         final Dimension fullSize = new Dimension(2000, 1000);
         final Info info = Info.builder().withSize(fullSize).build();
         final OperationList opList = new OperationList(
-                new Identifier("cats"), new Encode(Format.JPG));
+                new Identifier("cats"), new Encode(Format.get("jpg")));
 
         final RequestContext context = new RequestContext();
         context.setOperationList(opList, fullSize);
@@ -362,7 +362,7 @@ public class OperationListTest extends BaseTest {
         final OperationList opList = new OperationList(
                 new Identifier("cats"),
                 new ScaleByPercent(1.5),
-                new Encode(Format.JPG));
+                new Encode(Format.get("jpg")));
         final RequestContext context = new RequestContext();
         context.setOperationList(opList, fullSize);
         DelegateProxyService service = DelegateProxyService.getInstance();
@@ -384,7 +384,7 @@ public class OperationListTest extends BaseTest {
         final OperationList opList = new OperationList(
                 new Identifier("cats"),
                 new ScaleByPercent(0.5),
-                new Encode(Format.JPG));
+                new Encode(Format.get("jpg")));
         final RequestContext context = new RequestContext();
         context.setOperationList(opList, fullSize);
         DelegateProxyService service = DelegateProxyService.getInstance();
@@ -406,7 +406,7 @@ public class OperationListTest extends BaseTest {
         final OperationList opList = new OperationList(
                 new Identifier("cats"),
                 new ScaleByPercent(1.5),
-                new Encode(Format.JPG));
+                new Encode(Format.get("jpg")));
         final RequestContext context = new RequestContext();
         context.setOperationList(opList, fullSize);
         DelegateProxyService service = DelegateProxyService.getInstance();
@@ -427,7 +427,7 @@ public class OperationListTest extends BaseTest {
         final Info info = Info.builder().withSize(fullSize).build();
         final OperationList opList = new OperationList(
                 new Identifier("cats"),
-                new Encode(Format.TIF));
+                new Encode(Format.get("tif")));
         final RequestContext context = new RequestContext();
         context.setOperationList(opList, fullSize);
         DelegateProxyService service = DelegateProxyService.getInstance();
@@ -450,7 +450,7 @@ public class OperationListTest extends BaseTest {
         final Dimension fullSize = new Dimension(2000, 1000);
         final Info info = Info.builder().withSize(fullSize).build();
         final OperationList opList = new OperationList(
-                new Identifier("cats"), new Encode(Format.TIF));
+                new Identifier("cats"), new Encode(Format.get("tif")));
         final RequestContext context = new RequestContext();
         context.setOperationList(opList, fullSize);
         DelegateProxyService service = DelegateProxyService.getInstance();
@@ -474,7 +474,7 @@ public class OperationListTest extends BaseTest {
 
         final Dimension fullSize = new Dimension(2000, 1000);
         final Info info = Info.builder().withSize(fullSize).build();
-        final Encode encode = new Encode(Format.JPG);
+        final Encode encode = new Encode(Format.get("jpg"));
         final Metadata metadata = new Metadata();
         metadata.setXMP("<rdf:RDF>source metadata</rdf:RDF>");
         encode.setMetadata(metadata);
@@ -607,35 +607,35 @@ public class OperationListTest extends BaseTest {
 
     @Test
     void hasEffectWithScaleConstraint() {
-        instance = new OperationList(new Encode(Format.GIF));
+        instance = new OperationList(new Encode(Format.get("gif")));
         Dimension fullSize = new Dimension(100, 100);
-        assertFalse(instance.hasEffect(fullSize, Format.GIF));
+        assertFalse(instance.hasEffect(fullSize, Format.get("gif")));
         instance.setScaleConstraint(new ScaleConstraint(1, 2));
-        assertTrue(instance.hasEffect(fullSize, Format.GIF));
+        assertTrue(instance.hasEffect(fullSize, Format.get("gif")));
     }
 
     @Test
     void hasEffectWithSameFormat() {
-        instance = new OperationList(new Encode(Format.GIF));
-        assertFalse(instance.hasEffect(new Dimension(100, 100), Format.GIF));
+        instance = new OperationList(new Encode(Format.get("gif")));
+        assertFalse(instance.hasEffect(new Dimension(100, 100), Format.get("gif")));
     }
 
     @Test
     void hasEffectWithDifferentFormats() {
-        instance = new OperationList(new Encode(Format.GIF));
-        assertTrue(instance.hasEffect(new Dimension(100, 100), Format.JPG));
+        instance = new OperationList(new Encode(Format.get("gif")));
+        assertTrue(instance.hasEffect(new Dimension(100, 100), Format.get("jpg")));
     }
 
     @Test
     void hasEffectWithPDFSourceAndPDFOutputAndOverlay() {
-        instance = new OperationList(new Encode(Format.PDF));
-        assertFalse(instance.hasEffect(new Dimension(100, 100), Format.PDF));
+        instance = new OperationList(new Encode(Format.get("pdf")));
+        assertFalse(instance.hasEffect(new Dimension(100, 100), Format.get("pdf")));
     }
 
     @Test
     void hasEffectWithEncodeAndSameOutputFormat() {
-        instance = new OperationList(new Encode(Format.JPG));
-        assertFalse(instance.hasEffect(new Dimension(100, 100), Format.JPG));
+        instance = new OperationList(new Encode(Format.get("jpg")));
+        assertFalse(instance.hasEffect(new Dimension(100, 100), Format.get("jpg")));
     }
 
     @Test
@@ -696,7 +696,7 @@ public class OperationListTest extends BaseTest {
         instance.add(scale);
         instance.add(new Rotate(15));
         instance.add(ColorTransform.BITONAL);
-        instance.add(new Encode(Format.JPG));
+        instance.add(new Encode(Format.get("jpg")));
         instance.getOptions().put("animal", "cat");
         instance.setScaleConstraint(new ScaleConstraint(1, 2));
 
@@ -728,7 +728,7 @@ public class OperationListTest extends BaseTest {
         // transpose
         instance.add(Transpose.HORIZONTAL);
         // encode
-        instance.add(new Encode(Format.JPG));
+        instance.add(new Encode(Format.get("jpg")));
         instance.setScaleConstraint(new ScaleConstraint(1, 2));
 
         final Dimension fullSize = new Dimension(100, 100);
@@ -757,7 +757,7 @@ public class OperationListTest extends BaseTest {
         instance.add(scale);
         instance.add(new Rotate(15));
         instance.add(ColorTransform.BITONAL);
-        instance.add(new Encode(Format.JPG));
+        instance.add(new Encode(Format.get("jpg")));
         instance.getOptions().put("animal", "cat");
         instance.setScaleConstraint(new ScaleConstraint(1, 2));
 
@@ -771,8 +771,8 @@ public class OperationListTest extends BaseTest {
         OperationList ops = new OperationList(
                 new Identifier("cats"),
                 new CropByPixels(0, 0, 100, 100),
-                new Encode(Format.JPG));
-        ops.validate(fullSize, Format.PNG);
+                new Encode(Format.get("jpg")));
+        ops.validate(fullSize, Format.get("png"));
     }
 
     @Test
@@ -780,9 +780,9 @@ public class OperationListTest extends BaseTest {
         Dimension fullSize = new Dimension(1000, 1000);
         OperationList ops = new OperationList(
                 new CropByPixels(0, 0, 100, 100),
-                new Encode(Format.JPG));
+                new Encode(Format.get("jpg")));
         assertThrows(ValidationException.class,
-                () -> ops.validate(fullSize, Format.PNG));
+                () -> ops.validate(fullSize, Format.get("png")));
     }
 
     @Test
@@ -792,7 +792,7 @@ public class OperationListTest extends BaseTest {
                 new Identifier("cats"),
                 new CropByPixels(0, 0, 100, 100));
         assertThrows(ValidationException.class,
-                () -> ops.validate(fullSize, Format.PNG));
+                () -> ops.validate(fullSize, Format.get("png")));
     }
 
     @Test
@@ -800,37 +800,37 @@ public class OperationListTest extends BaseTest {
         Dimension fullSize = new Dimension(1000, 1000);
         OperationList ops = new OperationList(
                 new CropByPixels(1001, 1001, 100, 100),
-                new Encode(Format.JPG));
+                new Encode(Format.get("jpg")));
         assertThrows(ValidationException.class,
-                () -> ops.validate(fullSize, Format.PNG));
+                () -> ops.validate(fullSize, Format.get("png")));
     }
 
     @Test
     void validateWithValidPageArgument() throws Exception {
         OperationList ops = new OperationList(
                 new Identifier("cats"),
-                new Encode(Format.JPG));
+                new Encode(Format.get("jpg")));
         ops.getOptions().put("page", "2");
-        ops.validate(new Dimension(100, 88), Format.PNG);
+        ops.validate(new Dimension(100, 88), Format.get("png"));
     }
 
     @Test
     void validateWithZeroPageArgument() {
         OperationList ops = new OperationList(
                 new Identifier("cats"),
-                new Encode(Format.JPG));
+                new Encode(Format.get("jpg")));
         ops.getOptions().put("page", "0");
         assertThrows(ValidationException.class,
-                () -> ops.validate(new Dimension(100, 88), Format.PNG));
+                () -> ops.validate(new Dimension(100, 88), Format.get("png")));
     }
 
     @Test
     void validateWithNegativePageArgument() {
         OperationList ops = new OperationList(
-                new Identifier("cats"), new Encode(Format.JPG));
+                new Identifier("cats"), new Encode(Format.get("jpg")));
         ops.getOptions().put("page", "-1");
         assertThrows(ValidationException.class,
-                () -> ops.validate(new Dimension(100, 88), Format.PNG));
+                () -> ops.validate(new Dimension(100, 88), Format.get("png")));
     }
 
     @Test
@@ -840,9 +840,9 @@ public class OperationListTest extends BaseTest {
                 new Identifier("cats"),
                 new CropByPixels(0, 0, 10, 10),
                 new ScaleByPercent(0.0001),
-                new Encode(Format.JPG));
+                new Encode(Format.get("jpg")));
         assertThrows(ValidationException.class,
-                () -> ops.validate(fullSize, Format.PNG));
+                () -> ops.validate(fullSize, Format.get("png")));
     }
 
     @Test
@@ -851,10 +851,10 @@ public class OperationListTest extends BaseTest {
         OperationList ops = new OperationList(
                 new Identifier("cats"),
                 new ScaleByPercent(4),
-                new Encode(Format.JPG));
+                new Encode(Format.get("jpg")));
         ops.setScaleConstraint(new ScaleConstraint(1, 8));
         assertThrows(IllegalScaleException.class,
-                () -> ops.validate(fullSize, Format.PNG));
+                () -> ops.validate(fullSize, Format.get("png")));
     }
 
     @Test
@@ -863,9 +863,9 @@ public class OperationListTest extends BaseTest {
         Dimension fullSize = new Dimension(1000, 1000);
         OperationList ops = new OperationList(
                 new Identifier("cats"),
-                new Encode(Format.JPG));
+                new Encode(Format.get("jpg")));
         assertThrows(IllegalSizeException.class,
-                () -> ops.validate(fullSize, Format.PNG));
+                () -> ops.validate(fullSize, Format.get("png")));
     }
 
 }

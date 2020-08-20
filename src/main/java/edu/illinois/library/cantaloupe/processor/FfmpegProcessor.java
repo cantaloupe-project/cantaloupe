@@ -150,7 +150,7 @@ class FfmpegProcessor extends AbstractProcessor implements FileProcessor {
                         new StreamCopier(processErrorStream, errorBucket));
 
                 final ImageReader reader = new ImageReaderFactory().newImageReader(
-                        Format.BMP, processInputStream);
+                        Format.get("bmp"), processInputStream);
                 try {
                     BufferedImage image = reader.read();
                     image = Java2DPostProcessor.postProcess(

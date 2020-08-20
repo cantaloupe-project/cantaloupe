@@ -42,7 +42,7 @@ public class PdfBoxProcessorTest extends AbstractProcessorTest {
     protected PdfBoxProcessor newInstance() {
         PdfBoxProcessor proc = new PdfBoxProcessor();
         try {
-            proc.setSourceFormat(Format.PDF);
+            proc.setSourceFormat(Format.get("pdf"));
         } catch (SourceFormatException e) {
             fail("Huge bug");
         }
@@ -61,7 +61,7 @@ public class PdfBoxProcessorTest extends AbstractProcessorTest {
 
         // page option missing
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        OperationList ops = new OperationList(new Encode(Format.JPG));
+        OperationList ops = new OperationList(new Encode(Format.get("jpg")));
         instance.process(ops, imageInfo, outputStream);
         final byte[] page1 = outputStream.toByteArray();
 
@@ -80,7 +80,7 @@ public class PdfBoxProcessorTest extends AbstractProcessorTest {
         final Info imageInfo = instance.readInfo();
 
         // page "35"
-        OperationList ops = new OperationList(new Encode(Format.JPG));
+        OperationList ops = new OperationList(new Encode(Format.get("jpg")));
         ops.getOptions().put("page", "35");
         OutputStream outputStream = OutputStream.nullOutputStream();
 
@@ -117,7 +117,7 @@ public class PdfBoxProcessorTest extends AbstractProcessorTest {
         instance.setSourceFile(TestUtil.getImage("pdf.pdf"));
 
         OperationList ops = new OperationList(
-                new Identifier("cats"), new Encode(Format.JPG));
+                new Identifier("cats"), new Encode(Format.get("jpg")));
         Dimension fullSize = new Dimension(100, 88);
         instance.validate(ops, fullSize);
     }
@@ -127,7 +127,7 @@ public class PdfBoxProcessorTest extends AbstractProcessorTest {
         instance.setSourceFile(TestUtil.getImage("pdf.pdf"));
 
         OperationList ops = new OperationList(
-                new Identifier("cats"), new Encode(Format.JPG));
+                new Identifier("cats"), new Encode(Format.get("jpg")));
         ops.getOptions().put("page", "1");
         Dimension fullSize = new Dimension(100, 88);
 
@@ -139,7 +139,7 @@ public class PdfBoxProcessorTest extends AbstractProcessorTest {
         instance.setSourceFile(TestUtil.getImage("pdf.pdf"));
 
         OperationList ops = new OperationList(
-                new Identifier("cats"), new Encode(Format.JPG));
+                new Identifier("cats"), new Encode(Format.get("jpg")));
         ops.getOptions().put("page", "0");
         Dimension fullSize = new Dimension(100, 88);
 
@@ -152,7 +152,7 @@ public class PdfBoxProcessorTest extends AbstractProcessorTest {
         instance.setSourceFile(TestUtil.getImage("pdf.pdf"));
 
         OperationList ops = new OperationList(
-                new Identifier("cats"), new Encode(Format.JPG));
+                new Identifier("cats"), new Encode(Format.get("jpg")));
         ops.getOptions().put("page", "-1");
         Dimension fullSize = new Dimension(100, 88);
 
@@ -165,7 +165,7 @@ public class PdfBoxProcessorTest extends AbstractProcessorTest {
         instance.setSourceFile(TestUtil.getImage("pdf.pdf"));
 
         OperationList ops = new OperationList(
-                new Identifier("cats"), new Encode(Format.JPG));
+                new Identifier("cats"), new Encode(Format.get("jpg")));
         ops.getOptions().put("page", "3");
         Dimension fullSize = new Dimension(100, 88);
 

@@ -6,8 +6,6 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * IIIF compliance level.
- *
  * @see <a href="http://iiif.io/api/image/1.1/compliance.html">Compliance
  * Levels</a>
  */
@@ -23,9 +21,9 @@ enum ComplianceLevel {
     private String uri;
 
     static {
-        LEVEL_1_OUTPUT_FORMATS.add(Format.JPG);
+        LEVEL_1_OUTPUT_FORMATS.add(Format.get("jpg"));
         LEVEL_2_OUTPUT_FORMATS.addAll(LEVEL_1_OUTPUT_FORMATS);
-        LEVEL_2_OUTPUT_FORMATS.add(Format.PNG);
+        LEVEL_2_OUTPUT_FORMATS.add(Format.get("png"));
     }
 
     /**

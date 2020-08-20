@@ -193,9 +193,9 @@ public class JdbcSourceTest extends AbstractSourceTest {
         source.setIdentifier(identifier);
 
         JdbcSource.FormatIterator<Format> it = source.getFormatIterator();
-        assertEquals(Format.PNG, it.next()); // identifier extension
+        assertEquals(Format.get("png"), it.next()); // identifier extension
         assertEquals(Format.UNKNOWN, it.next()); // media type column
-        assertEquals(Format.JPG, it.next()); // magic bytes
+        assertEquals(Format.get("jpg"), it.next()); // magic bytes
         assertThrows(NoSuchElementException.class, it::next);
     }
 

@@ -31,7 +31,7 @@ public class ImageResource extends IIIF1Resource {
     /**
      * Format to assume when no extension is present in the URI.
      */
-    private static final Format DEFAULT_FORMAT = Format.JPG;
+    private static final Format DEFAULT_FORMAT = Format.get("jpg");
 
     private static final Method[] SUPPORTED_METHODS =
             new Method[] { Method.GET, Method.OPTIONS };

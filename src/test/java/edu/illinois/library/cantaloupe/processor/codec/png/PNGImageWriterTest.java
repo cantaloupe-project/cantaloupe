@@ -28,7 +28,7 @@ public class PNGImageWriterTest extends AbstractImageWriterTest {
     @Override
     protected PNGImageWriter newInstance() {
         PNGImageWriter writer = new PNGImageWriter();
-        writer.setEncode(new Encode(Format.PNG));
+        writer.setEncode(new Encode(Format.get("png")));
         return writer;
     }
 
@@ -79,7 +79,7 @@ public class PNGImageWriterTest extends AbstractImageWriterTest {
         final BufferedImage image = reader.read();
 
         ByteArrayOutputStream os = new ByteArrayOutputStream();
-        Encode encode = new Encode(Format.PNG);
+        Encode encode = new Encode(Format.get("png"));
         Metadata outMetadata = new Metadata();
         outMetadata.setXMP(metadata.getXMP().orElseThrow());
         encode.setMetadata(outMetadata);
@@ -98,7 +98,7 @@ public class PNGImageWriterTest extends AbstractImageWriterTest {
         ByteArrayOutputStream os = new ByteArrayOutputStream();
         instance.dispose();
         instance = newInstance();
-        Encode encode = new Encode(Format.PNG);
+        Encode encode = new Encode(Format.get("png"));
         PNGMetadata outMetadata = new PNGMetadata();
         outMetadata.setNativeMetadata(srcMetadata.getNativeMetadata().orElseThrow());
         encode.setMetadata(outMetadata);
@@ -117,7 +117,7 @@ public class PNGImageWriterTest extends AbstractImageWriterTest {
         ByteArrayOutputStream os = new ByteArrayOutputStream();
         instance.dispose();
         instance = newInstance();
-        Encode encode = new Encode(Format.PNG);
+        Encode encode = new Encode(Format.get("png"));
         Metadata outMetadata = new Metadata();
         outMetadata.setXMP(metadata.getXMP().orElseThrow());
         encode.setMetadata(outMetadata);
@@ -135,7 +135,7 @@ public class PNGImageWriterTest extends AbstractImageWriterTest {
                 PlanarImage.wrapRenderedImage(reader.readRendered());
 
         ByteArrayOutputStream os = new ByteArrayOutputStream();
-        Encode encode = new Encode(Format.PNG);
+        Encode encode = new Encode(Format.get("png"));
         Metadata outMetadata = new Metadata();
         outMetadata.setXMP(metadata.getXMP().orElseThrow());
         encode.setMetadata(outMetadata);
@@ -155,7 +155,7 @@ public class PNGImageWriterTest extends AbstractImageWriterTest {
         ByteArrayOutputStream os = new ByteArrayOutputStream();
         instance.dispose();
         instance = newInstance();
-        Encode encode = new Encode(Format.PNG);
+        Encode encode = new Encode(Format.get("png"));
         PNGMetadata outMetadata = new PNGMetadata();
         outMetadata.setNativeMetadata(srcMetadata.getNativeMetadata().orElseThrow());
         encode.setMetadata(outMetadata);
@@ -175,7 +175,7 @@ public class PNGImageWriterTest extends AbstractImageWriterTest {
         ByteArrayOutputStream os = new ByteArrayOutputStream();
         instance.dispose();
         instance = newInstance();
-        Encode encode = new Encode(Format.PNG);
+        Encode encode = new Encode(Format.get("png"));
         Metadata outMetadata = new Metadata();
         outMetadata.setXMP(metadata.getXMP().orElseThrow());
         encode.setMetadata(outMetadata);

@@ -26,7 +26,7 @@ public class TurboJpegProcessorTest extends AbstractProcessorTest {
     protected TurboJpegProcessor newInstance() {
         TurboJpegProcessor proc = new TurboJpegProcessor();
         try {
-            proc.setSourceFormat(Format.JPG);
+            proc.setSourceFormat(Format.get("jpg"));
         } catch (SourceFormatException e) {
             fail("Huge bug");
         }

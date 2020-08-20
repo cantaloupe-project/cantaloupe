@@ -345,7 +345,7 @@ public class ImageAPIResourceTester {
 
                 @Override
                 public Format next() {
-                    return Format.JPG;
+                    return Format.get("jpg");
                 }
             };
         }

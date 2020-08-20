@@ -101,7 +101,7 @@ abstract class AbstractProcessorTest extends BaseTest {
 
     @Test
     public void testProcessWithNoOperations() throws Exception {
-        OperationList ops = new OperationList(new Encode(Format.JPG)); // OK, one operation, but it's required
+        OperationList ops = new OperationList(new Encode(Format.get("jpg"))); // OK, one operation, but it's required
 
         forEachFixture(ops, new ProcessorAssertion() {
             @Override
@@ -121,7 +121,7 @@ abstract class AbstractProcessorTest extends BaseTest {
         OperationList ops = new OperationList(
                 new ScaleByPercent(),
                 new Rotate(0),
-                new Encode(Format.JPG));
+                new Encode(Format.get("jpg")));
 
         forEachFixture(ops, new ProcessorAssertion() {
             @Override
@@ -140,7 +140,7 @@ abstract class AbstractProcessorTest extends BaseTest {
     public void testProcessWithScaleConstraint() throws Exception {
         OperationList ops = new OperationList(
                 new ScaleByPercent(),
-                new Encode(Format.JPG));
+                new Encode(Format.get("jpg")));
         ops.setScaleConstraint(new ScaleConstraint(1, 2));
 
         forEachFixture(ops, new ProcessorAssertion() {
@@ -159,7 +159,7 @@ abstract class AbstractProcessorTest extends BaseTest {
     @Test
     public void testProcessWithSquareCropOperation() throws Exception {
         CropToSquare crop = new CropToSquare();
-        OperationList ops = new OperationList(crop, new Encode(Format.JPG));
+        OperationList ops = new OperationList(crop, new Encode(Format.get("jpg")));
 
         forEachFixture(ops, new ProcessorAssertion() {
             @Override
@@ -181,7 +181,7 @@ abstract class AbstractProcessorTest extends BaseTest {
     public void testProcessWithCropByPixelsOperation() throws Exception {
         OperationList ops = new OperationList(
                 new CropByPixels(10, 10, 35, 30),
-                new Encode(Format.JPG));
+                new Encode(Format.get("jpg")));
 
         boolean tmpFlag = false;
         try (Processor proc = newInstance()) {
@@ -216,7 +216,7 @@ abstract class AbstractProcessorTest extends BaseTest {
         final double width = 0.2;
         final double height = 0.2;
         Crop crop = new CropByPercent(0.2, 0.2, width, height);
-        OperationList ops = new OperationList(crop, new Encode(Format.JPG));
+        OperationList ops = new OperationList(crop, new Encode(Format.get("jpg")));
 
         forEachFixture(ops, new ProcessorAssertion() {
             @Override
@@ -235,7 +235,7 @@ abstract class AbstractProcessorTest extends BaseTest {
     @Test
     public void testProcessWithNullScaleOperation() throws Exception {
         OperationList ops = new OperationList(
-                new ScaleByPercent(), new Encode(Format.JPG));
+                new ScaleByPercent(), new Encode(Format.get("jpg")));
 
         forEachFixture(ops, new ProcessorAssertion() {
             @Override
@@ -254,7 +254,7 @@ abstract class AbstractProcessorTest extends BaseTest {
     public void testProcessWithScaleAspectFitWidthOperation() throws Exception {
         OperationList ops = new OperationList(
                 new ScaleByPixels(20, null, ScaleByPixels.Mode.ASPECT_FIT_WIDTH),
-                new Encode(Format.JPG));
+                new Encode(Format.get("jpg")));
 
         forEachFixture(ops, new ProcessorAssertion() {
             @Override
@@ -273,7 +273,7 @@ abstract class AbstractProcessorTest extends BaseTest {
     public void testProcessWithScaleAspectFitHeightOperation() throws Exception {
         OperationList ops = new OperationList(
                 new ScaleByPixels(null, 20, ScaleByPixels.Mode.ASPECT_FIT_HEIGHT),
-                new Encode(Format.JPG));
+                new Encode(Format.get("jpg")));
 
         forEachFixture(ops, new ProcessorAssertion() {
             @Override
@@ -292,7 +292,7 @@ abstract class AbstractProcessorTest extends BaseTest {
     public void testProcessWithDownscaleByPercentageOperation() throws Exception {
         OperationList ops = new OperationList(
                 new ScaleByPercent(0.5),
-                new Encode(Format.JPG));
+                new Encode(Format.get("jpg")));
 
         forEachFixture(ops, new ProcessorAssertion() {
             @Override
@@ -311,7 +311,7 @@ abstract class AbstractProcessorTest extends BaseTest {
     public void testProcessWithUpscaleByPercentageOperation() throws Exception {
         OperationList ops = new OperationList(
                 new ScaleByPercent(1.5),
-                new Encode(Format.JPG));
+                new Encode(Format.get("jpg")));
 
         forEachFixture(ops, new ProcessorAssertion() {
             @Override
@@ -330,7 +330,7 @@ abstract class AbstractProcessorTest extends BaseTest {
     public void testProcessWithAspectFitInsideScaleOperation() throws Exception {
         OperationList ops = new OperationList(
                 new ScaleByPixels(20, 20, ScaleByPixels.Mode.ASPECT_FIT_INSIDE),
-                new Encode(Format.JPG));
+                new Encode(Format.get("jpg")));
 
         forEachFixture(ops, new ProcessorAssertion() {
             @Override
@@ -353,7 +353,7 @@ abstract class AbstractProcessorTest extends BaseTest {
     public void testProcessWithNonAspectFillScaleOperation() throws Exception {
         OperationList ops = new OperationList(
                 new ScaleByPixels(20, 20, ScaleByPixels.Mode.NON_ASPECT_FILL),
-                new Encode(Format.JPG));
+                new Encode(Format.get("jpg")));
 
         forEachFixture(ops, new ProcessorAssertion() {
             @Override
@@ -368,7 +368,7 @@ abstract class AbstractProcessorTest extends BaseTest {
     public void testProcessWithTransposeOperation() throws Exception {
         OperationList ops = new OperationList(
                 Transpose.HORIZONTAL,
-                new Encode(Format.JPG));
+                new Encode(Format.get("jpg")));
 
         forEachFixture(ops, new ProcessorAssertion() {
             @Override
@@ -386,7 +386,7 @@ abstract class AbstractProcessorTest extends BaseTest {
     @Test
     public void testProcessWithRotate0DegreesOperation() throws Exception {
         OperationList ops = new OperationList(
-                new Rotate(0), new Encode(Format.JPG));
+                new Rotate(0), new Encode(Format.get("jpg")));
 
         forEachFixture(ops, new ProcessorAssertion() {
             @Override
@@ -404,7 +404,7 @@ abstract class AbstractProcessorTest extends BaseTest {
     @Test
     public void testProcessWithRotate275DegreesOperation() throws Exception {
         OperationList ops = new OperationList(
-                new Rotate(275), new Encode(Format.JPG));
+                new Rotate(275), new Encode(Format.get("jpg")));
 
         forEachFixture(ops, new ProcessorAssertion() {
             @Override
@@ -432,7 +432,7 @@ abstract class AbstractProcessorTest extends BaseTest {
     public void testProcessWithBitonalFilterOperation() throws Exception {
         OperationList ops = new OperationList(
                 ColorTransform.BITONAL,
-                new Encode(Format.PNG));
+                new Encode(Format.get("png")));
 
         forEachFixture(ops, new ProcessorAssertion() {
             {
@@ -459,7 +459,7 @@ abstract class AbstractProcessorTest extends BaseTest {
     public void testProcessWithGrayscaleFilterOperation() throws Exception {
         OperationList ops = new OperationList(
                 ColorTransform.GRAY,
-                new Encode(Format.JPG));
+                new Encode(Format.get("jpg")));
 
         forEachFixture(ops, new ProcessorAssertion() {
             {
@@ -547,7 +547,7 @@ abstract class AbstractProcessorTest extends BaseTest {
         // We don't want a failure if TurboJPEG is not actually available.
         assumeTrue(TurboJPEGImageWriter.isTurboJPEGAvailable());
 
-        OperationList ops = new OperationList(new Encode(Format.JPG));
+        OperationList ops = new OperationList(new Encode(Format.get("jpg")));
 
         forAnyFixture(ops, new ProcessorAssertion() {
             @Override
@@ -566,7 +566,7 @@ abstract class AbstractProcessorTest extends BaseTest {
     public void testProcessWithTurboJPEGNotAvailable() throws Exception {
         TurboJPEGImageWriter.setTurboJPEGAvailable(false);
 
-        OperationList ops = new OperationList(new Encode(Format.JPG));
+        OperationList ops = new OperationList(new Encode(Format.get("jpg")));
 
         forAnyFixture(ops, new ProcessorAssertion() {
             @Override
@@ -584,22 +584,22 @@ abstract class AbstractProcessorTest extends BaseTest {
     @Test
     @Disabled // see comment in GIFImageWriter, which most processors use to write GIFs
     public void testProcessWritesXMPMetadataIntoGIF() throws Exception {
-        testProcessWritesXMPMetadata(Format.GIF);
+        testProcessWritesXMPMetadata(Format.get("gif"));
     }
 
     @Test
     public void testProcessWritesXMPMetadataIntoJPEG() throws Exception {
-        testProcessWritesXMPMetadata(Format.JPG);
+        testProcessWritesXMPMetadata(Format.get("jpg"));
     }
 
     @Test
     public void testProcessWritesXMPMetadataIntoPNG() throws Exception {
-        testProcessWritesXMPMetadata(Format.PNG);
+        testProcessWritesXMPMetadata(Format.get("png"));
     }
 
     @Test
     public void testProcessWritesXMPMetadataIntoTIFF() throws Exception {
-        testProcessWritesXMPMetadata(Format.TIF);
+        testProcessWritesXMPMetadata(Format.get("tif"));
     }
 
     private void testProcessWritesXMPMetadata(Format outputFormat)

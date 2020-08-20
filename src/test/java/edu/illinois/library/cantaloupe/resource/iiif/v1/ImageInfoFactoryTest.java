@@ -30,7 +30,7 @@ public class ImageInfoFactoryTest extends BaseTest {
         config.setProperty(Key.PROCESSOR_FALLBACK, "Java2dProcessor");
 
         imageUri = "http://example.org/bla";
-        processor = new ProcessorFactory().newProcessor(Format.JPG);
+        processor = new ProcessorFactory().newProcessor(Format.get("jpg"));
         ((FileProcessor) processor).setSourceFile(
                 TestUtil.getImage("jpg-rgb-594x522x8-baseline.jpg"));
 
@@ -51,7 +51,7 @@ public class ImageInfoFactoryTest extends BaseTest {
 
     private void setUpForRotatedImage() throws Exception {
         processor.close();
-        processor = new ProcessorFactory().newProcessor(Format.JPG);
+        processor = new ProcessorFactory().newProcessor(Format.get("jpg"));
         ((FileProcessor) processor).setSourceFile(
                 TestUtil.getImage("jpg-xmp-orientation-90.jpg"));
 
@@ -63,7 +63,7 @@ public class ImageInfoFactoryTest extends BaseTest {
 
     private void setUpForScaleConstrainedImage() throws Exception {
         processor.close();
-        processor = new ProcessorFactory().newProcessor(Format.JPG);
+        processor = new ProcessorFactory().newProcessor(Format.get("jpg"));
         ((FileProcessor) processor).setSourceFile(
                 TestUtil.getImage("jpg-rgb-594x522x8-baseline.jpg"));
 
@@ -156,7 +156,7 @@ public class ImageInfoFactoryTest extends BaseTest {
 
     @Test
     void newImageInfoTileWidthWithTiledImage() throws Exception {
-        processor.setSourceFormat(Format.TIF);
+        processor.setSourceFormat(Format.get("tif"));
         ((FileProcessor) processor).setSourceFile(
                 TestUtil.getImage("tif-rgb-1res-64x56x8-tiled-uncompressed.tif"));
         Info info = processor.readInfo();
@@ -187,7 +187,7 @@ public class ImageInfoFactoryTest extends BaseTest {
 
     @Test
     void newImageInfoTileHeightWithTiledImage() throws Exception {
-        processor.setSourceFormat(Format.TIF);
+        processor.setSourceFormat(Format.get("tif"));
         ((FileProcessor) processor).setSourceFile(
                 TestUtil.getImage("tif-rgb-1res-64x56x8-tiled-uncompressed.tif"));
         Info info = processor.readInfo();

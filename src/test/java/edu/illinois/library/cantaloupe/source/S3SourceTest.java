@@ -540,10 +540,10 @@ public class S3SourceTest extends AbstractSourceTest {
         source.setIdentifier(new Identifier(OBJECT_KEY_WITH_NO_CONTENT_TYPE_AND_INCORRECT_EXTENSION));
 
         S3Source.FormatIterator<Format> it = source.getFormatIterator();
-        assertEquals(Format.PNG, it.next());     // object key
-        assertEquals(Format.PNG, it.next());     // identifier extension
+        assertEquals(Format.get("png"), it.next());     // object key
+        assertEquals(Format.get("png"), it.next());     // identifier extension
         assertEquals(Format.UNKNOWN, it.next()); // Content-Type is null
-        assertEquals(Format.JPG, it.next());     // magic bytes
+        assertEquals(Format.get("jpg"), it.next());     // magic bytes
         assertThrows(NoSuchElementException.class, it::next);
     }
 

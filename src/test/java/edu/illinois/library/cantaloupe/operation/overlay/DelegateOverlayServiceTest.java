@@ -43,7 +43,7 @@ public class DelegateOverlayServiceTest extends BaseTest {
         final Identifier identifier = new Identifier("image");
         final Dimension fullSize = new Dimension(500, 500);
         final OperationList opList = new OperationList(
-                identifier, new Encode(Format.JPG));
+                identifier, new Encode(Format.get("jpg")));
         final RequestContext context = new RequestContext();
         context.setIdentifier(identifier);
         context.setOperationList(opList, fullSize);
@@ -66,7 +66,7 @@ public class DelegateOverlayServiceTest extends BaseTest {
         final Identifier identifier = new Identifier("string");
         final Dimension fullSize = new Dimension(500, 500);
         final OperationList opList = new OperationList(
-                identifier, new Encode(Format.JPG));
+                identifier, new Encode(Format.get("jpg")));
         final RequestContext context = new RequestContext();
         context.setIdentifier(identifier);
         context.setOperationList(opList, fullSize);

@@ -80,7 +80,7 @@ public final class JPEGImageReader extends AbstractIIOImageReader
 
     @Override
     protected Format getFormat() {
-        return Format.JPG;
+        return Format.get("jpg");
     }
 
     @Override

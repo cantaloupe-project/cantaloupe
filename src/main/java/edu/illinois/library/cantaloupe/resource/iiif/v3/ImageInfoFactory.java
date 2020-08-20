@@ -122,7 +122,7 @@ final class ImageInfoFactory {
 
         { // extraFormats
             var formatStrings = processorOutputFormats.stream()
-                    .filter(f -> !Format.JPG.equals(f) && !Format.PNG.equals(f))
+                    .filter(f -> !"jpg".equals(f.getKey()) && !"png".equals(f.getKey()))
                     .map(Format::getPreferredExtension)
                     .collect(Collectors.toList());
             responseInfo.put("extraFormats", formatStrings);

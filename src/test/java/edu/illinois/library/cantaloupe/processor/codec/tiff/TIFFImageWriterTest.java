@@ -29,7 +29,7 @@ public class TIFFImageWriterTest extends AbstractImageWriterTest {
     @Override
     public TIFFImageWriter newInstance() {
         TIFFImageWriter writer = new TIFFImageWriter();
-        writer.setEncode(new Encode(Format.TIF));
+        writer.setEncode(new Encode(Format.get("tif")));
         return writer;
     }
 
@@ -82,7 +82,7 @@ public class TIFFImageWriterTest extends AbstractImageWriterTest {
             final BufferedImage image = reader.read();
 
             ByteArrayOutputStream os = new ByteArrayOutputStream();
-            Encode encode = new Encode(Format.TIF);
+            Encode encode = new Encode(Format.get("tif"));
             Metadata outMetadata = new Metadata();
             outMetadata.setXMP(metadata.getXMP().orElseThrow());
             encode.setMetadata(outMetadata);
@@ -103,7 +103,7 @@ public class TIFFImageWriterTest extends AbstractImageWriterTest {
             final BufferedImage image = reader.read();
 
             ByteArrayOutputStream os = new ByteArrayOutputStream();
-            Encode encode = new Encode(Format.TIF);
+            Encode encode = new Encode(Format.get("tif"));
             Metadata outMetadata = new Metadata();
             outMetadata.setXMP(metadata.getXMP().orElseThrow());
             encode.setMetadata(outMetadata);
@@ -124,7 +124,7 @@ public class TIFFImageWriterTest extends AbstractImageWriterTest {
             final BufferedImage image = reader.read();
 
             ByteArrayOutputStream os = new ByteArrayOutputStream();
-            Encode encode = new Encode(Format.TIF);
+            Encode encode = new Encode(Format.get("tif"));
             Metadata outMetadata = new Metadata();
             outMetadata.setXMP(metadata.getXMP().orElseThrow());
             encode.setMetadata(outMetadata);
@@ -147,7 +147,7 @@ public class TIFFImageWriterTest extends AbstractImageWriterTest {
                     PlanarImage.wrapRenderedImage(reader.readRendered());
 
             ByteArrayOutputStream os = new ByteArrayOutputStream();
-            Encode encode = new Encode(Format.TIF);
+            Encode encode = new Encode(Format.get("tif"));
             Metadata outMetadata = new Metadata();
             outMetadata.setXMP(metadata.getXMP().orElseThrow());
             encode.setMetadata(outMetadata);
@@ -169,7 +169,7 @@ public class TIFFImageWriterTest extends AbstractImageWriterTest {
                     PlanarImage.wrapRenderedImage(reader.readRendered());
 
             ByteArrayOutputStream os = new ByteArrayOutputStream();
-            Encode encode = new Encode(Format.TIF);
+            Encode encode = new Encode(Format.get("tif"));
             Metadata outMetadata = new Metadata();
             outMetadata.setXMP(metadata.getXMP().orElseThrow());
             encode.setMetadata(outMetadata);
@@ -194,7 +194,7 @@ public class TIFFImageWriterTest extends AbstractImageWriterTest {
             if (instance != null) {
                 instance.dispose();
                 instance = newInstance();
-                Encode encode = new Encode(Format.TIF);
+                Encode encode = new Encode(Format.get("tif"));
                 Metadata outMetadata = new Metadata();
                 outMetadata.setXMP(metadata.getXMP().orElseThrow());
                 encode.setMetadata(outMetadata);

@@ -177,7 +177,7 @@ public class DynamoDBCacheTest extends AbstractCacheTest {
     void testNewDerivativeImageOutputStreamWithMultiChunkImage() throws Exception {
         final DerivativeCache instance = newInstance();
         final OperationList ops = new OperationList(
-                new Identifier("cats"), new Encode(Format.JPG));
+                new Identifier("cats"), new Encode(Format.get("jpg")));
 
         // Assert that it's not already cached
         assertNull(instance.newDerivativeImageInputStream(ops));

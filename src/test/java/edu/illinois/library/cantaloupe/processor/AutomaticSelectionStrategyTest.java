@@ -25,7 +25,7 @@ public class AutomaticSelectionStrategyTest extends BaseTest {
                 KakaduNativeProcessor.class,
                 OpenJpegProcessor.class,
                 GrokProcessor.class);
-        assertEquals(expected, instance.getPreferredProcessors(Format.JP2));
+        assertEquals(expected, instance.getPreferredProcessors(Format.get("jp2")));
     }
 
     @Test
@@ -33,28 +33,28 @@ public class AutomaticSelectionStrategyTest extends BaseTest {
         List<?> expected = List.of(
                 TurboJpegProcessor.class,
                 Java2dProcessor.class);
-        assertEquals(expected, instance.getPreferredProcessors(Format.JPG));
+        assertEquals(expected, instance.getPreferredProcessors(Format.get("jpg")));
     }
 
     @Test
     void getPreferredProcessorsWithPDF() {
         List<?> expected = List.of(PdfBoxProcessor.class);
-        assertEquals(expected, instance.getPreferredProcessors(Format.PDF));
+        assertEquals(expected, instance.getPreferredProcessors(Format.get("pdf")));
     }
 
     @Test
     void getPreferredProcessorsWithVideo() {
         List<?> expected = List.of(FfmpegProcessor.class);
-        assertEquals(expected, instance.getPreferredProcessors(Format.MPG));
+        assertEquals(expected, instance.getPreferredProcessors(Format.get("mpg")));
     }
 
     @Test
     void getPreferredProcessorsWithOther() {
         List<?> expected = List.of(Java2dProcessor.class);
-        assertEquals(expected, instance.getPreferredProcessors(Format.BMP));
-        assertEquals(expected, instance.getPreferredProcessors(Format.GIF));
-        assertEquals(expected, instance.getPreferredProcessors(Format.PNG));
-        assertEquals(expected, instance.getPreferredProcessors(Format.TIF));
+        assertEquals(expected, instance.getPreferredProcessors(Format.get("bmp")));
+        assertEquals(expected, instance.getPreferredProcessors(Format.get("gif")));
+        assertEquals(expected, instance.getPreferredProcessors(Format.get("png")));
+        assertEquals(expected, instance.getPreferredProcessors(Format.get("tif")));
     }
 
     @Test

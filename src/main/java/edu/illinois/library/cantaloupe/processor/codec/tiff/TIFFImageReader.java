@@ -92,7 +92,7 @@ public final class TIFFImageReader extends AbstractIIOImageReader
 
     @Override
     protected Format getFormat() {
-        return Format.TIF;
+        return Format.get("tif");
     }
 
     @Override

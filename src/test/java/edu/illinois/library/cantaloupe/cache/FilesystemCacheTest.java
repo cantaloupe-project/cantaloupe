@@ -113,7 +113,7 @@ public class FilesystemCacheTest extends AbstractCacheTest {
         OperationList ops = new OperationList(
                 identifier,
                 new ScaleByPercent(0.905),
-                new Encode(Format.TIF));
+                new Encode(Format.get("tif")));
 
         final Path expected = Paths.get(
                 pathname,
@@ -133,7 +133,7 @@ public class FilesystemCacheTest extends AbstractCacheTest {
         Scale scale              = new ScaleByPercent(0.905);
         Rotate rotate            = new Rotate(10);
         ColorTransform transform = ColorTransform.BITONAL;
-        Encode encode            = new Encode(Format.TIF);
+        Encode encode            = new Encode(Format.get("tif"));
 
         OperationList ops = new OperationList(
                 identifier, crop, scale, rotate, transform, encode);

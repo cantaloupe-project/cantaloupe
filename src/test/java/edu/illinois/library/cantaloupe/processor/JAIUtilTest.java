@@ -541,7 +541,7 @@ class JAIUtilTest extends BaseTest {
         ImageReader reader = null;
         try {
             reader = new ImageReaderFactory().newImageReader(
-                    Format.PNG, TestUtil.getImage(name));
+                    Format.get("png"), TestUtil.getImage(name));
 
             Crop crop          = (Crop) ops.getFirst(Crop.class);
             Scale scale        = (Scale) ops.getFirst(Scale.class);

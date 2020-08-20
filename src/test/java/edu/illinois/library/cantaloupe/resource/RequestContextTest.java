@@ -52,7 +52,7 @@ public class RequestContextTest extends BaseTest {
         Identifier identifier = new Identifier("cats");
         Dimension fullSize = new Dimension(200, 200);
         OperationList opList = new OperationList(
-                identifier, new Encode(Format.GIF));
+                identifier, new Encode(Format.get("gif")));
         instance.setOperationList(opList, fullSize);
 
         // request headers
@@ -110,7 +110,7 @@ public class RequestContextTest extends BaseTest {
     @Test
     void testSetOperationList() {
         OperationList opList = new OperationList(
-                new Identifier("cats"), new Encode(Format.JPG));
+                new Identifier("cats"), new Encode(Format.get("jpg")));
         instance.setOperationList(opList, new Dimension(5, 5));
         assertNotNull(instance.toMap().get(FULL_SIZE_KEY));
         assertNotNull(instance.toMap().get(IDENTIFIER_KEY));

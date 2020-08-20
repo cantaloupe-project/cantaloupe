@@ -42,7 +42,7 @@ public class FfmpegProcessorPerformance {
     public void setUp() throws Exception {
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.PROCESSOR_FALLBACK, "FfmpegProcessor");
-        processor = (FileProcessor) new ProcessorFactory().newProcessor(Format.AVI);
+        processor = (FileProcessor) new ProcessorFactory().newProcessor(Format.get("avi"));
     }
 
     @TearDown
@@ -52,102 +52,102 @@ public class FfmpegProcessorPerformance {
 
     @Benchmark
     public void processWithAVI() throws Exception {
-        processor.setSourceFormat(Format.AVI);
+        processor.setSourceFormat(Format.get("avi"));
         processor.setSourceFile(TestUtil.getImage("avi"));
         processor.process(
-                new OperationList(new Encode(Format.PNG)),
+                new OperationList(new Encode(Format.get("png"))),
                 Info.builder().withSize(640, 360).build(),
                 OutputStream.nullOutputStream());
     }
 
     @Benchmark
     public void processWithFLV() throws Exception {
-        processor.setSourceFormat(Format.FLV);
+        processor.setSourceFormat(Format.get("flv"));
         processor.setSourceFile(TestUtil.getImage("flv"));
         processor.process(
-                new OperationList(new Encode(Format.PNG)),
+                new OperationList(new Encode(Format.get("png"))),
                 Info.builder().withSize(640, 360).build(),
                 OutputStream.nullOutputStream());
     }
 
     @Benchmark
     public void processWithMOV() throws Exception {
-        processor.setSourceFormat(Format.MOV);
+        processor.setSourceFormat(Format.get("mov"));
         processor.setSourceFile(TestUtil.getImage("mov"));
         processor.process(
-                new OperationList(new Encode(Format.PNG)),
+                new OperationList(new Encode(Format.get("png"))),
                 Info.builder().withSize(640, 360).build(),
                 OutputStream.nullOutputStream());
     }
 
     @Benchmark
     public void processWithMP4() throws Exception {
-        processor.setSourceFormat(Format.MP4);
+        processor.setSourceFormat(Format.get("mp4"));
         processor.setSourceFile(TestUtil.getImage("mp4"));
         processor.process(
-                new OperationList(new Encode(Format.PNG)),
+                new OperationList(new Encode(Format.get("png"))),
                 Info.builder().withSize(640, 360).build(),
                 OutputStream.nullOutputStream());
     }
 
     @Benchmark
     public void processWithMPG() throws Exception {
-        processor.setSourceFormat(Format.MPG);
+        processor.setSourceFormat(Format.get("mpg"));
         processor.setSourceFile(TestUtil.getImage("mpg"));
         processor.process(
-                new OperationList(new Encode(Format.PNG)),
+                new OperationList(new Encode(Format.get("png"))),
                 Info.builder().withSize(640, 360).build(),
                 OutputStream.nullOutputStream());
     }
 
     @Benchmark
     public void processWithWebM() throws Exception {
-        processor.setSourceFormat(Format.WEBM);
+        processor.setSourceFormat(Format.get("webm"));
         processor.setSourceFile(TestUtil.getImage("webm"));
         processor.process(
-                new OperationList(new Encode(Format.PNG)),
+                new OperationList(new Encode(Format.get("png"))),
                 Info.builder().withSize(640, 360).build(),
                 OutputStream.nullOutputStream());
     }
 
     @Benchmark
     public void readInfoWithAVI() throws Exception {
-        processor.setSourceFormat(Format.AVI);
+        processor.setSourceFormat(Format.get("avi"));
         processor.setSourceFile(TestUtil.getImage("avi"));
         processor.readInfo();
     }
 
     @Benchmark
     public void readInfoWithFLV() throws Exception {
-        processor.setSourceFormat(Format.FLV);
+        processor.setSourceFormat(Format.get("flv"));
         processor.setSourceFile(TestUtil.getImage("flv"));
         processor.readInfo();
     }
 
     @Benchmark
     public void readInfoWithMOV() throws Exception {
-        processor.setSourceFormat(Format.MOV);
+        processor.setSourceFormat(Format.get("mov"));
         processor.setSourceFile(TestUtil.getImage("mov"));
         processor.readInfo();
     }
 
     @Benchmark
     public void readInfoWithMP4() throws Exception {
-        processor.setSourceFormat(Format.MP4);
+        processor.setSourceFormat(Format.get("mp4"));
         processor.setSourceFile(TestUtil.getImage("mp4"));
         processor.readInfo();
     }
 
     @Benchmark
     public void readInfoWithMPG() throws Exception {
-        processor.setSourceFormat(Format.MPG);
+        processor.setSourceFormat(Format.get("mpg"));
         processor.setSourceFile(TestUtil.getImage("mpg"));
         processor.readInfo();
     }
 
     @Benchmark
     public void readInfoWithWebM() throws Exception {
-        processor.setSourceFormat(Format.WEBM);
+        processor.setSourceFormat(Format.get("webm"));
         processor.setSourceFile(TestUtil.getImage("webm"));
         processor.readInfo();
     }

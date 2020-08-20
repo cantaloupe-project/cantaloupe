@@ -88,13 +88,13 @@ public class HealthCheckerTest extends BaseTest {
         Source source = new MockFileSource() {
             @Override
             public Iterator<Format> getFormatIterator() {
-                return List.of(Format.JPG).iterator();
+                return List.of(Format.get("jpg")).iterator();
             }
         };
         source.setIdentifier(identifier);
         FileProcessor proc = new MockBrokenFileProcessor();
         proc.setSourceFile(file);
-        proc.setSourceFormat(Format.JPG);
+        proc.setSourceFormat(Format.get("jpg"));
 
         HealthChecker.addSourceProcessorPair(source, proc, new OperationList());
 

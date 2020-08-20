@@ -80,7 +80,7 @@ class PdfBoxProcessor extends AbstractProcessor
 
     @Override
     public Set<Format> getAvailableOutputFormats() {
-        return (Format.PDF.equals(getSourceFormat())) ?
+        return (Format.get("pdf").equals(getSourceFormat())) ?
                 ImageWriterFactory.supportedFormats() :
                 Collections.unmodifiableSet(Collections.emptySet());
     }

@@ -30,7 +30,7 @@ public class ManualSelectionStrategyTest extends BaseTest {
 
         List<Class<? extends Processor>> expected =
                 Collections.singletonList(PdfBoxProcessor.class);
-        assertEquals(expected, instance.getPreferredProcessors(Format.PDF));
+        assertEquals(expected, instance.getPreferredProcessors(Format.get("pdf")));
     }
 
     @Test
@@ -40,7 +40,7 @@ public class ManualSelectionStrategyTest extends BaseTest {
 
         List<Class<? extends Processor>> expected =
                 Collections.singletonList(Java2dProcessor.class);
-        assertEquals(expected, instance.getPreferredProcessors(Format.GIF));
+        assertEquals(expected, instance.getPreferredProcessors(Format.get("gif")));
     }
 
     @Test
@@ -54,7 +54,7 @@ public class ManualSelectionStrategyTest extends BaseTest {
         List<Class<? extends Processor>> expected = List.of(
                 PdfBoxProcessor.class,
                 Java2dProcessor.class);
-        assertEquals(expected, instance.getPreferredProcessors(Format.PDF));
+        assertEquals(expected, instance.getPreferredProcessors(Format.get("pdf")));
     }
 
     @Test
@@ -62,7 +62,7 @@ public class ManualSelectionStrategyTest extends BaseTest {
         Configuration config = Configuration.getInstance();
         config.setProperty("processor.ManualSelectionStrategy.jpg", "bogus");
         assertThrows(IllegalArgumentException.class,
-                () -> instance.getPreferredProcessors(Format.JPG));
+                () -> instance.getPreferredProcessors(Format.get("jpg")));
     }
 
     @Test
@@ -70,7 +70,7 @@ public class ManualSelectionStrategyTest extends BaseTest {
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.PROCESSOR_FALLBACK, "bogus");
         assertThrows(IllegalArgumentException.class,
-                () -> instance.getPreferredProcessors(Format.JPG));
+                () -> instance.getPreferredProcessors(Format.get("jpg")));
     }
 
     @Test
@@ -83,7 +83,7 @@ public class ManualSelectionStrategyTest extends BaseTest {
         List<Class<? extends Processor>> expected = List.of(
                 Java2dProcessor.class,
                 PdfBoxProcessor.class);
-        assertEquals(expected, instance.getPreferredProcessors(Format.JPG));
+        assertEquals(expected, instance.getPreferredProcessors(Format.get("jpg")));
     }
 
     @Test

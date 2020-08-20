@@ -64,12 +64,11 @@ public interface ImageReader {
      * <p>Returns the number of resolutions available in the image.</p>
      *
      * <ul>
-     *     <li>For conventional formats, this is {@literal 1}.</li>
-     *     <li>For {@link edu.illinois.library.cantaloupe.image.Format#TIF
-     *     pyramidal TIFF}, this is the number of embedded images, equal to
-     *     {@link #getNumImages()}.</li>
-     *     <li>For {@link edu.illinois.library.cantaloupe.image.Format#JP2}, it
-     *     is {@literal number of decomposition levels + 1}.</li>
+     *     <li>For conventional formats, this is {@code 1}.</li>
+     *     <li>For pyramidal TIFF, this is the number of embedded images, equal
+     *     to {@link #getNumImages()}.</li>
+     *     <li>For JPEG2000, it is {@code (number of decomposition) levels + 1}.
+     *     </li>
      * </ul>
      *
      * @return Number of resolutions available in the image.

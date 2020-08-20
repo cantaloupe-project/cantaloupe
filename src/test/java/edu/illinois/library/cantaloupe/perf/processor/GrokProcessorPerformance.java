@@ -36,7 +36,7 @@ import static edu.illinois.library.cantaloupe.test.PerformanceTestConstants.*;
 @Fork(value = 1, jvmArgs = { "-server", "-Xms128M", "-Xmx128M", "-Dcantaloupe.config=memory" })
 public class GrokProcessorPerformance {
 
-    private static final Format OUTPUT_FORMAT = Format.PNG;
+    private static final Format OUTPUT_FORMAT = Format.get("png");
 
     private FileProcessor processor;
 
@@ -44,7 +44,7 @@ public class GrokProcessorPerformance {
     public void setUp() throws Exception {
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.PROCESSOR_FALLBACK, "GrokProcessor");
-        processor = (FileProcessor) new ProcessorFactory().newProcessor(Format.JP2);
+        processor = (FileProcessor) new ProcessorFactory().newProcessor(Format.get("jp2"));
     }
 
     @TearDown
@@ -54,7 +54,7 @@ public class GrokProcessorPerformance {
 
     @Benchmark
     public void process() throws Exception {
-        processor.setSourceFormat(Format.JP2);
+        processor.setSourceFormat(Format.get("jp2"));
         processor.setSourceFile(TestUtil.getImage("jp2-5res-rgb-64x56x8-monotiled-lossy.jp2"));
         processor.process(
                 new OperationList(new Encode(OUTPUT_FORMAT)),
@@ -64,7 +64,7 @@ public class GrokProcessorPerformance {
 
     @Benchmark
     public void readInfo() throws Exception {
-        processor.setSourceFormat(Format.JP2);
+        processor.setSourceFormat(Format.get("jp2"));
         processor.setSourceFile(TestUtil.getImage("jp2-5res-rgb-64x56x8-monotiled-lossy.jp2"));
         processor.readInfo();
     }
