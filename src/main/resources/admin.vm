@@ -2302,7 +2302,26 @@
                                         </tr>
                                     </table>
                                 </div>
-
+                                
+                                <div role="tabpanel" class="tab-pane" id="GrokProcessor">
+                                    <table class="table table-striped">
+                                        <tr>
+                                            <td>Path to binaries
+                                                <a tabindex="0" class="btn btn-sm cl-help"
+                                                   role="button" data-toggle="popover"
+                                                   data-trigger="focus"
+                                                   data-content="Optional; overrides the
+                                                   &lt;code&gt;PATH&lt;/code&gt;.">?</a>
+                                            </td>
+                                            <td>
+                                                <input class="form-control" type="text"
+                                                       name="GrokProcessor.path_to_binaries"
+                                                       data-requires-restart="false">
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </div>
+                                
                                 <div role="tabpanel" class="tab-pane" id="PdfBoxProcessor">
                                     <p>This processor is not configurable.</p>
                                 </div>

@@ -561,6 +561,7 @@
                                 <exclude>FfmpegProcessorTest</exclude>
                                 <exclude>*Kakadu*Test</exclude>
                                 <exclude>OpenJpegProcessorTest</exclude>
+                                <exclude>GrokProcessorTest</exclude>
                                 <exclude>RedisCacheTest</exclude>
                                 <exclude>TurboJpegProcessorTest</exclude>
                                 <exclude>TurboJPEG*Test</exclude>

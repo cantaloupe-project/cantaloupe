@@ -26,6 +26,7 @@ public final class ProcessorFactory {
             Java2dProcessor.class,
             KakaduNativeProcessor.class,
             OpenJpegProcessor.class,
+            GrokProcessor.class,
             PdfBoxProcessor.class,
             TurboJpegProcessor.class);
 

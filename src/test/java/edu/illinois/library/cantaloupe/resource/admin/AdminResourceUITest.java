@@ -500,7 +500,9 @@ public class AdminResourceUITest extends AbstractAdminResourceTest {
         // OpenJpegProcessor
         css("#cl-processors li > a[href=\"#OpenJpegProcessor\"]").click();
         inputNamed(Key.OPENJPEGPROCESSOR_PATH_TO_BINARIES).sendKeys("/ojpath");
-
+        // GrokProcessor
+        css("#cl-processors li > a[href=\"#GrokProcessor\"]").click();
+        inputNamed(Key.GROKPROCESSOR_PATH_TO_BINARIES).sendKeys("/grkpath");
         // Submit the form
         css("#cl-processors input[type=\"submit\"]").click();
 
@@ -535,6 +537,9 @@ public class AdminResourceUITest extends AbstractAdminResourceTest {
         // OpenJpegProcessor
         assertEquals("/ojpath",
                 config.getString(Key.OPENJPEGPROCESSOR_PATH_TO_BINARIES));
+        // GrokProcessor
+        assertEquals("/grkpath",
+                config.getString(Key.GROKPROCESSOR_PATH_TO_BINARIES));        
     }
 
     @Test
