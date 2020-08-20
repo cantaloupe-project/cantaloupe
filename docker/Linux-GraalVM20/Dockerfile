@@ -13,8 +13,21 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         curl \
 		ffmpeg \
 		maven \
+		build-essential \
+		cmake \
+		wget \
 		libopenjp2-tools \
   && rm -rf /var/lib/apt/lists/*
+
+# Install Grok
+RUN     wget -q https://github.com/GrokImageCompression/grok/archive/v7.6.0.tar.gz \
+        && tar xzf v7.6.0.tar.gz \
+        && cd grok-7.6.0 \
+        && cmake . \
+        && make -j6 \
+        && make install \
+        && ldconfig \
+        && grk_decompress -h
 
 # Install TurboJpegProcessor dependencies
 RUN mkdir -p /opt/libjpeg-turbo/lib
