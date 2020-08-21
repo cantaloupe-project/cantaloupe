@@ -41,7 +41,7 @@ final class JRubyDelegateProxy implements DelegateProxy {
      * JSR-223 interface to the script interpreter. Invoke methods by casting
      * this to {@link Invocable}.
      */
-    private static ScriptEngine scriptEngine;
+    private static final ScriptEngine scriptEngine;
 
     /**
      * Read/write lock used to maintain thread-safe code reloading.
@@ -52,8 +52,6 @@ final class JRubyDelegateProxy implements DelegateProxy {
      * The Ruby delegate object.
      */
     private Object delegate;
-
-    private RequestContext requestContext;
 
     static {
         // N.B.: These must be set before the ScriptEngine is instantiated.
@@ -117,7 +115,6 @@ final class JRubyDelegateProxy implements DelegateProxy {
             throws ScriptException {
         invoke(RUBY_REQUEST_CONTEXT_SETTER,
                 Collections.unmodifiableMap(context.toMap()));
-        requestContext = context;
     }
 
     /**
