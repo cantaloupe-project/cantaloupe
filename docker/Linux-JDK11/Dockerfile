@@ -1,8 +1,14 @@
-FROM openjdk:11
+FROM ubuntu:latest
+
+ENV TZ=America/Chicago
+
+ARG DEBIAN_FRONTEND=noninteractive
 
 # Install various dependencies
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
+        tzdata \
+        openjdk-11-jdk-headless \
         curl \
 		ffmpeg \
 		maven \
