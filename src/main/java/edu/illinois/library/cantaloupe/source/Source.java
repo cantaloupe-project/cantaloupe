@@ -2,7 +2,7 @@ package edu.illinois.library.cantaloupe.source;
 
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
-import edu.illinois.library.cantaloupe.script.DelegateProxy;
+import edu.illinois.library.cantaloupe.delegate.DelegateProxy;
 
 import java.io.IOException;
 import java.nio.file.AccessDeniedException;

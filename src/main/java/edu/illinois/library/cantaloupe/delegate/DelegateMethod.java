@@ -1,4 +1,4 @@
-package edu.illinois.library.cantaloupe.script;
+package edu.illinois.library.cantaloupe.delegate;
 
 /**
  * Available delegate methods.

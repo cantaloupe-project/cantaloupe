@@ -1,6 +1,6 @@
 package edu.illinois.library.cantaloupe.auth;
 
-import edu.illinois.library.cantaloupe.script.DelegateProxy;
+import edu.illinois.library.cantaloupe.delegate.DelegateProxy;
 
 import javax.script.ScriptException;
 import java.io.IOException;

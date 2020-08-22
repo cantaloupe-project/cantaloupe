@@ -13,9 +13,9 @@ import edu.illinois.library.cantaloupe.http.Status;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.ScaleConstraint;
-import edu.illinois.library.cantaloupe.script.DelegateProxy;
-import edu.illinois.library.cantaloupe.script.DelegateProxyService;
-import edu.illinois.library.cantaloupe.script.DisabledException;
+import edu.illinois.library.cantaloupe.delegate.DelegateProxy;
+import edu.illinois.library.cantaloupe.delegate.DelegateProxyService;
+import edu.illinois.library.cantaloupe.delegate.DisabledException;
 import edu.illinois.library.cantaloupe.util.StringUtils;
 import org.slf4j.Logger;
 
@@ -283,7 +283,7 @@ public abstract class AbstractResource {
      * request. The response is modified if necessary.</p>
      *
      * <p>The authorization system (rooted in the {@link
-     * edu.illinois.library.cantaloupe.script.DelegateMethod#AUTHORIZE
+     * edu.illinois.library.cantaloupe.delegate.DelegateMethod#AUTHORIZE
      * authorization delegate method} supports simple boolean authorization
      * which maps to the HTTP 200 and 403 statuses. In the event of a 403,
      * IIIF image information should not be included in the response body.</p>
@@ -320,7 +320,7 @@ public abstract class AbstractResource {
      * request. The response is modified if necessary.</p>
      *
      * <p>The authorization system (rooted in the {@link
-     * edu.illinois.library.cantaloupe.script.DelegateMethod#AUTHORIZE
+     * edu.illinois.library.cantaloupe.delegate.DelegateMethod#AUTHORIZE
      * authorization delegate method} supports simple boolean authorization
      * which maps to the HTTP 200 and 403 statuses. In the event of a 403,
      * IIIF image information should not be included in the response body.</p>

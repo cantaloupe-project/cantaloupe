@@ -3,7 +3,7 @@ package edu.illinois.library.cantaloupe.operation.redaction;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Rectangle;
-import edu.illinois.library.cantaloupe.script.DelegateProxy;
+import edu.illinois.library.cantaloupe.delegate.DelegateProxy;
 
 import javax.script.ScriptException;
 import java.util.List;

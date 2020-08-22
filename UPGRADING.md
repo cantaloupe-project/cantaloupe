@@ -33,33 +33,36 @@ current version.
     * `ImageMagickProcessor.path_to_binaries`
 5.  Rename the following configuration keys:
     * `endpoint.iiif.2.restrict_to_sizes` to `endpoint.iiif.restrict_to_sizes`
-6. Add the following methods from the sample delegate script:
+6.  Add the following methods from the sample delegate script:
     * `pre_authorize()`
     * `extra_iiif3_information_response_keys()`
-7. Note that the `pre_authorize()` delegate method added in step 6 may require
-   refactoring the logic in `authorize()`. See the documentation of those
-   methods for more information.
-8.  The `X-IIIF-ID` reverse proxy header is no longer supported. Use
+7.  Note that the `pre_authorize()` delegate method added in step 6 may require
+    refactoring the logic in `authorize()`. See the documentation of those
+    methods for more information.
+8.  In your delegate script, change any references to
+   `edu.illinois.library.cantaloupe.script.Logger` to
+   `edu.illinois.library.cantaloupe.delegate.Logger`.
+9.  The `X-IIIF-ID` reverse proxy header is no longer supported. Use
     `X-Forwarded-ID` instead.
-9.  Purge your derivative cache.
-10. If you were using the `processor.metadata.preserve` key, you will need to
+10.  Purge your derivative cache.
+11. If you were using the `processor.metadata.preserve` key, you will need to
     use the new `metadata()` delegate method instead.
-11. If you were using the `cookie` key in the delegate script context hash,
+12. If you were using the `cookie` key in the delegate script context hash,
     note that its structure has changed to a hash of cookie name-value pairs.
     This is how it was documented to work, and how it was supposed to work, in
     prior versions.
-12. Note that the IIIF Image API 1.x endpoint no longer supports content
+13. Note that the IIIF Image API 1.x endpoint no longer supports content
     negotiation. If a format extension is not supplied in the URI, JPEG will be
     returned regardless of the value of the `Accept` header.
-13. If you are using HttpSource, note that the client implementation has
+14. If you are using HttpSource, note that the client implementation has
     changed. If you encounter errors like "PKIX path building failed," consult
     the HttpSource section of the user manual.
-14. If you are using KakaduNativeProcessor, you must install the updated Kakadu
+15. If you are using KakaduNativeProcessor, you must install the updated Kakadu
     shared library, contained in the `deps` folder.
-15. KakaduDemoProcessor is no longer available. If you were using it, you must
+16. KakaduDemoProcessor is no longer available. If you were using it, you must
     switch to either KakaduNativeProcessor, OpenJpegProcessor, or
     GrokProcessor.
-16. Note that the `false` value supplied to the `cache` URL query argument
+17. Note that the `false` value supplied to the `cache` URL query argument
     (e.g. `?cache=false`) has been replaced by `nocache`. `false` can still be
     used, but it is deprecated and may be removed in a future version.
 

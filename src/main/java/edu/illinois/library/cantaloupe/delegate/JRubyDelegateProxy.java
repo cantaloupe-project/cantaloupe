@@ -1,4 +1,4 @@
-package edu.illinois.library.cantaloupe.script;
+package edu.illinois.library.cantaloupe.delegate;
 
 import edu.illinois.library.cantaloupe.resource.RequestContext;
 import edu.illinois.library.cantaloupe.util.Stopwatch;

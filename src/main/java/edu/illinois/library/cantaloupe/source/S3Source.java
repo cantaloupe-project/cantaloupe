@@ -8,7 +8,7 @@ import edu.illinois.library.cantaloupe.http.Range;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.MediaType;
-import edu.illinois.library.cantaloupe.script.DelegateMethod;
+import edu.illinois.library.cantaloupe.delegate.DelegateMethod;
 import edu.illinois.library.cantaloupe.util.AWSClientBuilder;
 import io.minio.MinioClient;
 import io.minio.errors.ErrorResponseException;
