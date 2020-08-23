@@ -1,4 +1,4 @@
 /**
- * Contains classes supporting the delegate script mechanism.
+ * Contains classes supporting the delegate mechanism.
  */
 package edu.illinois.library.cantaloupe.delegate;

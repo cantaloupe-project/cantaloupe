@@ -1,14 +1,15 @@
 package edu.illinois.library.cantaloupe.resource;
 
+import edu.illinois.library.cantaloupe.delegate.JavaRequestContext;
 import edu.illinois.library.cantaloupe.image.Dimension;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.Metadata;
 import edu.illinois.library.cantaloupe.image.ScaleConstraint;
 import edu.illinois.library.cantaloupe.operation.OperationList;
+import edu.illinois.library.cantaloupe.delegate.JavaContext;
 
 import java.net.URI;
-import java.util.Collections;
 import java.util.Map;
 
 /**
@@ -158,6 +159,13 @@ public final class RequestContext {
      */
     public void setScaleConstraint(ScaleConstraint scaleConstraint) {
         this.scaleConstraint = scaleConstraint;
+    }
+
+    /**
+     * @return New instance backed by this instance.
+     */
+    public JavaContext toJavaContext() {
+        return new JavaRequestContext(this);
     }
 
     /**

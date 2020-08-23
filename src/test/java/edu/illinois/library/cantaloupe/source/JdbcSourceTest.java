@@ -7,7 +7,7 @@ import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.resource.RequestContext;
 import edu.illinois.library.cantaloupe.delegate.DelegateProxy;
 import edu.illinois.library.cantaloupe.delegate.DelegateProxyService;
-import edu.illinois.library.cantaloupe.delegate.DisabledException;
+import edu.illinois.library.cantaloupe.delegate.UnavailableException;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -122,7 +122,7 @@ public class JdbcSourceTest extends AbstractSourceTest {
             DelegateProxy proxy = service.newDelegateProxy(context);
             instance.setDelegateProxy(proxy);
             instance.setIdentifier(identifier);
-        } catch (DisabledException ignore) {}
+        } catch (UnavailableException ignore) {}
 
         return instance;
     }

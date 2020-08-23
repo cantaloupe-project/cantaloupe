@@ -31,6 +31,46 @@ public class DelegateProxyServiceTest extends BaseTest {
         instance = DelegateProxyService.getInstance();
     }
 
+    /* getJavaDelegate() */
+
+    @Test
+    void testGetJavaDelegate() {
+        // This is hard to test as we don't have a JavaDelegate on the
+        // classpath.
+    }
+
+    /* isDelegateAvailable() */
+
+    @Test
+    void testIsDelegateAvailableWithJavaDelegateAvailable() {
+        // This is hard to test as we don't have a JavaDelegate on the
+        // classpath.
+    }
+
+    @Test
+    void testIsDelegateAvailableWithNoJavaDelegateAndScriptEnabled() {
+        assertTrue(DelegateProxyService.isDelegateAvailable());
+    }
+
+    @Test
+    void testIsDelegateAvailableWithNoJavaDelegateAndScriptDisabled() {
+        Configuration config = Configuration.getInstance();
+        config.setProperty(Key.DELEGATE_SCRIPT_ENABLED, false);
+        assertFalse(DelegateProxyService.isDelegateAvailable());
+    }
+
+    /* isScriptEnabled() */
+
+    @Test
+    void testIsScriptEnabled() {
+        Configuration config = Configuration.getInstance();
+        config.setProperty(Key.DELEGATE_SCRIPT_ENABLED, false);
+        assertFalse(DelegateProxyService.isScriptEnabled());
+
+        config.setProperty(Key.DELEGATE_SCRIPT_ENABLED, true);
+        assertTrue(DelegateProxyService.isScriptEnabled());
+    }
+
     /* getScriptFile() */
 
     @Test
@@ -67,24 +107,20 @@ public class DelegateProxyServiceTest extends BaseTest {
                 DelegateProxyService::getScriptFile);
     }
 
-    /* isEnabled() */
-
-    @Test
-    void testIsEnabled() {
-        Configuration config = Configuration.getInstance();
-        config.setProperty(Key.DELEGATE_SCRIPT_ENABLED, false);
-        assertFalse(DelegateProxyService.isEnabled());
-
-        config.setProperty(Key.DELEGATE_SCRIPT_ENABLED, true);
-        assertTrue(DelegateProxyService.isEnabled());
-    }
-
     /* newDelegateProxy() */
 
     @Test
-    void testNewDelegateProxy() throws Exception {
+    void testNewDelegateProxyWithJavaDelegateAvailable() {
+        // This is hard to test as we don't have a JavaDelegate on the
+        // classpath.
+    }
+
+    @Test
+    void testNewDelegateProxyWithDelegateScriptEnabled() throws Exception {
         RequestContext context = new RequestContext();
-        assertNotNull(instance.newDelegateProxy(context));
+        DelegateProxy actual = instance.newDelegateProxy(context);
+        assertNotNull(actual);
+        assertNotNull(actual.getRequestContext());
     }
 
     @Test
@@ -93,7 +129,7 @@ public class DelegateProxyServiceTest extends BaseTest {
         config.setProperty(Key.DELEGATE_SCRIPT_ENABLED, false);
 
         RequestContext context = new RequestContext();
-        assertThrows(DisabledException.class,
+        assertThrows(UnavailableException.class,
                 () -> instance.newDelegateProxy(context));
     }
 

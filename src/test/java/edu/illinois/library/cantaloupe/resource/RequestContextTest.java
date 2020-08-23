@@ -1,5 +1,6 @@
 package edu.illinois.library.cantaloupe.resource;
 
+import edu.illinois.library.cantaloupe.delegate.JavaContext;
 import edu.illinois.library.cantaloupe.image.Dimension;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
@@ -145,7 +146,7 @@ public class RequestContextTest extends BaseTest {
         instance.setScaleConstraint(null);
         assertNull(instance.getScaleConstraint());
     }
-/*
+
     @Test
     void testToJavaContext() {
         JavaContext actual = instance.toJavaContext();
@@ -179,7 +180,7 @@ public class RequestContextTest extends BaseTest {
         instance.setClientIP("3.4.5.6");
         assertEquals("3.4.5.6", actual.getClientIPAddress());
     }
-*/
+
     @Test
     void testToMap() {
         Map<String,Object> actual = instance.toMap();

@@ -3,8 +3,9 @@ package edu.illinois.library.cantaloupe.delegate;
 import org.slf4j.LoggerFactory;
 
 /**
- * This class is public in order to be accessible from Ruby via the JRuby-Java
- * bridge. It shouldn't be used anywhere else.
+ * Logger for use by delegates.
+ *
+ * @since 3.4
  */
 public final class Logger {
 

@@ -59,6 +59,8 @@
 
 ### Delegate Script
 
+* A delegate class can be written in Java. See the user manual for more
+  information.
 * Added a `pre_authorize()` delegate method that enables more efficient,
   "fail-fast" authorization.
 * Added a `local_uri` key to the delegate script context.

@@ -15,7 +15,7 @@ import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.ScaleConstraint;
 import edu.illinois.library.cantaloupe.delegate.DelegateProxy;
 import edu.illinois.library.cantaloupe.delegate.DelegateProxyService;
-import edu.illinois.library.cantaloupe.delegate.DisabledException;
+import edu.illinois.library.cantaloupe.delegate.UnavailableException;
 import edu.illinois.library.cantaloupe.util.StringUtils;
 import org.slf4j.Logger;
 
@@ -147,7 +147,7 @@ public abstract class AbstractResource {
         response.setHeader("X-Powered-By",
                 Application.getName() + "/" + Application.getVersion());
 
-        if (DelegateProxyService.isEnabled()) {
+        if (DelegateProxyService.isDelegateAvailable()) {
             requestContext.setLocalURI(request.getReference().toURI());
             requestContext.setRequestURI(getPublicReference().toURI());
             requestContext.setRequestHeaders(request.getHeaders().toMap());
@@ -424,11 +424,11 @@ public abstract class AbstractResource {
      *         {@code null}.
      */
     protected final DelegateProxy getDelegateProxy() {
-        if (delegateProxy == null && DelegateProxyService.isEnabled()) {
+        if (delegateProxy == null && DelegateProxyService.isDelegateAvailable()) {
             DelegateProxyService service = DelegateProxyService.getInstance();
             try {
                 delegateProxy = service.newDelegateProxy(getRequestContext());
-            } catch (DisabledException e) {
+            } catch (UnavailableException e) {
                 getLogger().debug("newDelegateProxy(): {}", e.getMessage());
             }
         }

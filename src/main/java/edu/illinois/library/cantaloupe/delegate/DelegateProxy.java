@@ -7,13 +7,18 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * <p>Proxy for a delegate object, which is supplied by the user in a script
- * file.</p>
+ * <p>Proxy for a delegate object, which is an instantiation of a class
+ * supplied by the user.</p>
  *
  * <p>Instances should be acquired via {@link
  * DelegateProxyService#newDelegateProxy(RequestContext)}.</p>
  */
 public interface DelegateProxy {
+
+    /**
+     * @return Instance passed to {@link #setRequestContext(RequestContext)}.
+     */
+    RequestContext getRequestContext();
 
     /**
      * Used to provide context information to the delegate object. Should

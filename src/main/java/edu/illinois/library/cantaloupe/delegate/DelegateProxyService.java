@@ -13,6 +13,7 @@ import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Optional;
+import java.util.ServiceLoader;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
@@ -27,7 +28,7 @@ public final class DelegateProxyService {
 
     private static DelegateProxyService instance;
 
-    private static boolean isCodeLoaded;
+    private static boolean isScriptCodeLoaded;
 
     private ScriptWatcher scriptWatcher;
 
@@ -36,9 +37,26 @@ public final class DelegateProxyService {
     private Future<?> watcherFuture;
 
     /**
+     * @return {@link JavaDelegate} instance, if available.
+     */
+    static Optional<JavaDelegate> getJavaDelegate() {
+        ServiceLoader<JavaDelegate> services =
+                ServiceLoader.load(JavaDelegate.class);
+        return services.findFirst();
+    }
+
+    /**
+     * @return Whether a Java delegate is available, or the {@link
+     *         #isScriptEnabled() delegate script is enabled}.
+     */
+    public static boolean isDelegateAvailable() {
+        return getJavaDelegate().isPresent() || isScriptEnabled();
+    }
+
+    /**
      * @return Whether the delegate script is enabled.
      */
-    public static boolean isEnabled() {
+    public static boolean isScriptEnabled() {
         var config = Configuration.getInstance();
         return config.getBoolean(Key.DELEGATE_SCRIPT_ENABLED, false);
     }
@@ -51,22 +69,23 @@ public final class DelegateProxyService {
     }
 
     /**
-     * @return The shared instance. If the instance is being created, the
-     *         {@link #getScriptFile() delegate script code} will be loaded
+     * @return The shared instance. If the instance is being created from a
+     *         script, the {@link #getScriptFile() script code} will be loaded
      *         into it.
      */
     public static synchronized DelegateProxyService getInstance() {
         if (instance == null) {
             instance = new DelegateProxyService();
         }
-        if (!isCodeLoaded && Configuration.getInstance()
-                .getBoolean(Key.DELEGATE_SCRIPT_ENABLED, false)) {
+        // If we are using a delegate script, load the code into it.
+        if (getJavaDelegate().isEmpty() && !isScriptCodeLoaded &&
+                Configuration.getInstance().getBoolean(Key.DELEGATE_SCRIPT_ENABLED, false)) {
             try {
                 Path file = getScriptFile();
                 if (file != null) {
                     String code = Files.readString(file);
                     JRubyDelegateProxy.load(code);
-                    isCodeLoaded = true;
+                    isScriptCodeLoaded = true;
                 }
             } catch (IOException | ScriptException e) {
                 LOGGER.error(e.getMessage());
@@ -77,7 +96,7 @@ public final class DelegateProxyService {
 
     /**
      * @return Absolute path representing the delegate script, regardless of
-     *         whether the delegate script system is {@link #isEnabled()
+     *         whether the delegate script system is {@link #isScriptEnabled()
      *         enabled}; or {@code null} if {@link
      *         Key#DELEGATE_SCRIPT_PATHNAME} is not set.
      * @throws NoSuchFileException If the script specified in {@link
@@ -129,29 +148,48 @@ public final class DelegateProxyService {
     }
 
     /**
-     * <p>Acquires a new {@link DelegateProxy} instance.</p>
+     * <p>Acquires a new {@link DelegateProxy} instance, which may be backed
+     * by either a {@link JavaDelegate}, if present on the classpath, or a
+     * script-based delegate.</p>
      *
      * <p>This should normally be called only once at the beginning of a
      * request lifecycle, and the returned object passed around to wherever it
-     * is needed through the request lifecycle.</p>
+     * is needed.</p>
      *
      * @param context Request context.
      * @return        Shared delegate proxy.
-     * @throws DisabledException if the delegate script is disabled.
+     * @throws UnavailableException if a delegate is not available.
      */
     public DelegateProxy newDelegateProxy(RequestContext context)
-            throws DisabledException {
-        if (isEnabled()) {
-            return new JRubyDelegateProxy(context);
-        } else {
-            throw new DisabledException();
+            throws UnavailableException {
+        if (getJavaDelegate().isPresent()) {
+            LOGGER.debug("Instantiating a {}",
+                    JavaDelegate.class.getSimpleName());
+            var proxy = new JavaDelegateProxy(getJavaDelegate().get());
+            proxy.setRequestContext(context);
+            return proxy;
+        } else if (isScriptEnabled()) {
+            LOGGER.debug("Instantiating a {}",
+                    JRubyDelegateProxy.class.getSimpleName());
+            try {
+                var proxy = new JRubyDelegateProxy();
+                proxy.setRequestContext(context);
+                return proxy;
+            } catch (ScriptException e) {
+                LOGGER.error("newDelegateProxy(): {}", e.getMessage(), e);
+            }
         }
+        throw new UnavailableException();
     }
 
     /**
-     * Starts watching the delegate script for changes.
+     * Starts watching the delegate script for changes, only if the {@link
+     * #getJavaDelegate() Java delegate} is not available.
      */
     public void startWatching() {
+        if (getJavaDelegate().isPresent()) {
+            return;
+        }
         if (scriptWatcher == null) {
             scriptWatcher = new ScriptWatcher();
         }
@@ -163,9 +201,13 @@ public final class DelegateProxyService {
     }
 
     /**
-     * Stops watching the delegate script for changes.
+     * Stops watching the delegate script for changes, only if the {@link
+     * #getJavaDelegate() Java delegate} is not available.
      */
     public void stopWatching() {
+        if (getJavaDelegate().isPresent()) {
+            return;
+        }
         if (scriptWatcher != null) {
             scriptWatcher.stop();
             scriptWatcher = null;

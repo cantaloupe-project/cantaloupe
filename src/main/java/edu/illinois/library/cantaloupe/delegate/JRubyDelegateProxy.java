@@ -48,6 +48,8 @@ final class JRubyDelegateProxy implements DelegateProxy {
      */
     private static final StampedLock lock = new StampedLock();
 
+    private RequestContext requestContext;
+
     /**
      * The Ruby delegate object.
      */
@@ -84,24 +86,25 @@ final class JRubyDelegateProxy implements DelegateProxy {
         }
     }
 
-    JRubyDelegateProxy(RequestContext context) {
-        instantiateDelegate(context);
+    JRubyDelegateProxy() {
+        instantiateDelegate();
     }
 
-    private void instantiateDelegate(RequestContext context) {
+    private void instantiateDelegate() {
         final long stamp = lock.readLock();
-        final Stopwatch watch = new Stopwatch();
         try {
             delegate = scriptEngine.eval("\n" +
                     DELEGATE_CLASS_NAME + ".new" + "\n");
-            setRequestContext(context);
-
-            LOGGER.trace("Instantiated delegate object in {}", watch);
         } catch (javax.script.ScriptException e) {
             LOGGER.error(e.getMessage(), e);
         } finally {
             lock.unlock(stamp);
         }
+    }
+
+    @Override
+    public RequestContext getRequestContext() {
+        return requestContext;
     }
 
     /**
@@ -115,6 +118,7 @@ final class JRubyDelegateProxy implements DelegateProxy {
             throws ScriptException {
         invoke(RUBY_REQUEST_CONTEXT_SETTER,
                 Collections.unmodifiableMap(context.toMap()));
+        this.requestContext = context;
     }
 
     /**

@@ -29,7 +29,8 @@ public class JRubyDelegateProxyTest extends BaseTest {
         String code = Files.readString(scriptFile);
         JRubyDelegateProxy.load(code);
 
-        instance = new JRubyDelegateProxy(context);
+        instance = new JRubyDelegateProxy();
+        instance.setRequestContext(context);
     }
 
     /* authorize() */

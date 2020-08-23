@@ -38,6 +38,8 @@ public class ImageRequestHandlerTest extends BaseTest {
         void testOptionallyWithDelegateProxyWithNonNullArguments() throws Exception {
             var config = Configuration.getInstance();
             config.setProperty(Key.DELEGATE_SCRIPT_ENABLED, true);
+            config.setProperty(Key.DELEGATE_SCRIPT_PATHNAME,
+                    TestUtil.getFixture("delegates.rb").toString());
 
             RequestContext context = new RequestContext();
             DelegateProxy delegateProxy =
@@ -67,6 +69,8 @@ public class ImageRequestHandlerTest extends BaseTest {
         void testOptionallyWithDelegateProxyWithNullRequestContext() throws Exception {
             var config = Configuration.getInstance();
             config.setProperty(Key.DELEGATE_SCRIPT_ENABLED, true);
+            config.setProperty(Key.DELEGATE_SCRIPT_PATHNAME,
+                    TestUtil.getFixture("delegates.rb").toString());
 
             RequestContext context = new RequestContext();
             DelegateProxy delegateProxy =
@@ -103,6 +107,8 @@ public class ImageRequestHandlerTest extends BaseTest {
         void testWithDelegateProxyWithNullRequestContext() throws Exception {
             var config = Configuration.getInstance();
             config.setProperty(Key.DELEGATE_SCRIPT_ENABLED, true);
+            config.setProperty(Key.DELEGATE_SCRIPT_PATHNAME,
+                    TestUtil.getFixture("delegates.rb").toString());
 
             RequestContext context = new RequestContext();
             DelegateProxy delegateProxy =
