@@ -173,7 +173,6 @@ public enum Key {
     PROCESSOR_STREAM_RETRIEVAL_STRATEGY("processor.stream_retrieval_strategy"),
     PROCESSOR_TIF_COMPRESSION("processor.tif.compression"),
     PROCESSOR_UPSCALE_FILTER("processor.upscale_filter"),
-    REDACTION_ENABLED("redaction.enabled"),
     REDISCACHE_DATABASE("RedisCache.database"),
     REDISCACHE_HOST("RedisCache.host"),
     REDISCACHE_PASSWORD("RedisCache.password"),

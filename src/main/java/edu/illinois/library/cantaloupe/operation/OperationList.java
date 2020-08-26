@@ -200,14 +200,9 @@ public final class OperationList implements Iterable<Operation> {
         // Redactions
         try {
             final RedactionService service = new RedactionService();
-            if (service.isEnabled()) {
-                List<Redaction> redactions = service.redactionsFor(delegateProxy);
-                for (Redaction redaction : redactions) {
-                    addBefore(redaction, Encode.class);
-                }
-            } else {
-                LOGGER.trace("applyNonEndpointMutations(): redactions are " +
-                        "disabled; skipping.");
+            List<Redaction> redactions = service.redactionsFor(delegateProxy);
+            for (Redaction redaction : redactions) {
+                addBefore(redaction, Encode.class);
             }
         } catch (Exception e) {
             LOGGER.error(e.getMessage(), e);

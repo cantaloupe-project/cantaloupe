@@ -15,14 +15,6 @@ import java.util.stream.Collectors;
 public final class RedactionService {
 
     /**
-     * @return Whether {@link Key#REDACTION_ENABLED} is true.
-     */
-    public boolean isEnabled() {
-        return Configuration.getInstance().
-                getBoolean(Key.REDACTION_ENABLED, false);
-    }
-
-    /**
      * Factory method that returns a list of {@link Redaction redactions}
      * based on the given parameters.
      *

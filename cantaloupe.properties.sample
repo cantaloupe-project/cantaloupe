@@ -666,13 +666,6 @@ overlays.BasicStrategy.output_width_threshold = 400
 overlays.BasicStrategy.output_height_threshold = 300
 
 ###########################################################################
-# REDACTIONS
-###########################################################################
-
-# See the user manual for information about how redactions work.
-redaction.enabled = false
-
-###########################################################################
 # LOGGING
 ###########################################################################
 

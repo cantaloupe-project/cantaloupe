@@ -25,7 +25,6 @@ public class RedactionServiceTest extends BaseTest {
         config.setProperty(Key.DELEGATE_SCRIPT_ENABLED, true);
         config.setProperty(Key.DELEGATE_SCRIPT_PATHNAME,
                 TestUtil.getFixture("delegates.rb").toString());
-        config.setProperty(Key.REDACTION_ENABLED, true);
     }
 
     @BeforeEach
@@ -33,22 +32,6 @@ public class RedactionServiceTest extends BaseTest {
         super.setUp();
         setUpConfiguration();
         instance = new RedactionService();
-    }
-
-    @Test
-    void testIsEnabledWhenEnabled() {
-        Configuration config = Configuration.getInstance();
-        config.clear();
-        config.setProperty(Key.REDACTION_ENABLED, true);
-        assertTrue(instance.isEnabled());
-    }
-
-    @Test
-    void testIsEnabledWhenDisabled() {
-        Configuration config = Configuration.getInstance();
-        config.clear();
-        config.setProperty(Key.REDACTION_ENABLED, false);
-        assertFalse(instance.isEnabled());
     }
 
     @Test

@@ -76,6 +76,9 @@
 * Java 11 is required.
 * Added configuration options for logging in Logstash format. (Thanks to
   @cmhdave)
+* The `redaction.enabled` configuration key has been removed. The `redaction()`
+  delegate method is always called and redactions are always applied if it
+  returns any.
 * The `-Dcantaloupe.list_fonts` VM argument has been replaced with the
   `-list-fonts` command-line argument.
 

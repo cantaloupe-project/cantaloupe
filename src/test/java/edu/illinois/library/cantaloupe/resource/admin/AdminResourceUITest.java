@@ -705,7 +705,6 @@ public class AdminResourceUITest extends AbstractAdminResourceTest {
         inputNamed(Key.OVERLAY_STRING_STROKE_COLOR).sendKeys("#e0e0e0");
         inputNamed(Key.OVERLAY_STRING_STROKE_WIDTH).sendKeys("5");
         inputNamed(Key.OVERLAY_STRING_BACKGROUND_COLOR).sendKeys("#ffd000");
-        inputNamed(Key.REDACTION_ENABLED).click();
 
         // Submit the form
         css("#cl-overlays input[type=\"submit\"]").click();
@@ -749,7 +748,6 @@ public class AdminResourceUITest extends AbstractAdminResourceTest {
                 config.getString(Key.OVERLAY_STRING_STROKE_WIDTH));
         assertEquals("#ffd000",
                 config.getString(Key.OVERLAY_STRING_BACKGROUND_COLOR));
-        assertTrue(config.getBoolean(Key.REDACTION_ENABLED));
     }
 
 }
