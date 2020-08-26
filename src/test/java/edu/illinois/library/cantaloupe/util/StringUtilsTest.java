@@ -5,6 +5,13 @@ import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import org.junit.jupiter.api.Test;
 
+import java.awt.Font;
+import java.awt.FontMetrics;
+import java.awt.Graphics2D;
+import java.awt.font.TextAttribute;
+import java.awt.image.BufferedImage;
+import java.util.List;
+import java.util.Map;
 import java.util.regex.Pattern;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -229,6 +236,29 @@ class StringUtilsTest extends BaseTest {
     void testTrimXMPWithNullArgument() {
         assertThrows(NullPointerException.class,
                 () -> StringUtils.trimXMP(null));
+    }
+
+    @Test
+    void testWrap() {
+        String str = "This is a very very very very very very very very long line.";
+        final int maxWidth        = 200;
+        final BufferedImage image = new BufferedImage(200, 200, BufferedImage.TYPE_INT_ARGB);
+        final Graphics2D g2d      = image.createGraphics();
+
+        final Map<TextAttribute, Object> attributes = Map.of(
+                TextAttribute.FAMILY, "Helvetica",
+                TextAttribute.SIZE, 18,
+                TextAttribute.WEIGHT, 1,
+                TextAttribute.TRACKING, 0);
+        final Font font = Font.getFont(attributes);
+        g2d.setFont(font);
+        final FontMetrics fm = g2d.getFontMetrics();
+
+        List<String> lines = StringUtils.wrap(str, fm, maxWidth);
+        assertEquals(3, lines.size());
+        assertTrue(lines.get(0).length() > 10 && lines.get(0).length() < 30);
+        assertTrue(lines.get(1).length() > 10 && lines.get(1).length() < 30);
+        assertTrue(lines.get(2).length() > 10 && lines.get(2).length() < 30);
     }
 
 }

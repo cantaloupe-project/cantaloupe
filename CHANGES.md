@@ -79,6 +79,8 @@
 * The `redaction.enabled` configuration key has been removed. The `redaction()`
   delegate method is always called and redactions are always applied if it
   returns any.
+* The `overlay()` delegate method may return a boolean `word_wrap` key value
+  to enable automatic wrapping of overlay strings.
 * The `-Dcantaloupe.list_fonts` VM argument has been replaced with the
   `-list-fonts` command-line argument.
 

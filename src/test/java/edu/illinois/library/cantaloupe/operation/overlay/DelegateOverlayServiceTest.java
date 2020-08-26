@@ -88,6 +88,7 @@ public class DelegateOverlayServiceTest extends BaseTest {
         assertEquals(Color.BLUE, overlay.getStrokeColor());
         assertEquals(new Color(12, 23, 34, 45), overlay.getBackgroundColor());
         assertEquals(3, overlay.getStrokeWidth(), 0.00001f);
+        assertFalse(overlay.isWordWrap());
     }
 
     @Test

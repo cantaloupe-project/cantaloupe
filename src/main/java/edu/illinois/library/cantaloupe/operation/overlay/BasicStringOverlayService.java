@@ -27,10 +27,11 @@ class BasicStringOverlayService extends BasicOverlayService {
 
     StringOverlay getOverlay() {
         return new StringOverlay(string, getPosition(), getInset(), font,
-                minSize, color, backgroundColor, strokeColor, strokeWidth);
+                minSize, color, backgroundColor, strokeColor, strokeWidth,
+                false);
     }
 
-    private void readConfig() throws ConfigurationException {
+    private void readConfig() {
         final Configuration config = Configuration.getInstance();
 
         // Background color

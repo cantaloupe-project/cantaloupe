@@ -48,6 +48,7 @@ import java.awt.image.ComponentColorModel;
 import java.awt.image.WritableRaster;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Arrays;
 import java.util.Set;
 
 /**
@@ -374,170 +375,194 @@ public final class Java2DUtil {
                                      final BufferedImage overlayImage,
                                      final Position position,
                                      final int inset) {
-        if (overlayImage != null) {
-            final Stopwatch watch = new Stopwatch();
-
-            final Graphics2D g2d = baseImage.createGraphics();
-            g2d.setRenderingHint(RenderingHints.KEY_RENDERING,
-                    RenderingHints.VALUE_RENDER_QUALITY);
-            g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
-                    RenderingHints.VALUE_ANTIALIAS_ON);
-            g2d.drawImage(baseImage, 0, 0, null);
-
-            if (Position.REPEAT.equals(position)) {
-                int startX = Math.round(baseImage.getWidth() / 2f);
-                int startY = Math.round(baseImage.getHeight() / 2f);
-                while (startX >= 0) {
-                    startX -= overlayImage.getWidth();
-                }
-                while (startY >= 0) {
-                    startY -= overlayImage.getHeight();
-                }
-                for (int x = startX; x < baseImage.getWidth(); x += overlayImage.getWidth()) {
-                    for (int y = startY; y < baseImage.getHeight(); y += overlayImage.getHeight()) {
-                        g2d.drawImage(overlayImage, x, y, null);
-                    }
-                }
-            } else if (Position.SCALED.equals(position)) {
-                // We want to scale the overlay to be the size of the image but also respect the inset value.
-                // The inset value will be respected on all sides of the overlay so we want our scale to be the
-                // size of the base image MINUS the size of the inset * 2 in both width and height
-                int calculatedOverlayWidth = baseImage.getWidth() - (inset * 2);
-                int calculatedOverlayHeight = baseImage.getHeight() - (inset * 2);
-                ScaleByPixels scale = new ScaleByPixels(
-                        (calculatedOverlayWidth > 0) ? calculatedOverlayWidth : baseImage.getWidth(),
-                        (calculatedOverlayHeight > 0) ? calculatedOverlayHeight : baseImage.getHeight(),
-                        ScaleByPixels.Mode.ASPECT_FIT_INSIDE);
-                ScaleConstraint sc = new ScaleConstraint(1, 1);
-                ReductionFactor rf = new ReductionFactor(1);
-                BufferedImage scaledOverlay = Java2DUtil.scale(overlayImage, scale, sc, rf);
-                int xOffset = inset;
-                int yOffset = inset;
-                if (scaledOverlay.getWidth() < baseImage.getWidth()) {
-                    xOffset = Math.round((baseImage.getWidth() - scaledOverlay.getWidth()) / 2f);
-                }
-                if (scaledOverlay.getHeight() < baseImage.getHeight()) {
-                    yOffset = Math.round((baseImage.getHeight() - scaledOverlay.getHeight()) / 2f);
-                }
-                g2d.drawImage(Java2DUtil.scale(overlayImage, scale, sc, rf), xOffset, yOffset, null);
-            } else {
-                int overlayX, overlayY;
-                switch (position) {
-                    case TOP_LEFT:
-                        overlayX = inset;
-                        overlayY = inset;
-                        break;
-                    case TOP_RIGHT:
-                        overlayX = baseImage.getWidth() -
-                                overlayImage.getWidth() - inset;
-                        overlayY = inset;
-                        break;
-                    case BOTTOM_LEFT:
-                        overlayX = inset;
-                        overlayY = baseImage.getHeight() -
-                                overlayImage.getHeight() - inset;
-                        break;
-                    // case BOTTOM_RIGHT: will be handled in default:
-                    case TOP_CENTER:
-                        overlayX = (baseImage.getWidth() -
-                                overlayImage.getWidth()) / 2;
-                        overlayY = inset;
-                        break;
-                    case BOTTOM_CENTER:
-                        overlayX = (baseImage.getWidth() -
-                                overlayImage.getWidth()) / 2;
-                        overlayY = baseImage.getHeight() -
-                                overlayImage.getHeight() - inset;
-                        break;
-                    case LEFT_CENTER:
-                        overlayX = inset;
-                        overlayY = (baseImage.getHeight() -
-                                overlayImage.getHeight()) / 2;
-                        break;
-                    case RIGHT_CENTER:
-                        overlayX = baseImage.getWidth() -
-                                overlayImage.getWidth() - inset;
-                        overlayY = (baseImage.getHeight() -
-                                overlayImage.getHeight()) / 2;
-                        break;
-                    case CENTER:
-                        overlayX = (baseImage.getWidth() -
-                                overlayImage.getWidth()) / 2;
-                        overlayY = (baseImage.getHeight() -
-                                overlayImage.getHeight()) / 2;
-                        break;
-                    default: // bottom right
-                        overlayX = baseImage.getWidth() -
-                                overlayImage.getWidth() - inset;
-                        overlayY = baseImage.getHeight() -
-                                overlayImage.getHeight() - inset;
-                        break;
-                }
-                g2d.drawImage(overlayImage, overlayX, overlayY, null);
-            }
-            g2d.dispose();
-
-            LOGGER.debug("overlayImage() executed in {}", watch);
+        if (overlayImage == null) {
+            return;
         }
+        final Stopwatch watch = new Stopwatch();
+
+        final Graphics2D g2d = baseImage.createGraphics();
+        g2d.setRenderingHint(RenderingHints.KEY_RENDERING,
+                RenderingHints.VALUE_RENDER_QUALITY);
+        g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+                RenderingHints.VALUE_ANTIALIAS_ON);
+        g2d.drawImage(baseImage, 0, 0, null);
+
+        if (Position.REPEAT.equals(position)) {
+            int startX = Math.round(baseImage.getWidth() / 2f);
+            int startY = Math.round(baseImage.getHeight() / 2f);
+            while (startX >= 0) {
+                startX -= overlayImage.getWidth();
+            }
+            while (startY >= 0) {
+                startY -= overlayImage.getHeight();
+            }
+            for (int x = startX; x < baseImage.getWidth(); x += overlayImage.getWidth()) {
+                for (int y = startY; y < baseImage.getHeight(); y += overlayImage.getHeight()) {
+                    g2d.drawImage(overlayImage, x, y, null);
+                }
+            }
+        } else if (Position.SCALED.equals(position)) {
+            // We want to scale the overlay to be the size of the image but also respect the inset value.
+            // The inset value will be respected on all sides of the overlay so we want our scale to be the
+            // size of the base image MINUS the size of the inset * 2 in both width and height
+            int calculatedOverlayWidth = baseImage.getWidth() - (inset * 2);
+            int calculatedOverlayHeight = baseImage.getHeight() - (inset * 2);
+            ScaleByPixels scale = new ScaleByPixels(
+                    (calculatedOverlayWidth > 0) ? calculatedOverlayWidth : baseImage.getWidth(),
+                    (calculatedOverlayHeight > 0) ? calculatedOverlayHeight : baseImage.getHeight(),
+                    ScaleByPixels.Mode.ASPECT_FIT_INSIDE);
+            ScaleConstraint sc = new ScaleConstraint(1, 1);
+            ReductionFactor rf = new ReductionFactor(1);
+            BufferedImage scaledOverlay = Java2DUtil.scale(overlayImage, scale, sc, rf);
+            int xOffset = inset;
+            int yOffset = inset;
+            if (scaledOverlay.getWidth() < baseImage.getWidth()) {
+                xOffset = Math.round((baseImage.getWidth() - scaledOverlay.getWidth()) / 2f);
+            }
+            if (scaledOverlay.getHeight() < baseImage.getHeight()) {
+                yOffset = Math.round((baseImage.getHeight() - scaledOverlay.getHeight()) / 2f);
+            }
+            g2d.drawImage(Java2DUtil.scale(overlayImage, scale, sc, rf), xOffset, yOffset, null);
+        } else {
+            int overlayX, overlayY;
+            switch (position) {
+                case TOP_LEFT:
+                    overlayX = inset;
+                    overlayY = inset;
+                    break;
+                case TOP_RIGHT:
+                    overlayX = baseImage.getWidth() -
+                            overlayImage.getWidth() - inset;
+                    overlayY = inset;
+                    break;
+                case BOTTOM_LEFT:
+                    overlayX = inset;
+                    overlayY = baseImage.getHeight() -
+                            overlayImage.getHeight() - inset;
+                    break;
+                // case BOTTOM_RIGHT: will be handled in default:
+                case TOP_CENTER:
+                    overlayX = (baseImage.getWidth() -
+                            overlayImage.getWidth()) / 2;
+                    overlayY = inset;
+                    break;
+                case BOTTOM_CENTER:
+                    overlayX = (baseImage.getWidth() -
+                            overlayImage.getWidth()) / 2;
+                    overlayY = baseImage.getHeight() -
+                            overlayImage.getHeight() - inset;
+                    break;
+                case LEFT_CENTER:
+                    overlayX = inset;
+                    overlayY = (baseImage.getHeight() -
+                            overlayImage.getHeight()) / 2;
+                    break;
+                case RIGHT_CENTER:
+                    overlayX = baseImage.getWidth() -
+                            overlayImage.getWidth() - inset;
+                    overlayY = (baseImage.getHeight() -
+                            overlayImage.getHeight()) / 2;
+                    break;
+                case CENTER:
+                    overlayX = (baseImage.getWidth() -
+                            overlayImage.getWidth()) / 2;
+                    overlayY = (baseImage.getHeight() -
+                            overlayImage.getHeight()) / 2;
+                    break;
+                default: // bottom right
+                    overlayX = baseImage.getWidth() -
+                            overlayImage.getWidth() - inset;
+                    overlayY = baseImage.getHeight() -
+                            overlayImage.getHeight() - inset;
+                    break;
+            }
+            g2d.drawImage(overlayImage, overlayX, overlayY, null);
+        }
+        g2d.dispose();
+
+        LOGGER.debug("overlayImage() executed in {}", watch);
     }
 
     /**
-     * Overlays a string onto an image.
+     * <p>Overlays a string onto an image.</p>
      *
-     * @param baseImage Image to overlay the string onto.
-     * @param overlay   String to overlay onto the image.
+     * <p>There are two main layout strategies, depending on {@link
+     * StringOverlay#isWordWrap()}:</p>
+     *
+     * <ol>
+     *     <li>With the word wrap strategy, the font size is fixed, the
+     *     available width is the full width of the image, and the height is
+     *     whatever needed to accommodate the wrapped lines.</li>
+     *     <li>With the other strategy, the largest font size that enables the
+     *     string to fit entirely within the image is used, down to a
+     *     configured minimum size.</li>
+     * </ol>
+     *
+     * @param baseImage Image to overlay a string onto.
+     * @param overlay   Overlay to apply to the image.
      */
     private static void overlayString(final BufferedImage baseImage,
                                       final StringOverlay overlay) {
-        if (overlay.hasEffect()) {
-            final Stopwatch watch = new Stopwatch();
+        if (!overlay.hasEffect()) {
+            return;
+        }
+        final Stopwatch watch = new Stopwatch();
 
-            final Graphics2D g2d = baseImage.createGraphics();
-            g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
-                    RenderingHints.VALUE_ANTIALIAS_ON);
-            g2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING,
-                    RenderingHints.VALUE_TEXT_ANTIALIAS_GASP);
-            g2d.setRenderingHint(RenderingHints.KEY_FRACTIONALMETRICS,
-                    RenderingHints.VALUE_FRACTIONALMETRICS_ON);
-            g2d.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL,
-                    RenderingHints.VALUE_STROKE_PURE);
-            g2d.setRenderingHint(RenderingHints.KEY_RENDERING,
-                    RenderingHints.VALUE_RENDER_QUALITY);
+        final Graphics2D g2d = baseImage.createGraphics();
+        g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+                RenderingHints.VALUE_ANTIALIAS_ON);
+        g2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING,
+                RenderingHints.VALUE_TEXT_ANTIALIAS_GASP);
+        g2d.setRenderingHint(RenderingHints.KEY_FRACTIONALMETRICS,
+                RenderingHints.VALUE_FRACTIONALMETRICS_ON);
+        g2d.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL,
+                RenderingHints.VALUE_STROKE_PURE);
+        g2d.setRenderingHint(RenderingHints.KEY_RENDERING,
+                RenderingHints.VALUE_RENDER_QUALITY);
 
-            // Graphics2D.drawString() does not understand newlines. Each line
-            // has to be drawn separately.
-            Font font = overlay.getFont();
-            float fontSize = font.getSize();
-            final int inset = overlay.getInset();
-            final String[] lines = StringUtils.split(overlay.getString(), "\n");
-            final int padding = getBoxPadding(overlay);
-            int lineHeight;
-            int totalHeight;
-            int[] lineWidths;
-            int maxLineWidth;
-            boolean fits = false;
+        // Graphics2D.drawString() doesn't understand newlines. Each line must
+        // be drawn separately.
+        Font font                 = overlay.getFont();
+        float fontSize            = font.getSize();
+        final int inset           = overlay.getInset();
+        final int padding         = getBoxPadding(overlay);
+        final int availableWidth  = baseImage.getWidth() - (inset * 2) - (padding * 2);
+        final int availableHeight = baseImage.getHeight() - (inset * 2) - (padding * 2);
+        boolean fits              = false;
+        String[] lines;
+        int[] lineWidths;
+        int maxLineWidth, lineHeight, totalHeight;
 
+        if (overlay.isWordWrap()) {
+            g2d.setFont(font);
+            final FontMetrics fm = g2d.getFontMetrics();
+            lines = edu.illinois.library.cantaloupe.util.StringUtils
+                    .wrap(overlay.getString(), fm, availableWidth)
+                    .toArray(String[]::new);
+            lineHeight   = fm.getHeight();
+            totalHeight  = lineHeight * lines.length;
+            lineWidths   = getLineWidths(lines, fm);
+            maxLineWidth = Arrays.stream(lineWidths).max().orElse(0);
+
+            if (totalHeight <= availableHeight) {
+                fits = true;
+            }
+        } else {
+            lines = StringUtils.split(overlay.getString(), "\n");
             // Starting at the initial font size, loop through smaller sizes
             // down to the minimum in order to find the largest that will fit
             // entirely within the image.
             while (true) {
-                maxLineWidth = 0;
                 g2d.setFont(font);
                 final FontMetrics fm = g2d.getFontMetrics();
-                lineHeight = fm.getHeight();
-                totalHeight = lineHeight * lines.length;
-                // Find the max line width.
-                lineWidths = new int[lines.length];
-                for (int i = 0; i < lines.length; i++) {
-                    lineWidths[i] = fm.stringWidth(lines[i]);
-                    if (lineWidths[i] > maxLineWidth) {
-                        maxLineWidth = lineWidths[i];
-                    }
-                }
+                lineHeight   = fm.getHeight();
+                totalHeight  = lineHeight * lines.length;
+                lineWidths   = getLineWidths(lines, fm);
+                maxLineWidth = Arrays.stream(lineWidths).max().orElse(0);
 
                 // Will the overlay fit inside the image?
-                if (maxLineWidth + (inset * 2) + (padding * 2) <= baseImage.getWidth() &&
-                        totalHeight + (inset * 2) + (padding * 2) <= baseImage.getHeight()) {
+                if (maxLineWidth <= availableWidth &&
+                        totalHeight <= availableHeight) {
                     fits = true;
                     break;
                 } else {
@@ -549,96 +574,106 @@ public final class Java2DUtil {
                     }
                 }
             }
-
-            if (fits) {
-                LOGGER.debug("overlayString(): using {}-point font ({} min; {} max)",
-                        fontSize, overlay.getMinSize(),
-                        overlay.getFont().getSize());
-
-                g2d.drawImage(baseImage, 0, 0, null);
-
-                final Rectangle bgBox = getBoundingBox(overlay, inset,
-                        lineWidths, lineHeight,
-                        new Dimension(baseImage.getWidth(), baseImage.getHeight()));
-
-                // Draw the background, if it is not transparent.
-                if (overlay.getBackgroundColor().getAlpha() > 0) {
-                    g2d.setPaint(overlay.getBackgroundColor().toColor());
-                    g2d.fillRect(bgBox.intX(), bgBox.intY(),
-                            bgBox.intWidth(), bgBox.intHeight());
-                }
-
-                // Draw each line individually.
-                for (int i = 0; i < lines.length; i++) {
-                    double x, y;
-                    switch (overlay.getPosition()) {
-                        case TOP_LEFT:
-                            x = bgBox.x() + padding;
-                            y = bgBox.y() + lineHeight * i + padding;
-                            break;
-                        case TOP_RIGHT:
-                            x = bgBox.x() + maxLineWidth - lineWidths[i] + padding;
-                            y = bgBox.y() + lineHeight * i + padding;
-                            break;
-                        case BOTTOM_LEFT:
-                            x = bgBox.x() + padding;
-                            y = bgBox.y() + lineHeight * i + padding;
-                            break;
-                        // case BOTTOM_RIGHT: will be handled in default:
-                        case TOP_CENTER:
-                            x = bgBox.x() + (bgBox.width() - lineWidths[i]) / 2.0;
-                            y = bgBox.y() + lineHeight * i + padding;
-                            break;
-                        case BOTTOM_CENTER:
-                            x = bgBox.x() + (bgBox.width() - lineWidths[i]) / 2.0;
-                            y = bgBox.y() + lineHeight * i + padding;
-                            break;
-                        case LEFT_CENTER:
-                            x = bgBox.x() + padding;
-                            y = bgBox.y() + lineHeight * i + padding;
-                            break;
-                        case RIGHT_CENTER:
-                            x = bgBox.x() + maxLineWidth - lineWidths[i] + padding;
-                            y = bgBox.y() + lineHeight * i + padding;
-                            break;
-                        case CENTER:
-                            x = bgBox.x() + (bgBox.width() - lineWidths[i]) / 2.0;
-                            y = bgBox.y() + lineHeight * i + padding;
-                            break;
-                        default: // bottom right
-                            x = bgBox.x() + maxLineWidth - lineWidths[i] + padding;
-                            y = bgBox.y() + lineHeight * i + padding;
-                            break;
-                    }
-
-                    // This is arbitrary fudge, but it seems to work OK.
-                    y += lineHeight * 0.73;
-
-                    // Draw the text outline.
-                    if (overlay.getStrokeWidth() > 0.001) {
-                        final FontRenderContext frc = g2d.getFontRenderContext();
-                        final GlyphVector gv = font.createGlyphVector(frc, lines[i]);
-                        final Shape shape = gv.getOutline(Math.round(x), Math.round(y));
-                        g2d.setStroke(new BasicStroke(overlay.getStrokeWidth()));
-                        g2d.setPaint(overlay.getStrokeColor().toColor());
-                        g2d.draw(shape);
-                    }
-
-                    // Draw the string.
-                    g2d.setPaint(overlay.getColor().toColor());
-                    g2d.drawString(lines[i], Math.round(x), Math.round(y));
-                }
-                LOGGER.debug("overlayString() executed in {}", watch);
-            } else {
-                LOGGER.debug("overlayString(): {}-point ({}x{}) text won't fit in {}x{} image",
-                        fontSize,
-                        maxLineWidth + inset,
-                        totalHeight + inset,
-                        baseImage.getWidth(),
-                        baseImage.getHeight());
-            }
-            g2d.dispose();
         }
+
+        if (!fits) {
+            LOGGER.debug("overlayString(): {}-point ({}x{}) text won't fit in {}x{} image",
+                    fontSize,
+                    maxLineWidth + inset,
+                    totalHeight + inset,
+                    baseImage.getWidth(),
+                    baseImage.getHeight());
+            g2d.dispose();
+            return;
+        }
+
+        LOGGER.debug("overlayString(): using {}-point font ({} min; {} max)",
+                fontSize, overlay.getMinSize(),
+                overlay.getFont().getSize());
+
+        g2d.drawImage(baseImage, 0, 0, null);
+
+        final Rectangle bgBox = getBoundingBox(overlay, inset,
+                lineWidths, lineHeight,
+                new Dimension(baseImage.getWidth(), baseImage.getHeight()));
+
+        // Draw the background if it is not transparent.
+        if (overlay.getBackgroundColor().getAlpha() > 0) {
+            g2d.setPaint(overlay.getBackgroundColor().toColor());
+            g2d.fillRect(bgBox.intX(), bgBox.intY(),
+                    bgBox.intWidth(), bgBox.intHeight());
+        }
+
+        // Draw each line individually.
+        for (int i = 0; i < lines.length; i++) {
+            double x, y;
+            switch (overlay.getPosition()) {
+                case TOP_LEFT:
+                    x = bgBox.x() + padding;
+                    y = bgBox.y() + lineHeight * i + padding;
+                    break;
+                case TOP_RIGHT:
+                    x = bgBox.x() + maxLineWidth - lineWidths[i] + padding;
+                    y = bgBox.y() + lineHeight * i + padding;
+                    break;
+                case BOTTOM_LEFT:
+                    x = bgBox.x() + padding;
+                    y = bgBox.y() + lineHeight * i + padding;
+                    break;
+                // BOTTOM_RIGHT is handled in default:
+                case TOP_CENTER:
+                    x = bgBox.x() + (bgBox.width() - lineWidths[i]) / 2.0;
+                    y = bgBox.y() + lineHeight * i + padding;
+                    break;
+                case BOTTOM_CENTER:
+                    x = bgBox.x() + (bgBox.width() - lineWidths[i]) / 2.0;
+                    y = bgBox.y() + lineHeight * i + padding;
+                    break;
+                case LEFT_CENTER:
+                    x = bgBox.x() + padding;
+                    y = bgBox.y() + lineHeight * i + padding;
+                    break;
+                case RIGHT_CENTER:
+                    x = bgBox.x() + maxLineWidth - lineWidths[i] + padding;
+                    y = bgBox.y() + lineHeight * i + padding;
+                    break;
+                case CENTER:
+                    x = bgBox.x() + (bgBox.width() - lineWidths[i]) / 2.0;
+                    y = bgBox.y() + lineHeight * i + padding;
+                    break;
+                default: // bottom right
+                    x = bgBox.x() + maxLineWidth - lineWidths[i] + padding;
+                    y = bgBox.y() + lineHeight * i + padding;
+                    break;
+            }
+
+            // This is arbitrary fudge, but it seems to work OK.
+            y += lineHeight * 0.73;
+
+            // Draw the text outline.
+            if (overlay.getStrokeWidth() > 0.001) {
+                final FontRenderContext frc = g2d.getFontRenderContext();
+                final GlyphVector gv = font.createGlyphVector(frc, lines[i]);
+                final Shape shape = gv.getOutline(Math.round(x), Math.round(y));
+                g2d.setStroke(new BasicStroke(overlay.getStrokeWidth()));
+                g2d.setPaint(overlay.getStrokeColor().toColor());
+                g2d.draw(shape);
+            }
+
+            // Draw the string.
+            g2d.setPaint(overlay.getColor().toColor());
+            g2d.drawString(lines[i], Math.round(x), Math.round(y));
+        }
+        g2d.dispose();
+        LOGGER.debug("overlayString() executed in {}", watch);
+    }
+
+    private static int[] getLineWidths(String[] lines, FontMetrics fm) {
+        final int[] lineWidths = new int[lines.length];
+        for (int i = 0; i < lines.length; i++) {
+            lineWidths[i] = fm.stringWidth(lines[i]);
+        }
+        return lineWidths;
     }
 
     private static Rectangle getBoundingBox(final StringOverlay overlay,

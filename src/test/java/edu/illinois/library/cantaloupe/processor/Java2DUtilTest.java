@@ -267,7 +267,7 @@ class Java2DUtilTest extends BaseTest {
         final StringOverlay overlay = new StringOverlay(
                 "X", Position.TOP_LEFT, 0,
                 new Font("SansSerif", Font.PLAIN, 12), 11,
-                Color.WHITE, Color.BLACK, Color.WHITE, 0f);
+                Color.WHITE, Color.BLACK, Color.WHITE, 0f, false);
 
         // apply it
         Java2DUtil.applyOverlay(baseImage, overlay);

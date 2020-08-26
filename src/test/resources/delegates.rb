@@ -240,7 +240,8 @@ class CustomDelegate
             'font_weight' => 1.5,
             'glyph_spacing' => 0.1,
             'stroke_color' => 'blue',
-            'stroke_width' => 3
+            'stroke_width' => 3,
+            'word_wrap' => false
         }
     end
     nil

@@ -5,8 +5,12 @@ import edu.illinois.library.cantaloupe.config.Key;
 
 import javax.annotation.Nullable;
 import javax.xml.bind.DatatypeConverter;
+import java.awt.FontMetrics;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -216,6 +220,114 @@ public final class StringUtils {
             xmp = xmp.substring(start, end + 10);
         }
         return xmp;
+    }
+
+    /**
+     * Returns an array of strings, one for each line in the string after it
+     * has been wrapped to fit lines of <var>maxWidth</var>. Lines end with any
+     * of CR, LF, or CRLF. A line ending at the end of the string will not
+     * output a further, empty string.
+     *
+     * @param str      The string to split. Must not be {@code null}.
+     * @param fm       Used for string width calculations.
+     * @param maxWidth The max line width, in points.
+     * @return         List of strings.
+     */
+    public static List<String> wrap(String str, FontMetrics fm, int maxWidth) {
+        final List<String> lines = Arrays.asList(str.split("\\r?\\n"));
+        if (lines.isEmpty()) {
+            return lines;
+        }
+        // Remove the last list element, if it is blank.
+        final int lastIndex = lines.size() - 1;
+        if (lines.get(lastIndex).isBlank()) {
+            lines.remove(lastIndex);
+        }
+        final List<String> strings = new ArrayList<>();
+        lines.forEach(line -> wrapLineInto(line, strings, fm, maxWidth));
+        return strings;
+    }
+
+    /**
+     * Given a line of text and font metrics information, wrap the line and add
+     * the new line(s) to <var>list</var>.
+     *
+     * @param line     A line of text.
+     * @param list     An output list of strings.
+     * @param fm       Font metrics.
+     * @param maxWidth Maximum width of the line(s).
+     * @author         <a href="mailto:jimm@io.com">Jim Menard</a>
+     */
+    private static void wrapLineInto(String line,
+                                     List<String> list,
+                                     FontMetrics fm,
+                                     int maxWidth) {
+        int len = line.length();
+        int width;
+        while (len > 0 && (width = fm.stringWidth(line)) > maxWidth) {
+            // Guess where to split the line. Look for the next space before
+            // or after the guess.
+            int guess     = len * maxWidth / width;
+            String before = line.substring(0, guess).trim();
+
+            width = fm.stringWidth(before);
+            int pos;
+            if (width > maxWidth) { // Too long
+                pos = findBreakBefore(line, guess);
+            } else { // Too short or possibly just right
+                pos = findBreakAfter(line, guess);
+                if (pos != -1) { // Make sure this doesn't make us too long
+                    before = line.substring(0, pos).trim();
+                    if (fm.stringWidth(before) > maxWidth) {
+                        pos = findBreakBefore(line, guess);
+                    }
+                }
+            }
+            if (pos == -1) {
+                pos = guess; // Split in the middle of the word
+            }
+            list.add(line.substring(0, pos).trim());
+            line = line.substring(pos).trim();
+            len  = line.length();
+        }
+        if (len > 0) {
+            list.add(line);
+        }
+    }
+
+    /**
+     * @param line A string.
+     * @param start Where to start looking.
+     * @return The index of the first whitespace character or {@code -} in
+     *         <var>line</var> that is at or before <var>start</var>. Returns
+     *         {@code -1} if no such character is found.
+     */
+    private static int findBreakBefore(String line, int start) {
+        for (int i = start; i >= 0; --i) {
+            char c = line.charAt(i);
+            if (Character.isWhitespace(c) || c == '-') {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    /**
+     * @param line A string.
+     * @param start Where to start looking.
+     * @return The index of the first whitespace character or {@code -} in
+     *         <var>line</var> that is at or after <var>start</var>. Returns
+     *         {@code -1} if no such character is found.
+     */
+    private static int findBreakAfter(String line, int start) {
+        int len = line.length();
+        for (int i = start; i < len; ++i) {
+            char c = line.charAt(i);
+            if (Character.isWhitespace(c) || c == '-') {
+                return i;
+            }
+        }
+        return -1;
     }
 
     private StringUtils() {}

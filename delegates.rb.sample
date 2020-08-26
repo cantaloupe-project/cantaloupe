@@ -241,21 +241,34 @@ class CustomDelegate
   end
 
   ##
-  # Tells the server what overlay, if any, to apply to an image in response
-  # to a request. Will be called upon all image requests to any endpoint if
-  # overlays are enabled and the overlay strategy is set to `ScriptStrategy`
-  # in the application configuration.
+  # Tells the server what overlay, if any, to apply to an image. Called upon
+  # all image requests to any endpoint if overlays are enabled and the overlay
+  # strategy is set to `ScriptStrategy` in the application configuration.
   #
-  # N.B.: When a string overlay is too large or long to fit entirely within
-  # the image, it won't be drawn. Consider breaking long strings with LFs (\n).
+  # Return values:
+  #
+  # 1. For string overlays, a hash with the following keys:
+  #     * `background_color` [String]
+  #     * `color` [String]
+  #     * `font` [String]
+  #     * `font_min_size` [Integer]
+  #     * `font_size` [Integer]
+  #     * `font_weight` [Float]
+  #     * `glyph_spacing` [Float]
+  #     * `inset` [Integer]
+  #     * `position` [String]
+  #     * `string` [String]
+  #     * `stroke_color` [String]
+  #     * `stroke_width` [Float]
+  #     * `word_wrap` [Boolean]
+  # 2. For image overlays, a hash with the following keys:
+  #     * `image` [String]
+  #     * `position` [String]
+  #     * `inset` [Integer]
+  # 3. nil for no overlay.
   #
   # @param options [Hash] Empty hash.
-  # @return [Hash<String,String>,nil] For image overlays, a hash with `image`,
-  #         `position`, and `inset` keys. For string overlays, a hash with
-  #         `background_color`, `color`, `font`, `font_min_size`, `font_size`,
-  #         `font_weight`, `glyph_spacing`,`inset`, `position`, `string`,
-  #         `stroke_color`, and `stroke_width` keys.
-  #         Return nil for no overlay.
+  # @return See above.
   #
   def overlay(options = {})
   end
@@ -326,7 +339,6 @@ class CustomDelegate
   #                            embed anything.
   #
   def metadata(options = {})
-    nil
   end
 
 end

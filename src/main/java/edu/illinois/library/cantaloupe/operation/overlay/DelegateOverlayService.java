@@ -50,11 +50,11 @@ final class DelegateOverlayService {
             } else {
                 final String string = (String) defs.get("string");
 
-                final Map<TextAttribute, Object> attributes = new HashMap<>();
-                attributes.put(TextAttribute.FAMILY, defs.get("font"));
-                attributes.put(TextAttribute.SIZE, defs.get("font_size"));
-                attributes.put(TextAttribute.WEIGHT, defs.get("font_weight"));
-                attributes.put(TextAttribute.TRACKING, defs.get("glyph_spacing"));
+                final Map<TextAttribute, Object> attributes = Map.of(
+                        TextAttribute.FAMILY, defs.get("font"),
+                        TextAttribute.SIZE, defs.get("font_size"),
+                        TextAttribute.WEIGHT, defs.get("font_weight"),
+                        TextAttribute.TRACKING, defs.get("glyph_spacing"));
                 final Font font = Font.getFont(attributes);
 
                 final Color backgroundColor =
@@ -67,9 +67,11 @@ final class DelegateOverlayService {
                         Color.fromString((String) defs.get("stroke_color"));
                 final float strokeWidth =
                         Float.parseFloat(defs.get("stroke_width").toString());
+                final boolean wordWrap = (boolean) defs.get("word_wrap");
 
                 return new StringOverlay(string, position, inset, font, minSize,
-                        color, backgroundColor, strokeColor, strokeWidth);
+                        color, backgroundColor, strokeColor, strokeWidth,
+                        wordWrap);
             }
         }
         return null;

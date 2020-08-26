@@ -30,9 +30,9 @@ public class StringOverlayTest extends BaseTest {
     @BeforeEach
     public void setUp() throws Exception {
         super.setUp();
-
         instance = new StringOverlay("cats", Position.BOTTOM_RIGHT, 5,
-                newFont(2.0f,  0.1f), 11, Color.BLUE, Color.ORANGE, Color.RED, 5f);
+                newFont(2.0f,  0.1f), 11, Color.BLUE, Color.ORANGE, Color.RED,
+                5f, false);
     }
 
     @Test
@@ -96,10 +96,19 @@ public class StringOverlayTest extends BaseTest {
     }
 
     @Test
+    void setWordWrapThrowsExceptionWhenFrozen() {
+        instance.freeze();
+        assertThrows(IllegalStateException.class,
+                () -> instance.setWordWrap(true));
+    }
+
+    @Test
     void toMap() {
         Dimension fullSize = new Dimension(100, 100);
         ScaleConstraint scaleConstraint = new ScaleConstraint(1, 1);
         Map<String,Object> map = instance.toMap(fullSize, scaleConstraint);
+
+        assertEquals(13, map.size());
         assertEquals(instance.getClass().getSimpleName(), map.get("class"));
         assertEquals(instance.getBackgroundColor().toRGBAHex(),
                 map.get("background_color"));
@@ -116,14 +125,16 @@ public class StringOverlayTest extends BaseTest {
         assertEquals(instance.getStrokeColor().toRGBAHex(),
                 map.get("stroke_color"));
         assertEquals(5f, map.get("stroke_width"));
+        assertEquals(false, map.get("word_wrap"));
     }
 
     @Test
     void toMapReturnsDefaultValueForMissingFontAttributes() {
         Dimension fullSize = new Dimension(100, 100);
         ScaleConstraint scaleConstraint = new ScaleConstraint(1, 1);
-        StringOverlay fontModifiedInstance = new StringOverlay("cats", Position.BOTTOM_RIGHT, 5,
-                newFont(null,  null), 11, Color.BLUE, Color.ORANGE, Color.RED, 5f);
+        StringOverlay fontModifiedInstance = new StringOverlay("cats",
+                Position.BOTTOM_RIGHT, 5, newFont(null,  null), 11,
+                Color.BLUE, Color.ORANGE, Color.RED, 5f, false);
         Map<String,Object> map = fontModifiedInstance.toMap(fullSize, scaleConstraint);
         assertEquals(TextAttribute.WEIGHT_REGULAR, map.get("font_weight"));
         assertEquals(0.0f, map.get("glyph_spacing"));
@@ -141,7 +152,7 @@ public class StringOverlayTest extends BaseTest {
     @Test
     void testToString() {
         instance.setString("DOGSdogs123!@#$%\n%^&*()");
-        assertEquals("801774c691b35cbd89e3bd8cb6803681_SE_5_SansSerif_12_2.0_0.1_#0000FFFF_#FFA500FF_#FF0000FF_5.0",
+        assertEquals("801774c691b35cbd89e3bd8cb6803681_SE_5_SansSerif_12_2.0_0.1_#0000FFFF_#FFA500FF_#FF0000FF_5.0_false",
                 instance.toString());
     }
 

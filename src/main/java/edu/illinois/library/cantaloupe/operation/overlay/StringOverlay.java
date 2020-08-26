@@ -25,6 +25,7 @@ public class StringOverlay extends Overlay implements Operation {
     private String string;
     private Color strokeColor;
     private float strokeWidth;
+    private boolean wordWrap;
 
     public StringOverlay(String string,
                          Position position,
@@ -34,7 +35,8 @@ public class StringOverlay extends Overlay implements Operation {
                          Color color,
                          Color backgroundColor,
                          Color strokeColor,
-                         float strokeWidth) {
+                         float strokeWidth,
+                         boolean wordWrap) {
         super(position, inset);
         this.setString(string);
         this.setFont(font);
@@ -43,6 +45,7 @@ public class StringOverlay extends Overlay implements Operation {
         this.setMinSize(minSize);
         this.setStrokeColor(strokeColor);
         this.setStrokeWidth(strokeWidth);
+        this.setWordWrap(wordWrap);
     }
 
     public Color getBackgroundColor() {
@@ -79,6 +82,10 @@ public class StringOverlay extends Overlay implements Operation {
     @Override
     public boolean hasEffect() {
         return (getString() != null && getString().length() > 0);
+    }
+
+    public boolean isWordWrap() {
+        return wordWrap;
     }
 
     /**
@@ -145,6 +152,15 @@ public class StringOverlay extends Overlay implements Operation {
     }
 
     /**
+     * @param wordWrap Whether to auto-wrap text.
+     * @throws IllegalStateException If the instance is frozen.
+     */
+    public void setWordWrap(boolean wordWrap) {
+        checkFrozen();
+        this.wordWrap = wordWrap;
+    }
+
+    /**
      * @param fullSize Full size of the source image on which the operation
      *                 is being applied.
      * @return Map with {@literal background_color}, {@literal class},
@@ -176,7 +192,8 @@ public class StringOverlay extends Overlay implements Operation {
                 Map.entry("position", getPosition().toString()),
                 Map.entry("string", getString()),
                 Map.entry("stroke_color", getStrokeColor().toRGBAHex()),
-                Map.entry("stroke_width", getStrokeWidth()));
+                Map.entry("stroke_width", getStrokeWidth()),
+                Map.entry("word_wrap", isWordWrap()));
     }
 
     /**
@@ -187,7 +204,7 @@ public class StringOverlay extends Overlay implements Operation {
     public String toString() {
         // minSize is not included, as it is more of a potential property than
         // a property.
-        return String.format("%s_%s_%d_%s_%d_%.1f_%.01f_%s_%s_%s_%.1f",
+        return String.format("%s_%s_%d_%s_%d_%.1f_%.01f_%s_%s_%s_%.1f_%s",
                 StringUtils.md5(getString()),
                 getPosition(),
                 getInset(),
@@ -198,7 +215,8 @@ public class StringOverlay extends Overlay implements Operation {
                 getColor().toRGBAHex(),
                 getBackgroundColor().toRGBAHex(),
                 getStrokeColor().toRGBAHex(),
-                getStrokeWidth());
+                getStrokeWidth(),
+                isWordWrap());
     }
 
 }
