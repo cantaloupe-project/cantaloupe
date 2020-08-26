@@ -37,6 +37,7 @@ public class RedactionServiceTest extends BaseTest {
     @Test
     void testRedactionsForWithRedactions() throws Exception {
         RequestContext context = new RequestContext();
+        context.setIdentifier(new Identifier("redacted"));
         DelegateProxyService service = DelegateProxyService.getInstance();
         DelegateProxy proxy = service.newDelegateProxy(context);
 

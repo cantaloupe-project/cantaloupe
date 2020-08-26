@@ -339,7 +339,7 @@ public class OperationListTest extends BaseTest {
         final Dimension fullSize = new Dimension(2000, 1000);
         final Info info = Info.builder().withSize(fullSize).build();
         final OperationList opList = new OperationList(
-                new Identifier("cats"), new Encode(Format.get("jpg")));
+                new Identifier("redacted"), new Encode(Format.get("jpg")));
 
         final RequestContext context = new RequestContext();
         context.setOperationList(opList, fullSize);

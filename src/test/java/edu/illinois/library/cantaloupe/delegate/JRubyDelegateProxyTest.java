@@ -258,6 +258,7 @@ public class JRubyDelegateProxyTest extends BaseTest {
 
     @Test
     void testGetRedactions() throws Exception {
+        instance.getRequestContext().setIdentifier(new Identifier("redacted"));
         List<Map<String,Long>> result = instance.getRedactions();
         assertEquals(1, result.size());
     }

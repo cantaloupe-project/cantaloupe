@@ -249,12 +249,12 @@ class CustomDelegate
 
   def redactions(options = {})
     case context['identifier']
-      when 'bogus'
-        return nil
       when 'empty'
         return []
-      else
+      when 'redacted'
         return [ { 'x' => 0, 'y' => 10, 'width' => 50, 'height' => 70 } ]
+      else
+        return nil
     end
   end
 
