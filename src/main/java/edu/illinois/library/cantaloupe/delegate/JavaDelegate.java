@@ -199,34 +199,64 @@ public interface JavaDelegate {
     Map<String,String> getS3SourceObjectInfo();
 
     /**
-     * <p>Tells the server what overlay, if any, to apply to an image in
-     * response to a request. Will be called upon all image requests to any
-     * endpoint if overlays are enabled and the overlay strategy is set to
-     * {@code ScriptStrategy} in the application configuration.</p>
-     *
-     * <p>N.B.: When a string overlay is too large or long to fit entirely
-     * within the image, it won't be drawn. Consider breaking long strings with
-     * LFs ({@literal \n}).</p>
+     * <p>Tells the server what overlay, if any, to apply to an image. Called
+     * upon all image requests to any endpoint if overlays are enabled and the
+     * overlay strategy is set to {@code ScriptStrategy} in the application
+     * configuration.</p>
      *
      * <p>Possible return values:</p>
      *
-     * <ul>
-     *     <li>For image overlays, a map with {@code image}, {@code position},
-     *     and {@code inset} keys</li>
-     *     <li>For string overlays, a map with {@code background_color}, {@code
-     *     color}, {@code font}, {@code font_min_size}, {@code font_size},
-     *     {@code font_weight}, {@code glyph_spacing}, {@code inset}, {@code
-     *     position}, {@code string}, {@code stroke_color}, and {@code
-     *     stroke_width} keys.</li>
-     *     <li>For no overlay, {@code null}.</li>
-     * </ul>
+     * <ol>
+     *     <li>For string overlays, a map with the following keys:
+     *         <dl>
+     *             <dt>{@code background_color}</dt>
+     *             <dd>CSS-compliant RGB(A) color.</dd>
+     *             <dt>{@code color}</dt>
+     *             <dd>CSS-compliant RGB(A) color.</dd>
+     *             <dt>{@code font}</dt>
+     *             <dd>Font name.</dd>
+     *             <dt>{@code font_min_size}</dt>
+     *             <dd>Minimum font size in points (ignored when {@code
+     *             word_wrap} is {@code true}.</dd>
+     *             <dt>{@code font_size}</dt>
+     *             <dd>Font size in points.</dd>
+     *             <dt>{@code font_weight}</dt>
+     *             <dd>Font weight based on 1.</dd>
+     *             <dt>{@code glyph_spacing}</dt>
+     *             <dd>Glyph spacing based on 0.</dd>
+     *             <dt>{@code inset}</dt>
+     *             <dd>Pixels of inset.</dd>
+     *             <dt>{@code position}</dt>
+     *             <dd>Position like {@code top left}, {@code center right},
+     *             etc.</dd>
+     *             <dt>{@code string}</dt>
+     *             <dd>String to render.</dd>
+     *             <dt>{@code stroke_color}</dt>
+     *             <dd>CSS-compliant RGB(A) text outline color.</dd>
+     *             <dt>{@code stroke_width}</dt>
+     *             <dd>Text outline width in pixels.</dd>
+     *             <dt>{@code word_wrap}</dt>
+     *             <dd>Whether to wrap long lines within {@code string}.</dd>
+     *         </dl>
+     *     </li>
+     *     <li>For image overlays, a map with the following keys:
+     *         <dl>
+     *             <dt>{@code image}</dt>
+     *             <dd>Image pathname or URL.</dd>
+     *             <dt>{@code position}</dt>
+     *             <dd>See above.</dd>
+     *             <dt>{@code inset}</dt>
+     *             <dd>See above.</dd>
+     *         </dl>
+     *     </li>
+     *     <li>{@code null} for no overlay.</li>
+     * </ol>
      */
     Map<String,Object> getOverlay();
 
     /**
      * Tells the server what regions of an image to redact in response to a
-     * request. Will be called upon all image requests to any endpoint if
-     * redactions are enabled in the application configuration.
+     * request. Will be called upon all image requests to any endpoint.
      *
      * @return List of maps, each with {@code x}, {@code y}, {@code width}, and
      *         {@code height} keys; or an empty list if no redactions are to

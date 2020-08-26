@@ -182,10 +182,10 @@ class CustomDelegate
   #
   # 1. String URI
   # 2. Hash with the following keys:
-  #     * `uri` [String] (required)
+  #     * `uri`      [String] (required)
   #     * `username` [String] For HTTP Basic authentication (optional).
-  #     * `secret` [String] For HTTP Basic authentication (optional).
-  #     * `headers` [Hash<String,String>] Hash of request headers (optional).
+  #     * `secret`   [String] For HTTP Basic authentication (optional).
+  #     * `headers`  [Hash<String,String>] Hash of request headers (optional).
   # 3. nil if not found.
   #
   # N.B.: this method should not try to perform authorization. `authorize()`
@@ -248,23 +248,27 @@ class CustomDelegate
   # Return values:
   #
   # 1. For string overlays, a hash with the following keys:
-  #     * `background_color` [String]
-  #     * `color` [String]
-  #     * `font` [String]
-  #     * `font_min_size` [Integer]
-  #     * `font_size` [Integer]
-  #     * `font_weight` [Float]
-  #     * `glyph_spacing` [Float]
-  #     * `inset` [Integer]
-  #     * `position` [String]
-  #     * `string` [String]
-  #     * `stroke_color` [String]
-  #     * `stroke_width` [Float]
-  #     * `word_wrap` [Boolean]
+  #     * `background_color` [String] CSS-compliant RGA(A) color.
+  #     * `color`            [String] CSS-compliant RGA(A) color.
+  #     * `font`             [String] Font name. Launch with the -list-fonts
+  #                          argument to see a list of available fonts.
+  #     * `font_min_size`    [Integer] Minimum font size in points (ignored
+  #                          when `word_wrap` is true).
+  #     * `font_size`        [Integer] Font size in points.
+  #     * `font_weight`      [Float] Font weight based on 1.
+  #     * `glyph_spacing`    [Float] Glyph spacing based on 0.
+  #     * `inset`            [Integer] Pixels of inset.
+  #     * `position`         [String] Position like `top left`, `center right`,
+  #                          etc.
+  #     * `string`           [String] String to draw.
+  #     * `stroke_color`     [String] CSS-compliant RGB(A) text outline color.
+  #     * `stroke_width`     [Float] Text outline width in pixels.
+  #     * `word_wrap`        [Boolean] Whether to wrap long lines within
+  #                          `string`.
   # 2. For image overlays, a hash with the following keys:
-  #     * `image` [String]
-  #     * `position` [String]
-  #     * `inset` [Integer]
+  #     * `image`    [String] Image pathname or URL.
+  #     * `position` [String] See above.
+  #     * `inset`    [Integer] See above.
   # 3. nil for no overlay.
   #
   # @param options [Hash] Empty hash.
@@ -275,8 +279,7 @@ class CustomDelegate
 
   ##
   # Tells the server what regions of an image to redact in response to a
-  # particular request. Will be called upon all image requests to any endpoint
-  # if redactions are enabled in the application configuration.
+  # particular request. Will be called upon all image requests to any endpoint.
   #
   # @param options [Hash] Empty hash.
   # @return [Array<Hash<String,Integer>>] Array of hashes, each with `x`, `y`,
@@ -293,6 +296,7 @@ class CustomDelegate
   # Source image metadata is available in the `metadata` context key, and has
   # the following structure:
   #
+  # ```
   # {
   #     "exif": {
   #         "tagSet": "Baseline TIFF",
@@ -318,6 +322,7 @@ class CustomDelegate
   #         # structure varies
   #     }
   # }
+  # ```
   #
   # * The `exif` key refers to embedded EXIF data. This also includes IFD0
   #   metadata from source TIFFs, whether or not an EXIF IFD is present.
