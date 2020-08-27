@@ -20,7 +20,7 @@ jobs:
         if: matrix.os == 'windows-latest' && matrix.java == 'jdk'
         run: |
           docker build -f docker/Windows10-JDK11/Dockerfile -t cantaloupe/tests .
-          docker run cantaloupe/tests cmd /c "mvn --batch-mode --quiet test -Pnodeps"
+          docker run cantaloupe/tests cmd /c "mvn --batch-mode test -Pnodeps"
       - name: Test in Windows JDK
         if: matrix.os == 'windows-latest' && matrix.java == 'graalvm'
         # TODO: Windows+GraalVM
