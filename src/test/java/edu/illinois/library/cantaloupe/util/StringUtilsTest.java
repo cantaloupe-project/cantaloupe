@@ -255,7 +255,7 @@ class StringUtilsTest extends BaseTest {
         final FontMetrics fm = g2d.getFontMetrics();
 
         List<String> lines = StringUtils.wrap(str, fm, maxWidth);
-        assertEquals(3, lines.size());
+        assertTrue(lines.size() > 2 && lines.size() < 6);
         assertTrue(lines.get(0).length() > 10 && lines.get(0).length() < 30);
         assertTrue(lines.get(1).length() > 10 && lines.get(1).length() < 30);
         assertTrue(lines.get(2).length() > 10 && lines.get(2).length() < 30);
