@@ -1,13 +1,6 @@
 # Cantaloupe unit test configuration file.
 # DO NOT EDIT; copy to test.properties and edit that.
 
-# Used by DynamoDBCacheTest. These are pre-set to values that will work with
-# dynamodb-local (https://hub.docker.com/r/amazon/dynamodb-local/).
-dynamodb.endpoint = http://localhost:8000
-dynamodb.table = DynamoDBCacheTest
-dynamodb.access_key_id =
-dynamodb.secret_key =
-
 # Used by S3SourceTest and S3CacheTest.
 # Available services are `s3mock`, `minio`, and `aws`.
 s3.service = s3mock

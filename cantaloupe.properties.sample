@@ -445,7 +445,7 @@ cache.server.source.ttl_seconds = 2592000
 cache.server.derivative.enabled = false
 
 # Available values are `FilesystemCache`, `JdbcCache`, `RedisCache`,
-# `HeapCache`, `S3Cache`, `AzureStorageCache`, and `DynamoDBCache`.
+# `HeapCache`, `S3Cache`, and `AzureStorageCache`.
 cache.server.derivative =
 
 # Amount of time derivative cache content remains valid. Set to blank or 0
@@ -578,24 +578,6 @@ RedisCache.port = 6379
 RedisCache.ssl = false
 RedisCache.password =
 RedisCache.database = 0
-
-#----------------------------------------
-# DynamoDBCache
-#----------------------------------------
-
-# !! Endpoint URI. For AWS endpoints, see:
-# https://docs.aws.amazon.com/general/latest/gr/rande.html#ddb_region
-DynamoDBCache.endpoint =
-
-# !! This table must be created manually; see the user manual.
-DynamoDBCache.table.name = CantaloupeDynamoDBCache
-
-# !! Credentials for your AWS account.
-# See: http://aws.amazon.com/security-credentials
-# Note that this info can be obtained from elsewhere rather than setting it
-# here; see the user manual.
-DynamoDBCache.access_key_id =
-DynamoDBCache.secret_key =
 
 ###########################################################################
 # OVERLAYS

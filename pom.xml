@@ -79,7 +79,7 @@
             <artifactId>logstash-logback-encoder</artifactId>
             <version>6.1</version>
         </dependency>
-        <!-- Used by S3Cache and DynamoDBCache-->
+        <!-- Used by S3Cache -->
         <dependency>
             <groupId>com.amazonaws</groupId>
             <artifactId>aws-java-sdk-core</artifactId>
@@ -88,12 +88,6 @@
         <dependency>
             <groupId>com.amazonaws</groupId>
             <artifactId>aws-java-sdk-s3</artifactId>
-            <version>${aws-sdk.version}</version>
-        </dependency>
-        <!-- Used by DynamoDBCache -->
-        <dependency>
-            <groupId>com.amazonaws</groupId>
-            <artifactId>aws-java-sdk-dynamodb</artifactId>
             <version>${aws-sdk.version}</version>
         </dependency>
         <!-- Heap-based object cache: https://github.com/ben-manes/caffeine-->
@@ -563,7 +557,6 @@
                             <reuseForks>false</reuseForks>
                             <excludes>
                                 <exclude>AzureStorage*Test</exclude>
-                                <exclude>DynamoDB*Test</exclude>
                                 <exclude>FfmpegProcessorTest</exclude>
                                 <exclude>*Kakadu*Test</exclude>
                                 <exclude>OpenJpegProcessorTest</exclude>

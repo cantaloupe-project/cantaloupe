@@ -16,7 +16,6 @@ current version.
     * `processor.ManualSelectionStrategy.xpm`
     * `processor.imageio.xpm.reader`
     * `GrokProcessor.path_to_binaries`
-    * `DynamoDBCache.*`
     * `log.application.ConsoleAppender.logstash.enabled`
     * `log.application.FileAppender.logstash.enabled`
     * `log.application.RollingFileAppender.logstash.enabled`

@@ -47,8 +47,6 @@ on third-party services and do not require any external tools or libraries.
 depend on open-source tools or libraries. These are the tests run in
 continuous integration. The following dependencies are required:
 
-* DynamoDB or [dynamodb-local](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/DynamoDBLocal.html)
-  (for DynamoDBCacheTest)
 * FFmpeg (for FfmpegProcessorTest)
 * OpenJPEG (for OpenJpegProcessorTest)
 * Grok (for GrokProcessorTest)
