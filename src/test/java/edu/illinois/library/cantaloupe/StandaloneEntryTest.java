@@ -138,6 +138,9 @@ public class StandaloneEntryTest extends BaseTest {
         redirectOutput();
         System.setProperty(ConfigurationFactory.CONFIG_VM_ARGUMENT, "");
         StandaloneEntry.main("");
+
+        String message = redirectedOutput.toString();
+        assertTrue(message.contains("Usage:"));
     }
 
     @Test
