@@ -46,7 +46,7 @@ public class BasicStringOverlayServiceTest extends BaseTest {
 
     @Test
     void testGetOverlay() {
-        final StringOverlay overlay = instance.getOverlay();
+        final StringOverlay overlay = instance.newOverlay();
         assertEquals("cats", overlay.getString());
         assertEquals(new Color(12, 23, 34, 45), overlay.getBackgroundColor());
         assertEquals(Color.RED, overlay.getColor());

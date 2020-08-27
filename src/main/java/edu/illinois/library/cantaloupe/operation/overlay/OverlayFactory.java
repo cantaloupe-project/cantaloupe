@@ -5,12 +5,13 @@ import edu.illinois.library.cantaloupe.config.ConfigurationException;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Dimension;
 import edu.illinois.library.cantaloupe.delegate.DelegateProxy;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import javax.script.ScriptException;
+import java.util.Optional;
 
 /**
- * Provides information about overlays, including whether they are enabled,
- * and access to new {@link Overlay} instances, if so.
+ * Provides access to {@link Overlay} instances.
  */
 public final class OverlayFactory {
 
@@ -29,12 +30,41 @@ public final class OverlayFactory {
 
     }
 
-    private boolean isEnabled = false;
+    private static final Logger LOGGER =
+            LoggerFactory.getLogger(OverlayFactory.class);
+
     private Strategy strategy;
 
     public OverlayFactory() throws ConfigurationException {
-        readEnabled();
         readStrategy();
+    }
+
+    private OverlayService newOverlayService(DelegateProxy delegateProxy)
+            throws ConfigurationException {
+        final Configuration config = Configuration.getInstance();
+        OverlayService instance = null;
+        switch (getStrategy()) {
+            case BASIC:
+                switch (config.getString(Key.OVERLAY_TYPE, "")) {
+                    case "image":
+                        instance = new BasicImageOverlayService();
+                        break;
+                    case "string":
+                        instance = new BasicStringOverlayService();
+                        break;
+                }
+                break;
+            case DELEGATE_METHOD:
+                instance = new DelegateOverlayService(delegateProxy);
+                break;
+        }
+        if (instance != null) {
+            LOGGER.trace("Using a {}", instance.getClass().getSimpleName());
+        } else {
+            LOGGER.trace("No {} available",
+                    OverlayService.class.getSimpleName());
+        }
+        return instance;
     }
 
     /**
@@ -42,43 +72,23 @@ public final class OverlayFactory {
      * configuration, or the delegate method return value, depending on the
      * setting of {@link Key#OVERLAY_STRATEGY}.
      *
-     * @param delegateProxy Required for {@link Strategy#DELEGATE_METHOD}.
-     *                      May be {@literal null}.
-     * @return              Overlay respecting the overlay strategy and given
-     *                      arguments, or {@literal null}.
+     * @param delegateProxy Required when {@link #getStrategy()} returns {@link
+     *                      Strategy#DELEGATE_METHOD}. May be {@code null}
+     *                      otherwise.
+     * @return              Instance respecting the overlay strategy and given
+     *                      arguments.
      */
-    public Overlay newOverlay(DelegateProxy delegateProxy)
-            throws ScriptException, ConfigurationException {
-        final Configuration config = Configuration.getInstance();
-        switch (getStrategy()) {
-            case BASIC:
-                switch (config.getString(Key.OVERLAY_TYPE, "")) {
-                    case "image":
-                        return new BasicImageOverlayService().getOverlay();
-                    case "string":
-                        return new BasicStringOverlayService().getOverlay();
-                }
-                break;
-            case DELEGATE_METHOD:
-                return new DelegateOverlayService().getOverlay(delegateProxy);
+    public Optional<Overlay> newOverlay(DelegateProxy delegateProxy)
+            throws Exception {
+        OverlayService service = newOverlayService(delegateProxy);
+        if (service != null && service.isAvailable()) {
+            return Optional.ofNullable(service.newOverlay());
         }
-        return null;
+        return Optional.empty();
     }
 
     Strategy getStrategy() {
         return strategy;
-    }
-
-    /**
-     * @return Whether overlays are enabled.
-     */
-    public boolean isEnabled() {
-        return isEnabled;
-    }
-
-    private void readEnabled() {
-        setEnabled(Configuration.getInstance().
-                getBoolean(Key.OVERLAY_ENABLED, false));
     }
 
     private void readStrategy() throws ConfigurationException {
@@ -96,13 +106,6 @@ public final class OverlayFactory {
                 throw new ConfigurationException("Unsupported value for " +
                         Key.OVERLAY_STRATEGY);
         }
-    }
-
-    /**
-     * @param enabled Whether overlays should be enabled.
-     */
-    void setEnabled(boolean enabled) {
-        isEnabled = enabled;
     }
 
     /**

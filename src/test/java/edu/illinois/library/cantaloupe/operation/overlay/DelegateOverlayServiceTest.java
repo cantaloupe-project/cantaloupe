@@ -34,12 +34,28 @@ public class DelegateOverlayServiceTest extends BaseTest {
         config.setProperty(Key.DELEGATE_SCRIPT_ENABLED, true);
         config.setProperty(Key.DELEGATE_SCRIPT_PATHNAME,
                 TestUtil.getFixture("delegates.rb").toString());
+    }
 
-        instance = new DelegateOverlayService();
+    /* isAvailable() */
+
+    @Test
+    void testIsAvailableWhenAvailable() {
+        instance = new DelegateOverlayService(null);
+        assertTrue(instance.isAvailable());
     }
 
     @Test
-    void testGetOverlayReturningImageOverlay() throws Exception {
+    void testIsAvailableWhenNotAvailable() {
+        Configuration config = Configuration.getInstance();
+        config.setProperty(Key.DELEGATE_SCRIPT_ENABLED, false);
+        instance = new DelegateOverlayService(null);
+        assertFalse(instance.isAvailable());
+    }
+
+    /* newOverlay() */
+
+    @Test
+    void testNewOverlayReturningImageOverlay() throws Exception {
         final Identifier identifier = new Identifier("image");
         final Dimension fullSize = new Dimension(500, 500);
         final OperationList opList = new OperationList(
@@ -50,8 +66,9 @@ public class DelegateOverlayServiceTest extends BaseTest {
 
         DelegateProxyService service = DelegateProxyService.getInstance();
         DelegateProxy proxy = service.newDelegateProxy(context);
+        instance = new DelegateOverlayService(proxy);
 
-        final ImageOverlay overlay = (ImageOverlay) instance.getOverlay(proxy);
+        final ImageOverlay overlay = (ImageOverlay) instance.newOverlay();
         if (SystemUtils.IS_OS_WINDOWS) {
             assertEquals(new URI("file:///C:/dev/cats"), overlay.getURI());
         } else {
@@ -62,7 +79,7 @@ public class DelegateOverlayServiceTest extends BaseTest {
     }
 
     @Test
-    void testGetOverlayReturningStringOverlay() throws Exception {
+    void testNewOverlayReturningStringOverlay() throws Exception {
         final Identifier identifier = new Identifier("string");
         final Dimension fullSize = new Dimension(500, 500);
         final OperationList opList = new OperationList(
@@ -73,9 +90,9 @@ public class DelegateOverlayServiceTest extends BaseTest {
 
         DelegateProxyService service = DelegateProxyService.getInstance();
         DelegateProxy proxy = service.newDelegateProxy(context);
+        instance = new DelegateOverlayService(proxy);
 
-        final StringOverlay overlay =
-                (StringOverlay) instance.getOverlay(proxy);
+        final StringOverlay overlay = (StringOverlay) instance.newOverlay();
         assertEquals("dogs\ndogs", overlay.getString());
         assertEquals("SansSerif", overlay.getFont().getName());
         assertEquals(20, overlay.getFont().getSize());
@@ -92,12 +109,13 @@ public class DelegateOverlayServiceTest extends BaseTest {
     }
 
     @Test
-    void testGetOverlayReturningNull() throws Exception {
+    void testNewOverlayReturningNull() throws Exception {
         final RequestContext context = new RequestContext();
         DelegateProxyService service = DelegateProxyService.getInstance();
         DelegateProxy proxy = service.newDelegateProxy(context);
+        instance = new DelegateOverlayService(proxy);
 
-        Overlay overlay = instance.getOverlay(proxy);
+        Overlay overlay = instance.newOverlay();
         assertNull(overlay);
     }
 

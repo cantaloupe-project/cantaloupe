@@ -601,13 +601,13 @@ DynamoDBCache.secret_key =
 # OVERLAYS
 ###########################################################################
 
-# Whether to enable overlays.
-overlays.enabled = false
-
 # Controls how overlays are configured. `BasicStrategy` will use the
 # `overlays.BasicStrategy.*` keys in this section. `ScriptStrategy` will
 # use a delegate method. (See the user manual.)
 overlays.strategy = BasicStrategy
+
+# Whether to enable overlays using the BasicStrategy.
+overlays.BasicStrategy.enabled = false
 
 # `image` or `string`.
 overlays.BasicStrategy.type = image

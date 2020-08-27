@@ -11,7 +11,8 @@ import java.nio.file.Paths;
 /**
  * Used to acquire overlay images when using BasicStrategy for overlays.
  */
-class BasicImageOverlayService extends BasicOverlayService {
+class BasicImageOverlayService extends BasicOverlayService
+        implements OverlayService {
 
     private URI overlayURI;
 
@@ -23,7 +24,8 @@ class BasicImageOverlayService extends BasicOverlayService {
     /**
      * @return Overlay image corresponding to the application configuration.
      */
-    ImageOverlay getOverlay() {
+    @Override
+    public ImageOverlay newOverlay() {
         return new ImageOverlay(overlayURI, getPosition(), getInset());
     }
 

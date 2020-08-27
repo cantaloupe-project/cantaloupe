@@ -33,7 +33,7 @@ public class BasicImageOverlayServiceTest extends BaseTest {
 
     @Test
     void testGetOverlay() throws Exception {
-        final ImageOverlay overlay = instance.getOverlay();
+        final ImageOverlay overlay = instance.newOverlay();
         if (SystemUtils.IS_OS_WINDOWS) {
             assertEquals(new URI("file:///C:/dev/null"), overlay.getURI());
         } else {

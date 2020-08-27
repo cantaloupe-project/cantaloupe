@@ -26,6 +26,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -242,18 +243,10 @@ public final class OperationList implements Iterable<Operation> {
         // Overlay
         try {
             final OverlayFactory overlayFactory = new OverlayFactory();
-            if (overlayFactory.isEnabled() &&
-                    overlayFactory.shouldApplyToImage(getResultingSize(sourceImageSize))) {
-                final Overlay overlay = overlayFactory.newOverlay(delegateProxy);
-                if (overlay != null) {
-                    addBefore(overlay, Encode.class);
-                } else {
-                    LOGGER.trace("applyNonEndpointMutations(): delegate " +
-                            "requested no overlay.");
-                }
-            } else {
-                LOGGER.trace("applyNonEndpointMutations(): overlays are " +
-                        "disabled; skipping.");
+            if (overlayFactory.shouldApplyToImage(getResultingSize(sourceImageSize))) {
+                final Optional<Overlay> overlay =
+                        overlayFactory.newOverlay(delegateProxy);
+                overlay.ifPresent(ov -> addBefore(ov, Encode.class));
             }
         } catch (Exception e) {
             LOGGER.error(e.getMessage(), e);

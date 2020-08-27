@@ -142,7 +142,7 @@ public enum Key {
     MAX_SCALE("max_scale"),
     OPENJPEGPROCESSOR_PATH_TO_BINARIES("OpenJpegProcessor.path_to_binaries"),
     GROKPROCESSOR_PATH_TO_BINARIES("GrokProcessor.path_to_binaries"),
-    OVERLAY_ENABLED("overlays.enabled"),
+    OVERLAY_ENABLED("overlays.BasicStrategy.enabled"),
     OVERLAY_IMAGE("overlays.BasicStrategy.image"),
     OVERLAY_INSET("overlays.BasicStrategy.inset"),
     OVERLAY_OUTPUT_HEIGHT_THRESHOLD("overlays.BasicStrategy.output_height_threshold"),

@@ -14,6 +14,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.net.URI;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -41,13 +42,13 @@ public class OverlayFactoryTest extends BaseTest {
 
     @Test
     void testConstructor() {
-        assertTrue(instance.isEnabled());
         assertEquals(OverlayFactory.Strategy.BASIC, instance.getStrategy());
     }
 
     @Test
     void testNewOverlayWithBasicImageStrategy() throws Exception {
-        ImageOverlay overlay = (ImageOverlay) instance.newOverlay(null);
+        Optional<Overlay> result = instance.newOverlay(null);
+        ImageOverlay overlay = (ImageOverlay) result.get();
         if (SystemUtils.IS_OS_WINDOWS) {
             assertEquals(new URI("file:///C:/dev/null"), overlay.getURI());
         } else {
@@ -65,7 +66,8 @@ public class OverlayFactoryTest extends BaseTest {
         config.setProperty(Key.OVERLAY_STRING_COLOR, "green");
         instance = new OverlayFactory();
 
-        StringOverlay overlay = (StringOverlay) instance.newOverlay(null);
+        Optional<Overlay> result = instance.newOverlay(null);
+        StringOverlay overlay = (StringOverlay) result.get();
         assertEquals("cats", overlay.getString());
         assertEquals(10, overlay.getInset());
         assertEquals(Position.TOP_LEFT, overlay.getPosition());
@@ -83,7 +85,8 @@ public class OverlayFactoryTest extends BaseTest {
         DelegateProxyService service = DelegateProxyService.getInstance();
         DelegateProxy proxy = service.newDelegateProxy(context);
 
-        ImageOverlay overlay = (ImageOverlay) instance.newOverlay(proxy);
+        Optional<Overlay> result = instance.newOverlay(proxy);
+        ImageOverlay overlay = (ImageOverlay) result.get();
         if (SystemUtils.IS_OS_WINDOWS) {
             assertEquals(new URI("file:///C:/dev/cats"), overlay.getURI());
         } else {
@@ -104,7 +107,8 @@ public class OverlayFactoryTest extends BaseTest {
         DelegateProxyService service = DelegateProxyService.getInstance();
         DelegateProxy proxy = service.newDelegateProxy(context);
 
-        StringOverlay overlay = (StringOverlay) instance.newOverlay(proxy);
+        Optional<Overlay> result = instance.newOverlay(proxy);
+        StringOverlay overlay = (StringOverlay) result.get();
         assertEquals("dogs\ndogs", overlay.getString());
         assertEquals(5, overlay.getInset());
         assertEquals(Position.BOTTOM_LEFT, overlay.getPosition());
@@ -121,8 +125,8 @@ public class OverlayFactoryTest extends BaseTest {
         DelegateProxyService service = DelegateProxyService.getInstance();
         DelegateProxy proxy = service.newDelegateProxy(context);
 
-        Overlay overlay = instance.newOverlay(proxy);
-        assertNull(overlay);
+        Optional<Overlay> result = instance.newOverlay(proxy);
+        assertFalse(result.isPresent());
     }
 
 }

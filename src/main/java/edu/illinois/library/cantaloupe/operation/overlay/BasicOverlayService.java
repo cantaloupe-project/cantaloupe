@@ -11,7 +11,6 @@ abstract class BasicOverlayService {
     private Position position;
 
     /**
-     * @param outputImageSize
      * @return Whether an overlay should be applied to an output image with
      * the given dimensions.
      */
@@ -44,7 +43,10 @@ abstract class BasicOverlayService {
         return position;
     }
 
-    abstract Overlay getOverlay();
+    public boolean isAvailable() {
+        return Configuration.getInstance().
+                getBoolean(Key.OVERLAY_ENABLED, false);
+    }
 
     private void readInset() {
         inset = Configuration.getInstance().getInt(Key.OVERLAY_INSET, 0);

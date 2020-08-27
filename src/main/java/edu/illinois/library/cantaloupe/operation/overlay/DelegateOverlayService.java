@@ -1,5 +1,6 @@
 package edu.illinois.library.cantaloupe.operation.overlay;
 
+import edu.illinois.library.cantaloupe.delegate.DelegateProxyService;
 import edu.illinois.library.cantaloupe.operation.Color;
 import edu.illinois.library.cantaloupe.delegate.DelegateProxy;
 import org.slf4j.Logger;
@@ -15,17 +16,29 @@ import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 
-final class DelegateOverlayService {
+final class DelegateOverlayService implements OverlayService {
 
     private static final Logger LOGGER =
             LoggerFactory.getLogger(DelegateOverlayService.class);
+
+    private final DelegateProxy delegateProxy;
+
+    DelegateOverlayService(DelegateProxy delegateProxy) {
+        this.delegateProxy = delegateProxy;
+    }
+
+    @Override
+    public boolean isAvailable() {
+        return DelegateProxyService.isDelegateAvailable();
+    }
 
     /**
      * @return Map with {@literal inset}, {@literal position}, and {@literal
      *         pathname} or {@literal string} keys; or {@literal null}
      */
-    Overlay getOverlay(DelegateProxy proxy) throws ScriptException {
-        final Map<String,Object> defs = overlayProperties(proxy);
+    @Override
+    public Overlay newOverlay() throws ScriptException {
+        final Map<String,Object> defs = overlayProperties(delegateProxy);
         if (defs != null) {
             final int inset = ((Long) defs.get("inset")).intValue();
             final Position position = (Position) defs.get("position");
@@ -48,26 +61,26 @@ final class DelegateOverlayService {
                     return null;
                 }
             } else {
-                final String string = (String) defs.get("string");
+                String string = (String) defs.get("string");
 
-                final Map<TextAttribute, Object> attributes = Map.of(
+                Map<TextAttribute, Object> attributes = Map.of(
                         TextAttribute.FAMILY, defs.get("font"),
                         TextAttribute.SIZE, defs.get("font_size"),
                         TextAttribute.WEIGHT, defs.get("font_weight"),
                         TextAttribute.TRACKING, defs.get("glyph_spacing"));
-                final Font font = Font.getFont(attributes);
+                Font font = Font.getFont(attributes);
 
-                final Color backgroundColor =
+                Color backgroundColor =
                         Color.fromString((String) defs.get("background_color"));
-                final Color color =
+                Color color =
                         Color.fromString((String) defs.get("color"));
-                final int minSize =
+                int minSize =
                         ((Long) defs.get("font_min_size")).intValue();
-                final Color strokeColor =
+                Color strokeColor =
                         Color.fromString((String) defs.get("stroke_color"));
-                final float strokeWidth =
+                float strokeWidth =
                         Float.parseFloat(defs.get("stroke_width").toString());
-                final boolean wordWrap = (boolean) defs.get("word_wrap");
+                boolean wordWrap = (boolean) defs.get("word_wrap");
 
                 return new StringOverlay(string, position, inset, font, minSize,
                         color, backgroundColor, strokeColor, strokeWidth,

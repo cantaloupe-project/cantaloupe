@@ -34,6 +34,7 @@ current version.
     * `redaction.enabled`
 5.  Rename the following configuration keys:
     * `endpoint.iiif.2.restrict_to_sizes` to `endpoint.iiif.restrict_to_sizes`
+    * `overlays.enabled` to `overlays.BasicStrategy.enabled`
 6.  Add the following methods from the sample delegate script:
     * `pre_authorize()`
     * `extra_iiif3_information_response_keys()`
