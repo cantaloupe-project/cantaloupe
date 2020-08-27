@@ -17,9 +17,9 @@ import java.net.URI;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class OverlayServiceTest extends BaseTest {
+public class OverlayFactoryTest extends BaseTest {
 
-    private OverlayService instance;
+    private OverlayFactory instance;
 
     @BeforeEach
     public void setUp() throws Exception {
@@ -36,13 +36,13 @@ public class OverlayServiceTest extends BaseTest {
         config.setProperty(Key.OVERLAY_POSITION, "top left");
         config.setProperty(Key.OVERLAY_IMAGE, "/dev/null");
 
-        instance = new OverlayService();
+        instance = new OverlayFactory();
     }
 
     @Test
     void testConstructor() {
         assertTrue(instance.isEnabled());
-        assertEquals(OverlayService.Strategy.BASIC, instance.getStrategy());
+        assertEquals(OverlayFactory.Strategy.BASIC, instance.getStrategy());
     }
 
     @Test
@@ -63,7 +63,7 @@ public class OverlayServiceTest extends BaseTest {
         config.setProperty(Key.OVERLAY_TYPE, "string");
         config.setProperty(Key.OVERLAY_STRING_STRING, "cats");
         config.setProperty(Key.OVERLAY_STRING_COLOR, "green");
-        instance = new OverlayService();
+        instance = new OverlayFactory();
 
         StringOverlay overlay = (StringOverlay) instance.newOverlay(null);
         assertEquals("cats", overlay.getString());
@@ -75,7 +75,7 @@ public class OverlayServiceTest extends BaseTest {
     @Test
     void testNewOverlayWithScriptStrategyReturningImageOverlay()
             throws Exception {
-        instance.setStrategy(OverlayService.Strategy.DELEGATE_METHOD);
+        instance.setStrategy(OverlayFactory.Strategy.DELEGATE_METHOD);
 
         final RequestContext context = new RequestContext();
         context.setIdentifier(new Identifier("image"));
@@ -96,7 +96,7 @@ public class OverlayServiceTest extends BaseTest {
     @Test
     void testNewOverlayWithScriptStrategyReturningStringOverlay()
             throws Exception {
-        instance.setStrategy(OverlayService.Strategy.DELEGATE_METHOD);
+        instance.setStrategy(OverlayFactory.Strategy.DELEGATE_METHOD);
 
         final RequestContext context = new RequestContext();
         context.setIdentifier(new Identifier("string"));
@@ -112,7 +112,7 @@ public class OverlayServiceTest extends BaseTest {
 
     @Test
     void testNewOverlayWithScriptStrategyReturningNil() throws Exception {
-        instance.setStrategy(OverlayService.Strategy.DELEGATE_METHOD);
+        instance.setStrategy(OverlayFactory.Strategy.DELEGATE_METHOD);
 
         final Identifier identifier = new Identifier("bogus");
         final RequestContext context = new RequestContext();

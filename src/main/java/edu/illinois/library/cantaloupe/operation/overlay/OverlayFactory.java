@@ -12,7 +12,7 @@ import javax.script.ScriptException;
  * Provides information about overlays, including whether they are enabled,
  * and access to new {@link Overlay} instances, if so.
  */
-public final class OverlayService {
+public final class OverlayFactory {
 
     enum Strategy {
 
@@ -32,7 +32,7 @@ public final class OverlayService {
     private boolean isEnabled = false;
     private Strategy strategy;
 
-    public OverlayService() throws ConfigurationException {
+    public OverlayFactory() throws ConfigurationException {
         readEnabled();
         readStrategy();
     }

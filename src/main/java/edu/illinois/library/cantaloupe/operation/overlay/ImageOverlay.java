@@ -14,7 +14,7 @@ import java.util.Set;
 /**
  * <p>Encapsulates an image overlaid on top of another image.</p>
  *
- * <p>Instances should be obtained from the {@link OverlayService}.</p>
+ * <p>Instances should be obtained from the {@link OverlayFactory}.</p>
  */
 public class ImageOverlay extends Overlay implements Operation {
 

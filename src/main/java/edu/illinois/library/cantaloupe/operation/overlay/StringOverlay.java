@@ -14,7 +14,7 @@ import java.util.Map;
  * <p>Encapsulates a string overlay applied to an image.</p>
  *
  * <p>Instances should be obtained from the
- * {@link OverlayService}.</p>
+ * {@link OverlayFactory}.</p>
  */
 public class StringOverlay extends Overlay implements Operation {
 

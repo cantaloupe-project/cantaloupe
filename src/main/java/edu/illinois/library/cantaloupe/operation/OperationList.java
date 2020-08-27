@@ -11,7 +11,7 @@ import edu.illinois.library.cantaloupe.image.Metadata;
 import edu.illinois.library.cantaloupe.image.Orientation;
 import edu.illinois.library.cantaloupe.image.ScaleConstraint;
 import edu.illinois.library.cantaloupe.operation.overlay.Overlay;
-import edu.illinois.library.cantaloupe.operation.overlay.OverlayService;
+import edu.illinois.library.cantaloupe.operation.overlay.OverlayFactory;
 import edu.illinois.library.cantaloupe.operation.redaction.Redaction;
 import edu.illinois.library.cantaloupe.operation.redaction.RedactionService;
 import edu.illinois.library.cantaloupe.delegate.DelegateProxy;
@@ -241,10 +241,10 @@ public final class OperationList implements Iterable<Operation> {
 
         // Overlay
         try {
-            final OverlayService service = new OverlayService();
-            if (service.isEnabled() &&
-                    service.shouldApplyToImage(getResultingSize(sourceImageSize))) {
-                final Overlay overlay = service.newOverlay(delegateProxy);
+            final OverlayFactory overlayFactory = new OverlayFactory();
+            if (overlayFactory.isEnabled() &&
+                    overlayFactory.shouldApplyToImage(getResultingSize(sourceImageSize))) {
+                final Overlay overlay = overlayFactory.newOverlay(delegateProxy);
                 if (overlay != null) {
                     addBefore(overlay, Encode.class);
                 } else {
