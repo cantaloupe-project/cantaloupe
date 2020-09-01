@@ -1,13 +1,12 @@
 package edu.illinois.library.cantaloupe.image;
 
-import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import com.fasterxml.jackson.annotation.JsonSetter;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import edu.illinois.library.cantaloupe.cache.DerivativeCache;
 import edu.illinois.library.cantaloupe.processor.Processor;
@@ -41,34 +40,31 @@ import java.util.Objects;
  * cached}, perhaps for a very long time. When an instance is needed, it may be
  * preferentially acquired from a cache, with a processor being consulted only
  * as a last resort. As a result, changes to the class definition need to be
- * implemented carefully so that older serializations remain readable.
- * Otherwise, users would have to purge their cache whenever the class design
- * changes.)</p>
+ * implemented carefully so that {@link InfoDeserializer older serializations
+ * remain readable}. (Otherwise, users would have to purge their cache whenever
+ * the class design changes.)</p>
  *
  * <h1>History</h1>
  *
  * <dl>
  *     <dt>5.0</dt>
- *     <dd>Replaced {@literal orientation} key with {@literal metadata}
- *     key</dd>
+ *     <dd>Replaced {@code orientation} key with {@code metadata} key</dd>
  *     <dt>4.0</dt>
- *     <dd>Added {@literal numResolutions} and {@literal identifier} keys</dd>
+ *     <dd>Added {@code numResolutions} and {@code identifier} keys</dd>
  *     <dt>3.4</dt>
- *     <dd>Added {@literal mediaType} key</dd>
+ *     <dd>Added {@code mediaType} key</dd>
  * </dl>
  *
  * @see <a href="https://github.com/FasterXML/jackson-databind">jackson-databind
  *      docs</a>
  */
-@JsonPropertyOrder({ "identifier", "mediaType", "numResolutions", "images",
-        "metadata" })
-@JsonInclude(JsonInclude.Include.NON_ABSENT)
-@JsonIgnoreProperties(ignoreUnknown = true)
+@JsonSerialize(using = InfoSerializer.class)
+@JsonDeserialize(using = InfoDeserializer.class)
 public final class Info {
 
     public static final class Builder {
 
-        private Info info;
+        private final Info info;
 
         Builder(Info info) {
             this.info = info;
@@ -191,7 +187,7 @@ public final class Info {
     private Metadata metadata = new Metadata();
 
     /**
-     * Ordered list of subimages. The main image is at index {@literal 0}.
+     * Ordered list of subimages. The main image is at index {@code 0}.
      */
     private final List<Image> images = new ArrayList<>(8);
 
@@ -252,7 +248,6 @@ public final class Info {
      *         in an application version prior to 4.0.
      * @since 4.0
      */
-    @JsonGetter
     public Identifier getIdentifier() {
         return identifier;
     }
@@ -267,8 +262,6 @@ public final class Info {
      * @see #getSourceFormat()
      * @since 3.4
      */
-    @JsonGetter
-    @SuppressWarnings("unused")
     public MediaType getMediaType() {
         return mediaType;
     }
@@ -276,7 +269,6 @@ public final class Info {
     /**
      * @since 5.0
      */
-    @JsonGetter
     public Metadata getMetadata() {
         return metadata;
     }
@@ -295,11 +287,10 @@ public final class Info {
      *     will be {@code -1}.</li>
      * </ul>
      *
-     * @return Number of resolutions contained in the image, or {@literal -1}
-     *         if the instance was serialized in an older application version.
+     * @return Number of resolutions contained in the image, or {@code -1} if
+     *         the instance was serialized in an older application version.
      * @since 4.0
      */
-    @JsonGetter
     public int getNumResolutions() {
         return numResolutions;
     }
@@ -307,16 +298,13 @@ public final class Info {
     /**
      * @return Size of the main image.
      */
-    @JsonIgnore
     public Dimension getSize() {
         return getSize(0);
     }
 
     /**
-     * @param imageIndex
      * @return Size of the image at the given index.
      */
-    @JsonIgnore
     public Dimension getSize(int imageIndex) {
         return images.get(imageIndex).getSize();
     }
@@ -325,7 +313,6 @@ public final class Info {
      * @return Source format of the image, or {@link Format#UNKNOWN} if
      *         unknown.
      */
-    @JsonIgnore
     public Format getSourceFormat() {
         if (mediaType != null) {
             return mediaType.toFormat();
@@ -349,7 +336,6 @@ public final class Info {
      *         about the source image.
      * @since 5.0
      */
-    @JsonIgnore
     public boolean isComplete() {
         return isComplete;
     }
@@ -357,7 +343,7 @@ public final class Info {
     /**
      * If a {@link Processor} cannot fully {@link Processor#readInfo()
      * populate} an instance&mdash;for example, if it can't read XMP metadata
-     * in order to set a complete {@link #metadata}&mdash;then it should call
+     * in order to set a complete {@link #metadata}&mdash;then it should invoke
      * this method with a {@code false} argument to make that clear.
      *
      * @since 5.0
@@ -370,7 +356,6 @@ public final class Info {
      * @param identifier Identifier of the image described by the instance.
      * @since 4.0
      */
-    @JsonSetter
     public void setIdentifier(Identifier identifier) {
         this.identifier = identifier;
     }
@@ -381,8 +366,6 @@ public final class Info {
      * @see #setSourceFormat(Format)
      * @since 3.4
      */
-    @JsonSetter
-    @SuppressWarnings("unused")
     public void setMediaType(MediaType mediaType) {
         this.mediaType = mediaType;
     }
@@ -390,7 +373,6 @@ public final class Info {
     /**
      * @since 5.0
      */
-    @JsonSetter
     public void setMetadata(Metadata metadata) {
         this.metadata = metadata;
     }
@@ -399,12 +381,10 @@ public final class Info {
      * @param numResolutions Number of resolutions contained in the image.
      * @since 4.0
      */
-    @JsonSetter
     public void setNumResolutions(int numResolutions) {
         this.numResolutions = numResolutions;
     }
 
-    @JsonIgnore
     public void setSourceFormat(Format sourceFormat) {
         if (sourceFormat == null) {
             mediaType = null;
@@ -416,7 +396,6 @@ public final class Info {
     /**
      * @return JSON representation of the instance.
      */
-    @JsonIgnore
     public String toJSON() throws JsonProcessingException {
         return newMapper().writer().writeValueAsString(this);
     }
@@ -433,7 +412,6 @@ public final class Info {
     /**
      * @param os Output stream to write to.
      */
-    @JsonIgnore
     public void writeAsJSON(OutputStream os) throws IOException {
         newMapper().writer().writeValue(os, this);
     }

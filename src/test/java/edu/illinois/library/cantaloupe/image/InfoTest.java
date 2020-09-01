@@ -234,11 +234,12 @@ public class InfoTest extends BaseTest {
         assertEquals(info.toString(), instance.toString());
     }
 
+    /* fromJSON() serialization */
+
     @Test
     void testFromJSONWithVersion34Serialization() throws Exception {
-        String v4json = "{\n" +
+        String v34json = "{\n" +
                 "  \"mediaType\": \"image/jpeg\",\n" +
-                "  \"numResolutions\": 3,\n" +
                 "  \"images\": [\n" +
                 "    {\n" +
                 "      \"width\": 100,\n" +
@@ -248,15 +249,12 @@ public class InfoTest extends BaseTest {
                 "    }\n" +
                 "  ]\n" +
                 "}";
-        Info actual = Info.fromJSON(v4json);
-
+        Info actual = Info.fromJSON(v34json);
         Info expected = Info.builder()
                 .withFormat(Format.get("jpg"))
-                .withNumResolutions(3)
                 .withSize(100, 80)
                 .withTileSize(50, 40)
                 .build();
-
         assertEquals(expected, actual);
     }
 
@@ -276,7 +274,6 @@ public class InfoTest extends BaseTest {
                 "  ]\n" +
                 "}";
         Info actual = Info.fromJSON(v4json);
-
         Info expected = Info.builder()
                 .withIdentifier(new Identifier("cats"))
                 .withFormat(Format.get("jpg"))
@@ -284,7 +281,38 @@ public class InfoTest extends BaseTest {
                 .withSize(100, 80)
                 .withTileSize(50, 40)
                 .build();
+        assertEquals(expected, actual);
+    }
 
+    @Test
+    void testFromJSONWithVersion5Serialization() throws Exception {
+        String v5json = "{\n" +
+                "  \"identifier\": \"cats\",\n" +
+                "  \"mediaType\": \"image/jpeg\",\n" +
+                "  \"numResolutions\": 3,\n" +
+                "  \"images\": [\n" +
+                "    {\n" +
+                "      \"width\": 100,\n" +
+                "      \"height\": 80,\n" +
+                "      \"tileWidth\": 50,\n" +
+                "      \"tileHeight\": 40\n" +
+                "    }\n" +
+                "  ],\n" +
+                "  \"metadata\": {\n" +
+                "    \"xmp\": \"<cats/>\"\n" +
+                "  }\n" +
+                "}";
+        Metadata metadata = new Metadata();
+        metadata.setXMP("<cats/>");
+        Info actual = Info.fromJSON(v5json);
+        Info expected = Info.builder()
+                .withIdentifier(new Identifier("cats"))
+                .withFormat(Format.get("jpg"))
+                .withNumResolutions(3)
+                .withMetadata(metadata)
+                .withSize(100, 80)
+                .withTileSize(50, 40)
+                .build();
         assertEquals(expected, actual);
     }
 
