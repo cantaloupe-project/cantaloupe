@@ -64,12 +64,16 @@ class FormatRegistryTest extends BaseTest {
             assertTrue(formats.size() > initialSize);
         } finally {
             // Delete the temporary formats.yml.
-            if (Files.exists(pathname)) {
-                Files.delete(pathname);
-                // Move the initial one back into place.
-                if (Files.exists(tmpPathname)) {
-                    Files.move(tmpPathname, pathname);
+            try {
+                if (Files.exists(pathname)) {
+                    Files.delete(pathname);
+                    // Move the initial one back into place.
+                    if (Files.exists(tmpPathname)) {
+                        Files.move(tmpPathname, pathname);
+                    }
                 }
+            } finally {
+                FormatRegistry.clear();
             }
         }
     }
