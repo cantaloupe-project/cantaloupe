@@ -27,9 +27,13 @@ final class InfoSerializer extends JsonSerializer<Info> {
                           SerializerProvider serializerProvider) throws IOException {
         generator.writeStartObject();
         // identifier
-        generator.writeStringField(IDENTIFIER_KEY, info.getIdentifier().toString());
+        if (info.getIdentifier() != null) {
+            generator.writeStringField(IDENTIFIER_KEY, info.getIdentifier().toString());
+        }
         // mediaType
-        generator.writeStringField(MEDIA_TYPE_KEY, info.getMediaType().toString());
+        if (info.getMediaType() != null) {
+            generator.writeStringField(MEDIA_TYPE_KEY, info.getMediaType().toString());
+        }
         // numResolutions
         generator.writeNumberField(NUM_RESOLUTIONS_KEY, info.getNumResolutions());
         // images
