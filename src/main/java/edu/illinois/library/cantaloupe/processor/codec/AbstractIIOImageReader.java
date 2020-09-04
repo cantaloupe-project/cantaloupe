@@ -115,6 +115,7 @@ public abstract class AbstractIIOImageReader {
         if (inputStream != null) {
             try {
                 inputStream.close();
+                inputStream = null;
             } catch (IOException e) {
                 getLogger().debug("dispose(): failed to close the input " +
                                 "stream: {}", e.getMessage(), e);

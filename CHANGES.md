@@ -87,6 +87,8 @@
 
 * Fixed a `NumberFormatException` caused by incorrect Java version parsing when
   running in a beta or early-access JVM.
+* Fixed an `IOException` appearing in the log at the conclusion of a successful
+  request involving HttpSource when chunking is enabled.
 * Fixed a `NullPointerException` when returning `nil` from the `overlay()`
   delegate method. (Thanks to @ccare)
 * Fixed an error from the embedded Jetty server when trying to use a key store
