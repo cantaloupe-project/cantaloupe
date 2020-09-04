@@ -27,6 +27,9 @@ final class InfoDeserializer extends JsonDeserializer<Info> {
     @Override
     public Info deserialize(JsonParser parser,
                             DeserializationContext deserializationContext) throws IOException {
+        // N.B.: keys may or may not exist in different serializations,
+        // documented inline. Even for keys that are supposed to always exist,
+        // we have to check for them anyway because they may not exist in tests.
         final Info info = new Info();
         final JsonNode node = parser.getCodec().readTree(parser);
         { // identifier (does not exist in <= 3.4 serializations)
@@ -36,7 +39,10 @@ final class InfoDeserializer extends JsonDeserializer<Info> {
             }
         }
         { // mediaType (always exists)
-            info.setMediaType(new MediaType(node.get(MEDIA_TYPE_KEY).textValue()));
+            JsonNode mediaTypeNode = node.get(MEDIA_TYPE_KEY);
+            if (mediaTypeNode != null) {
+                info.setMediaType(new MediaType(mediaTypeNode.textValue()));
+            }
         }
         { // numResolutions (does not exist in < 4.0 serializations)
             JsonNode numResolutionsNode = node.get(NUM_RESOLUTIONS_KEY);
