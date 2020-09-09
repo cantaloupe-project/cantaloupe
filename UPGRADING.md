@@ -63,9 +63,6 @@ current version.
 16. KakaduDemoProcessor is no longer available. If you were using it, you must
     switch to either KakaduNativeProcessor, OpenJpegProcessor, or
     GrokProcessor.
-17. Note that the `false` value supplied to the `cache` URL query argument
-    (e.g. `?cache=false`) has been replaced by `nocache`. `false` can still be
-    used, but it is deprecated and may be removed in a future version.
 
 ## 4.0.x → 4.1
 
