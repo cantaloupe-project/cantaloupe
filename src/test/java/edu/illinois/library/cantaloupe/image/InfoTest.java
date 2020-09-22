@@ -1,5 +1,6 @@
 package edu.illinois.library.cantaloupe.image;
 
+import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
@@ -287,6 +288,8 @@ class InfoTest extends BaseTest {
     @Test
     void testFromJSONWithVersion5Serialization() throws Exception {
         String v5json = "{\n" +
+                "  \"applicationVersion\": \"5.0\",\n" +
+                "  \"serializationVersion\": 4,\n" +
                 "  \"identifier\": \"cats\",\n" +
                 "  \"mediaType\": \"image/jpeg\",\n" +
                 "  \"numResolutions\": 3,\n" +
@@ -313,6 +316,7 @@ class InfoTest extends BaseTest {
                 .withSize(100, 80)
                 .withTileSize(50, 40)
                 .build();
+        expected.setApplicationVersion("5.0");
         assertEquals(expected, actual);
     }
 
@@ -329,28 +333,54 @@ class InfoTest extends BaseTest {
 
     @Test
     void testEqualsWithEqualInstances() {
-        Metadata metadata2 = new Metadata();
-        metadata2.setXMP("<cats/>");
-
         Info info2 = Info.builder()
-                .withIdentifier(new Identifier("cats"))
-                .withSize(100, 80)
-                .withTileSize(50, 40)
-                .withNumResolutions(3)
-                .withMetadata(metadata2)
-                .withFormat(Format.get("jpg"))
+                .withIdentifier(instance.getIdentifier())
+                .withSize(instance.getSize())
+                .withTileSize(instance.getImages().get(0).getTileSize())
+                .withFormat(instance.getSourceFormat())
+                .withNumResolutions(instance.getNumResolutions())
+                .withMetadata(instance.getMetadata())
                 .build();
         assertEquals(instance, info2);
     }
 
     @Test
+    void testEqualsWithDifferentApplicationVersions() {
+        Info info2 = Info.builder()
+                .withIdentifier(instance.getIdentifier())
+                .withSize(instance.getSize())
+                .withTileSize(instance.getImages().get(0).getTileSize())
+                .withFormat(instance.getSourceFormat())
+                .withNumResolutions(instance.getNumResolutions())
+                .withMetadata(instance.getMetadata())
+                .build();
+        info2.setApplicationVersion("99.0");
+        assertNotEquals(instance, info2);
+    }
+
+    @Test
+    void testEqualsWithDifferentSerializationVersions() {
+        Info info2 = Info.builder()
+                .withIdentifier(instance.getIdentifier())
+                .withSize(instance.getSize())
+                .withTileSize(instance.getImages().get(0).getTileSize())
+                .withFormat(instance.getSourceFormat())
+                .withNumResolutions(instance.getNumResolutions())
+                .withMetadata(instance.getMetadata())
+                .build();
+        info2.setSerializationVersion(2);
+        assertNotEquals(instance, info2);
+    }
+
+    @Test
     void testEqualsWithDifferentIdentifiers() {
         Info info2 = Info.builder()
-                .withIdentifier(new Identifier("dogs"))
-                .withSize(100, 80)
-                .withTileSize(50, 40)
-                .withNumResolutions(3)
-                .withFormat(Format.get("jpg"))
+                .withIdentifier(new Identifier("mules"))
+                .withSize(instance.getSize())
+                .withTileSize(instance.getImages().get(0).getTileSize())
+                .withFormat(instance.getSourceFormat())
+                .withNumResolutions(instance.getNumResolutions())
+                .withMetadata(instance.getMetadata())
                 .build();
         assertNotEquals(instance, info2);
     }
@@ -358,10 +388,12 @@ class InfoTest extends BaseTest {
     @Test
     void testEqualsWithDifferentWidths() {
         Info info2 = Info.builder()
-                .withSize(99, 80)
-                .withTileSize(50, 40)
-                .withNumResolutions(3)
-                .withFormat(Format.get("jpg"))
+                .withIdentifier(instance.getIdentifier())
+                .withSize(999, instance.getSize().intHeight())
+                .withTileSize(instance.getImages().get(0).getTileSize())
+                .withFormat(instance.getSourceFormat())
+                .withNumResolutions(instance.getNumResolutions())
+                .withMetadata(instance.getMetadata())
                 .build();
         assertNotEquals(instance, info2);
     }
@@ -369,10 +401,12 @@ class InfoTest extends BaseTest {
     @Test
     void testEqualsWithDifferentHeights() {
         Info info2 = Info.builder()
-                .withSize(100, 79)
-                .withTileSize(50, 40)
-                .withNumResolutions(3)
-                .withFormat(Format.get("jpg"))
+                .withIdentifier(instance.getIdentifier())
+                .withSize(instance.getSize().intWidth(), 999)
+                .withTileSize(instance.getImages().get(0).getTileSize())
+                .withFormat(instance.getSourceFormat())
+                .withNumResolutions(instance.getNumResolutions())
+                .withMetadata(instance.getMetadata())
                 .build();
         assertNotEquals(instance, info2);
     }
@@ -380,10 +414,12 @@ class InfoTest extends BaseTest {
     @Test
     void testEqualsWithDifferentTileWidths() {
         Info info2 = Info.builder()
-                .withSize(100, 80)
-                .withTileSize(49, 40)
-                .withNumResolutions(3)
-                .withFormat(Format.get("jpg"))
+                .withIdentifier(instance.getIdentifier())
+                .withSize(instance.getSize())
+                .withTileSize(999, instance.getImages().get(0).getTileSize().intHeight())
+                .withFormat(instance.getSourceFormat())
+                .withNumResolutions(instance.getNumResolutions())
+                .withMetadata(instance.getMetadata())
                 .build();
         assertNotEquals(instance, info2);
     }
@@ -391,10 +427,12 @@ class InfoTest extends BaseTest {
     @Test
     void testEqualsWithDifferentTileHeights() {
         Info info2 = Info.builder()
-                .withSize(100, 80)
-                .withTileSize(50, 39)
-                .withNumResolutions(3)
-                .withFormat(Format.get("jpg"))
+                .withIdentifier(instance.getIdentifier())
+                .withSize(instance.getSize())
+                .withTileSize(instance.getImages().get(0).getTileSize().intWidth(), 999)
+                .withFormat(instance.getSourceFormat())
+                .withNumResolutions(instance.getNumResolutions())
+                .withMetadata(instance.getMetadata())
                 .build();
         assertNotEquals(instance, info2);
     }
@@ -405,11 +443,12 @@ class InfoTest extends BaseTest {
         metadata2.setXMP("<dogs/>");
 
         Info info2 = Info.builder()
-                .withSize(100, 80)
-                .withTileSize(50, 40)
+                .withIdentifier(instance.getIdentifier())
+                .withSize(instance.getSize())
+                .withTileSize(instance.getImages().get(0).getTileSize())
+                .withFormat(instance.getSourceFormat())
+                .withNumResolutions(instance.getNumResolutions())
                 .withMetadata(metadata2)
-                .withNumResolutions(3)
-                .withFormat(Format.get("jpg"))
                 .build();
         assertNotEquals(instance, info2);
     }
@@ -417,10 +456,12 @@ class InfoTest extends BaseTest {
     @Test
     void testEqualsWithDifferentNumResolutions() {
         Info info2 = Info.builder()
-                .withSize(100, 80)
-                .withTileSize(50, 40)
-                .withNumResolutions(2)
-                .withFormat(Format.get("jpg"))
+                .withIdentifier(instance.getIdentifier())
+                .withSize(instance.getSize())
+                .withTileSize(instance.getImages().get(0).getTileSize())
+                .withFormat(instance.getSourceFormat())
+                .withNumResolutions(instance.getNumResolutions() + 1)
+                .withMetadata(instance.getMetadata())
                 .build();
         assertNotEquals(instance, info2);
     }
@@ -428,12 +469,22 @@ class InfoTest extends BaseTest {
     @Test
     void testEqualsWithDifferentFormats() {
         Info info2 = Info.builder()
-                .withSize(100, 80)
-                .withTileSize(50, 40)
-                .withNumResolutions(3)
+                .withIdentifier(instance.getIdentifier())
+                .withSize(instance.getSize())
+                .withTileSize(instance.getImages().get(0).getTileSize())
                 .withFormat(Format.get("gif"))
+                .withNumResolutions(instance.getNumResolutions())
+                .withMetadata(instance.getMetadata())
                 .build();
         assertNotEquals(instance, info2);
+    }
+
+    /* getApplicationVersion() */
+
+    @Test
+    void testGetApplicationVersion() {
+        assertEquals(Application.getVersion(),
+                instance.getApplicationVersion());
     }
 
     /* getImages() */
@@ -455,6 +506,13 @@ class InfoTest extends BaseTest {
     @Test
     void testGetNumResolutions() {
         assertEquals(3, instance.getNumResolutions());
+    }
+
+    /* getSerialization() */
+
+    @Test
+    void testGetSerialization() {
+        assertEquals(Info.Serialization.CURRENT, instance.getSerialization());
     }
 
     /* adjustedSize() */
@@ -616,12 +674,90 @@ class InfoTest extends BaseTest {
         assertNotEquals(instance.hashCode(), info2.hashCode());
     }
 
+    /* setApplicationVersion() */
+
+    @Test
+    void testSetApplicationVersion() {
+        String version = "Some Version";
+        instance.setApplicationVersion(version);
+        assertEquals(version, instance.getApplicationVersion());
+    }
+
+    /* setComplete() */
+
+    @Test
+    void testSetComplete() {
+        instance.setComplete(true);
+        assertTrue(instance.isComplete());
+        instance.setComplete(false);
+        assertFalse(instance.isComplete());
+    }
+
+    /* setIdentifier() */
+
+    @Test
+    void testSetIdentifier() {
+        Identifier identifier = new Identifier("Some Identifier");
+        instance.setIdentifier(identifier);
+        assertEquals(identifier, instance.getIdentifier());
+    }
+
+    /* setMediaType() */
+
+    @Test
+    void testSetMediaType() {
+        MediaType type = new MediaType("image/jpg");
+        instance.setMediaType(type);
+        assertEquals(type, instance.getMediaType());
+    }
+
+    /* setMetadata() */
+
+    @Test
+    void testSetMetadata() {
+        Metadata metadata = new Metadata();
+        instance.setMetadata(metadata);
+        assertSame(metadata, instance.getMetadata());
+    }
+
+    /* setNumResolutions() */
+
+    @Test
+    void testSetNumResolutions() {
+        instance.setNumResolutions(7);
+        assertEquals(7, instance.getNumResolutions());
+    }
+
+    /* setSerializationVersion() */
+
+    @Test
+    void testSetSerializationVersionWithIllegalArgument() {
+        assertThrows(IllegalArgumentException.class,
+                () -> instance.setSerializationVersion(99));
+    }
+
+    @Test
+    void testSetSerializationVersion() {
+        instance.setSerializationVersion(2);
+        assertEquals(Info.Serialization.VERSION_2, instance.getSerialization());
+    }
+
+    /* setSourceFormat() */
+
+    @Test
+    void testSetSourceFormat() {
+        Format format = Format.get("png");
+        instance.setSourceFormat(format);
+        assertEquals(format, instance.getSourceFormat());
+    }
+
     /* toJSON() */
 
     @Test
     void testToJSONContents() throws Exception {
-        assertEquals(
-                "{" +
+        assertEquals("{" +
+                        "\"applicationVersion\":\"" + Application.getVersion() + "\"," +
+                        "\"serializationVersion\":" + Info.Serialization.CURRENT.getVersion() + "," +
                         "\"identifier\":\"cats\"," +
                         "\"mediaType\":\"image/jpeg\"," +
                         "\"numResolutions\":3," +

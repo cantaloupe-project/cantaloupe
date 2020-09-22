@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
+import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.cache.DerivativeCache;
 import edu.illinois.library.cantaloupe.processor.Processor;
 
@@ -46,17 +47,7 @@ import java.util.Objects;
  *
  * <h1>History</h1>
  *
- * <dl>
- *     <dt>5.0</dt>
- *     <dd>Replaced {@code orientation} key with {@code metadata} key</dd>
- *     <dt>4.0</dt>
- *     <dd>Added {@code numResolutions} and {@code identifier} keys</dd>
- *     <dt>3.4</dt>
- *     <dd>Added {@code mediaType} key</dd>
- * </dl>
- *
- * @see <a href="https://github.com/FasterXML/jackson-databind">jackson-databind
- *      docs</a>
+ * <p>See {@link Serialization}.</p>
  */
 @JsonSerialize(using = InfoSerializer.class)
 @JsonDeserialize(using = InfoDeserializer.class)
@@ -182,9 +173,55 @@ public final class Info {
 
     }
 
+    public enum Serialization {
+
+        /**
+         * Represents a number of older serializations from application
+         * versions prior to 3.4 that are no longer supported.
+         */
+        VERSION_1(1),
+
+        /**
+         * <p>Added the {@code mediaType} key.</p>
+         *
+         * <p>Introduced in application version 3.4.</p>
+         */
+        VERSION_2(2),
+
+        /**
+         * <p>Added {@code numResolutions} and {@code identifier} keys.</p>
+         *
+         * <p>Introduced in application version 4.0.</p>
+         */
+        VERSION_3(3),
+
+        /**
+         * <p>Replaced the {@code orientation} key with the {@code metadata}
+         * key, and added {@code applicationVersion} and {@code
+         * serializationVersion} keys.</p>
+         *
+         * <p>Introduced in application version 5.0.</p>
+         */
+        VERSION_4(4);
+
+        private final int version;
+
+        static final Serialization CURRENT = VERSION_4;
+
+        Serialization(int version) {
+            this.version = version;
+        }
+
+        int getVersion() {
+            return version;
+        }
+    }
+
+    private String appVersion           = Application.getVersion();
     private Identifier identifier;
     private MediaType mediaType;
-    private Metadata metadata = new Metadata();
+    private Metadata metadata           = new Metadata();
+    private Serialization serialization = Serialization.CURRENT;
 
     /**
      * Ordered list of subimages. The main image is at index {@code 0}.
@@ -234,13 +271,25 @@ public final class Info {
             return true;
         } else if (obj instanceof Info) {
             Info other = (Info) obj;
-            return Objects.equals(other.getIdentifier(), getIdentifier()) &&
+            return Objects.equals(other.getApplicationVersion(), getApplicationVersion()) &&
+                    Objects.equals(other.getSerialization(), getSerialization()) &&
+                    Objects.equals(other.getIdentifier(), getIdentifier()) &&
                     Objects.equals(other.getMetadata(), getMetadata()) &&
                     Objects.equals(other.getSourceFormat(), getSourceFormat()) &&
                     other.getNumResolutions() == getNumResolutions() &&
                     other.getImages().equals(getImages());
         }
         return super.equals(obj);
+    }
+
+    /**
+     * @return Version of the application with which the instance was or will
+     *         be serialized.
+     * @since 5.0
+     * @see #getSerialization
+     */
+    public String getApplicationVersion() {
+        return appVersion;
     }
 
     /**
@@ -296,6 +345,14 @@ public final class Info {
     }
 
     /**
+     * @since 5.0
+     * @see #getApplicationVersion
+     */
+    public Serialization getSerialization() {
+        return serialization;
+    }
+
+    /**
      * @return Size of the main image.
      */
     public Dimension getSize() {
@@ -322,13 +379,15 @@ public final class Info {
 
     @Override
     public int hashCode() {
-        int[] codes = new int[5];
-        codes[0] = getIdentifier().hashCode();
-        codes[1] = getImages().hashCode();
-        codes[2] = getSourceFormat().hashCode();
-        codes[3] = getNumResolutions();
+        int[] codes = new int[7];
+        codes[0] = getApplicationVersion().hashCode();
+        codes[1] = getSerialization().hashCode();
+        codes[2] = getIdentifier().hashCode();
+        codes[3] = getImages().hashCode();
+        codes[4] = getSourceFormat().hashCode();
+        codes[5] = getNumResolutions();
         if (getMetadata() != null) {
-            codes[4] = getMetadata().hashCode();
+            codes[6] = getMetadata().hashCode();
         }
         return Arrays.hashCode(codes);
     }
@@ -340,6 +399,16 @@ public final class Info {
      */
     public boolean isComplete() {
         return isComplete;
+    }
+
+    /**
+     * @param version Application version string. This value is not serialized
+     *                (the current application version is instead).
+     *
+     * @since 5.0
+     */
+    void setApplicationVersion(String version) {
+        this.appVersion = version;
     }
 
     /**
@@ -385,6 +454,20 @@ public final class Info {
      */
     public void setNumResolutions(int numResolutions) {
         this.numResolutions = numResolutions;
+    }
+
+    /**
+     * @param version One of the {@link Serialization} versions. This value is
+     *                not serialized (the current serialization version is
+     *                instead).
+     * @since 5.0
+     */
+    void setSerializationVersion(int version) {
+        this.serialization = Arrays
+                .stream(Serialization.values())
+                .filter(sv -> sv.getVersion() == version)
+                .findFirst()
+                .orElseThrow(IllegalArgumentException::new);
     }
 
     public void setSourceFormat(Format sourceFormat) {
