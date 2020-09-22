@@ -14,7 +14,7 @@ import java.nio.file.Path;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class InfoTest extends BaseTest {
+class InfoTest extends BaseTest {
 
     /*********************** Builder tests **************************/
 
@@ -499,12 +499,12 @@ public class InfoTest extends BaseTest {
         metadata2.setXMP("<cats/>");
 
         Info info2 = Info.builder()
-                .withIdentifier(new Identifier("cats"))
-                .withSize(100, 80)
-                .withTileSize(50, 40)
-                .withNumResolutions(3)
+                .withIdentifier(instance.getIdentifier())
+                .withSize(instance.getSize())
+                .withTileSize(instance.getImages().get(0).getTileSize())
+                .withFormat(instance.getSourceFormat())
+                .withNumResolutions(instance.getNumResolutions())
                 .withMetadata(metadata2)
-                .withFormat(Format.get("jpg"))
                 .build();
         assertEquals(instance.hashCode(), info2.hashCode());
     }
@@ -512,11 +512,12 @@ public class InfoTest extends BaseTest {
     @Test
     void testHashCodeWithDifferentIdentifiers() {
         Info info2 = Info.builder()
-                .withIdentifier(new Identifier("dogs"))
-                .withSize(100, 80)
-                .withTileSize(50, 40)
-                .withNumResolutions(3)
-                .withFormat(Format.get("jpg"))
+                .withIdentifier(new Identifier("cows"))
+                .withSize(instance.getSize())
+                .withTileSize(instance.getImages().get(0).getTileSize())
+                .withFormat(instance.getSourceFormat())
+                .withNumResolutions(instance.getNumResolutions())
+                .withMetadata(instance.getMetadata())
                 .build();
         assertNotEquals(instance.hashCode(), info2.hashCode());
     }
@@ -524,10 +525,12 @@ public class InfoTest extends BaseTest {
     @Test
     void testHashCodeWithDifferentWidths() {
         Info info2 = Info.builder()
-                .withSize(99, 80)
-                .withTileSize(50, 40)
-                .withNumResolutions(3)
-                .withFormat(Format.get("jpg"))
+                .withIdentifier(instance.getIdentifier())
+                .withSize(999, instance.getSize().intHeight())
+                .withTileSize(instance.getImages().get(0).getTileSize())
+                .withFormat(instance.getSourceFormat())
+                .withNumResolutions(instance.getNumResolutions())
+                .withMetadata(instance.getMetadata())
                 .build();
         assertNotEquals(instance.hashCode(), info2.hashCode());
     }
@@ -535,10 +538,12 @@ public class InfoTest extends BaseTest {
     @Test
     void testHashCodeWithDifferentHeights() {
         Info info2 = Info.builder()
-                .withSize(100, 79)
-                .withTileSize(50, 40)
-                .withNumResolutions(3)
-                .withFormat(Format.get("jpg"))
+                .withIdentifier(instance.getIdentifier())
+                .withSize(instance.getSize().intWidth(), 999)
+                .withTileSize(instance.getImages().get(0).getTileSize())
+                .withFormat(instance.getSourceFormat())
+                .withNumResolutions(instance.getNumResolutions())
+                .withMetadata(instance.getMetadata())
                 .build();
         assertNotEquals(instance.hashCode(), info2.hashCode());
     }
@@ -546,10 +551,12 @@ public class InfoTest extends BaseTest {
     @Test
     void testHashCodeWithDifferentTileWidths() {
         Info info2 = Info.builder()
-                .withSize(100, 80)
-                .withTileSize(49, 40)
-                .withNumResolutions(3)
-                .withFormat(Format.get("jpg"))
+                .withIdentifier(instance.getIdentifier())
+                .withSize(instance.getSize())
+                .withTileSize(999, instance.getImages().get(0).getTileSize().intHeight())
+                .withFormat(instance.getSourceFormat())
+                .withNumResolutions(instance.getNumResolutions())
+                .withMetadata(instance.getMetadata())
                 .build();
         assertNotEquals(instance.hashCode(), info2.hashCode());
     }
@@ -557,10 +564,12 @@ public class InfoTest extends BaseTest {
     @Test
     void testHashCodeWithDifferentTileHeights() {
         Info info2 = Info.builder()
-                .withSize(100, 80)
-                .withTileSize(50, 39)
-                .withNumResolutions(3)
-                .withFormat(Format.get("jpg"))
+                .withIdentifier(instance.getIdentifier())
+                .withSize(instance.getSize())
+                .withTileSize(instance.getImages().get(0).getTileSize().intWidth(), 999)
+                .withFormat(instance.getSourceFormat())
+                .withNumResolutions(instance.getNumResolutions())
+                .withMetadata(instance.getMetadata())
                 .build();
         assertNotEquals(instance.hashCode(), info2.hashCode());
     }
@@ -571,11 +580,12 @@ public class InfoTest extends BaseTest {
         metadata2.setXMP("<dogs/>");
 
         Info info2 = Info.builder()
-                .withSize(100, 80)
-                .withTileSize(50, 40)
+                .withIdentifier(instance.getIdentifier())
+                .withSize(instance.getSize())
+                .withTileSize(instance.getImages().get(0).getTileSize())
+                .withFormat(instance.getSourceFormat())
+                .withNumResolutions(instance.getNumResolutions())
                 .withMetadata(metadata2)
-                .withNumResolutions(3)
-                .withFormat(Format.get("jpg"))
                 .build();
         assertNotEquals(instance.hashCode(), info2.hashCode());
     }
@@ -583,10 +593,12 @@ public class InfoTest extends BaseTest {
     @Test
     void testHashCodeWithDifferentNumResolutions() {
         Info info2 = Info.builder()
-                .withSize(100, 80)
-                .withTileSize(50, 40)
-                .withNumResolutions(2)
-                .withFormat(Format.get("jpg"))
+                .withIdentifier(instance.getIdentifier())
+                .withSize(instance.getSize())
+                .withTileSize(instance.getImages().get(0).getTileSize())
+                .withFormat(instance.getSourceFormat())
+                .withNumResolutions(instance.getNumResolutions() + 1)
+                .withMetadata(instance.getMetadata())
                 .build();
         assertNotEquals(instance.hashCode(), info2.hashCode());
     }
@@ -594,10 +606,12 @@ public class InfoTest extends BaseTest {
     @Test
     void testHashCodeWithDifferentFormats() {
         Info info2 = Info.builder()
-                .withSize(100, 80)
-                .withTileSize(50, 40)
-                .withNumResolutions(3)
+                .withIdentifier(instance.getIdentifier())
+                .withSize(instance.getSize())
+                .withTileSize(instance.getImages().get(0).getTileSize())
                 .withFormat(Format.get("gif"))
+                .withNumResolutions(instance.getNumResolutions())
+                .withMetadata(instance.getMetadata())
                 .build();
         assertNotEquals(instance.hashCode(), info2.hashCode());
     }

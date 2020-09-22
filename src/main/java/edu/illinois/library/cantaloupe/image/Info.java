@@ -41,7 +41,7 @@ import java.util.Objects;
  * preferentially acquired from a cache, with a processor being consulted only
  * as a last resort. As a result, changes to the class definition need to be
  * implemented carefully so that {@link InfoDeserializer older serializations
- * remain readable}. (Otherwise, users would have to purge their cache whenever
+ * remain readable}. (Otherwise, users might have to purge their cache whenever
  * the class design changes.)</p>
  *
  * <h1>History</h1>
@@ -322,11 +322,13 @@ public final class Info {
 
     @Override
     public int hashCode() {
-        int[] codes = new int[3];
-        codes[0] = getImages().hashCode();
-        codes[1] = getSourceFormat().hashCode();
+        int[] codes = new int[5];
+        codes[0] = getIdentifier().hashCode();
+        codes[1] = getImages().hashCode();
+        codes[2] = getSourceFormat().hashCode();
+        codes[3] = getNumResolutions();
         if (getMetadata() != null) {
-            codes[2] = getMetadata().hashCode();
+            codes[4] = getMetadata().hashCode();
         }
         return Arrays.hashCode(codes);
     }
