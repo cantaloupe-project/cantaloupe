@@ -510,13 +510,16 @@ public abstract class AbstractResource {
         if (acceptHeader != null) {
             String[] clauses = acceptHeader.split(",");
             for (String clause : clauses) {
-                String[] parts = clause.split(";");
+                String[] parts        = clause.split(";");
                 Preference preference = new Preference();
-                preference.mediaType = parts[0].trim();
+                preference.mediaType  = parts[0].trim();
+                if ("*/*".equals(preference.mediaType)) {
+                    continue;
+                }
                 if (parts.length > 1) {
                     String q = parts[1].trim();
                     if (q.startsWith("q=")) {
-                        q = q.substring(2, q.length());
+                        q = q.substring(2);
                         preference.qValue = Float.parseFloat(q);
                     }
                 } else {
