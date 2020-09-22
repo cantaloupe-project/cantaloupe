@@ -52,15 +52,12 @@ current version.
     note that its structure has changed to a hash of cookie name-value pairs.
     This is how it was documented to work, and how it was supposed to work, in
     prior versions.
-13. Note that the IIIF Image API 1.x endpoint no longer supports content
-    negotiation. If a format extension is not supplied in the URI, JPEG will be
-    returned regardless of the value of the `Accept` header.
-14. If you are using HttpSource, note that the client implementation has
+13. If you are using HttpSource, note that the client implementation has
     changed. If you encounter errors like "PKIX path building failed," consult
     the HttpSource section of the user manual.
-15. If you are using KakaduNativeProcessor, you must install the updated Kakadu
+14. If you are using KakaduNativeProcessor, you must install the updated Kakadu
     shared library, contained in the `deps` folder.
-16. KakaduDemoProcessor is no longer available. If you were using it, you must
+15. KakaduDemoProcessor is no longer available. If you were using it, you must
     switch to either KakaduNativeProcessor, OpenJpegProcessor, or
     GrokProcessor.
 

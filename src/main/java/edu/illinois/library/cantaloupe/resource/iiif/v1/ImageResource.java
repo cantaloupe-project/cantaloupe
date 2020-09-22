@@ -7,6 +7,7 @@ import edu.illinois.library.cantaloupe.image.Dimension;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.Info;
+import edu.illinois.library.cantaloupe.image.MediaType;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.operation.Scale;
 import edu.illinois.library.cantaloupe.processor.Processor;
@@ -27,6 +28,9 @@ public class ImageResource extends IIIF1Resource {
 
     private static final Logger LOGGER =
             LoggerFactory.getLogger(ImageResource.class);
+
+    private static final List<String> AVAILABLE_OUTPUT_MEDIA_TYPES =
+            List.of("image/jpeg", "image/tiff", "image/png", "image/gif");
 
     /**
      * Format to assume when no extension is present in the URI.
@@ -161,6 +165,16 @@ public class ImageResource extends IIIF1Resource {
                     .findFirst()
                     .orElse(null);
         }
+
+        if (format == null) { // if none, check the Accept header.
+            String contentType = negotiateContentType(AVAILABLE_OUTPUT_MEDIA_TYPES);
+            if (contentType != null) {
+                format = new MediaType(contentType).toFormat();
+            } else {
+                format = DEFAULT_FORMAT;
+            }
+        }
+
         if (format == null) {
             format = DEFAULT_FORMAT;
         }
