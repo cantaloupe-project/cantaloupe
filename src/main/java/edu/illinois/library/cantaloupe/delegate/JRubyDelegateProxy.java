@@ -87,7 +87,29 @@ final class JRubyDelegateProxy implements DelegateProxy {
     }
 
     JRubyDelegateProxy() {
-        instantiateDelegate();
+        tryInstantiateDelegate();
+    }
+
+    /**
+     * There is an apparent bug in JRuby (9.2.11.1) whereby invocation of
+     * {@code new()} on the delegate class, under rare and unknown conditions
+     * possibly involving high memory usage, will not return an instance,
+     * leaving {@link #delegate} null. This method attempts to retry the
+     * instantiation several times in that case, until it is no longer null.
+     *
+     * @see <a href="https://github.com/cantaloupe-project/cantaloupe/issues/402">
+     *     https://github.com/cantaloupe-project/cantaloupe/issues/402</a>
+     */
+    private void tryInstantiateDelegate() {
+        final short numAttempts = 10;
+        short attempt = 0;
+        do {
+            if (delegate == null) {
+                instantiateDelegate();
+            } else {
+                break;
+            }
+        } while (attempt++ <= numAttempts);
     }
 
     private void instantiateDelegate() {
