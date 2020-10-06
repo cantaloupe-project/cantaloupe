@@ -86,11 +86,10 @@ public class AbstractResourceTest extends BaseTest {
                 "text/html;q=0.9, application/xhtml+xml, */*;q=0.2, text/plain;q=0.5");
 
         List<String> types = instance.getPreferredMediaTypes();
-        assertEquals(4, types.size());
+        assertEquals(3, types.size());
         assertEquals("application/xhtml+xml", types.get(0));
         assertEquals("text/html", types.get(1));
         assertEquals("text/plain", types.get(2));
-        assertEquals("*/*", types.get(3));
     }
 
     @Test
