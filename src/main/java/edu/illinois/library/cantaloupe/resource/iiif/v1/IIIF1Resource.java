@@ -4,10 +4,10 @@ import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.http.Status;
 import edu.illinois.library.cantaloupe.resource.EndpointDisabledException;
-import edu.illinois.library.cantaloupe.resource.PublicResource;
 import edu.illinois.library.cantaloupe.resource.ResourceException;
+import edu.illinois.library.cantaloupe.resource.iiif.IIIFResource;
 
-abstract class IIIF1Resource extends PublicResource {
+abstract class IIIF1Resource extends IIIFResource {
 
     @Override
     public void doInit() throws Exception {
