@@ -20,7 +20,7 @@
         <!-- N.B.: Jetty does not use semantic versioning. New x.x.x releases
         often break API. -->
         <jetty.version>9.4.24.v20191120</jetty.version>
-        <jruby.version>9.2.11.1</jruby.version>
+        <jruby.version>9.2.13.0</jruby.version>
         <surefire.version>3.0.0-M3</surefire.version>
     </properties>
 
