@@ -153,6 +153,7 @@ public class HandlerServlet extends HttpServlet {
             resource.doGET();
         } catch (Throwable t2) {
             // Fall back to a plain text stack trace.
+            response.setStatus(500);
             response.setContentType("text/plain;charset=UTF-8");
             try {
                 PrintWriter writer = response.getWriter();
