@@ -147,8 +147,9 @@ public class ScaleByPercentTest extends ScaleTest {
     @Test
     void testHasEffectWithArguments() {
         final Dimension fullSize = new Dimension(600, 400);
-        final OperationList opList =
-                new OperationList(new CropByPixels(0, 0, 300, 200));
+        final OperationList opList = OperationList.builder()
+                .withOperations(new CropByPixels(0, 0, 300, 200))
+                .build();
         assertFalse(instance.hasEffect(fullSize, opList));
 
         instance.setPercent(0.5);

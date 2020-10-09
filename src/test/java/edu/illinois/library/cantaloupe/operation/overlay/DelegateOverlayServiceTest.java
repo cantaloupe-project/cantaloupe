@@ -56,10 +56,12 @@ public class DelegateOverlayServiceTest extends BaseTest {
 
     @Test
     void testNewOverlayReturningImageOverlay() throws Exception {
-        final Identifier identifier = new Identifier("image");
-        final Dimension fullSize = new Dimension(500, 500);
-        final OperationList opList = new OperationList(
-                identifier, new Encode(Format.get("jpg")));
+        final Identifier identifier  = new Identifier("image");
+        final Dimension fullSize     = new Dimension(500, 500);
+        final OperationList opList   = OperationList.builder()
+                .withIdentifier(identifier)
+                .withOperations(new Encode(Format.get("jpg")))
+                .build();
         final RequestContext context = new RequestContext();
         context.setIdentifier(identifier);
         context.setOperationList(opList, fullSize);
@@ -80,10 +82,12 @@ public class DelegateOverlayServiceTest extends BaseTest {
 
     @Test
     void testNewOverlayReturningStringOverlay() throws Exception {
-        final Identifier identifier = new Identifier("string");
-        final Dimension fullSize = new Dimension(500, 500);
-        final OperationList opList = new OperationList(
-                identifier, new Encode(Format.get("jpg")));
+        final Identifier identifier  = new Identifier("string");
+        final Dimension fullSize     = new Dimension(500, 500);
+        final OperationList opList   = OperationList.builder()
+                .withIdentifier(identifier)
+                .withOperations(new Encode(Format.get("jpg")))
+                .build();
         final RequestContext context = new RequestContext();
         context.setIdentifier(identifier);
         context.setOperationList(opList, fullSize);

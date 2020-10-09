@@ -48,7 +48,9 @@ public class Java2dProcessorTest extends AbstractImageIOProcessorTest {
     @Test
     void testProcessWithAnimatedGIF() throws Exception {
         Path image = TestUtil.getImage("gif-animated-looping.gif");
-        OperationList ops = new OperationList(new Encode(Format.get("gif")));
+        OperationList ops = OperationList.builder()
+                .withOperations(new Encode(Format.get("gif")))
+                .build();
         Info info = Info.builder()
                 .withSize(136, 200)
                 .withFormat(Format.get("gif"))

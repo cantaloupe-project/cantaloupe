@@ -58,7 +58,7 @@ public class SourceProcessorPairTest extends BaseTest {
         SourceProcessorPair instance2 = new SourceProcessorPair(
                 new SourceFactory().newSource("FilesystemSource"),
                 "Java2dProcessor",
-                new OperationList(new ScaleByPercent()));
+                OperationList.builder().withOperations(new ScaleByPercent()).build());
         assertEquals(instance, instance2);
     }
 
@@ -94,7 +94,7 @@ public class SourceProcessorPairTest extends BaseTest {
         SourceProcessorPair instance2 = new SourceProcessorPair(
                 new SourceFactory().newSource("FilesystemSource"),
                 "Java2dProcessor",
-                new OperationList(new ScaleByPercent()));
+                OperationList.builder().withOperations(new ScaleByPercent()).build());
         assertEquals(instance.hashCode(), instance2.hashCode());
     }
 

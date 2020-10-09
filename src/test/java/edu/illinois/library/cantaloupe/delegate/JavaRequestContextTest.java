@@ -34,8 +34,10 @@ class JavaRequestContextTest extends BaseTest {
         // operation list
         Identifier identifier = new Identifier("cats");
         Dimension fullSize    = new Dimension(200, 200);
-        OperationList opList  = new OperationList(
-                identifier, new Encode(Format.get("gif")));
+        OperationList opList  = OperationList.builder()
+                .withIdentifier(identifier)
+                .withOperations(new Encode(Format.get("gif")))
+                .build();
         context.setOperationList(opList, fullSize);
         // request headers
         Map<String,String> headers = Map.of("X-Cats", "Yes");

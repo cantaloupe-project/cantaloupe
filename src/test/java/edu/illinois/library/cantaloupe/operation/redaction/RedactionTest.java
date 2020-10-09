@@ -126,18 +126,27 @@ public class RedactionTest extends BaseTest {
         // added to ensure that it doesn't.
 
         // in bounds
-        OperationList opList = new OperationList(
-                new CropByPixels(0, 0, 400, 300), new ScaleByPercent(0.25));
+        OperationList opList = OperationList.builder()
+                .withOperations(
+                        new CropByPixels(0, 0, 400, 300),
+                        new ScaleByPercent(0.25))
+                .build();
         assertTrue(instance.hasEffect(fullSize, opList));
 
         // partially in bounds
-        opList = new OperationList(
-                new CropByPixels(100, 100, 100, 100), new ScaleByPercent(0.25));
+        opList = OperationList.builder()
+                .withOperations(
+                        new CropByPixels(100, 100, 100, 100),
+                        new ScaleByPercent(0.25))
+                .build();
         assertTrue(instance.hasEffect(fullSize, opList));
 
         // out of bounds
-        opList = new OperationList(
-                new CropByPixels(0, 0, 400, 300), new ScaleByPercent(0.25));
+        opList = OperationList.builder()
+                .withOperations(
+                        new CropByPixels(0, 0, 400, 300),
+                        new ScaleByPercent(0.25))
+                .build();
         instance = new Redaction(new Rectangle(420, 305, 20, 20));
         assertFalse(instance.hasEffect(fullSize, opList));
     }

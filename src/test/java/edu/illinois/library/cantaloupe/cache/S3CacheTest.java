@@ -38,7 +38,7 @@ public class S3CacheTest extends AbstractCacheTest {
     private enum Service {
         AWS("aws"), MINIO("minio"), S3MOCK("s3mock");
 
-        private String key;
+        private final String key;
 
         static Service forKey(String key) {
             return Arrays.stream(values())
@@ -271,8 +271,10 @@ public class S3CacheTest extends AbstractCacheTest {
         final DerivativeCache instance = newInstance();
         Configuration.getInstance().setProperty(Key.DERIVATIVE_CACHE_TTL, 2);
 
-        OperationList ops = new OperationList(
-                new Identifier("cats"), new Encode(Format.get("jpg")));
+        OperationList ops = OperationList.builder()
+                .withIdentifier(new Identifier("cats"))
+                .withOperations(new Encode(Format.get("jpg")))
+                .build();
         Path fixture = TestUtil.getImage(IMAGE);
 
         // Add an image.

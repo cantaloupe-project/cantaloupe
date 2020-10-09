@@ -37,8 +37,9 @@ public class ColorTransformTest extends BaseTest {
     @Test
     void testHasEffectWithArguments() {
         Dimension fullSize = new Dimension(600, 400);
-        OperationList opList = new OperationList(new CropByPixels(0, 0, 300, 200));
-
+        OperationList opList = OperationList.builder()
+                .withOperations(new CropByPixels(0, 0, 300, 200))
+                .build();
         assertTrue(ColorTransform.BITONAL.hasEffect(fullSize, opList));
         assertTrue(ColorTransform.GRAY.hasEffect(fullSize, opList));
     }

@@ -55,6 +55,48 @@ import java.util.stream.Stream;
  */
 public final class OperationList implements Iterable<Operation> {
 
+    public static final class Builder {
+
+        private Identifier identifier;
+        private Operation[] operations;
+        private Map<String,String> options;
+        private ScaleConstraint scaleConstraint;
+
+        public Builder withIdentifier(Identifier identifier) {
+            this.identifier = identifier;
+            return this;
+        }
+
+        public Builder withOperations(Operation... operations) {
+            this.operations = operations;
+            return this;
+        }
+
+        public Builder withOptions(Map<String,String> options) {
+            this.options = options;
+            return this;
+        }
+
+        public Builder withScaleConstraint(ScaleConstraint scaleConstraint) {
+            this.scaleConstraint = scaleConstraint;
+            return this;
+        }
+
+        public OperationList build() {
+            OperationList opList = new OperationList();
+            opList.setIdentifier(identifier);
+            if (operations != null) {
+                opList.operations.addAll(List.of(operations));
+            }
+            if (options != null) {
+                opList.options.putAll(options);
+            }
+            opList.setScaleConstraint(scaleConstraint);
+            return opList;
+        }
+
+    }
+
     private static final Logger LOGGER =
             LoggerFactory.getLogger(OperationList.class);
 
@@ -62,27 +104,16 @@ public final class OperationList implements Iterable<Operation> {
     private Identifier identifier;
     private final List<Operation> operations = new ArrayList<>();
     private final Map<String,Object> options = new HashMap<>();
-    private ScaleConstraint scaleConstraint = new ScaleConstraint(1, 1);
+    private ScaleConstraint scaleConstraint  = new ScaleConstraint(1, 1);
 
-    /**
-     * Constructs a minimal valid instance.
-     */
+    public static OperationList.Builder builder() {
+        return new OperationList.Builder();
+    }
+
     public OperationList() {}
 
     public OperationList(Identifier identifier) {
         this();
-        setIdentifier(identifier);
-    }
-
-    public OperationList(Operation... operations) {
-        this();
-        for (Operation op : operations) {
-            add(op);
-        }
-    }
-
-    public OperationList(Identifier identifier, Operation... operations) {
-        this(operations);
         setIdentifier(identifier);
     }
 
@@ -380,6 +411,10 @@ public final class OperationList implements Iterable<Operation> {
 
     public Identifier getIdentifier() {
         return identifier;
+    }
+
+    public List<Operation> getOperations() {
+        return operations;
     }
 
     /**

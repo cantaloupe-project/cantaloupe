@@ -57,7 +57,7 @@ public class PdfBoxProcessorPerformance {
         processor.setSourceFormat(Format.get("pdf"));
         processor.setSourceFile(TestUtil.getImage("pdf"));
         processor.process(
-                new OperationList(new Encode(OUTPUT_FORMAT)),
+                OperationList.builder().withOperations(new Encode(OUTPUT_FORMAT)).build(),
                 Info.builder().withSize(64, 56).build(),
                 OutputStream.nullOutputStream());
     }

@@ -61,7 +61,9 @@ public class PdfBoxProcessorTest extends AbstractProcessorTest {
 
         // page option missing
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        OperationList ops = new OperationList(new Encode(Format.get("jpg")));
+        OperationList ops = OperationList.builder()
+                .withOperations(new Encode(Format.get("jpg")))
+                .build();
         instance.process(ops, imageInfo, outputStream);
         final byte[] page1 = outputStream.toByteArray();
 
@@ -80,7 +82,9 @@ public class PdfBoxProcessorTest extends AbstractProcessorTest {
         final Info imageInfo = instance.readInfo();
 
         // page "35"
-        OperationList ops = new OperationList(new Encode(Format.get("jpg")));
+        OperationList ops = OperationList.builder()
+                .withOperations(new Encode(Format.get("jpg")))
+                .build();
         ops.getOptions().put("page", "35");
         OutputStream outputStream = OutputStream.nullOutputStream();
 
@@ -116,8 +120,10 @@ public class PdfBoxProcessorTest extends AbstractProcessorTest {
     void testValidateWithNoPageArgument() throws Exception {
         instance.setSourceFile(TestUtil.getImage("pdf.pdf"));
 
-        OperationList ops = new OperationList(
-                new Identifier("cats"), new Encode(Format.get("jpg")));
+        OperationList ops = OperationList.builder()
+                .withIdentifier(new Identifier("cats"))
+                .withOperations(new Encode(Format.get("jpg")))
+                .build();
         Dimension fullSize = new Dimension(100, 88);
         instance.validate(ops, fullSize);
     }
@@ -126,8 +132,10 @@ public class PdfBoxProcessorTest extends AbstractProcessorTest {
     void testValidateWithValidPageArgument() throws Exception {
         instance.setSourceFile(TestUtil.getImage("pdf.pdf"));
 
-        OperationList ops = new OperationList(
-                new Identifier("cats"), new Encode(Format.get("jpg")));
+        OperationList ops = OperationList.builder()
+                .withIdentifier(new Identifier("cats"))
+                .withOperations(new Encode(Format.get("jpg")))
+                .build();
         ops.getOptions().put("page", "1");
         Dimension fullSize = new Dimension(100, 88);
 
@@ -138,8 +146,10 @@ public class PdfBoxProcessorTest extends AbstractProcessorTest {
     void testValidateWithZeroPageArgument() {
         instance.setSourceFile(TestUtil.getImage("pdf.pdf"));
 
-        OperationList ops = new OperationList(
-                new Identifier("cats"), new Encode(Format.get("jpg")));
+        OperationList ops = OperationList.builder()
+                .withIdentifier(new Identifier("cats"))
+                .withOperations(new Encode(Format.get("jpg")))
+                .build();
         ops.getOptions().put("page", "0");
         Dimension fullSize = new Dimension(100, 88);
 
@@ -151,8 +161,10 @@ public class PdfBoxProcessorTest extends AbstractProcessorTest {
     void testValidateWithNegativePageArgument() {
         instance.setSourceFile(TestUtil.getImage("pdf.pdf"));
 
-        OperationList ops = new OperationList(
-                new Identifier("cats"), new Encode(Format.get("jpg")));
+        OperationList ops = OperationList.builder()
+                .withIdentifier(new Identifier("cats"))
+                .withOperations(new Encode(Format.get("jpg")))
+                .build();
         ops.getOptions().put("page", "-1");
         Dimension fullSize = new Dimension(100, 88);
 
@@ -164,8 +176,10 @@ public class PdfBoxProcessorTest extends AbstractProcessorTest {
     void testValidateWithExcessivePageArgument() {
         instance.setSourceFile(TestUtil.getImage("pdf.pdf"));
 
-        OperationList ops = new OperationList(
-                new Identifier("cats"), new Encode(Format.get("jpg")));
+        OperationList ops = OperationList.builder()
+                .withIdentifier(new Identifier("cats"))
+                .withOperations(new Encode(Format.get("jpg")))
+                .build();
         ops.getOptions().put("page", "3");
         Dimension fullSize = new Dimension(100, 88);
 

@@ -57,7 +57,7 @@ public class Java2dProcessorPerformance {
         processor.setSourceFormat(Format.get("bmp"));
         processor.setSourceFile(TestUtil.getImage("bmp-rgb-64x56x8.bmp"));
         processor.process(
-                new OperationList(new Encode(OUTPUT_FORMAT)),
+                OperationList.builder().withOperations(new Encode(OUTPUT_FORMAT)).build(),
                 Info.builder().withSize(64, 56).build(),
                 OutputStream.nullOutputStream());
     }
@@ -67,7 +67,7 @@ public class Java2dProcessorPerformance {
         processor.setSourceFormat(Format.get("gif"));
         processor.setSourceFile(TestUtil.getImage("gif-rgb-64x56x8.gif"));
         processor.process(
-                new OperationList(new Encode(OUTPUT_FORMAT)),
+                OperationList.builder().withOperations(new Encode(OUTPUT_FORMAT)).build(),
                 Info.builder().withSize(64, 56).build(),
                 OutputStream.nullOutputStream());
     }
@@ -77,7 +77,7 @@ public class Java2dProcessorPerformance {
         processor.setSourceFormat(Format.get("jpg"));
         processor.setSourceFile(TestUtil.getImage("jpg-rgb-64x56x8-line.jpg"));
         processor.process(
-                new OperationList(new Encode(OUTPUT_FORMAT)),
+                OperationList.builder().withOperations(new Encode(OUTPUT_FORMAT)).build(),
                 Info.builder().withSize(64, 56).build(),
                 OutputStream.nullOutputStream());
     }
@@ -87,7 +87,7 @@ public class Java2dProcessorPerformance {
         processor.setSourceFormat(Format.get("png"));
         processor.setSourceFile(TestUtil.getImage("png-rgb-64x56x8.png"));
         processor.process(
-                new OperationList(new Encode(OUTPUT_FORMAT)),
+                OperationList.builder().withOperations(new Encode(OUTPUT_FORMAT)).build(),
                 Info.builder().withSize(64, 56).build(),
                 OutputStream.nullOutputStream());
     }
@@ -97,7 +97,7 @@ public class Java2dProcessorPerformance {
         processor.setSourceFormat(Format.get("tif"));
         processor.setSourceFile(TestUtil.getImage("tif-rgb-1res-64x56x8-striped-lzw.tif"));
         processor.process(
-                new OperationList(new Encode(OUTPUT_FORMAT)),
+                OperationList.builder().withOperations(new Encode(OUTPUT_FORMAT)).build(),
                 Info.builder().withSize(64, 56).build(),
                 OutputStream.nullOutputStream());
     }

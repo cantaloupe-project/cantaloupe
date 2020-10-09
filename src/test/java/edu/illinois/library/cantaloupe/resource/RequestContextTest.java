@@ -52,8 +52,10 @@ public class RequestContextTest extends BaseTest {
         // operation list
         Identifier identifier = new Identifier("cats");
         Dimension fullSize    = new Dimension(200, 200);
-        OperationList opList  = new OperationList(
-                identifier, new Encode(Format.get("gif")));
+        OperationList opList  = OperationList.builder()
+                .withIdentifier(identifier)
+                .withOperations(new Encode(Format.get("gif")))
+                .build();
         instance.setOperationList(opList, fullSize);
         // request headers
         Map<String,String> headers = Map.of("X-Cats", "Yes");
@@ -106,8 +108,10 @@ public class RequestContextTest extends BaseTest {
 
     @Test
     void testSetOperationList() {
-        OperationList opList = new OperationList(
-                new Identifier("cats"), new Encode(Format.get("jpg")));
+        OperationList opList = OperationList.builder()
+                .withIdentifier(new Identifier("cats"))
+                .withOperations(new Encode(Format.get("jpg")))
+                .build();
         instance.setOperationList(opList, new Dimension(5, 5));
         assertNotNull(instance.getFullSize());
         assertNotNull(instance.getIdentifier());

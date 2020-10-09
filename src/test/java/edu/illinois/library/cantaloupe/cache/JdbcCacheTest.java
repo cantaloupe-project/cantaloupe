@@ -108,19 +108,23 @@ public class JdbcCacheTest extends AbstractCacheTest {
             Files.copy(TestUtil.getImage(IMAGE), os);
         }
 
-        Crop crop = new CropByPixels(50, 50, 50, 50);
-        Scale scale = new ScaleByPercent(0.9);
+        Crop crop     = new CropByPixels(50, 50, 50, 50);
+        Scale scale   = new ScaleByPercent(0.9);
         Rotate rotate = new Rotate();
-        ops = new OperationList(crop, scale, rotate);
+        ops           = OperationList.builder()
+                .withOperations(crop, scale, rotate)
+                .build();
 
         try (OutputStream os = instance.newDerivativeImageOutputStream(ops)) {
             Files.copy(TestUtil.getImage(IMAGE), os);
         }
 
-        crop = new CropByPixels(10, 20, 50, 90);
-        scale = new ScaleByPixels(40, null, ScaleByPixels.Mode.ASPECT_FIT_WIDTH);
+        crop   = new CropByPixels(10, 20, 50, 90);
+        scale  = new ScaleByPixels(40, null, ScaleByPixels.Mode.ASPECT_FIT_WIDTH);
         rotate = new Rotate(15);
-        ops = new OperationList(crop, scale, rotate);
+        ops    = OperationList.builder()
+                .withOperations(crop, scale, rotate)
+                .build();
 
         try (OutputStream os = instance.newDerivativeImageOutputStream(ops)) {
             Files.copy(TestUtil.getImage(IMAGE), os);

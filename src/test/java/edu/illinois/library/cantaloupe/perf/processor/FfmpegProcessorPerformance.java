@@ -55,7 +55,7 @@ public class FfmpegProcessorPerformance {
         processor.setSourceFormat(Format.get("avi"));
         processor.setSourceFile(TestUtil.getImage("avi"));
         processor.process(
-                new OperationList(new Encode(Format.get("png"))),
+                OperationList.builder().withOperations(new Encode(Format.get("png"))).build(),
                 Info.builder().withSize(640, 360).build(),
                 OutputStream.nullOutputStream());
     }
@@ -65,7 +65,7 @@ public class FfmpegProcessorPerformance {
         processor.setSourceFormat(Format.get("flv"));
         processor.setSourceFile(TestUtil.getImage("flv"));
         processor.process(
-                new OperationList(new Encode(Format.get("png"))),
+                OperationList.builder().withOperations(new Encode(Format.get("png"))).build(),
                 Info.builder().withSize(640, 360).build(),
                 OutputStream.nullOutputStream());
     }
@@ -75,7 +75,7 @@ public class FfmpegProcessorPerformance {
         processor.setSourceFormat(Format.get("mov"));
         processor.setSourceFile(TestUtil.getImage("mov"));
         processor.process(
-                new OperationList(new Encode(Format.get("png"))),
+                OperationList.builder().withOperations(new Encode(Format.get("png"))).build(),
                 Info.builder().withSize(640, 360).build(),
                 OutputStream.nullOutputStream());
     }
@@ -85,7 +85,7 @@ public class FfmpegProcessorPerformance {
         processor.setSourceFormat(Format.get("mp4"));
         processor.setSourceFile(TestUtil.getImage("mp4"));
         processor.process(
-                new OperationList(new Encode(Format.get("png"))),
+                OperationList.builder().withOperations(new Encode(Format.get("png"))).build(),
                 Info.builder().withSize(640, 360).build(),
                 OutputStream.nullOutputStream());
     }
@@ -95,7 +95,7 @@ public class FfmpegProcessorPerformance {
         processor.setSourceFormat(Format.get("mpg"));
         processor.setSourceFile(TestUtil.getImage("mpg"));
         processor.process(
-                new OperationList(new Encode(Format.get("png"))),
+                OperationList.builder().withOperations(new Encode(Format.get("png"))).build(),
                 Info.builder().withSize(640, 360).build(),
                 OutputStream.nullOutputStream());
     }
@@ -105,7 +105,7 @@ public class FfmpegProcessorPerformance {
         processor.setSourceFormat(Format.get("webm"));
         processor.setSourceFile(TestUtil.getImage("webm"));
         processor.process(
-                new OperationList(new Encode(Format.get("png"))),
+                OperationList.builder().withOperations(new Encode(Format.get("png"))).build(),
                 Info.builder().withSize(640, 360).build(),
                 OutputStream.nullOutputStream());
     }

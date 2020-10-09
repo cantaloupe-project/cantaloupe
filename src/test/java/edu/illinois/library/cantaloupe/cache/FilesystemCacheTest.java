@@ -110,10 +110,12 @@ public class FilesystemCacheTest extends AbstractCacheTest {
 
         Identifier identifier = new Identifier("cats_~!@#$%^&*()");
 
-        OperationList ops = new OperationList(
-                identifier,
-                new ScaleByPercent(0.905),
-                new Encode(Format.get("tif")));
+        OperationList ops = OperationList.builder()
+                .withIdentifier(identifier)
+                .withOperations(
+                        new ScaleByPercent(0.905),
+                        new Encode(Format.get("tif")))
+                .build();
 
         final Path expected = Paths.get(
                 pathname,
@@ -135,8 +137,10 @@ public class FilesystemCacheTest extends AbstractCacheTest {
         ColorTransform transform = ColorTransform.BITONAL;
         Encode encode            = new Encode(Format.get("tif"));
 
-        OperationList ops = new OperationList(
-                identifier, crop, scale, rotate, transform, encode);
+        OperationList ops = OperationList.builder()
+                .withIdentifier(identifier)
+                .withOperations(crop, scale, rotate, transform, encode)
+                .build();
 
         final Path expected = Paths.get(
                 pathname,

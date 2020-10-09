@@ -58,7 +58,7 @@ public class TurboJpegProcessorPerformance {
         processor.setSourceFormat(SOURCE_FORMAT);
         processor.setSourceFile(TestUtil.getImage("jpg"));
         processor.process(
-                new OperationList(new Encode(OUTPUT_FORMAT)),
+                OperationList.builder().withOperations(new Encode(OUTPUT_FORMAT)).build(),
                 Info.builder().withSize(64, 56).build(),
                 OutputStream.nullOutputStream());
     }
