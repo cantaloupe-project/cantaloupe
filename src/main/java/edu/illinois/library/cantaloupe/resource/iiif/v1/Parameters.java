@@ -17,8 +17,8 @@ import org.apache.commons.lang3.StringUtils;
  */
 class Parameters {
 
+    private String identifier;
     private Format outputFormat;
-    private Identifier identifier;
     private Quality quality;
     private Region region;
     private Rotation rotation;
@@ -34,7 +34,7 @@ class Parameters {
         String[] parts = StringUtils.split(paramsStr, "/");
         try {
             if (parts.length == 5) {
-                params.setIdentifier(new Identifier(Reference.decode(parts[0])));
+                params.setIdentifier(Reference.decode(parts[0]));
                 params.setRegion(Region.fromUri(parts[1]));
                 params.setSize(Size.fromUri(parts[2]));
                 params.setRotation(Rotation.fromUri(parts[3]));
@@ -72,7 +72,7 @@ class Parameters {
      * @throws IllegalClientArgumentException if any of the other arguments are
      *         invalid.
      */
-    Parameters(Identifier identifier,
+    Parameters(String identifier,
                String region,
                String size,
                String rotation,
@@ -105,7 +105,7 @@ class Parameters {
         return super.equals(obj);
     }
 
-    public Identifier getIdentifier() {
+    public String getIdentifier() {
         return identifier;
     }
 
@@ -134,7 +134,7 @@ class Parameters {
         return toString().hashCode();
     }
 
-    public void setIdentifier(Identifier identifier) {
+    public void setIdentifier(String identifier) {
         this.identifier = identifier;
     }
 
@@ -164,7 +164,7 @@ class Parameters {
      *         overlays, etc.
      */
     OperationList toOperationList() {
-        OperationList ops = new OperationList(getIdentifier());
+        OperationList ops = new OperationList(new Identifier(getIdentifier()));
 
         if (!getRegion().isFull()) {
             ops.add(getRegion().toCrop());

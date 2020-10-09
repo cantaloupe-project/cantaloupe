@@ -1,7 +1,6 @@
 package edu.illinois.library.cantaloupe.resource.iiif.v1;
 
 import edu.illinois.library.cantaloupe.image.Format;
-import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.operation.Crop;
 import edu.illinois.library.cantaloupe.operation.Operation;
 import edu.illinois.library.cantaloupe.operation.OperationList;
@@ -24,15 +23,15 @@ public class ParametersTest extends BaseTest {
     @BeforeEach
     public void setUp() throws Exception {
         super.setUp();
-        instance = new Parameters(new Identifier("identifier"),
-                "0,0,200,200", "pct:50", "5", "native", "jpg");
+        instance = new Parameters(
+                "identifier", "0,0,200,200", "pct:50", "5", "native", "jpg");
     }
 
     @Test
     void testFromUri() {
         Parameters params =
                 Parameters.fromUri("bla/20,20,50,50/pct:90/15/native.jpg");
-        assertEquals("bla", params.getIdentifier().toString());
+        assertEquals("bla", params.getIdentifier());
         assertEquals("20,20,50,50", params.getRegion().toString());
         assertEquals(90f, params.getSize().getPercent(), 0.0000001f);
         assertEquals(15f, params.getRotation().getDegrees(), 0.0000001f);
@@ -56,24 +55,14 @@ public class ParametersTest extends BaseTest {
     void testConstructorWithInvalidQuality() {
         assertThrows(IllegalClientArgumentException.class,
                 () -> new Parameters(
-                        new Identifier("identifier"),
-                        "0,0,200,200",
-                        "pct:50",
-                        "5",
-                        "bogus",
-                        "jpg"));
+                        "identifier", "0,0,200,200", "pct:50", "5", "bogus", "jpg"));
     }
 
     @Test
     void testConstructorWithUnsupportedOutputFormat() {
         assertThrows(FormatException.class,
                 () -> new Parameters(
-                        new Identifier("identifier"),
-                        "0,0,200,200",
-                        "pct:50",
-                        "5",
-                        "native",
-                        "bogus"));
+                        "identifier", "0,0,200,200", "pct:50", "5", "native", "bogus"));
     }
 
     @Test

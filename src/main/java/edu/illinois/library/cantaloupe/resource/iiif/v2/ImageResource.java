@@ -5,7 +5,6 @@ import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.http.Method;
 import edu.illinois.library.cantaloupe.http.Status;
 import edu.illinois.library.cantaloupe.image.Dimension;
-import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.image.Metadata;
 import edu.illinois.library.cantaloupe.image.Orientation;
@@ -56,7 +55,7 @@ public class ImageResource extends IIIF2Resource {
         // Assemble the URI path segments into a Parameters object.
         final List<String> args = getPathArguments();
         final Parameters params = new Parameters(
-                getIdentifier(), args.get(1), args.get(2),
+                getIdentifier().toString(), args.get(1), args.get(2),
                 args.get(3), args.get(4), args.get(5));
         // Convert it into an OperationList.
         final OperationList ops = params.toOperationList();
@@ -142,7 +141,7 @@ public class ImageResource extends IIIF2Resource {
         addHeaders(disposition, contentType);
 
         Parameters paramsCopy = new Parameters(params);
-        paramsCopy.setIdentifier(new Identifier(getPublicIdentifier()));
+        paramsCopy.setIdentifier(getPublicIdentifier());
         String paramsStr = paramsCopy.toCanonicalString(fullSize);
         getResponse().setHeader("Link",
                 String.format("<%s%s/%s>;rel=\"canonical\"",

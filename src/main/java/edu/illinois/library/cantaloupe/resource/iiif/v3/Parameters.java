@@ -21,7 +21,7 @@ import java.util.stream.Collectors;
  */
 class Parameters {
 
-    private Identifier identifier;
+    private String identifier;
     private Region region;
     private Size size;
     private Rotation rotation;
@@ -38,7 +38,7 @@ class Parameters {
         Parameters params = new Parameters();
         String[] parts = StringUtils.split(paramsStr, "/");
         if (parts.length == 5) {
-            params.setIdentifier(new Identifier(Reference.decode(parts[0])));
+            params.setIdentifier(Reference.decode(parts[0]));
             params.setRegion(Region.fromURI(parts[1]));
             params.setSize(Size.fromURI(parts[2]));
             params.setRotation(Rotation.fromURI(parts[3]));
@@ -84,7 +84,7 @@ class Parameters {
      * @throws IllegalClientArgumentException if any of the other arguments are
      *         invalid.
      */
-    Parameters(Identifier identifier,
+    Parameters(String identifier,
                String region,
                String size,
                String rotation,
@@ -122,7 +122,7 @@ class Parameters {
         return super.equals(obj);
     }
 
-    Identifier getIdentifier() {
+    String getIdentifier() {
         return identifier;
     }
 
@@ -160,7 +160,7 @@ class Parameters {
         return toString().hashCode();
     }
 
-    void setIdentifier(Identifier identifier) {
+    void setIdentifier(String identifier) {
         this.identifier = identifier;
     }
 
@@ -195,7 +195,7 @@ class Parameters {
      *                 need to be performed, such as overlays, etc.
      */
     OperationList toOperationList(double maxScale) {
-        OperationList ops = new OperationList(getIdentifier());
+        OperationList ops = new OperationList(new Identifier(getIdentifier()));
 
         if (!Region.Type.FULL.equals(getRegion().getType())) {
             ops.add(getRegion().toCrop());

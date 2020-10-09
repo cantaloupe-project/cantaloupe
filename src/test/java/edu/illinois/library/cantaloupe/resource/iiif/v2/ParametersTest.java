@@ -1,7 +1,6 @@
 package edu.illinois.library.cantaloupe.resource.iiif.v2;
 
 import edu.illinois.library.cantaloupe.image.Dimension;
-import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.operation.Crop;
 import edu.illinois.library.cantaloupe.operation.Operation;
 import edu.illinois.library.cantaloupe.operation.OperationList;
@@ -27,12 +26,7 @@ public class ParametersTest extends BaseTest {
     public void setUp() throws Exception {
         super.setUp();
         instance = new Parameters(
-                new Identifier("identifier"),
-                "0,0,200,200",
-                "pct:50",
-                "5",
-                "default",
-                "jpg");
+                "identifier", "0,0,200,200", "pct:50", "5", "default", "jpg");
     }
 
     @Test
@@ -74,24 +68,14 @@ public class ParametersTest extends BaseTest {
     void testConstructor3WithUnsupportedQuality() {
         assertThrows(IllegalClientArgumentException.class,
                 () -> new Parameters(
-                        new Identifier("identifier"),
-                        "0,0,200,200",
-                        "pct:50",
-                        "5",
-                        "bogus",
-                        "jpg"));
+                        "identifier", "0,0,200,200", "pct:50", "5", "bogus", "jpg"));
     }
 
     @Test
     void testConstructor3WithUnsupportedFormat() {
         assertThrows(FormatException.class,
                 () -> new Parameters(
-                        new Identifier("identifier"),
-                        "0,0,200,200",
-                        "pct:50",
-                        "5",
-                        "default",
-                        "bogus"));
+                        "identifier", "0,0,200,200", "pct:50", "5", "default", "bogus"));
     }
 
     @Test

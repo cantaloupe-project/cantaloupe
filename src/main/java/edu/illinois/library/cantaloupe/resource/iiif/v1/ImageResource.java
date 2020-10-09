@@ -138,7 +138,7 @@ public class ImageResource extends IIIF1Resource {
 
         final Identifier identifier = getIdentifier();
         final Parameters params = new Parameters(
-                identifier, args.get(1), args.get(2),
+                identifier.toString(), args.get(1), args.get(2),
                 args.get(3), args.get(4), outputFormat);
 
         final OperationList ops = params.toOperationList();
