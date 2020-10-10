@@ -10,9 +10,7 @@ import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
-import edu.illinois.library.cantaloupe.resource.RequestContext;
 import edu.illinois.library.cantaloupe.delegate.DelegateProxy;
-import edu.illinois.library.cantaloupe.delegate.DelegateProxyService;
 import edu.illinois.library.cantaloupe.test.AzureStorageTestUtil;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.ConfigurationConstants;
@@ -150,16 +148,11 @@ public class AzureStorageSourceTest extends AbstractSourceTest {
             Configuration config = Configuration.getInstance();
             config.setProperty(Key.AZURESTORAGESOURCE_LOOKUP_STRATEGY,
                     "ScriptLookupStrategy");
-            config.setProperty(Key.DELEGATE_SCRIPT_ENABLED, true);
-            config.setProperty(Key.DELEGATE_SCRIPT_PATHNAME,
-                    TestUtil.getFixture("delegates.rb").toString());
 
             Identifier identifier = new Identifier(AzureStorageTestUtil.OBJECT_KEY_WITH_CONTENT_TYPE_AND_RECOGNIZED_EXTENSION);
-            RequestContext context = new RequestContext();
-            context.setIdentifier(identifier);
-            DelegateProxyService service = DelegateProxyService.getInstance();
-            DelegateProxy proxy = service.newDelegateProxy(context);
-            instance.setDelegateProxy(proxy);
+            DelegateProxy delegateProxy = TestUtil.newDelegateProxy();
+            delegateProxy.getRequestContext().setIdentifier(identifier);
+            instance.setDelegateProxy(delegateProxy);
         } catch (Exception e) {
             fail();
         }
@@ -186,16 +179,13 @@ public class AzureStorageSourceTest extends AbstractSourceTest {
     }
 
     @Test
-    void testCheckAccessUsingScriptLookupStrategyWithMissingImage()
-            throws Exception {
+    void testCheckAccessUsingScriptLookupStrategyWithMissingImage() {
         useScriptLookupStrategy();
 
         Identifier identifier = new Identifier("bogus");
-        RequestContext context = new RequestContext();
-        context.setIdentifier(identifier);
-        DelegateProxyService service = DelegateProxyService.getInstance();
-        DelegateProxy proxy = service.newDelegateProxy(context);
-        instance.setDelegateProxy(proxy);
+        DelegateProxy delegateProxy = TestUtil.newDelegateProxy();
+        delegateProxy.getRequestContext().setIdentifier(identifier);
+        instance.setDelegateProxy(delegateProxy);
         instance.setIdentifier(identifier);
 
         assertThrows(NoSuchFileException.class, instance::checkAccess);

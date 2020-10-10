@@ -6,9 +6,7 @@ import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.http.Headers;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
-import edu.illinois.library.cantaloupe.resource.RequestContext;
 import edu.illinois.library.cantaloupe.delegate.DelegateProxy;
-import edu.illinois.library.cantaloupe.delegate.DelegateProxyService;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import edu.illinois.library.cantaloupe.test.WebServer;
 import org.eclipse.jetty.server.Request;
@@ -50,12 +48,6 @@ abstract class HttpSourceTest extends AbstractSourceTest {
     @BeforeEach
     public void setUp() throws Exception {
         super.setUp();
-
-        Configuration config = Configuration.getInstance();
-        config.setProperty(Key.DELEGATE_SCRIPT_ENABLED, true);
-        config.setProperty(Key.DELEGATE_SCRIPT_PATHNAME,
-                TestUtil.getFixture("delegates.rb"));
-
         instance = newInstance();
     }
 
@@ -99,9 +91,6 @@ abstract class HttpSourceTest extends AbstractSourceTest {
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.HTTPSOURCE_LOOKUP_STRATEGY,
                 "ScriptLookupStrategy");
-        config.setProperty(Key.DELEGATE_SCRIPT_ENABLED, true);
-        config.setProperty(Key.DELEGATE_SCRIPT_PATHNAME,
-                TestUtil.getFixture("delegates.rb").toString());
     }
 
     /* checkAccess() */
@@ -141,10 +130,8 @@ abstract class HttpSourceTest extends AbstractSourceTest {
             throws Exception {
         server.start();
 
-        RequestContext context = new RequestContext();
-        context.setIdentifier(identifier);
-        DelegateProxyService service = DelegateProxyService.getInstance();
-        DelegateProxy proxy = service.newDelegateProxy(context);
+        DelegateProxy proxy = TestUtil.newDelegateProxy();
+        proxy.getRequestContext().setIdentifier(identifier);
         instance.setDelegateProxy(proxy);
         instance.setIdentifier(identifier);
 
@@ -165,10 +152,8 @@ abstract class HttpSourceTest extends AbstractSourceTest {
         });
         server.start();
 
-        RequestContext context = new RequestContext();
-        context.setIdentifier(identifier);
-        DelegateProxyService service = DelegateProxyService.getInstance();
-        DelegateProxy proxy = service.newDelegateProxy(context);
+        DelegateProxy proxy = TestUtil.newDelegateProxy();
+        proxy.getRequestContext().setIdentifier(identifier);
         instance.setDelegateProxy(proxy);
         instance.setIdentifier(identifier);
         instance.setIdentifier(identifier);
@@ -180,10 +165,8 @@ abstract class HttpSourceTest extends AbstractSourceTest {
         try {
             server.start();
 
-            RequestContext context = new RequestContext();
-            context.setIdentifier(identifier);
-            DelegateProxyService service = DelegateProxyService.getInstance();
-            DelegateProxy proxy = service.newDelegateProxy(context);
+            DelegateProxy proxy = TestUtil.newDelegateProxy();
+            proxy.getRequestContext().setIdentifier(identifier);
             instance.setDelegateProxy(proxy);
             instance.setIdentifier(identifier);
 
@@ -204,10 +187,8 @@ abstract class HttpSourceTest extends AbstractSourceTest {
 
         Identifier identifier = new Identifier("valid-auth-" +
                 getServerURI() + "/" + PRESENT_READABLE_IDENTIFIER);
-        RequestContext context = new RequestContext();
-        context.setIdentifier(identifier);
-        DelegateProxyService service = DelegateProxyService.getInstance();
-        DelegateProxy proxy = service.newDelegateProxy(context);
+        DelegateProxy proxy = TestUtil.newDelegateProxy();
+        proxy.getRequestContext().setIdentifier(identifier);
         instance.setDelegateProxy(proxy);
         instance.setIdentifier(identifier);
 
@@ -224,10 +205,8 @@ abstract class HttpSourceTest extends AbstractSourceTest {
 
         Identifier identifier = new Identifier("invalid-auth-" +
                 getServerURI() + "/" + PRESENT_READABLE_IDENTIFIER);
-        RequestContext context = new RequestContext();
-        context.setIdentifier(identifier);
-        DelegateProxyService service = DelegateProxyService.getInstance();
-        DelegateProxy proxy = service.newDelegateProxy(context);
+        DelegateProxy proxy = TestUtil.newDelegateProxy();
+        proxy.getRequestContext().setIdentifier(identifier);
         instance.setDelegateProxy(proxy);
         instance.setIdentifier(identifier);
 
@@ -323,10 +302,8 @@ abstract class HttpSourceTest extends AbstractSourceTest {
 
         Identifier identifier = new Identifier(
                 getServerURI() + "/" + PRESENT_READABLE_IDENTIFIER);
-        RequestContext context = new RequestContext();
-        context.setIdentifier(identifier);
-        DelegateProxyService service = DelegateProxyService.getInstance();
-        DelegateProxy proxy = service.newDelegateProxy(context);
+        DelegateProxy proxy = TestUtil.newDelegateProxy();
+        proxy.getRequestContext().setIdentifier(identifier);
         instance.setDelegateProxy(proxy);
         instance.setIdentifier(identifier);
 
@@ -449,10 +426,8 @@ abstract class HttpSourceTest extends AbstractSourceTest {
 
         Identifier identifier = new Identifier(getScheme() + "-" +
                 PRESENT_READABLE_IDENTIFIER);
-        RequestContext context = new RequestContext();
-        context.setIdentifier(identifier);
-        DelegateProxyService service = DelegateProxyService.getInstance();
-        DelegateProxy proxy = service.newDelegateProxy(context);
+        DelegateProxy proxy = TestUtil.newDelegateProxy();
+        proxy.getRequestContext().setIdentifier(identifier);
         instance.setDelegateProxy(proxy);
 
         server.start();
@@ -470,12 +445,10 @@ abstract class HttpSourceTest extends AbstractSourceTest {
         final Map<String, String> headers = new HashMap<>();
         headers.put("X-Forwarded-Proto", getScheme());
 
-        RequestContext context = new RequestContext();
-        context.setClientIP("1.2.3.4");
-        context.setRequestHeaders(headers);
-        context.setIdentifier(PRESENT_READABLE_IDENTIFIER);
-        DelegateProxyService service = DelegateProxyService.getInstance();
-        DelegateProxy proxy = service.newDelegateProxy(context);
+        DelegateProxy proxy = TestUtil.newDelegateProxy();
+        proxy.getRequestContext().setIdentifier(PRESENT_READABLE_IDENTIFIER);
+        proxy.getRequestContext().setClientIP("1.2.3.4");
+        proxy.getRequestContext().setRequestHeaders(headers);
         instance.setIdentifier(PRESENT_READABLE_IDENTIFIER);
         instance.setDelegateProxy(proxy);
 
@@ -491,10 +464,8 @@ abstract class HttpSourceTest extends AbstractSourceTest {
         useScriptLookupStrategy();
 
         Identifier identifier = new Identifier(getScheme() + "-jpg-rgb-64x56x8-plane.jpg");
-        RequestContext context = new RequestContext();
-        context.setIdentifier(identifier);
-        DelegateProxyService service = DelegateProxyService.getInstance();
-        DelegateProxy proxy = service.newDelegateProxy(context);
+        DelegateProxy proxy = TestUtil.newDelegateProxy();
+        proxy.getRequestContext().setIdentifier(identifier);
         instance.setDelegateProxy(proxy);
         instance.setIdentifier(identifier);
 
@@ -516,10 +487,8 @@ abstract class HttpSourceTest extends AbstractSourceTest {
         server.start();
 
         Identifier identifier = new Identifier("bogus");
-        RequestContext context = new RequestContext();
-        context.setIdentifier(identifier);
-        DelegateProxyService service = DelegateProxyService.getInstance();
-        DelegateProxy proxy = service.newDelegateProxy(context);
+        DelegateProxy proxy = TestUtil.newDelegateProxy();
+        proxy.getRequestContext().setIdentifier(identifier);
         instance.setDelegateProxy(proxy);
         instance.setIdentifier(identifier);
 
@@ -560,10 +529,8 @@ abstract class HttpSourceTest extends AbstractSourceTest {
 
         Identifier identifier = new Identifier("valid-auth-" +
                 getServerURI() + "/" + PRESENT_READABLE_IDENTIFIER);
-        RequestContext context = new RequestContext();
-        context.setIdentifier(identifier);
-        DelegateProxyService service = DelegateProxyService.getInstance();
-        DelegateProxy proxy = service.newDelegateProxy(context);
+        DelegateProxy proxy = TestUtil.newDelegateProxy();
+        proxy.getRequestContext().setIdentifier(identifier);
         instance.setDelegateProxy(proxy);
         instance.setIdentifier(identifier);
 
@@ -583,10 +550,8 @@ abstract class HttpSourceTest extends AbstractSourceTest {
             throws Exception {
         server.start();
 
-        RequestContext context = new RequestContext();
-        context.setIdentifier(identifier);
-        DelegateProxyService service = DelegateProxyService.getInstance();
-        DelegateProxy proxy = service.newDelegateProxy(context);
+        DelegateProxy proxy = TestUtil.newDelegateProxy();
+        proxy.getRequestContext().setIdentifier(identifier);
         instance.setDelegateProxy(proxy);
         instance.setIdentifier(identifier);
 

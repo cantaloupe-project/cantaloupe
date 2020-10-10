@@ -4,9 +4,7 @@ import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
-import edu.illinois.library.cantaloupe.resource.RequestContext;
 import edu.illinois.library.cantaloupe.delegate.DelegateProxy;
-import edu.illinois.library.cantaloupe.delegate.DelegateProxyService;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -55,9 +53,6 @@ public class FilesystemSourceTest extends AbstractSourceTest {
     @Override
     void useBasicLookupStrategy() {
         Configuration config = Configuration.getInstance();
-        config.setProperty(Key.DELEGATE_SCRIPT_ENABLED, true);
-        config.setProperty(Key.DELEGATE_SCRIPT_PATHNAME,
-                TestUtil.getFixture("delegates.rb").toString());
         config.setProperty(Key.FILESYSTEMSOURCE_LOOKUP_STRATEGY,
                 "BasicLookupStrategy");
         config.setProperty(Key.FILESYSTEMSOURCE_PATH_PREFIX,
@@ -67,11 +62,11 @@ public class FilesystemSourceTest extends AbstractSourceTest {
     @Override
     void useScriptLookupStrategy() {
         Configuration config = Configuration.getInstance();
-        config.setProperty(Key.FILESYSTEMSOURCE_LOOKUP_STRATEGY,
-                "ScriptLookupStrategy");
         config.setProperty(Key.DELEGATE_SCRIPT_ENABLED, true);
         config.setProperty(Key.DELEGATE_SCRIPT_PATHNAME,
                 TestUtil.getFixture("delegates.rb").toString());
+        config.setProperty(Key.FILESYSTEMSOURCE_LOOKUP_STRATEGY,
+                "ScriptLookupStrategy");
     }
 
     /* checkAccess() */
@@ -95,10 +90,8 @@ public class FilesystemSourceTest extends AbstractSourceTest {
 
         Identifier identifier = new Identifier(
                 TestUtil.getImage(IDENTIFIER.toString()).toString());
-        RequestContext context = new RequestContext();
-        context.setIdentifier(identifier);
-        DelegateProxyService service = DelegateProxyService.getInstance();
-        DelegateProxy proxy = service.newDelegateProxy(context);
+        DelegateProxy proxy = TestUtil.newDelegateProxy();
+        proxy.getRequestContext().setIdentifier(identifier);
         instance.setDelegateProxy(proxy);
 
         instance.setIdentifier(identifier);
@@ -112,10 +105,8 @@ public class FilesystemSourceTest extends AbstractSourceTest {
 
         Identifier identifier = new Identifier(
                 TestUtil.getImage(IDENTIFIER.toString()).toString());
-        RequestContext context = new RequestContext();
-        context.setIdentifier(identifier);
-        DelegateProxyService service = DelegateProxyService.getInstance();
-        DelegateProxy proxy = service.newDelegateProxy(context);
+        DelegateProxy proxy = TestUtil.newDelegateProxy();
+        proxy.getRequestContext().setIdentifier(identifier);
         instance.setDelegateProxy(proxy);
         instance.setIdentifier(identifier);
 
@@ -130,17 +121,13 @@ public class FilesystemSourceTest extends AbstractSourceTest {
     }
 
     @Test
-    void testCheckAccessUsingScriptLookupStrategyWithMissingFile()
-            throws Exception {
+    void testCheckAccessUsingScriptLookupStrategyWithMissingFile() {
         useScriptLookupStrategy();
 
         Identifier identifier = new Identifier("missing");
-        RequestContext context = new RequestContext();
-        context.setIdentifier(identifier);
-        DelegateProxyService service = DelegateProxyService.getInstance();
-        DelegateProxy proxy = service.newDelegateProxy(context);
+        DelegateProxy proxy = TestUtil.newDelegateProxy();
+        proxy.getRequestContext().setIdentifier(identifier);
         instance.setDelegateProxy(proxy);
-
         instance.setIdentifier(identifier);
         assertThrows(NoSuchFileException.class, instance::checkAccess);
     }
@@ -257,10 +244,8 @@ public class FilesystemSourceTest extends AbstractSourceTest {
     void testgetFileWithScriptLookupStrategy() throws Exception {
         useScriptLookupStrategy();
 
-        RequestContext context = new RequestContext();
-        context.setIdentifier(IDENTIFIER);
-        DelegateProxyService service = DelegateProxyService.getInstance();
-        DelegateProxy proxy = service.newDelegateProxy(context);
+        DelegateProxy proxy = TestUtil.newDelegateProxy();
+        proxy.getRequestContext().setIdentifier(IDENTIFIER);
         instance.setDelegateProxy(proxy);
 
         assertEquals(IDENTIFIER.toString(), instance.getFile().toString());

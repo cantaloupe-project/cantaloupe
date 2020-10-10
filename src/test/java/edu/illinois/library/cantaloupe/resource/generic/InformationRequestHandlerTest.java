@@ -7,7 +7,6 @@ import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.*;
 import edu.illinois.library.cantaloupe.resource.RequestContext;
 import edu.illinois.library.cantaloupe.delegate.DelegateProxy;
-import edu.illinois.library.cantaloupe.delegate.DelegateProxyService;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.junit.jupiter.api.Nested;
@@ -29,15 +28,8 @@ public class InformationRequestHandlerTest extends BaseTest {
         }
 
         @Test
-        void testBuildWithDelegateProxyButNoRequestContextSet() throws Exception {
-            var config = Configuration.getInstance();
-            config.setProperty(Key.DELEGATE_SCRIPT_ENABLED, true);
-            config.setProperty(Key.DELEGATE_SCRIPT_PATHNAME,
-                    TestUtil.getFixture("delegates.rb").toString());
-
-            RequestContext context = new RequestContext();
-            DelegateProxy delegateProxy =
-                    DelegateProxyService.getInstance().newDelegateProxy(context);
+        void testBuildWithDelegateProxyButNoRequestContextSet() {
+            DelegateProxy delegateProxy = TestUtil.newDelegateProxy();
             assertThrows(IllegalArgumentException.class, () ->
                     InformationRequestHandler.builder()
                             .withIdentifier(new Identifier("cats"))

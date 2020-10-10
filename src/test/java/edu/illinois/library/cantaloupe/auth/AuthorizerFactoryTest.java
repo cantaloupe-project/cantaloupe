@@ -1,11 +1,7 @@
 package edu.illinois.library.cantaloupe.auth;
 
-import edu.illinois.library.cantaloupe.config.Configuration;
-import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Identifier;
-import edu.illinois.library.cantaloupe.resource.RequestContext;
 import edu.illinois.library.cantaloupe.delegate.DelegateProxy;
-import edu.illinois.library.cantaloupe.delegate.DelegateProxyService;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.junit.jupiter.api.BeforeEach;
@@ -34,16 +30,10 @@ public class AuthorizerFactoryTest extends BaseTest {
     }
 
     @Test
-    void testNewAuthorizerWithArgument() throws Exception {
-        Configuration config = Configuration.getInstance();
-        config.setProperty(Key.DELEGATE_SCRIPT_ENABLED, true);
-        config.setProperty(Key.DELEGATE_SCRIPT_PATHNAME,
-                TestUtil.getFixture("delegates.rb").toString());
-
-        RequestContext context = new RequestContext();
-        context.setIdentifier(new Identifier("forbidden-code-no-reason.jpg"));
-        DelegateProxyService service = DelegateProxyService.getInstance();
-        DelegateProxy proxy = service.newDelegateProxy(context);
+    void testNewAuthorizerWithArgument() {
+        DelegateProxy proxy = TestUtil.newDelegateProxy();
+        proxy.getRequestContext().setIdentifier(
+                new Identifier("forbidden-code-no-reason.jpg"));
 
         assertTrue(instance.newAuthorizer(proxy) instanceof DelegateAuthorizer);
     }

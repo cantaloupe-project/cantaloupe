@@ -8,13 +8,10 @@ import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.operation.Color;
 import edu.illinois.library.cantaloupe.operation.Encode;
 import edu.illinois.library.cantaloupe.operation.OperationList;
-import edu.illinois.library.cantaloupe.resource.RequestContext;
 import edu.illinois.library.cantaloupe.delegate.DelegateProxy;
-import edu.illinois.library.cantaloupe.delegate.DelegateProxyService;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.apache.commons.lang3.SystemUtils;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.awt.font.TextAttribute;
@@ -26,20 +23,11 @@ public class DelegateOverlayServiceTest extends BaseTest {
 
     private DelegateOverlayService instance;
 
-    @BeforeEach
-    public void setUp() throws Exception {
-        super.setUp();
-
-        Configuration config = Configuration.getInstance();
-        config.setProperty(Key.DELEGATE_SCRIPT_ENABLED, true);
-        config.setProperty(Key.DELEGATE_SCRIPT_PATHNAME,
-                TestUtil.getFixture("delegates.rb").toString());
-    }
-
     /* isAvailable() */
 
     @Test
     void testIsAvailableWhenAvailable() {
+        TestUtil.newDelegateProxy();
         instance = new DelegateOverlayService(null);
         assertTrue(instance.isAvailable());
     }
@@ -62,12 +50,10 @@ public class DelegateOverlayServiceTest extends BaseTest {
                 .withIdentifier(identifier)
                 .withOperations(new Encode(Format.get("jpg")))
                 .build();
-        final RequestContext context = new RequestContext();
-        context.setIdentifier(identifier);
-        context.setOperationList(opList, fullSize);
+        DelegateProxy proxy = TestUtil.newDelegateProxy();
+        proxy.getRequestContext().setIdentifier(identifier);
+        proxy.getRequestContext().setOperationList(opList, fullSize);
 
-        DelegateProxyService service = DelegateProxyService.getInstance();
-        DelegateProxy proxy = service.newDelegateProxy(context);
         instance = new DelegateOverlayService(proxy);
 
         final ImageOverlay overlay = (ImageOverlay) instance.newOverlay();
@@ -88,12 +74,10 @@ public class DelegateOverlayServiceTest extends BaseTest {
                 .withIdentifier(identifier)
                 .withOperations(new Encode(Format.get("jpg")))
                 .build();
-        final RequestContext context = new RequestContext();
-        context.setIdentifier(identifier);
-        context.setOperationList(opList, fullSize);
+        DelegateProxy proxy = TestUtil.newDelegateProxy();
+        proxy.getRequestContext().setIdentifier(identifier);
+        proxy.getRequestContext().setOperationList(opList, fullSize);
 
-        DelegateProxyService service = DelegateProxyService.getInstance();
-        DelegateProxy proxy = service.newDelegateProxy(context);
         instance = new DelegateOverlayService(proxy);
 
         final StringOverlay overlay = (StringOverlay) instance.newOverlay();
@@ -114,9 +98,7 @@ public class DelegateOverlayServiceTest extends BaseTest {
 
     @Test
     void testNewOverlayReturningNull() throws Exception {
-        final RequestContext context = new RequestContext();
-        DelegateProxyService service = DelegateProxyService.getInstance();
-        DelegateProxy proxy = service.newDelegateProxy(context);
+        DelegateProxy proxy = TestUtil.newDelegateProxy();
         instance = new DelegateOverlayService(proxy);
 
         Overlay overlay = instance.newOverlay();

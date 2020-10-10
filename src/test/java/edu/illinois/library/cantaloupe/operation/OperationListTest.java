@@ -15,9 +15,7 @@ import edu.illinois.library.cantaloupe.operation.overlay.BasicStringOverlayServi
 import edu.illinois.library.cantaloupe.operation.overlay.Overlay;
 import edu.illinois.library.cantaloupe.operation.redaction.Redaction;
 import edu.illinois.library.cantaloupe.operation.redaction.RedactionServiceTest;
-import edu.illinois.library.cantaloupe.resource.RequestContext;
 import edu.illinois.library.cantaloupe.delegate.DelegateProxy;
-import edu.illinois.library.cantaloupe.delegate.DelegateProxyService;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.junit.jupiter.api.BeforeEach;
@@ -91,12 +89,6 @@ class OperationListTest extends BaseTest {
     @BeforeEach
     public void setUp() throws Exception {
         super.setUp();
-
-        var config = Configuration.getInstance();
-        config.setProperty(Key.DELEGATE_SCRIPT_ENABLED, true);
-        config.setProperty(Key.DELEGATE_SCRIPT_PATHNAME,
-                TestUtil.getFixture("delegates.rb").toString());
-
         instance = new OperationList();
     }
 
@@ -218,8 +210,7 @@ class OperationListTest extends BaseTest {
     }
 
     @Test
-    void applyNonEndpointMutationsWithScaleConstraintAndNoScaleOperationAddsOne()
-            throws Exception {
+    void applyNonEndpointMutationsWithScaleConstraintAndNoScaleOperationAddsOne() {
         final Dimension fullSize = new Dimension(2000, 1000);
         final Info info = Info.builder()
                 .withSize(fullSize)
@@ -232,10 +223,8 @@ class OperationListTest extends BaseTest {
                 .withScaleConstraint(new ScaleConstraint(1, 2))
                 .build();
 
-        final RequestContext context = new RequestContext();
-        context.setOperationList(opList, fullSize);
-        DelegateProxyService service = DelegateProxyService.getInstance();
-        DelegateProxy proxy = service.newDelegateProxy(context);
+        DelegateProxy proxy = TestUtil.newDelegateProxy();
+        proxy.getRequestContext().setOperationList(opList, fullSize);
 
         opList.applyNonEndpointMutations(info, proxy);
 
@@ -245,8 +234,7 @@ class OperationListTest extends BaseTest {
     }
 
     @Test
-    void applyNonEndpointMutationsWithOrientationMutatesCrop()
-            throws Exception {
+    void applyNonEndpointMutationsWithOrientationMutatesCrop() {
         final Dimension fullSize = new Dimension(2000, 1000);
         final Info info = Info.builder()
                 .withSize(fullSize)
@@ -264,10 +252,8 @@ class OperationListTest extends BaseTest {
                         new Encode(Format.get("jpg")))
                 .build();
 
-        final RequestContext context = new RequestContext();
-        context.setOperationList(opList, fullSize);
-        DelegateProxyService service = DelegateProxyService.getInstance();
-        DelegateProxy proxy = service.newDelegateProxy(context);
+        DelegateProxy proxy = TestUtil.newDelegateProxy();
+        proxy.getRequestContext().setOperationList(opList, fullSize);
 
         opList.applyNonEndpointMutations(info, proxy);
 
@@ -278,8 +264,7 @@ class OperationListTest extends BaseTest {
     }
 
     @Test
-    void applyNonEndpointMutationsWithOrientationMutatesRotate()
-            throws Exception {
+    void applyNonEndpointMutationsWithOrientationMutatesRotate() {
         final Dimension fullSize = new Dimension(2000, 1000);
         final Info info = Info.builder()
                 .withSize(fullSize)
@@ -298,10 +283,8 @@ class OperationListTest extends BaseTest {
                         new Encode(Format.get("jpg")))
                 .build();
 
-        final RequestContext context = new RequestContext();
-        context.setOperationList(opList, fullSize);
-        DelegateProxyService service = DelegateProxyService.getInstance();
-        DelegateProxy proxy = service.newDelegateProxy(context);
+        DelegateProxy proxy = TestUtil.newDelegateProxy();
+        proxy.getRequestContext().setOperationList(opList, fullSize);
 
         opList.applyNonEndpointMutations(info, proxy);
 
@@ -312,21 +295,19 @@ class OperationListTest extends BaseTest {
     }
 
     @Test
-    void applyNonEndpointMutationsWithBackgroundColor() throws Exception {
+    void applyNonEndpointMutationsWithBackgroundColor() {
         final Configuration config = Configuration.getInstance();
         config.setProperty(Key.PROCESSOR_BACKGROUND_COLOR, "white");
 
-        final Dimension fullSize = new Dimension(2000, 1000);
-        final Info info = Info.builder().withSize(fullSize).build();
+        final Dimension fullSize   = new Dimension(2000, 1000);
+        final Info info            = Info.builder().withSize(fullSize).build();
         final OperationList opList = OperationList.builder()
                 .withIdentifier(new Identifier("cats"))
                 .withOperations(new Rotate(45), new Encode(Format.get("jpg")))
                 .build();
 
-        final RequestContext context = new RequestContext();
-        context.setOperationList(opList, fullSize);
-        DelegateProxyService service = DelegateProxyService.getInstance();
-        DelegateProxy proxy = service.newDelegateProxy(context);
+        DelegateProxy proxy = TestUtil.newDelegateProxy();
+        proxy.getRequestContext().setOperationList(opList, fullSize);
 
         opList.applyNonEndpointMutations(info, proxy);
 
@@ -335,22 +316,20 @@ class OperationListTest extends BaseTest {
     }
 
     @Test
-    void applyNonEndpointMutationsWithJPEGOutputFormat() throws Exception {
+    void applyNonEndpointMutationsWithJPEGOutputFormat() {
         final Configuration config = Configuration.getInstance();
         config.setProperty(Key.PROCESSOR_JPG_QUALITY, 50);
         config.setProperty(Key.PROCESSOR_JPG_PROGRESSIVE, true);
 
-        final Dimension fullSize = new Dimension(2000, 1000);
-        final Info info = Info.builder().withSize(fullSize).build();
+        final Dimension fullSize   = new Dimension(2000, 1000);
+        final Info info            = Info.builder().withSize(fullSize).build();
         final OperationList opList = OperationList.builder()
                 .withIdentifier(new Identifier("cats"))
                 .withOperations(new Encode(Format.get("jpg")))
                 .build();
 
-        final RequestContext context = new RequestContext();
-        context.setOperationList(opList, fullSize);
-        DelegateProxyService service = DelegateProxyService.getInstance();
-        DelegateProxy proxy = service.newDelegateProxy(context);
+        DelegateProxy proxy = TestUtil.newDelegateProxy();
+        proxy.getRequestContext().setOperationList(opList, fullSize);
 
         opList.applyNonEndpointMutations(info, proxy);
 
@@ -363,20 +342,18 @@ class OperationListTest extends BaseTest {
     }
 
     @Test
-    void applyNonEndpointMutationsWithOverlay() throws Exception {
+    void applyNonEndpointMutationsWithOverlay() {
         BasicStringOverlayServiceTest.setUpConfiguration();
 
-        final Dimension fullSize = new Dimension(2000, 1000);
-        final Info info = Info.builder().withSize(fullSize).build();
+        final Dimension fullSize   = new Dimension(2000, 1000);
+        final Info info            = Info.builder().withSize(fullSize).build();
         final OperationList opList = OperationList.builder()
                 .withIdentifier(new Identifier("cats"))
                 .withOperations(new Encode(Format.get("tif")))
                 .build();
 
-        final RequestContext context = new RequestContext();
-        context.setOperationList(opList, fullSize);
-        DelegateProxyService service = DelegateProxyService.getInstance();
-        DelegateProxy proxy = service.newDelegateProxy(context);
+        DelegateProxy proxy = TestUtil.newDelegateProxy();
+        proxy.getRequestContext().setOperationList(opList, fullSize);
 
         opList.applyNonEndpointMutations(info, proxy);
 
@@ -385,20 +362,16 @@ class OperationListTest extends BaseTest {
     }
 
     @Test
-    void applyNonEndpointMutationsWithRedactions() throws Exception {
-        RedactionServiceTest.setUpConfiguration();
-
-        final Dimension fullSize = new Dimension(2000, 1000);
-        final Info info = Info.builder().withSize(fullSize).build();
+    void applyNonEndpointMutationsWithRedactions() {
+        final Dimension fullSize   = new Dimension(2000, 1000);
+        final Info info            = Info.builder().withSize(fullSize).build();
         final OperationList opList = OperationList.builder()
                 .withIdentifier(new Identifier("redacted"))
                 .withOperations(new Encode(Format.get("jpg")))
                 .build();
 
-        final RequestContext context = new RequestContext();
-        context.setOperationList(opList, fullSize);
-        DelegateProxyService service = DelegateProxyService.getInstance();
-        DelegateProxy proxy = service.newDelegateProxy(context);
+        DelegateProxy proxy = TestUtil.newDelegateProxy();
+        proxy.getRequestContext().setOperationList(opList, fullSize);
 
         opList.applyNonEndpointMutations(info, proxy);
 
@@ -407,22 +380,21 @@ class OperationListTest extends BaseTest {
     }
 
     @Test
-    void applyNonEndpointMutationsWithMaxScale() throws Exception {
+    void applyNonEndpointMutationsWithMaxScale() {
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.MAX_SCALE, 1);
 
-        final Dimension fullSize = new Dimension(2000, 1000);
-        final Info info = Info.builder().withSize(fullSize).build();
+        final Dimension fullSize   = new Dimension(2000, 1000);
+        final Info info            = Info.builder().withSize(fullSize).build();
         final OperationList opList = OperationList.builder()
                 .withIdentifier(new Identifier("cats"))
                 .withOperations(
                         new ScaleByPercent(1.5),
                         new Encode(Format.get("jpg")))
                 .build();
-        final RequestContext context = new RequestContext();
-        context.setOperationList(opList, fullSize);
-        DelegateProxyService service = DelegateProxyService.getInstance();
-        DelegateProxy proxy = service.newDelegateProxy(context);
+
+        DelegateProxy proxy = TestUtil.newDelegateProxy();
+        proxy.getRequestContext().setOperationList(opList, fullSize);
 
         opList.applyNonEndpointMutations(info, proxy);
 
@@ -431,22 +403,21 @@ class OperationListTest extends BaseTest {
     }
 
     @Test
-    void applyNonEndpointMutationsWithDownscaleFilter() throws Exception {
+    void applyNonEndpointMutationsWithDownscaleFilter() {
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.PROCESSOR_DOWNSCALE_FILTER, "bicubic");
 
-        final Dimension fullSize = new Dimension(2000, 1000);
-        final Info info = Info.builder().withSize(fullSize).build();
+        final Dimension fullSize   = new Dimension(2000, 1000);
+        final Info info            = Info.builder().withSize(fullSize).build();
         final OperationList opList = OperationList.builder()
                 .withIdentifier(new Identifier("cats"))
                 .withOperations(
                         new ScaleByPercent(0.5),
                         new Encode(Format.get("jpg")))
                 .build();
-        final RequestContext context = new RequestContext();
-        context.setOperationList(opList, fullSize);
-        DelegateProxyService service = DelegateProxyService.getInstance();
-        DelegateProxy proxy = service.newDelegateProxy(context);
+
+        DelegateProxy proxy = TestUtil.newDelegateProxy();
+        proxy.getRequestContext().setOperationList(opList, fullSize);
 
         opList.applyNonEndpointMutations(info, proxy);
 
@@ -455,22 +426,21 @@ class OperationListTest extends BaseTest {
     }
 
     @Test
-    void applyNonEndpointMutationsWithUpscaleFilter() throws Exception {
+    void applyNonEndpointMutationsWithUpscaleFilter() {
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.PROCESSOR_UPSCALE_FILTER, "triangle");
 
-        final Dimension fullSize = new Dimension(2000, 1000);
-        final Info info = Info.builder().withSize(fullSize).build();
+        final Dimension fullSize   = new Dimension(2000, 1000);
+        final Info info            = Info.builder().withSize(fullSize).build();
         final OperationList opList = OperationList.builder()
                 .withIdentifier(new Identifier("cats"))
                 .withOperations(
                         new ScaleByPercent(1.5),
                         new Encode(Format.get("jpg")))
                 .build();
-        final RequestContext context = new RequestContext();
-        context.setOperationList(opList, fullSize);
-        DelegateProxyService service = DelegateProxyService.getInstance();
-        DelegateProxy proxy = service.newDelegateProxy(context);
+
+        DelegateProxy proxy = TestUtil.newDelegateProxy();
+        proxy.getRequestContext().setOperationList(opList, fullSize);
 
         opList.applyNonEndpointMutations(info, proxy);
 
@@ -479,20 +449,19 @@ class OperationListTest extends BaseTest {
     }
 
     @Test
-    void applyNonEndpointMutationsWithSharpening() throws Exception {
+    void applyNonEndpointMutationsWithSharpening() {
         final Configuration config = Configuration.getInstance();
         config.setProperty(Key.PROCESSOR_SHARPEN, 0.2f);
 
-        final Dimension fullSize = new Dimension(2000, 1000);
-        final Info info = Info.builder().withSize(fullSize).build();
+        final Dimension fullSize   = new Dimension(2000, 1000);
+        final Info info            = Info.builder().withSize(fullSize).build();
         final OperationList opList = OperationList.builder()
                 .withIdentifier(new Identifier("cats"))
                 .withOperations(new Encode(Format.get("tif")))
                 .build();
-        final RequestContext context = new RequestContext();
-        context.setOperationList(opList, fullSize);
-        DelegateProxyService service = DelegateProxyService.getInstance();
-        DelegateProxy proxy = service.newDelegateProxy(context);
+
+        DelegateProxy proxy = TestUtil.newDelegateProxy();
+        proxy.getRequestContext().setOperationList(opList, fullSize);
 
         opList.applyNonEndpointMutations(info, proxy);
 
@@ -504,7 +473,7 @@ class OperationListTest extends BaseTest {
     }
 
     @Test
-    void applyNonEndpointMutationsWithTIFFOutputFormat() throws Exception {
+    void applyNonEndpointMutationsWithTIFFOutputFormat() {
         final Configuration config = Configuration.getInstance();
         config.setProperty(Key.PROCESSOR_TIF_COMPRESSION, "LZW");
 
@@ -514,10 +483,9 @@ class OperationListTest extends BaseTest {
                 .withIdentifier(new Identifier("cats"))
                 .withOperations(new Encode(Format.get("tif")))
                 .build();
-        final RequestContext context = new RequestContext();
-        context.setOperationList(opList, fullSize);
-        DelegateProxyService service = DelegateProxyService.getInstance();
-        DelegateProxy proxy = service.newDelegateProxy(context);
+
+        DelegateProxy proxy = TestUtil.newDelegateProxy();
+        proxy.getRequestContext().setOperationList(opList, fullSize);
 
         opList.applyNonEndpointMutations(info, proxy);
 
@@ -529,12 +497,7 @@ class OperationListTest extends BaseTest {
     }
 
     @Test
-    void applyNonEndpointMutationsWithMetadata() throws Exception {
-        Configuration config = Configuration.getInstance();
-        config.setProperty(Key.DELEGATE_SCRIPT_ENABLED, true);
-        config.setProperty(Key.DELEGATE_SCRIPT_PATHNAME,
-                TestUtil.getFixture("delegates.rb").toString());
-
+    void applyNonEndpointMutationsWithMetadata() {
         final Dimension fullSize = new Dimension(2000, 1000);
         final Info info = Info.builder().withSize(fullSize).build();
         final Encode encode = new Encode(Format.get("jpg"));
@@ -546,10 +509,8 @@ class OperationListTest extends BaseTest {
                 .withOperations(encode)
                 .build();
 
-        final RequestContext context = new RequestContext();
-        context.setOperationList(opList, fullSize);
-        DelegateProxyService service = DelegateProxyService.getInstance();
-        DelegateProxy proxy = service.newDelegateProxy(context);
+        DelegateProxy proxy = TestUtil.newDelegateProxy();
+        proxy.getRequestContext().setOperationList(opList, fullSize);
 
         opList.applyNonEndpointMutations(info, proxy);
 
@@ -558,7 +519,7 @@ class OperationListTest extends BaseTest {
     }
 
     @Test
-    void applyNonEndpointMutationsWhileFrozen() throws Exception {
+    void applyNonEndpointMutationsWhileFrozen() {
         final Dimension fullSize   = new Dimension(2000, 1000);
         final Info info            = Info.builder().withSize(fullSize).build();
         final OperationList opList = OperationList.builder()
@@ -566,10 +527,7 @@ class OperationListTest extends BaseTest {
                 .build();
 
         opList.freeze();
-
-        final RequestContext context = new RequestContext();
-        DelegateProxyService service = DelegateProxyService.getInstance();
-        DelegateProxy proxy          = service.newDelegateProxy(context);
+        DelegateProxy proxy = TestUtil.newDelegateProxy();
 
         assertThrows(IllegalStateException.class,
                 () -> opList.applyNonEndpointMutations(info, proxy));

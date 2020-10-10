@@ -4,10 +4,7 @@ import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
-import edu.illinois.library.cantaloupe.resource.RequestContext;
 import edu.illinois.library.cantaloupe.delegate.DelegateProxy;
-import edu.illinois.library.cantaloupe.delegate.DelegateProxyService;
-import edu.illinois.library.cantaloupe.delegate.UnavailableException;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -43,9 +40,6 @@ public class JdbcSourceTest extends AbstractSourceTest {
         config.setProperty(Key.JDBCSOURCE_JDBC_URL, "jdbc:h2:mem:test");
         config.setProperty(Key.JDBCSOURCE_USER, "sa");
         config.setProperty(Key.JDBCSOURCE_PASSWORD, "");
-        config.setProperty(Key.DELEGATE_SCRIPT_ENABLED, true);
-        config.setProperty(Key.DELEGATE_SCRIPT_PATHNAME,
-                TestUtil.getFixture("delegates.rb").toString());
 
         initializeEndpoint();
 
@@ -114,16 +108,11 @@ public class JdbcSourceTest extends AbstractSourceTest {
     @Override
     JdbcSource newInstance() {
         JdbcSource instance = new JdbcSource();
-        try {
-            Identifier identifier = new Identifier(IMAGE_WITH_EXTENSION_WITH_MEDIA_TYPE);
-            RequestContext context = new RequestContext();
-            context.setIdentifier(identifier);
-            DelegateProxyService service = DelegateProxyService.getInstance();
-            DelegateProxy proxy = service.newDelegateProxy(context);
-            instance.setDelegateProxy(proxy);
-            instance.setIdentifier(identifier);
-        } catch (UnavailableException ignore) {}
-
+        Identifier identifier = new Identifier(IMAGE_WITH_EXTENSION_WITH_MEDIA_TYPE);
+        DelegateProxy proxy = TestUtil.newDelegateProxy();
+        proxy.getRequestContext().setIdentifier(identifier);
+        instance.setDelegateProxy(proxy);
+        instance.setIdentifier(identifier);
         return instance;
     }
 
@@ -141,13 +130,10 @@ public class JdbcSourceTest extends AbstractSourceTest {
 
     @Override
     @Test
-    void testCheckAccessUsingBasicLookupStrategyWithMissingImage()
-            throws Exception {
+    void testCheckAccessUsingBasicLookupStrategyWithMissingImage() {
         Identifier identifier = new Identifier("bogus");
-        RequestContext context = new RequestContext();
-        context.setIdentifier(identifier);
-        DelegateProxyService service = DelegateProxyService.getInstance();
-        DelegateProxy proxy = service.newDelegateProxy(context);
+        DelegateProxy proxy = TestUtil.newDelegateProxy();
+        proxy.getRequestContext().setIdentifier(identifier);
         instance.setDelegateProxy(proxy);
         instance.setIdentifier(identifier);
 
@@ -157,15 +143,14 @@ public class JdbcSourceTest extends AbstractSourceTest {
     /* getFormatIterator() */
 
     @Test
-    void testGetFormatIteratorHasNext() throws Exception {
+    void testGetFormatIteratorHasNext() {
         final Identifier identifier =
                 new Identifier(IMAGE_WITH_EXTENSION_WITH_MEDIA_TYPE);
         JdbcSource source = newInstance();
         source.setIdentifier(identifier);
-        RequestContext context = new RequestContext();
-        context.setIdentifier(identifier);
-        DelegateProxyService service = DelegateProxyService.getInstance();
-        DelegateProxy proxy = service.newDelegateProxy(context);
+
+        DelegateProxy proxy = TestUtil.newDelegateProxy();
+        proxy.getRequestContext().setIdentifier(identifier);
         source.setDelegateProxy(proxy);
         source.setIdentifier(identifier);
 
@@ -180,15 +165,14 @@ public class JdbcSourceTest extends AbstractSourceTest {
     }
 
     @Test
-    void testGetFormatIteratorNext() throws Exception {
+    void testGetFormatIteratorNext() {
         final Identifier identifier =
                 new Identifier(IMAGE_WITH_INCORRECT_EXTENSION_WITHOUT_MEDIA_TYPE);
         JdbcSource source = newInstance();
         source.setIdentifier(identifier);
-        RequestContext context = new RequestContext();
-        context.setIdentifier(identifier);
-        DelegateProxyService service = DelegateProxyService.getInstance();
-        DelegateProxy proxy = service.newDelegateProxy(context);
+
+        DelegateProxy proxy = TestUtil.newDelegateProxy();
+        proxy.getRequestContext().setIdentifier(identifier);
         source.setDelegateProxy(proxy);
         source.setIdentifier(identifier);
 
@@ -204,10 +188,8 @@ public class JdbcSourceTest extends AbstractSourceTest {
     @Test
     void testGetDatabaseIdentifier() throws Exception {
         Identifier identifier = new Identifier("cats.jpg");
-        RequestContext context = new RequestContext();
-        context.setIdentifier(identifier);
-        DelegateProxyService service = DelegateProxyService.getInstance();
-        DelegateProxy proxy = service.newDelegateProxy(context);
+        DelegateProxy proxy = TestUtil.newDelegateProxy();
+        proxy.getRequestContext().setIdentifier(identifier);
         instance.setDelegateProxy(proxy);
         instance.setIdentifier(identifier);
 
@@ -220,10 +202,8 @@ public class JdbcSourceTest extends AbstractSourceTest {
     @Test
     void testGetLookupSQL() throws Exception {
         Identifier identifier = new Identifier("cats.jpg");
-        RequestContext context = new RequestContext();
-        context.setIdentifier(identifier);
-        DelegateProxyService service = DelegateProxyService.getInstance();
-        DelegateProxy proxy = service.newDelegateProxy(context);
+        DelegateProxy proxy = TestUtil.newDelegateProxy();
+        proxy.getRequestContext().setIdentifier(identifier);
         instance.setDelegateProxy(proxy);
         instance.setIdentifier(identifier);
 

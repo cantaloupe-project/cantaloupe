@@ -11,9 +11,7 @@ import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
-import edu.illinois.library.cantaloupe.resource.RequestContext;
 import edu.illinois.library.cantaloupe.delegate.DelegateProxy;
-import edu.illinois.library.cantaloupe.delegate.DelegateProxyService;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.ConfigurationConstants;
 import edu.illinois.library.cantaloupe.test.S3Server;
@@ -256,16 +254,11 @@ public class S3SourceTest extends AbstractSourceTest {
             Configuration config = Configuration.getInstance();
             config.setProperty(Key.S3SOURCE_LOOKUP_STRATEGY,
                     "ScriptLookupStrategy");
-            config.setProperty(Key.DELEGATE_SCRIPT_ENABLED, true);
-            config.setProperty(Key.DELEGATE_SCRIPT_PATHNAME,
-                    TestUtil.getFixture("delegates.rb"));
 
             Identifier identifier = new Identifier(OBJECT_KEY_WITH_CONTENT_TYPE_AND_RECOGNIZED_EXTENSION);
             instance.setIdentifier(identifier);
-            RequestContext context = new RequestContext();
-            context.setIdentifier(identifier);
-            DelegateProxyService service = DelegateProxyService.getInstance();
-            DelegateProxy proxy = service.newDelegateProxy(context);
+            DelegateProxy proxy = TestUtil.newDelegateProxy();
+            proxy.getRequestContext().setIdentifier(identifier);
             instance.setDelegateProxy(proxy);
         } catch (Exception e) {
             fail();
@@ -466,15 +459,12 @@ public class S3SourceTest extends AbstractSourceTest {
     }
 
     @Test
-    void testCheckAccessUsingScriptLookupStrategyWithMissingImage()
-            throws Exception {
+    void testCheckAccessUsingScriptLookupStrategyWithMissingImage() {
         useScriptLookupStrategy();
 
         Identifier identifier = new Identifier("bogus");
-        RequestContext context = new RequestContext();
-        context.setIdentifier(identifier);
-        DelegateProxyService service = DelegateProxyService.getInstance();
-        DelegateProxy proxy = service.newDelegateProxy(context);
+        DelegateProxy proxy = TestUtil.newDelegateProxy();
+        proxy.getRequestContext().setIdentifier(identifier);
         instance.setDelegateProxy(proxy);
         instance.setIdentifier(identifier);
 
@@ -490,25 +480,20 @@ public class S3SourceTest extends AbstractSourceTest {
                 ";key:" + OBJECT_KEY_WITH_CONTENT_TYPE_AND_RECOGNIZED_EXTENSION);
         instance.setIdentifier(identifier);
 
-        RequestContext context = new RequestContext();
-        context.setIdentifier(identifier);
-        DelegateProxyService service = DelegateProxyService.getInstance();
-        DelegateProxy proxy = service.newDelegateProxy(context);
+        DelegateProxy proxy = TestUtil.newDelegateProxy();
+        proxy.getRequestContext().setIdentifier(identifier);
         instance.setDelegateProxy(proxy);
 
         instance.checkAccess();
     }
 
     @Test
-    void testCheckAccessUsingScriptLookupStrategyWithMissingKeyInReturnedHash()
-            throws Exception {
+    void testCheckAccessUsingScriptLookupStrategyWithMissingKeyInReturnedHash() {
         useScriptLookupStrategy();
 
         Identifier identifier = new Identifier("key:" + OBJECT_KEY_WITH_CONTENT_TYPE_AND_RECOGNIZED_EXTENSION);
-        RequestContext context = new RequestContext();
-        context.setIdentifier(identifier);
-        DelegateProxyService service = DelegateProxyService.getInstance();
-        DelegateProxy proxy = service.newDelegateProxy(context);
+        DelegateProxy proxy = TestUtil.newDelegateProxy();
+        proxy.getRequestContext().setIdentifier(identifier);
         instance.setDelegateProxy(proxy);
         instance.setIdentifier(identifier);
 

@@ -1,6 +1,11 @@
 package edu.illinois.library.cantaloupe.test;
 
+import edu.illinois.library.cantaloupe.config.Key;
+import edu.illinois.library.cantaloupe.delegate.DelegateProxy;
+import edu.illinois.library.cantaloupe.delegate.DelegateProxyService;
+import edu.illinois.library.cantaloupe.delegate.UnavailableException;
 import edu.illinois.library.cantaloupe.image.Format;
+import edu.illinois.library.cantaloupe.resource.RequestContext;
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
 import org.apache.commons.configuration.ConfigurationException;
@@ -92,6 +97,21 @@ public final class TestUtil {
             e.printStackTrace();
         }
         return new BaseConfiguration();
+    }
+
+    public static DelegateProxy newDelegateProxy() {
+        edu.illinois.library.cantaloupe.config.Configuration config =
+                edu.illinois.library.cantaloupe.config.Configuration.getInstance();
+        config.setProperty(Key.DELEGATE_SCRIPT_ENABLED, true);
+        config.setProperty(Key.DELEGATE_SCRIPT_PATHNAME,
+                TestUtil.getFixture("delegates.rb").toString());
+
+        DelegateProxyService service = DelegateProxyService.getInstance();
+        try {
+            return service.newDelegateProxy(new RequestContext());
+        } catch (UnavailableException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private TestUtil() {}

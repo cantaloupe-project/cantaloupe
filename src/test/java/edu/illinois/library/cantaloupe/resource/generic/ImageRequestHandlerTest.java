@@ -12,7 +12,6 @@ import edu.illinois.library.cantaloupe.processor.Processor;
 import edu.illinois.library.cantaloupe.resource.IllegalClientArgumentException;
 import edu.illinois.library.cantaloupe.resource.RequestContext;
 import edu.illinois.library.cantaloupe.delegate.DelegateProxy;
-import edu.illinois.library.cantaloupe.delegate.DelegateProxyService;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.junit.jupiter.api.Nested;
@@ -35,18 +34,10 @@ public class ImageRequestHandlerTest extends BaseTest {
         }
 
         @Test
-        void testOptionallyWithDelegateProxyWithNonNullArguments() throws Exception {
-            var config = Configuration.getInstance();
-            config.setProperty(Key.DELEGATE_SCRIPT_ENABLED, true);
-            config.setProperty(Key.DELEGATE_SCRIPT_PATHNAME,
-                    TestUtil.getFixture("delegates.rb").toString());
-
-            RequestContext context = new RequestContext();
-            DelegateProxy delegateProxy =
-                    DelegateProxyService.getInstance().newDelegateProxy(context);
-
+        void testOptionallyWithDelegateProxyWithNonNullArguments() {
+            DelegateProxy proxy = TestUtil.newDelegateProxy();
             ImageRequestHandler handler = ImageRequestHandler.builder()
-                    .optionallyWithDelegateProxy(delegateProxy, context)
+                    .optionallyWithDelegateProxy(proxy, proxy.getRequestContext())
                     .withOperationList(new OperationList())
                     .build();
             assertNotNull(handler.delegateProxy);
@@ -66,16 +57,8 @@ public class ImageRequestHandlerTest extends BaseTest {
         }
 
         @Test
-        void testOptionallyWithDelegateProxyWithNullRequestContext() throws Exception {
-            var config = Configuration.getInstance();
-            config.setProperty(Key.DELEGATE_SCRIPT_ENABLED, true);
-            config.setProperty(Key.DELEGATE_SCRIPT_PATHNAME,
-                    TestUtil.getFixture("delegates.rb").toString());
-
-            RequestContext context = new RequestContext();
-            DelegateProxy delegateProxy =
-                    DelegateProxyService.getInstance().newDelegateProxy(context);
-
+        void testOptionallyWithDelegateProxyWithNullRequestContext() {
+            DelegateProxy delegateProxy = TestUtil.newDelegateProxy();
             ImageRequestHandler handler = ImageRequestHandler.builder()
                     .withOperationList(new OperationList())
                     .optionallyWithDelegateProxy(delegateProxy, null)
@@ -104,15 +87,8 @@ public class ImageRequestHandlerTest extends BaseTest {
         }
 
         @Test
-        void testWithDelegateProxyWithNullRequestContext() throws Exception {
-            var config = Configuration.getInstance();
-            config.setProperty(Key.DELEGATE_SCRIPT_ENABLED, true);
-            config.setProperty(Key.DELEGATE_SCRIPT_PATHNAME,
-                    TestUtil.getFixture("delegates.rb").toString());
-
-            RequestContext context = new RequestContext();
-            DelegateProxy delegateProxy =
-                    DelegateProxyService.getInstance().newDelegateProxy(context);
+        void testWithDelegateProxyWithNullRequestContext() {
+            DelegateProxy delegateProxy = TestUtil.newDelegateProxy();
             assertThrows(IllegalArgumentException.class, () ->
                     ImageRequestHandler.builder()
                             .withDelegateProxy(delegateProxy, null));

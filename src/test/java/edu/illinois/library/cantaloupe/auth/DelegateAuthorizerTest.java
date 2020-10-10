@@ -1,12 +1,8 @@
 package edu.illinois.library.cantaloupe.auth;
 
-import edu.illinois.library.cantaloupe.config.Configuration;
-import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.ScaleConstraint;
-import edu.illinois.library.cantaloupe.resource.RequestContext;
 import edu.illinois.library.cantaloupe.delegate.DelegateProxy;
-import edu.illinois.library.cantaloupe.delegate.DelegateProxyService;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.junit.jupiter.api.Assertions;
@@ -22,16 +18,7 @@ public class DelegateAuthorizerTest extends BaseTest {
     @BeforeEach
     public void setUp() throws Exception {
         super.setUp();
-
-        Configuration config = Configuration.getInstance();
-        config.setProperty(Key.DELEGATE_SCRIPT_ENABLED, true);
-        config.setProperty(Key.DELEGATE_SCRIPT_PATHNAME,
-                TestUtil.getFixture("delegates.rb").toString());
-
-        RequestContext context = new RequestContext();
-        DelegateProxyService service = DelegateProxyService.getInstance();
-        DelegateProxy proxy = service.newDelegateProxy(context);
-
+        DelegateProxy proxy = TestUtil.newDelegateProxy();
         instance = new DelegateAuthorizer(proxy);
     }
 
@@ -52,10 +39,8 @@ public class DelegateAuthorizerTest extends BaseTest {
 
     @Test
     void testAuthorizeWithDelegateProxyReturningFalse() throws Exception {
-        RequestContext context = new RequestContext();
-        context.setIdentifier(new Identifier("forbidden-boolean.jpg"));
-        DelegateProxyService service = DelegateProxyService.getInstance();
-        DelegateProxy proxy = service.newDelegateProxy(context);
+        DelegateProxy proxy = TestUtil.newDelegateProxy();
+        proxy.getRequestContext().setIdentifier(new Identifier("forbidden-boolean.jpg"));
         instance = new DelegateAuthorizer(proxy);
 
         AuthInfo info = instance.authorize();
@@ -65,10 +50,8 @@ public class DelegateAuthorizerTest extends BaseTest {
 
     @Test
     void testAuthorizeWithDelegateProxyReturningUnauthorizedMap() throws Exception {
-        RequestContext context = new RequestContext();
-        context.setIdentifier(new Identifier("forbidden-code.jpg"));
-        DelegateProxyService service = DelegateProxyService.getInstance();
-        DelegateProxy proxy = service.newDelegateProxy(context);
+        DelegateProxy proxy = TestUtil.newDelegateProxy();
+        proxy.getRequestContext().setIdentifier(new Identifier("forbidden-code.jpg"));
         instance = new DelegateAuthorizer(proxy);
 
         AuthInfo info = instance.authorize();
@@ -78,10 +61,8 @@ public class DelegateAuthorizerTest extends BaseTest {
 
     @Test
     void testAuthorizeWithDelegateProxyReturningRedirectMap() throws Exception {
-        RequestContext context = new RequestContext();
-        context.setIdentifier(new Identifier("redirect.jpg"));
-        DelegateProxyService service = DelegateProxyService.getInstance();
-        DelegateProxy proxy = service.newDelegateProxy(context);
+        DelegateProxy proxy = TestUtil.newDelegateProxy();
+        proxy.getRequestContext().setIdentifier(new Identifier("redirect.jpg"));
         instance = new DelegateAuthorizer(proxy);
 
         AuthInfo info = instance.authorize();
@@ -91,10 +72,8 @@ public class DelegateAuthorizerTest extends BaseTest {
 
     @Test
     void testAuthorizeWithDelegateProxyReturningScaleConstraintMap() throws Exception {
-        RequestContext context = new RequestContext();
-        context.setIdentifier(new Identifier("reduce.jpg"));
-        DelegateProxyService service = DelegateProxyService.getInstance();
-        DelegateProxy proxy = service.newDelegateProxy(context);
+        DelegateProxy proxy = TestUtil.newDelegateProxy();
+        proxy.getRequestContext().setIdentifier(new Identifier("reduce.jpg"));
         instance = new DelegateAuthorizer(proxy);
 
         AuthInfo info = instance.authorize();
@@ -113,10 +92,8 @@ public class DelegateAuthorizerTest extends BaseTest {
 
     @Test
     void testPreAuthorizeWithDelegateProxyReturningFalse() throws Exception {
-        RequestContext context = new RequestContext();
-        context.setIdentifier(new Identifier("forbidden-boolean.jpg"));
-        DelegateProxyService service = DelegateProxyService.getInstance();
-        DelegateProxy proxy = service.newDelegateProxy(context);
+        DelegateProxy proxy = TestUtil.newDelegateProxy();
+        proxy.getRequestContext().setIdentifier(new Identifier("forbidden-boolean.jpg"));
         instance = new DelegateAuthorizer(proxy);
 
         AuthInfo info = instance.preAuthorize();
@@ -126,10 +103,8 @@ public class DelegateAuthorizerTest extends BaseTest {
 
     @Test
     void testPreAuthorizeWithDelegateProxyReturningUnauthorizedMap() throws Exception {
-        RequestContext context = new RequestContext();
-        context.setIdentifier(new Identifier("forbidden-code.jpg"));
-        DelegateProxyService service = DelegateProxyService.getInstance();
-        DelegateProxy proxy = service.newDelegateProxy(context);
+        DelegateProxy proxy = TestUtil.newDelegateProxy();
+        proxy.getRequestContext().setIdentifier(new Identifier("forbidden-code.jpg"));
         instance = new DelegateAuthorizer(proxy);
 
         AuthInfo info = instance.preAuthorize();
@@ -139,10 +114,8 @@ public class DelegateAuthorizerTest extends BaseTest {
 
     @Test
     void testPreAuthorizeWithDelegateProxyReturningRedirectMap() throws Exception {
-        RequestContext context = new RequestContext();
-        context.setIdentifier(new Identifier("redirect.jpg"));
-        DelegateProxyService service = DelegateProxyService.getInstance();
-        DelegateProxy proxy = service.newDelegateProxy(context);
+        DelegateProxy proxy = TestUtil.newDelegateProxy();
+        proxy.getRequestContext().setIdentifier(new Identifier("redirect.jpg"));
         instance = new DelegateAuthorizer(proxy);
 
         AuthInfo info = instance.preAuthorize();
@@ -151,11 +124,10 @@ public class DelegateAuthorizerTest extends BaseTest {
     }
 
     @Test
-    void testPreAuthorizeWithDelegateProxyReturningScaleConstraintMap() throws Exception {
-        RequestContext context = new RequestContext();
-        context.setIdentifier(new Identifier("reduce.jpg"));
-        DelegateProxyService service = DelegateProxyService.getInstance();
-        DelegateProxy proxy = service.newDelegateProxy(context);
+    void testPreAuthorizeWithDelegateProxyReturningScaleConstraintMap()
+            throws Exception {
+        DelegateProxy proxy = TestUtil.newDelegateProxy();
+        proxy.getRequestContext().setIdentifier(new Identifier("reduce.jpg"));
         instance = new DelegateAuthorizer(proxy);
 
         AuthInfo info = instance.preAuthorize();
