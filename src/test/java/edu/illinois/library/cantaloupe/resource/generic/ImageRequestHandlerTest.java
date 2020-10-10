@@ -440,15 +440,16 @@ public class ImageRequestHandlerTest extends BaseTest {
         }
 
         // Configure the request.
-        final OperationList opList  = new OperationList();
-        opList.setIdentifier(new Identifier("jpg-rgb-64x48x8.jpg"));
-        opList.add(new Encode(Format.get("jpg")));
+        final OperationList opList = OperationList.builder()
+                .withIdentifier(new Identifier("jpg-rgb-64x48x8.jpg"))
+                .withPageIndex(9999)
+                .withOperations(new Encode(Format.get("jpg")))
+                .build();
 
         final IntrospectiveCallback callback = new IntrospectiveCallback();
         try (ImageRequestHandler handler = ImageRequestHandler.builder()
                 .withCallback(callback)
                 .withOperationList(opList)
-                .withPageIndex(99999)
                 .build();
              ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
             assertThrows(IllegalClientArgumentException.class, () ->
@@ -466,10 +467,8 @@ public class ImageRequestHandlerTest extends BaseTest {
         }
 
         // Configure the request.
-        final OperationList opList  = new OperationList();
-        opList.setIdentifier(new Identifier("jpg-rgb-64x48x8.jpg"));
-        opList.add(new Encode(Format.get("jpg")));
-        opList.getOptions().put("page", "-1"); // invalid
+        final OperationList opList =
+                new OperationList(new Identifier("jpg-rgb-64x48x8.jpg"));
 
         final IntrospectiveCallback callback = new IntrospectiveCallback();
         try (ImageRequestHandler handler = ImageRequestHandler.builder()

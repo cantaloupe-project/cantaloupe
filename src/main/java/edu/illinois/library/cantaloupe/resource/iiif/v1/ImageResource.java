@@ -101,7 +101,6 @@ public class ImageResource extends IIIF1Resource {
                 .withBypassingCache(isBypassingCache())
                 .withBypassingCacheRead(isBypassingCacheRead())
                 .optionallyWithDelegateProxy(getDelegateProxy(), getRequestContext())
-                .withPageIndex(getPageIndex())
                 .withCallback(new CustomCallback())
                 .build()) {
             handler.handle(getResponse().getOutputStream());
@@ -142,6 +141,7 @@ public class ImageResource extends IIIF1Resource {
                 args.get(3), args.get(4), outputFormat);
 
         final OperationList ops = params.toOperationList();
+        ops.setPageIndex(getPageIndex());
         ops.setScaleConstraint(getScaleConstraint());
         ops.getOptions().putAll(getRequest().getReference().getQuery().toMap());
         return ops;
@@ -159,8 +159,7 @@ public class ImageResource extends IIIF1Resource {
 
         Format format = null;
         if (extension != null) {
-            format = Format.all()
-                    .stream()
+            format = Format.all().stream()
                     .filter(f -> f.getPreferredExtension().equals(extension))
                     .findFirst()
                     .orElse(null);

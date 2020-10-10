@@ -15,7 +15,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayOutputStream;
-import java.io.OutputStream;
 import java.util.Arrays;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -55,11 +54,11 @@ public class PdfBoxProcessorTest extends AbstractProcessorTest {
     }
 
     @Test
-    void testProcessWithPageOption() throws Exception {
+    void testProcessWithNonOnePageIndex() throws Exception {
         instance.setSourceFile(TestUtil.getImage("pdf-multipage.pdf"));
         final Info imageInfo = instance.readInfo();
 
-        // page option missing
+        // page index missing
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         OperationList ops = OperationList.builder()
                 .withOperations(new Encode(Format.get("jpg")))
@@ -67,29 +66,13 @@ public class PdfBoxProcessorTest extends AbstractProcessorTest {
         instance.process(ops, imageInfo, outputStream);
         final byte[] page1 = outputStream.toByteArray();
 
-        // page option present
-        ops.getOptions().put("page", "2");
+        // page index present
+        ops.setPageIndex(1);
         outputStream = new ByteArrayOutputStream();
         instance.process(ops, imageInfo, outputStream);
         final byte[] page2 = outputStream.toByteArray();
 
         assertFalse(Arrays.equals(page1, page2));
-    }
-
-    @Test
-    void testProcessWithIllegalPageOptionThrowsException() throws Exception {
-        instance.setSourceFile(TestUtil.getImage("pdf-multipage.pdf"));
-        final Info imageInfo = instance.readInfo();
-
-        // page "35"
-        OperationList ops = OperationList.builder()
-                .withOperations(new Encode(Format.get("jpg")))
-                .build();
-        ops.getOptions().put("page", "35");
-        OutputStream outputStream = OutputStream.nullOutputStream();
-
-        assertThrows(ProcessorException.class,
-                () -> instance.process(ops, imageInfo, outputStream));
     }
 
     @Test
@@ -134,42 +117,12 @@ public class PdfBoxProcessorTest extends AbstractProcessorTest {
 
         OperationList ops = OperationList.builder()
                 .withIdentifier(new Identifier("cats"))
+                .withPageIndex(0)
                 .withOperations(new Encode(Format.get("jpg")))
                 .build();
-        ops.getOptions().put("page", "1");
         Dimension fullSize = new Dimension(100, 88);
 
         instance.validate(ops, fullSize);
-    }
-
-    @Test
-    void testValidateWithZeroPageArgument() {
-        instance.setSourceFile(TestUtil.getImage("pdf.pdf"));
-
-        OperationList ops = OperationList.builder()
-                .withIdentifier(new Identifier("cats"))
-                .withOperations(new Encode(Format.get("jpg")))
-                .build();
-        ops.getOptions().put("page", "0");
-        Dimension fullSize = new Dimension(100, 88);
-
-        assertThrows(ValidationException.class,
-                () -> instance.validate(ops, fullSize));
-    }
-
-    @Test
-    void testValidateWithNegativePageArgument() {
-        instance.setSourceFile(TestUtil.getImage("pdf.pdf"));
-
-        OperationList ops = OperationList.builder()
-                .withIdentifier(new Identifier("cats"))
-                .withOperations(new Encode(Format.get("jpg")))
-                .build();
-        ops.getOptions().put("page", "-1");
-        Dimension fullSize = new Dimension(100, 88);
-
-        assertThrows(ValidationException.class,
-                () -> instance.validate(ops, fullSize));
     }
 
     @Test
@@ -178,9 +131,9 @@ public class PdfBoxProcessorTest extends AbstractProcessorTest {
 
         OperationList ops = OperationList.builder()
                 .withIdentifier(new Identifier("cats"))
+                .withPageIndex(2)
                 .withOperations(new Encode(Format.get("jpg")))
                 .build();
-        ops.getOptions().put("page", "3");
         Dimension fullSize = new Dimension(100, 88);
 
         assertThrows(ValidationException.class,

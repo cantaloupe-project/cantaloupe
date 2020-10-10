@@ -59,6 +59,8 @@ public class ImageResource extends IIIF3Resource {
                 args.get(3), args.get(4), args.get(5));
         // Convert it into an OperationList.
         final OperationList ops = params.toOperationList(getMaxScale());
+        ops.setPageIndex(getPageIndex());
+        ops.setScaleConstraint(getScaleConstraint());
         ops.getOptions().putAll(getRequest().getReference().getQuery().toMap());
         final int pageIndex = getPageIndex();
         final String disposition = getRepresentationDisposition(
@@ -108,7 +110,6 @@ public class ImageResource extends IIIF3Resource {
                 .withBypassingCache(isBypassingCache())
                 .withBypassingCacheRead(isBypassingCacheRead())
                 .optionallyWithDelegateProxy(getDelegateProxy(), getRequestContext())
-                .withPageIndex(pageIndex)
                 .withCallback(new CustomCallback())
                 .build()) {
             handler.handle(getResponse().getOutputStream());

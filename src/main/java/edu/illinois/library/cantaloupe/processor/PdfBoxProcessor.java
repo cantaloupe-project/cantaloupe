@@ -113,11 +113,10 @@ class PdfBoxProcessor extends AbstractProcessor
             double pct = scale.getPercent();
             ReductionFactor reductionFactor = ReductionFactor.forScale(pct);
 
-            // This processor supports a "page" URI query argument.
-            int page = getPageNumber(opList.getOptions());
+            int pageIndex = opList.getPageIndex();
 
             BufferedImage image = readImage(
-                    page - 1, reductionFactor, scaleConstraint);
+                    pageIndex, reductionFactor, scaleConstraint);
             image = Java2DPostProcessor.postProcess(
                     image, hints, opList, imageInfo, reductionFactor);
             ImageWriterFacade.write(image,
@@ -130,25 +129,6 @@ class PdfBoxProcessor extends AbstractProcessor
         } finally {
             close();
         }
-    }
-
-    /**
-     * @param options Operation list options map.
-     * @return Page number from the given options map, or {@code 1} if not
-     *         found.
-     */
-    private int getPageNumber(Map<String,Object> options) {
-        int page = 1;
-        String pageStr = (String) options.get("page");
-        if (pageStr != null) {
-            try {
-                page = Integer.parseInt(pageStr);
-            } catch (NumberFormatException e) {
-                LOGGER.info("Page number from URI query string is not " +
-                        "an integer; using page 1.");
-            }
-        }
-        return Math.max(page, 1);
     }
 
     @Override
@@ -290,15 +270,12 @@ class PdfBoxProcessor extends AbstractProcessor
             throws ValidationException, ProcessorException {
         StreamProcessor.super.validate(opList, fullSize);
 
-        // The "page" argument, if present, was validated in the overridden
-        // method, but we also want to make sure the page is actually contained
-        // in the PDF.
-        final String pageStr = (String) opList.getOptions().get("page");
-        if (pageStr != null) {
-            final int page = Integer.parseInt(pageStr);
+        // Ensure that the page is contained in the PDF.
+        final int pageIndex = opList.getPageIndex();
+        if (pageIndex != 0) {
             try {
                 readDocument();
-                if (page > doc.getNumberOfPages()) {
+                if (pageIndex >= doc.getNumberOfPages()) {
                     close();
                     throw new ValidationException(
                             "Page number is out-of-bounds.");

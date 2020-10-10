@@ -60,6 +60,7 @@ public final class OperationList implements Iterable<Operation> {
         private Identifier identifier;
         private Operation[] operations;
         private Map<String,String> options;
+        private int pageIndex;
         private ScaleConstraint scaleConstraint;
 
         public Builder withIdentifier(Identifier identifier) {
@@ -77,6 +78,11 @@ public final class OperationList implements Iterable<Operation> {
             return this;
         }
 
+        public Builder withPageIndex(int pageIndex) {
+            this.pageIndex = pageIndex;
+            return this;
+        }
+
         public Builder withScaleConstraint(ScaleConstraint scaleConstraint) {
             this.scaleConstraint = scaleConstraint;
             return this;
@@ -91,6 +97,7 @@ public final class OperationList implements Iterable<Operation> {
             if (options != null) {
                 opList.options.putAll(options);
             }
+            opList.setPageIndex(pageIndex);
             opList.setScaleConstraint(scaleConstraint);
             return opList;
         }
@@ -104,6 +111,7 @@ public final class OperationList implements Iterable<Operation> {
     private Identifier identifier;
     private final List<Operation> operations = new ArrayList<>();
     private final Map<String,Object> options = new HashMap<>();
+    private int pageIndex;
     private ScaleConstraint scaleConstraint  = new ScaleConstraint(1, 1);
 
     public static OperationList.Builder builder() {
@@ -285,7 +293,7 @@ public final class OperationList implements Iterable<Operation> {
 
         // Encode customization
         final Encode encode = (Encode) getFirst(Encode.class);
-        if (Format.get("jpg").equals(encode.getFormat())) {
+        if (encode != null && Format.get("jpg").equals(encode.getFormat())) {
             // Compression
             encode.setCompression(Compression.JPEG);
             // Interlacing
@@ -296,7 +304,7 @@ public final class OperationList implements Iterable<Operation> {
             final int quality =
                     config.getInt(Key.PROCESSOR_JPG_QUALITY, 80);
             encode.setQuality(quality);
-        } else if (Format.get("tif").equals(encode.getFormat())) {
+        } else if (encode != null && Format.get("tif").equals(encode.getFormat())) {
             // Compression
             final String compressionStr =
                     config.getString(Key.PROCESSOR_TIF_COMPRESSION, "LZW");
@@ -306,7 +314,7 @@ public final class OperationList implements Iterable<Operation> {
         }
 
         // Set the Encode operation's background color.
-        if (!encode.getFormat().supportsTransparency()) {
+        if (encode != null && !encode.getFormat().supportsTransparency()) {
             final String bgColor = config.getString(Key.PROCESSOR_BACKGROUND_COLOR);
             if (bgColor != null) {
                 encode.setBackgroundColor(Color.fromString(bgColor));
@@ -336,7 +344,7 @@ public final class OperationList implements Iterable<Operation> {
             }
             metadata.setNativeMetadata(srcMetadata.getNativeMetadata());
         }
-        if (metadata != null) {
+        if (encode != null && metadata != null) {
             encode.setMetadata(metadata);
         }
     }
@@ -443,6 +451,13 @@ public final class OperationList implements Iterable<Operation> {
     }
 
     /**
+     * @return Page index.
+     */
+    public int getPageIndex() {
+        return pageIndex;
+    }
+
+    /**
      * @param fullSize Full size of the source image to which the instance is
      *                 being applied.
      * @return         Resulting dimensions when all operations are applied in
@@ -540,6 +555,18 @@ public final class OperationList implements Iterable<Operation> {
     }
 
     /**
+     * @param pageIndex Zero-based page index.
+     * @throws IllegalStateException if the instance is frozen.
+     */
+    public void setPageIndex(int pageIndex) {
+        checkFrozen();
+        if (pageIndex < 0) {
+            throw new IllegalArgumentException("Page index must be >= 0");
+        }
+        this.pageIndex = pageIndex;
+    }
+
+    /**
      * <p>Sets the effective base scale of the source image upon which the
      * instance is to be applied.</p>
      *
@@ -562,25 +589,31 @@ public final class OperationList implements Iterable<Operation> {
      * <p>Returns a filename-safe string guaranteed to uniquely represent the
      * instance. The filename is in the format:</p>
      *
-     * <p>{@literal [hashed identifier]_[hashed scale constraint + operation list + options list].[output format extension]}</p>
+     * <p>{@literal [hashed identifier]_[page number + hashed scale constraint + operation list + options list].[output format extension]}</p>
      *
      * @return Filename string.
      */
     public String toFilename() {
-        // Compile operations
-        final List<String> opStrings = stream().
+        final List<String> parts = new ArrayList<>();
+        // Add page index if != 0
+        if (getPageIndex() != 0) {
+            parts.add("" + getPageIndex());
+        }
+        // Add scale constraint
+        if (getScaleConstraint() != null) {
+            parts.add(0, getScaleConstraint().toString());
+        }
+        // Add operations
+        parts.addAll(stream().
                 filter(Operation::hasEffect).
                 map(Operation::toString).
-                collect(Collectors.toList());
-        if (getScaleConstraint() != null) {
-            opStrings.add(0, getScaleConstraint().toString());
-        }
+                collect(Collectors.toList()));
         // Add options
         for (String key : getOptions().keySet()) {
-            opStrings.add(key + ":" + this.getOptions().get(key));
+            parts.add(key + ":" + this.getOptions().get(key));
         }
 
-        String opsString = StringUtils.md5(String.join("_", opStrings));
+        String opsString = StringUtils.md5(String.join("_", parts));
 
         String idStr = "";
         Identifier identifier = getIdentifier();
@@ -593,7 +626,6 @@ public final class OperationList implements Iterable<Operation> {
         if (encode != null) {
             extension = "." + encode.getFormat().getPreferredExtension();
         }
-
         return StringUtils.md5(idStr) + "_" + opsString + extension;
     }
 
@@ -622,6 +654,9 @@ public final class OperationList implements Iterable<Operation> {
         if (getIdentifier() != null) {
             map.put("identifier", getIdentifier().toString());
         }
+        if (getPageIndex() != 0) {
+            map.put("page_index", getPageIndex());
+        }
         if (getScaleConstraint() != null) {
             map.put("scale_constraint", getScaleConstraint().toMap());
         }
@@ -644,6 +679,9 @@ public final class OperationList implements Iterable<Operation> {
         if (getIdentifier() != null) {
             parts.add(getIdentifier().toString());
         }
+        if (getPageIndex() != 0) {
+            parts.add(getPageIndex() + "");
+        }
         if (getScaleConstraint() != null) {
             parts.add(getScaleConstraint().toString());
         }
@@ -665,8 +703,6 @@ public final class OperationList implements Iterable<Operation> {
      *     set}</li>
      *     <li>Checks that an {@link Encode} is present</li>
      *     <li>Calls {@link Operation#validate} on each {@link Operation}</li>
-     *     <li>Validates the {@literal page} {@link #getOptions() option}, if
-     *     present</li>
      *     <li>Checks that the resulting scale is not larger than allowed by
      *     the {@link #getScaleConstraint() scale constraint}</li>
      *     <li>Checks that the resulting pixel area is greater than zero and
@@ -697,23 +733,6 @@ public final class OperationList implements Iterable<Operation> {
         // Validate each operation.
         for (Operation op : this) {
             op.validate(fullSize, getScaleConstraint());
-        }
-
-        // "page" is a special query argument used by some processors, namely
-        // ones that read PDFs, that tells them what page to read. Since it's
-        // a de facto standard within the application, we might as well
-        // validate it here to save them the trouble.
-        final String pageStr = (String) getOptions().get("page");
-        if (pageStr != null) {
-            try {
-                final int page = Integer.parseInt(pageStr);
-                if (page < 1) {
-                    throw new ValidationException(
-                            "Page number is out-of-bounds.");
-                }
-            } catch (NumberFormatException e) {
-                throw new ValidationException("Invalid page number.");
-            }
         }
 
         Dimension resultingSize = getResultingSize(fullSize);

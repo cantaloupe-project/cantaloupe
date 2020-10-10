@@ -59,6 +59,7 @@ public class ImageResource extends IIIF2Resource {
                 args.get(3), args.get(4), args.get(5));
         // Convert it into an OperationList.
         final OperationList ops = params.toOperationList();
+        ops.setPageIndex(getPageIndex());
         ops.setScaleConstraint(getScaleConstraint());
         ops.getOptions().putAll(getRequest().getReference().getQuery().toMap());
         final int pageIndex = getPageIndex();
@@ -109,7 +110,6 @@ public class ImageResource extends IIIF2Resource {
                 .withBypassingCache(isBypassingCache())
                 .withBypassingCacheRead(isBypassingCacheRead())
                 .optionallyWithDelegateProxy(getDelegateProxy(), getRequestContext())
-                .withPageIndex(pageIndex)
                 .withCallback(new CustomCallback())
                 .build()) {
             handler.handle(getResponse().getOutputStream());

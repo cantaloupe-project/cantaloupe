@@ -49,6 +49,7 @@ class OperationListTest extends BaseTest {
             assertNull(opList.getIdentifier());
             assertTrue(opList.getOperations().isEmpty());
             assertTrue(opList.getOptions().isEmpty());
+            assertEquals(0, opList.getPageIndex());
             assertEquals(new ScaleConstraint(1, 1), opList.getScaleConstraint());
         }
 
@@ -62,6 +63,8 @@ class OperationListTest extends BaseTest {
                     new ScaleByPercent(0.4));
             // options
             Map<String,String> options = Map.of("key", "value");
+            // page index
+            int pageIndex = 3;
             // scale constraint
             ScaleConstraint scaleConstraint = new ScaleConstraint(1, 2);
 
@@ -69,11 +72,13 @@ class OperationListTest extends BaseTest {
                     .withIdentifier(identifier)
                     .withOperations(operations.toArray(Operation[]::new))
                     .withOptions(options)
+                    .withPageIndex(3)
                     .withScaleConstraint(scaleConstraint)
                     .build();
             assertEquals(identifier, opList.getIdentifier());
             assertEquals(operations, opList.getOperations());
             assertEquals(options, opList.getOptions());
+            assertEquals(pageIndex, opList.getPageIndex());
             assertEquals(scaleConstraint, opList.getScaleConstraint());
         }
 
@@ -746,6 +751,19 @@ class OperationListTest extends BaseTest {
     }
 
     @Test
+    void setPageIndexWithIllegalArgument() {
+        assertThrows(IllegalArgumentException.class,
+                () -> instance.setPageIndex(-1));
+    }
+
+    @Test
+    void setPageIndexWhileFrozen() {
+        instance.freeze();
+        assertThrows(IllegalStateException.class,
+                () -> instance.setPageIndex(3));
+    }
+
+    @Test
     void setScaleConstraint() {
         instance.setScaleConstraint(new ScaleConstraint(1, 3));
         assertEquals(1, instance.getScaleConstraint().getRational().getNumerator());
@@ -766,6 +784,7 @@ class OperationListTest extends BaseTest {
     @Test
     void toFilename() {
         instance = new OperationList(new Identifier("identifier.jpg"));
+        instance.setPageIndex(3);
         CropByPixels crop = new CropByPixels(5, 6, 20, 22);
         instance.add(crop);
         Scale scale = new ScaleByPercent(0.4);
@@ -776,7 +795,7 @@ class OperationListTest extends BaseTest {
         instance.getOptions().put("animal", "cat");
         instance.setScaleConstraint(new ScaleConstraint(1, 2));
 
-        String expected = "50c63748527e634134449ae20b199cc0_6c143a524f75a965058f126fa9a92f7f.jpg";
+        String expected = "50c63748527e634134449ae20b199cc0_08592737b5ff7370bc0a70517fcb0b23.jpg";
         assertEquals(expected, instance.toFilename());
 
         // Assert that changing an operation changes the filename
@@ -793,6 +812,8 @@ class OperationListTest extends BaseTest {
     @SuppressWarnings("unchecked")
     void toMap() {
         instance = new OperationList(new Identifier("identifier.jpg"));
+        // page index
+        instance.setPageIndex(3);
         // crop
         Crop crop = new CropByPixels(2, 4, 50, 50);
         instance.add(crop);
@@ -810,6 +831,7 @@ class OperationListTest extends BaseTest {
         final Dimension fullSize = new Dimension(100, 100);
         Map<String,Object> map = instance.toMap(fullSize);
         assertEquals("identifier.jpg", map.get("identifier"));
+        assertEquals(3, map.get("page_index"));
         assertEquals(4, ((List<?>) map.get("operations")).size());
         assertEquals(0, ((Map<?, ?>) map.get("options")).size());
         assertEquals(1, (long) ((Map<String,Long>) map.get("scale_constraint")).get("numerator"));
@@ -886,38 +908,6 @@ class OperationListTest extends BaseTest {
                 .build();
         assertThrows(ValidationException.class,
                 () -> ops.validate(fullSize, Format.get("png")));
-    }
-
-    @Test
-    void validateWithValidPageArgument() throws Exception {
-        OperationList ops = OperationList.builder()
-                .withIdentifier(new Identifier("cats"))
-                .withOperations(new Encode(Format.get("jpg")))
-                .withOptions(Map.of("page", "2"))
-                .build();
-        ops.validate(new Dimension(100, 88), Format.get("png"));
-    }
-
-    @Test
-    void validateWithZeroPageArgument() {
-        OperationList ops = OperationList.builder()
-                .withIdentifier(new Identifier("cats"))
-                .withOperations(new Encode(Format.get("jpg")))
-                .withOptions(Map.of("page", "0"))
-                .build();
-        assertThrows(ValidationException.class,
-                () -> ops.validate(new Dimension(100, 88), Format.get("png")));
-    }
-
-    @Test
-    void validateWithNegativePageArgument() {
-        OperationList ops = OperationList.builder()
-                .withIdentifier(new Identifier("cats"))
-                .withOperations(new Encode(Format.get("jpg")))
-                .build();
-        ops.getOptions().put("page", "-1");
-        assertThrows(ValidationException.class,
-                () -> ops.validate(new Dimension(100, 88), Format.get("png")));
     }
 
     @Test

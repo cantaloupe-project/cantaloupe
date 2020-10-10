@@ -138,11 +138,6 @@ public class ImageRequestHandler extends AbstractRequestHandler
             return this;
         }
 
-        public Builder withPageIndex(int pageIndex) {
-            handler.pageIndex = pageIndex;
-            return this;
-        }
-
         /**
          * @return New instance.
          * @throws NullPointerException if any of the required builder methods
@@ -191,21 +186,21 @@ public class ImageRequestHandler extends AbstractRequestHandler
         boolean authorize() throws Exception;
 
         /**
-         * <p>Called when a hit is found in the derivative cache. In this case, no
-         * further processing will be necessary and the streaming will begin very
-         * soon after this method returns.</p>
+         * <p>Called when a hit is found in the derivative cache. In this case,
+         * no further processing will be necessary and the streaming will begin
+         * very soon after this method returns.</p>
          *
          * <p>If a hit is not found in the derivative cache, this method is not
          * called.</p>
          *
-         * <p>This method tends to be called relatively early. No other callback
-         * methods have been or will be called.</p>
+         * <p>This method tends to be called relatively early. No other
+         * callback methods have been or will be called.</p>
          */
         void willStreamImageFromDerivativeCache() throws Exception;
 
         /**
-         * <p>All setup is complete and processing will begin very soon after this
-         * method returns.</p>
+         * <p>All setup is complete and processing will begin very soon after
+         * this method returns.</p>
          *
          * <p>This method tends to be called last.</p>
          *
@@ -237,7 +232,6 @@ public class ImageRequestHandler extends AbstractRequestHandler
         }
     };
     private OperationList operationList;
-    private int pageIndex;
     private Future<Path> tempFileFuture;
 
     public static Builder builder() {
@@ -378,7 +372,7 @@ public class ImageRequestHandler extends AbstractRequestHandler
                         processor);
                 Dimension fullSize;
                 try {
-                    fullSize = info.getSize(pageIndex);
+                    fullSize = info.getSize(operationList.getPageIndex());
                     requestContext.setMetadata(info.getMetadata());
                     operationList.setScaleConstraint(operationList.getScaleConstraint());
                     operationList.applyNonEndpointMutations(info, delegateProxy);
