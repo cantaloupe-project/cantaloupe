@@ -117,14 +117,24 @@ public class ImageRepresentation implements Representation {
             LOGGER.debug("Writing to the response & derivative " +
                     "cache simultaneously");
             copyOrProcess(teeOS);
-        } catch (Throwable t) {
-            LOGGER.debug("write(): {}", t.getMessage(), t);
-
+        } catch (IOException e) {
+            LOGGER.debug("write(): {}", e.getMessage(), e);
             // The cached image has been incompletely written and is corrupt,
             // so it must be purged.
             cacheFacade.purge(opList);
-            // It may still be possible to fulfill the request.
-            copyOrProcess(responseOS);
+            // TODO: uncommenting this can cause KakaduNativeProcessor to crash
+            //  the JVM (see
+            //  https://github.com/cantaloupe-project/cantaloupe/issues/303).
+            //  First, we need to reset the processor correctly. Then, we
+            //  should move this into a catch block for a cache-specific
+            //  exception (which does not exist yet as of 4.1.x).
+            //copyOrProcess(responseOS);
+        } catch (Throwable t) {
+            LOGGER.error("write(): {}", t.getMessage(), t);
+            // The cached image has been incompletely written and is corrupt,
+            // so it must be purged.
+            cacheFacade.purge(opList);
+            throw t;
         }
     }
 
