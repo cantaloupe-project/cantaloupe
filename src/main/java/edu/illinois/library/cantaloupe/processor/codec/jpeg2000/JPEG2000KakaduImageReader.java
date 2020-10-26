@@ -74,7 +74,7 @@ public final class JPEG2000KakaduImageReader implements AutoCloseable {
     private static class KduImageInputStreamSource
             extends Kdu_compressed_source_nonnative {
 
-        private ImageInputStream inputStream;
+        private final ImageInputStream inputStream;
 
         KduImageInputStreamSource(ImageInputStream inputStream) {
             this.inputStream = inputStream;
@@ -219,7 +219,9 @@ public final class JPEG2000KakaduImageReader implements AutoCloseable {
      */
     private ImageInputStream inputStream;
 
-    private boolean isOpenAttempted, haveReadInfo, haveReadMetadata;
+    private boolean isOpenAttempted, haveReadInfo, haveReadMetadata,
+            isDecompressing;
+
     private int width, height, tileWidth, tileHeight, numDWTLevels = -1;
     private String xmp;
     private byte[] iptc;
@@ -241,7 +243,7 @@ public final class JPEG2000KakaduImageReader implements AutoCloseable {
         try {
             threadEnv.Handle_exception(e.Get_kdu_exception_code());
         } catch (KduException ke) {
-            LOGGER.warn("{} (code: {})",
+            LOGGER.debug("{} (code: {})",
                     ke.getMessage(),
                     Integer.toHexString(ke.Get_kdu_exception_code()),
                     ke);
@@ -264,20 +266,21 @@ public final class JPEG2000KakaduImageReader implements AutoCloseable {
         // N.B.: see the end notes in the KduRender.java file in the Kakadu SDK
         // for explanation of how this stuff needs to be destroyed. (And it DOES
         // need to be destroyed!)
-        limiter.Native_destroy();
-
-        try {
-            threadEnv.Destroy();
-        } catch (KduException e) {
-            LOGGER.warn("Failed to destroy the kdu_thread_env: {} (code: {})",
-                    e.getMessage(),
-                    Integer.toHexString(e.Get_kdu_exception_code()));
+        if (isDecompressing) {
+            try {
+                decompressor.Finish();
+            } catch (KduException e) {
+                LOGGER.warn("Failed to stop the kdu_region_decompressor: {} (code: {})",
+                        e.getMessage(),
+                        Integer.toHexString(e.Get_kdu_exception_code()));
+            }
         }
-        threadEnv.Native_destroy();
+        limiter.Native_destroy();
         decompressor.Native_destroy();
         channels.Native_destroy();
         try {
             if (codestream.Exists()) {
+                threadEnv.Cs_terminate(codestream);
                 codestream.Destroy();
             }
         } catch (KduException e) {
@@ -300,6 +303,15 @@ public final class JPEG2000KakaduImageReader implements AutoCloseable {
         }
         jpxSrc.Native_destroy();
         familySrc.Native_destroy();
+
+        try {
+            threadEnv.Destroy();
+        } catch (KduException e) {
+            LOGGER.warn("Failed to destroy the kdu_thread_env: {} (code: {})",
+                    e.getMessage(),
+                    Integer.toHexString(e.Get_kdu_exception_code()));
+        }
+        threadEnv.Native_destroy();
 
         if (inputStream != null) {
             try {
@@ -671,6 +683,7 @@ public final class JPEG2000KakaduImageReader implements AutoCloseable {
                     reductionFactor.factor, MAX_LAYERS, regionDims,
                     expandNumerator, expandDenominator, false, accessMode,
                     false, threadEnv);
+            isDecompressing = true;
 
             Kdu_dims newRegion        = new Kdu_dims();
             Kdu_dims incompleteRegion = new Kdu_dims();
@@ -718,6 +731,7 @@ public final class JPEG2000KakaduImageReader implements AutoCloseable {
                 // Would be nice if we knew more...
                 LOGGER.error("Fatal error in the codestream management machinery.");
             }
+            isDecompressing = false;
         } catch (KduException e) {
             try {
                 threadEnv.Handle_exception(e.Get_kdu_exception_code());
