@@ -74,6 +74,7 @@ current version.
     * `AzureStorageSource.chunking.*`
     * `processor.selection_strategy`
 3. Remove the following configuration keys:
+    * `allow_upscaling`
     * `endpoint.public.auth.*`
     * `S3Source.max_connections`
     * `processor.normalize`

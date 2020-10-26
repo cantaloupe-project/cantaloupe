@@ -83,6 +83,10 @@
 
 ## 4.1.7
 
+* Fixed a sporadic JVM crash when using KakaduNativeProcessor under load with a
+  derivative cache enabled.
+* Fixed incorrect success status in response to image requests that have failed
+  with a VM error.
 * Fixed a `NumberFormatException` caused by incorrect Java version parsing when
   running in a beta or early-access JVM.
 * Fixed an `IOException` appearing in the log at the conclusion of a successful
