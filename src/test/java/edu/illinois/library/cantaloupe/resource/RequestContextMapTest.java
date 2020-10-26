@@ -48,6 +48,8 @@ class RequestContextMapTest extends BaseTest {
                 .withOperations(new Encode(Format.get("gif")))
                 .build();
         context.setOperationList(opList, fullSize);
+        // page count
+        context.setPageCount(3);
         // request headers
         Map<String,String> headers = Map.of("X-Cats", "Yes");
         context.setRequestHeaders(headers);
@@ -103,6 +105,8 @@ class RequestContextMapTest extends BaseTest {
         assertTrue(instance.get(OPERATIONS_KEY) instanceof List);
         // output format
         assertTrue(instance.get(OUTPUT_FORMAT_KEY) instanceof String);
+        // page count
+        assertTrue(instance.get(PAGE_COUNT_KEY) instanceof Integer);
         // page number
         assertTrue(instance.get(PAGE_NUMBER_KEY) instanceof Integer);
         // request headers
@@ -136,6 +140,8 @@ class RequestContextMapTest extends BaseTest {
         assertNull(instance.get(OPERATIONS_KEY));
         // output format
         assertNull(instance.get(OUTPUT_FORMAT_KEY));
+        // page count
+        assertNull(instance.get(PAGE_COUNT_KEY));
         // page number
         assertNull(instance.get(PAGE_NUMBER_KEY));
         // request headers
@@ -181,7 +187,7 @@ class RequestContextMapTest extends BaseTest {
 
     @Test
     void testSize() {
-        assertEquals(13, instance.size());
+        assertEquals(14, instance.size());
     }
 
     @Test

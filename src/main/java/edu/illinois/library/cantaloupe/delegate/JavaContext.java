@@ -118,6 +118,11 @@ public interface JavaContext {
     String getOutputFormat();
 
     /**
+     * @return Number of pages available in the source image file.
+     */
+    Integer getPageCount();
+
+    /**
      * @return Page number requested by the client.
      */
     Integer getPageNumber();

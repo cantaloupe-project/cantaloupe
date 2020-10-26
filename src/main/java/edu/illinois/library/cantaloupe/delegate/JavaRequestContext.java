@@ -90,6 +90,11 @@ public final class JavaRequestContext implements JavaContext {
     }
 
     @Override
+    public Integer getPageCount() {
+        return backingContext.getPageCount();
+    }
+
+    @Override
     public Integer getPageNumber() {
         return backingContext.getPageNumber();
     }

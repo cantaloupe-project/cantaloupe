@@ -61,7 +61,7 @@
   information.
 * Added a `pre_authorize()` delegate method that enables more efficient,
   "fail-fast" authorization.
-* Added a `local_uri` key to the delegate script context.
+* Added `local_uri` and `page_count` keys to the delegate script context.
 * Corrected the structure of the `cookie` key in the delegate script context.
   See the upgrade guide for more information.
 * Updated JRuby to version 9.2.13.0.

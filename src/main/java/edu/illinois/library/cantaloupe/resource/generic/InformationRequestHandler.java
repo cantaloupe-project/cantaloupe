@@ -288,7 +288,9 @@ public class InformationRequestHandler extends AbstractRequestHandler
                         source, processor, identifier, format);
                 callback.knowAvailableOutputFormats(
                         processor.getAvailableOutputFormats());
-                return getOrReadInfo(identifier, processor);
+                Info info = getOrReadInfo(identifier, processor);
+                requestContext.setPageCount(info.getImages().size());
+                return info;
             } catch (SourceFormatException e) {
                 LOGGER.debug("Format inferred by {} disagrees with the one " +
                                 "supplied by {} ({}) for {}; trying again",

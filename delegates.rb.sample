@@ -27,6 +27,7 @@ class CustomDelegate
   # * `client_ip`        [String] Client IP address.
   # * `cookies`          [Hash<String,String>] Hash of cookie name-value pairs.
   # * `identifier`       [String] Image identifier.
+  # * `page_count`       [Integer] Page count.
   # * `page_number`      [Integer] Page number.
   # * `request_headers`  [Hash<String,String>] Hash of header name-value pairs.
   # * `request_uri`      [String] URI requested by the client.
@@ -102,7 +103,7 @@ class CustomDelegate
   ##
   # Returns authorization status for the current request. This method is called
   # upon all requests to all public endpoints early in the request cycle,
-  # before any image has been accessed. This means that some context keys (like
+  # before the image has been accessed. This means that some context keys (like
   # `full_size`) will not be available yet.
   #
   # This method should implement all possible authorization logic except that

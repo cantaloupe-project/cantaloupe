@@ -33,6 +33,7 @@ public final class RequestContext {
     private Metadata metadata;
     private OperationList operations;
     private Format outputFormat;
+    private Integer pageCount;
     private Integer pageNumber;
     private Map<String,String> requestHeaders;
     private URI requestURI;
@@ -69,6 +70,10 @@ public final class RequestContext {
 
     public Format getOutputFormat() {
         return outputFormat;
+    }
+
+    public Integer getPageCount() {
+        return pageCount;
     }
 
     public Integer getPageNumber() {
@@ -121,13 +126,6 @@ public final class RequestContext {
     }
 
     /**
-     * @param pageNumber May be {@code null}.
-     */
-    public void setPageNumber(Integer pageNumber) {
-        this.pageNumber = pageNumber;
-    }
-
-    /**
      * @param metadata May be {@code null}.
      */
     public void setMetadata(Metadata metadata) {
@@ -158,6 +156,20 @@ public final class RequestContext {
             this.resultingSize   = null;
             this.scaleConstraint = null;
         }
+    }
+
+    /**
+     * @param pageCount May be {@code null}.
+     */
+    public void setPageCount(Integer pageCount) {
+        this.pageCount = pageCount;
+    }
+
+    /**
+     * @param pageNumber May be {@code null}.
+     */
+    public void setPageNumber(Integer pageNumber) {
+        this.pageNumber = pageNumber;
     }
 
     /**

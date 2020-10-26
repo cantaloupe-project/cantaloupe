@@ -46,6 +46,8 @@ public class RequestContextTest extends BaseTest {
                 .withOperations(new Encode(Format.get("gif")))
                 .build();
         instance.setOperationList(opList, fullSize);
+        // page count
+        instance.setPageCount(3);
         // page number
         instance.setPageNumber(3);
         // request headers
@@ -116,6 +118,14 @@ public class RequestContextTest extends BaseTest {
         assertNull(instance.getOperationList());
         assertNull(instance.getOutputFormat());
         assertNull(instance.getResultingSize());
+    }
+
+    @Test
+    void testSetPageCount() {
+        instance.setPageCount(5);
+        assertEquals(5, instance.getPageCount());
+        instance.setPageCount(null);
+        assertNull(instance.getPageCount());
     }
 
     @Test

@@ -376,6 +376,7 @@ public class ImageRequestHandler extends AbstractRequestHandler
                     operationList.applyNonEndpointMutations(info, delegateProxy);
                     operationList.freeze();
                     requestContext.setOperationList(operationList, fullSize);
+                    requestContext.setPageCount(info.getImages().size());
                 } catch (IllegalArgumentException | IndexOutOfBoundsException e) {
                     throw new IllegalClientArgumentException(e);
                 }
