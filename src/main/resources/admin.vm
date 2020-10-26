@@ -142,14 +142,6 @@
                                         <td>Info Cache Max Size</td>
                                         <td></td>
                                     </tr>
-                                    <tr>
-                                        <td>Delegate Method Invocation Cache Size</td>
-                                        <td></td>
-                                    </tr>
-                                    <tr>
-                                        <td>Delegate Method Invocation Cache Max Size</td>
-                                        <td></td>
-                                    </tr>
                                 </table>
                             </section>
                         </div>
@@ -957,20 +949,6 @@
                                                data-requires-restart="false">
                                     </td>
                                 </tr>
-                                <tr>
-                                    <td>Scale Constraint Delimiter
-                                        <a tabindex="0" class="btn btn-sm cl-help"
-                                           role="button" data-toggle="popover"
-                                           data-trigger="focus"
-                                           data-content="Character sequence that separates an identifier from
-                                           a scale constraint in the identifier portion of a URI.">?</a>
-                                    </td>
-                                    <td>
-                                        <input class="form-control" type="text"
-                                               name="scale_constraints.delimiter" min="0"
-                                               data-requires-restart="false">
-                                    </td>
-                                </tr>
                             </table>
                         </section>
 
@@ -1030,7 +1008,7 @@
                                 </tr>
                             </table>
 
-                            <h3>1.x</h3>
+                            <h3>Version 1.x</h3>
                             <table class="table table-striped">
                                 <tr>
                                     <td></td>
@@ -1048,7 +1026,7 @@
                                 </tr>
                             </table>
 
-                            <h3>2.x</h3>
+                            <h3>Version 2.x</h3>
                             <table class="table table-striped">
                                 <tr>
                                     <td></td>
@@ -1066,7 +1044,7 @@
                                 </tr>
                             </table>
 
-                            <h3>3.x</h3>
+                            <h3>Version 3.x</h3>
                             <table class="table table-striped">
                                 <tr>
                                     <td></td>
@@ -1119,6 +1097,71 @@
                                     </td>
                                 </tr>
                             </table>
+                        </section>
+
+                        <section>
+                            <h2>Meta-Identifiers</h2>
+
+                            <table class="table table-striped">
+                                <tr>
+                                    <td>Meta-Identifier Transformer
+                                        <a tabindex="0" class="btn btn-sm cl-help"
+                                           role="button" data-toggle="popover"
+                                           data-trigger="focus"
+                                           data-content="A meta-identifier is a superset of an identifier that includes
+                                           other information like a page number and/or scale constraint. A meta-identifier
+                                           transformer transforms a meta-identifier to and from a string in a URI
+                                           path component. See the user manual for more
+                                           information about meta-identifiers and these options.">?</a>
+                                    </td>
+                                    <td>
+                                        <select class="form-control" name="meta_identifier.transformer">
+                                            #foreach ($metaIdentifierTransformer in $metaIdentifierTransformers)
+                                                #if ($metaIdentifierTransformer.equals($currentMetaIdentifierTransformer))
+                                                    <option selected>$metaIdentifierTransformer</option>
+                                                #else
+                                                    <option>$metaIdentifierTransformer</option>
+                                                #end
+                                            #end
+                                        </select>
+                                    </td>
+                                </tr>
+                            </table>
+
+                            <ul class="nav nav-pills" role="tablist">
+                                #foreach ($metaIdentifierTransformer in $metaIdentifierTransformers)
+                                    <li role="presentation">
+                                        <a href="#$metaIdentifierTransformer"
+                                           aria-controls="$metaIdentifierTransformer" role="tab"
+                                           data-toggle="tab">$metaIdentifierTransformer</a>
+                                    </li>
+                                #end
+                            </ul>
+
+                            <div class="tab-content">
+                                <div role="tabpanel" class="tab-pane" id="StandardMetaIdentifierTransformer">
+                                    <table class="table table-striped">
+                                        <tr>
+                                            <td>Component Delimiter
+                                                <a tabindex="0" class="btn btn-sm cl-help"
+                                                   role="button" data-toggle="popover"
+                                                   data-trigger="focus"
+                                                   data-content="Character sequence that separates the components
+                                                   of a meta-identifier in the identifier portion of a URI.">?</a>
+                                            </td>
+                                            <td>
+                                                <input class="form-control" type="text"
+                                                       name="meta_identifier.transformer.StandardMetaIdentifierTransformer.delimiter"
+                                                       data-requires-restart="false">
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </div>
+
+                                <div role="tabpanel" class="tab-pane" id="DelegateMetaIdentifierTransformer">
+                                    <p>This transformer is not configurable.</p>
+                                </div>
+                            </div>
                         </section>
 
                         <input type="submit" class="btn btn-primary" value="Save">

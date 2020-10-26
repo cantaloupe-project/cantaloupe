@@ -1,5 +1,6 @@
 package edu.illinois.library.cantaloupe.resource.iiif.v3;
 
+import edu.illinois.library.cantaloupe.delegate.DelegateProxy;
 import edu.illinois.library.cantaloupe.operation.Crop;
 import edu.illinois.library.cantaloupe.operation.Encode;
 import edu.illinois.library.cantaloupe.operation.Operation;
@@ -9,6 +10,7 @@ import edu.illinois.library.cantaloupe.operation.Scale;
 import edu.illinois.library.cantaloupe.resource.IllegalClientArgumentException;
 import edu.illinois.library.cantaloupe.resource.iiif.FormatException;
 import edu.illinois.library.cantaloupe.test.BaseTest;
+import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -81,7 +83,11 @@ class ParametersTest extends BaseTest {
 
     @Test
     void testToOperationList() {
-        final OperationList opList = instance.toOperationList(1);
+        DelegateProxy delegateProxy = TestUtil.newDelegateProxy();
+        OperationList opList        = instance.toOperationList(delegateProxy, 1);
+
+        assertEquals(instance.getIdentifier(),
+                opList.getMetaIdentifier().getIdentifier().toString());
         Iterator<Operation> it = opList.iterator();
         assertTrue(it.next() instanceof Crop);
         assertTrue(it.next() instanceof Scale);

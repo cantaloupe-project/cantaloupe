@@ -91,6 +91,32 @@ public interface JavaDelegate {
     Object authorize();
 
     /**
+     * <p>Deserializes the given meta-identifier string into a map of its
+     * component parts.</p>
+     *
+     * <p>This method is called only when the {@code
+     * meta_identifier.transformer} configuration key is set to {@code
+     * DelegateMetaIdentifierTransformer}.</p>
+     *
+     * <p>The map contains the following keys:</p>
+     *
+     * <dl>
+     *     <dt>{@code identifier} (required)</dt>
+     *     <dd>String identifier.</dd>
+     *     <dt>{@code page_number} (optional)</dt>
+     *     <dd>Integer page number.</dd>
+     *     <dt>{@code scale_constraint} (optional></dt>
+     *     <dd>Two-element array with scale constraint numerator at position 0
+     *     and denominator at position 1.</dd>
+     * </dl>
+     *
+     * @return See above. The return value should be compatible with the
+     *         argument to {@link #serializeMetaIdentifier(Map)}.
+     * @see #serializeMetaIdentifier(Map)
+     */
+    Map<String,Object> deserializeMetaIdentifier(String metaIdentifier);
+
+    /**
      * Adds additional keys to an Image API 2.x information response. See the
      * <a href="http://iiif.io/api/image/2.1/#image-information">IIIF Image API
      * 2.1</a> specification and "endpoints" section of the user manual.
@@ -277,6 +303,21 @@ public interface JavaDelegate {
      *         or {@code null} to not embed anything.
      */
     String getMetadata();
+
+    /**
+     * <p>Serializes the given meta-identifier map.</p>
+     *
+     * <p>This method is called only when the {@code
+     * meta_identifier.transformer} configuration key is set to {@code
+     * DelegateMetaIdentifierTransformer}.</p>
+     *
+     * @param metaIdentifier See {@link #deserializeMetaIdentifier(String)}
+     *                       for a description of the map structure.
+     * @return Serialized meta-identifier compatible with the argument to
+     *         {@link #deserializeMetaIdentifier(String)}.
+     * @see #deserializeMetaIdentifier(String)
+     */
+    String serializeMetaIdentifier(Map<String,Object> metaIdentifier);
 
 }
 

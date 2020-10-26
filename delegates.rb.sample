@@ -7,8 +7,7 @@
 # to be thread-safe, but sharing information across instances (requests)
 # **does** need to be done thread-safely.
 #
-# This version of the script works with Cantaloupe version 4, and not earlier
-# versions.
+# This version of the script works with Cantaloupe version >= 5.
 #
 class CustomDelegate
 
@@ -28,6 +27,7 @@ class CustomDelegate
   # * `client_ip`        [String] Client IP address.
   # * `cookies`          [Hash<String,String>] Hash of cookie name-value pairs.
   # * `identifier`       [String] Image identifier.
+  # * `page_number`      [Integer] Page number.
   # * `request_headers`  [Hash<String,String>] Hash of header name-value pairs.
   # * `request_uri`      [String] URI requested by the client.
   # * `local_uri`        [String] URI seen by the application, which may be
@@ -60,6 +60,44 @@ class CustomDelegate
   # @return [Hash] Request context.
   #
   attr_accessor :context
+
+  ##
+  # Deserializes the given meta-identifier string into a hash of its component
+  # parts.
+  #
+  # This method is used only when the `meta_identifier.transformer`
+  # configuration key is set to `DelegateMetaIdentifierTransformer`.
+  #
+  # The hash contains the following keys:
+  #
+  # * `identifier`       [String] Required.
+  # * `page_number`      [Integer] Optional.
+  # * `scale_constraint` [Array<Integer>] Two-element array with scale
+  #                      constraint numerator at position 0 and denominator at
+  #                      position 1. Optional.
+  #
+  # @param meta_identifier [String]
+  # @return Hash<String,Object> See above. The return value should be
+  #                             compatible with the argument to
+  #                             {serialize_meta_identifier}.
+  #
+  def deserialize_meta_identifier(meta_identifier)
+  end
+
+  ##
+  # Serializes the given meta-identifier hash.
+  #
+  # This method is used only when the `meta_identifier.transformer`
+  # configuration key is set to `DelegateMetaIdentifierTransformer`.
+  #
+  # See {deserialize_meta_identifier} for a description of the hash structure.
+  #
+  # @param components [Hash<String,Object>]
+  # @return [String] Serialized meta-identifier compatible with the argument to
+  #                  {deserialize_meta_identifier}.
+  #
+  def serialize_meta_identifier(components)
+  end
 
   ##
   # Returns authorization status for the current request. This method is called

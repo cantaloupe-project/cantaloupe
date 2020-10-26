@@ -154,8 +154,25 @@ final class JRubyDelegateProxy implements DelegateProxy {
 
     /**
      * @return Return value of {@link
+     *         DelegateMethod#DESERIALIZE_META_IDENTIFIER}, or an
+     *         empty map if it returned {@code nil}.
+     */
+    @SuppressWarnings("unchecked")
+    @Override
+    public Map<String, Object> deserializeMetaIdentifier(String metaIdentifier)
+            throws ScriptException {
+        Object result = invoke(DelegateMethod.DESERIALIZE_META_IDENTIFIER,
+                metaIdentifier);
+        if (result != null) {
+            return (Map<String, Object>) result;
+        }
+        return Collections.emptyMap();
+    }
+
+    /**
+     * @return Return value of {@link
      *         DelegateMethod#EXTRA_IIIF2_INFORMATION_RESPONSE_KEYS}, or an
-     *         empty map if it returned {@literal nil}.
+     *         empty map if it returned {@code nil}.
      */
     @SuppressWarnings("unchecked")
     @Override
@@ -171,7 +188,7 @@ final class JRubyDelegateProxy implements DelegateProxy {
     /**
      * @return Return value of {@link
      *         DelegateMethod#EXTRA_IIIF3_INFORMATION_RESPONSE_KEYS}, or an
-     *         empty map if it returned {@literal nil}.
+     *         empty map if it returned {@code nil}.
      */
     @SuppressWarnings("unchecked")
     @Override
@@ -186,8 +203,8 @@ final class JRubyDelegateProxy implements DelegateProxy {
 
     /**
      * {@return Return value of {@link
-     *          DelegateMethod#AZURESTORAGESOURCE_BLOB_KEY }. May be
-     *          {@literal null}.
+     *          DelegateMethod#AZURESTORAGESOURCE_BLOB_KEY }. May be {@code
+     *          null}.
      */
     @Override
     public String getAzureStorageSourceBlobKey() throws ScriptException {
@@ -197,8 +214,7 @@ final class JRubyDelegateProxy implements DelegateProxy {
 
     /**
      * @return Return value of {@link
-     *         DelegateMethod#FILESYSTEMSOURCE_PATHMAME}. May be {@literal
-     *         null}.
+     *         DelegateMethod#FILESYSTEMSOURCE_PATHMAME}. May be {@code null}.
      */
     @Override
     public String getFilesystemSourcePathname() throws ScriptException {
@@ -209,12 +225,11 @@ final class JRubyDelegateProxy implements DelegateProxy {
     /**
      * @return Map based on the return value of {@link
      *         DelegateMethod#HTTPSOURCE_RESOURCE_INFO}, or an empty map if
-     *         it returned {@literal nil}.
+     *         it returned {@code nil}.
      */
     @SuppressWarnings("unchecked")
     @Override
-    public Map<String,?> getHttpSourceResourceInfo()
-            throws ScriptException {
+    public Map<String,?> getHttpSourceResourceInfo() throws ScriptException {
         Object result = invoke(DelegateMethod.HTTPSOURCE_RESOURCE_INFO);
         if (result instanceof String) {
             Map<String,String> map = new HashMap<>();
@@ -228,8 +243,8 @@ final class JRubyDelegateProxy implements DelegateProxy {
 
     /**
      * @return Return value of {@link
-     *         DelegateMethod#JDBCSOURCE_DATABASE_IDENTIFIER}. May be
-     *         {@literal null}.
+     *         DelegateMethod#JDBCSOURCE_DATABASE_IDENTIFIER}. May be {@code
+     *         null}.
      */
     @Override
     public String getJdbcSourceDatabaseIdentifier() throws ScriptException {
@@ -266,7 +281,7 @@ final class JRubyDelegateProxy implements DelegateProxy {
 
     /**
      * @return Return value of {@link DelegateMethod#OVERLAY}, or an empty map
-     *         if it returned {@literal nil}.
+     *         if it returned {@code nil}.
      */
     @SuppressWarnings("unchecked")
     @Override
@@ -280,7 +295,7 @@ final class JRubyDelegateProxy implements DelegateProxy {
 
     /**
      * @return Return value of {@link DelegateMethod#REDACTIONS}, or an empty
-     *         list if it returned {@literal nil}.
+     *         list if it returned {@code nil}.
      */
     @SuppressWarnings("unchecked")
     @Override
@@ -293,8 +308,8 @@ final class JRubyDelegateProxy implements DelegateProxy {
     }
 
     /**
-     * @return Return value of {@link DelegateMethod#SOURCE}. May be
-     *         {@literal null}.
+     * @return Return value of {@link DelegateMethod#SOURCE}. May be {@code
+     *         null}.
      */
     @Override
     public String getSource() throws ScriptException {
@@ -304,7 +319,7 @@ final class JRubyDelegateProxy implements DelegateProxy {
 
     /**
      * @return Return value of {@link DelegateMethod#S3SOURCE_OBJECT_INFO},
-     *         or an empty map if it returned {@literal nil}.
+     *         or an empty map if it returned {@code nil}.
      */
     @SuppressWarnings("unchecked")
     @Override
@@ -323,6 +338,17 @@ final class JRubyDelegateProxy implements DelegateProxy {
     @Override
     public Object preAuthorize() throws ScriptException {
         return invoke(DelegateMethod.PRE_AUTHORIZE);
+    }
+
+    /**
+     * @return Return value of {@link DelegateMethod#SERIALIZE_META_IDENTIFIER}.
+     */
+    @Override
+    public String serializeMetaIdentifier(Map<String, Object> metaIdentifier)
+            throws ScriptException {
+        Object result = invoke(DelegateMethod.SERIALIZE_META_IDENTIFIER,
+                metaIdentifier);
+        return (String) result;
     }
 
     /**

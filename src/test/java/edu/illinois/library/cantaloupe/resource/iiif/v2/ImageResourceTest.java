@@ -3,12 +3,14 @@ package edu.illinois.library.cantaloupe.resource.iiif.v2;
 import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
+import edu.illinois.library.cantaloupe.delegate.DelegateProxy;
 import edu.illinois.library.cantaloupe.http.Headers;
 import edu.illinois.library.cantaloupe.http.Method;
 import edu.illinois.library.cantaloupe.http.ResourceException;
 import edu.illinois.library.cantaloupe.http.Response;
 import edu.illinois.library.cantaloupe.image.Identifier;
-import edu.illinois.library.cantaloupe.image.ScaleConstraint;
+import edu.illinois.library.cantaloupe.image.MetaIdentifier;
+import edu.illinois.library.cantaloupe.image.StandardMetaIdentifierTransformer;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.resource.ResourceTest;
 import edu.illinois.library.cantaloupe.resource.Route;
@@ -424,6 +426,22 @@ public class ImageResourceTest extends ResourceTest {
     }
 
     @Test
+    void testGETWithPageNumberInMetaIdentifier() {
+        final String image = "pdf-multipage.pdf";
+        URI uri1 = getHTTPURI("/" + image + "/full/max/0/color.jpg");
+        URI uri2 = getHTTPURI("/" + image + ";2/full/max/0/color.jpg");
+        assertRepresentationsNotSame(uri1, uri2);
+    }
+
+    @Test
+    void testGETWithPageNumberInQuery() {
+        final String image = "pdf-multipage.pdf";
+        URI uri1 = getHTTPURI("/" + image + "/full/max/0/color.jpg");
+        URI uri2 = getHTTPURI("/" + image + "/full/max/0/color.jpg?page=2");
+        assertRepresentationsNotSame(uri1, uri2);
+    }
+
+    @Test
     void testGETProcessorValidationFailure() {
         URI uri = getHTTPURI("/pdf-multipage.pdf/full/full/0/color.jpg?page=999999");
         tester.testProcessorValidationFailure(uri);
@@ -432,9 +450,11 @@ public class ImageResourceTest extends ResourceTest {
     @Test
     void testGETPurgeFromCacheWhenSourceIsMissingAndOptionIsFalse()
             throws Exception {
-        final String imagePath = "/" + IMAGE + "/full/full/0/color.jpg";
-        final URI uri = getHTTPURI(imagePath);
-        final OperationList opList = Parameters.fromUri(imagePath).toOperationList();
+        DelegateProxy delegateProxy = TestUtil.newDelegateProxy();
+        String imagePath            = "/" + IMAGE + "/full/full/0/color.jpg";
+        URI uri                     = getHTTPURI(imagePath);
+        OperationList opList        = Parameters.fromUri(imagePath)
+                .toOperationList(delegateProxy);
         tester.testPurgeFromCacheWhenSourceIsMissingAndOptionIsFalse(
                 uri, opList);
     }
@@ -442,9 +462,11 @@ public class ImageResourceTest extends ResourceTest {
     @Test
     void testGETPurgeFromCacheWhenSourceIsMissingAndOptionIsTrue()
             throws Exception {
-        final String imagePath = "/" + IMAGE + "/full/full/0/color.jpg";
-        final URI uri = getHTTPURI(imagePath);
-        final OperationList opList = Parameters.fromUri(imagePath).toOperationList();
+        DelegateProxy delegateProxy = TestUtil.newDelegateProxy();
+        String imagePath            = "/" + IMAGE + "/full/full/0/color.jpg";
+        URI uri                     = getHTTPURI(imagePath);
+        OperationList opList        = Parameters.fromUri(imagePath)
+                .toOperationList(delegateProxy);
         tester.testPurgeFromCacheWhenSourceIsMissingAndOptionIsTrue(
                 uri, opList);
     }
@@ -470,43 +492,65 @@ public class ImageResourceTest extends ResourceTest {
     }
 
     /**
-     * Tests that a scale constraint of {@literal -1:1} is redirected to no
+     * Tests that a scale constraint of {@literal 1:1} is redirected to no
      * scale constraint.
      */
     @Test
     void testGETRedirectToNormalizedScaleConstraint1() {
-        URI fromURI = getHTTPURI("/" + IMAGE +
-                new ScaleConstraint(1, 1).toIdentifierSuffix() +
+        MetaIdentifier metaIdentifier = MetaIdentifier.builder()
+                .withIdentifier(IMAGE)
+                .withScaleConstraint(1, 1)
+                .build();
+        String metaIdentifierString = new StandardMetaIdentifierTransformer()
+                .serialize(metaIdentifier, false);
+
+        URI fromURI = getHTTPURI("/" + metaIdentifierString +
                 "/full/full/0/color.png");
-        URI toURI = getHTTPURI("/" + IMAGE + "/full/full/0/color.png");
+        URI toURI   = getHTTPURI("/" + IMAGE + "/full/full/0/color.png");
         assertRedirect(fromURI, toURI, 301);
     }
 
     /**
-     * Tests that a scale constraint of {@literal -2:2} is redirected to no
+     * Tests that a scale constraint of {@literal 2:2} is redirected to no
      * scale constraint.
      */
     @Test
     void testGETRedirectToNormalizedScaleConstraint2() {
-        URI fromURI = getHTTPURI("/" + IMAGE +
-                new ScaleConstraint(2, 2).toIdentifierSuffix() +
+        MetaIdentifier metaIdentifier = MetaIdentifier.builder()
+                .withIdentifier(IMAGE)
+                .withScaleConstraint(1, 1)
+                .build();
+        String metaIdentifierString = new StandardMetaIdentifierTransformer()
+                .serialize(metaIdentifier, false);
+
+        URI fromURI = getHTTPURI("/" + metaIdentifierString +
                 "/full/full/0/color.png");
-        URI toURI = getHTTPURI("/" + IMAGE + "/full/full/0/color.png");
+        URI toURI   = getHTTPURI("/" + IMAGE + "/full/full/0/color.png");
         assertRedirect(fromURI, toURI, 301);
     }
 
     /**
-     * Tests that a scale constraint of {@literal -2:4} is redirected to
-     * {@literal -1:2}.
+     * Tests that a scale constraint of {@literal 2:4} is redirected to
+     * {@literal 1:2}.
      */
     @Test
     void testGETRedirectToNormalizedScaleConstraint3() {
-        URI fromURI = getHTTPURI("/" + IMAGE +
-                new ScaleConstraint(2, 4).toIdentifierSuffix() +
+        MetaIdentifier.Builder builder = MetaIdentifier.builder()
+                .withIdentifier(IMAGE);
+        // create the "from" URI
+        MetaIdentifier metaIdentifier = builder.withScaleConstraint(2, 4).build();
+        String metaIdentifierString =
+                new StandardMetaIdentifierTransformer().serialize(metaIdentifier);
+        URI fromURI = getHTTPURI("/" + IMAGE + metaIdentifierString +
                 "/full/full/0/color.png");
-        URI toURI = getHTTPURI("/" + IMAGE +
-                new ScaleConstraint(1, 2).toIdentifierSuffix() +
+
+        // create the "to" URI
+        metaIdentifier = builder.withScaleConstraint(1, 2).build();
+        metaIdentifierString =
+                new StandardMetaIdentifierTransformer().serialize(metaIdentifier);
+        URI toURI = getHTTPURI("/" + IMAGE + metaIdentifierString +
                 "/full/full/0/color.png");
+
         assertRedirect(fromURI, toURI, 301);
     }
 

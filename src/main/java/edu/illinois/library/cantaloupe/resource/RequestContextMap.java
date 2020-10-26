@@ -29,6 +29,7 @@ final class RequestContextMap<K, V> implements Map<K, V> {
     static final String FULL_SIZE_KEY        = "full_size";
     static final String IDENTIFIER_KEY       = "identifier";
     static final String LOCAL_URI_KEY        = "local_uri";
+    static final String PAGE_NUMBER_KEY      = "page_number";
     static final String METADATA_KEY         = "metadata";
     static final String OPERATIONS_KEY       = "operations";
     static final String OUTPUT_FORMAT_KEY    = "output_format";
@@ -94,6 +95,8 @@ final class RequestContextMap<K, V> implements Map<K, V> {
                 Format format = backingContext.getOutputFormat();
                 return (format != null) ?
                         (V) format.getPreferredMediaType().toString() : null;
+            case PAGE_NUMBER_KEY:
+                return (V) backingContext.getPageNumber();
             case REQUEST_HEADERS_KEY:
                 Map<String,String> headers = backingContext.getRequestHeaders();
                 return (headers != null) ?
@@ -155,6 +158,7 @@ final class RequestContextMap<K, V> implements Map<K, V> {
         size += (backingContext.getMetadata() != null)        ? 1 : 0;
         size += (backingContext.getOperationList() != null)   ? 1 : 0;
         size += (backingContext.getOutputFormat() != null)    ? 1 : 0;
+        size += (backingContext.getPageNumber() != null)      ? 1 : 0;
         size += (backingContext.getRequestHeaders() != null)  ? 1 : 0;
         size += (backingContext.getRequestURI() != null)      ? 1 : 0;
         size += (backingContext.getResultingSize() != null)   ? 1 : 0;

@@ -70,7 +70,7 @@ public class InformationResource extends IIIF1Resource {
         }
 
         try (InformationRequestHandler handler = InformationRequestHandler.builder()
-                .withIdentifier(getIdentifier())
+                .withIdentifier(getMetaIdentifier().getIdentifier())
                 .withBypassingCache(isBypassingCache())
                 .withBypassingCacheRead(isBypassingCacheRead())
                 .withDelegateProxy(getDelegateProxy())
@@ -84,7 +84,7 @@ public class InformationResource extends IIIF1Resource {
                     availableOutputFormats,
                     info,
                     getPageIndex(),
-                    getScaleConstraint());
+                    getMetaIdentifier().getScaleConstraint());
 
             addHeaders(iiifInfo);
             new JacksonRepresentation(iiifInfo)

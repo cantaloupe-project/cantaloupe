@@ -58,6 +58,11 @@ class StringUtilsTest extends BaseTest {
     }
 
     @Test
+    void testReverse() {
+        assertEquals("321stac", StringUtils.reverse("cats123"));
+    }
+
+    @Test
     void testSanitize1() {
         assertEquals("", StringUtils.sanitize("dirt", "dirt", "dirt"));
         assertEquals("y", StringUtils.sanitize("dirty", "dirt", "dirt"));
@@ -258,7 +263,7 @@ class StringUtilsTest extends BaseTest {
         assertTrue(lines.size() > 2 && lines.size() < 6);
         assertTrue(lines.get(0).length() > 10 && lines.get(0).length() < 30);
         assertTrue(lines.get(1).length() > 10 && lines.get(1).length() < 30);
-        assertTrue(lines.get(2).length() > 10 && lines.get(2).length() < 30);
+        assertTrue(lines.get(2).length() > 5 && lines.get(2).length() < 30);
     }
 
 }

@@ -7,6 +7,31 @@ class CustomDelegate
 
   attr_accessor :context
 
+  ##
+  # Works the same as `StandardMetaIdentifierTransformer.deserialize()`.
+  #
+  def deserialize_meta_identifier(meta_identifier)
+    reversed_meta_id = meta_identifier.reverse
+    matches          = /^(?<sc>\d+:\d+)?;?(?<pg>\d+)?;?(?<id>.+)/.match(reversed_meta_id)
+    captures         = matches.named_captures
+    struct                     = {}
+    struct['identifier']       = captures['id'].reverse
+    struct['page_number']      = captures['pg'].reverse.to_i if captures['pg']
+    struct['scale_constraint'] = captures['sc'].reverse.split(':').map(&:to_i) if captures['sc']
+    struct
+  end
+
+  ##
+  # Works the same as `StandardMetaIdentifierTransformer.serialize()`.
+  #
+  def serialize_meta_identifier(components)
+    [
+        components['identifier'],
+        components['page_number'],
+        components['scale_constraint']&.join(':')
+    ].reject(&:nil?).join(';')
+  end
+
   def pre_authorize(options = {})
     case context['identifier']
       when 'forbidden.jpg', 'forbidden-boolean.jpg'

@@ -1,6 +1,7 @@
 package edu.illinois.library.cantaloupe.operation;
 
 import edu.illinois.library.cantaloupe.image.Dimension;
+import edu.illinois.library.cantaloupe.image.MetaIdentifier;
 import edu.illinois.library.cantaloupe.image.ScaleConstraint;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -484,8 +485,10 @@ public class ScaleByPixelsTest extends ScaleTest {
     void hasEffectWithScaleConstraint() {
         final Dimension fullSize = new Dimension(600, 400);
         final OperationList opList = new OperationList();
-        opList.setScaleConstraint(new ScaleConstraint(1, 2));
-
+        opList.setMetaIdentifier(MetaIdentifier.builder()
+                .withIdentifier("cats")
+                .withScaleConstraint(1, 2)
+                .build());
         assertTrue(instance.hasEffect(fullSize, opList));
     }
 

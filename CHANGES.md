@@ -17,9 +17,11 @@
   The `response-content-disposition` URL query argument should be used instead.
 * The `http.http2.enabled` and `https.http2.enabled` configuration keys have
   been removed. HTTP/2 is always enabled.
-* A `scale_constraints.delimiter` configuration key is available for customizing
-  the character sequence used to separate scale constraints from identifiers in
-  URIs.
+* The identifier path component of IIIF Image API URIs may contain a
+  "meta-identifier," which is comprised of an identifier plus other relevant
+  information like a page number and/or scale constraint.
+* The `page` and `time` query arguments have been deprecated in favor of the
+  meta-identifier-expressed page number explained above.
 
 ### Sources
 

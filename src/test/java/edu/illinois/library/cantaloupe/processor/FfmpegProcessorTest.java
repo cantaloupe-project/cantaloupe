@@ -17,7 +17,6 @@ import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.nio.file.Path;
 import java.util.Arrays;
 
@@ -103,10 +102,10 @@ public class FfmpegProcessorTest extends AbstractProcessorTest {
     }
 
     @Test
-    void testProcessWithTimeOption() throws Exception {
+    void testProcessWithPageIndex() throws Exception {
         final Info imageInfo = instance.readInfo();
 
-        // time option missing
+        // page index missing
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         OperationList ops = OperationList.builder()
                 .withOperations(new Encode(Format.get("jpg")))
@@ -114,8 +113,8 @@ public class FfmpegProcessorTest extends AbstractProcessorTest {
         instance.process(ops, imageInfo, outputStream);
         final byte[] frame1 = outputStream.toByteArray();
 
-        // time option present
-        ops.getOptions().put("time", "00:00:05");
+        // page index present
+        ops.setPageIndex(3);
         outputStream = new ByteArrayOutputStream();
         instance.process(ops, imageInfo, outputStream);
         final byte[] frame2 = outputStream.toByteArray();
@@ -124,52 +123,13 @@ public class FfmpegProcessorTest extends AbstractProcessorTest {
     }
 
     @Test
-    void testProcessWithInvalidFrameOptionThrowsException() throws Exception {
-        final Info imageInfo = instance.readInfo();
-
-        OperationList ops = OperationList.builder()
-                .withOperations(new Encode(Format.get("jpg")))
-                .build();
-        ops.getOptions().put("time", "cats");
-        OutputStream outputStream = OutputStream.nullOutputStream();
-
-        assertThrows(ProcessorException.class, () ->
-                instance.process(ops, imageInfo, outputStream));
-    }
-
-    @Test
-    void testValidateWithValidTime() throws Exception {
-        OperationList ops = OperationList.builder()
-                .withIdentifier(new Identifier("cats"))
-                .withOperations(new Encode(Format.get("jpg")))
-                .build();
-        Dimension fullSize = new Dimension(1000, 1000);
-        ops.getOptions().put("time", "00:00:02");
-
-        instance.validate(ops, fullSize);
-    }
-
-    @Test
-    void testValidateWithInvalidTimeFormat() {
-        OperationList ops = OperationList.builder()
-                .withIdentifier(new Identifier("cats"))
-                .withOperations(new Encode(Format.get("jpg")))
-                .build();
-        Dimension fullSize = new Dimension(1000, 1000);
-        ops.getOptions().put("time", "000012");
-
-        assertThrows(IllegalArgumentException.class,
-                () -> instance.validate(ops, fullSize));
-    }
-
-    @Test
     void testValidateWithOutOfBoundsTime() {
         OperationList ops = OperationList.builder()
                 .withIdentifier(new Identifier("cats"))
+                .withPageIndex(9999999)
                 .withOperations(new Encode(Format.get("jpg")))
                 .build();
         Dimension fullSize = new Dimension(1000, 1000);
-        ops.getOptions().put("time", "00:38:06");
 
         assertThrows(IllegalArgumentException.class,
                 () -> instance.validate(ops, fullSize));

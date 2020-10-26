@@ -7,6 +7,7 @@ import edu.illinois.library.cantaloupe.http.Headers;
 import edu.illinois.library.cantaloupe.http.Method;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
+import edu.illinois.library.cantaloupe.image.MetaIdentifierTransformerFactory;
 import edu.illinois.library.cantaloupe.operation.Scale;
 import edu.illinois.library.cantaloupe.processor.InitializationException;
 import edu.illinois.library.cantaloupe.processor.Processor;
@@ -163,27 +164,43 @@ public class AdminResource extends AbstractAdminResource {
         ////////////////////////////////////////////////////////////////////
         //////////////////////// status section ////////////////////////////
         ////////////////////////////////////////////////////////////////////
+        {
+            // VM info
+            RuntimeMXBean runtimeMxBean = ManagementFactory.getRuntimeMXBean();
+            vars.put("vmArguments", runtimeMxBean.getInputArguments());
+            vars.put("vmName", runtimeMxBean.getVmName());
+            vars.put("vmVendor", runtimeMxBean.getVmVendor());
+            vars.put("vmVersion", runtimeMxBean.getVmVersion());
+            vars.put("javaVersion", runtimeMxBean.getSpecVersion());
 
-        // VM info
-        RuntimeMXBean runtimeMxBean = ManagementFactory.getRuntimeMXBean();
-        vars.put("vmArguments", runtimeMxBean.getInputArguments());
-        vars.put("vmName", runtimeMxBean.getVmName());
-        vars.put("vmVendor", runtimeMxBean.getVmVendor());
-        vars.put("vmVersion", runtimeMxBean.getVmVersion());
-        vars.put("javaVersion", runtimeMxBean.getSpecVersion());
+            // Reverse-Proxy headers
+            final Headers headers = getRequest().getHeaders();
+            vars.put("xForwardedProtoHeader",
+                    headers.getFirstValue("X-Forwarded-Proto", ""));
+            vars.put("xForwardedHostHeader",
+                    headers.getFirstValue("X-Forwarded-Host", ""));
+            vars.put("xForwardedPortHeader",
+                    headers.getFirstValue("X-Forwarded-Port", ""));
+            vars.put("xForwardedPathHeader",
+                    headers.getFirstValue("X-Forwarded-Path", ""));
+            vars.put("xForwardedForHeader",
+                    headers.getFirstValue("X-Forwarded-For", ""));
+        }
 
-        // Reverse-Proxy headers
-        final Headers headers = getRequest().getHeaders();
-        vars.put("xForwardedProtoHeader",
-                headers.getFirstValue("X-Forwarded-Proto", ""));
-        vars.put("xForwardedHostHeader",
-                headers.getFirstValue("X-Forwarded-Host", ""));
-        vars.put("xForwardedPortHeader",
-                headers.getFirstValue("X-Forwarded-Port", ""));
-        vars.put("xForwardedPathHeader",
-                headers.getFirstValue("X-Forwarded-Path", ""));
-        vars.put("xForwardedForHeader",
-                headers.getFirstValue("X-Forwarded-For", ""));
+        ////////////////////////////////////////////////////////////////////
+        /////////////////////// endpoints section //////////////////////////
+        ////////////////////////////////////////////////////////////////////
+        {
+            vars.put("currentMetaIdentifierTransformer",
+                    new MetaIdentifierTransformerFactory()
+                            .newInstance(getDelegateProxy())
+                            .getClass().getSimpleName());
+            List<String> impls = MetaIdentifierTransformerFactory.allImplementations()
+                    .stream()
+                    .map(Class::getSimpleName)
+                    .collect(Collectors.toList());
+            vars.put("metaIdentifierTransformers", impls);
+        }
 
         ////////////////////////////////////////////////////////////////////
         //////////////////////// sources section ///////////////////////////
@@ -220,7 +237,7 @@ public class AdminResource extends AbstractAdminResource {
                 new ProcessorFactory().getSelectionStrategy());
 
         // source format assignments
-        Map<FormatProxy,ProcessorProxy> assignments = new TreeMap<>();
+        Map<FormatProxy, ProcessorProxy> assignments = new TreeMap<>();
         for (Format format : Format.all()) {
             try (Processor proc = new ProcessorFactory().newProcessor(format)) {
                 assignments.put(new FormatProxy(format), new ProcessorProxy(proc));
@@ -275,46 +292,47 @@ public class AdminResource extends AbstractAdminResource {
         ////////////////////////////////////////////////////////////////////
         //////////////////////// caches section ////////////////////////////
         ////////////////////////////////////////////////////////////////////
+        {
+            // source caches
+            try {
+                CacheFactory.getSourceCache().ifPresent(sc ->
+                        vars.put("currentSourceCache", sc));
+            } catch (Exception e) {
+                // noop
+            }
 
-        // source caches
-        try {
-            CacheFactory.getSourceCache().ifPresent(sc ->
-                    vars.put("currentSourceCache", sc));
-        } catch (Exception e) {
-            // noop
+            sortedProxies = CacheFactory.getAllSourceCaches()
+                    .stream()
+                    .map(ObjectProxy::new)
+                    .sorted(Comparator.comparing(ObjectProxy::getName))
+                    .collect(Collectors.toList());
+            vars.put("sourceCaches", sortedProxies);
+
+            // derivative caches
+            try {
+                vars.put("currentDerivativeCache",
+                        CacheFactory.getDerivativeCache());
+            } catch (Exception e) {
+                // noop
+            }
+
+            sortedProxies = CacheFactory.getAllDerivativeCaches()
+                    .stream()
+                    .map(ObjectProxy::new)
+                    .sorted(Comparator.comparing(ObjectProxy::getName))
+                    .collect(Collectors.toList());
+            vars.put("derivativeCaches", sortedProxies);
         }
-
-        sortedProxies = CacheFactory.getAllSourceCaches()
-                .stream()
-                .map(ObjectProxy::new)
-                .sorted(Comparator.comparing(ObjectProxy::getName))
-                .collect(Collectors.toList());
-        vars.put("sourceCaches", sortedProxies);
-
-        // derivative caches
-        try {
-            vars.put("currentDerivativeCache",
-                    CacheFactory.getDerivativeCache());
-        } catch (Exception e) {
-            // noop
-        }
-
-        sortedProxies = CacheFactory.getAllDerivativeCaches()
-                .stream()
-                .map(ObjectProxy::new)
-                .sorted(Comparator.comparing(ObjectProxy::getName))
-                .collect(Collectors.toList());
-        vars.put("derivativeCaches", sortedProxies);
 
         ////////////////////////////////////////////////////////////////////
         /////////////////////// overlays section ///////////////////////////
         ////////////////////////////////////////////////////////////////////
-
-        vars.put("fonts", GraphicsEnvironment.getLocalGraphicsEnvironment().
-                getAvailableFontFamilyNames());
-        vars.put("currentOverlayFont", Configuration.getInstance().
-                getString(Key.OVERLAY_STRING_FONT, ""));
-
+        {
+            vars.put("fonts", GraphicsEnvironment.getLocalGraphicsEnvironment().
+                    getAvailableFontFamilyNames());
+            vars.put("currentOverlayFont", Configuration.getInstance().
+                    getString(Key.OVERLAY_STRING_FONT, ""));
+        }
         return vars;
     }
 

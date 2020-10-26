@@ -12,6 +12,9 @@ import edu.illinois.library.cantaloupe.http.Reference;
 import edu.illinois.library.cantaloupe.http.Status;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
+import edu.illinois.library.cantaloupe.image.MetaIdentifier;
+import edu.illinois.library.cantaloupe.image.MetaIdentifierTransformer;
+import edu.illinois.library.cantaloupe.image.MetaIdentifierTransformerFactory;
 import edu.illinois.library.cantaloupe.image.ScaleConstraint;
 import edu.illinois.library.cantaloupe.delegate.DelegateProxy;
 import edu.illinois.library.cantaloupe.delegate.DelegateProxyService;
@@ -54,9 +57,8 @@ public abstract class AbstractResource {
      */
     private DelegateProxy delegateProxy;
 
+    private List<String> pathArguments          = Collections.emptyList();
     private final RequestContext requestContext = new RequestContext();
-
-    private List<String> pathArguments = Collections.emptyList();
     private Request request;
     private HttpServletResponse response;
 
@@ -66,31 +68,36 @@ public abstract class AbstractResource {
     private Identifier identifier;
 
     /**
+     * Cached by {@link #getMetaIdentifier()}.
+     */
+    private MetaIdentifier metaIdentifier;
+
+    /**
      * <p>Returns a sanitized value for a {@code Content-Disposition} header
      * based on the value of the {@link #RESPONSE_CONTENT_DISPOSITION_QUERY_ARG}
      * query argument.</p>
      *
      * <p>If the disposition is {@code attachment} and the filename is not
-     * set, it will be set to a reasonable value based on the given identifier
-     * and output format.</p>
+     * set, it is set to a reasonable value based on the given identifier and
+     * output format.</p>
      *
-     * @param queryArg     Value of the unsanitized {@link
-     *                     #RESPONSE_CONTENT_DISPOSITION_QUERY_ARG} query
-     *                     argument.
-     * @param identifier   Image identifier.
-     * @param outputFormat Output format.
-     * @return             Value for a {@code Content-Disposition} header,
-     *                     which may be {@code null}.
+     * @param queryArg      Value of the unsanitized {@link
+     *                      #RESPONSE_CONTENT_DISPOSITION_QUERY_ARG} query
+     *                      argument.
+     * @param identifierStr Identifier or meta-identifier.
+     * @param outputFormat  Output format.
+     * @return              Value for a {@code Content-Disposition} header,
+     *                      which may be {@code null}.
      */
     private static String getSafeContentDisposition(String queryArg,
-                                                    Identifier identifier,
+                                                    String identifierStr,
                                                     Format outputFormat) {
         String disposition = null;
         if (queryArg != null) {
             queryArg = URLDecoder.decode(queryArg, StandardCharsets.UTF_8);
             if (queryArg.startsWith("inline")) {
                 disposition = "inline; filename=\"" +
-                        safeContentDispositionFilename(identifier, outputFormat) + "\"";
+                        safeContentDispositionFilename(identifierStr, outputFormat) + "\"";
             } else if (queryArg.startsWith("attachment")) {
                 final List<String> dispositionParts = new ArrayList<>(3);
                 dispositionParts.add("attachment");
@@ -106,7 +113,7 @@ public abstract class AbstractResource {
                             Pattern.compile("\\.\\."),
                             Pattern.compile(StringUtils.ASCII_FILENAME_UNSAFE_REGEX));
                 } else {
-                    filename = safeContentDispositionFilename(identifier,
+                    filename = safeContentDispositionFilename(identifierStr,
                             outputFormat);
                 }
                 dispositionParts.add("filename=\"" + filename + "\"");
@@ -130,9 +137,9 @@ public abstract class AbstractResource {
         return disposition;
     }
 
-    private static String safeContentDispositionFilename(Identifier identifier,
+    private static String safeContentDispositionFilename(String identifierStr,
                                                          Format outputFormat) {
-        return identifier.toString().replaceAll(StringUtils.ASCII_FILENAME_UNSAFE_REGEX, "_") +
+        return identifierStr.replaceAll(StringUtils.ASCII_FILENAME_UNSAFE_REGEX, "_") +
                 "." + outputFormat.getPreferredExtension();
     }
 
@@ -153,25 +160,25 @@ public abstract class AbstractResource {
             requestContext.setRequestHeaders(request.getHeaders().toMap());
             requestContext.setClientIP(getCanonicalClientIPAddress());
             requestContext.setCookies(request.getCookies().toMap());
-            requestContext.setIdentifier(getIdentifier());
-
-            ScaleConstraint scaleConstraint =
-                    ScaleConstraint.fromIdentifierPathComponent(getIdentifierPathComponent());
-            if (scaleConstraint == null) {
-                // Delegate script users will appreciate not having to check
-                // for null.
-                scaleConstraint = new ScaleConstraint(1, 1);
+            MetaIdentifier metaID = getMetaIdentifier();
+            if (metaID != null) {
+                requestContext.setIdentifier(metaID.getIdentifier());
+                requestContext.setPageNumber(metaID.getPageNumber());
+                ScaleConstraint scaleConstraint = metaID.getScaleConstraint();
+                if (scaleConstraint == null) {
+                    // Delegate users will appreciate not having to check for
+                    // null.
+                    scaleConstraint = new ScaleConstraint(1, 1);
+                }
+                requestContext.setScaleConstraint(scaleConstraint);
             }
-            requestContext.setScaleConstraint(scaleConstraint);
         }
 
         // Log request info.
         getLogger().info("Handling {} {}",
-                request.getMethod(),
-                request.getReference().getPath());
+                request.getMethod(), request.getReference().getPath());
         getLogger().debug("Request headers: {}",
-                request.getHeaders()
-                .stream()
+                request.getHeaders().stream()
                 .map(h -> h.getName() + ": " +
                         ("Authorization".equals(h.getName()) ? "******" : h.getValue()))
                 .collect(Collectors.joining("; ")));
@@ -270,7 +277,6 @@ public abstract class AbstractResource {
                 }
             }
         }
-
         if (!isAuthenticated) {
             getResponse().setHeader("WWW-Authenticate",
                     "Basic realm=\"" + realm + "\" charset=\"UTF-8\"");
@@ -285,8 +291,7 @@ public abstract class AbstractResource {
      * <p>The authorization system (rooted in the {@link
      * edu.illinois.library.cantaloupe.delegate.DelegateMethod#AUTHORIZE
      * authorization delegate method} supports simple boolean authorization
-     * which maps to the HTTP 200 and 403 statuses. In the event of a 403,
-     * IIIF image information should not be included in the response body.</p>
+     * which maps to the HTTP 200 and 403 statuses.</p>
      *
      * <p>Authorization can simultaneously be used in the context of the
      * <a href="https://iiif.io/api/auth/1.0/">IIIF Authentication API, where
@@ -354,9 +359,10 @@ public abstract class AbstractResource {
 
     private boolean processAuthInfo(AuthInfo info)
             throws IOException, ResourceException {
-        final int code = info.getResponseStatus();
-        final String location = info.getRedirectURI();
-        final ScaleConstraint scaleConstraint = info.getScaleConstraint();
+        final int code                      = info.getResponseStatus();
+        final String location               = info.getRedirectURI();
+        final MetaIdentifier metaIdentifier = getMetaIdentifier();
+        metaIdentifier.setScaleConstraint(info.getScaleConstraint());
 
         if (location != null) {
             getResponse().setStatus(code);
@@ -365,8 +371,8 @@ public abstract class AbstractResource {
             new StringRepresentation("Redirect: " + location)
                     .write(getResponse().getOutputStream());
             return false;
-        } else if (scaleConstraint != null) {
-            Reference publicRef = getPublicReference(scaleConstraint);
+        } else if (metaIdentifier.getScaleConstraint() != null) {
+            Reference publicRef = getPublicReference(metaIdentifier);
             getResponse().setStatus(code);
             getResponse().setHeader("Cache-Control", "no-cache");
             getResponse().setHeader("Location", publicRef.toString());
@@ -402,8 +408,8 @@ public abstract class AbstractResource {
     }
 
     /**
-     * @return Map of template variables common to most or all templates, such
-     *         as variables that appear in a common header.
+     * @return Template variables common to most or all templates, such as
+     *         variables that appear in a common header.
      */
     protected final Map<String, Object> getCommonTemplateVars() {
         final Map<String,Object> vars = new HashMap<>();
@@ -436,12 +442,18 @@ public abstract class AbstractResource {
     }
 
     /**
-     * Returns the decoded identifier path component of the URI. (This may not
-     * be the identifier that the client supplies or sees; for that, use {@link
-     * #getPublicIdentifier()}.)
+     * <p>Returns the decoded identifier path component of the URI. (This may
+     * not be the identifier that the client supplies or sees; for that, use
+     * {@link #getPublicIdentifier()}.)</p>
+     *
+     * <p>N.B.: Depending on the image request endpoint API, The return value
+     * may include "meta-information" that is not part of the identifier but is
+     * encoded along with it. In that case, it is not safe to consume via this
+     * method, and {@link #getMetaIdentifier()} should be used instead.</p>
      *
      * @return Identifier, or {@code null} if the URI does not have an
      *         identifier path component.
+     * @see #getMetaIdentifier()
      * @see #getPublicIdentifier()
      */
     protected Identifier getIdentifier() {
@@ -459,9 +471,9 @@ public abstract class AbstractResource {
      * resources have an identifier as the first path argument, so this will
      * work for them, but if not, an override will be necessary.)</p>
      *
-     * <p>The result is not decoded and may include a {@link
-     * edu.illinois.library.cantaloupe.image.ScaleConstraint scale constraint
-     * suffix}. As such, it is not usable without additional processing.</p>
+     * <p>The result is not decoded and may be a {@link MetaIdentifier
+     * meta-identifier}. As such, it is not usable without additional
+     * processing.</p>
      *
      * @return Identifier, or {@code null} if no path arguments are
      *         available.
@@ -472,6 +484,29 @@ public abstract class AbstractResource {
     }
 
     abstract protected Logger getLogger();
+
+    /**
+     * Returns the decoded identifier path component of the URI, which may
+     * include page number or other information. (This may not be the path
+     * component that the client supplies or sees; for that, use {@link
+     * #getPublicIdentifier()}.)
+     *
+     * @return Instance corresponding to the first {@link #getPathArguments()
+     *         path argument}, or {@code null} if no path arguments are
+     *         available.
+     * @see #getIdentifier()
+     * @see #getPublicIdentifier()
+     */
+    protected MetaIdentifier getMetaIdentifier() {
+        if (metaIdentifier == null) {
+            String pathComponent = getIdentifierPathComponent();
+            if (pathComponent != null) {
+                metaIdentifier = MetaIdentifier.fromURIPathComponent(
+                        pathComponent, getDelegateProxy());
+            }
+        }
+        return metaIdentifier;
+    }
 
     /**
      * Returns the segments of the URI path that are considered arguments.
@@ -581,46 +616,21 @@ public abstract class AbstractResource {
 
     /**
      * Variant of {@link #getPublicReference()} that replaces the identifier
-     * path component's scale constraint suffix, if an identifier path
-     * component is available.
+     * path component's meta-identifier if an identifier path component is
+     * available.
      *
-     * @param newConstraint Scale constraint to suffix to the identifier.
-     *                      Supply {@literal 1,1} to remove the suffix.
+     * @param newMetaIdentifier Meta-identifier.
      */
-    protected Reference getPublicReference(ScaleConstraint newConstraint) {
-        newConstraint = newConstraint.getReduced();
-
-        final Reference publicRef = new Reference(getPublicReference());
+    protected Reference getPublicReference(MetaIdentifier newMetaIdentifier) {
+        final Reference publicRef         = new Reference(getPublicReference());
         final List<String> pathComponents = publicRef.getPathComponents();
-        final int identifierIndex =
-                pathComponents.indexOf(getIdentifierPathComponent());
-        String identifierComponent = pathComponents.get(identifierIndex);
+        final int identifierIndex         = pathComponents.indexOf(
+                getIdentifierPathComponent());
 
-        // If the identifier already contains a scale constraint suffix...
-        Matcher matcher = ScaleConstraint.getIdentifierSuffixPattern()
-                .matcher(identifierComponent);
-        if (matcher.find()) {
-            ScaleConstraint currentConstraint =
-                    ScaleConstraint.fromIdentifierPathComponent(identifierComponent);
-            // And it's either not equal to the one we want, or evaluates to 1,
-            // remove it.
-            if (!currentConstraint.equals(newConstraint) ||
-                    (currentConstraint.getRational().getNumerator() ==
-                            currentConstraint.getRational().getDenominator())) {
-                identifierComponent = identifierComponent.substring(0,
-                        identifierComponent.length() -
-                                currentConstraint.toIdentifierSuffix().length());
-            }
-        }
-
-        // Append the new suffix if necessary.
-        String newIdentifier = identifierComponent;
-        if (newConstraint.getRational().getNumerator() !=
-                newConstraint.getRational().getDenominator()) {
-            newIdentifier += newConstraint.toIdentifierSuffix();
-        }
-
-        publicRef.setPathComponent(identifierIndex, newIdentifier);
+        final MetaIdentifierTransformer xformer =
+                new MetaIdentifierTransformerFactory().newInstance(getDelegateProxy());
+        final String newMetaIdentifierString = xformer.serialize(newMetaIdentifier);
+        publicRef.setPathComponent(identifierIndex, newMetaIdentifierString);
         return publicRef;
     }
 
@@ -647,13 +657,11 @@ public abstract class AbstractResource {
             ref.setHost(baseRef.getHost());
             ref.setPort(baseRef.getPort());
             ref.setPath(StringUtils.stripEnd(baseRef.getPath(), "/"));
-
             getLogger().debug("Base URI from assembled from {} key: {}",
                     Key.BASE_URI, ref);
         } else {
             // Try to use X-Forwarded-* headers.
             ref.applyProxyHeaders(getRequest().getHeaders());
-
             getLogger().debug("Base URI assembled from X-Forwarded headers: {}",
                     ref);
         }
@@ -672,11 +680,11 @@ public abstract class AbstractResource {
      * @return Value for a {@code Content-Disposition} header, which may be
      *         {@code null}.
      */
-    protected String getRepresentationDisposition(Identifier identifier,
+    protected String getRepresentationDisposition(String identifierStr,
                                                   Format outputFormat) {
         var queryArg = getRequest().getReference().getQuery()
                 .getFirstValue(RESPONSE_CONTENT_DISPOSITION_QUERY_ARG);
-        return getSafeContentDisposition(queryArg, identifier, outputFormat);
+        return getSafeContentDisposition(queryArg, identifierStr, outputFormat);
     }
 
     /**
@@ -701,14 +709,6 @@ public abstract class AbstractResource {
     }
 
     /**
-     * @return Scale constraint from the {@link #getIdentifierPathComponent()
-     *         identifier path component}, or {@code null} if not present.
-     */
-    protected final ScaleConstraint getScaleConstraint() {
-        return ScaleConstraint.fromIdentifierPathComponent(getIdentifierPathComponent());
-    }
-
-    /**
      * <p>This implementation returns a one-element array containing {@link
      * Method#OPTIONS}. It can be overridden to declare or not declare support
      * for:</p>
@@ -728,8 +728,8 @@ public abstract class AbstractResource {
     }
 
     /**
-     * @param limitToTypes Media types to limit the result to, in order of
-     *                     most to least preferred by the application.
+     * @param limitToTypes Media types to limit the result to, in order of most
+     *                     to least preferred by the application.
      * @return             Best media type conforming to client preferences as
      *                     expressed in the {@code Accept} header; or {@code
      *                     null} if negotiation failed.

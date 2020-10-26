@@ -7,6 +7,8 @@ import java.util.Map;
 
 /**
  * Shims a {@link JavaDelegate} to serve as a {@link DelegateProxy}.
+ *
+ * @since 5.0
  */
 final class JavaDelegateProxy implements DelegateProxy {
 
@@ -23,6 +25,11 @@ final class JavaDelegateProxy implements DelegateProxy {
     @Override
     public Object authorize() {
         return delegate.authorize();
+    }
+
+    @Override
+    public Map<String, Object> deserializeMetaIdentifier(String metaIdentifier) {
+        return delegate.deserializeMetaIdentifier(metaIdentifier);
     }
 
     @Override
@@ -94,6 +101,11 @@ final class JavaDelegateProxy implements DelegateProxy {
     @Override
     public Object preAuthorize() {
         return delegate.preAuthorize();
+    }
+
+    @Override
+    public String serializeMetaIdentifier(Map<String, Object> metaIdentifier) {
+        return delegate.serializeMetaIdentifier(metaIdentifier);
     }
 
     @Override

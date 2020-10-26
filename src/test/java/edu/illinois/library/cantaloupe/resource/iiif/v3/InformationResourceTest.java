@@ -9,7 +9,8 @@ import edu.illinois.library.cantaloupe.http.Method;
 import edu.illinois.library.cantaloupe.http.ResourceException;
 import edu.illinois.library.cantaloupe.http.Response;
 import edu.illinois.library.cantaloupe.image.Identifier;
-import edu.illinois.library.cantaloupe.image.ScaleConstraint;
+import edu.illinois.library.cantaloupe.image.MetaIdentifier;
+import edu.illinois.library.cantaloupe.image.StandardMetaIdentifierTransformer;
 import edu.illinois.library.cantaloupe.resource.AbstractResource;
 import edu.illinois.library.cantaloupe.resource.ResourceTest;
 import edu.illinois.library.cantaloupe.resource.Route;
@@ -33,7 +34,8 @@ public class InformationResourceTest extends ResourceTest {
 
     private static final String IMAGE = "jpg-rgb-64x56x8-baseline.jpg";
 
-    private InformationResourceTester tester = new InformationResourceTester();
+    private final InformationResourceTester tester =
+            new InformationResourceTester();
 
     @Override
     protected String getEndpointPath() {
@@ -251,6 +253,22 @@ public class InformationResourceTest extends ResourceTest {
     }
 
     @Test
+    void testGETWithPageNumberInMetaIdentifier() {
+        final String image = "pdf-multipage.pdf";
+        URI uri1 = getHTTPURI("/" + image + "/info.json");
+        URI uri2 = getHTTPURI("/" + image + ";2/info.json");
+        assertRepresentationsNotSame(uri1, uri2);
+    }
+
+    @Test
+    void testGETWithPageNumberInQuery() {
+        final String image = "pdf-multipage.pdf";
+        URI uri1 = getHTTPURI("/" + image + "/info.json");
+        URI uri2 = getHTTPURI("/" + image + "/info.json?page=2");
+        assertRepresentationsNotSame(uri1, uri2);
+    }
+
+    @Test
     void testGETPurgeFromCacheWhenSourceIsMissingAndOptionIsFalse()
             throws Exception {
         URI uri = getHTTPURI("/" + IMAGE + "/info.json");
@@ -285,39 +303,63 @@ public class InformationResourceTest extends ResourceTest {
     }
 
     /**
-     * Tests that a scale constraint of {@literal -1:1} is redirected to no
+     * Tests that a scale constraint of {@literal 1:1} is redirected to no
      * scale constraint.
      */
     @Test
     void testGETRedirectToNormalizedScaleConstraint1() {
-        URI fromURI = getHTTPURI("/" + IMAGE +
-                new ScaleConstraint(1, 1).toIdentifierSuffix() + "/info.json");
-        URI toURI = getHTTPURI("/" + IMAGE + "/info.json");
+        MetaIdentifier metaIdentifier = MetaIdentifier.builder()
+                .withIdentifier(IMAGE)
+                .withScaleConstraint(1, 1)
+                .build();
+        String metaIdentifierString = new StandardMetaIdentifierTransformer()
+                .serialize(metaIdentifier, false);
+
+        URI fromURI = getHTTPURI("/" + metaIdentifierString + "/info.json");
+        URI toURI   = getHTTPURI("/" + IMAGE + "/info.json");
         assertRedirect(fromURI, toURI, 301);
     }
 
     /**
-     * Tests that a scale constraint of {@literal -2:2} is redirected to no
+     * Tests that a scale constraint of {@literal 2:2} is redirected to no
      * scale constraint.
      */
     @Test
     void testGETRedirectToNormalizedScaleConstraint2() {
-        URI fromURI = getHTTPURI("/" + IMAGE +
-                new ScaleConstraint(2, 2).toIdentifierSuffix() + "/info.json");
-        URI toURI = getHTTPURI("/" + IMAGE + "/info.json");
+        MetaIdentifier metaIdentifier = MetaIdentifier.builder()
+                .withIdentifier(IMAGE)
+                .withScaleConstraint(2, 2)
+                .build();
+        String metaIdentifierString = new StandardMetaIdentifierTransformer()
+                .serialize(metaIdentifier, false);
+
+        URI fromURI = getHTTPURI("/" + metaIdentifierString + "/info.json");
+        URI toURI   = getHTTPURI("/" + IMAGE + "/info.json");
         assertRedirect(fromURI, toURI, 301);
     }
 
     /**
-     * Tests that a scale constraint of {@literal -2:4} is redirected to
-     * {@literal -1:2}.
+     * Tests that a scale constraint of {@literal 2:4} is redirected to
+     * {@literal 1:2}.
      */
     @Test
     void testGETRedirectToNormalizedScaleConstraint3() {
-        URI fromURI = getHTTPURI("/" + IMAGE +
-                new ScaleConstraint(2, 4).toIdentifierSuffix() + "/info.json");
-        URI toURI = getHTTPURI("/" + IMAGE +
-                new ScaleConstraint(1, 2).toIdentifierSuffix() + "/info.json");
+        MetaIdentifier.Builder builder = MetaIdentifier.builder()
+                .withIdentifier(IMAGE);
+        // create the "from" URI
+        MetaIdentifier metaIdentifier = builder
+                .withScaleConstraint(2, 4)
+                .build();
+        String metaIdentifierString =
+                new StandardMetaIdentifierTransformer().serialize(metaIdentifier);
+        URI fromURI = getHTTPURI("/" + metaIdentifierString + "/info.json");
+
+        // create the "to" URI
+        metaIdentifier = builder.withScaleConstraint(1, 2).build();
+        metaIdentifierString =
+                new StandardMetaIdentifierTransformer().serialize(metaIdentifier);
+        URI toURI = getHTTPURI("/" + metaIdentifierString + "/info.json");
+
         assertRedirect(fromURI, toURI, 301);
     }
 

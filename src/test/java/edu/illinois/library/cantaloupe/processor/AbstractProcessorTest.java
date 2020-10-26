@@ -2,8 +2,8 @@ package edu.illinois.library.cantaloupe.processor;
 
 import edu.illinois.library.cantaloupe.image.Dimension;
 import edu.illinois.library.cantaloupe.image.Info;
+import edu.illinois.library.cantaloupe.image.MetaIdentifier;
 import edu.illinois.library.cantaloupe.image.Metadata;
-import edu.illinois.library.cantaloupe.image.ScaleConstraint;
 import edu.illinois.library.cantaloupe.operation.ColorTransform;
 import edu.illinois.library.cantaloupe.operation.Crop;
 import edu.illinois.library.cantaloupe.image.Format;
@@ -143,10 +143,13 @@ abstract class AbstractProcessorTest extends BaseTest {
     @Test
     public void testProcessWithScaleConstraint() throws Exception {
         OperationList ops = OperationList.builder()
+                .withMetaIdentifier(MetaIdentifier.builder()
+                        .withIdentifier("cats")
+                        .withScaleConstraint(1, 2)
+                        .build())
                 .withOperations(
                         new ScaleByPercent(),
                         new Encode(Format.get("jpg")))
-                .withScaleConstraint(new ScaleConstraint(1, 2))
                 .build();
 
         forEachFixture(ops, new ProcessorAssertion() {

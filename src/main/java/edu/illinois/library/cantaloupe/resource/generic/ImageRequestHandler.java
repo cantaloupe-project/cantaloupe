@@ -58,7 +58,7 @@ public class ImageRequestHandler extends AbstractRequestHandler
      */
     public static final class Builder {
 
-        private ImageRequestHandler handler;
+        private final ImageRequestHandler handler;
 
         private Builder(ImageRequestHandler handler) {
             this.handler = handler;
@@ -292,7 +292,6 @@ public class ImageRequestHandler extends AbstractRequestHandler
             final Optional<Info> optInfo = cacheFacade.getInfo(identifier);
             if (optInfo.isPresent()) {
                 Info info = optInfo.get();
-                operationList.setScaleConstraint(operationList.getScaleConstraint());
                 operationList.applyNonEndpointMutations(info, delegateProxy);
 
                 InputStream cacheStream = null;
@@ -374,7 +373,6 @@ public class ImageRequestHandler extends AbstractRequestHandler
                 try {
                     fullSize = info.getSize(operationList.getPageIndex());
                     requestContext.setMetadata(info.getMetadata());
-                    operationList.setScaleConstraint(operationList.getScaleConstraint());
                     operationList.applyNonEndpointMutations(info, delegateProxy);
                     operationList.freeze();
                     requestContext.setOperationList(operationList, fullSize);

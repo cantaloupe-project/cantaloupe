@@ -18,18 +18,7 @@ import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import static edu.illinois.library.cantaloupe.resource.RequestContextMap.CLIENT_IP_KEY;
-import static edu.illinois.library.cantaloupe.resource.RequestContextMap.COOKIES_KEY;
-import static edu.illinois.library.cantaloupe.resource.RequestContextMap.FULL_SIZE_KEY;
-import static edu.illinois.library.cantaloupe.resource.RequestContextMap.IDENTIFIER_KEY;
-import static edu.illinois.library.cantaloupe.resource.RequestContextMap.LOCAL_URI_KEY;
-import static edu.illinois.library.cantaloupe.resource.RequestContextMap.METADATA_KEY;
-import static edu.illinois.library.cantaloupe.resource.RequestContextMap.OPERATIONS_KEY;
-import static edu.illinois.library.cantaloupe.resource.RequestContextMap.OUTPUT_FORMAT_KEY;
-import static edu.illinois.library.cantaloupe.resource.RequestContextMap.REQUEST_HEADERS_KEY;
-import static edu.illinois.library.cantaloupe.resource.RequestContextMap.REQUEST_URI_KEY;
-import static edu.illinois.library.cantaloupe.resource.RequestContextMap.RESULTING_SIZE_KEY;
-import static edu.illinois.library.cantaloupe.resource.RequestContextMap.SCALE_CONSTRAINT_KEY;
+import static edu.illinois.library.cantaloupe.resource.RequestContextMap.*;
 
 public class RequestContextTest extends BaseTest {
 
@@ -57,6 +46,8 @@ public class RequestContextTest extends BaseTest {
                 .withOperations(new Encode(Format.get("gif")))
                 .build();
         instance.setOperationList(opList, fullSize);
+        // page number
+        instance.setPageNumber(3);
         // request headers
         Map<String,String> headers = Map.of("X-Cats", "Yes");
         instance.setRequestHeaders(headers);
@@ -128,11 +119,19 @@ public class RequestContextTest extends BaseTest {
     }
 
     @Test
+    void testSetPageNumber() {
+        instance.setPageNumber(5);
+        assertEquals(5, instance.getPageNumber());
+        instance.setPageNumber(null);
+        assertNull(instance.getPageNumber());
+    }
+
+    @Test
     void testSetRequestHeaders() {
         instance.setRequestHeaders(Collections.emptyMap());
         assertNotNull(instance.getRequestHeaders());
-        instance.setCookies(null);
-        assertTrue(instance.getRequestHeaders().isEmpty());
+        instance.setRequestHeaders(null);
+        assertNull(instance.getRequestHeaders());
     }
 
     @Test

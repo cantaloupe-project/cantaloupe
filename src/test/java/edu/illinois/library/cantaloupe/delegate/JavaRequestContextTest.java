@@ -39,6 +39,8 @@ class JavaRequestContextTest extends BaseTest {
                 .withOperations(new Encode(Format.get("gif")))
                 .build();
         context.setOperationList(opList, fullSize);
+        // page number
+        context.setPageNumber(3);
         // request headers
         Map<String,String> headers = Map.of("X-Cats", "Yes");
         context.setRequestHeaders(headers);
@@ -170,6 +172,19 @@ class JavaRequestContextTest extends BaseTest {
     void testGetOutputFormatWhenNull() {
         instance = new JavaRequestContext(new RequestContext());
         assertNull(instance.getOutputFormat());
+    }
+
+    /* getPageNumber() */
+
+    @Test
+    void testGetPageNumberWhenSet() {
+        assertEquals(3, instance.getPageNumber());
+    }
+
+    @Test
+    void testGetPageNumberWhenNull() {
+        instance = new JavaRequestContext(new RequestContext());
+        assertNull(instance.getPageNumber());
     }
 
     /* getRequestHeaders() */

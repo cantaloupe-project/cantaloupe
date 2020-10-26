@@ -3,8 +3,8 @@ package edu.illinois.library.cantaloupe.resource;
 import edu.illinois.library.cantaloupe.image.Dimension;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
+import edu.illinois.library.cantaloupe.image.MetaIdentifier;
 import edu.illinois.library.cantaloupe.image.Metadata;
-import edu.illinois.library.cantaloupe.image.ScaleConstraint;
 import edu.illinois.library.cantaloupe.operation.Encode;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.test.BaseTest;
@@ -16,20 +16,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+import static edu.illinois.library.cantaloupe.resource.RequestContextMap.*;
 import static org.junit.jupiter.api.Assertions.*;
-
-import static edu.illinois.library.cantaloupe.resource.RequestContextMap.CLIENT_IP_KEY;
-import static edu.illinois.library.cantaloupe.resource.RequestContextMap.COOKIES_KEY;
-import static edu.illinois.library.cantaloupe.resource.RequestContextMap.FULL_SIZE_KEY;
-import static edu.illinois.library.cantaloupe.resource.RequestContextMap.IDENTIFIER_KEY;
-import static edu.illinois.library.cantaloupe.resource.RequestContextMap.LOCAL_URI_KEY;
-import static edu.illinois.library.cantaloupe.resource.RequestContextMap.METADATA_KEY;
-import static edu.illinois.library.cantaloupe.resource.RequestContextMap.OPERATIONS_KEY;
-import static edu.illinois.library.cantaloupe.resource.RequestContextMap.OUTPUT_FORMAT_KEY;
-import static edu.illinois.library.cantaloupe.resource.RequestContextMap.REQUEST_HEADERS_KEY;
-import static edu.illinois.library.cantaloupe.resource.RequestContextMap.REQUEST_URI_KEY;
-import static edu.illinois.library.cantaloupe.resource.RequestContextMap.RESULTING_SIZE_KEY;
-import static edu.illinois.library.cantaloupe.resource.RequestContextMap.SCALE_CONSTRAINT_KEY;
 
 class RequestContextMapTest extends BaseTest {
 
@@ -52,6 +40,11 @@ class RequestContextMapTest extends BaseTest {
         Dimension fullSize    = new Dimension(200, 200);
         OperationList opList  = OperationList.builder()
                 .withIdentifier(identifier)
+                .withMetaIdentifier(MetaIdentifier.builder()
+                        .withIdentifier(identifier)
+                        .withPageNumber(3)
+                        .withScaleConstraint(1, 2)
+                        .build())
                 .withOperations(new Encode(Format.get("gif")))
                 .build();
         context.setOperationList(opList, fullSize);
@@ -62,8 +55,6 @@ class RequestContextMapTest extends BaseTest {
         context.setRequestURI(new URI("http://example.org/cats"));
         // local URI
         context.setLocalURI(new URI("http://example.org/cats"));
-        // scale constraint
-        context.setScaleConstraint(new ScaleConstraint(1, 2));
 
         instance = new RequestContextMap<>(context);
     }
@@ -112,6 +103,8 @@ class RequestContextMapTest extends BaseTest {
         assertTrue(instance.get(OPERATIONS_KEY) instanceof List);
         // output format
         assertTrue(instance.get(OUTPUT_FORMAT_KEY) instanceof String);
+        // page number
+        assertTrue(instance.get(PAGE_NUMBER_KEY) instanceof Integer);
         // request headers
         assertTrue(instance.get(REQUEST_HEADERS_KEY) instanceof Map);
         assertThrows(UnsupportedOperationException.class,
@@ -143,6 +136,8 @@ class RequestContextMapTest extends BaseTest {
         assertNull(instance.get(OPERATIONS_KEY));
         // output format
         assertNull(instance.get(OUTPUT_FORMAT_KEY));
+        // page number
+        assertNull(instance.get(PAGE_NUMBER_KEY));
         // request headers
         assertNull(instance.get(REQUEST_HEADERS_KEY));
         // request URI
@@ -186,7 +181,7 @@ class RequestContextMapTest extends BaseTest {
 
     @Test
     void testSize() {
-        assertEquals(12, instance.size());
+        assertEquals(13, instance.size());
     }
 
     @Test

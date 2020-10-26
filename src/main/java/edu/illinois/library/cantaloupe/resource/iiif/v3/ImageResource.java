@@ -58,13 +58,13 @@ public class ImageResource extends IIIF3Resource {
                 getIdentifier().toString(), args.get(1), args.get(2),
                 args.get(3), args.get(4), args.get(5));
         // Convert it into an OperationList.
-        final OperationList ops = params.toOperationList(getMaxScale());
+        final OperationList ops = params.toOperationList(
+                getDelegateProxy(), getMaxScale());
         ops.setPageIndex(getPageIndex());
-        ops.setScaleConstraint(getScaleConstraint());
         ops.getOptions().putAll(getRequest().getReference().getQuery().toMap());
         final int pageIndex = getPageIndex();
         final String disposition = getRepresentationDisposition(
-                ops.getIdentifier(), ops.getOutputFormat());
+                ops.getMetaIdentifier().toString(), ops.getOutputFormat());
 
         class CustomCallback implements ImageRequestHandler.Callback {
             @Override

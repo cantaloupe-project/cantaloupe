@@ -136,6 +136,7 @@ public enum Key {
     JDBCSOURCE_USER("JdbcSource.user"),
     MAX_PIXELS("max_pixels"),
     MAX_SCALE("max_scale"),
+    META_IDENTIFIER_TRANSFORMER("meta_identifier.transformer"),
     OPENJPEGPROCESSOR_PATH_TO_BINARIES("OpenJpegProcessor.path_to_binaries"),
     GROKPROCESSOR_PATH_TO_BINARIES("GrokProcessor.path_to_binaries"),
     OVERLAY_ENABLED("overlays.BasicStrategy.enabled"),
@@ -174,7 +175,6 @@ public enum Key {
     REDISCACHE_PASSWORD("RedisCache.password"),
     REDISCACHE_PORT("RedisCache.port"),
     REDISCACHE_SSL("RedisCache.ssl"),
-    SCALE_CONSTRAINT_DELIMITER("scale_constraints.delimiter"),
     SOURCE_DELEGATE("source.delegate"),
     SOURCE_STATIC("source.static"),
     S3CACHE_ACCESS_KEY_ID("S3Cache.access_key_id"),
@@ -197,9 +197,10 @@ public enum Key {
     SLASH_SUBSTITUTE("slash_substitute"),
     SOURCE_CACHE("cache.server.source"),
     SOURCE_CACHE_TTL("cache.server.source.ttl_seconds"),
+    STANDARD_META_IDENTIFIER_TRANSFORMER_DELIMITER("meta_identifier.transformer.StandardMetaIdentifierTransformer.delimiter"),
     TEMP_PATHNAME("temp_pathname");
 
-    private String key;
+    private final String key;
 
     Key(String key) {
         this.key = key;

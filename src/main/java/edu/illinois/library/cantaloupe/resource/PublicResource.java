@@ -5,8 +5,10 @@ import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.http.Status;
 import edu.illinois.library.cantaloupe.image.Dimension;
 import edu.illinois.library.cantaloupe.http.Reference;
+import edu.illinois.library.cantaloupe.image.MetaIdentifier;
 import edu.illinois.library.cantaloupe.image.ScaleConstraint;
 import edu.illinois.library.cantaloupe.operation.Scale;
+import edu.illinois.library.cantaloupe.util.TimeUtils;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -22,6 +24,8 @@ public abstract class PublicResource extends AbstractResource {
      */
     private static final Set<String> CACHE_BYPASS_ARGUMENTS =
             Set.of("false", "nocache");
+    private static final String PAGE_NUMBER_QUERY_ARG = "page";
+    private static final String TIME_QUERY_ARG        = "time";
 
     @Override
     public void doInit() throws Exception {
@@ -33,7 +37,6 @@ public abstract class PublicResource extends AbstractResource {
         getResponse().setHeader("Access-Control-Allow-Origin", "*");
         getResponse().setHeader("Vary",
                 "Accept, Accept-Charset, Accept-Encoding, Accept-Language, Origin");
-
         if (!isBypassingCache()) {
             final Configuration config = Configuration.getInstance();
             if (config.getBoolean(Key.CLIENT_CACHE_ENABLED, false)) {
@@ -73,20 +76,50 @@ public abstract class PublicResource extends AbstractResource {
     }
 
     /**
-     * @return Page index (a.k.a. {@literal page number - 1}) from the {@code
-     *         page} query argument, or {@code 0} if not supplied.
+     * <p>Returns the page index (i.e. {@literal page number - 1}), which may
+     * come from one of two sources, in order of preference:</p>
+     *
+     * <ol>
+     *     <li>The {@link AbstractResource#getMetaIdentifier()
+     *     meta-identifier}</li>
+     *     <li>The {@link #PAGE_NUMBER_QUERY_ARG page number query argument
+     *     (deprecated in 5.0)</li>
+     * </ol>
+     *
+     * <p>If neither of those contain a page number, {@code 0} is returned.</p>
+     *
+     * @return Page index.
      */
     protected int getPageIndex() {
-        String arg = getRequest().getReference().getQuery()
-                .getFirstValue("page", "1");
-        try {
-            int index = Integer.parseInt(arg) - 1;
-            if (index >= 0) {
-                return index;
-            }
-        } catch (NumberFormatException ignore) {
+        // Check the meta-identifier.
+        int index = 0;
+        if (getMetaIdentifier().getPageNumber() != null) {
+            index = getMetaIdentifier().getPageNumber() - 1;
         }
-        return 0;
+        if (index == 0) {
+            // Check the `page` query argument (deprecated in 5.0).
+            String arg = getRequest().getReference().getQuery()
+                    .getFirstValue(PAGE_NUMBER_QUERY_ARG, "1");
+            try {
+                index = Integer.parseInt(arg) - 1;
+                if (index < 0) {
+                    index = 0;
+                }
+            } catch (NumberFormatException ignore) {
+                // Client supplied a bogus page number, so use 0.
+            }
+            if (index == 0) {
+                // Check the `time` query argument (deprecated in 5.0).
+                arg = getRequest().getReference().getQuery()
+                        .getFirstValue(TIME_QUERY_ARG, "00:00:00");
+                try {
+                    index = TimeUtils.toSeconds(arg);
+                } catch (IllegalArgumentException ignore) {
+                    // Client supplied a bogus time, so use 0.
+                }
+            }
+        }
+        return index;
     }
 
     /**
@@ -118,11 +151,11 @@ public abstract class PublicResource extends AbstractResource {
      *
      * <dl>
      *     <dt>1:2</dt>
-     *     <dd>no redirect</dd>
+     *     <dd>No redirect</dd>
      *     <dt>2:4</dt>
-     *     <dd>redirect to 1:2</dd>
+     *     <dd>Redirect to 1:2</dd>
      *     <dt>1:1 and 5:5</dt>
-     *     <dd>redirect to no constraint</dd>
+     *     <dd>Redirect to no constraint</dd>
      * </dl>
      *
      * @return {@code true} if redirecting. Clients should stop processing if
@@ -130,30 +163,36 @@ public abstract class PublicResource extends AbstractResource {
      */
     protected final boolean redirectToNormalizedScaleConstraint()
             throws IOException {
-        final ScaleConstraint scaleConstraint = getScaleConstraint();
-        // If an identifier is present in the URI, and it contains a scale
-        // constraint suffix...
-        if (scaleConstraint != null) {
-            Reference newRef = null;
-            // ...and the numerator and denominator are equal, redirect to the
-            // non-suffixed identifier.
-            if (scaleConstraint.getRational().getNumerator() ==
-                    scaleConstraint.getRational().getDenominator()) {
-                newRef = getPublicReference(scaleConstraint);
-            } else {
-                ScaleConstraint reducedConstraint = scaleConstraint.getReduced();
-                // ...and the fraction is not reduced, redirect to the reduced
-                // version.
-                if (!reducedConstraint.equals(scaleConstraint)) {
-                    newRef = getPublicReference(reducedConstraint);
+        final MetaIdentifier metaIdentifier = getMetaIdentifier();
+        // If a meta-identifier is present in the URI...
+        if (metaIdentifier != null) {
+            final ScaleConstraint scaleConstraint =
+                    metaIdentifier.getScaleConstraint();
+            // and it contains a scale constraint...
+            if (scaleConstraint != null) {
+                Reference newRef = null;
+                // ...and the numerator and denominator are equal, redirect to
+                // the non-suffixed identifier.
+                if (!scaleConstraint.hasEffect()) {
+                    metaIdentifier.setScaleConstraint(null);
+                    newRef = getPublicReference(metaIdentifier);
+                } else {
+                    ScaleConstraint reducedConstraint =
+                            scaleConstraint.getReduced();
+                    // ...and the fraction is not reduced, redirect to the
+                    // reduced version.
+                    if (!reducedConstraint.equals(scaleConstraint)) {
+                        metaIdentifier.setScaleConstraint(reducedConstraint);
+                        newRef = getPublicReference(metaIdentifier);
+                    }
                 }
-            }
-            if (newRef != null) {
-                getResponse().setStatus(301);
-                getResponse().setHeader("Location", newRef.toString());
-                new StringRepresentation("Redirect: " + newRef + "\n")
-                        .write(getResponse().getOutputStream());
-                return true;
+                if (newRef != null) {
+                    getResponse().setStatus(301);
+                    getResponse().setHeader("Location", newRef.toString());
+                    new StringRepresentation("Redirect: " + newRef + "\n")
+                            .write(getResponse().getOutputStream());
+                    return true;
+                }
             }
         }
         return false;
@@ -168,15 +207,15 @@ public abstract class PublicResource extends AbstractResource {
     protected void validateScale(Dimension virtualSize,
                                  Scale scale,
                                  Status invalidStatus) throws ScaleRestrictedException {
-        final ScaleConstraint scaleConstraint = (getScaleConstraint() != null) ?
-                getScaleConstraint() : new ScaleConstraint(1, 1);
+        final ScaleConstraint scaleConstraint =
+                (getMetaIdentifier().getScaleConstraint() != null) ?
+                getMetaIdentifier().getScaleConstraint() : new ScaleConstraint(1, 1);
         double scalePct = scaleConstraint.getRational().doubleValue();
         if (scale != null) {
             scalePct = Arrays.stream(
                     scale.getResultingScales(virtualSize, scaleConstraint))
                     .max().orElse(1);
         }
-
         final Configuration config = Configuration.getInstance();
         final double maxScale      = config.getDouble(Key.MAX_SCALE, 1.0);
         if (maxScale > 0.0001 && scalePct > maxScale) {

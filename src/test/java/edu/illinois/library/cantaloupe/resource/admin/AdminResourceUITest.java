@@ -280,7 +280,6 @@ public class AdminResourceUITest extends AbstractAdminResourceTest {
         // Fill in the form
         inputNamed(Key.MAX_PIXELS).sendKeys("5000");
         inputNamed(Key.MAX_SCALE).sendKeys("1.1");
-        inputNamed(Key.SCALE_CONSTRAINT_DELIMITER).sendKeys("---");
         inputNamed(Key.IIIF_MIN_SIZE).sendKeys("75");
         inputNamed(Key.IIIF_MIN_TILE_SIZE).sendKeys("250");
         inputNamed(Key.IIIF_RESTRICT_TO_SIZES).click();
@@ -290,6 +289,9 @@ public class AdminResourceUITest extends AbstractAdminResourceTest {
         inputNamed(Key.API_ENABLED).click();
         inputNamed(Key.API_USERNAME).sendKeys("cats");
         inputNamed(Key.API_SECRET).sendKeys("dogs");
+        inputNamed(Key.META_IDENTIFIER_TRANSFORMER).sendKeys("Bla");
+        css("#cl-endpoints li > a[href=\"#StandardMetaIdentifierTransformer\"]").click();
+        inputNamed(Key.STANDARD_META_IDENTIFIER_TRANSFORMER_DELIMITER).sendKeys("---");
 
         // Submit the form
         css("#cl-endpoints input[type=\"submit\"]").click();
@@ -300,7 +302,6 @@ public class AdminResourceUITest extends AbstractAdminResourceTest {
         final Configuration config = Configuration.getInstance();
         assertEquals(5000, config.getLong(Key.MAX_PIXELS));
         assertEquals(1.1, config.getDouble(Key.MAX_SCALE), DELTA);
-        assertEquals("---", config.getString(Key.SCALE_CONSTRAINT_DELIMITER));
         assertEquals(75, config.getInt(Key.IIIF_MIN_SIZE));
         assertEquals(250, config.getInt(Key.IIIF_MIN_TILE_SIZE));
         assertTrue(config.getBoolean(Key.IIIF_RESTRICT_TO_SIZES));
@@ -310,6 +311,10 @@ public class AdminResourceUITest extends AbstractAdminResourceTest {
         assertTrue(config.getBoolean(Key.API_ENABLED));
         assertEquals("cats", config.getString(Key.API_USERNAME));
         assertEquals("dogs", config.getString(Key.API_SECRET));
+        assertEquals("StandardMetaIdentifierTransformer",
+                config.getString(Key.META_IDENTIFIER_TRANSFORMER));
+        assertEquals("---",
+                config.getString(Key.STANDARD_META_IDENTIFIER_TRANSFORMER_DELIMITER));
     }
 
     @Test

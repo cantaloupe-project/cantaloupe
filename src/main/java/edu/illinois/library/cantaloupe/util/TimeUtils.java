@@ -40,6 +40,43 @@ public final class TimeUtils {
         return unit;
     }
 
+    /**
+     * @param seconds Number of seconds.
+     * @return String in {@code hh:mm:ss} format.
+     * @throws IllegalArgumentException if the argument is negative.
+     */
+    public static String toHMS(int seconds) {
+        if (seconds < 0) {
+            throw new IllegalArgumentException("Argument is negative");
+        }
+        int h = (int) Math.floor(seconds / 60.0 / 60.0);
+        int m = (int) Math.floor(seconds / 60.0) - h * 60;
+        int s = seconds - m * 60 - h * 60 * 60;
+        return (String.format("%2s", h) + ":" + String.format("%2s", m) + ":" +
+                String.format("%2s", s)).replace(' ', '0');
+    }
+
+    /**
+     * @param hms String in {@code hh:mm:ss} format.
+     * @return Number of seconds in the given string.
+     * @throws IllegalArgumentException if the argument is invalid.
+     */
+    public static int toSeconds(String hms) {
+        String[] parts = hms.split(":");
+        if (parts.length == 3) {
+            int h = Integer.parseInt(parts[0]);
+            int m = Integer.parseInt(parts[1]);
+            int s = Integer.parseInt(parts[2]);
+            if (h < 0 || m < 0 || s < 0) {
+                throw new IllegalArgumentException(
+                        "Argument contains a negative component");
+            }
+            return h * 60 * 60 + m * 60 + s;
+        } else {
+            throw new IllegalArgumentException("Unrecognized format: " + hms);
+        }
+    }
+
     private TimeUtils() {}
 
 }

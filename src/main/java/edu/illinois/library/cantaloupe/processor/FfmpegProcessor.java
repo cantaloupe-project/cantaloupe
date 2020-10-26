@@ -14,7 +14,7 @@ import edu.illinois.library.cantaloupe.processor.codec.ImageReaderFactory;
 import edu.illinois.library.cantaloupe.processor.codec.ImageWriterFactory;
 import edu.illinois.library.cantaloupe.processor.codec.ImageWriterFacade;
 import edu.illinois.library.cantaloupe.util.CommandLocator;
-import org.apache.commons.lang3.StringUtils;
+import edu.illinois.library.cantaloupe.util.TimeUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,8 +32,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * Processor using the {@literal ffmpeg} command-line tool to extract video
@@ -45,10 +43,8 @@ class FfmpegProcessor extends AbstractProcessor implements FileProcessor {
     private static final Logger LOGGER = LoggerFactory.
             getLogger(FfmpegProcessor.class);
 
-    private static final String FFMPEG_NAME   = "ffmpeg";
-    private static final String FFPROBE_NAME  = "ffprobe";
-    private static final Pattern TIME_PATTERN =
-            Pattern.compile("[0-9][0-9]:[0-5][0-9]:[0-5][0-9]");
+    private static final String FFMPEG_NAME  = "ffmpeg";
+    private static final String FFPROBE_NAME = "ffprobe";
 
     private static final AtomicBoolean IS_INITIALIZATION_ATTEMPTED =
             new AtomicBoolean(false);
@@ -193,16 +189,20 @@ class FfmpegProcessor extends AbstractProcessor implements FileProcessor {
         command.add("-i");
         command.add(sourceFile.toString());
 
-        // Seeking to a particular time is supported via a "time" URL query
-        // parameter which gets injected into an -ss flag. FFmpeg supports
-        // additional syntax, but this will do for now.
-        // https://trac.ffmpeg.org/wiki/Seeking
-        String time = (String) opList.getOptions().get("time");
-        if (time != null) { // we assume it's already been validated.
-            command.add("-ss");
-            command.add(time);
-        }
-
+        // Seeking to a frame at a particular second is supported in one of two
+        // ways:
+        //
+        // 1. A "page number" in the meta-identifier, which is actually a
+        //    second
+        // 2. A "time" URL query argument (deprecated in 5.0)
+        //
+        // These get inserted into the operation list's page index property, in
+        // priority order.
+        // See: https://trac.ffmpeg.org/wiki/Seeking
+        final int second  = opList.getPageIndex();
+        final String time = TimeUtils.toHMS(second);
+        command.add("-ss");
+        command.add(time);
         command.add("-nostdin");
         command.add("-v");
         command.add("quiet");
@@ -214,7 +214,6 @@ class FfmpegProcessor extends AbstractProcessor implements FileProcessor {
         command.add("-f"); // source or output format depending on position
         command.add("image2pipe");
         command.add("pipe:1");
-
         return new ProcessBuilder(command);
     }
 
@@ -240,7 +239,7 @@ class FfmpegProcessor extends AbstractProcessor implements FileProcessor {
             ProcessBuilder pb = new ProcessBuilder(command);
             pb.redirectErrorStream(true);
 
-            LOGGER.trace("Invoking {}", StringUtils.join(pb.command(), " "));
+            LOGGER.trace("Invoking {}", String.join(" ", pb.command()));
             Process process = pb.start();
 
             try (InputStream processInputStream = process.getInputStream();
@@ -301,25 +300,11 @@ class FfmpegProcessor extends AbstractProcessor implements FileProcessor {
                 throw new ProcessorException(e.getMessage(), e);
             }
         }
-        // Check that the "time" option, if supplied, is in the correct format.
-        final String timeStr = (String) opList.getOptions().get("time");
-        if (timeStr != null) {
-            Matcher matcher = TIME_PATTERN.matcher(timeStr);
-            if (matcher.matches()) {
-                // Check that the supplied time is within the bounds of the
-                // video's duration.
-                final String[] parts = timeStr.split(":");
-                final long seconds = (Integer.parseInt(parts[0]) * 60 * 60) +
-                        (Integer.parseInt(parts[1]) * 60) +
-                        Integer.parseInt(parts[2]);
-                if (seconds > durationSec) {
-                    throw new IllegalArgumentException(
-                            "Time is beyond the length of the video.");
-                }
-            } else {
-                throw new IllegalArgumentException("Invalid time format. " +
-                        "(HH:MM::SS is required.)");
-            }
+        // Check that the supplied "page number" (second offset) is within the
+        // video's duration.
+        if (opList.getPageIndex() > durationSec) {
+            throw new IllegalArgumentException(
+                    "Time is beyond the length of the video.");
         }
     }
 

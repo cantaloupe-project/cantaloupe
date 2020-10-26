@@ -57,9 +57,18 @@ max_pixels = 100000000
 # Maximum scale to allow (1.0 = full scale; 0 = no maximum).
 max_scale = 1.0
 
-# Character sequence that separates an identifier from a scale constraint
-# in the identifier portion of a URI.
-scale_constraints.delimiter = -
+# A meta-identifier is a superset of an identifier that includes other
+# information like a page number and/or scale constraint. A meta-identifier
+# transformer transforms a meta-identifier to and from a string in a URI
+# path component.
+# Available transformers include `StandardMetaIdentifierTransformer` and
+# `DelegateMetaIdentifierTransformer`. See the user manual for more
+# information about meta-identifiers and these options.
+meta_identifier.transformer = StandardMetaIdentifierTransformer
+
+# Character sequence that separates the components of a meta-identifier in
+# the identifier portion of a URI.
+meta_identifier.transformer.StandardMetaIdentifierTransformer.delimiter = ;
 
 print_stack_trace_on_error_pages = true
 

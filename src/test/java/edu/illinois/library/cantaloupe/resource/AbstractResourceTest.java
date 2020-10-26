@@ -5,7 +5,6 @@ import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.http.Headers;
 import edu.illinois.library.cantaloupe.http.Reference;
 import edu.illinois.library.cantaloupe.image.Format;
-import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -193,7 +192,7 @@ public class AbstractResourceTest extends BaseTest {
         instance.getRequest().getReference().getQuery().remove(
                 AbstractResource.RESPONSE_CONTENT_DISPOSITION_QUERY_ARG);
         String disposition = instance.getRepresentationDisposition(
-                new Identifier("cats?/\\dogs"), Format.get("jpg"));
+                "cats?/\\dogs", Format.get("jpg"));
         assertNull(disposition);
     }
 
@@ -203,7 +202,7 @@ public class AbstractResourceTest extends BaseTest {
                 AbstractResource.RESPONSE_CONTENT_DISPOSITION_QUERY_ARG,
                 "inline");
         String disposition = instance.getRepresentationDisposition(
-                new Identifier("cats?/\\dogs"), Format.get("jpg"));
+                "cats?/\\dogs", Format.get("jpg"));
         assertEquals("inline; filename=\"cats___dogs.jpg\"", disposition);
     }
 
@@ -213,7 +212,7 @@ public class AbstractResourceTest extends BaseTest {
                 AbstractResource.RESPONSE_CONTENT_DISPOSITION_QUERY_ARG,
                 "attachment");
         String disposition = instance.getRepresentationDisposition(
-                new Identifier("cats?/\\dogs"), Format.get("jpg"));
+                "cats?/\\dogs", Format.get("jpg"));
         assertEquals("attachment; filename=\"cats___dogs.jpg\"", disposition);
     }
 
@@ -223,7 +222,7 @@ public class AbstractResourceTest extends BaseTest {
                 AbstractResource.RESPONSE_CONTENT_DISPOSITION_QUERY_ARG,
                 "attachment; filename=\"dogs.jpg\"");
         String disposition = instance.getRepresentationDisposition(
-                new Identifier("cats?/\\dogs"), Format.get("jpg"));
+                "cats?/\\dogs", Format.get("jpg"));
         assertEquals("attachment; filename=\"dogs.jpg\"", disposition);
     }
 
@@ -233,7 +232,7 @@ public class AbstractResourceTest extends BaseTest {
                 AbstractResource.RESPONSE_CONTENT_DISPOSITION_QUERY_ARG,
                 "attachment; filename=\"unsafe_path../\\.jpg\"");
         String disposition = instance.getRepresentationDisposition(
-                new Identifier("cats?/\\dogs"), Format.get("jpg"));
+                "cats?/\\dogs", Format.get("jpg"));
         assertEquals("attachment; filename=\"unsafe_path.jpg\"",
                 disposition);
 
@@ -242,7 +241,7 @@ public class AbstractResourceTest extends BaseTest {
                 AbstractResource.RESPONSE_CONTENT_DISPOSITION_QUERY_ARG,
                 "attachment; filename=\"unsafe_injection_.....//./.jpg\"");
         disposition = instance.getRepresentationDisposition(
-                new Identifier("cats?/\\dogs"), Format.get("jpg"));
+                "cats?/\\dogs", Format.get("jpg"));
         assertEquals("attachment; filename=\"unsafe_injection_.jpg\"",
                 disposition);
     }
@@ -253,7 +252,7 @@ public class AbstractResourceTest extends BaseTest {
                 AbstractResource.RESPONSE_CONTENT_DISPOSITION_QUERY_ARG,
                 "attachment; filename*= UTF-8''dogs.jpg");
         String disposition = instance.getRepresentationDisposition(
-                new Identifier("cats?/\\dogs"), Format.get("jpg"));
+                "cats?/\\dogs", Format.get("jpg"));
         assertEquals("attachment; filename=\"cats___dogs.jpg\"; filename*= UTF-8''dogs.jpg",
                 disposition);
     }
@@ -264,7 +263,7 @@ public class AbstractResourceTest extends BaseTest {
                 AbstractResource.RESPONSE_CONTENT_DISPOSITION_QUERY_ARG,
                 "attachment; filename*=UTF-8''unsafe_path../\\.jpg");
         String disposition = instance.getRepresentationDisposition(
-                new Identifier("cats?/\\dogs"), Format.get("jpg"));
+                "cats?/\\dogs", Format.get("jpg"));
         assertEquals("attachment; filename=\"cats___dogs.jpg\"; filename*= UTF-8''unsafe_path.jpg",
                 disposition);
 
@@ -273,7 +272,7 @@ public class AbstractResourceTest extends BaseTest {
                 AbstractResource.RESPONSE_CONTENT_DISPOSITION_QUERY_ARG,
                 "attachment; filename*= utf-8''unsafe_injection_.....//./.jpg");
         disposition = instance.getRepresentationDisposition(
-                new Identifier("cats?/\\dogs"), Format.get("jpg"));
+                "cats?/\\dogs", Format.get("jpg"));
         assertEquals("attachment; filename=\"cats___dogs.jpg\"; filename*= UTF-8''unsafe_injection_.jpg",
                 disposition);
     }
@@ -284,7 +283,7 @@ public class AbstractResourceTest extends BaseTest {
                 AbstractResource.RESPONSE_CONTENT_DISPOSITION_QUERY_ARG,
                 "attachment; filename=\"dogs.jpg\"; filename*= UTF-8''dogs.jpg");
         String disposition = instance.getRepresentationDisposition(
-                new Identifier("cats?/\\dogs"), Format.get("jpg"));
+                "cats?/\\dogs", Format.get("jpg"));
         assertEquals("attachment; filename=\"dogs.jpg\"; filename*= UTF-8''dogs.jpg",
                 disposition);
     }
@@ -294,7 +293,7 @@ public class AbstractResourceTest extends BaseTest {
         instance.getRequest().getReference().getQuery().remove(
                 AbstractResource.RESPONSE_CONTENT_DISPOSITION_QUERY_ARG);
         String disposition = instance.getRepresentationDisposition(
-                new Identifier("cats?/\\dogs"), Format.get("jpg"));
+                "cats?/\\dogs", Format.get("jpg"));
         assertNull(disposition);
     }
 

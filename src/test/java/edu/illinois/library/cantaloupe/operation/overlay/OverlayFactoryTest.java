@@ -4,9 +4,7 @@ import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.operation.Color;
-import edu.illinois.library.cantaloupe.resource.RequestContext;
 import edu.illinois.library.cantaloupe.delegate.DelegateProxy;
-import edu.illinois.library.cantaloupe.delegate.DelegateProxyService;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.apache.commons.lang3.SystemUtils;
@@ -79,11 +77,8 @@ public class OverlayFactoryTest extends BaseTest {
             throws Exception {
         instance.setStrategy(OverlayFactory.Strategy.DELEGATE_METHOD);
 
-        final RequestContext context = new RequestContext();
-        context.setIdentifier(new Identifier("image"));
-
-        DelegateProxyService service = DelegateProxyService.getInstance();
-        DelegateProxy proxy = service.newDelegateProxy(context);
+        DelegateProxy proxy = TestUtil.newDelegateProxy();
+        proxy.getRequestContext().setIdentifier(new Identifier("image"));
 
         Optional<Overlay> result = instance.newOverlay(proxy);
         ImageOverlay overlay = (ImageOverlay) result.get();
@@ -101,11 +96,8 @@ public class OverlayFactoryTest extends BaseTest {
             throws Exception {
         instance.setStrategy(OverlayFactory.Strategy.DELEGATE_METHOD);
 
-        final RequestContext context = new RequestContext();
-        context.setIdentifier(new Identifier("string"));
-
-        DelegateProxyService service = DelegateProxyService.getInstance();
-        DelegateProxy proxy = service.newDelegateProxy(context);
+        DelegateProxy proxy = TestUtil.newDelegateProxy();
+        proxy.getRequestContext().setIdentifier(new Identifier("string"));
 
         Optional<Overlay> result = instance.newOverlay(proxy);
         StringOverlay overlay = (StringOverlay) result.get();
@@ -118,12 +110,8 @@ public class OverlayFactoryTest extends BaseTest {
     void testNewOverlayWithScriptStrategyReturningNil() throws Exception {
         instance.setStrategy(OverlayFactory.Strategy.DELEGATE_METHOD);
 
-        final Identifier identifier = new Identifier("bogus");
-        final RequestContext context = new RequestContext();
-        context.setIdentifier(identifier);
-
-        DelegateProxyService service = DelegateProxyService.getInstance();
-        DelegateProxy proxy = service.newDelegateProxy(context);
+        DelegateProxy proxy = TestUtil.newDelegateProxy();
+        proxy.getRequestContext().setIdentifier(new Identifier("bogus"));
 
         Optional<Overlay> result = instance.newOverlay(proxy);
         assertFalse(result.isPresent());

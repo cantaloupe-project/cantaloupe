@@ -1,6 +1,7 @@
 package edu.illinois.library.cantaloupe.delegate;
 
 import edu.illinois.library.cantaloupe.image.Identifier;
+import edu.illinois.library.cantaloupe.image.ScaleConstraint;
 import edu.illinois.library.cantaloupe.resource.RequestContext;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;
@@ -63,6 +64,21 @@ public class JRubyDelegateProxyTest extends BaseTest {
         Map<String,Object> result = (Map<String,Object>) instance.authorize();
         assertEquals("http://example.org/", result.get("location"));
         assertEquals(303, (long) result.get("status_code"));
+    }
+
+    /* deserializeMetaIdentifier() */
+
+    @Test
+    void testDeserializeMetaIdentifier() throws Exception {
+        RequestContext context = new RequestContext();
+        context.setIdentifier(new Identifier("whatever"));
+        context.setPageNumber(3);
+        context.setScaleConstraint(new ScaleConstraint(2, 3));
+
+        Map<String,Object> result = instance.deserializeMetaIdentifier("whatever;3;2:3");
+        assertEquals("whatever", result.get("identifier"));
+        assertEquals(3L, result.get("page_number"));
+        assertEquals(List.of(2L, 3L), result.get("scale_constraint"));
     }
 
     /* getAzureStorageSourceBlobKey() */
@@ -349,6 +365,18 @@ public class JRubyDelegateProxyTest extends BaseTest {
         Map<String,Object> result = (Map<String,Object>) instance.preAuthorize();
         assertEquals("http://example.org/", result.get("location"));
         assertEquals(303, (long) result.get("status_code"));
+    }
+
+    /* serializeMetaIdentifier() */
+
+    @Test
+    void testSerializeMetaIdentifier() throws Exception {
+        Map<String,Object> map = Map.of(
+                "identifier", "whatever",
+                "page_number", 3,
+                "scale_constraint", List.of(2, 3));
+        String result = instance.serializeMetaIdentifier(map);
+        assertEquals("whatever;3;2:3", result);
     }
 
 }

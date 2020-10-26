@@ -90,7 +90,8 @@ public class ImageResource extends IIIF1Resource {
                         Status.FORBIDDEN);
 
                 final String disposition = getRepresentationDisposition(
-                        getIdentifier(), opList.getOutputFormat());
+                        getMetaIdentifier().toString(),
+                        opList.getOutputFormat());
                 addHeaders(processor.getAvailableOutputFormats(),
                         opList.getOutputFormat(), disposition);
             }
@@ -135,14 +136,13 @@ public class ImageResource extends IIIF1Resource {
             outputFormat = getEffectiveOutputFormat().getPreferredExtension();
         }
 
-        final Identifier identifier = getIdentifier();
+        final Identifier identifier = getMetaIdentifier().getIdentifier();
         final Parameters params = new Parameters(
                 identifier.toString(), args.get(1), args.get(2),
                 args.get(3), args.get(4), outputFormat);
 
-        final OperationList ops = params.toOperationList();
+        final OperationList ops = params.toOperationList(getDelegateProxy());
         ops.setPageIndex(getPageIndex());
-        ops.setScaleConstraint(getScaleConstraint());
         ops.getOptions().putAll(getRequest().getReference().getQuery().toMap());
         return ops;
     }

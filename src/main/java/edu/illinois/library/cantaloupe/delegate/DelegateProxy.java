@@ -7,10 +7,10 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * <p>Proxy for a delegate object, which is an instantiation of a class
- * supplied by the user.</p>
+ * <p>Proxy for a delegate object, which is an instance of a class written by
+ * the user.</p>
  *
- * <p>Instances should be acquired via {@link
+ * <p>Instances are generally acquired via {@link
  * DelegateProxyService#newDelegateProxy(RequestContext)}.</p>
  */
 public interface DelegateProxy {
@@ -21,8 +21,9 @@ public interface DelegateProxy {
     RequestContext getRequestContext();
 
     /**
-     * Used to provide context information to the delegate object. Should
-     * typically be called before any other method.
+     * Provides context information to the delegate object. Should typically be
+     * invoked before any other method, as many method implementations depend
+     * on it.
      *
      * @param context Context to set.
      * @throws ScriptException if the delegate object does not contain a
@@ -34,6 +35,14 @@ public interface DelegateProxy {
      * @return Return value of {@link DelegateMethod#AUTHORIZE}.
      */
     Object authorize() throws ScriptException;
+
+    /**
+     * @param metaIdentifier Meta-identifier.
+     * @return Return value of {@link
+     *         DelegateMethod#DESERIALIZE_META_IDENTIFIER}.
+     */
+    Map<String,Object> deserializeMetaIdentifier(String metaIdentifier)
+            throws ScriptException;
 
     /**
      * @return Return value of {@link
@@ -121,5 +130,14 @@ public interface DelegateProxy {
      * @return Return value of {@link DelegateMethod#PRE_AUTHORIZE}.
      */
     Object preAuthorize() throws ScriptException;
+
+    /**
+     * @param metaIdentifier Map with {@code identifier}, {@code page_number},
+     *                       and {@code scale_constraint} keys.
+     * @return Return value of {@link
+     *         DelegateMethod#SERIALIZE_META_IDENTIFIER}.
+     */
+    String serializeMetaIdentifier(Map<String,Object> metaIdentifier)
+            throws ScriptException;
 
 }

@@ -7,6 +7,7 @@ import edu.illinois.library.cantaloupe.image.Dimension;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.Info;
+import edu.illinois.library.cantaloupe.image.MetaIdentifier;
 import edu.illinois.library.cantaloupe.image.Metadata;
 import edu.illinois.library.cantaloupe.image.Orientation;
 import edu.illinois.library.cantaloupe.image.ScaleConstraint;
@@ -32,7 +33,8 @@ import java.util.stream.Stream;
 
 /**
  * <p>Normalized list of {@link Operation image transform operations}
- * associated with a source image identified by an {@link Identifier}.</p>
+ * associated with a source image that is identified by either a {@link
+ * MetaIdentifier} or {@link Identifier}.</p>
  *
  * <p>This class has dual purposes:</p>
  *
@@ -40,7 +42,7 @@ import java.util.stream.Stream;
  *     <li>To describe a list of image transform operations;</li>
  *     <li>To uniquely identify a post-processed (&quot;derivative&quot;) image
  *     created using the instance. For example, the return values of {@link
- *     #toString()} and {@link #toFilename()} may be used in cache keys.</li>
+ *     #toString()} or {@link #toFilename()} may be used in cache keys.</li>
  * </ol>
  *
  * <p>Endpoints translate request arguments into instances of this class, in
@@ -58,13 +60,18 @@ public final class OperationList implements Iterable<Operation> {
     public static final class Builder {
 
         private Identifier identifier;
+        private MetaIdentifier metaIdentifier;
         private Operation[] operations;
         private Map<String,String> options;
         private int pageIndex;
-        private ScaleConstraint scaleConstraint;
 
         public Builder withIdentifier(Identifier identifier) {
             this.identifier = identifier;
+            return this;
+        }
+
+        public Builder withMetaIdentifier(MetaIdentifier metaIdentifier) {
+            this.metaIdentifier = metaIdentifier;
             return this;
         }
 
@@ -83,22 +90,17 @@ public final class OperationList implements Iterable<Operation> {
             return this;
         }
 
-        public Builder withScaleConstraint(ScaleConstraint scaleConstraint) {
-            this.scaleConstraint = scaleConstraint;
-            return this;
-        }
-
         public OperationList build() {
             OperationList opList = new OperationList();
             opList.setIdentifier(identifier);
+            opList.setMetaIdentifier(metaIdentifier);
+            opList.setPageIndex(pageIndex);
             if (operations != null) {
                 opList.operations.addAll(List.of(operations));
             }
             if (options != null) {
                 opList.options.putAll(options);
             }
-            opList.setPageIndex(pageIndex);
-            opList.setScaleConstraint(scaleConstraint);
             return opList;
         }
 
@@ -109,20 +111,28 @@ public final class OperationList implements Iterable<Operation> {
 
     private boolean isFrozen;
     private Identifier identifier;
+    private MetaIdentifier metaIdentifier;
     private final List<Operation> operations = new ArrayList<>();
     private final Map<String,Object> options = new HashMap<>();
     private int pageIndex;
-    private ScaleConstraint scaleConstraint  = new ScaleConstraint(1, 1);
 
     public static OperationList.Builder builder() {
-        return new OperationList.Builder();
+        return new Builder();
     }
 
+    /**
+     * No-op constructor.
+     */
     public OperationList() {}
 
     public OperationList(Identifier identifier) {
         this();
         setIdentifier(identifier);
+    }
+
+    public OperationList(MetaIdentifier identifier) {
+        this();
+        setMetaIdentifier(identifier);
     }
 
     /**
@@ -417,8 +427,22 @@ public final class OperationList implements Iterable<Operation> {
         return null;
     }
 
+    /**
+     * @return The identifier ascribed to the instance, if set; otherwise the
+     *         {@link #getMetaIdentifier() meta-identifier}'s identifier, if
+     *         set; otherwise {@code null}.
+     */
     public Identifier getIdentifier() {
-        return identifier;
+        if (identifier != null) {
+            return identifier;
+        } else if (metaIdentifier != null) {
+            return metaIdentifier.getIdentifier();
+        }
+        return null;
+    }
+
+    public MetaIdentifier getMetaIdentifier() {
+        return metaIdentifier;
     }
 
     public List<Operation> getOperations() {
@@ -427,8 +451,8 @@ public final class OperationList implements Iterable<Operation> {
 
     /**
      * @return Map of auxiliary options separate from the basic
-     *         crop/scale/etc., such as URI query variables, etc. If the
-     *         instance is frozen, the map will be unmodifiable.
+     *         crop/scale/etc., such as URI query arguments, etc. If the
+     *         instance is frozen, the map is unmodifiable.
      */
     public Map<String,Object> getOptions() {
         if (isFrozen) {
@@ -471,9 +495,18 @@ public final class OperationList implements Iterable<Operation> {
     }
 
     /**
-     * @return Scale constraint. Never {@literal null}.
+     * Convenience method that returns the instance ascribed to the {@link
+     * #getMetaIdentifier() meta-identifier}, if set, or a neutral instance
+     * otherwise.
      */
     public ScaleConstraint getScaleConstraint() {
+        ScaleConstraint scaleConstraint = null;
+        if (getMetaIdentifier() != null) {
+            scaleConstraint = getMetaIdentifier().getScaleConstraint();
+        }
+        if (scaleConstraint == null) {
+            scaleConstraint = new ScaleConstraint(1, 1);
+        }
         return scaleConstraint;
     }
 
@@ -487,7 +520,9 @@ public final class OperationList implements Iterable<Operation> {
      *                 unmodified source image.
      */
     public boolean hasEffect(Dimension fullSize, Format format) {
-        if (getScaleConstraint().hasEffect()) {
+        if (getMetaIdentifier() != null &&
+                getMetaIdentifier().getScaleConstraint() != null &&
+                getMetaIdentifier().getScaleConstraint().hasEffect()) {
             return true;
         }
         if (!format.equals(getOutputFormat())) {
@@ -548,6 +583,7 @@ public final class OperationList implements Iterable<Operation> {
     /**
      * @param identifier
      * @throws IllegalStateException if the instance is frozen.
+     * @see #setMetaIdentifier(MetaIdentifier)
      */
     public void setIdentifier(Identifier identifier) {
         checkFrozen();
@@ -555,30 +591,32 @@ public final class OperationList implements Iterable<Operation> {
     }
 
     /**
+     * <p>Sets the effective base scale of the source image upon which the
+     * instance is to be applied.</p>
+     *
+     * @param metaIdentifier
+     * @throws IllegalStateException if the instance is frozen.
+     * @see #setIdentifier(Identifier)
+     */
+    public void setMetaIdentifier(MetaIdentifier metaIdentifier) {
+        checkFrozen();
+        this.metaIdentifier = metaIdentifier;
+    }
+
+    /**
      * @param pageIndex Zero-based page index.
      * @throws IllegalStateException if the instance is frozen.
+     * @deprecated Once the {@code page} query argument is no longer supported,
+     *             the page index should be retrieved from the {@link
+     *             #getMetaIdentifier() meta-identifier}.
      */
+    @Deprecated
     public void setPageIndex(int pageIndex) {
         checkFrozen();
         if (pageIndex < 0) {
             throw new IllegalArgumentException("Page index must be >= 0");
         }
         this.pageIndex = pageIndex;
-    }
-
-    /**
-     * <p>Sets the effective base scale of the source image upon which the
-     * instance is to be applied.</p>
-     *
-     * @param scaleConstraint Instance to set.
-     * @throws IllegalStateException if the instance is frozen.
-     */
-    public void setScaleConstraint(ScaleConstraint scaleConstraint) {
-        checkFrozen();
-        if (scaleConstraint == null) {
-            scaleConstraint = new ScaleConstraint(1, 1);
-        }
-        this.scaleConstraint = scaleConstraint;
     }
 
     public Stream<Operation> stream() {
@@ -600,7 +638,7 @@ public final class OperationList implements Iterable<Operation> {
             parts.add("" + getPageIndex());
         }
         // Add scale constraint
-        if (getScaleConstraint() != null) {
+        if (getScaleConstraint().hasEffect()) {
             parts.add(0, getScaleConstraint().toString());
         }
         // Add operations
@@ -654,12 +692,8 @@ public final class OperationList implements Iterable<Operation> {
         if (getIdentifier() != null) {
             map.put("identifier", getIdentifier().toString());
         }
-        if (getPageIndex() != 0) {
-            map.put("page_index", getPageIndex());
-        }
-        if (getScaleConstraint() != null) {
-            map.put("scale_constraint", getScaleConstraint().toMap());
-        }
+        map.put("page_index", getPageIndex());
+        map.put("scale_constraint", getScaleConstraint().toMap());
         map.put("operations", this.stream()
                 .filter(op -> op.hasEffect(fullSize, this))
                 .map(op -> op.toMap(fullSize, getScaleConstraint()))
@@ -682,9 +716,7 @@ public final class OperationList implements Iterable<Operation> {
         if (getPageIndex() != 0) {
             parts.add(getPageIndex() + "");
         }
-        if (getScaleConstraint() != null) {
-            parts.add(getScaleConstraint().toString());
-        }
+        parts.add(getScaleConstraint().toString());
         for (Operation op : this) {
             if (op.hasEffect()) {
                 final String opName = op.getClass().getSimpleName().toLowerCase();

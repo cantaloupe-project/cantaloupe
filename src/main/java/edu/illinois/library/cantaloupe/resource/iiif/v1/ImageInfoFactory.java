@@ -42,7 +42,8 @@ final class ImageInfoFactory {
         final Metadata metadata = info.getMetadata();
         final Orientation orientation = (metadata != null) ?
                 metadata.getOrientation() : Orientation.ROTATE_0;
-        final Dimension virtualSize = orientation.adjustedSize(info.getSize());
+        final Dimension virtualSize =
+                orientation.adjustedSize(info.getSize(imageIndex));
         final double scScale = scaleConstraint.getRational().doubleValue();
         virtualSize.scale(scScale);
         Dimension virtualTileSize = orientation.adjustedSize(

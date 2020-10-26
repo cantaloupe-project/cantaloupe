@@ -82,6 +82,14 @@ public final class StringUtils {
     }
 
     /**
+     * @param str String to reverse.
+     * @return Reversed string.
+     */
+    public static String reverse(String str) {
+        return new StringBuilder(str).reverse().toString();
+    }
+
+    /**
      * Recursively filters out {@code removeables} from the given dirty string.
      *
      * @return Sanitized string.

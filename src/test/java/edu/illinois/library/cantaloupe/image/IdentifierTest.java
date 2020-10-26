@@ -41,8 +41,7 @@ public class IdentifierTest extends BaseTest {
     void testFromURIPathComponent() {
         Configuration.getInstance().setProperty(Key.SLASH_SUBSTITUTE, "BUG");
 
-        String pathComponent = "catsBUG%3Adogs" +
-                new ScaleConstraint(3, 4).toIdentifierSuffix();
+        String pathComponent = "catsBUG%3Adogs";
         Identifier actual = Identifier.fromURIPathComponent(pathComponent);
         Identifier expected = new Identifier("cats/:dogs");
         assertEquals(expected, actual);

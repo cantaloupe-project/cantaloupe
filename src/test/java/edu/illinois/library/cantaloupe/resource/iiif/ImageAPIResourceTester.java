@@ -84,7 +84,7 @@ public class ImageAPIResourceTester {
         try {
             Response response = client.send();
             assertEquals(302, response.getStatus());
-            assertEquals(uri.toString().replace("reduce.jpg", "reduce.jpg-1:2"),
+            assertEquals(uri.toString().replace("reduce.jpg", "reduce.jpg;1:2"),
                     response.getHeaders().getFirstValue("Location"));
         } finally {
             client.stop();

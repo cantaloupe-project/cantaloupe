@@ -18,6 +18,9 @@ import java.util.Map;
  * <p>Developer note: adding, removing, or changing any of the properties also
  * requires updating {@link RequestContextMap}.</p>
  *
+ * <p>Developer note: this class' properties need to be kept in sync with
+ * {@link JavaContext}.</p>
+ *
  * @see RequestContextMap
  */
 public final class RequestContext {
@@ -30,6 +33,7 @@ public final class RequestContext {
     private Metadata metadata;
     private OperationList operations;
     private Format outputFormat;
+    private Integer pageNumber;
     private Map<String,String> requestHeaders;
     private URI requestURI;
     private Dimension resultingSize;
@@ -65,6 +69,10 @@ public final class RequestContext {
 
     public Format getOutputFormat() {
         return outputFormat;
+    }
+
+    public Integer getPageNumber() {
+        return pageNumber;
     }
 
     public Map<String,String> getRequestHeaders() {
@@ -113,6 +121,13 @@ public final class RequestContext {
     }
 
     /**
+     * @param pageNumber May be {@code null}.
+     */
+    public void setPageNumber(Integer pageNumber) {
+        this.pageNumber = pageNumber;
+    }
+
+    /**
      * @param metadata May be {@code null}.
      */
     public void setMetadata(Metadata metadata) {
@@ -130,12 +145,18 @@ public final class RequestContext {
             this.operations    = opList;
             this.outputFormat  = opList.getOutputFormat();
             this.resultingSize = opList.getResultingSize(fullSize);
+            if (opList.getMetaIdentifier() != null) {
+                this.pageNumber      = opList.getMetaIdentifier().getPageNumber();
+                this.scaleConstraint = opList.getMetaIdentifier().getScaleConstraint();
+            }
         } else {
-            this.fullSize      = null;
-            this.identifier    = null;
-            this.operations    = null;
-            this.outputFormat  = null;
-            this.resultingSize = null;
+            this.fullSize        = null;
+            this.identifier      = null;
+            this.operations      = null;
+            this.outputFormat    = null;
+            this.pageNumber      = null;
+            this.resultingSize   = null;
+            this.scaleConstraint = null;
         }
     }
 

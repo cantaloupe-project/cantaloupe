@@ -1,5 +1,7 @@
 package edu.illinois.library.cantaloupe.delegate;
 
+import java.util.Map;
+
 /**
  * Available delegate methods.
  */
@@ -16,6 +18,11 @@ public enum DelegateMethod {
      * Called by {@link DelegateProxy#getAzureStorageSourceBlobKey()}.
      */
     AZURESTORAGESOURCE_BLOB_KEY("azurestoragesource_blob_key"),
+
+    /**
+     * Called by {@link DelegateProxy#deserializeMetaIdentifier(String)}.
+     */
+    DESERIALIZE_META_IDENTIFIER("deserialize_meta_identifier"),
 
     /**
      * Called by {@link DelegateProxy#getExtraIIIF2InformationResponseKeys()}.
@@ -75,6 +82,11 @@ public enum DelegateMethod {
     REDACTIONS("redactions"),
 
     /**
+     * Called by {@link DelegateProxy#serializeMetaIdentifier(Map)}.
+     */
+    SERIALIZE_META_IDENTIFIER("serialize_meta_identifier"),
+
+    /**
      * Called by {@link DelegateProxy#getSource()}.
      */
     SOURCE("source"),
@@ -84,7 +96,7 @@ public enum DelegateMethod {
      */
     S3SOURCE_OBJECT_INFO("s3source_object_info");
 
-    private String methodName;
+    private final String methodName;
 
     DelegateMethod(String methodName) {
         this.methodName = methodName;

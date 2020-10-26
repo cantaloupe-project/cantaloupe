@@ -1,9 +1,10 @@
 package edu.illinois.library.cantaloupe.resource.iiif.v2;
 
+import edu.illinois.library.cantaloupe.delegate.DelegateProxy;
 import edu.illinois.library.cantaloupe.http.Query;
 import edu.illinois.library.cantaloupe.http.Reference;
 import edu.illinois.library.cantaloupe.image.Dimension;
-import edu.illinois.library.cantaloupe.image.Identifier;
+import edu.illinois.library.cantaloupe.image.MetaIdentifier;
 import edu.illinois.library.cantaloupe.operation.Encode;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.resource.IllegalClientArgumentException;
@@ -195,9 +196,9 @@ class Parameters {
      *         additional operations that may need to be performed, such as
      *         overlays, etc.
      */
-    OperationList toOperationList() {
-        OperationList ops = new OperationList(new Identifier(getIdentifier()));
-
+    OperationList toOperationList(DelegateProxy delegateProxy) {
+        final OperationList ops = new OperationList(
+                MetaIdentifier.fromString(getIdentifier(), delegateProxy));
         if (!Region.Type.FULL.equals(getRegion().getType())) {
             ops.add(getRegion().toCrop());
         }
@@ -210,7 +211,6 @@ class Parameters {
         }
         ops.add(getQuality().toColorTransform());
         ops.add(new Encode(getOutputFormat().toFormat()));
-
         return ops;
     }
 

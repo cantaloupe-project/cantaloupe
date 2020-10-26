@@ -118,6 +118,11 @@ public interface JavaContext {
     String getOutputFormat();
 
     /**
+     * @return Page number requested by the client.
+     */
+    Integer getPageNumber();
+
+    /**
      * @return Map of header name-value pairs.
      */
     Map<String, String> getRequestHeaders();

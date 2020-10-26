@@ -47,6 +47,8 @@ public abstract class ResourceTest extends BaseTest {
                 TestUtil.getFixture("delegates.rb").toString());
         config.setProperty(Key.PROCESSOR_SELECTION_STRATEGY,
                 "ManualSelectionStrategy");
+        config.setProperty("processor.ManualSelectionStrategy.pdf",
+                "PdfBoxProcessor");
         config.setProperty(Key.PROCESSOR_FALLBACK, "Java2dProcessor");
         config.setProperty(Key.SOURCE_STATIC, "FilesystemSource");
         config.setProperty(Key.FILESYSTEMSOURCE_LOOKUP_STRATEGY,

@@ -7,6 +7,7 @@ import edu.illinois.library.cantaloupe.image.Dimension;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.Info;
+import edu.illinois.library.cantaloupe.image.MetaIdentifier;
 import edu.illinois.library.cantaloupe.image.Metadata;
 import edu.illinois.library.cantaloupe.image.Orientation;
 import edu.illinois.library.cantaloupe.image.Rectangle;
@@ -14,7 +15,6 @@ import edu.illinois.library.cantaloupe.image.ScaleConstraint;
 import edu.illinois.library.cantaloupe.operation.overlay.BasicStringOverlayServiceTest;
 import edu.illinois.library.cantaloupe.operation.overlay.Overlay;
 import edu.illinois.library.cantaloupe.operation.redaction.Redaction;
-import edu.illinois.library.cantaloupe.operation.redaction.RedactionServiceTest;
 import edu.illinois.library.cantaloupe.delegate.DelegateProxy;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;
@@ -55,6 +55,8 @@ class OperationListTest extends BaseTest {
         void testBuildWithAllPropertiesSet() {
             // identifier
             Identifier identifier = new Identifier("cats");
+            // meta-identifier
+            MetaIdentifier metaIdentifier = new MetaIdentifier(identifier);
             // operations
             List<Operation> operations = List.of(
                     new ScaleByPercent(0.5),
@@ -63,21 +65,19 @@ class OperationListTest extends BaseTest {
             Map<String,String> options = Map.of("key", "value");
             // page index
             int pageIndex = 3;
-            // scale constraint
-            ScaleConstraint scaleConstraint = new ScaleConstraint(1, 2);
 
             OperationList opList = instance
                     .withIdentifier(identifier)
+                    .withMetaIdentifier(metaIdentifier)
                     .withOperations(operations.toArray(Operation[]::new))
                     .withOptions(options)
                     .withPageIndex(3)
-                    .withScaleConstraint(scaleConstraint)
                     .build();
             assertEquals(identifier, opList.getIdentifier());
+            assertEquals(metaIdentifier, opList.getMetaIdentifier());
             assertEquals(operations, opList.getOperations());
             assertEquals(options, opList.getOptions());
             assertEquals(pageIndex, opList.getPageIndex());
-            assertEquals(scaleConstraint, opList.getScaleConstraint());
         }
 
     }
@@ -99,9 +99,15 @@ class OperationListTest extends BaseTest {
     }
 
     @Test
-    void constructor2() {
+    void identifierConstructor() {
         instance = new OperationList(new Identifier("cats"));
         assertEquals("cats", instance.getIdentifier().toString());
+    }
+
+    @Test
+    void metaIdentifierConstructor() {
+        instance = new OperationList(new MetaIdentifier("cats"));
+        assertEquals("cats", instance.getMetaIdentifier().toString());
     }
 
     @Test
@@ -215,12 +221,16 @@ class OperationListTest extends BaseTest {
         final Info info = Info.builder()
                 .withSize(fullSize)
                 .build();
+        final Identifier identifier = new Identifier("cats");
         final OperationList opList = OperationList.builder()
-                .withIdentifier(new Identifier("cats"))
+                .withIdentifier(identifier)
+                .withMetaIdentifier(MetaIdentifier.builder()
+                        .withIdentifier(identifier)
+                        .withScaleConstraint(1, 2)
+                        .build())
                 .withOperations(
                         new CropByPixels(0, 0, 70, 30),
                         new Encode(Format.get("jpg")))
-                .withScaleConstraint(new ScaleConstraint(1, 2))
                 .build();
 
         DelegateProxy proxy = TestUtil.newDelegateProxy();
@@ -563,7 +573,7 @@ class OperationListTest extends BaseTest {
     }
 
     @Test
-    void equalsWithEqualOperationList() {
+    void equalsWithEqualInstance() {
         OperationList ops1 = OperationList.builder()
                 .withOperations(new Rotate(1)).build();
         OperationList ops2 = OperationList.builder()
@@ -572,7 +582,7 @@ class OperationListTest extends BaseTest {
     }
 
     @Test
-    void equalsWithUnequalOperationList() {
+    void equalsWithUnequalInstance() {
         OperationList ops1 = OperationList.builder()
                 .withOperations(new Rotate(1)).build();
         OperationList ops2 = OperationList.builder()
@@ -606,6 +616,21 @@ class OperationListTest extends BaseTest {
     }
 
     @Test
+    void getIdentifierReturnsIdentifierIfSet() {
+        final Identifier identifier = new Identifier("cats");
+        instance.setIdentifier(identifier);
+        instance.setMetaIdentifier(null);
+        assertEquals(identifier, instance.getIdentifier());
+    }
+
+    @Test
+    void getIdentifierFallsBacktoMetaIdentifierIdentifier() {
+        instance.setIdentifier(null);
+        instance.setMetaIdentifier(new MetaIdentifier("cats"));
+        assertEquals(new Identifier("cats"), instance.getIdentifier());
+    }
+
+    @Test
     void getOptions() {
         assertNotNull(instance.getOptions());
     }
@@ -615,6 +640,23 @@ class OperationListTest extends BaseTest {
         instance.freeze();
         assertThrows(UnsupportedOperationException.class,
                 () -> instance.getOptions().put("test", "test"));
+    }
+
+    @Test
+    void getOutputFormatReturnsEncodeFormatWhenPresent() {
+        Format format = Format.get("jpg");
+        instance.add(new Encode(format));
+        assertEquals(format, instance.getOutputFormat());
+    }
+
+    @Test
+    void getOutputFormatReturnsNullWhenEncodeNotPresent() {
+        assertNull(instance.getOutputFormat());
+    }
+
+    @Test
+    void getPageIndexDefaultsToZero() {
+        assertEquals(0, instance.getPageIndex());
     }
 
     @Test
@@ -635,13 +677,30 @@ class OperationListTest extends BaseTest {
     }
 
     @Test
+    void getScaleConstraintReturnsScaleConstraintWhenSet() {
+        instance.setMetaIdentifier(MetaIdentifier.builder()
+                .withIdentifier("cats")
+                .withScaleConstraint(1, 2)
+                .build());
+        assertEquals(new ScaleConstraint(1, 2), instance.getScaleConstraint());
+    }
+
+    @Test
+    void getScaleConstraintDefaultsToOne() {
+        assertEquals(new ScaleConstraint(1, 1), instance.getScaleConstraint());
+    }
+
+    @Test
     void hasEffectWithScaleConstraint() {
         instance = OperationList.builder()
                 .withOperations(new Encode(Format.get("gif")))
                 .build();
         Dimension fullSize = new Dimension(100, 100);
         assertFalse(instance.hasEffect(fullSize, Format.get("gif")));
-        instance.setScaleConstraint(new ScaleConstraint(1, 2));
+        instance.setMetaIdentifier(MetaIdentifier.builder()
+                .withIdentifier("cats")
+                .withScaleConstraint(1, 2)
+                .build());
         assertTrue(instance.hasEffect(fullSize, Format.get("gif")));
     }
 
@@ -678,6 +737,11 @@ class OperationListTest extends BaseTest {
     }
 
     @Test
+    void testHashCode() {
+        assertEquals(instance.toString().hashCode(), instance.hashCode());
+    }
+
+    @Test
     void iterator() {
         instance.add(new CropByPixels(10, 10, 10, 10));
         instance.add(new ScaleByPercent(0.5));
@@ -709,6 +773,23 @@ class OperationListTest extends BaseTest {
     }
 
     @Test
+    void setMetaIdentifier() {
+        MetaIdentifier metaIdentifier = new MetaIdentifier("cats");
+        instance.setMetaIdentifier(metaIdentifier);
+        assertEquals(metaIdentifier, instance.getMetaIdentifier());
+
+        instance.setMetaIdentifier(null);
+        assertNull(instance.getMetaIdentifier());
+    }
+
+    @Test
+    void setMetaIdentifierWhileFrozen() {
+        instance.freeze();
+        assertThrows(IllegalStateException.class,
+                () -> instance.setMetaIdentifier(new MetaIdentifier("cats")));
+    }
+
+    @Test
     void setPageIndexWithIllegalArgument() {
         assertThrows(IllegalArgumentException.class,
                 () -> instance.setPageIndex(-1));
@@ -722,41 +803,29 @@ class OperationListTest extends BaseTest {
     }
 
     @Test
-    void setScaleConstraint() {
-        instance.setScaleConstraint(new ScaleConstraint(1, 3));
-        assertEquals(1, instance.getScaleConstraint().getRational().getNumerator());
-        assertEquals(3, instance.getScaleConstraint().getRational().getDenominator());
-
-        instance.setScaleConstraint(null);
-        assertEquals(1, instance.getScaleConstraint().getRational().getNumerator());
-        assertEquals(1, instance.getScaleConstraint().getRational().getDenominator());
-    }
-
-    @Test
-    void setScaleConstraintWhileFrozen() {
-        instance.freeze();
-        assertThrows(IllegalStateException.class,
-                () -> instance.setScaleConstraint(new ScaleConstraint(1, 2)));
-    }
-
-    @Test
     void toFilename() {
-        instance = new OperationList(new Identifier("identifier.jpg"));
-        instance.setPageIndex(3);
-        CropByPixels crop = new CropByPixels(5, 6, 20, 22);
-        instance.add(crop);
-        Scale scale = new ScaleByPercent(0.4);
-        instance.add(scale);
-        instance.add(new Rotate(15));
-        instance.add(ColorTransform.BITONAL);
-        instance.add(new Encode(Format.get("jpg")));
-        instance.getOptions().put("animal", "cat");
-        instance.setScaleConstraint(new ScaleConstraint(1, 2));
+        final Identifier identifier = new Identifier("identifier.jpg");
+        instance = OperationList.builder()
+                .withIdentifier(identifier)
+                .withMetaIdentifier(MetaIdentifier.builder()
+                        .withIdentifier(identifier)
+                        .withScaleConstraint(1, 2)
+                        .build())
+                .withOperations(
+                        new CropByPixels(5, 6, 20, 22),
+                        new ScaleByPercent(0.4),
+                        new Rotate(15),
+                        ColorTransform.BITONAL,
+                        new Encode(Format.get("jpg")))
+                .withOptions(Map.of("animal", "cat"))
+                .withPageIndex(3)
+                .build();
 
         String expected = "50c63748527e634134449ae20b199cc0_08592737b5ff7370bc0a70517fcb0b23.jpg";
         assertEquals(expected, instance.toFilename());
 
         // Assert that changing an operation changes the filename
+        CropByPixels crop = (CropByPixels) instance.getFirst(CropByPixels.class);
         crop.setX(12);
         assertNotEquals(expected, instance.toFilename());
 
@@ -769,22 +838,21 @@ class OperationListTest extends BaseTest {
     @Test
     @SuppressWarnings("unchecked")
     void toMap() {
-        instance = new OperationList(new Identifier("identifier.jpg"));
-        // page index
-        instance.setPageIndex(3);
-        // crop
-        Crop crop = new CropByPixels(2, 4, 50, 50);
-        instance.add(crop);
-        // no-op scale
-        Scale scale = new ScaleByPercent();
-        instance.add(scale);
-        // rotate
-        instance.add(new Rotate(0));
-        // transpose
-        instance.add(Transpose.HORIZONTAL);
-        // encode
-        instance.add(new Encode(Format.get("jpg")));
-        instance.setScaleConstraint(new ScaleConstraint(1, 2));
+        final Identifier identifier = new Identifier("identifier.jpg");
+        instance = OperationList.builder()
+                .withIdentifier(identifier)
+                .withMetaIdentifier(MetaIdentifier.builder()
+                        .withIdentifier(identifier)
+                        .withScaleConstraint(1, 2)
+                        .build())
+                .withOperations(
+                        new CropByPixels(2, 4, 50, 50),
+                        new ScaleByPercent(),
+                        new Rotate(0),
+                        Transpose.HORIZONTAL,
+                        new Encode(Format.get("jpg")))
+                .withPageIndex(3)
+                .build();
 
         final Dimension fullSize = new Dimension(100, 100);
         Map<String,Object> map = instance.toMap(fullSize);
@@ -806,17 +874,20 @@ class OperationListTest extends BaseTest {
 
     @Test
     void testToString() {
-        instance = new OperationList(new Identifier("identifier.jpg"));
-        Crop crop = new CropByPixels(5, 6, 20, 22);
-        instance.add(crop);
-        Scale scale = new ScaleByPercent(0.4);
-        instance.add(scale);
-        instance.add(new Rotate(15));
-        instance.add(ColorTransform.BITONAL);
-        instance.add(new Encode(Format.get("jpg")));
-        instance.getOptions().put("animal", "cat");
-        instance.setScaleConstraint(new ScaleConstraint(1, 2));
-
+        final Identifier identifier = new Identifier("identifier.jpg");
+        instance = OperationList.builder()
+                .withIdentifier(identifier)
+                .withMetaIdentifier(MetaIdentifier.builder()
+                        .withIdentifier(identifier)
+                        .withScaleConstraint(1, 2).build())
+                .withOperations(
+                        new CropByPixels(5, 6, 20, 22),
+                        new ScaleByPercent(0.4),
+                        new Rotate(15),
+                        ColorTransform.BITONAL,
+                        new Encode(Format.get("jpg")))
+                .withOptions(Map.of("animal", "cat"))
+                .build();
         String expected = "identifier.jpg_1:2_cropbypixels:5,6,20,22_scalebypercent:40%_rotate:15_colortransform:bitonal_encode:jpg_UNDEFINED_8_animal:cat";
         assertEquals(expected, instance.toString());
     }
@@ -885,10 +956,16 @@ class OperationListTest extends BaseTest {
     @Test
     void validateWithScaleGreaterThanMaxAllowed() {
         Dimension fullSize = new Dimension(1000, 1000);
+        Identifier identifier = new Identifier("cats");
         OperationList ops = OperationList.builder()
-                .withIdentifier(new Identifier("cats"))
-                .withOperations(new ScaleByPercent(4), new Encode(Format.get("jpg")))
-                .withScaleConstraint(new ScaleConstraint(1, 8))
+                .withIdentifier(identifier)
+                .withMetaIdentifier(MetaIdentifier.builder()
+                        .withIdentifier(identifier)
+                        .withScaleConstraint(1, 8)
+                        .build())
+                .withOperations(
+                        new ScaleByPercent(4),
+                        new Encode(Format.get("jpg")))
                 .build();
         assertThrows(IllegalScaleException.class,
                 () -> ops.validate(fullSize, Format.get("png")));

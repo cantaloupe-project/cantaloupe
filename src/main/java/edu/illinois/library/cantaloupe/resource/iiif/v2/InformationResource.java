@@ -70,7 +70,7 @@ public class InformationResource extends IIIF2Resource {
         }
 
         try (InformationRequestHandler handler = InformationRequestHandler.builder()
-                .withIdentifier(getIdentifier())
+                .withIdentifier(getMetaIdentifier().getIdentifier())
                 .withBypassingCache(isBypassingCache())
                 .withBypassingCacheRead(isBypassingCacheRead())
                 .withDelegateProxy(getDelegateProxy())
@@ -122,7 +122,7 @@ public class InformationResource extends IIIF2Resource {
                 getImageURI(),
                 info,
                 getPageIndex(),
-                getScaleConstraint());
+                getMetaIdentifier().getScaleConstraint());
         return new JacksonRepresentation(imageInfo);
     }
 

@@ -8,16 +8,19 @@ import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import edu.illinois.library.cantaloupe.delegate.DelegateProxy;
 import edu.illinois.library.cantaloupe.http.Reference;
 import edu.illinois.library.cantaloupe.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.util.regex.Matcher;
 
 /**
- * <p>Immutable application-unique source image identifier.</p>
+ * <p>Immutable application-unique source image file/object identifier.</p>
+ *
+ * <p>This may be one component of a {@link MetaIdentifier}, which may include
+ * additional information, such as a page number.</p>
  *
  * <h1>Input</h1>
  *
@@ -27,8 +30,6 @@ import java.util.regex.Matcher;
  *
  * <ol>
  *     <li>URI decoding</li>
- *     <li>Strip off any {@link ScaleConstraint#getIdentifierSuffixPattern()}
- *     scale constraint suffix}</li>
  *     <li>{@link StringUtils#decodeSlashes(String) slash decoding}</li>
  * </ol>
  *
@@ -50,14 +51,15 @@ import java.util.regex.Matcher;
  *     edu.illinois.library.cantaloupe.resource.AbstractResource#PUBLIC_IDENTIFIER_HEADER},
  *     if present</li>
  *     <li>Encode slashes</li>
- *     <li>Append a {@link ScaleConstraint#getIdentifierSuffixPattern()} scale
- *     constraint suffix}, if necessary</li>
  *     <li>URI encoding</li>
  * </ol>
+ *
+ * @see MetaIdentifier
+ * @since 1.0
  */
 @JsonSerialize(using = Identifier.IdentifierSerializer.class)
 @JsonDeserialize(using = Identifier.IdentifierDeserializer.class)
-public class Identifier implements Comparable<Identifier> {
+public final class Identifier implements Comparable<Identifier> {
 
     /**
      * Deserializes a type/subtype string into an {@link Identifier}.
@@ -85,50 +87,31 @@ public class Identifier implements Comparable<Identifier> {
     private static final Logger LOGGER =
             LoggerFactory.getLogger(Identifier.class);
 
-    private String value;
+    private final String value;
 
     /**
-     * Translates the string in a raw URI path component to an {@link
-     * Identifier}.
+     * Translates the string in a raw URI path component into a new
+     * instance.
      *
      * @param pathComponent Raw URI path component.
+     * @see MetaIdentifier#fromURIPathComponent(String, DelegateProxy) 
      */
     public static Identifier fromURIPathComponent(String pathComponent) {
         // Decode entities.
         final String decodedComponent = Reference.decode(pathComponent);
-        // Strip off any scale constraint suffix.
-        final String deScaledComponent = stripScaleConstraint(decodedComponent);
         // Decode slash substitutes.
         final String deSlashedComponent =
-                StringUtils.decodeSlashes(deScaledComponent);
+                StringUtils.decodeSlashes(decodedComponent);
 
-        LOGGER.debug("Raw path component: {} -> " +
-                        "decoded: {} -> scale constraint stripped: {} -> " +
-                        "slashes substituted: {}",
-                pathComponent, decodedComponent, deScaledComponent,
-                deSlashedComponent);
-
+        LOGGER.debug("[Raw path component: {}] -> " +
+                        "[decoded: {}] -> [slashes substituted: {}]",
+                pathComponent, decodedComponent, deSlashedComponent);
         return new Identifier(deSlashedComponent);
     }
 
     /**
-     * @param pathComponent Decoded URI path component.
-     * @return The given path component with any {@link ScaleConstraint} suffix
-     *         stripped off.
-     */
-    private static String stripScaleConstraint(String pathComponent) {
-        final Matcher matcher = ScaleConstraint.getIdentifierSuffixPattern().
-                matcher(pathComponent);
-        if (matcher.find()) {
-            String group = matcher.group(0);
-            return pathComponent.substring(0, pathComponent.length() - group.length());
-        }
-        return pathComponent;
-    }
-
-    /**
-     * @param value Identifier value
-     * @throws IllegalArgumentException If the given value is {@literal null}.
+     * @param value Identifier value.
+     * @throws IllegalArgumentException If the given value is {@code null}.
      */
     public Identifier(String value) {
         if (value == null) {
@@ -144,10 +127,9 @@ public class Identifier implements Comparable<Identifier> {
 
     /**
      * @param obj Instance to compare.
-     * @return {@literal true} if {@literal obj} is a reference to the same
-     *         instance; {@literal true} if it is a different instance with the
-     *         same value; {@literal true} if it is a {@link String} instance
-     *         with the same value; {@literal false} otherwise.
+     * @return {@code true} if {@code obj} is a reference to the same instance;
+     *         {@code true} if it is a different instance with the same value;
+     *         {@code false} otherwise.
      */
     @Override
     public boolean equals(Object obj) {

@@ -1,8 +1,9 @@
 package edu.illinois.library.cantaloupe.resource.iiif.v1;
 
+import edu.illinois.library.cantaloupe.delegate.DelegateProxy;
 import edu.illinois.library.cantaloupe.http.Reference;
 import edu.illinois.library.cantaloupe.image.Format;
-import edu.illinois.library.cantaloupe.image.Identifier;
+import edu.illinois.library.cantaloupe.image.MetaIdentifier;
 import edu.illinois.library.cantaloupe.operation.Encode;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.resource.IllegalClientArgumentException;
@@ -15,7 +16,7 @@ import org.apache.commons.lang3.StringUtils;
  * @see <a href="http://iiif.io/api/image/1.1/#parameters">IIIF Image API
  * 1.1</a>
  */
-class Parameters {
+final class Parameters {
 
     private String identifier;
     private Format outputFormat;
@@ -163,9 +164,9 @@ class Parameters {
      *         additional operations that may need to be performed, such as
      *         overlays, etc.
      */
-    OperationList toOperationList() {
-        OperationList ops = new OperationList(new Identifier(getIdentifier()));
-
+    OperationList toOperationList(DelegateProxy delegateProxy) {
+        final OperationList ops = new OperationList(
+                MetaIdentifier.fromString(getIdentifier(), delegateProxy));
         if (!getRegion().isFull()) {
             ops.add(getRegion().toCrop());
         }
@@ -177,7 +178,6 @@ class Parameters {
         }
         ops.add(getQuality().toColorTransform());
         ops.add(new Encode(getOutputFormat()));
-
         return ops;
     }
 
