@@ -12,8 +12,8 @@ class CustomDelegate
   #
   def deserialize_meta_identifier(meta_identifier)
     reversed_meta_id = meta_identifier.reverse
-    matches          = /^(?<sc>\d+:\d+)?;?(?<pg>\d+)?;?(?<id>.+)/.match(reversed_meta_id)
-    captures         = matches.named_captures
+    matches  = /^((?<sc>\d+:\d+);)?((?<pg>\d+);)?(?<id>.+)/.match(reversed_meta_id)
+    captures = matches.named_captures
     struct                     = {}
     struct['identifier']       = captures['id'].reverse
     struct['page_number']      = captures['pg'].reverse.to_i if captures['pg']

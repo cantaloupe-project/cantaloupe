@@ -37,8 +37,8 @@ public final class StandardMetaIdentifierTransformer
 
     private static Pattern getReverseMetaIdentifierPattern() {
         final String separator = StringUtils.reverse(getComponentDelimiter());
-        return Pattern.compile("^(?<sc>\\d+:\\d+)?" + separator +
-                "?(?<page>\\d+)?" + separator + "?(?<id>.+)");
+        return Pattern.compile("^((?<sc>\\d+:\\d+)" + separator +
+                ")?((?<page>\\d+)" + separator + ")?(?<id>.+)");
     }
 
     /**

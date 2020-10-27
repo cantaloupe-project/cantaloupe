@@ -22,8 +22,8 @@ class StandardMetaIdentifierTransformerTest extends BaseTest {
 
     @Test
     void deserializeWithIdentifier() {
-        MetaIdentifier metaID = instance.deserialize("cats cats;1;2:3;cats");
-        assertEquals(new Identifier("cats cats;1;2:3;cats"),
+        MetaIdentifier metaID = instance.deserialize("cats cats.jp2;1;2:3;cats");
+        assertEquals(new Identifier("cats cats.jp2;1;2:3;cats"),
                 metaID.getIdentifier());
         assertNull(metaID.getPageNumber());
         assertNull(metaID.getScaleConstraint());
@@ -31,24 +31,24 @@ class StandardMetaIdentifierTransformerTest extends BaseTest {
 
     @Test
     void deserializeWithIdentifierAndPageNumber() {
-        MetaIdentifier metaID = instance.deserialize("cats;cats;3");
-        assertEquals(new Identifier("cats;cats"), metaID.getIdentifier());
+        MetaIdentifier metaID = instance.deserialize("cats;cats.jp2;3");
+        assertEquals(new Identifier("cats;cats.jp2"), metaID.getIdentifier());
         assertEquals(3, metaID.getPageNumber());
         assertNull(metaID.getScaleConstraint());
     }
 
     @Test
     void deserializeWithIdentifierAndScaleConstraint() {
-        MetaIdentifier metaID = instance.deserialize("cats;cats;1:2");
-        assertEquals(new Identifier("cats;cats"), metaID.getIdentifier());
+        MetaIdentifier metaID = instance.deserialize("cats;cats.jp2;1:2");
+        assertEquals(new Identifier("cats;cats.jp2"), metaID.getIdentifier());
         assertNull(metaID.getPageNumber());
         assertEquals(new ScaleConstraint(1, 2), metaID.getScaleConstraint());
     }
 
     @Test
     void deserializeWithIdentifierAndPageNumberAndScaleConstraint() {
-        MetaIdentifier metaID = instance.deserialize("cats;cats;3;1:2");
-        assertEquals(new Identifier("cats;cats"), metaID.getIdentifier());
+        MetaIdentifier metaID = instance.deserialize("cats;cats.jp2;3;1:2");
+        assertEquals(new Identifier("cats;cats.jp2"), metaID.getIdentifier());
         assertEquals(3, metaID.getPageNumber());
         assertEquals(new ScaleConstraint(1, 2), metaID.getScaleConstraint());
     }
