@@ -3,31 +3,16 @@ FROM ubuntu:latest
 ENV JAVA_HOME=/opt/graalvm-ce-java11-20.1.0
 ENV GRAALVM_HOME=/opt/graalvm-ce-java11-20.1.0
 ENV PATH=$PATH:/opt/graalvm-ce-java11-20.1.0/bin
-ENV TZ=America/Chicago
 
 ARG DEBIAN_FRONTEND=noninteractive
 
 # Install various dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
-        tzdata \
-        curl \
 		ffmpeg \
 		maven \
-		build-essential \
-		cmake \
 		wget \
 		libopenjp2-tools \
-  && rm -rf /var/lib/apt/lists/*
-
-# Install Grok
-RUN     wget -q https://github.com/GrokImageCompression/grok/archive/v7.6.0.tar.gz \
-        && tar xzf v7.6.0.tar.gz \
-        && cd grok-7.6.0 \
-        && cmake . \
-        && make -j6 \
-        && make install \
-        && ldconfig \
-        && grk_decompress -h
+    && rm -rf /var/lib/apt/lists/*
 
 # Install TurboJpegProcessor dependencies
 RUN mkdir -p /opt/libjpeg-turbo/lib
@@ -36,10 +21,16 @@ COPY docker/Linux-JDK11/image_files/libjpeg-turbo/lib64 /opt/libjpeg-turbo/lib
 # Install KakaduNativeProcessor dependencies
 COPY dist/deps/Linux-x86-64/lib/* /usr/lib/
 
+# Install GrokProcessor dependencies
+RUN wget -q https://github.com/GrokImageCompression/grok/releases/download/v7.6.1/libgrokj2k1_7.6.1-1_amd64.deb \
+    && wget -q https://github.com/GrokImageCompression/grok/releases/download/v7.6.1/grokj2k-tools_7.6.1-1_amd64.deb \
+    && dpkg -i ./libgrokj2k1_7.6.1-1_amd64.deb \
+    && dpkg -i --ignore-depends=libjpeg62-turbo ./grokj2k-tools_7.6.1-1_amd64.deb
+
 # Install GraalVM
-RUN curl -OL --silent https://github.com/graalvm/graalvm-ce-builds/releases/download/vm-20.1.0/graalvm-ce-java11-linux-amd64-20.1.0.tar.gz \
-  && tar xfz graalvm-ce-java11-linux-amd64-20.1.0.tar.gz \
-  && mv graalvm-ce-java11-20.1.0 /opt
+RUN wget -q https://github.com/graalvm/graalvm-ce-builds/releases/download/vm-20.1.0/graalvm-ce-java11-linux-amd64-20.1.0.tar.gz \
+    && tar xfz graalvm-ce-java11-linux-amd64-20.1.0.tar.gz \
+    && mv graalvm-ce-java11-20.1.0 /opt
 
 # A non-root user is needed for some FilesystemSourceTest tests to work.
 ARG user=cantaloupe
