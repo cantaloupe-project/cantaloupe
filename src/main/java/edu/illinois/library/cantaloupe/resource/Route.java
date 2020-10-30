@@ -10,6 +10,8 @@ import java.util.regex.Pattern;
 /**
  * Associates a URI path pattern with an {@link AbstractResource}
  * implementation.
+ *
+ * @since 4.1
  */
 public final class Route {
 
@@ -98,16 +100,16 @@ public final class Route {
 
     /**
      * @param path URI path relative to the context path.
-     * @return     Route corresponding to the given path, or {@literal null} if
+     * @return     Route corresponding to the given path, or {@code null} if
      *             there is no match.
      */
     static Route forPath(String path) {
-        for (Pattern pattern : MAPPINGS.keySet()) {
+        for (var entry : MAPPINGS.entrySet()) {
+            final Pattern pattern = entry.getKey();
             final Matcher matcher = pattern.matcher(path);
             if (matcher.find()) {
                 final Route route = new Route();
-                route.setResource(MAPPINGS.get(pattern));
-
+                route.setResource(entry.getValue());
                 for (int i = 1; i <= matcher.groupCount(); i++) {
                     route.getPathArguments().add(matcher.group(i));
                 }
