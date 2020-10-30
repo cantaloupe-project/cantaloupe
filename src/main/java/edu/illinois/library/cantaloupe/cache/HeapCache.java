@@ -71,7 +71,7 @@ class HeapCache implements DerivativeCache {
      */
     static class Item {
 
-        private byte[] data;
+        private final byte[] data;
 
         Item(byte[] data) {
             this.data = data;
@@ -288,10 +288,11 @@ class HeapCache implements DerivativeCache {
                 // Iterate over the cache keys and add cache values one-by-one to
                 // the protobuf cache, removing them from the cache along the way
                 // to save memory.
-                final Iterator<Key> it = cache.keySet().iterator();
+                final Iterator<Map.Entry<Key,Item>> it = cache.entrySet().iterator();
                 while (it.hasNext()) {
-                    final Key key = it.next();
-                    final Item item = cache.get(key);
+                    final Map.Entry<Key,Item> entry = it.next();
+                    final Key key                   = entry.getKey();
+                    final Item item                 = entry.getValue();
                     if (key.getOperationList() != null) { // it's an image
                         final HeapCacheProtos.Image image =
                                 HeapCacheProtos.Image.newBuilder()
@@ -312,11 +313,9 @@ class HeapCache implements DerivativeCache {
                     }
                     it.remove();
                 }
-
                 try (OutputStream fos = Files.newOutputStream(path)) {
                     cacheBuilder.build().writeTo(fos);
                 }
-
                 LOGGER.debug("Dumped {} items ({} bytes)", size, byteSize);
             } else {
                 throw new IOException("dumpToPersistentStore(): " +
