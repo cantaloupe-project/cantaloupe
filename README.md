@@ -16,9 +16,9 @@
   project using the embedded web server listening on the port(s) specified in
   `cantaloupe.properties`.
 * `mvn clean package -DskipTests` will build a release JAR in the `target`
-  folder, which can be run using either of the following invocations:
-    * `java -cp cantaloupe-{version}.jar -Dcantaloupe.config=... edu.illinois.library.cantaloupe.StandaloneEntry`
-    * `java -Dcantaloupe.config=... -jar cantaloupe-{version}.jar`
+  folder, which can be run via:
+
+  `java -cp cantaloupe-{version}.jar -Dcantaloupe.config=... edu.illinois.library.cantaloupe.StandaloneEntry`
 
 ### IDE
 
@@ -48,15 +48,15 @@ depend on open-source tools or libraries. These are the tests run in
 continuous integration. The following dependencies are required:
 
 * FFmpeg (for FfmpegProcessorTest)
-* OpenJPEG (for OpenJpegProcessorTest)
 * Grok (for GrokProcessorTest)
+* OpenJPEG (for OpenJpegProcessorTest)
 * Redis (for RedisCacheTest)
 * TurboJPEG with Java binding (for TurboJpegProcessorTest)
 
 #### 3. All tests
 
-`mvn clean test` will run all tests, including the ones above. The following
-dependencies are required in addition to the ones above:
+`mvn clean test` will run all tests including the ones above. The following
+additional dependencies are required:
 
 * Kakadu native library (for KakaduNativeProcessorTest) - see the
   KakaduNativeProcessor section of the user manual for information.
@@ -68,7 +68,9 @@ Because it can be a chore to install all of the dependencies needed to get all
 of the tests in the `freedeps` profile passing, there is a `docker-compose.yml`
 file available that will spin up all needed dependencies in separate
 containers, and run the tests in another container. From the project root
-directory, invoke `docker-compose -f docker/{platform}/docker-compose.yml up`.
+directory, invoke:
+
+  `docker-compose -f docker/{platform}/docker-compose.yml up --build --exit-code-from cantaloupe`.
 
 ### Output testing
 
@@ -82,8 +84,7 @@ Run them with `mvn clean test -Pbenchmark`.
 
 ## Contribute
 
-Contributions are welcome. The suggested process for contributing code changes
-is:
+The suggested process for contributing code changes is:
 
 1. Submit a "heads-up" issue in the tracker, ideally before beginning any
    work.
@@ -101,14 +102,15 @@ is:
 
 Different application versions may require different configuration file keys.
 It's good practice to use a dedicated configuration file for each version.
-Key changes are documented in [UPGRADING.md](https://github.com/cantaloupe-project/cantaloupe/blob/develop/UPGRADING.md).
+Key changes are documented in
+[UPGRADING.md](https://github.com/cantaloupe-project/cantaloupe/blob/develop/UPGRADING.md).
 
 ### Versioning
 
 Cantaloupe roughly uses semantic versioning. Major releases (n) involve major
-rearchitecting that breaks backwards compatibility in a significant way. Minor
-releases (n.n) either do not break compatibility, or only in a minor way.
-Patch releases (n.n.n) are for bugfixes only.
+redesign that breaks backwards compatibility significantly. Minor releases
+(n.n) either do not break compatibility, or only in a minor way. Patch releases
+(n.n.n) are for bugfixes only.
 
 ### Branching
 
@@ -131,7 +133,7 @@ release branch for that release, and merged back into `develop`.
 
 1. Run the Maven Verifier plugin (`mvn verify -DskipTests=true`)
 2. Run an OWASP dependency check (`mvn org.owasp:dependency-check-maven:check`)
-3. Run Findbugs (`mvn clean compile findbugs:findbugs findbugs:gui`)
+3. Run Spotbugs (`mvn clean compile spotbugs:spotbugs spotbugs:gui`)
 4. Run the [Endpoint tests](https://github.com/cantaloupe-project/output-tester)
 5. Finalize the code to be released, addressing any relevant milestone issues,
    TODOs, etc.
@@ -142,14 +144,15 @@ release branch for that release, and merged back into `develop`.
 
 1. Merge into `release/vX.X`
 2. Update the version in `pom.xml` and commit this change
-3. Merge into `master`
-4. Push the code: `git push origin master; git push origin release/x.x`
-5. Wait for CI tests to pass
+3. `git push origin release/x.x`
+4. Wait for CI tests to pass
+5. Merge into `master` and push
 6. Tag the release: `git tag -a v{version} -m 'Tag v{version}'`
 7. `git push --tags`
-8. Add the change log to the release on GitHub
-9. Deploy the updated website (usually not necessary for bugfix releases)
-10. Close the release's GitHub milestone
+8. Wait for GitHub actions to add the release artifact to the tag
+9. Add the change log to the release on GitHub
+10. Deploy the updated website (if necessary)
+11. Close the release's issue milestone
 
 ## License
 

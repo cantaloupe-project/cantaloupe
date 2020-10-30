@@ -435,11 +435,19 @@
                 </configuration>
             </plugin>
 
-            <!-- Find bugs with mvn findbugs:findbugs findbugs:gui -->
+            <!-- Find bugs with mvn spotbugs:spotbugs spotbugs:gui -->
             <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>findbugs-maven-plugin</artifactId>
-                <version>3.0.1</version>
+                <groupId>com.github.spotbugs</groupId>
+                <artifactId>spotbugs-maven-plugin</artifactId>
+                <version>4.1.3</version>
+                <dependencies>
+                    <!-- overwrite dependency on spotbugs if you want to specify the version of spotbugs -->
+                    <dependency>
+                        <groupId>com.github.spotbugs</groupId>
+                        <artifactId>spotbugs</artifactId>
+                        <version>4.1.4</version>
+                    </dependency>
+                </dependencies>
             </plugin>
 
             <plugin>
