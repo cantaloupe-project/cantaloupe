@@ -303,8 +303,12 @@ public class ApplicationServer {
 
                 final SslContextFactory contextFactory = new SslContextFactory.Server();
                 contextFactory.setKeyStorePath(getHTTPSKeyStorePath());
-                contextFactory.setKeyStorePassword(getHTTPSKeyStorePassword());
-                contextFactory.setKeyManagerPassword(getHTTPSKeyPassword());
+                if (getHTTPSKeyStorePassword() != null) {
+                    contextFactory.setKeyStorePassword(getHTTPSKeyStorePassword());
+                }
+                if (getHTTPSKeyPassword() != null) {
+                    contextFactory.setKeyManagerPassword(getHTTPSKeyPassword());
+                }
 
                 ServerConnector connector = null;
 

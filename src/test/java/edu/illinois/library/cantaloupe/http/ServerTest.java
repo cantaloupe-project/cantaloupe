@@ -159,7 +159,7 @@ public class ServerTest extends BaseTest {
         server.setHTTPS2Enabled(false);
         server.setKeyManagerPassword("password");
         server.setKeyStorePassword("password");
-        server.setKeyStorePath(TestUtil.getFixture("keystore.jks"));
+        server.setKeyStorePath(TestUtil.getFixture("keystore-password.jks"));
         server.start();
 
         client.setTransport(Transport.HTTP1_1);
@@ -177,7 +177,7 @@ public class ServerTest extends BaseTest {
         server.setHTTPS2Enabled(true);
         server.setKeyManagerPassword("password");
         server.setKeyStorePassword("password");
-        server.setKeyStorePath(TestUtil.getFixture("keystore.jks"));
+        server.setKeyStorePath(TestUtil.getFixture("keystore-password.jks"));
         server.start();
 
         client.setTransport(Transport.HTTP2_0);
