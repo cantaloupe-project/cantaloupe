@@ -66,7 +66,7 @@ public abstract class ResourceTest extends BaseTest {
         appServer.setHTTPSPort(HTTPS_PORT);
         appServer.setHTTPSKeyStoreType("JKS");
         appServer.setHTTPSKeyStorePath(
-                TestUtil.getFixture("keystore.jks").toString());
+                TestUtil.getFixture("keystore-password.jks").toString());
         appServer.setHTTPSKeyStorePassword("password");
         appServer.setHTTPSKeyPassword("password");
 

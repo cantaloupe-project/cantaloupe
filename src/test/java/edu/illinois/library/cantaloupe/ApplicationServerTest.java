@@ -6,6 +6,7 @@ import edu.illinois.library.cantaloupe.util.SocketUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import static edu.illinois.library.cantaloupe.test.Assert.HTTPAssert.*;
@@ -21,8 +22,8 @@ public class ApplicationServerTest extends BaseTest {
     public static void beforeClass() throws Exception {
         BaseTest.beforeClass();
         int[] ports = SocketUtils.getOpenPorts(2);
-        HTTP_PORT = ports[0];
-        HTTPS_PORT = ports[1];
+        HTTP_PORT   = ports[0];
+        HTTPS_PORT  = ports[1];
     }
 
     @BeforeEach
@@ -37,7 +38,7 @@ public class ApplicationServerTest extends BaseTest {
     }
 
     @Test
-    public void getAcceptQueueLimit() {
+    void getAcceptQueueLimit() {
         // default
         assertEquals(0, instance.getAcceptQueueLimit());
         // explicitly set
@@ -122,7 +123,7 @@ public class ApplicationServerTest extends BaseTest {
     }
 
     @Test
-    public void getMaxThreads() {
+    void getMaxThreads() {
         // default
         assertEquals(ApplicationServer.DEFAULT_MAX_THREADS,
                 instance.getMaxThreads());
@@ -132,7 +133,7 @@ public class ApplicationServerTest extends BaseTest {
     }
 
     @Test
-    public void getMinThreads() {
+    void getMinThreads() {
         // default
         assertEquals(ApplicationServer.DEFAULT_MIN_THREADS,
                 instance.getMinThreads());
@@ -177,17 +178,35 @@ public class ApplicationServerTest extends BaseTest {
     void startStartsHTTPServer() throws Exception {
         initializeHTTP();
         instance.start();
-
-        assertStatus(200, "http://127.0.0.1:" + HTTP_PORT +"/");
+        assertStatus(200, "http://localhost:" + HTTP_PORT);
     }
 
     @Test
-    void startStartsHTTPSServer() throws Exception {
-        initializeHTTPS();
+    void startStartsHTTPSServerWithJKSKeyStoreWithPassword() throws Exception {
+        initializeHTTPSWithJKSKeyStoreWithPassword();
         instance.setHTTPEnabled(false);
         instance.start();
+        assertStatus(200, "https://localhost:" + HTTPS_PORT);
+    }
 
-        assertStatus(200, "https://localhost:" + HTTPS_PORT +"/");
+    @Test
+    void startStartsHTTPSServerWithPKCS12KeyStoreWithPassword()
+            throws Exception {
+        initializeHTTPSWithPKCS12KeyStoreWithPassword();
+        instance.setHTTPEnabled(false);
+        instance.start();
+        assertStatus(200, "https://localhost:" + HTTPS_PORT);
+    }
+
+
+    @Disabled // TODO: this fails in Jetty 9.4.24
+    @Test
+    void startStartsHTTPSServerWithPKCS12KeyStoreWithoutPassword()
+            throws Exception {
+        initializeHTTPSWithPKCS12KeyStoreWithoutPassword();
+        instance.setHTTPEnabled(false);
+        instance.start();
+        assertStatus(200, "https://localhost:" + HTTPS_PORT);
     }
 
     @Test
@@ -208,18 +227,42 @@ public class ApplicationServerTest extends BaseTest {
         } finally {
             instance.stop();
         }
-        assertConnectionRefused("http://127.0.0.1:" + HTTP_PORT +"/");
+        assertConnectionRefused("http://localhost:" + HTTP_PORT);
     }
 
     @Test
-    void stopStopsHTTPSServer() throws Exception {
-        initializeHTTPS();
+    void stopStopsHTTPSServerWithJKSKeyStoreWithPassword() throws Exception {
+        initializeHTTPSWithJKSKeyStoreWithPassword();
         try {
             instance.start();
         } finally {
             instance.stop();
         }
-        assertConnectionRefused("https://127.0.0.1:" + HTTPS_PORT +"/");
+        assertConnectionRefused("https://localhost:" + HTTPS_PORT);
+    }
+
+    @Test
+    void stopStopsHTTPSServerWithPKCS12KeyStoreWithPassword()
+            throws Exception {
+        initializeHTTPSWithPKCS12KeyStoreWithPassword();
+        try {
+            instance.start();
+        } finally {
+            instance.stop();
+        }
+        assertConnectionRefused("https://localhost:" + HTTPS_PORT);
+    }
+
+    @Test
+    void stopStopsHTTPSServerWithPKCS12KeyStoreWithoutPassword()
+            throws Exception {
+        initializeHTTPSWithPKCS12KeyStoreWithoutPassword();
+        try {
+            instance.start();
+        } finally {
+            instance.stop();
+        }
+        assertConnectionRefused("https://localhost:" + HTTPS_PORT);
     }
 
     private void initializeHTTP() {
@@ -227,13 +270,29 @@ public class ApplicationServerTest extends BaseTest {
         instance.setHTTPPort(HTTP_PORT);
     }
 
-    private void initializeHTTPS() {
+    private void initializeHTTPSWithJKSKeyStoreWithPassword() {
         instance.setHTTPSEnabled(true);
         instance.setHTTPSPort(HTTPS_PORT);
-        instance.setHTTPSKeyStorePath(TestUtil.getFixture("keystore.jks").toString());
+        instance.setHTTPSKeyStorePath(TestUtil.getFixture("keystore-password.jks").toString());
         instance.setHTTPSKeyStorePassword("password");
         instance.setHTTPSKeyStoreType("JKS");
         instance.setHTTPSKeyPassword("password");
+    }
+
+    private void initializeHTTPSWithPKCS12KeyStoreWithPassword() {
+        instance.setHTTPSEnabled(true);
+        instance.setHTTPSPort(HTTPS_PORT);
+        instance.setHTTPSKeyStorePath(TestUtil.getFixture("keystore-password.p12").toString());
+        instance.setHTTPSKeyStorePassword("password");
+        instance.setHTTPSKeyStoreType("PKCS12");
+        instance.setHTTPSKeyPassword("password");
+    }
+
+    private void initializeHTTPSWithPKCS12KeyStoreWithoutPassword() {
+        instance.setHTTPSEnabled(true);
+        instance.setHTTPSPort(HTTPS_PORT);
+        instance.setHTTPSKeyStorePath(TestUtil.getFixture("keystore-nopass.p12").toString());
+        instance.setHTTPSKeyStoreType("PKCS12");
     }
 
 }
