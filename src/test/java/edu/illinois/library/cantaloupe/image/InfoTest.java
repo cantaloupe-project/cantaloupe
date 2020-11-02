@@ -683,16 +683,6 @@ class InfoTest extends BaseTest {
         assertEquals(version, instance.getApplicationVersion());
     }
 
-    /* setComplete() */
-
-    @Test
-    void testSetComplete() {
-        instance.setComplete(true);
-        assertTrue(instance.isComplete());
-        instance.setComplete(false);
-        assertFalse(instance.isComplete());
-    }
-
     /* setIdentifier() */
 
     @Test
@@ -726,6 +716,16 @@ class InfoTest extends BaseTest {
     void testSetNumResolutions() {
         instance.setNumResolutions(7);
         assertEquals(7, instance.getNumResolutions());
+    }
+
+    /* setPersistable() */
+
+    @Test
+    void testSetPersistable() {
+        instance.setPersistable(true);
+        assertTrue(instance.isPersistable());
+        instance.setPersistable(false);
+        assertFalse(instance.isPersistable());
     }
 
     /* setSerializationVersion() */

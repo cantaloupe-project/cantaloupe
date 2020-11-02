@@ -139,8 +139,8 @@ public interface Processor extends AutoCloseable {
      * <p>Reads and returns information about the source image.</p>
      *
      * <p>If any of the {@link Info}'s properties cannot be set due to an
-     * implementation's inability to read them, it is marked as {@link
-     * Info#setComplete(boolean) incomplete}.</p>
+     * implementation's inability to read them, it is marked as non-{@link
+     * Info#setPersistable(boolean) persistable}.</p>
      *
      * @return Information about the source image, without an {@link
      *         Info#getIdentifier() identifier} set.

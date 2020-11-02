@@ -503,7 +503,7 @@ class S3Cache implements DerivativeCache {
      */
     @Override
     public void put(Identifier identifier, Info info) throws IOException {
-        if (!info.isComplete()) {
+        if (!info.isPersistable()) {
             LOGGER.debug("put(): info for {} is incomplete; ignoring",
                     identifier);
             return;

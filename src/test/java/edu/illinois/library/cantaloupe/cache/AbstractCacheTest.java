@@ -465,11 +465,11 @@ abstract class AbstractCacheTest extends BaseTest {
     }
 
     @Test
-    void testPutWithIncompleteInstance() throws Exception {
+    void testPutWithNonPersistableInstance() throws Exception {
         final DerivativeCache instance = newInstance();
         final Identifier identifier = new Identifier("incomplete");
         final Info info = new Info();
-        info.setComplete(false);
+        info.setPersistable(false);
 
         instance.put(identifier, info);
 

@@ -235,7 +235,7 @@ public final class Info {
      */
     private int numResolutions = -1;
 
-    private transient boolean isComplete = true;
+    private transient boolean isPersistable = true;
 
     public static Builder builder() {
         return new Builder(new Info());
@@ -397,8 +397,8 @@ public final class Info {
      *         about the source image.
      * @since 5.0
      */
-    public boolean isComplete() {
-        return isComplete;
+    public boolean isPersistable() {
+        return isPersistable;
     }
 
     /**
@@ -409,18 +409,6 @@ public final class Info {
      */
     void setApplicationVersion(String version) {
         this.appVersion = version;
-    }
-
-    /**
-     * If a {@link Processor} cannot fully {@link Processor#readInfo()
-     * populate} an instance&mdash;for example, if it can't read XMP metadata
-     * in order to set a complete {@link #metadata}&mdash;then it should invoke
-     * this method with a {@code false} argument to make that clear.
-     *
-     * @since 5.0
-     */
-    public void setComplete(boolean isComplete) {
-        this.isComplete = isComplete;
     }
 
     /**
@@ -454,6 +442,18 @@ public final class Info {
      */
     public void setNumResolutions(int numResolutions) {
         this.numResolutions = numResolutions;
+    }
+
+    /**
+     * If a {@link Processor} cannot fully {@link Processor#readInfo()
+     * populate} an instance&mdash;for example, if it can't read XMP metadata
+     * in order to set a complete {@link #metadata}&mdash;then it should invoke
+     * this method with a {@code false} argument to make that clear.
+     *
+     * @since 5.0
+     */
+    public void setPersistable(boolean isComplete) {
+        this.isPersistable = isComplete;
     }
 
     /**

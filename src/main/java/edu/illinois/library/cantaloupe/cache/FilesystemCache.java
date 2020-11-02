@@ -19,7 +19,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.Charset;
-import java.nio.file.AccessDeniedException;
 import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.FileVisitOption;
 import java.nio.file.Files;
@@ -30,7 +29,6 @@ import java.nio.file.StandardCopyOption;
 import java.nio.file.attribute.FileTime;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
@@ -889,7 +887,7 @@ class FilesystemCache implements SourceCache, DerivativeCache {
 
     @Override
     public void put(Identifier identifier, Info info) throws IOException {
-        if (!info.isComplete()) {
+        if (!info.isPersistable()) {
             LOGGER.debug("put(): info for {} is incomplete; ignoring",
                     identifier);
             return;

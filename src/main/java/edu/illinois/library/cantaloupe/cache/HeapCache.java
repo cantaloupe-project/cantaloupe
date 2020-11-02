@@ -597,7 +597,7 @@ class HeapCache implements DerivativeCache {
 
     @Override
     public void put(Identifier identifier, Info imageInfo) throws IOException {
-        if (!imageInfo.isComplete()) {
+        if (!imageInfo.isPersistable()) {
             LOGGER.debug("put(): info for {} is incomplete; ignoring",
                     identifier);
             return;

@@ -76,7 +76,7 @@ public interface DerivativeCache extends Cache {
      * <p>If the information corresponding to the given identifier already
      * exists, it will be overwritten.</p>
      *
-     * <p>{@link Info#isComplete() Incomplete instances} are silently
+     * <p>Non-{@link Info#isPersistable() persistable} instances are silently
      * ignored.</p>
      *
      * @param identifier Image identifier.
