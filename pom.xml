@@ -150,7 +150,7 @@
         <dependency>
             <groupId>edu.illinois.library</groupId>
             <artifactId>imageio-xpm</artifactId>
-            <version>1.0</version>
+            <version>1.0.1</version>
         </dependency>
         <!-- Used by S3SourceTest and S3CacheTest -->
         <dependency>
