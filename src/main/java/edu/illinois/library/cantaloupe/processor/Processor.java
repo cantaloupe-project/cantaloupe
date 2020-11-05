@@ -165,6 +165,8 @@ public interface Processor extends AutoCloseable {
      *
      * <ol>
      *     <li>Calls {@link OperationList#validate}</li>
+     *     <li>Ensures that the {@link OperationList#getOutputFormat() output
+     *     format specified in the operation list} is supported</li>
      * </ol>
      *
      * <p>Notes:</p>
@@ -177,13 +179,20 @@ public interface Processor extends AutoCloseable {
      *
      * @param opList Operation list to process. Equal to the one passed to
      *               {@link #process}.
+     * @throws OutputFormatException if the instance is not capable of
+     *         producing the {@link OperationList#getOutputFormat() output
+     *         format specified in the operation list}.
      * @throws ValidationException if validation fails.
      * @throws ProcessorException if there is an error in performing the
      *         validation.
      */
     default void validate(OperationList opList, Dimension fullSize)
-            throws ValidationException, ProcessorException {
+            throws ValidationException, ProcessorException, OutputFormatException {
         opList.validate(fullSize, getSourceFormat());
+
+        if (!getAvailableOutputFormats().contains(opList.getOutputFormat())) {
+            throw new OutputFormatException(opList.getOutputFormat());
+        }
 
         // TODO: bind Scale.Mode to ProcessorFeature and validate whether the
         // processor supports all of the requested operations.

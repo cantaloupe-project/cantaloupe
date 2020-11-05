@@ -267,7 +267,7 @@ class PdfBoxProcessor extends AbstractProcessor
 
     @Override
     public void validate(OperationList opList, Dimension fullSize)
-            throws ValidationException, ProcessorException {
+            throws ValidationException, ProcessorException, OutputFormatException {
         StreamProcessor.super.validate(opList, fullSize);
 
         // Ensure that the page is contained in the PDF.

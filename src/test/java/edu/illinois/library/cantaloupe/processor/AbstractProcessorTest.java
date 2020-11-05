@@ -1,6 +1,7 @@
 package edu.illinois.library.cantaloupe.processor;
 
 import edu.illinois.library.cantaloupe.image.Dimension;
+import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.image.MetaIdentifier;
 import edu.illinois.library.cantaloupe.image.Metadata;
@@ -751,8 +752,7 @@ abstract class AbstractProcessorTest extends BaseTest {
     @Test
     public void testSetSourceFormatWithUnsupportedSourceFormat() {
         for (Format format : Format.all()) {
-            try {
-                final Processor proc = newInstance();
+            try (Processor proc = newInstance()) {
                 proc.setSourceFormat(format);
                 if (proc.getAvailableOutputFormats().isEmpty()) {
                     fail("Expected exception");
@@ -761,6 +761,22 @@ abstract class AbstractProcessorTest extends BaseTest {
                 // pass
             }
         }
+    }
+
+    @Test
+    public void testValidateWithIncompatibleOutputFormat() throws Exception {
+        boolean pass = false;
+        OperationList ops = OperationList.builder()
+                .withIdentifier(new Identifier("cats"))
+                .withOperations(new Encode(Format.UNKNOWN))
+                .build();
+        try (Processor proc = newInstance()) {
+            proc.setSourceFormat(getAnySupportedSourceFormat(proc));
+            proc.validate(ops, new Dimension(1000, 1000));
+        } catch (OutputFormatException e) {
+            pass = true;
+        }
+        assertTrue(pass);
     }
 
     /**

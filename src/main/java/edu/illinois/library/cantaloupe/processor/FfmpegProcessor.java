@@ -290,7 +290,7 @@ class FfmpegProcessor extends AbstractProcessor implements FileProcessor {
 
     @Override
     public void validate(OperationList opList, Dimension fullSize)
-            throws ValidationException, ProcessorException {
+            throws ValidationException, ProcessorException, OutputFormatException {
         FileProcessor.super.validate(opList, fullSize);
 
         if (durationSec < 1) {

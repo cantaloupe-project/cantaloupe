@@ -575,6 +575,12 @@ public class ImageResourceTest extends ResourceTest {
         tester.testInvalidOutputFormat(uri);
     }
 
+    @Test
+    void testGETUnsupportedOutputFormat() {
+        URI uri = getHTTPURI("/" + IMAGE + "/full/max/0/color.pdf");
+        tester.testUnsupportedOutputFormat(uri);
+    }
+
     /**
      * Tests the default response headers. Individual headers may be tested
      * more thoroughly elsewhere.

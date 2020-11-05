@@ -495,7 +495,18 @@ public class ImageResourceTester extends ImageAPIResourceTester {
         }
     }
 
+    /**
+     * Tests an output format that is not recognized by the application.
+     */
     public void testInvalidOutputFormat(URI uri) {
+        assertStatus(415, uri);
+    }
+
+    /**
+     * Tests an output format that is recognized by the application but not
+     * supported by a processor.
+     */
+    public void testUnsupportedOutputFormat(URI uri) {
         assertStatus(415, uri);
     }
 
