@@ -72,7 +72,7 @@ public final class Route {
                 edu.illinois.library.cantaloupe.resource.iiif.v3.InformationResource.class);
         MAPPINGS.put(Pattern.compile("^" + IIIF_3_PATH + "/([^/]+)$"),
                 edu.illinois.library.cantaloupe.resource.iiif.v3.IdentifierResource.class);
-        MAPPINGS.put(Pattern.compile("^" + IIIF_3_PATH + "/([^/]+)/([^/]+)/([^/]+)/([^/]+)/([^/]+)\\.([a-z0-9]+)$"),
+        MAPPINGS.put(Pattern.compile("^" + IIIF_3_PATH + "/([^/]+)/([^/]+)/([^/]+)/([^/]+)/([^/]+)\\.([^/]+)$"),
                 edu.illinois.library.cantaloupe.resource.iiif.v3.ImageResource.class);
 
         // IIIF Image API v2 routes
@@ -82,7 +82,7 @@ public final class Route {
                 edu.illinois.library.cantaloupe.resource.iiif.v2.InformationResource.class);
         MAPPINGS.put(Pattern.compile("^" + IIIF_2_PATH + "/([^/]+)$"),
                 edu.illinois.library.cantaloupe.resource.iiif.v2.IdentifierResource.class);
-        MAPPINGS.put(Pattern.compile("^" + IIIF_2_PATH + "/([^/]+)/([^/]+)/([^/]+)/([^/]+)/([^/]+)\\.([a-z0-9]+)$"),
+        MAPPINGS.put(Pattern.compile("^" + IIIF_2_PATH + "/([^/]+)/([^/]+)/([^/]+)/([^/]+)/([^/]+)\\.([^/]+)$"),
                 edu.illinois.library.cantaloupe.resource.iiif.v2.ImageResource.class);
 
         // IIIF Image API v1 routes
@@ -94,7 +94,7 @@ public final class Route {
                 edu.illinois.library.cantaloupe.resource.iiif.v1.IdentifierResource.class);
         MAPPINGS.put(Pattern.compile("^" + IIIF_1_PATH + "/([^/]+)/([^/]+)/([^/]+)/([^/]+)/([^/.]+)$"),
                 edu.illinois.library.cantaloupe.resource.iiif.v1.ImageResource.class);
-        MAPPINGS.put(Pattern.compile("^" + IIIF_1_PATH + "/([^/]+)/([^/]+)/([^/]+)/([^/]+)/([^/.]+)\\.([a-z0-9]+)$"),
+        MAPPINGS.put(Pattern.compile("^" + IIIF_1_PATH + "/([^/]+)/([^/]+)/([^/]+)/([^/]+)/([^/.]+)\\.([^/]+)$"),
                 edu.illinois.library.cantaloupe.resource.iiif.v1.ImageResource.class);
     }
 
