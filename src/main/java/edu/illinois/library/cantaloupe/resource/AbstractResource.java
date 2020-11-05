@@ -153,13 +153,19 @@ public abstract class AbstractResource {
         response.setHeader("X-Powered-By",
                 Application.getName() + "/" + Application.getVersion());
         // Log request info.
-        getLogger().info("Handling {} {}",
-                request.getMethod(), request.getReference().getPath());
-        getLogger().debug("Request headers: {}",
-                request.getHeaders().stream()
-                .map(h -> h.getName() + ": " +
-                        ("Authorization".equals(h.getName()) ? "******" : h.getValue()))
-                .collect(Collectors.joining("; ")));
+        try {
+            getLogger().info("Handling {} {}",
+                    request.getMethod(), request.getReference().getPath());
+            getLogger().debug("Request headers: {}",
+                    request.getHeaders().stream()
+                            .map(h -> h.getName() + ": " +
+                                    ("Authorization".equals(h.getName()) ? "******" : h.getValue()))
+                            .collect(Collectors.joining("; ")));
+        } catch (IllegalArgumentException e) {
+            // This is caused by a malformed URI or some other illegal client
+            // argument. It is better caught and handled elsewhere.
+            getLogger().warn("doInit(): {}", e.getMessage());
+        }
     }
 
     /**
