@@ -28,7 +28,7 @@ public class ImageWriterFactoryTest extends BaseTest {
     }
 
     @Test
-    void testNewImageWriter() {
+    void testNewImageWriter() throws Exception {
         assertNotNull(instance.newImageWriter(new Encode(Format.get("jpg"))));
     }
 

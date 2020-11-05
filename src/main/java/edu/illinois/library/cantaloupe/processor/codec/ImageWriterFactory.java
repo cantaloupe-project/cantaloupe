@@ -2,6 +2,7 @@ package edu.illinois.library.cantaloupe.processor.codec;
 
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.operation.Encode;
+import edu.illinois.library.cantaloupe.processor.OutputFormatException;
 import edu.illinois.library.cantaloupe.processor.codec.gif.GIFImageWriter;
 import edu.illinois.library.cantaloupe.processor.codec.jpeg.JPEGImageWriter;
 import edu.illinois.library.cantaloupe.processor.codec.png.PNGImageWriter;
@@ -22,7 +23,8 @@ public final class ImageWriterFactory {
         return SUPPORTED_FORMATS;
     }
 
-    public ImageWriter newImageWriter(Encode encode) {
+    public ImageWriter newImageWriter(Encode encode)
+            throws OutputFormatException {
         ImageWriter writer;
         if (Format.get("gif").equals(encode.getFormat())) {
             writer = new GIFImageWriter();
@@ -33,8 +35,7 @@ public final class ImageWriterFactory {
         } else if (Format.get("tif").equals(encode.getFormat())) {
             writer = new TIFFImageWriter();
         } else {
-            throw new IllegalArgumentException(
-                    "Unsupported output format: " + encode.getFormat());
+            throw new OutputFormatException(encode.getFormat());
         }
         writer.setEncode(encode);
         return writer;
