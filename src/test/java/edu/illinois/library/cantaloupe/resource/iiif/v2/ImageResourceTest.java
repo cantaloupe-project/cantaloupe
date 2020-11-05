@@ -286,6 +286,12 @@ public class ImageResourceTest extends ResourceTest {
     }
 
     @Test
+    void testGETWithIllegalCharactersInIdentifier() {
+        String uri = getHTTPURIString("/[bogus]/full/full/0/default.jpg");
+        tester.testIllegalCharactersInIdentifier(uri);
+    }
+
+    @Test
     void testGETHTTP2() throws Exception {
         URI uri = getHTTPURI("/" + IMAGE + "/full/full/0/color.jpg");
         tester.testHTTP2(uri);

@@ -382,14 +382,17 @@ public abstract class AbstractResource {
     protected final Map<String, Object> getCommonTemplateVars() {
         final Map<String,Object> vars = new HashMap<>();
         vars.put("version", Application.getVersion());
-
-        String baseURI = getPublicRootReference().toString();
-        // Normalize the base URI. Note that the <base> tag will need it to
-        // have a trailing slash.
-        if (baseURI.endsWith("/")) {
-            baseURI = baseURI.substring(0, baseURI.length() - 2);
+        try {
+            String baseURI = getPublicRootReference().toString();
+            // Normalize the base URI. Note that the <base> tag will need it to
+            // have a trailing slash.
+            if (baseURI.endsWith("/")) {
+                baseURI = baseURI.substring(0, baseURI.length() - 2);
+            }
+            vars.put("baseUri", baseURI);
+        } catch (IllegalArgumentException e) {
+            throw new IllegalClientArgumentException(e);
         }
-        vars.put("baseUri", baseURI);
         return vars;
     }
 

@@ -239,6 +239,11 @@ public class ImageAPIResourceTester {
         assertStatus(200, uri);
     }
 
+    public void testIllegalCharactersInIdentifier(String uri) {
+        // TODO: this is difficult to test because our HTTP client only accepts
+        // java.net.URI instances which don't allow illegal characters in them.
+    }
+
     public void testHTTP2(URI uri) throws Exception {
         Client client = newClient(uri);
         try {

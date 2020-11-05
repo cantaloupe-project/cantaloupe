@@ -151,37 +151,44 @@ public class HandlerServlet extends HttpServlet {
             resource.setResponse(response);
             resource.doInit();
             resource.doGET();
+        } catch (IllegalClientArgumentException e) {
+            handleError(response, e, 400);
         } catch (Throwable t2) {
-            // Fall back to a plain text stack trace.
-            response.setStatus(500);
-            response.setContentType("text/plain;charset=UTF-8");
-            try {
-                PrintWriter writer = response.getWriter();
-                writer.print("Unrecoverable error in " +
-                        HandlerServlet.class.getSimpleName());
-                if (isPrintingStackTraces()) {
-                    writer.println(":");
-                    writer.println("");
-                    t2.printStackTrace(writer);
-                }
-            } catch (IllegalStateException e) {
-                if ("STREAM".equals(e.getMessage())) {
-                    // This means that something was writing to the response
-                    // OutputStream but was interrupted, probably by the user
-                    // terminating the request, and trying to acquire a writer
-                    // above threw an exception because you aren't allowed to
-                    // use a writer after you've written to the output stream.
-                    // Anyway, no big deal, we'll just log it.
-                    LOGGER.debug("Failed to acquire an error writer after " +
-                            "failing to fully write the response. Most " +
-                            "likely this was caused by the client closing " +
-                            "the connection and is not a problem.");
-                }
-            } catch (IOException e) {
-                LOGGER.error("handleError(): {}", e.getMessage(), e);
-            }
+            handleError(response, t2, 500);
         } finally {
             resource.destroy();
+        }
+    }
+
+    private void handleError(HttpServletResponse response,
+                             Throwable t,
+                             int status) {
+        response.setStatus(status);
+        response.setContentType("text/plain;charset=UTF-8");
+        try {
+            PrintWriter writer = response.getWriter();
+            writer.print("Unrecoverable error in " +
+                    HandlerServlet.class.getSimpleName());
+            if (isPrintingStackTraces()) {
+                writer.println(":");
+                writer.println("");
+                t.printStackTrace(writer);
+            }
+        } catch (IllegalStateException e) {
+            if ("STREAM".equals(e.getMessage())) {
+                // This means that something was writing to the response
+                // OutputStream but was interrupted, probably by the user
+                // terminating the request, and trying to acquire a writer
+                // above threw an exception because you aren't allowed to
+                // use a writer after you've written to the output stream.
+                // Anyway, no big deal, we'll just log it.
+                LOGGER.debug("Failed to acquire an error writer after " +
+                        "failing to fully write the response. Most " +
+                        "likely this was caused by the client closing " +
+                        "the connection and is not a problem.");
+            }
+        } catch (IOException e) {
+            LOGGER.error("handleError(): {}", e.getMessage(), e);
         }
     }
 

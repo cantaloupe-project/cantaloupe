@@ -88,16 +88,22 @@ public abstract class ResourceTest extends BaseTest {
 
     /**
      * @param path URI path relative to {@link #getEndpointPath()}.
-     * @return HTTP URI. Subclasses should override if they need an HTTPS URI.
      */
     protected URI getHTTPURI(String path) {
         try {
-            return new URI("http://localhost:" + appServer.getHTTPPort() +
-                    getEndpointPath() + path);
+            return new URI(getHTTPURIString(path));
         } catch (URISyntaxException e) {
             fail(e.getMessage());
         }
         return null;
+    }
+
+    /**
+     * @param path URI path relative to {@link #getEndpointPath()}.
+     */
+    protected String getHTTPURIString(String path) {
+        return "http://localhost:" + appServer.getHTTPPort() +
+                getEndpointPath() + path;
     }
 
     /**

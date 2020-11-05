@@ -223,6 +223,12 @@ public class InformationResourceTest extends ResourceTest {
     }
 
     @Test
+    void testGETWithIllegalCharactersInIdentifier() {
+        String uri = getHTTPURIString("/[bogus]/info.json");
+        tester.testIllegalCharactersInIdentifier(uri);
+    }
+
+    @Test
     void testGETHTTP2() throws Exception {
         URI uri = getHTTPURI("/" + IMAGE + "/info.json");
         tester.testHTTP2(uri);
