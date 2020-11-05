@@ -2,6 +2,7 @@ package edu.illinois.library.cantaloupe.resource;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
+import edu.illinois.library.cantaloupe.delegate.DelegateProxyService;
 import edu.illinois.library.cantaloupe.http.Status;
 import edu.illinois.library.cantaloupe.image.Dimension;
 import edu.illinois.library.cantaloupe.http.Reference;
@@ -30,6 +31,26 @@ public abstract class PublicResource extends AbstractResource {
     @Override
     public void doInit() throws Exception {
         super.doInit();
+        if (DelegateProxyService.isDelegateAvailable()) {
+            RequestContext context = getRequestContext();
+            context.setLocalURI(getRequest().getReference().toURI());
+            context.setRequestURI(getPublicReference().toURI());
+            context.setRequestHeaders(getRequest().getHeaders().toMap());
+            context.setClientIP(getCanonicalClientIPAddress());
+            context.setCookies(getRequest().getCookies().toMap());
+            MetaIdentifier metaID = getMetaIdentifier();
+            if (metaID != null) {
+                context.setIdentifier(metaID.getIdentifier());
+                context.setPageNumber(metaID.getPageNumber());
+                ScaleConstraint scaleConstraint = metaID.getScaleConstraint();
+                if (scaleConstraint == null) {
+                    // Delegate users will appreciate not having to check for
+                    // null.
+                    scaleConstraint = new ScaleConstraint(1, 1);
+                }
+                context.setScaleConstraint(scaleConstraint);
+            }
+        }
         addHeaders();
     }
 
@@ -72,6 +93,22 @@ public abstract class PublicResource extends AbstractResource {
                 getResponse().setHeader("Cache-Control",
                         String.join(", ", directives));
             }
+        }
+    }
+
+    /**
+     * @return User agent's IP address, respecting the {@code X-Forwarded-For}
+     *         request header, if present.
+     */
+    private String getCanonicalClientIPAddress() {
+        // The value is expected to be in the format: "client, proxy1, proxy2"
+        final String forwardedFor =
+                getRequest().getHeaders().getFirstValue("X-Forwarded-For", "");
+        if (!forwardedFor.isEmpty()) {
+            return forwardedFor.split(",")[0].trim();
+        } else {
+            // Fall back to the client IP address.
+            return getRequest().getRemoteAddr();
         }
     }
 

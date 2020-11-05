@@ -15,7 +15,6 @@ import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.MetaIdentifier;
 import edu.illinois.library.cantaloupe.image.MetaIdentifierTransformer;
 import edu.illinois.library.cantaloupe.image.MetaIdentifierTransformerFactory;
-import edu.illinois.library.cantaloupe.image.ScaleConstraint;
 import edu.illinois.library.cantaloupe.delegate.DelegateProxy;
 import edu.illinois.library.cantaloupe.delegate.DelegateProxyService;
 import edu.illinois.library.cantaloupe.delegate.UnavailableException;
@@ -153,27 +152,6 @@ public abstract class AbstractResource {
     public void doInit() throws Exception {
         response.setHeader("X-Powered-By",
                 Application.getName() + "/" + Application.getVersion());
-
-        if (DelegateProxyService.isDelegateAvailable()) {
-            requestContext.setLocalURI(request.getReference().toURI());
-            requestContext.setRequestURI(getPublicReference().toURI());
-            requestContext.setRequestHeaders(request.getHeaders().toMap());
-            requestContext.setClientIP(getCanonicalClientIPAddress());
-            requestContext.setCookies(request.getCookies().toMap());
-            MetaIdentifier metaID = getMetaIdentifier();
-            if (metaID != null) {
-                requestContext.setIdentifier(metaID.getIdentifier());
-                requestContext.setPageNumber(metaID.getPageNumber());
-                ScaleConstraint scaleConstraint = metaID.getScaleConstraint();
-                if (scaleConstraint == null) {
-                    // Delegate users will appreciate not having to check for
-                    // null.
-                    scaleConstraint = new ScaleConstraint(1, 1);
-                }
-                requestContext.setScaleConstraint(scaleConstraint);
-            }
-        }
-
         // Log request info.
         getLogger().info("Handling {} {}",
                 request.getMethod(), request.getReference().getPath());
@@ -389,22 +367,6 @@ public abstract class AbstractResource {
             throw new ResourceException(new Status(code));
         }
         return true;
-    }
-
-    /**
-     * @return User agent's IP address, respecting the {@code X-Forwarded-For}
-     *         request header, if present.
-     */
-    private String getCanonicalClientIPAddress() {
-        // The value is expected to be in the format: "client, proxy1, proxy2"
-        final String forwardedFor =
-                request.getHeaders().getFirstValue("X-Forwarded-For", "");
-        if (!forwardedFor.isEmpty()) {
-            return forwardedFor.split(",")[0].trim();
-        } else {
-            // Fall back to the client IP address.
-            return request.getRemoteAddr();
-        }
     }
 
     /**
