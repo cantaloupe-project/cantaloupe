@@ -179,7 +179,7 @@ public class ScaleByPixelsTest extends ScaleTest {
     }
 
     @Test
-    void testGetResultingScalesWithAspectFitInsideAndUnlimitedMaxScale() {
+    void testGetResultingScalesWithAspectFitInside() {
         final Dimension fullSize = new Dimension(900, 600);
         final ScaleConstraint scaleConstraint = new ScaleConstraint(1, 3);
         instance.setMode(ScaleByPixels.Mode.ASPECT_FIT_INSIDE);
@@ -190,19 +190,6 @@ public class ScaleByPixelsTest extends ScaleTest {
                 instance.getWidth() / fullSize.width(),
                 instance.getHeight() / fullSize.height());
         assertArrayEquals(new double[] { expected, expected },
-                instance.getResultingScales(fullSize, scaleConstraint), DELTA);
-    }
-
-    @Test
-    void testGetResultingScalesWithAspectFitInsideAndMaxScale1() {
-        final Dimension fullSize = new Dimension(900, 600);
-        final ScaleConstraint scaleConstraint = new ScaleConstraint(1, 3);
-        instance.setMode(ScaleByPixels.Mode.ASPECT_FIT_INSIDE);
-        instance.setWidth(1800);
-        instance.setHeight(1200);
-        instance.setMaxScale(1.0);
-
-        assertArrayEquals(new double[] { 1.0, 1.0 },
                 instance.getResultingScales(fullSize, scaleConstraint), DELTA);
     }
 
@@ -281,7 +268,7 @@ public class ScaleByPixelsTest extends ScaleTest {
     }
 
     @Test
-    void testGetResultingSize1WithAspectFitInsideAndUnlimitedMaxScale() {
+    void testGetResultingSize1WithAspectFitInside() {
         final Dimension fullSize = new Dimension(600, 400);
         final ScaleConstraint scaleConstraint = new ScaleConstraint(1, 1);
         instance.setMode(ScaleByPixels.Mode.ASPECT_FIT_INSIDE);
@@ -289,19 +276,6 @@ public class ScaleByPixelsTest extends ScaleTest {
         instance.setHeight(600);
 
         assertEquals(new Dimension(900, 600),
-                instance.getResultingSize(fullSize, scaleConstraint));
-    }
-
-    @Test
-    void testGetResultingSize1WithAspectFitInsideAndMaxScale1() {
-        final Dimension fullSize = new Dimension(600, 400);
-        final ScaleConstraint scaleConstraint = new ScaleConstraint(1, 1);
-        instance.setMode(ScaleByPixels.Mode.ASPECT_FIT_INSIDE);
-        instance.setMaxScale(1.0);
-        instance.setWidth(1200);
-        instance.setHeight(600);
-
-        assertEquals(new Dimension(600, 400),
                 instance.getResultingSize(fullSize, scaleConstraint));
     }
 
@@ -395,7 +369,7 @@ public class ScaleByPixelsTest extends ScaleTest {
     }
 
     @Test
-    void testGetResultingSize2WithAspectFitInsideAndUnlimitedMaxScale() {
+    void testGetResultingSize2WithAspectFitInside() {
         final Dimension fullSize = new Dimension(600, 400);
         final ReductionFactor rf = new ReductionFactor(1);
         final ScaleConstraint sc = new ScaleConstraint(1, 2);
@@ -404,20 +378,6 @@ public class ScaleByPixelsTest extends ScaleTest {
         instance.setHeight(600);
 
         assertEquals(new Dimension(900, 600),
-                instance.getResultingSize(fullSize, rf, sc));
-    }
-
-    @Test
-    void testGetResultingSize2WithAspectFitInsideAndMaxScale1() {
-        final Dimension fullSize = new Dimension(600, 400);
-        final ReductionFactor rf = new ReductionFactor(1);
-        final ScaleConstraint sc = new ScaleConstraint(1, 2);
-        instance.setMode(ScaleByPixels.Mode.ASPECT_FIT_INSIDE);
-        instance.setWidth(1200);
-        instance.setHeight(600);
-        instance.setMaxScale(1.0);
-
-        assertEquals(new Dimension(600, 400),
                 instance.getResultingSize(fullSize, rf, sc));
     }
 

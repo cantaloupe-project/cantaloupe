@@ -29,8 +29,8 @@ public abstract class Scale implements Operation {
         MITCHELL("Mitchell", ResampleFilters.getMitchellFilter()),
         TRIANGLE("Triangle", ResampleFilters.getTriangleFilter());
 
-        private String name;
-        private ResampleFilter resampleFilter;
+        private final String name;
+        private final ResampleFilter resampleFilter;
 
         Filter(String name, ResampleFilter resampleFilter) {
             this.name = name;
@@ -100,7 +100,6 @@ public abstract class Scale implements Operation {
 
     private Filter filter;
     private boolean isFrozen;
-    private double maxScale = Double.MAX_VALUE;
 
     void checkFrozen() {
         if (isFrozen) {
@@ -148,10 +147,6 @@ public abstract class Scale implements Operation {
                 scales[0] / rfScale,
                 scales[1] / rfScale
         };
-    }
-
-    double getMaxScale() {
-        return maxScale;
     }
 
     /**
@@ -244,14 +239,6 @@ public abstract class Scale implements Operation {
     public void setFilter(Filter filter) {
         checkFrozen();
         this.filter = filter;
-    }
-
-    /**
-     * @param maxScale Maximum scale to allow. Supply {@literal 0} to indicate
-     *                 no max.
-     */
-    void setMaxScale(double maxScale) {
-        this.maxScale = (maxScale > 0.0001) ? maxScale : Double.MAX_VALUE;
     }
 
     /**

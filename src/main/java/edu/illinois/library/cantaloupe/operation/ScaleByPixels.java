@@ -133,9 +133,6 @@ public class ScaleByPixels extends Scale implements Operation {
                 result[0] = result[1] = Math.min(
                         getWidth() / fullSize.width(),
                         getHeight() / fullSize.height());
-                if (result[0] > getMaxScale() || result[1] > getMaxScale()) {
-                    result[0] = result[1] = getMaxScale();
-                }
                 break;
             default:
                 result[0] = getWidth() / fullSize.width();
@@ -178,11 +175,6 @@ public class ScaleByPixels extends Scale implements Operation {
                         getHeight() / size.height());
                 size.setWidth(size.width() * scalePct);
                 size.setHeight(size.height() * scalePct);
-                if ((size.width() / imageSize.width() > getMaxScale() ||
-                        size.height() / imageSize.height() > getMaxScale())) {
-                    size.setWidth(imageSize.width());
-                    size.setHeight(imageSize.height());
-                }
                 break;
             case NON_ASPECT_FILL:
                 size.setWidth(getWidth());

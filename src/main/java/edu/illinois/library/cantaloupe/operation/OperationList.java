@@ -261,9 +261,6 @@ public final class OperationList implements Iterable<Operation> {
         // Scale customization
         final Scale scale = (Scale) getFirst(Scale.class);
         if (scale != null) {
-            // Max scale
-            scale.setMaxScale(config.getDouble(Key.MAX_SCALE, 1.0));
-
             // Filter
             double[] scales = scale.getResultingScales(
                     sourceImageSize, getScaleConstraint());
