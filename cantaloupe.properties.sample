@@ -52,7 +52,7 @@ slash_substitute =
 # Maximum number of pixels to return in a response, to prevent overloading
 # the server. Requests for more pixels than this will receive an error
 # response. Set to 0 for no maximum.
-max_pixels = 100000000
+max_pixels = 10000000
 
 # Maximum scale to allow (1.0 = full scale; 0 = no maximum).
 max_scale = 1.0
