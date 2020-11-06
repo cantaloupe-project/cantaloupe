@@ -90,6 +90,12 @@ public class QueryTest extends BaseTest {
     }
 
     @Test
+    void testGetFirstValueWithNullValue() {
+        instance = new Query("key1=value1&key2");
+        assertNull(instance.getFirstValue("key2"));
+    }
+
+    @Test
     void testGetFirstValueWithDefaultValue() {
         assertEquals("value1", instance.getFirstValue("key1", "default"));
         assertEquals("default", instance.getFirstValue("bogus", "default"));

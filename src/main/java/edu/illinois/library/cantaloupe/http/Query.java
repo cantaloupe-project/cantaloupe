@@ -75,11 +75,12 @@ public final class Query implements Iterable<KeyValuePair> {
     }
 
     public String getFirstValue(String key) {
-        Optional<String> header = pairs.stream().
-                filter(kv -> kv.getKey().equals(key)).
-                map(KeyValuePair::getValue).
-                findFirst();
-        return header.orElse(null);
+        for (KeyValuePair pair : pairs) {
+            if (pair.getKey().equals(key)) {
+                return pair.getValue();
+            }
+        }
+        return null;
     }
 
     public String getFirstValue(String key, String defaultValue) {
