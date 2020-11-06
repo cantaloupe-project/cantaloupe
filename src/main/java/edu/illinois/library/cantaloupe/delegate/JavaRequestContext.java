@@ -1,5 +1,6 @@
 package edu.illinois.library.cantaloupe.delegate;
 
+import edu.illinois.library.cantaloupe.http.Reference;
 import edu.illinois.library.cantaloupe.image.Dimension;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
@@ -58,7 +59,7 @@ public final class JavaRequestContext implements JavaContext {
 
     @Override
     public String getLocalURI() {
-        URI uri = backingContext.getLocalURI();
+        Reference uri = backingContext.getLocalURI();
         return (uri != null) ? uri.toString() : null;
     }
 
@@ -108,7 +109,7 @@ public final class JavaRequestContext implements JavaContext {
 
     @Override
     public String getRequestURI() {
-        URI uri = backingContext.getRequestURI();
+        Reference uri = backingContext.getRequestURI();
         return (uri != null) ? uri.toString() : null;
     }
 

@@ -1,6 +1,7 @@
 package edu.illinois.library.cantaloupe.resource;
 
 import edu.illinois.library.cantaloupe.delegate.JavaContext;
+import edu.illinois.library.cantaloupe.http.Reference;
 import edu.illinois.library.cantaloupe.image.Dimension;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
@@ -12,7 +13,6 @@ import edu.illinois.library.cantaloupe.test.BaseTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.net.URI;
 import java.util.Collections;
 import java.util.Map;
 
@@ -35,7 +35,7 @@ public class RequestContextTest extends BaseTest {
         Map<String,String> cookies = Map.of("cookie", "yes");
         instance.setCookies(cookies);
         // local URI
-        instance.setLocalURI(new URI("http://example.org/cats"));
+        instance.setLocalURI(new Reference("http://example.org/cats"));
         // metadata
         instance.setMetadata(new Metadata());
         // operation list
@@ -54,7 +54,7 @@ public class RequestContextTest extends BaseTest {
         Map<String,String> headers = Map.of("X-Cats", "Yes");
         instance.setRequestHeaders(headers);
         // request URI
-        instance.setRequestURI(new URI("http://example.org/cats"));
+        instance.setRequestURI(new Reference("http://example.org/cats"));
         // scale constraint
         instance.setScaleConstraint(new ScaleConstraint(1, 2));
     }
@@ -84,8 +84,8 @@ public class RequestContextTest extends BaseTest {
     }
 
     @Test
-    void testSetLocalURI() throws Exception {
-        instance.setLocalURI(new URI("http://example.org/"));
+    void testSetLocalURI() {
+        instance.setLocalURI(new Reference("http://example.org/"));
         assertNotNull(instance.getLocalURI());
         instance.setLocalURI(null);
         assertNull(instance.getLocalURI());
@@ -146,7 +146,7 @@ public class RequestContextTest extends BaseTest {
 
     @Test
     void testSetRequestURI() {
-        instance.setRequestURI(URI.create("http://example.org/"));
+        instance.setRequestURI(new Reference("http://example.org/"));
         assertNotNull(instance.getRequestURI());
         instance.setRequestURI(null);
         assertNull(instance.getRequestURI());

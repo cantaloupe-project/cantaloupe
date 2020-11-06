@@ -33,8 +33,8 @@ public abstract class PublicResource extends AbstractResource {
         super.doInit();
         if (DelegateProxyService.isDelegateAvailable()) {
             RequestContext context = getRequestContext();
-            context.setLocalURI(getRequest().getReference().toURI());
-            context.setRequestURI(getPublicReference().toURI());
+            context.setLocalURI(getRequest().getReference());
+            context.setRequestURI(getPublicReference());
             context.setRequestHeaders(getRequest().getHeaders().toMap());
             context.setClientIP(getCanonicalClientIPAddress());
             context.setCookies(getRequest().getCookies().toMap());

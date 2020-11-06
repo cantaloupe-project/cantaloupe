@@ -1,5 +1,6 @@
 package edu.illinois.library.cantaloupe.delegate;
 
+import edu.illinois.library.cantaloupe.http.Reference;
 import edu.illinois.library.cantaloupe.image.Dimension;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
@@ -12,8 +13,6 @@ import edu.illinois.library.cantaloupe.test.BaseTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -47,17 +46,9 @@ class JavaRequestContextTest extends BaseTest {
         Map<String,String> headers = Map.of("X-Cats", "Yes");
         context.setRequestHeaders(headers);
         // client-requested URI
-        try {
-            context.setRequestURI(new URI("http://example.org/cats"));
-        } catch (URISyntaxException e) {
-            throw new IllegalArgumentException(e);
-        }
+        context.setRequestURI(new Reference("http://example.org/cats"));
         // local URI
-        try {
-            context.setLocalURI(new URI("http://example.org/cats"));
-        } catch (URISyntaxException e) {
-            throw new IllegalArgumentException(e);
-        }
+        context.setLocalURI(new Reference("http://example.org/cats"));
         // scale constraint
         context.setScaleConstraint(new ScaleConstraint(1, 2));
         return context;

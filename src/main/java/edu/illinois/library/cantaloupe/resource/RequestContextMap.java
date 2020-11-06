@@ -1,5 +1,6 @@
 package edu.illinois.library.cantaloupe.resource;
 
+import edu.illinois.library.cantaloupe.http.Reference;
 import edu.illinois.library.cantaloupe.image.Dimension;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
@@ -83,7 +84,7 @@ final class RequestContextMap<K, V> implements Map<K, V> {
                 Identifier identifier = backingContext.getIdentifier();
                 return (identifier != null) ? (V) identifier.toString() : null;
             case LOCAL_URI_KEY:
-                URI uri = backingContext.getLocalURI();
+                Reference uri = backingContext.getLocalURI();
                 return (uri != null) ? (V) uri.toString() : null;
             case METADATA_KEY:
                 Metadata metadata = backingContext.getMetadata();

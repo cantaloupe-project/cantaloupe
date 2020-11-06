@@ -1,5 +1,6 @@
 package edu.illinois.library.cantaloupe.resource;
 
+import edu.illinois.library.cantaloupe.http.Reference;
 import edu.illinois.library.cantaloupe.image.Dimension;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
@@ -11,7 +12,6 @@ import edu.illinois.library.cantaloupe.test.BaseTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.net.URI;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -54,9 +54,9 @@ class RequestContextMapTest extends BaseTest {
         Map<String,String> headers = Map.of("X-Cats", "Yes");
         context.setRequestHeaders(headers);
         // client-requested URI
-        context.setRequestURI(new URI("http://example.org/cats"));
+        context.setRequestURI(new Reference("http://example.org/cats"));
         // local URI
-        context.setLocalURI(new URI("http://example.org/cats"));
+        context.setLocalURI(new Reference("http://example.org/cats"));
 
         instance = new RequestContextMap<>(context);
     }

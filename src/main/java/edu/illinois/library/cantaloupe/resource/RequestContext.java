@@ -1,6 +1,7 @@
 package edu.illinois.library.cantaloupe.resource;
 
 import edu.illinois.library.cantaloupe.delegate.JavaRequestContext;
+import edu.illinois.library.cantaloupe.http.Reference;
 import edu.illinois.library.cantaloupe.image.Dimension;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
@@ -29,14 +30,14 @@ public final class RequestContext {
     private Map<String,String> cookies;
     private Dimension fullSize;
     private Identifier identifier;
-    private URI localURI;
+    private Reference localURI;
     private Metadata metadata;
     private OperationList operations;
     private Format outputFormat;
     private Integer pageCount;
     private Integer pageNumber;
     private Map<String,String> requestHeaders;
-    private URI requestURI;
+    private Reference requestURI;
     private Dimension resultingSize;
     private ScaleConstraint scaleConstraint;
 
@@ -56,7 +57,7 @@ public final class RequestContext {
         return identifier;
     }
 
-    public URI getLocalURI() {
+    public Reference getLocalURI() {
         return localURI;
     }
 
@@ -84,7 +85,7 @@ public final class RequestContext {
         return requestHeaders;
     }
 
-    public URI getRequestURI() {
+    public Reference getRequestURI() {
         return requestURI;
     }
 
@@ -119,9 +120,9 @@ public final class RequestContext {
 
     /**
      * @param uri URI seen by the application. May be {@code null}.
-     * @see #setRequestURI(URI)
+     * @see #setRequestURI(Reference)
      */
-    public void setLocalURI(URI uri) {
+    public void setLocalURI(Reference uri) {
         this.localURI = uri;
     }
 
@@ -181,9 +182,9 @@ public final class RequestContext {
 
     /**
      * @param uri URI requested by the client .May be {@code null}.
-     * @see #setLocalURI(URI)
+     * @see #setLocalURI(Reference)
      */
-    public void setRequestURI(URI uri) {
+    public void setRequestURI(Reference uri) {
         this.requestURI = uri;
     }
 
