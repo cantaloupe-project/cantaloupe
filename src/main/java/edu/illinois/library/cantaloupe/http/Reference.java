@@ -11,6 +11,7 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * <p>Mutable URI class inspired by the one in Restlet.</p>
@@ -18,6 +19,9 @@ import java.util.List;
  * <p>Unlike {@link java.net.URL} and {@link java.net.URI}, this class does not
  * throw {@link java.net.MalformedURLException}s or {@link URISyntaxException}s,
  * which are unfortunately checked, making these classes a pain to use.</p>
+ *
+ * @see <a href="https://tools.ietf.org/html/rfc3986">RFC 3986: Uniform
+ * Resource Identifier</a>
  */
 public final class Reference {
 
@@ -166,6 +170,28 @@ public final class Reference {
         return super.equals(obj);
     }
 
+    /**
+     * @return Authority (userinfo + host + port). If the port is the
+     *         standard port for the scheme, it is omitted.
+     */
+    public String getAuthority() {
+        final StringBuilder builder = new StringBuilder();
+        if (getUser() != null && !getUser().isEmpty() &&
+                getSecret() != null && !getSecret().isEmpty()) {
+            builder.append(getUser());
+            builder.append(":");
+            builder.append(getSecret());
+            builder.append("@");
+        }
+        builder.append(getHost());
+        if (("http".equalsIgnoreCase(getScheme()) && getPort() > 0 && getPort() != 80) ||
+                ("https".equalsIgnoreCase(getScheme()) && getPort() > 0 && getPort() != 443)) {
+            builder.append(":");
+            builder.append(getPort());
+        }
+        return builder.toString();
+    }
+
     public String getFragment() {
         return fragment;
     }
@@ -301,19 +327,7 @@ public final class Reference {
         StringBuilder builder = new StringBuilder();
         builder.append(getScheme());
         builder.append("://");
-        if (getUser() != null && !getUser().isEmpty() &&
-                getSecret() != null && !getSecret().isEmpty()) {
-            builder.append(getUser());
-            builder.append(":");
-            builder.append(getSecret());
-            builder.append("@");
-        }
-        builder.append(getHost());
-        if (("http".equalsIgnoreCase(getScheme()) && getPort() > 0 && getPort() != 80) ||
-                ("https".equalsIgnoreCase(getScheme()) && getPort() > 0 && getPort() != 443)) {
-            builder.append(":");
-            builder.append(getPort());
-        }
+        builder.append(getAuthority());
         builder.append(getPath());
         if (!getQuery().isEmpty()) {
             builder.append("?");

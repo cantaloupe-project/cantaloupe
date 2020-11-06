@@ -288,6 +288,46 @@ public class ReferenceTest extends BaseTest {
     }
 
     @Test
+    void testGetAuthorityWithUserInfo() {
+        assertEquals("user:secret@example.org:81", instance.getAuthority());
+    }
+
+    @Test
+    void testGetAuthorityWithoutUserInfo() {
+        instance.setUser(null);
+        instance.setSecret(null);
+        assertEquals("example.org:81", instance.getAuthority());
+    }
+
+    @Test
+    void testGetAuthorityWithHTTPSchemeAndStandardPort() {
+        instance.setScheme("http");
+        instance.setPort(80);
+        assertEquals("user:secret@example.org", instance.getAuthority());
+    }
+
+    @Test
+    void testGetAuthorityWithHTTPSchemeAndNonStandardPort() {
+        instance.setScheme("http");
+        instance.setPort(81);
+        assertEquals("user:secret@example.org:81", instance.getAuthority());
+    }
+
+    @Test
+    void testGetAuthorityWithHTTPSSchemeAndStandardPort() {
+        instance.setScheme("httpS");
+        instance.setPort(443);
+        assertEquals("user:secret@example.org", instance.getAuthority());
+    }
+
+    @Test
+    void testGetAuthorityWithHTTPSSchemeAndNonStandardPort() {
+        instance.setScheme("httpS");
+        instance.setPort(444);
+        assertEquals("user:secret@example.org:444", instance.getAuthority());
+    }
+
+    @Test
     void testGetFragment() {
         assertEquals("35", instance.getFragment());
     }
