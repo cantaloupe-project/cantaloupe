@@ -364,13 +364,6 @@ public class ReferenceTest extends BaseTest {
     }
 
     @Test
-    void testToURI() throws Exception {
-        URI expected = new URI(instance.toString());
-        URI actual = instance.toURI();
-        assertEquals(expected, actual);
-    }
-
-    @Test
     void testToString() {
         String expected = "http://user:secret@example.org:81/p1/p2.jpg?q1=cats&q2=dogs#35";
         String actual = instance.toString();

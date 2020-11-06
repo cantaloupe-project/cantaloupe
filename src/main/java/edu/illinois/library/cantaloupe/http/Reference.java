@@ -296,14 +296,6 @@ public final class Reference {
         this.user = user;
     }
 
-    public URI toURI() {
-        try {
-            return new URI(toString());
-        } catch (URISyntaxException e) {
-            throw new IllegalArgumentException(e);
-        }
-    }
-
     @Override
     public String toString() {
         StringBuilder builder = new StringBuilder();
