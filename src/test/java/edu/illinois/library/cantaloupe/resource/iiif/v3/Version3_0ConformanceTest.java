@@ -580,6 +580,21 @@ public class Version3_0ConformanceTest extends ResourceTest {
     }
 
     /**
+     * 4.2. (!w,h) "The extracted region is scaled so that the width and height
+     * of the returned image are not greater than w and h, while maintaining
+     * the aspect ratio. The returned image must be as large as possible but
+     * not larger than the extracted region, w or h, or server-imposed limits."
+     */
+    @Test
+    void testSizeDownscaledToFitInsideWithIllegalSize() {
+        client = newClient("/" + IMAGE + "/full/!300,300/0/default.jpg");
+        ResourceException e = assertThrows(
+                ResourceException.class,
+                () -> client.send());
+        assertEquals(400, e.getStatusCode());
+    }
+
+    /**
      * 4.2. (^!w,h) "The extracted region is scaled so that the width and
      * height of the returned image are not greater than w and h, while
      * maintaining the aspect ratio. The returned image must be as large as
@@ -607,13 +622,18 @@ public class Version3_0ConformanceTest extends ResourceTest {
      *
      * Note that because supporting upscaling is not an on/off switch, but
      * rather a continuum based on {@link Key#MAX_SCALE}, this implementation
-     * returns 200 in this situation instead of 501.
+     * returns 400 in this situation instead of 501.
      */
     @Test
     void testSizeUpscaledToFitInsideWithoutServerSupport() {
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.MAX_SCALE, 1.0);
-        assertStatus(200, getHTTPURI("/" + IMAGE + "/full/%5E!150,150/0/color.jpg"));
+        client = newClient("/" + IMAGE + "/full/%5E!150,150/0/color.jpg");
+
+        ResourceException e = assertThrows(
+                ResourceException.class,
+                () -> client.send());
+        assertEquals(400, e.getStatusCode());
     }
 
     /**

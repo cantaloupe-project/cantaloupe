@@ -1,5 +1,7 @@
 package edu.illinois.library.cantaloupe.resource.iiif.v3;
 
+import edu.illinois.library.cantaloupe.config.Configuration;
+import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Dimension;
 import edu.illinois.library.cantaloupe.operation.ScaleByPercent;
 import edu.illinois.library.cantaloupe.operation.ScaleByPixels;
@@ -284,19 +286,41 @@ public class SizeTest extends BaseTest {
     }
 
     @Test
-    void testToScaleWithMaxAndUpscalingAllowed() {
+    void testToScaleWithMaxTypeAndUpscalingAllowedAndPositiveMaxArgument() {
         instance.setType(Size.Type.MAX);
         instance.setUpscalingAllowed(true);
-
+        // 1
         ScaleByPercent actual = (ScaleByPercent) instance.toScale(1);
         assertEquals(1, actual.getPercent(), DELTA);
-
+        // 2
         actual = (ScaleByPercent) instance.toScale(2);
         assertEquals(2, actual.getPercent(), DELTA);
     }
 
     @Test
-    void testToScaleWithMaxAndUpscalingNotAllowed() {
+    void testToScaleWithMaxTypeAndUpscalingAllowedAndZeroMaxArgumentAndPositiveMaxPixels() {
+        final long maxPixels = 1000000;
+        Configuration.getInstance().setProperty(Key.MAX_PIXELS, maxPixels);
+        instance.setType(Size.Type.MAX);
+        instance.setUpscalingAllowed(true);
+
+        ScaleByPixels actual = (ScaleByPixels) instance.toScale(0);
+        assertEquals((int) Math.sqrt(maxPixels), actual.getWidth());
+        assertEquals((int) Math.sqrt(maxPixels), actual.getHeight());
+    }
+
+    @Test
+    void testToScaleWithMaxTypeAndUpscalingAllowedAndZeroMaxArgumentAndZeroMaxPixels() {
+        Configuration.getInstance().setProperty(Key.MAX_PIXELS, 0);
+        instance.setType(Size.Type.MAX);
+        instance.setUpscalingAllowed(true);
+
+        ScaleByPercent actual = (ScaleByPercent) instance.toScale(0);
+        assertEquals(1, actual.getPercent(), DELTA);
+    }
+
+    @Test
+    void testToScaleWithMaxTypeAndUpscalingNotAllowed() {
         instance.setType(Size.Type.MAX);
         instance.setUpscalingAllowed(false);
 
@@ -308,7 +332,7 @@ public class SizeTest extends BaseTest {
     }
 
     @Test
-    void testToScaleWithAspectFitWidth() {
+    void testToScaleWithAspectFitWidthType() {
         instance.setType(Size.Type.ASPECT_FIT_WIDTH);
         instance.setWidth(300);
         assertEquals(
@@ -317,7 +341,7 @@ public class SizeTest extends BaseTest {
     }
 
     @Test
-    void testToScaleWithAspectFitHeight() {
+    void testToScaleWithAspectFitHeightType() {
         instance.setType(Size.Type.ASPECT_FIT_HEIGHT);
         instance.setHeight(300);
         assertEquals(
@@ -326,7 +350,7 @@ public class SizeTest extends BaseTest {
     }
 
     @Test
-    void testToScaleWithAspectFitInside() {
+    void testToScaleWithAspectFitInsideType() {
         instance.setType(Size.Type.ASPECT_FIT_INSIDE);
         instance.setWidth(300);
         instance.setHeight(200);
@@ -336,7 +360,7 @@ public class SizeTest extends BaseTest {
     }
 
     @Test
-    void testToScaleWithNonAspectFill() {
+    void testToScaleWithNonAspectFillType() {
         instance.setType(Size.Type.NON_ASPECT_FILL);
         instance.setWidth(300);
         instance.setHeight(200);
