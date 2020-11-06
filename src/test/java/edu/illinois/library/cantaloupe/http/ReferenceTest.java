@@ -54,10 +54,11 @@ public class ReferenceTest extends BaseTest {
     }
 
     @Test
-    void testStringConstructorWithUnescapedCharacters() {
-        String uri = "http://example.org/[cats]/^dogs?cats=dogs";
+    void testStringConstructorWithUnencodedCharacters() {
+        String uri = "http://example.org/cats`/`dogs?cats=dogs`";
         Reference ref = new Reference(uri);
-        assertEquals(uri, ref.toString());
+        assertEquals("http://example.org/cats%60/%60dogs?cats=dogs%60",
+                ref.toString());
     }
 
     @Test

@@ -54,6 +54,9 @@ public final class Reference {
     }
 
     /**
+     * Initializes an instance from a string. Illegal unencoded characters are
+     * allowed as long as they don't break the URI structure.
+     *
      * @throws IllegalArgumentException if the argument is not a valid URI.
      */
     public Reference(String reference) {
@@ -70,7 +73,7 @@ public final class Reference {
             setScheme(url.getProtocol());
             setHost(url.getHost());
             setPort(url.getPort());
-            setPath(url.getPath());
+            setPath(decode(url.getPath()));
             if (url.getQuery() != null) {
                 setQuery(new Query(url.getQuery()));
             }
