@@ -29,6 +29,7 @@ final class ImageInfoFactory {
 
     private static final String CONTEXT =
             "http://iiif.io/api/image/3/context.json";
+    private static final double DELTA = 0.00000001;
 
     /**
      * Used when {@link Key#IIIF_MIN_SIZE} is not set.
@@ -46,7 +47,8 @@ final class ImageInfoFactory {
 
     private DelegateProxy delegateProxy;
     private double maxScale;
-    private int maxPixels, minSize, minTileSize;
+    private long maxPixels;
+    private int minSize, minTileSize;
 
     ImageInfoFactory() {
         var config  = Configuration.getInstance();
@@ -96,7 +98,7 @@ final class ImageInfoFactory {
         { // maxArea
             // N.B.: maxWidth and maxHeight are not supported as maxArea more
             // succinctly fulfills the "emergency brake" role.
-            int effectiveMaxPixels = getEffectiveMaxPixels(virtualSize);
+            long effectiveMaxPixels = getEffectiveMaxPixels(virtualSize);
             if (effectiveMaxPixels > 0) {
                 responseInfo.put("maxArea", effectiveMaxPixels);
             }
@@ -167,12 +169,12 @@ final class ImageInfoFactory {
 
         // The min reduction factor is the smallest number of reductions that
         // are required in order to fit within maxPixels.
-        final int effectiveMaxPixels = getEffectiveMaxPixels(virtualSize);
-        final int minReductionFactor = (effectiveMaxPixels > 0) ?
+        final long effectiveMaxPixels = getEffectiveMaxPixels(virtualSize);
+        final long minReductionFactor  = (effectiveMaxPixels > 0) ?
                 ImageInfoUtil.minReductionFactor(virtualSize, effectiveMaxPixels) : 0;
         // The max reduction factor is the number of times the full image
         // dimensions can be halved until they're smaller than minSize.
-        final int maxReductionFactor =
+        final long maxReductionFactor =
                 ImageInfoUtil.maxReductionFactor(virtualSize, minSize);
 
         for (double i = Math.pow(2, minReductionFactor);
@@ -232,9 +234,14 @@ final class ImageInfoFactory {
      * @return         The smaller of {@link #maxPixels} or the area at {@link
      *                 #maxScale}.
      */
-    private int getEffectiveMaxPixels(Dimension fullSize) {
+    private long getEffectiveMaxPixels(Dimension fullSize) {
         final double area = fullSize.width() * fullSize.height();
-        return (int) Math.min(area * maxScale, maxPixels);
+        if (maxPixels == 0) {
+            return Math.round(area * maxScale);
+        } else if (maxScale < DELTA) {
+            return maxPixels;
+        }
+        return (long) Math.min(area * maxScale, maxPixels);
     }
 
     void setDelegateProxy(DelegateProxy proxy) {
@@ -245,7 +252,7 @@ final class ImageInfoFactory {
      * @param maxPixels Maximum number of pixels that will be used in {@code
      *                  sizes} keys.
      */
-    void setMaxPixels(int maxPixels) {
+    void setMaxPixels(long maxPixels) {
         this.maxPixels = maxPixels;
     }
 

@@ -26,7 +26,6 @@ public class ImageInfoFactoryTest extends BaseTest {
     @BeforeEach
     public void setUp() throws Exception {
         super.setUp();
-
         instance = new ImageInfoFactory();
     }
 
@@ -145,8 +144,30 @@ public class ImageInfoFactoryTest extends BaseTest {
     }
 
     @Test
-    void testNewImageInfoMaxAreaWithPositiveMaxPixels() {
-        final int maxPixels = 100;
+    void testNewImageInfoMaxAreaWithPositiveMaxPixelsGreaterThanAndPositiveMaxScale() {
+        final long maxPixels = 1000;
+        final double maxScale = 1.2;
+        instance.setMaxPixels(maxPixels);
+        instance.setMaxScale(maxScale);
+
+        ImageInfo<String, Object> imageInfo = invokeNewImageInfo();
+        assertEquals(maxPixels, imageInfo.get("maxArea"));
+    }
+
+    @Test
+    void testNewImageInfoMaxAreaWithPositiveMaxPixelsLessThanPositiveMaxScale() {
+        final long maxPixels = 100;
+        final double maxScale = 50;
+        instance.setMaxPixels(maxPixels);
+        instance.setMaxScale(maxScale);
+
+        ImageInfo<String, Object> imageInfo = invokeNewImageInfo();
+        assertEquals(maxPixels, imageInfo.get("maxArea")); // TODO: fix
+    }
+
+    @Test
+    void testNewImageInfoMaxAreaWithPositiveMaxPixelsAndZeroMaxScale() {
+        final long maxPixels = 100;
         instance.setMaxPixels(maxPixels);
 
         ImageInfo<String, Object> imageInfo = invokeNewImageInfo();
@@ -154,8 +175,20 @@ public class ImageInfoFactoryTest extends BaseTest {
     }
 
     @Test
-    void testNewImageInfoMaxAreaWithZeroMaxPixels() {
+    void testNewImageInfoMaxAreaWithZeroMaxPixelsAndPositiveMaxScale() {
+        final double maxScale = 2;
+        instance.setMaxPixels(0);
+        instance.setMaxScale(maxScale);
+
+        ImageInfo<String, Object> imageInfo = invokeNewImageInfo();
+        assertEquals(Math.round(1500 * 1200 * maxScale),
+                imageInfo.get("maxArea"));
+    }
+
+    @Test
+    void testNewImageInfoMaxAreaWithZeroMaxPixelsAndZeroMaxScale() {
         final int maxPixels = 0;
+        instance.setMaxScale(0);
         instance.setMaxPixels(maxPixels);
 
         ImageInfo<String, Object> imageInfo = invokeNewImageInfo();
@@ -166,10 +199,10 @@ public class ImageInfoFactoryTest extends BaseTest {
     void testNewImageInfoMaxAreaWithAllowUpscalingDisabled() {
         final int maxPixels = 2000000;
         instance.setMaxPixels(maxPixels);
-        instance.setMaxScale(1.0);
+        instance.setMaxScale(1);
 
         ImageInfo<String, Object> imageInfo = invokeNewImageInfo();
-        assertEquals(1500 * 1200, imageInfo.get("maxArea"));
+        assertEquals(Math.round(1500 * 1200), imageInfo.get("maxArea"));
     }
 
     @Test

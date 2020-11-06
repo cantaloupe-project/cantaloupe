@@ -34,7 +34,7 @@ public final class ImageInfoUtil {
      *                  maximum allowed number of pixels.
      */
     public static int minReductionFactor(final Dimension fullSize,
-                                         final int maxPixels) {
+                                         final long maxPixels) {
         if (maxPixels <= 0) {
             throw new IllegalArgumentException("maxPixels must be a positive number.");
         }
