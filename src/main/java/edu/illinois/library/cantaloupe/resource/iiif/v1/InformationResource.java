@@ -11,7 +11,7 @@ import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.resource.JacksonRepresentation;
 import edu.illinois.library.cantaloupe.resource.ResourceException;
 import edu.illinois.library.cantaloupe.resource.Route;
-import edu.illinois.library.cantaloupe.resource.generic.InformationRequestHandler;
+import edu.illinois.library.cantaloupe.resource.InformationRequestHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

@@ -1,4 +1,4 @@
-package edu.illinois.library.cantaloupe.resource.generic;
+package edu.illinois.library.cantaloupe.resource;
 
 import edu.illinois.library.cantaloupe.cache.CacheFacade;
 import edu.illinois.library.cantaloupe.cache.CacheFactory;
@@ -8,7 +8,6 @@ import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.processor.Processor;
-import edu.illinois.library.cantaloupe.resource.RequestContext;
 import edu.illinois.library.cantaloupe.delegate.DelegateProxy;
 import org.slf4j.Logger;
 

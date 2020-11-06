@@ -11,7 +11,7 @@ import edu.illinois.library.cantaloupe.image.MediaType;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.operation.Scale;
 import edu.illinois.library.cantaloupe.processor.Processor;
-import edu.illinois.library.cantaloupe.resource.generic.*;
+import edu.illinois.library.cantaloupe.resource.ImageRequestHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

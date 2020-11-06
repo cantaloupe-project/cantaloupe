@@ -14,7 +14,7 @@ import edu.illinois.library.cantaloupe.operation.Scale;
 import edu.illinois.library.cantaloupe.processor.Processor;
 import edu.illinois.library.cantaloupe.resource.Route;
 import edu.illinois.library.cantaloupe.resource.ScaleRestrictedException;
-import edu.illinois.library.cantaloupe.resource.generic.ImageRequestHandler;
+import edu.illinois.library.cantaloupe.resource.ImageRequestHandler;
 import edu.illinois.library.cantaloupe.resource.iiif.SizeRestrictedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
