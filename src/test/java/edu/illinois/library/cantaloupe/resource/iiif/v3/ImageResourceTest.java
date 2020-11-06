@@ -316,13 +316,13 @@ public class ImageResourceTest extends ResourceTest {
     @Test
     void testGETLinkHeaderWithEncodedCharacters() throws Exception {
         Configuration config = Configuration.getInstance();
-        config.setProperty(Key.SLASH_SUBSTITUTE, ":");
+        config.setProperty(Key.SLASH_SUBSTITUTE, "`");
 
-        client = newClient("/subfolder%3Ajpg/full/max/0/color.jpg");
+        client = newClient("/subfolder%60jpg/full/max/0/color.jpg");
         Response response = client.send();
 
         String value = response.getHeaders().getFirstValue("Link");
-        assertTrue(value.contains("subfolder%3Ajpg"));
+        assertTrue(value.contains("subfolder%60jpg"));
     }
 
     @Test

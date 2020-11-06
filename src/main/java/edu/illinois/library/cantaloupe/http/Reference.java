@@ -11,14 +11,15 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
- * <p>Mutable URI class inspired by the one in Restlet.</p>
+ * <p>Mutable URI class.</p>
  *
  * <p>Unlike {@link java.net.URL} and {@link java.net.URI}, this class does not
  * throw {@link java.net.MalformedURLException}s or {@link URISyntaxException}s,
  * which are unfortunately checked, making these classes a pain to use.</p>
+ *
+ * <p>Components are stored unencoded.</p>
  *
  * @see <a href="https://tools.ietf.org/html/rfc3986">RFC 3986: Uniform
  * Resource Identifier</a>
@@ -325,22 +326,35 @@ public final class Reference {
         this.user = user;
     }
 
+    /**
+     * @return URI string with all components encoded.
+     */
     @Override
     public String toString() {
-        StringBuilder builder = new StringBuilder();
-        builder.append(getScheme());
-        builder.append("://");
-        builder.append(getAuthority());
-        builder.append(getPath());
-        if (!getQuery().isEmpty()) {
-            builder.append("?");
-            builder.append(getQuery().toString());
+        try {
+            String query = getQuery().toString();
+            URI uri = new URI(getScheme(),
+                    getAuthority(),
+                    getPath(),
+                    query.isBlank() ? null : query,
+                    getFragment());
+            return uri.toString();
+        } catch (URISyntaxException ignore) {
+            StringBuilder builder = new StringBuilder();
+            builder.append(getScheme());
+            builder.append("://");
+            builder.append(getAuthority());
+            builder.append(getPath());
+            if (!getQuery().isEmpty()) {
+                builder.append("?");
+                builder.append(getQuery().toString());
+            }
+            if (getFragment() != null) {
+                builder.append("#");
+                builder.append(getFragment());
+            }
+            return builder.toString();
         }
-        if (getFragment() != null) {
-            builder.append("#");
-            builder.append(getFragment());
-        }
-        return builder.toString();
     }
 
 }

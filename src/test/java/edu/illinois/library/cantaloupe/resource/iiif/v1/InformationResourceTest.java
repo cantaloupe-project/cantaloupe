@@ -476,9 +476,9 @@ public class InformationResourceTest extends ResourceTest {
     @Test
     void testGETURIsInJSONWithEncodedCharacters() throws Exception {
         Configuration config = Configuration.getInstance();
-        config.setProperty(Key.SLASH_SUBSTITUTE, ":");
+        config.setProperty(Key.SLASH_SUBSTITUTE, "`");
 
-        final String path = "/subfolder%3Ajpg";
+        final String path = "/subfolder%60jpg";
         client = newClient(path + "/info.json");
         Response response = client.send();
 

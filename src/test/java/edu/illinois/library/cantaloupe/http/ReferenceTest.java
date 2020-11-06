@@ -411,4 +411,12 @@ public class ReferenceTest extends BaseTest {
         assertEquals(expected, actual);
     }
 
+    @Test
+    void testToStringEncodesComponents() {
+        instance        = new Reference("http://user`:secret`@example.org:81/p`/p2.jpg?q1=cats`");
+        String expected = "http://user%60:secret%60@example.org:81/p%60/p2.jpg?q1=cats%60";
+        String actual   = instance.toString();
+        assertEquals(expected, actual);
+    }
+
 }

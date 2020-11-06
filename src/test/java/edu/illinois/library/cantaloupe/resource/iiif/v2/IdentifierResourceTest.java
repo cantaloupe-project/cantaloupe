@@ -30,10 +30,10 @@ public class IdentifierResourceTest extends ResourceTest {
     @Test
     void testGETRedirectToInfoJSONWithEncodedCharacters() {
         Configuration config = Configuration.getInstance();
-        config.setProperty(Key.SLASH_SUBSTITUTE, ":");
+        config.setProperty(Key.SLASH_SUBSTITUTE, "`");
 
-        URI fromURI = getHTTPURI("/subfolder%3A" + IMAGE);
-        URI toURI = getHTTPURI("/subfolder%3A" + IMAGE + "/info.json");
+        URI fromURI = getHTTPURI("/subfolder%60" + IMAGE);
+        URI toURI = getHTTPURI("/subfolder%60" + IMAGE + "/info.json");
         tester.testRedirectToInfoJSONWithEncodedCharacters(fromURI, toURI);
     }
 
