@@ -202,7 +202,7 @@ public class ImageInfoFactoryTest extends BaseTest {
         instance.setMaxScale(1);
 
         ImageInfo<String, Object> imageInfo = invokeNewImageInfo();
-        assertEquals(Math.round(1500 * 1200), imageInfo.get("maxArea"));
+        assertEquals((long) Math.round(1500 * 1200), imageInfo.get("maxArea"));
     }
 
     @Test

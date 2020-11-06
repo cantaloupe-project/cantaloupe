@@ -29,7 +29,7 @@ public class MockHttpServletRequest implements HttpServletRequest {
     private String contextPath;
     private String method = "GET";
     private String remoteAddr;
-    private String requestURL = "";
+    private String requestURL = "http://example.org/path";
     private final Map<String, List<String>> headers = new HashMap<>();
 
     @Override
