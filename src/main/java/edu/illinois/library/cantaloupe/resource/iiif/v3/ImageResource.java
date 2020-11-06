@@ -87,6 +87,10 @@ public class ImageResource extends IIIF3Resource {
             }
 
             @Override
+            public void infoAvailable(Info info) {
+            }
+
+            @Override
             public void willProcessImage(Processor processor,
                                          Info info) throws Exception {
                 final Metadata metadata       = info.getMetadata();

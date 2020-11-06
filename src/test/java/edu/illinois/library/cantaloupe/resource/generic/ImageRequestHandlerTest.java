@@ -99,7 +99,7 @@ public class ImageRequestHandlerTest extends BaseTest {
     private static class IntrospectiveCallback implements ImageRequestHandler.Callback {
         private boolean isPreAuthorizeCalled, isAuthorizeCalled,
                 isWillStreamImageFromDerivativeCacheCalled,
-                isWillProcessImageCalled;
+                isInfoAvailableCalled, isWillProcessImageCalled;
 
         @Override
         public boolean preAuthorize() {
@@ -116,6 +116,11 @@ public class ImageRequestHandlerTest extends BaseTest {
         @Override
         public void willStreamImageFromDerivativeCache() {
             isWillStreamImageFromDerivativeCacheCalled = true;
+        }
+
+        @Override
+        public void infoAvailable(Info info) {
+            isInfoAvailableCalled = true;
         }
 
         @Override
@@ -223,6 +228,32 @@ public class ImageRequestHandlerTest extends BaseTest {
              OutputStream outputStream = OutputStream.nullOutputStream()) {
             handler.handle(outputStream);
             assertTrue(callback.isWillStreamImageFromDerivativeCacheCalled);
+        }
+    }
+
+    @Test
+    void testHandleCallsInfoAvailableCallback() throws Exception {
+        { // Configure the application.
+            final Configuration config = Configuration.getInstance();
+            config.setProperty(Key.CACHE_SERVER_RESOLVE_FIRST, false);
+            config.setProperty(Key.SOURCE_STATIC, "FilesystemSource");
+            config.setProperty(Key.FILESYSTEMSOURCE_PATH_PREFIX,
+                    TestUtil.getImagesPath().toString() + "/");
+        }
+
+        // Configure the request.
+        final OperationList opList  = new OperationList();
+        opList.setIdentifier(new Identifier("jpg-rgb-64x48x8.jpg"));
+        opList.add(new Encode(Format.get("jpg")));
+
+        final IntrospectiveCallback callback = new IntrospectiveCallback();
+        try (ImageRequestHandler handler = ImageRequestHandler.builder()
+                .withCallback(callback)
+                .withOperationList(opList)
+                .build();
+             OutputStream outputStream = OutputStream.nullOutputStream()) {
+            handler.handle(outputStream);
+            assertTrue(callback.isInfoAvailableCalled);
         }
     }
 
@@ -356,6 +387,9 @@ public class ImageRequestHandlerTest extends BaseTest {
                     public void willStreamImageFromDerivativeCache() {
                     }
                     @Override
+                    public void infoAvailable(Info info) {
+                    }
+                    @Override
                     public void willProcessImage(Processor processor, Info info) {
                     }
                 })
@@ -393,6 +427,9 @@ public class ImageRequestHandlerTest extends BaseTest {
                     }
                     @Override
                     public void willStreamImageFromDerivativeCache() {
+                    }
+                    @Override
+                    public void infoAvailable(Info info) {
                     }
                     @Override
                     public void willProcessImage(Processor processor, Info info) {

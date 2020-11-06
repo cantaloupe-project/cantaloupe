@@ -199,6 +199,15 @@ public class ImageRequestHandler extends AbstractRequestHandler
         void willStreamImageFromDerivativeCache() throws Exception;
 
         /**
+         * Called when image information is available. Always called before
+         * {@link #willProcessImage(Processor, Info)}, but not called if {@link
+         * #willStreamImageFromDerivativeCache()} is called.
+         *
+         * @param info Efficiently obtained instance.
+         */
+        void infoAvailable(Info info) throws Exception;
+
+        /**
          * <p>All setup is complete and processing will begin very soon after
          * this method returns.</p>
          *
@@ -226,6 +235,9 @@ public class ImageRequestHandler extends AbstractRequestHandler
         }
         @Override
         public void willStreamImageFromDerivativeCache() {
+        }
+        @Override
+        public void infoAvailable(Info info) {
         }
         @Override
         public void willProcessImage(Processor processor, Info info) {
@@ -369,6 +381,8 @@ public class ImageRequestHandler extends AbstractRequestHandler
                 final Info info = getOrReadInfo(
                         operationList.getIdentifier(),
                         processor);
+                callback.infoAvailable(info);
+
                 Dimension fullSize;
                 try {
                     fullSize = info.getSize(operationList.getPageIndex());

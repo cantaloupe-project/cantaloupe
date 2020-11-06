@@ -82,6 +82,10 @@ public class ImageResource extends IIIF1Resource {
             }
 
             @Override
+            public void infoAvailable(Info info) {
+            }
+
+            @Override
             public void willProcessImage(Processor processor,
                                          Info info) throws Exception {
                 final Dimension fullSize = info.getSize(getPageIndex());
