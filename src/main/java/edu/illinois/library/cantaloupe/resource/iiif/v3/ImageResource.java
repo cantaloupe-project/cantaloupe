@@ -8,10 +8,12 @@ import edu.illinois.library.cantaloupe.image.Dimension;
 import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.image.Metadata;
 import edu.illinois.library.cantaloupe.image.Orientation;
+import edu.illinois.library.cantaloupe.image.ScaleConstraint;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.operation.Scale;
 import edu.illinois.library.cantaloupe.processor.Processor;
 import edu.illinois.library.cantaloupe.resource.Route;
+import edu.illinois.library.cantaloupe.resource.ScaleRestrictedException;
 import edu.illinois.library.cantaloupe.resource.generic.ImageRequestHandler;
 import edu.illinois.library.cantaloupe.resource.iiif.SizeRestrictedException;
 import org.slf4j.Logger;
@@ -90,13 +92,12 @@ public class ImageResource extends IIIF3Resource {
                 final Metadata metadata       = info.getMetadata();
                 final Orientation orientation = (metadata != null) ?
                         metadata.getOrientation() : Orientation.ROTATE_0;
+                final Scale scale             = (Scale) ops.getFirst(Scale.class);
                 final Dimension virtualSize   = orientation.adjustedSize(info.getSize(pageIndex));
                 final Dimension resultingSize = ops.getResultingSize(info.getSize());
-                validateScale(
-                        virtualSize,
-                        (Scale) ops.getFirst(Scale.class),
-                        Status.BAD_REQUEST);
-                validateSize(resultingSize, virtualSize);
+                validateScale(virtualSize, scale, params.getSize().isUpscalingAllowed());
+                validateScale(virtualSize, scale, Status.BAD_REQUEST);
+                validateSize(virtualSize, resultingSize);
 
                 addHeaders(params,
                         info.getSize(pageIndex),
@@ -131,7 +132,7 @@ public class ImageResource extends IIIF3Resource {
     }
 
     /**
-     * Invokes {@link #addHeaders(String, String)} and also adds an {@code Link}
+     * Invokes {@link #addHeaders(String, String)} and also adds a {@code Link}
      * header.
      */
     private void addHeaders(Parameters params,
@@ -154,8 +155,44 @@ public class ImageResource extends IIIF3Resource {
         return Configuration.getInstance().getDouble(Key.MAX_SCALE, 1);
     }
 
-    private void validateSize(Dimension resultingSize,
-                              Dimension virtualSize) throws SizeRestrictedException {
+    /**
+     * Ensures that the resulting scale is less than or equal to 1 if the
+     * {@literal size} URI path component does not begin with {@literal ^}.
+     *
+     * @param virtualSize        Source image size post-rotation and post-scale
+     *                           constraint.
+     * @param scale              May be {@code null}.
+     * @param isUpscalingAllowed Whether the {@literal size} URI path component
+     *                           begins with {@literal ^}.
+     */
+    private void validateScale(Dimension virtualSize,
+                               Scale scale,
+                               boolean isUpscalingAllowed) throws ScaleRestrictedException {
+        if (!isUpscalingAllowed && scale != null) {
+            final ScaleConstraint constraint =
+                    (getMetaIdentifier().getScaleConstraint() != null) ?
+                            getMetaIdentifier().getScaleConstraint() :
+                            new ScaleConstraint(1, 1);
+            if (scale.isWidthUp(virtualSize, constraint) ||
+                    scale.isHeightUp(virtualSize, constraint)) {
+                throw new ScaleRestrictedException("Requests for scales in " +
+                        "excess of 100% must prefix the scale path component " +
+                        "with a ^ character.",
+                        Status.BAD_REQUEST);
+            }
+        }
+    }
+
+    /**
+     * Ensures that {@code resultingSize} is valid if {@link
+     * Key#IIIF_RESTRICT_TO_SIZES} is set to {@code true}.
+     *
+     * @param virtualSize   Source image size post-rotation and post-scale
+     *                      constraint.
+     * @param resultingSize Requested size.
+     */
+    private void validateSize(Dimension virtualSize,
+                              Dimension resultingSize) throws SizeRestrictedException {
         final Configuration config = Configuration.getInstance();
         if (config.getBoolean(Key.IIIF_RESTRICT_TO_SIZES, false)) {
             var factory = new ImageInfoFactory();
@@ -164,7 +201,8 @@ public class ImageResource extends IIIF3Resource {
                             s.height == resultingSize.intHeight())
                     .findAny()
                     .orElseThrow(() -> new SizeRestrictedException(
-                            "Available sizes are limited to those in the information response."));
+                            "Available sizes are limited to those listed in " +
+                                    "the information response."));
         }
     }
 

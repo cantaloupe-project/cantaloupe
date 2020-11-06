@@ -41,6 +41,7 @@ public abstract class ResourceTest extends BaseTest {
         super.setUp();
 
         final Configuration config = Configuration.getInstance();
+        config.setProperty(Key.MAX_SCALE, 0);
         config.setProperty(Key.ADMIN_ENABLED, true);
         config.setProperty(Key.DELEGATE_SCRIPT_ENABLED, true);
         config.setProperty(Key.DELEGATE_SCRIPT_PATHNAME,

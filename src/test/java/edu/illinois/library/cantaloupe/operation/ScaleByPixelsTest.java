@@ -493,6 +493,78 @@ public class ScaleByPixelsTest extends ScaleTest {
     }
 
     @Test
+    void testIsHeightUpWithAspectFitWidth() {
+        Dimension size = new Dimension(600, 400);
+        ScaleConstraint scaleConstraint = new ScaleConstraint(1, 1);
+
+        instance = new ScaleByPixels(
+                null, 300, ScaleByPixels.Mode.ASPECT_FIT_WIDTH);
+        instance.setWidth(300); // down
+        assertFalse(instance.isHeightUp(size, scaleConstraint));
+        instance.setWidth(600); // even
+        assertFalse(instance.isHeightUp(size, scaleConstraint));
+        instance.setWidth(800); // up
+        assertTrue(instance.isHeightUp(size, scaleConstraint));
+    }
+
+    @Test
+    void testIsHeightUpWithAspectFitHeight() {
+        Dimension size = new Dimension(600, 400);
+        ScaleConstraint scaleConstraint = new ScaleConstraint(1, 1);
+
+        instance = new ScaleByPixels(
+                null, 200, ScaleByPixels.Mode.ASPECT_FIT_HEIGHT);
+        instance.setHeight(200); // down
+        assertFalse(instance.isHeightUp(size, scaleConstraint));
+        instance.setHeight(400); // even
+        assertFalse(instance.isHeightUp(size, scaleConstraint));
+        instance.setHeight(600); // up
+        assertTrue(instance.isHeightUp(size, scaleConstraint));
+    }
+
+    @Test
+    void testIsHeightUpWithAspectFitInside() {
+        Dimension size = new Dimension(600, 400);
+        ScaleConstraint scaleConstraint = new ScaleConstraint(1, 1);
+
+        instance = new ScaleByPixels(
+                null, null, ScaleByPixels.Mode.ASPECT_FIT_INSIDE);
+        instance.setWidth(300); // down
+        instance.setHeight(200);
+        assertFalse(instance.isHeightUp(size, scaleConstraint));
+        instance.setWidth(600); // even
+        instance.setHeight(400);
+        assertFalse(instance.isHeightUp(size, scaleConstraint));
+        instance.setWidth(800); // up
+        instance.setHeight(600);
+        assertTrue(instance.isHeightUp(size, scaleConstraint));
+    }
+
+    @Test
+    void testIsHeightUpWithNonAspectFill() {
+        Dimension size = new Dimension(600, 400);
+        ScaleConstraint scaleConstraint = new ScaleConstraint(1, 1);
+
+        instance = new ScaleByPixels(
+                null, null, ScaleByPixels.Mode.NON_ASPECT_FILL);
+        instance.setWidth(300); // down
+        instance.setHeight(200);
+        assertFalse(instance.isHeightUp(size, scaleConstraint));
+        instance.setWidth(600); // even
+        instance.setHeight(400);
+        assertFalse(instance.isHeightUp(size, scaleConstraint));
+        instance.setWidth(800); // up
+        instance.setHeight(600);
+        assertTrue(instance.isHeightUp(size, scaleConstraint));
+        instance.setWidth(500);
+        instance.setHeight(800);
+        assertTrue(instance.isHeightUp(size, scaleConstraint));
+        instance.setWidth(900);
+        instance.setHeight(300);
+        assertFalse(instance.isHeightUp(size, scaleConstraint));
+    }
+
+    @Test
     void testIsUpWithAspectFitWidth() {
         Dimension size = new Dimension(600, 400);
         ScaleConstraint scaleConstraint = new ScaleConstraint(1, 1);
@@ -562,6 +634,78 @@ public class ScaleByPixelsTest extends ScaleTest {
         instance.setWidth(900);
         instance.setHeight(300);
         assertTrue(instance.isUp(size, scaleConstraint));
+    }
+
+    @Test
+    void testIsWidthUpWithAspectFitWidth() {
+        Dimension size = new Dimension(600, 400);
+        ScaleConstraint scaleConstraint = new ScaleConstraint(1, 1);
+
+        instance = new ScaleByPixels(
+                null, 300, ScaleByPixels.Mode.ASPECT_FIT_WIDTH);
+        instance.setWidth(300); // down
+        assertFalse(instance.isWidthUp(size, scaleConstraint));
+        instance.setWidth(600); // even
+        assertFalse(instance.isWidthUp(size, scaleConstraint));
+        instance.setWidth(800); // up
+        assertTrue(instance.isWidthUp(size, scaleConstraint));
+    }
+
+    @Test
+    void testIsWidthUpWithAspectFitHeight() {
+        Dimension size = new Dimension(600, 400);
+        ScaleConstraint scaleConstraint = new ScaleConstraint(1, 1);
+
+        instance = new ScaleByPixels(
+                null, 200, ScaleByPixels.Mode.ASPECT_FIT_HEIGHT);
+        instance.setHeight(200); // down
+        assertFalse(instance.isWidthUp(size, scaleConstraint));
+        instance.setHeight(400); // even
+        assertFalse(instance.isWidthUp(size, scaleConstraint));
+        instance.setHeight(600); // up
+        assertTrue(instance.isWidthUp(size, scaleConstraint));
+    }
+
+    @Test
+    void testIsWidthUpWithAspectFitInside() {
+        Dimension size = new Dimension(600, 400);
+        ScaleConstraint scaleConstraint = new ScaleConstraint(1, 1);
+
+        instance = new ScaleByPixels(
+                null, null, ScaleByPixels.Mode.ASPECT_FIT_INSIDE);
+        instance.setWidth(300); // down
+        instance.setHeight(200);
+        assertFalse(instance.isWidthUp(size, scaleConstraint));
+        instance.setWidth(600); // even
+        instance.setHeight(400);
+        assertFalse(instance.isWidthUp(size, scaleConstraint));
+        instance.setWidth(800); // up
+        instance.setHeight(600);
+        assertTrue(instance.isWidthUp(size, scaleConstraint));
+    }
+
+    @Test
+    void testIsWidthUpWithNonAspectFill() {
+        Dimension size = new Dimension(600, 400);
+        ScaleConstraint scaleConstraint = new ScaleConstraint(1, 1);
+
+        instance = new ScaleByPixels(
+                null, null, ScaleByPixels.Mode.NON_ASPECT_FILL);
+        instance.setWidth(300); // down
+        instance.setHeight(200);
+        assertFalse(instance.isWidthUp(size, scaleConstraint));
+        instance.setWidth(600); // even
+        instance.setHeight(400);
+        assertFalse(instance.isWidthUp(size, scaleConstraint));
+        instance.setWidth(800); // up
+        instance.setHeight(600);
+        assertTrue(instance.isWidthUp(size, scaleConstraint));
+        instance.setWidth(500);
+        instance.setHeight(800);
+        assertFalse(instance.isWidthUp(size, scaleConstraint));
+        instance.setWidth(900);
+        instance.setHeight(300);
+        assertTrue(instance.isWidthUp(size, scaleConstraint));
     }
 
     @Test

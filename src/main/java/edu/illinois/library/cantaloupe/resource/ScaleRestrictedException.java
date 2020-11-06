@@ -10,4 +10,8 @@ public class ScaleRestrictedException extends ResourceException {
                 Math.round(maxScale * 100)));
     }
 
+    public ScaleRestrictedException(String message, Status status) {
+        super(status, message);
+    }
+
 }

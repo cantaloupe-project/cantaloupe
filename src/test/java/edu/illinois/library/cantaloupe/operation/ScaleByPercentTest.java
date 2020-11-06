@@ -191,6 +191,19 @@ public class ScaleByPercentTest extends ScaleTest {
     }
 
     @Test
+    void testIsHeightUp() {
+        Dimension size = new Dimension(600, 400);
+        ScaleConstraint scaleConstraint = new ScaleConstraint(1, 1);
+
+        instance.setPercent(0.5); // down
+        assertFalse(instance.isHeightUp(size, scaleConstraint));
+        instance.setPercent(1.0); // even
+        assertFalse(instance.isHeightUp(size, scaleConstraint));
+        instance.setPercent(1.2); // up
+        assertTrue(instance.isHeightUp(size, scaleConstraint));
+    }
+
+    @Test
     void testIsUp() {
         Dimension size = new Dimension(600, 400);
         ScaleConstraint scaleConstraint = new ScaleConstraint(1, 1);
@@ -201,6 +214,19 @@ public class ScaleByPercentTest extends ScaleTest {
         assertFalse(instance.isUp(size, scaleConstraint));
         instance.setPercent(1.2); // up
         assertTrue(instance.isUp(size, scaleConstraint));
+    }
+
+    @Test
+    void testIsWidthUp() {
+        Dimension size = new Dimension(600, 400);
+        ScaleConstraint scaleConstraint = new ScaleConstraint(1, 1);
+
+        instance.setPercent(0.5); // down
+        assertFalse(instance.isWidthUp(size, scaleConstraint));
+        instance.setPercent(1.0); // even
+        assertFalse(instance.isWidthUp(size, scaleConstraint));
+        instance.setPercent(1.2); // up
+        assertTrue(instance.isWidthUp(size, scaleConstraint));
     }
 
     @Test

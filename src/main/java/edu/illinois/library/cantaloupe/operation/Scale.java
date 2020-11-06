@@ -204,9 +204,19 @@ public abstract class Scale implements Operation {
                                                ScaleConstraint scaleConstraint);
 
     /**
+     * @return Whether the instance would effectively upscale the Y axis of the
+     *         image it is applied to.
+     */
+    public boolean isHeightUp(Dimension comparedToSize,
+                              ScaleConstraint comparedToScaleConstraint) {
+        Dimension resultingSize = getResultingSize(
+                comparedToSize, comparedToScaleConstraint);
+        return (resultingSize.height() - comparedToSize.height() > DELTA);
+    }
+
+    /**
      * @return Whether the instance would effectively upscale the image it is
-     *         applied to, i.e. whether the resulting image would have more
-     *         pixels.
+     *         applied to on both axes.
      */
     public boolean isUp(Dimension comparedToSize,
                         ScaleConstraint comparedToScaleConstraint) {
@@ -214,6 +224,17 @@ public abstract class Scale implements Operation {
                 comparedToSize, comparedToScaleConstraint);
         return ((resultingSize.width() * resultingSize.height()) -
                 (comparedToSize.width() * comparedToSize.height()) > DELTA);
+    }
+
+    /**
+     * @return Whether the instance would effectively upscale the X axis of the
+     *         image it is applied to.
+     */
+    public boolean isWidthUp(Dimension comparedToSize,
+                             ScaleConstraint comparedToScaleConstraint) {
+        Dimension resultingSize = getResultingSize(
+                comparedToSize, comparedToScaleConstraint);
+        return (resultingSize.width() - comparedToSize.width() > DELTA);
     }
 
     /**
