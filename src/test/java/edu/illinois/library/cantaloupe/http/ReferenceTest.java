@@ -54,6 +54,13 @@ public class ReferenceTest extends BaseTest {
     }
 
     @Test
+    void testStringConstructorWithUnescapedCharacters() {
+        String uri = "http://example.org/[cats]/^dogs?cats=dogs";
+        Reference ref = new Reference(uri);
+        assertEquals(uri, ref.toString());
+    }
+
+    @Test
     void testURIConstructor() throws Exception {
         URI uri = new URI("http://example.org/cats/dogs?cats=dogs");
         Reference ref = new Reference(uri);

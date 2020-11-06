@@ -2,8 +2,10 @@ package edu.illinois.library.cantaloupe.http;
 
 import edu.illinois.library.cantaloupe.util.StringUtils;
 
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URL;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
@@ -52,22 +54,24 @@ public final class Reference {
      */
     public Reference(String reference) {
         try {
-            URI uri = new URI(reference);
-            String userInfo = uri.getRawUserInfo();
+            // N.B.: java.net.URL is less fussy than java.net.URI about
+            // URL-safe characters.
+            URL url = new URL(reference);
+            String userInfo = url.getUserInfo();
             if (userInfo != null) {
                 String[] parts = userInfo.split(":");
                 setUser(parts[0]);
                 setSecret(parts[1]);
             }
-            setScheme(uri.getScheme());
-            setHost(uri.getHost());
-            setPort(uri.getPort());
-            setPath(uri.getRawPath());
-            if (uri.getRawQuery() != null) {
-                setQuery(new Query(uri.getRawQuery()));
+            setScheme(url.getProtocol());
+            setHost(url.getHost());
+            setPort(url.getPort());
+            setPath(url.getPath());
+            if (url.getQuery() != null) {
+                setQuery(new Query(url.getQuery()));
             }
-            setFragment(uri.getRawFragment());
-        } catch (URISyntaxException e) {
+            setFragment(url.getRef());
+        } catch (MalformedURLException e) {
             throw new IllegalArgumentException(e);
         }
     }
