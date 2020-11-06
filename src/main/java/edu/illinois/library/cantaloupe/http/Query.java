@@ -25,9 +25,9 @@ public final class Query implements Iterable<KeyValuePair> {
             for (String pair : pairs) {
                 String[] kv = pair.split("=");
                 if (kv.length > 1) {
-                    add(kv[0], kv[1]);
+                    add(Reference.decode(kv[0]), Reference.decode(kv[1]));
                 } else if (kv.length > 0) {
-                    add(kv[0]);
+                    add(Reference.decode(kv[0]));
                 }
             }
         }

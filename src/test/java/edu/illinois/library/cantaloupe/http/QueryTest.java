@@ -22,15 +22,22 @@ public class QueryTest extends BaseTest {
     }
 
     @Test
-    void testConstructorWithEmptyString() {
+    void testStringConstructorWithEmptyString() {
         instance = new Query("");
         assertTrue(instance.isEmpty());
     }
 
     @Test
-    void testConstructorWithNonEmptyString() {
+    void testStringConstructorWithNonEmptyString() {
         assertEquals("value1", instance.getFirstValue("key1"));
         assertEquals("value2", instance.getFirstValue("key2"));
+    }
+
+    @Test
+    void testStringConstructorWithEncodedCharacters() {
+        instance = new Query("key1%60=value1%60&key2%60");
+        assertEquals("value1`", instance.getFirstValue("key1`"));
+        assertNull(instance.getFirstValue("key2`"));
     }
 
     @Test
