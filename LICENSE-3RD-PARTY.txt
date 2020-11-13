@@ -16,6 +16,7 @@ Commons Lang           Copyright © 2001-2018 The Apache Software Foundation
 Eclipse Jetty          Copyright © 2016 The Eclipse Foundation
 HikariCP               Copyright © Brett Wooldridge
 Jackson                Copyright © FasterXML, LLC
+jbig2-imageio          Copyright © 2019 The Apache Software Foundation
 lettuce-core           Copyright © Mark Paluch
 Minio                  Copyright © Minio, Inc.
 OkHttp                 Copyright © Square, Inc.

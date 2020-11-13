@@ -50,6 +50,7 @@
 * FfmpegProcessor, KakaduNativeProcessor, OpenJpegProcessor, and
   PdfBoxProcessor use libjpeg-turbo to write JPEGs if it is available.
 * Added the `scaled` position for image overlays.
+* Updated Apache PDFBox to version 2.0.21.
 
 ### Caches
 
