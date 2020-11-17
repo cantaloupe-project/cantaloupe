@@ -14,10 +14,7 @@ import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.ConfigurationConstants;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import edu.illinois.library.cantaloupe.util.AWSClientBuilder;
-import edu.illinois.library.cantaloupe.util.SocketUtils;
-import io.findify.s3mock.S3Mock;
 import org.apache.commons.lang3.SystemUtils;
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -36,7 +33,7 @@ import static org.junit.jupiter.api.Assumptions.assumeFalse;
 public class S3CacheTest extends AbstractCacheTest {
 
     private enum Service {
-        AWS("aws"), MINIO("minio"), S3MOCK("s3mock");
+        AWS("aws"), MINIO("minio");
 
         private final String key;
 
@@ -52,26 +49,14 @@ public class S3CacheTest extends AbstractCacheTest {
         }
     }
 
-    private static S3Mock mockS3;
-    private static int mockS3Port;
-
-    private Identifier identifier = new Identifier("jpg-rgb-64x56x8-baseline.jpg");
-    private OperationList opList = new OperationList();
+    private final Identifier identifier = new Identifier("jpg-rgb-64x56x8-baseline.jpg");
+    private final OperationList opList  = new OperationList();
     private S3Cache instance;
 
     @BeforeAll
     public static void beforeClass() throws Exception {
         BaseTest.beforeClass();
-        startServiceIfNecessary();
         createBucket();
-    }
-
-    @AfterAll
-    public static void afterClass() throws Exception {
-        BaseTest.afterClass();
-        if (mockS3 != null) {
-            mockS3.stop();
-        }
     }
 
     private static AmazonS3 client() {
@@ -100,21 +85,6 @@ public class S3CacheTest extends AbstractCacheTest {
         }
     }
 
-    /**
-     * Starts a mock S3 service if {@link #getEndpoint()} returns a localhost
-     * URI.
-     */
-    private static void startServiceIfNecessary() {
-        if ("localhost".equals(getEndpoint().getHost())) {
-            mockS3Port = SocketUtils.getOpenPort();
-            mockS3 = new S3Mock.Builder()
-                    .withPort(mockS3Port)
-                    .withInMemoryBackend()
-                    .build();
-            mockS3.start();
-        }
-    }
-
     private static String getAccessKeyId() {
         org.apache.commons.configuration.Configuration testConfig =
                 TestUtil.getTestConfig();
@@ -131,14 +101,14 @@ public class S3CacheTest extends AbstractCacheTest {
         org.apache.commons.configuration.Configuration testConfig =
                 TestUtil.getTestConfig();
         String endpointStr = testConfig.getString(ConfigurationConstants.S3_ENDPOINT.getKey());
-        if (endpointStr == null || endpointStr.isEmpty()) {
-            endpointStr = "http://localhost:" + mockS3Port;
+        if (endpointStr != null && !endpointStr.isBlank()) {
+            try {
+                return new URI(endpointStr);
+            } catch (URISyntaxException e) {
+                throw new IllegalArgumentException(e);
+            }
         }
-        try {
-            return new URI(endpointStr);
-        } catch (URISyntaxException e) {
-            throw new IllegalArgumentException(e);
-        }
+        return null;
     }
 
     private static String getSecretKey() {
@@ -189,14 +159,6 @@ public class S3CacheTest extends AbstractCacheTest {
     }
 
     /* getInfo(Identifier) */
-
-    @Test
-    @Override
-    void testGetInfoWithExistingInvalidImage() throws Exception {
-        assumeFalse(Service.S3MOCK.equals(getService()));
-
-        super.testGetInfoWithExistingInvalidImage();
-    }
 
     @Test
     void testGetImageInfoUpdatesLastModifiedTime() throws Exception {
@@ -257,8 +219,7 @@ public class S3CacheTest extends AbstractCacheTest {
     @Test
     @Override
     void testNewDerivativeImageInputStreamWithNonzeroTTL() throws Exception {
-        assumeFalse(Service.AWS.equals(getService()));  // this test fails in AWS
-        assumeFalse(Service.S3MOCK.equals(getService()));  // this test fails in s3mock
+        assumeFalse(Service.AWS.equals(getService()));  // TODO: this test fails in AWS
 
         super.testNewDerivativeImageInputStreamWithNonzeroTTL();
     }

@@ -14,7 +14,6 @@ import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.delegate.DelegateProxy;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.ConfigurationConstants;
-import edu.illinois.library.cantaloupe.test.S3Server;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import edu.illinois.library.cantaloupe.util.AWSClientBuilder;
 import org.junit.jupiter.api.AfterAll;
@@ -46,14 +45,11 @@ public class S3SourceTest extends AbstractSourceTest {
     private static final String OBJECT_KEY_WITH_NO_CONTENT_TYPE_OR_EXTENSION               = "jpg";
     private static final String NON_IMAGE_KEY                                              = "NotAnImage";
 
-    private static final S3Server S3_SERVER = new S3Server();
-
     private S3Source instance;
 
     @BeforeAll
     public static void beforeClass() throws Exception {
         BaseTest.beforeClass();
-        startS3ServerIfNecessary();
         createBucket();
     }
 
@@ -61,7 +57,6 @@ public class S3SourceTest extends AbstractSourceTest {
     public static void afterClass() throws Exception {
         BaseTest.afterClass();
         deleteBucket();
-        S3_SERVER.stop();
     }
 
     private static void createBucket() {
@@ -155,16 +150,6 @@ public class S3SourceTest extends AbstractSourceTest {
 
     }
 
-    /**
-     * Starts a mock S3 service if {@link #getAccessKeyId()} and
-     * {@link #getSecretKey()} return an empty value.
-     */
-    private static void startS3ServerIfNecessary() throws IOException {
-        if ("localhost".equals(getEndpoint().getHost())) {
-            S3_SERVER.start();
-        }
-    }
-
     private static AmazonS3 client() {
         return new AWSClientBuilder()
                 .endpointURI(getEndpoint())
@@ -193,10 +178,10 @@ public class S3SourceTest extends AbstractSourceTest {
             try {
                 return new URI(endpointStr);
             } catch (URISyntaxException e) {
-                return null;
+                throw new IllegalArgumentException(e);
             }
         }
-        return S3_SERVER.getEndpoint();
+        return null;
     }
 
     private static String getSecretKey() {

@@ -1,11 +1,16 @@
 package edu.illinois.library.cantaloupe.source;
 
+import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.model.PutObjectRequest;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.source.stream.ClosingMemoryCacheImageInputStream;
 import edu.illinois.library.cantaloupe.source.stream.HTTPImageInputStream;
 import edu.illinois.library.cantaloupe.test.BaseTest;
-import edu.illinois.library.cantaloupe.test.S3Server;
+import edu.illinois.library.cantaloupe.test.ConfigurationConstants;
+import edu.illinois.library.cantaloupe.test.S3Utils;
+import edu.illinois.library.cantaloupe.test.TestUtil;
+import edu.illinois.library.cantaloupe.util.AWSClientBuilder;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -13,32 +18,74 @@ import org.junit.jupiter.api.Test;
 
 import javax.imageio.stream.ImageInputStream;
 import java.io.InputStream;
+import java.net.URI;
+import java.nio.file.Path;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 public class S3StreamFactoryTest extends BaseTest {
 
-    private static final S3Server S3_SERVER = new S3Server();
+    private static final String FIXTURE_KEY = "jpg";
 
     private S3StreamFactory instance;
 
     @BeforeAll
     public static void beforeClass() throws Exception {
         BaseTest.beforeClass();
-        S3_SERVER.start();
+        S3Utils.createBucket(client(), bucket());
     }
 
     @AfterAll
     public static void afterClass() throws Exception {
         BaseTest.afterClass();
-        S3_SERVER.stop();
+        S3Utils.deleteBucket(client(), bucket());
+    }
+
+    private static String accessKeyID() {
+        org.apache.commons.configuration.Configuration testConfig =
+                TestUtil.getTestConfig();
+        return testConfig.getString(ConfigurationConstants.S3_ACCESS_KEY_ID.getKey());
+    }
+
+    private static String bucket() {
+        org.apache.commons.configuration.Configuration testConfig =
+                TestUtil.getTestConfig();
+        return testConfig.getString(ConfigurationConstants.S3_BUCKET.getKey());
+    }
+
+    private static String endpoint() {
+        org.apache.commons.configuration.Configuration testConfig =
+                TestUtil.getTestConfig();
+        return testConfig.getString(ConfigurationConstants.S3_ENDPOINT.getKey());
+    }
+
+    private static String secretAccessKey() {
+        org.apache.commons.configuration.Configuration testConfig =
+                TestUtil.getTestConfig();
+        return testConfig.getString(ConfigurationConstants.S3_SECRET_KEY.getKey());
+    }
+
+    private static AmazonS3 client() {
+        return new AWSClientBuilder()
+                .endpointURI(URI.create(endpoint()))
+                .accessKeyID(accessKeyID())
+                .secretKey(secretAccessKey())
+                .build();
     }
 
     private static void configureS3Source() {
         final Configuration config = Configuration.getInstance();
-        config.setProperty(Key.S3SOURCE_ENDPOINT, S3_SERVER.getEndpoint());
-        config.setProperty(Key.S3SOURCE_ACCESS_KEY_ID, S3Server.ACCESS_KEY_ID);
-        config.setProperty(Key.S3SOURCE_SECRET_KEY, S3Server.SECRET_KEY);
+        config.setProperty(Key.S3SOURCE_ENDPOINT, endpoint());
+        config.setProperty(Key.S3SOURCE_ACCESS_KEY_ID, accessKeyID());
+        config.setProperty(Key.S3SOURCE_SECRET_KEY, secretAccessKey());
+    }
+
+    private static void seedFixtures() {
+        final AmazonS3 s3  = client();
+        final Path fixture = TestUtil.getImage(FIXTURE_KEY);
+        s3.putObject(new PutObjectRequest(
+                bucket(), fixture.getFileName().toString(),
+                fixture.toFile()));
     }
 
     @BeforeEach
@@ -47,8 +94,9 @@ public class S3StreamFactoryTest extends BaseTest {
         super.setUp();
 
         configureS3Source();
+        seedFixtures();
 
-        S3ObjectInfo info = new S3ObjectInfo("jpg", S3Server.FIXTURES_BUCKET_NAME);
+        S3ObjectInfo info = new S3ObjectInfo(FIXTURE_KEY, bucket());
         info.setLength(1584);
 
         instance = new S3StreamFactory(info);

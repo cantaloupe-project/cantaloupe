@@ -2,12 +2,12 @@
 # DO NOT EDIT; copy to test.properties and edit that.
 
 # Used by S3SourceTest and S3CacheTest.
-# Available services are `s3mock`, `minio`, and `aws`.
-s3.service = s3mock
+# Available services are `minio` and `aws`.
+s3.service = minio
 s3.endpoint =
-s3.access_key_id = s3mock
-s3.secret_key = s3mock
-s3.bucket = test.cantaloupe.library.illinois.edu
+s3.access_key_id = minioadmin
+s3.secret_key = minioadmin
+s3.bucket = cantaloupe-test
 
 # Used by AzureStorageSourceTest and AzureStorageCacheTest.
 # Note: leave blank to test SAS and container specified in a URL to the object

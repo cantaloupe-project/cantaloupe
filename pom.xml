@@ -152,13 +152,6 @@
             <artifactId>imageio-xpm</artifactId>
             <version>1.0.1</version>
         </dependency>
-        <!-- Used by S3SourceTest and S3CacheTest -->
-        <dependency>
-            <groupId>io.findify</groupId>
-            <artifactId>s3mock_2.12</artifactId>
-            <version>0.2.4</version>
-            <scope>test</scope>
-        </dependency>
         <!-- S3 client for S3Source -->
         <dependency>
             <groupId>io.minio</groupId>

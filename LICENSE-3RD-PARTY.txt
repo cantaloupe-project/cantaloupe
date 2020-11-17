@@ -1044,7 +1044,6 @@ MIT License
 This license applies to the following modules:
 
 Microsoft Azure Storage Library   Copyright © Microsoft Corporation
-s3mock                            Copyright © 2016 Findify AB
 SLF4J                             Copyright © 2004-2017 QOS.ch
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
