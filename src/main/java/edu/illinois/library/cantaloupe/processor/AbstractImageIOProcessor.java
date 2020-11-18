@@ -4,6 +4,7 @@ import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Info;
+import edu.illinois.library.cantaloupe.image.Metadata;
 import edu.illinois.library.cantaloupe.image.Orientation;
 import edu.illinois.library.cantaloupe.processor.codec.ImageReader;
 import edu.illinois.library.cantaloupe.processor.codec.ImageReaderFactory;
@@ -106,7 +107,10 @@ abstract class AbstractImageIOProcessor extends AbstractProcessor {
         Orientation orientation = null;
         if (Configuration.getInstance().
                 getBoolean(Key.PROCESSOR_RESPECT_ORIENTATION, false)) {
-            orientation = getReader().getMetadata(0).getOrientation();
+            Metadata metadata = getReader().getMetadata(0);
+            if (metadata != null) {
+                orientation = metadata.getOrientation();
+            }
         }
         if (orientation == null) {
             orientation = Orientation.ROTATE_0;
