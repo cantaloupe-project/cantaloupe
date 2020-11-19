@@ -332,6 +332,7 @@ public class AdminResourceUITest extends AbstractAdminResourceTest {
         inputNamed(Key.S3SOURCE_SECRET_KEY).sendKeys("456");
         inputNamed(Key.S3SOURCE_BUCKET_NAME).sendKeys("cats");
         inputNamed(Key.S3SOURCE_ENDPOINT).sendKeys("http://localhost:1234");
+        inputNamed(Key.S3SOURCE_REGION).sendKeys("us-east-2");
         inputNamed(Key.S3SOURCE_CHUNKING_ENABLED).click();
         inputNamed(Key.S3SOURCE_CHUNK_SIZE).sendKeys("453");
         inputNamed(Key.S3SOURCE_CHUNK_CACHE_ENABLED).click();
@@ -397,6 +398,8 @@ public class AdminResourceUITest extends AbstractAdminResourceTest {
                 config.getString(Key.S3SOURCE_BUCKET_NAME));
         assertEquals("http://localhost:1234",
                 config.getString(Key.S3SOURCE_ENDPOINT));
+        assertEquals("us-east-2",
+                config.getString(Key.S3SOURCE_REGION));
         assertTrue(
                 config.getBoolean(Key.S3SOURCE_CHUNKING_ENABLED));
         assertEquals("453",

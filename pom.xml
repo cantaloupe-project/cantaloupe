@@ -110,8 +110,7 @@
             <artifactId>azure-storage</artifactId>
             <version>5.2.0</version>
         </dependency>
-        <!-- HTTP client used by HttpSource
-        Also a transitive dependency of io.minio:minio. -->
+        <!-- HTTP client used by HttpSource -->
         <dependency>
             <groupId>com.squareup.okhttp3</groupId>
             <artifactId>okhttp</artifactId>
@@ -140,12 +139,6 @@
             <groupId>edu.illinois.library</groupId>
             <artifactId>imageio-xpm</artifactId>
             <version>1.0.1</version>
-        </dependency>
-        <!-- S3 client for S3Source -->
-        <dependency>
-            <groupId>io.minio</groupId>
-            <artifactId>minio</artifactId>
-            <version>6.0.11</version>
         </dependency>
         <!-- Dependency on part of Java EE that's available by default in Java 8
         but not 9 -->

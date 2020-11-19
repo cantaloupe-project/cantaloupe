@@ -13,6 +13,9 @@ current version.
     * `http.max_threads`
     * `meta_identifier.*`
     * `endpoint.iiif.3.enabled`
+    * `S3Source.region`
+        * If you had set `S3Source.endpoint` to an AWS endpoint, unset that and
+          set this key to your AWS region instead.
     * `processor.ManualSelectionStrategy.xpm`
     * `processor.imageio.xpm.reader`
     * `GrokProcessor.path_to_binaries`

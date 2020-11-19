@@ -8,23 +8,26 @@ import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.MediaType;
 import edu.illinois.library.cantaloupe.delegate.DelegateMethod;
 import edu.illinois.library.cantaloupe.util.S3ClientBuilder;
-import io.minio.MinioClient;
-import io.minio.errors.ErrorResponseException;
-import io.minio.errors.InvalidBucketNameException;
-import io.minio.errors.InvalidEndpointException;
-import io.minio.errors.InvalidPortException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import software.amazon.awssdk.auth.credentials.AwsCredentials;
-import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider;
+import software.amazon.awssdk.core.exception.SdkClientException;
+import software.amazon.awssdk.core.exception.SdkException;
+import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.GetObjectRequest;
+import software.amazon.awssdk.services.s3.model.HeadObjectRequest;
+import software.amazon.awssdk.services.s3.model.HeadObjectResponse;
+import software.amazon.awssdk.services.s3.model.NoSuchBucketException;
+import software.amazon.awssdk.services.s3.model.NoSuchKeyException;
+import software.amazon.awssdk.services.s3.model.S3Exception;
 
 import javax.script.ScriptException;
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.file.AccessDeniedException;
 import java.nio.file.NoSuchFileException;
-import java.security.InvalidKeyException;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -35,10 +38,6 @@ import java.util.regex.Pattern;
 /**
  * <p>Maps an identifier to an <a href="https://aws.amazon.com/s3/">Amazon
  * Simple Storage Service (S3)</a> object, for retrieving images from S3.</p>
- *
- * <p>Past versions of this class used the AWS Java SDK's S3 client, which is
- * poorly designed and not suitable for long-running servers (it leaks
- * connections like a sieve). This spurred a change to the Minio client.</p>
  *
  * <h1>Format Inference</h1>
  *
@@ -81,6 +80,7 @@ import java.util.regex.Pattern;
  *     </li>
  * </ol>
  *
+ * @author Alex Dolski UIUC
  * @see <a href="https://docs.minio.io/docs/java-client-api-reference">
  *     Minio Java Client API Reference</a>
  */
@@ -198,7 +198,7 @@ final class S3Source extends AbstractSource implements Source {
     private static final Pattern URL_REGION_PATTERN =
             Pattern.compile("[.-]([a-z]{2}-[a-z]+-[0-9]).amazonaws.com");
 
-    private static MinioClient client;
+    private static S3Client client;
 
     /**
      * Cached by {@link #getObjectInfo()}.
@@ -235,25 +235,25 @@ final class S3Source extends AbstractSource implements Source {
         return null;
     }
 
-    static synchronized MinioClient getClientInstance() {
+    static synchronized S3Client getClientInstance() {
         if (client == null) {
             final Configuration config = Configuration.getInstance();
-            final AwsCredentialsProvider credentialsProvider =
-                    S3ClientBuilder.newCredentialsProvider(
-                            config.getString(Key.S3SOURCE_ACCESS_KEY_ID),
-                            config.getString(Key.S3SOURCE_SECRET_KEY));
-            final AwsCredentials credentials =
-                    credentialsProvider.resolveCredentials();
-            try {
-                final String endpoint = config.getString(Key.S3SOURCE_ENDPOINT);
-                client = new MinioClient(
-                        endpoint,
-                        credentials.accessKeyId(),
-                        credentials.secretAccessKey(),
-                        awsRegionFromURL(endpoint));
-            } catch (InvalidEndpointException | InvalidPortException e) {
-                throw new IllegalArgumentException(e);
+            final String endpointStr = config.getString(Key.S3SOURCE_ENDPOINT);
+            URI endpointURI = null;
+            if (endpointStr != null) {
+                try {
+                    endpointURI = new URI(endpointStr);
+                } catch (URISyntaxException e) {
+                    LOGGER.error("Invalid URI for {}: {}",
+                            Key.S3SOURCE_ENDPOINT, e.getMessage());
+                }
             }
+            client = new S3ClientBuilder()
+                    .accessKeyID(config.getString(Key.S3SOURCE_ACCESS_KEY_ID))
+                    .secretKey(config.getString(Key.S3SOURCE_SECRET_KEY))
+                    .endpointURI(endpointURI)
+                    .region(config.getString(Key.S3SOURCE_REGION))
+                    .build();
         }
         return client;
     }
@@ -272,26 +272,32 @@ final class S3Source extends AbstractSource implements Source {
      * Fetches a byte range of an object.
      *
      * @param info  Object info.
-     * @param range Byte range. May be {@literal null}.
+     * @param range Byte range. May be {@code null}.
      */
     static InputStream newObjectInputStream(S3ObjectInfo info,
                                             Range range) throws IOException {
-        final MinioClient mc = getClientInstance();
+        final S3Client client = getClientInstance();
         try {
+            GetObjectRequest request;
             if (range != null) {
                 LOGGER.debug("Requesting bytes {}-{} from {}",
                         range.start, range.end, info);
-                return mc.getObject(info.getBucketName(), info.getKey(),
-                        range.start, range.end - range.start + 1);
+                request = GetObjectRequest.builder()
+                        .bucket(info.getBucketName())
+                        .key(info.getKey())
+                        .range("bytes=" + range.start + "-" + range.end)
+                        .build();
             } else {
                 LOGGER.debug("Requesting {}", info);
-                return mc.getObject(info.getBucketName(), info.getKey());
+                request = GetObjectRequest.builder()
+                        .bucket(info.getBucketName())
+                        .key(info.getKey())
+                        .build();
             }
-        } catch (InvalidBucketNameException | InvalidKeyException e) {
+            return client.getObject(request);
+        } catch (NoSuchBucketException | NoSuchKeyException e) {
             throw new NoSuchFileException(info.toString());
-        } catch (IOException e) {
-            throw e;
-        } catch (Exception e) {
+        } catch (SdkException e) {
             throw new IOException(info.toString(), e);
         }
     }
@@ -312,27 +318,25 @@ final class S3Source extends AbstractSource implements Source {
             final S3ObjectInfo info = getObjectInfo();
             final String bucket     = info.getBucketName();
             final String key        = info.getKey();
-            final MinioClient mc    = getClientInstance();
+            final S3Client client   = getClientInstance();
             try {
+                HeadObjectResponse response = client.headObject(HeadObjectRequest.builder()
+                        .bucket(bucket)
+                        .key(key)
+                        .build());
                 objectAttributes        = new S3ObjectAttributes();
-                objectAttributes.length = mc.statObject(bucket, key).length();
-            } catch (InvalidBucketNameException | InvalidKeyException e) {
+                objectAttributes.length = response.contentLength();
+            } catch (NoSuchBucketException | NoSuchKeyException e) {
                 throw new NoSuchFileException(info.toString());
-            } catch (ErrorResponseException e) {
-                final String code = e.errorResponse().code();
-                if ("NoSuchBucket".equals(code) || "NoSuchKey".equals(code)) {
-                    throw new NoSuchFileException(info.toString());
-                } else if ("AccessDenied".equals(code) ||
-                        "AllAccessDisabled".equals(code)) {
+            } catch (S3Exception e) {
+                final int code = e.statusCode();
+                if (code == 403) {
                     throw new AccessDeniedException(info.toString());
                 } else {
                     LOGGER.error(e.getMessage(), e);
                     throw new IOException(e);
                 }
-            } catch (IOException e) {
-                LOGGER.error(e.getMessage(), e);
-                throw e;
-            } catch (Exception e) {
+            } catch (SdkClientException e) {
                 LOGGER.error(e.getMessage(), e);
                 throw new IOException(info.toString(), e);
             }

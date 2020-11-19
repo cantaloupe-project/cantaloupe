@@ -96,7 +96,7 @@ public final class S3ClientBuilder {
      * @return       The instance.
      */
     public S3ClientBuilder region(String region) {
-        this.region = Region.of(region);
+        this.region = (region != null && !region.isBlank()) ? Region.of(region) : null;
         return this;
     }
 

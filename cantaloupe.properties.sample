@@ -195,10 +195,11 @@ HttpSource.chunking.cache.max_size = 5M
 # S3Source
 #----------------------------------------
 
-# !! Endpoint URI.
-# For AWS endpoints, see:
-# https://docs.aws.amazon.com/general/latest/gr/rande.html#s3_region
+# !! Endpoint URI. Only needed for non-AWS endpoints.
 S3Source.endpoint =
+
+# !! AWS region. Only needed for AWS endpoints.
+S3Source.region =
 
 # !! Credentials for your AWS account.
 # See: http://aws.amazon.com/security-credentials
@@ -541,10 +542,10 @@ JdbcCache.info_table = info_cache
 # S3Cache
 #----------------------------------------
 
-# !! Endpoint URI. Only used for non-AWS endpoints.
+# !! Endpoint URI. Only needed for non-AWS endpoints.
 S3Cache.endpoint =
 
-# !! AWS region. Only used for AWS endpoints.
+# !! AWS region. Only needed for AWS endpoints.
 S3Cache.region =
 
 # !! Credentials for your AWS account.

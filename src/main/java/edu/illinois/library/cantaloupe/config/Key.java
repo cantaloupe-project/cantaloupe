@@ -193,6 +193,7 @@ public enum Key {
     S3SOURCE_LOOKUP_STRATEGY("S3Source.lookup_strategy"),
     S3SOURCE_PATH_PREFIX("S3Source.BasicLookupStrategy.path_prefix"),
     S3SOURCE_PATH_SUFFIX("S3Source.BasicLookupStrategy.path_suffix"),
+    S3SOURCE_REGION("S3Source.region"),
     S3SOURCE_SECRET_KEY("S3Source.secret_key"),
     SLASH_SUBSTITUTE("slash_substitute"),
     SOURCE_CACHE("cache.server.source"),

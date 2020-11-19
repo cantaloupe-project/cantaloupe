@@ -29,6 +29,7 @@
   byte signatures.
 * HttpSource uses the OkHttp HTTP client library instead of Jetty.
 * HttpSource supports HTTP/2.
+* S3Source uses version 2 of the AWS SDK insead of MinIO.
 
 ### Processors
 

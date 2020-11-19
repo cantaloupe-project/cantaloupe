@@ -96,6 +96,7 @@ public class S3SourceTest extends AbstractSourceTest {
         if (client == null) {
             client = new S3ClientBuilder()
                     .endpointURI(getEndpoint())
+                    .region(getRegion())
                     .accessKeyID(getAccessKeyId())
                     .secretKey(getSecretKey())
                     .build();
@@ -127,6 +128,12 @@ public class S3SourceTest extends AbstractSourceTest {
             }
         }
         return null;
+    }
+
+    private static String getRegion() {
+        org.apache.commons.configuration.Configuration testConfig =
+                TestUtil.getTestConfig();
+        return testConfig.getString(ConfigurationConstants.S3_REGION.getKey());
     }
 
     private static String getSecretKey() {

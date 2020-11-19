@@ -58,6 +58,12 @@ public class S3HTTPImageInputStreamClientTest extends BaseTest {
         return testConfig.getString(ConfigurationConstants.S3_ENDPOINT.getKey());
     }
 
+    private static String region() {
+        org.apache.commons.configuration.Configuration testConfig =
+                TestUtil.getTestConfig();
+        return testConfig.getString(ConfigurationConstants.S3_REGION.getKey());
+    }
+
     private static String secretAccessKey() {
         org.apache.commons.configuration.Configuration testConfig =
                 TestUtil.getTestConfig();
@@ -74,6 +80,7 @@ public class S3HTTPImageInputStreamClientTest extends BaseTest {
     private static S3Client client() {
         return new S3ClientBuilder()
                 .endpointURI(URI.create(endpoint()))
+                .region(region())
                 .accessKeyID(accessKeyID())
                 .secretKey(secretAccessKey())
                 .build();
