@@ -541,10 +541,11 @@ JdbcCache.info_table = info_cache
 # S3Cache
 #----------------------------------------
 
-# !! Endpoint URI.
-# For AWS endpoints, see:
-# https://docs.aws.amazon.com/general/latest/gr/rande.html#s3_region
+# !! Endpoint URI. Only used for non-AWS endpoints.
 S3Cache.endpoint =
+
+# !! AWS region. Only used for AWS endpoints.
+S3Cache.region =
 
 # !! Credentials for your AWS account.
 # See: http://aws.amazon.com/security-credentials
@@ -558,10 +559,6 @@ S3Cache.bucket.name =
 
 # !! String that will be prefixed to object keys.
 S3Cache.object_key_prefix =
-
-# !! Maximum number of concurrent HTTP connections to AWS. Leave blank to
-# use the default.
-S3Cache.max_connections =
 
 #----------------------------------------
 # AzureStorageCache

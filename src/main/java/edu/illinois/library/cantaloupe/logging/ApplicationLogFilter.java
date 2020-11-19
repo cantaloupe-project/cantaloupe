@@ -45,12 +45,6 @@ public class ApplicationLogFilter extends Filter<ILoggingEvent> {
                 Level.DEBUG.isGreaterOrEqual(event.getLevel())) {
             return FilterReply.DENY;
         }
-        // The Amazon S3 client wraps an Apache HTTP client which is extremely
-        // verbose.
-        else if ("org.apache.http.wire".equals(event.getLoggerName()) &&
-                Level.DEBUG.isGreaterOrEqual(event.getLevel())) {
-            return FilterReply.DENY;
-        }
         return FilterReply.NEUTRAL;
     }
 

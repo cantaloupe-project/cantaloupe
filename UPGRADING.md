@@ -16,6 +16,9 @@ current version.
     * `processor.ManualSelectionStrategy.xpm`
     * `processor.imageio.xpm.reader`
     * `GrokProcessor.path_to_binaries`
+    * `S3Cache.region`
+        * If you had set `S3Cache.endpoint` to an AWS endpoint, unset that and
+          set this key to your AWS region instead.
     * `log.application.ConsoleAppender.logstash.enabled`
     * `log.application.FileAppender.logstash.enabled`
     * `log.application.RollingFileAppender.logstash.enabled`
@@ -30,6 +33,7 @@ current version.
     * `GraphicsMagickProcessor.path_to_binaries`
     * `KakaduDemoProcessor.path_to_binaries`
     * `ImageMagickProcessor.path_to_binaries`
+    * `S3Cache.max_connections`
     * `redaction.enabled`
 5.  Rename the following configuration keys:
     * `endpoint.iiif.2.restrict_to_sizes` to `endpoint.iiif.restrict_to_sizes`

@@ -2738,12 +2738,24 @@
                                                 <a tabindex="0" class="btn btn-sm cl-help"
                                                    role="button" data-toggle="popover"
                                                    data-trigger="focus"
-                                                   data-content="See &lt;a href=&quot;https://docs.aws.amazon.com/general/latest/gr/rande.html#s3_region&quot;&gt;
-                                                   here&lt;/a&gt; for a list of AWS endpoints.">?</a>
+                                                   data-content="Endpoint URI. Only used for non-AWS endpoints.">?</a>
                                             </td>
                                             <td>
                                                 <input type="text" class="form-control"
                                                        name="S3Cache.endpoint"
+                                                       data-requires-restart="true">
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Region
+                                                <a tabindex="0" class="btn btn-sm cl-help"
+                                                   role="button" data-toggle="popover"
+                                                   data-trigger="focus"
+                                                   data-content="AWS region. Only used for AWS endpoints.">?</a>
+                                            </td>
+                                            <td>
+                                                <input type="text" class="form-control"
+                                                       name="S3Cache.region"
                                                        data-requires-restart="true">
                                             </td>
                                         </tr>
@@ -2758,20 +2770,6 @@
                                             <td>
                                                 <input type="text" class="form-control"
                                                        name="S3Cache.object_key_prefix"
-                                                       data-requires-restart="true">
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td>Max Connections
-                                                <a tabindex="0" class="btn btn-sm cl-help"
-                                                   role="button" data-toggle="popover"
-                                                   data-trigger="focus"
-                                                   data-content="Maximum number of concurrent HTTP connections to AWS.">?</a>
-                                            </td>
-                                            <td>
-                                                <input class="form-control" type="number"
-                                                       min="1"
-                                                       name="S3Cache.max_connections"
                                                        data-requires-restart="true">
                                             </td>
                                         </tr>

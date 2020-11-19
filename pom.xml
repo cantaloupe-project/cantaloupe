@@ -15,7 +15,7 @@
         <maven.compile.target>11</maven.compile.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <aws-sdk.version>1.11.538</aws-sdk.version>
+        <aws-sdk.version>2.15.28</aws-sdk.version>
         <jackson.version>2.11.0</jackson.version>
         <!-- N.B.: Jetty does not use semantic versioning. New x.x.x releases
         often break API. -->
@@ -78,17 +78,6 @@
             <groupId>net.logstash.logback</groupId>
             <artifactId>logstash-logback-encoder</artifactId>
             <version>6.1</version>
-        </dependency>
-        <!-- Used by S3Cache -->
-        <dependency>
-            <groupId>com.amazonaws</groupId>
-            <artifactId>aws-java-sdk-core</artifactId>
-            <version>${aws-sdk.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.amazonaws</groupId>
-            <artifactId>aws-java-sdk-s3</artifactId>
-            <version>${aws-sdk.version}</version>
         </dependency>
         <!-- Heap-based object cache: https://github.com/ben-manes/caffeine-->
         <dependency>
@@ -222,7 +211,9 @@
             <version>1.19</version>
             <scope>test</scope>
         </dependency>
-        <!-- Assists in parsing XMP metadata in RDF/XML -->
+        <!-- Assists in parsing XMP metadata in RDF/XML. Also part of the de
+         facto delegate script contract, as it may be used from the metadata()
+         delegate method.-->
         <dependency>
             <groupId>org.apache.jena</groupId>
             <artifactId>jena-core</artifactId>
@@ -394,6 +385,31 @@
             <artifactId>maven-assembly-plugin</artifactId>
             <version>3.1.1</version>
             <type>maven-plugin</type>
+        </dependency>
+        <!-- Used by S3Source & S3Cache -->
+        <dependency>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>bom</artifactId>
+            <version>${aws-sdk.version}</version>
+            <type>pom</type>
+            <scope>import</scope>
+        </dependency>
+        <dependency>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>s3</artifactId>
+            <version>${aws-sdk.version}</version>
+        </dependency>
+        <!--
+        <dependency>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>apache-client</artifactId>
+            <version>${aws-sdk.version}</version>
+        </dependency>
+        -->
+        <dependency>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>url-connection-client</artifactId>
+            <version>${aws-sdk.version}</version>
         </dependency>
     </dependencies>
 

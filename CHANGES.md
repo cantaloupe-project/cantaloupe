@@ -54,6 +54,7 @@
 
 ### Caches
 
+* S3Cache has been updated to use version 2 of the AWS SDK.
 * The delegate method invocation cache has been removed. 
 
 ### Delegate Script

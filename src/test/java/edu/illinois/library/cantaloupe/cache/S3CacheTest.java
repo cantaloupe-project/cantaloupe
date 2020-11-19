@@ -1,8 +1,5 @@
 package edu.illinois.library.cantaloupe.cache;
 
-import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.model.AmazonS3Exception;
-import com.amazonaws.services.s3.model.CreateBucketRequest;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.image.Format;
@@ -13,12 +10,15 @@ import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.ConfigurationConstants;
 import edu.illinois.library.cantaloupe.test.TestUtil;
-import edu.illinois.library.cantaloupe.util.AWSClientBuilder;
+import edu.illinois.library.cantaloupe.util.S3ClientBuilder;
+import edu.illinois.library.cantaloupe.util.S3Utils;
 import org.apache.commons.lang3.SystemUtils;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import software.amazon.awssdk.services.s3.S3Client;
 
 import java.io.OutputStream;
 import java.net.URI;
@@ -49,6 +49,8 @@ public class S3CacheTest extends AbstractCacheTest {
         }
     }
 
+    private static S3Client client;
+
     private final Identifier identifier = new Identifier("jpg-rgb-64x56x8-baseline.jpg");
     private final OperationList opList  = new OperationList();
     private S3Cache instance;
@@ -56,33 +58,27 @@ public class S3CacheTest extends AbstractCacheTest {
     @BeforeAll
     public static void beforeClass() throws Exception {
         BaseTest.beforeClass();
-        createBucket();
+        S3Utils.createBucket(client(), getBucket());
     }
 
-    private static AmazonS3 client() {
-        return new AWSClientBuilder()
-                .endpointURI(getEndpoint())
-                .accessKeyID(getAccessKeyId())
-                .secretKey(getSecretKey())
-                .build();
+    @AfterAll
+    public static void afterClass() throws Exception {
+        BaseTest.afterClass();
+        if (client != null) {
+            client.close();
+        }
     }
 
-    private static void createBucket() {
-        final AmazonS3 s3 = client();
-        final String bucketName = getBucket();
-
-        try {
-            s3.deleteBucket(bucketName);
-        } catch (AmazonS3Exception e) {
-            // This probably means it already exists. We'll find out shortly.
+    private static synchronized S3Client client() {
+        if (client == null) {
+            client = new S3ClientBuilder()
+                    .endpointURI(getEndpoint())
+                    .region(getRegion())
+                    .accessKeyID(getAccessKeyId())
+                    .secretKey(getSecretKey())
+                    .build();
         }
-        try {
-            s3.createBucket(new CreateBucketRequest(bucketName));
-        } catch (AmazonS3Exception e) {
-            if (!e.getErrorCode().startsWith("BucketAlreadyOwnedByYou")) {
-                throw e;
-            }
-        }
+        return client;
     }
 
     private static String getAccessKeyId() {
@@ -109,6 +105,12 @@ public class S3CacheTest extends AbstractCacheTest {
             }
         }
         return null;
+    }
+
+    private static String getRegion() {
+        org.apache.commons.configuration.Configuration testConfig =
+                TestUtil.getTestConfig();
+        return testConfig.getString(ConfigurationConstants.S3_REGION.getKey());
     }
 
     private static String getSecretKey() {
@@ -145,7 +147,6 @@ public class S3CacheTest extends AbstractCacheTest {
         config.setProperty(Key.S3CACHE_BUCKET_NAME, getBucket());
         config.setProperty(Key.S3CACHE_SECRET_KEY, getSecretKey());
         config.setProperty(Key.S3CACHE_ENDPOINT, getEndpoint().toString());
-
         return new S3Cache();
     }
 
@@ -161,9 +162,7 @@ public class S3CacheTest extends AbstractCacheTest {
     /* getInfo(Identifier) */
 
     @Test
-    void testGetImageInfoUpdatesLastModifiedTime() throws Exception {
-        assumeFalse(Service.MINIO.equals(getService())); // this test fails in minio
-
+    void testGetInfoUpdatesLastModifiedTime() throws Exception {
         Configuration.getInstance().setProperty(Key.DERIVATIVE_CACHE_TTL, 1);
 
         final DerivativeCache instance = newInstance();

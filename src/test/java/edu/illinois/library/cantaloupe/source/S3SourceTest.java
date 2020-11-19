@@ -1,12 +1,5 @@
 package edu.illinois.library.cantaloupe.source;
 
-import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.model.AmazonS3Exception;
-import com.amazonaws.services.s3.model.CreateBucketRequest;
-import com.amazonaws.services.s3.model.ObjectListing;
-import com.amazonaws.services.s3.model.ObjectMetadata;
-import com.amazonaws.services.s3.model.PutObjectRequest;
-import com.amazonaws.services.s3.model.S3ObjectSummary;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Format;
@@ -15,19 +8,18 @@ import edu.illinois.library.cantaloupe.delegate.DelegateProxy;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.ConfigurationConstants;
 import edu.illinois.library.cantaloupe.test.TestUtil;
-import edu.illinois.library.cantaloupe.util.AWSClientBuilder;
+import edu.illinois.library.cantaloupe.util.S3ClientBuilder;
+import edu.illinois.library.cantaloupe.util.S3Utils;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.util.NoSuchElementException;
@@ -45,63 +37,28 @@ public class S3SourceTest extends AbstractSourceTest {
     private static final String OBJECT_KEY_WITH_NO_CONTENT_TYPE_OR_EXTENSION               = "jpg";
     private static final String NON_IMAGE_KEY                                              = "NotAnImage";
 
+    private static S3Client client;
+
     private S3Source instance;
 
     @BeforeAll
     public static void beforeClass() throws Exception {
         BaseTest.beforeClass();
-        createBucket();
+        S3Utils.createBucket(client(), getBucket());
     }
 
     @AfterAll
     public static void afterClass() throws Exception {
         BaseTest.afterClass();
-        deleteBucket();
-    }
-
-    private static void createBucket() {
-        final AmazonS3 s3 = client();
-        final String bucketName = getBucket();
-        try {
-            deleteBucket();
-        } catch (AmazonS3Exception e) {
-            // This probably means it doesn't exist. We'll find out shortly.
-        }
-        try {
-            s3.createBucket(new CreateBucketRequest(bucketName));
-        } catch (AmazonS3Exception e) {
-            if (!e.getMessage().contains("you already own it")) {
-                throw e;
-            }
+        S3Utils.deleteBucket(client(), getBucket());
+        if (client != null) {
+            client.close();
         }
     }
 
-    private static void deleteBucket() throws AmazonS3Exception {
-        final AmazonS3 s3 = client();
-        final String bucketName = getBucket();
-        s3.deleteBucket(bucketName);
-    }
-
-    private static void emptyBucket() {
-        final AmazonS3 s3 = client();
-        final String bucketName = getBucket();
-
-        ObjectListing objectListing = s3.listObjects(bucketName);
-        while (true) {
-            for (S3ObjectSummary s3ObjectSummary : objectListing.getObjectSummaries()) {
-                s3.deleteObject(bucketName, s3ObjectSummary.getKey());
-            }
-            if (objectListing.isTruncated()) {
-                objectListing = s3.listNextBatchOfObjects(objectListing);
-            } else {
-                break;
-            }
-        }
-    }
-
-    private static void seedFixtures() throws IOException {
-        final AmazonS3 s3 = client();
-        Path fixture = TestUtil.getImage("jpg");
+    private static void seedFixtures() {
+        final S3Client client = client();
+        Path fixture          = TestUtil.getImage("jpg");
 
         for (final String key : new String[] {
                 OBJECT_KEY_WITH_CONTENT_TYPE_AND_RECOGNIZED_EXTENSION,
@@ -111,51 +68,39 @@ public class S3SourceTest extends AbstractSourceTest {
                 OBJECT_KEY_WITH_NO_CONTENT_TYPE_AND_UNRECOGNIZED_EXTENSION,
                 OBJECT_KEY_WITH_NO_CONTENT_TYPE_AND_INCORRECT_EXTENSION,
                 OBJECT_KEY_WITH_NO_CONTENT_TYPE_OR_EXTENSION}) {
-            try (ByteArrayOutputStream os = new ByteArrayOutputStream()) {
-                Files.copy(fixture, os);
-                byte[] imageBytes = os.toByteArray();
-
-                final ObjectMetadata metadata = new ObjectMetadata();
-                if (!OBJECT_KEY_WITH_NO_CONTENT_TYPE_AND_RECOGNIZED_EXTENSION.equals(key) &&
-                        !OBJECT_KEY_WITH_NO_CONTENT_TYPE_AND_UNRECOGNIZED_EXTENSION.equals(key) &&
-                        !OBJECT_KEY_WITH_NO_CONTENT_TYPE_AND_INCORRECT_EXTENSION.equals(key) &&
-                        !OBJECT_KEY_WITH_NO_CONTENT_TYPE_OR_EXTENSION.equals(key)) {
-                    metadata.setContentType("image/jpeg");
-                }
-                metadata.setContentLength(imageBytes.length);
-
-                try (ByteArrayInputStream s3Stream = new ByteArrayInputStream(imageBytes)) {
-                    final PutObjectRequest request = new PutObjectRequest(
-                            getBucket(), key, s3Stream, metadata);
-                    s3.putObject(request);
-                }
+            String contentType = null;
+            if (!OBJECT_KEY_WITH_NO_CONTENT_TYPE_AND_RECOGNIZED_EXTENSION.equals(key) &&
+                    !OBJECT_KEY_WITH_NO_CONTENT_TYPE_AND_UNRECOGNIZED_EXTENSION.equals(key) &&
+                    !OBJECT_KEY_WITH_NO_CONTENT_TYPE_AND_INCORRECT_EXTENSION.equals(key) &&
+                    !OBJECT_KEY_WITH_NO_CONTENT_TYPE_OR_EXTENSION.equals(key)) {
+                contentType = "image/jpeg";
             }
+            PutObjectRequest request = PutObjectRequest.builder()
+                    .bucket(getBucket())
+                    .key(key)
+                    .contentType(contentType)
+                    .build();
+            client.putObject(request, fixture);
         }
 
         // Add a non-image
         fixture = TestUtil.getImage("text.txt");
-        try (ByteArrayOutputStream os = new ByteArrayOutputStream()) {
-            Files.copy(fixture, os);
-            byte[] imageBytes = os.toByteArray();
-
-            final ObjectMetadata metadata = new ObjectMetadata();
-            metadata.setContentLength(imageBytes.length);
-
-            try (ByteArrayInputStream s3Stream = new ByteArrayInputStream(imageBytes)) {
-                final PutObjectRequest request = new PutObjectRequest(
-                        getBucket(), NON_IMAGE_KEY, s3Stream, metadata);
-                s3.putObject(request);
-            }
-        }
-
+        PutObjectRequest request = PutObjectRequest.builder()
+                .bucket(getBucket())
+                .key(NON_IMAGE_KEY)
+                .build();
+        client.putObject(request, fixture);
     }
 
-    private static AmazonS3 client() {
-        return new AWSClientBuilder()
-                .endpointURI(getEndpoint())
-                .accessKeyID(getAccessKeyId())
-                .secretKey(getSecretKey())
-                .build();
+    private static S3Client client() {
+        if (client == null) {
+            client = new S3ClientBuilder()
+                    .endpointURI(getEndpoint())
+                    .accessKeyID(getAccessKeyId())
+                    .secretKey(getSecretKey())
+                    .build();
+        }
+        return client;
     }
 
     private static String getAccessKeyId() {
@@ -202,7 +147,7 @@ public class S3SourceTest extends AbstractSourceTest {
     @Override
     public void tearDown() throws Exception {
         super.tearDown();
-        emptyBucket();
+        S3Utils.emptyBucket(client(), getBucket());
     }
 
     @Override

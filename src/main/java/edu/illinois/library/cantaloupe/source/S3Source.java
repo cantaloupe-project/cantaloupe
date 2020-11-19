@@ -1,7 +1,5 @@
 package edu.illinois.library.cantaloupe.source;
 
-import com.amazonaws.auth.AWSCredentials;
-import com.amazonaws.auth.AWSCredentialsProvider;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.http.Range;
@@ -9,7 +7,7 @@ import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.MediaType;
 import edu.illinois.library.cantaloupe.delegate.DelegateMethod;
-import edu.illinois.library.cantaloupe.util.AWSClientBuilder;
+import edu.illinois.library.cantaloupe.util.S3ClientBuilder;
 import io.minio.MinioClient;
 import io.minio.errors.ErrorResponseException;
 import io.minio.errors.InvalidBucketNameException;
@@ -17,6 +15,8 @@ import io.minio.errors.InvalidEndpointException;
 import io.minio.errors.InvalidPortException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import software.amazon.awssdk.auth.credentials.AwsCredentials;
+import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider;
 
 import javax.script.ScriptException;
 import java.io.BufferedInputStream;
@@ -238,18 +238,18 @@ final class S3Source extends AbstractSource implements Source {
     static synchronized MinioClient getClientInstance() {
         if (client == null) {
             final Configuration config = Configuration.getInstance();
-            final AWSCredentialsProvider credentialsProvider =
-                    AWSClientBuilder.newCredentialsProvider(
+            final AwsCredentialsProvider credentialsProvider =
+                    S3ClientBuilder.newCredentialsProvider(
                             config.getString(Key.S3SOURCE_ACCESS_KEY_ID),
                             config.getString(Key.S3SOURCE_SECRET_KEY));
-            final AWSCredentials credentials =
-                    credentialsProvider.getCredentials();
+            final AwsCredentials credentials =
+                    credentialsProvider.resolveCredentials();
             try {
                 final String endpoint = config.getString(Key.S3SOURCE_ENDPOINT);
                 client = new MinioClient(
                         endpoint,
-                        credentials.getAWSAccessKeyId(),
-                        credentials.getAWSSecretKey(),
+                        credentials.accessKeyId(),
+                        credentials.secretAccessKey(),
                         awsRegionFromURL(endpoint));
             } catch (InvalidEndpointException | InvalidPortException e) {
                 throw new IllegalArgumentException(e);

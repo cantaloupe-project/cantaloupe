@@ -579,8 +579,8 @@ public class AdminResourceUITest extends AbstractAdminResourceTest {
         inputNamed(Key.S3CACHE_SECRET_KEY).sendKeys("dogs");
         inputNamed(Key.S3CACHE_BUCKET_NAME).sendKeys("bucket");
         inputNamed(Key.S3CACHE_ENDPOINT).sendKeys("localhost:1234");
+        inputNamed(Key.S3CACHE_REGION).sendKeys("us-east-2");
         inputNamed(Key.S3CACHE_OBJECT_KEY_PREFIX).sendKeys("obj");
-        inputNamed(Key.S3CACHE_MAX_CONNECTIONS).sendKeys("35");
         // AzureStorageCache
         css("#cl-caches li > a[href=\"#AzureStorageCache\"]").click();
         inputNamed(Key.AZURESTORAGECACHE_ACCOUNT_NAME).sendKeys("bees");
@@ -645,8 +645,8 @@ public class AdminResourceUITest extends AbstractAdminResourceTest {
         assertEquals("dogs", config.getString(Key.S3CACHE_SECRET_KEY));
         assertEquals("bucket", config.getString(Key.S3CACHE_BUCKET_NAME));
         assertEquals("localhost:1234", config.getString(Key.S3CACHE_ENDPOINT));
+        assertEquals("us-east-2", config.getString(Key.S3CACHE_REGION));
         assertEquals("obj", config.getString(Key.S3CACHE_OBJECT_KEY_PREFIX));
-        assertEquals("35", config.getString(Key.S3CACHE_MAX_CONNECTIONS));
         // AzureStorageCache
         assertEquals("bees", config.getString(Key.AZURESTORAGECACHE_ACCOUNT_NAME));
         assertEquals("birds", config.getString(Key.AZURESTORAGECACHE_ACCOUNT_KEY));

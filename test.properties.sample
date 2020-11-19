@@ -5,6 +5,7 @@
 # Available services are `minio` and `aws`.
 s3.service = minio
 s3.endpoint =
+s3.region =
 s3.access_key_id = minioadmin
 s3.secret_key = minioadmin
 s3.bucket = cantaloupe-test
