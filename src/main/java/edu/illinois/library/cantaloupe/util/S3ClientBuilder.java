@@ -14,7 +14,6 @@ import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.S3Configuration;
 
-import javax.annotation.Nullable;
 import java.net.URI;
 
 /**
@@ -43,8 +42,8 @@ public final class S3ClientBuilder {
      *     AwsCredentialsProvider</a>
      */
     public static AwsCredentialsProvider newCredentialsProvider(
-            @Nullable final String accessKeyIDFromConfig,
-            @Nullable final String secretKeyFromConfig) {
+            final String accessKeyIDFromConfig,
+            final String secretKeyFromConfig) {
         return AwsCredentialsProviderChain.builder()
                 .addCredentialsProvider(SystemPropertyCredentialsProvider.create())
                 .addCredentialsProvider(EnvironmentVariableCredentialsProvider.create())
@@ -68,7 +67,7 @@ public final class S3ClientBuilder {
      * @param accessKeyID AWS access key ID.
      * @return            The instance.
      */
-    public S3ClientBuilder accessKeyID(@Nullable String accessKeyID) {
+    public S3ClientBuilder accessKeyID(String accessKeyID) {
         this.accessKeyID = accessKeyID;
         return this;
     }
@@ -77,7 +76,7 @@ public final class S3ClientBuilder {
      * @param secretKey AWS secret key.
      * @return          The instance.
      */
-    public S3ClientBuilder secretKey(@Nullable String secretKey) {
+    public S3ClientBuilder secretKey(String secretKey) {
         this.secretKey = secretKey;
         return this;
     }

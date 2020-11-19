@@ -4,8 +4,6 @@ import edu.illinois.library.cantaloupe.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -132,8 +130,7 @@ class HeritablePropertiesConfiguration implements MultipleFileConfiguration {
         return bool;
     }
 
-    @Nullable
-    private Boolean readBoolean(@Nonnull String key) {
+    private Boolean readBoolean(String key) {
         Boolean bool = null;
         for (PropertiesDocument doc : propertiesDocs.values()) {
             if (doc.containsKey(key)) {
@@ -361,8 +358,7 @@ class HeritablePropertiesConfiguration implements MultipleFileConfiguration {
     }
 
     @Override
-    @Nullable
-    public Object getProperty(@Nonnull String key) {
+    public Object getProperty(String key) {
         return readPropertyOptimistically(key);
     }
 
@@ -382,8 +378,7 @@ class HeritablePropertiesConfiguration implements MultipleFileConfiguration {
         return prop;
     }
 
-    @Nullable
-    private Object readProperty(@Nonnull String key) {
+    private Object readProperty(String key) {
         Object prop = null;
         for (PropertiesDocument doc : propertiesDocs.values()) {
             if (doc.containsKey(key)) {
@@ -395,8 +390,7 @@ class HeritablePropertiesConfiguration implements MultipleFileConfiguration {
     }
 
     @Override
-    @Nullable
-    public String getString(@Nonnull String key) {
+    public String getString(String key) {
         return readStringOptimistically(key);
     }
 
