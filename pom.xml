@@ -17,9 +17,7 @@
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <aws-sdk.version>2.15.28</aws-sdk.version>
         <jackson.version>2.11.0</jackson.version>
-        <!-- N.B.: Jetty does not use semantic versioning. New x.x.x releases
-        often break API. -->
-        <jetty.version>9.4.24.v20191120</jetty.version>
+        <jetty.version>9.4.34.v20201102</jetty.version>
         <jruby.version>9.2.13.0</jruby.version>
         <surefire.version>3.0.0-M3</surefire.version>
     </properties>
