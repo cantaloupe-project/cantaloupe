@@ -18,5 +18,5 @@ services:
       MINIO_SECRET_KEY: OpenSesame
     hostname: minio
   redis:
-    image: redis
+    image: winamd64/redis
     hostname: redis
