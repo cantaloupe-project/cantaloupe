@@ -236,7 +236,7 @@ class S3Cache implements DerivativeCache {
             }
             client = new S3ClientBuilder()
                     .accessKeyID(config.getString(Key.S3CACHE_ACCESS_KEY_ID))
-                    .secretKey(config.getString(Key.S3CACHE_SECRET_KEY))
+                    .secretAccessKey(config.getString(Key.S3CACHE_SECRET_KEY))
                     .endpointURI(endpointURI)
                     .region(config.getString(Key.S3CACHE_REGION))
                     .build();

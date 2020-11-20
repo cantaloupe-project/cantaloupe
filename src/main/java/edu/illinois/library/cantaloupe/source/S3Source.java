@@ -222,7 +222,7 @@ final class S3Source extends AbstractSource implements Source {
             }
             client = new S3ClientBuilder()
                     .accessKeyID(config.getString(Key.S3SOURCE_ACCESS_KEY_ID))
-                    .secretKey(config.getString(Key.S3SOURCE_SECRET_KEY))
+                    .secretAccessKey(config.getString(Key.S3SOURCE_SECRET_KEY))
                     .endpointURI(endpointURI)
                     .region(config.getString(Key.S3SOURCE_REGION))
                     .build();

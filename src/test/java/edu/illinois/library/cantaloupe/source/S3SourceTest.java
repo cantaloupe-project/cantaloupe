@@ -98,7 +98,7 @@ public class S3SourceTest extends AbstractSourceTest {
                     .endpointURI(getEndpoint())
                     .region(getRegion())
                     .accessKeyID(getAccessKeyId())
-                    .secretKey(getSecretKey())
+                    .secretAccessKey(getSecretKey())
                     .build();
         }
         return client;

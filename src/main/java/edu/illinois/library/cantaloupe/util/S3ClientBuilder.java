@@ -37,7 +37,7 @@ public final class S3ClientBuilder {
 
     private URI endpointURI;
     private Region region;
-    private String accessKeyID, secretKey;
+    private String accessKeyID, secretAccessKey;
 
     /**
      * Returns credentials using a similar strategy as the {@link
@@ -129,11 +129,11 @@ public final class S3ClientBuilder {
     }
 
     /**
-     * @param secretKey AWS secret key.
+     * @param secretAccessKey AWS secret access key.
      * @return          The instance.
      */
-    public S3ClientBuilder secretKey(String secretKey) {
-        this.secretKey = secretKey;
+    public S3ClientBuilder secretAccessKey(String secretAccessKey) {
+        this.secretAccessKey = secretAccessKey;
         return this;
     }
 
@@ -147,7 +147,7 @@ public final class S3ClientBuilder {
                 .serviceConfiguration(config)
                 // A region is required even for non-AWS endpoints.
                 .region(getEffectiveRegion())
-                .credentialsProvider(newCredentialsProvider(accessKeyID, secretKey));
+                .credentialsProvider(newCredentialsProvider(accessKeyID, secretAccessKey));
         if (endpointURI != null) {
             builder = builder.endpointOverride(endpointURI);
         }

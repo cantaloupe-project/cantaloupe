@@ -82,7 +82,7 @@ public class S3HTTPImageInputStreamClientTest extends BaseTest {
                 .endpointURI(URI.create(endpoint()))
                 .region(region())
                 .accessKeyID(accessKeyID())
-                .secretKey(secretAccessKey())
+                .secretAccessKey(secretAccessKey())
                 .build();
     }
 

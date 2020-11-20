@@ -75,7 +75,7 @@ public class S3CacheTest extends AbstractCacheTest {
                     .endpointURI(getEndpoint())
                     .region(getRegion())
                     .accessKeyID(getAccessKeyId())
-                    .secretKey(getSecretKey())
+                    .secretAccessKey(getSecretKey())
                     .build();
         }
         return client;
