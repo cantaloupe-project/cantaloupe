@@ -92,7 +92,8 @@ public final class S3ClientBuilder {
     }
 
     /**
-     * @param region Region to use. Relevant only to AWS endpoints.
+     * @param region Region to use. Relevant only to AWS endpoints; for non-AWS
+     *               endpoints, {@link #endpointURI(URI)} must be set.
      * @return       The instance.
      */
     public S3ClientBuilder region(String region) {
@@ -105,13 +106,16 @@ public final class S3ClientBuilder {
                 .pathStyleAccessEnabled(endpointURI != null)
                 .checksumValidationEnabled(false)
                 .build();
-        return S3Client.builder()
+        software.amazon.awssdk.services.s3.S3ClientBuilder builder = S3Client.builder()
                 .httpClientBuilder(UrlConnectionHttpClient.builder())
-                .endpointOverride(endpointURI)
-                .region(region)
                 .serviceConfiguration(config)
-                .credentialsProvider(newCredentialsProvider(accessKeyID, secretKey))
-                .build();
+                .credentialsProvider(newCredentialsProvider(accessKeyID, secretKey));
+        if (endpointURI != null) {
+            builder = builder.endpointOverride(endpointURI);
+        } else {
+            builder = builder.region(region);
+        }
+        return builder.build();
     }
 
 }
