@@ -32,8 +32,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * <p>Maps an identifier to an <a href="https://aws.amazon.com/s3/">Amazon
@@ -195,9 +193,6 @@ final class S3Source extends AbstractSource implements Source {
      */
     private static final Range FORMAT_INFERENCE_RANGE = new Range(0, 32);
 
-    private static final Pattern URL_REGION_PATTERN =
-            Pattern.compile("[.-]([a-z]{2}-[a-z]+-[0-9]).amazonaws.com");
-
     private static S3Client client;
 
     /**
@@ -211,29 +206,6 @@ final class S3Source extends AbstractSource implements Source {
     private S3ObjectAttributes objectAttributes;
 
     private FormatIterator<Format> formatIterator = new FormatIterator<>();
-
-    /**
-     * Extracts the AWS region from a URL or hostname like {@literal
-     * s3.us-east-2.amazonaws.com}.
-     *
-     * @param url S3 endpoint URL.
-     * @return    AWS region for the given URL, or {@literal null} if the URL
-     *            is not a recognized AWS URL.
-     * @see <a href="https://docs.aws.amazon.com/general/latest/gr/rande.html">AWS Regions and Endpoints</a>
-     */
-    static String awsRegionFromURL(String url) {
-        // special cases
-        if ("s3.amazonaws.com".equals(url) ||
-                "s3-external-1.amazonaws.com".equals(url)) {
-            return "us-east-1";
-        }
-
-        Matcher matcher = URL_REGION_PATTERN.matcher(url);
-        if (matcher.find()) {
-            return matcher.group(1);
-        }
-        return null;
-    }
 
     static synchronized S3Client getClientInstance() {
         if (client == null) {
