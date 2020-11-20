@@ -6,20 +6,21 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest]
-        java: [jdk, graalvm]
+        java: [jdk11, jdk15, graalvm]
     steps:
       - name: Check out the repository
         uses: actions/checkout@v2
-      - name: Test in Linux JDK
-        if: matrix.os == 'ubuntu-latest' && matrix.java == 'jdk'
+      - name: Test in Linux JDK 11
+        if: matrix.os == 'ubuntu-latest' && matrix.java == 'jdk11'
         run: docker-compose -f docker/Linux-JDK11/docker-compose.yml up --exit-code-from cantaloupe
+      - name: Test in Linux JDK 15
+        if: matrix.os == 'ubuntu-latest' && matrix.java == 'jdk15'
+        run: docker-compose -f docker/Linux-JDK15/docker-compose.yml up --exit-code-from cantaloupe
       - name: Test in Linux GraalVM
         if: matrix.os == 'ubuntu-latest' && matrix.java == 'graalvm'
         run: docker-compose -f docker/Linux-GraalVM20/docker-compose.yml up --exit-code-from cantaloupe
       - name: Test in Windows JDK
-        if: matrix.os == 'windows-latest' && matrix.java == 'jdk'
+        if: matrix.os == 'windows-latest' && matrix.java == 'jdk11'
         run: docker-compose -f docker/Windows10-JDK11/docker-compose.yml up --exit-code-from cantaloupe
-      - name: Test in Windows JDK
-        if: matrix.os == 'windows-latest' && matrix.java == 'graalvm'
-        # TODO: Windows+GraalVM
-        run: echo "Windows+GraalVM isn't working yet"
+      # TODO: Windows+GraalVM
+      # TODO: Windows+JDK15
