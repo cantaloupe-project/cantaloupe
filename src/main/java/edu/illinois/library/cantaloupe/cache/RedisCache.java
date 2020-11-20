@@ -1,19 +1,19 @@
 package edu.illinois.library.cantaloupe.cache;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.lambdaworks.redis.MapScanCursor;
-import com.lambdaworks.redis.RedisClient;
-import com.lambdaworks.redis.RedisURI;
-import com.lambdaworks.redis.ScanArgs;
-import com.lambdaworks.redis.api.StatefulRedisConnection;
-import com.lambdaworks.redis.codec.ByteArrayCodec;
-import com.lambdaworks.redis.codec.RedisCodec;
-import com.lambdaworks.redis.codec.Utf8StringCodec;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.operation.OperationList;
+import io.lettuce.core.MapScanCursor;
+import io.lettuce.core.RedisClient;
+import io.lettuce.core.RedisURI;
+import io.lettuce.core.ScanArgs;
+import io.lettuce.core.api.StatefulRedisConnection;
+import io.lettuce.core.codec.ByteArrayCodec;
+import io.lettuce.core.codec.RedisCodec;
+import io.lettuce.core.codec.StringCodec;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,19 +27,19 @@ import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 
 /**
- * <p>Cache using Redis via the <a href="http://redis.paluch.biz">Lettuce</a>
+ * <p>Cache using Redis via the <a href="https://lettuce.io">Lettuce</a>
  * client.</p>
  *
  * <p>Content is structured as follows:</p>
  *
- * <pre>{
+ * <code><pre>{
  *     #{@link #IMAGE_HASH_KEY}: {
  *         "operation list string representation": image byte array
  *     },
  *     #{@link #INFO_HASH_KEY}: {
  *         "identifier": "UTF-8 JSON string"
  *     }
- * }</pre>
+ * }</pre></code>
  */
 class RedisCache implements DerivativeCache {
 
@@ -49,8 +49,8 @@ class RedisCache implements DerivativeCache {
      */
     static class CustomRedisCodec implements RedisCodec<String, byte[]> {
 
-        private RedisCodec<String,String> keyDelegate = new Utf8StringCodec();
-        private RedisCodec<byte[],byte[]> valueDelegate = new ByteArrayCodec();
+        private final RedisCodec<String,String> keyDelegate = StringCodec.UTF8;
+        private final RedisCodec<byte[],byte[]> valueDelegate = new ByteArrayCodec();
 
         @Override
         public ByteBuffer encodeKey(String k) {
@@ -80,9 +80,9 @@ class RedisCache implements DerivativeCache {
     private static class RedisInputStream extends InputStream {
 
         private ByteArrayInputStream bufferStream;
-        private StatefulRedisConnection<String, byte[]> connection;
-        private String hashKey;
-        private String valueKey;
+        private final StatefulRedisConnection<String, byte[]> connection;
+        private final String hashKey;
+        private final String valueKey;
 
         RedisInputStream(String hashKey,
                          String valueKey,
@@ -139,10 +139,10 @@ class RedisCache implements DerivativeCache {
      */
     private static class RedisOutputStream extends OutputStream {
 
-        private ByteArrayOutputStream bufferStream = new ByteArrayOutputStream();
-        private StatefulRedisConnection<String, byte[]> connection;
-        private String hashKey;
-        private String valueKey;
+        private final ByteArrayOutputStream bufferStream = new ByteArrayOutputStream();
+        private final StatefulRedisConnection<String, byte[]> connection;
+        private final String hashKey;
+        private final String valueKey;
 
         RedisOutputStream(String hashKey,
                           String valueKey,

@@ -56,6 +56,7 @@
 ### Caches
 
 * S3Cache has been updated to use version 2 of the AWS SDK.
+* RedisCache has been updated to use version 6.0.1 of the Lettuce client.
 * The delegate method invocation cache has been removed. 
 
 ### Delegate Script
