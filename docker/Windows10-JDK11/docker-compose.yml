@@ -1,0 +1,22 @@
+#
+# N.B.: docker-compose must be invoked from the project root directory:
+#
+# docker-compose -f path/to/docker-compose.yml up --exit-code-from cantaloupe
+#
+version: '3'
+services:
+  cantaloupe:
+    build:
+      context: ../../
+      dockerfile: docker/Windows10-JDK11/Dockerfile
+  minio:
+    build:
+      context: ../../
+      dockerfile: docker/Windows10-JDK11/Dockerfile-minio
+    environment:
+      MINIO_ACCESS_KEY: MinioUser
+      MINIO_SECRET_KEY: OpenSesame
+    hostname: minio
+  redis:
+    image: redis
+    hostname: redis

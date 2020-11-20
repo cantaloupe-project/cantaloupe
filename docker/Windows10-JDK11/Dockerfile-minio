@@ -1,0 +1,10 @@
+FROM mcr.microsoft.com/windows/servercore:ltsc2019
+
+ENV MINIO_ACCESS_KEY=MinioUser
+ENV MINIO_SECRET_KEY=OpenSesame
+
+RUN Invoke-WebRequest https://dl.min.io/server/minio/release/windows-amd64/minio.exe -O minio.exe
+
+RUN mkdir c:\data
+
+CMD minio.exe server --address=:9000 c:\data

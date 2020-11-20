@@ -18,9 +18,7 @@ jobs:
         run: docker-compose -f docker/Linux-GraalVM20/docker-compose.yml up --exit-code-from cantaloupe
       - name: Test in Windows JDK
         if: matrix.os == 'windows-latest' && matrix.java == 'jdk'
-        run: |
-          docker build -f docker/Windows10-JDK11/Dockerfile -t cantaloupe/tests .
-          docker run cantaloupe/tests cmd /c "mvn --batch-mode test -Pnodeps"
+        run: docker-compose -f docker/Windows10-JDK11/docker-compose.yml up --exit-code-from cantaloupe
       - name: Test in Windows JDK
         if: matrix.os == 'windows-latest' && matrix.java == 'graalvm'
         # TODO: Windows+GraalVM
