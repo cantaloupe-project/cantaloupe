@@ -3,7 +3,6 @@ package edu.illinois.library.cantaloupe.source;
 import edu.illinois.library.cantaloupe.http.Range;
 import edu.illinois.library.cantaloupe.http.Response;
 import edu.illinois.library.cantaloupe.source.stream.HTTPImageInputStreamClient;
-import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import software.amazon.awssdk.core.exception.SdkClientException;
@@ -14,6 +13,8 @@ import software.amazon.awssdk.services.s3.model.NoSuchBucketException;
 import software.amazon.awssdk.services.s3.model.NoSuchKeyException;
 import software.amazon.awssdk.services.s3.model.S3Exception;
 
+import java.io.BufferedInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.AccessDeniedException;
@@ -68,10 +69,13 @@ class S3HTTPImageInputStreamClient implements HTTPImageInputStreamClient {
 
     @Override
     public Response sendGETRequest(Range range) throws IOException {
-        try (InputStream is = S3Source.newObjectInputStream(objectInfo, range)) {
+        try (InputStream is = new BufferedInputStream(
+                S3Source.newObjectInputStream(objectInfo, range));
+             ByteArrayOutputStream os = new ByteArrayOutputStream()) {
             final Response response = new Response();
             response.setStatus(206);
-            response.setBody(IOUtils.toByteArray(is));
+            is.transferTo(os);
+            response.setBody(os.toByteArray());
             return response;
         } catch (IOException e) {
             LOGGER.error(e.getMessage(), e);
