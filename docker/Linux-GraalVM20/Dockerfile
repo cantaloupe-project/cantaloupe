@@ -1,8 +1,8 @@
 FROM ubuntu:latest
 
-ENV JAVA_HOME=/opt/graalvm-ce-java11-20.1.0
-ENV GRAALVM_HOME=/opt/graalvm-ce-java11-20.1.0
-ENV PATH=$PATH:/opt/graalvm-ce-java11-20.1.0/bin
+ENV JAVA_HOME=/opt/graalvm-ce-java11-20.3.0
+ENV GRAALVM_HOME=/opt/graalvm-ce-java11-20.3.0
+ENV PATH=$PATH:/opt/graalvm-ce-java11-20.3.0/bin
 
 ARG DEBIAN_FRONTEND=noninteractive
 
@@ -28,9 +28,9 @@ RUN wget -q https://github.com/GrokImageCompression/grok/releases/download/v7.6.
     && dpkg -i --ignore-depends=libjpeg62-turbo ./grokj2k-tools_7.6.1-1_amd64.deb
 
 # Install GraalVM
-RUN wget -q https://github.com/graalvm/graalvm-ce-builds/releases/download/vm-20.1.0/graalvm-ce-java11-linux-amd64-20.1.0.tar.gz \
-    && tar xfz graalvm-ce-java11-linux-amd64-20.1.0.tar.gz \
-    && mv graalvm-ce-java11-20.1.0 /opt
+RUN wget -q https://github.com/graalvm/graalvm-ce-builds/releases/download/vm-20.3.0/graalvm-ce-java11-linux-amd64-20.3.0.tar.gz \
+    && tar xfz graalvm-ce-java11-linux-amd64-20.3.0.tar.gz \
+    && mv graalvm-ce-java11-20.3.0 /opt
 
 # A non-root user is needed for some FilesystemSourceTest tests to work.
 ARG user=cantaloupe
