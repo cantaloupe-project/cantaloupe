@@ -9,8 +9,13 @@ import software.amazon.awssdk.auth.credentials.InstanceProfileCredentialsProvide
 import software.amazon.awssdk.auth.credentials.ProfileCredentialsProvider;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.auth.credentials.SystemPropertyCredentialsProvider;
+import software.amazon.awssdk.core.exception.SdkClientException;
 import software.amazon.awssdk.http.urlconnection.UrlConnectionHttpClient;
 import software.amazon.awssdk.regions.Region;
+import software.amazon.awssdk.regions.providers.AwsProfileRegionProvider;
+import software.amazon.awssdk.regions.providers.AwsRegionProviderChain;
+import software.amazon.awssdk.regions.providers.InstanceProfileRegionProvider;
+import software.amazon.awssdk.regions.providers.SystemSettingsRegionProvider;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.S3Configuration;
 
@@ -23,6 +28,12 @@ import java.net.URI;
  *     AWS SDK for Java</a>
  */
 public final class S3ClientBuilder {
+
+    /**
+     * This region is used when the region provider chain used by {@link
+     * #getEffectiveRegion()} is not able to obtain a region.
+     */
+    private static final Region DEFAULT_REGION = Region.US_EAST_1;
 
     private URI endpointURI;
     private Region region;
@@ -64,20 +75,33 @@ public final class S3ClientBuilder {
     }
 
     /**
+     * Returns a region using a similar strategy as the {@link
+     * software.amazon.awssdk.regions.providers.DefaultAwsRegionProviderChain}
+     * except the application configuration is consulted between the
+     * environment and AWS profile.
+     *
+     * @return Region, or {@link #DEFAULT_REGION} if none could be found.
+     * @see <a href="https://sdk.amazonaws.com/java/api/latest/software/amazon/awssdk/regions/providers/DefaultAwsRegionProviderChain.html">
+     *     DefaultAwsRegionProviderChain</a>
+     */
+    private Region getEffectiveRegion() {
+        try {
+            return new AwsRegionProviderChain(
+                    new SystemSettingsRegionProvider(),
+                    () -> region,
+                    new AwsProfileRegionProvider(),
+                    new InstanceProfileRegionProvider()).getRegion();
+        } catch (SdkClientException e) {
+            return DEFAULT_REGION;
+        }
+    }
+
+    /**
      * @param accessKeyID AWS access key ID.
      * @return            The instance.
      */
     public S3ClientBuilder accessKeyID(String accessKeyID) {
         this.accessKeyID = accessKeyID;
-        return this;
-    }
-
-    /**
-     * @param secretKey AWS secret key.
-     * @return          The instance.
-     */
-    public S3ClientBuilder secretKey(String secretKey) {
-        this.secretKey = secretKey;
         return this;
     }
 
@@ -92,12 +116,24 @@ public final class S3ClientBuilder {
     }
 
     /**
-     * @param region Region to use. Relevant only to AWS endpoints; for non-AWS
-     *               endpoints, {@link #endpointURI(URI)} must be set.
+     * @param region Region to use. This is relevant only for AWS endpoints.
      * @return       The instance.
      */
     public S3ClientBuilder region(String region) {
-        this.region = (region != null && !region.isBlank()) ? Region.of(region) : null;
+        try {
+            this.region = (region != null) ? Region.of(region) : null;
+        } catch (IllegalArgumentException | SdkClientException e) {
+            this.region = null;
+        }
+        return this;
+    }
+
+    /**
+     * @param secretKey AWS secret key.
+     * @return          The instance.
+     */
+    public S3ClientBuilder secretKey(String secretKey) {
+        this.secretKey = secretKey;
         return this;
     }
 
@@ -109,11 +145,11 @@ public final class S3ClientBuilder {
         software.amazon.awssdk.services.s3.S3ClientBuilder builder = S3Client.builder()
                 .httpClientBuilder(UrlConnectionHttpClient.builder())
                 .serviceConfiguration(config)
+                // A region is required even for non-AWS endpoints.
+                .region(getEffectiveRegion())
                 .credentialsProvider(newCredentialsProvider(accessKeyID, secretKey));
         if (endpointURI != null) {
             builder = builder.endpointOverride(endpointURI);
-        } else {
-            builder = builder.region(region);
         }
         return builder.build();
     }
