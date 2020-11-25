@@ -245,7 +245,8 @@ public abstract class AbstractResource {
         String header = getRequest().getHeaders().getFirstValue("Authorization", "");
         if ("Basic ".equals(header.substring(0, Math.min(header.length(), 6)))) {
             String encoded = header.substring(6);
-            String decoded = new String(Base64.getDecoder().decode(encoded.getBytes()));
+            String decoded = new String(Base64.getDecoder().decode(encoded.getBytes(StandardCharsets.UTF_8)),
+                    StandardCharsets.UTF_8);
             String[] parts = decoded.split(":");
             if (parts.length == 2) {
                 String user = parts[0];

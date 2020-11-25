@@ -12,6 +12,7 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.nio.charset.StandardCharsets;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
@@ -22,7 +23,7 @@ public final class Client {
 
     public static final class Builder {
 
-        private Client clientInstance;
+        private final Client clientInstance;
 
         Builder(Client clientInstance) {
             this.clientInstance = clientInstance;
@@ -214,8 +215,8 @@ public final class Client {
     }
 
     private String basicAuthToken() {
-        return "Basic " + Base64.getEncoder()
-                .encodeToString((username + ":" + secret).getBytes());
+        byte[] bytes = (username + ":" + secret).getBytes(StandardCharsets.UTF_8);
+        return "Basic " + Base64.getEncoder().encodeToString(bytes);
     }
 
     /**

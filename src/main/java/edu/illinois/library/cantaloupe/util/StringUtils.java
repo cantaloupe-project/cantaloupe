@@ -5,6 +5,7 @@ import edu.illinois.library.cantaloupe.config.Key;
 
 import javax.xml.bind.DatatypeConverter;
 import java.awt.FontMetrics;
+import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
@@ -62,7 +63,7 @@ public final class StringUtils {
     public static String md5(String str) {
         try {
             final MessageDigest digest = MessageDigest.getInstance("MD5");
-            digest.update(str.getBytes());
+            digest.update(str.getBytes(StandardCharsets.UTF_8));
             byte[] bytes = digest.digest();
             return DatatypeConverter.printHexBinary(bytes).toLowerCase();
         } catch (NoSuchAlgorithmException e) {

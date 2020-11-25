@@ -2,12 +2,13 @@ package edu.illinois.library.cantaloupe.source;
 
 import edu.illinois.library.cantaloupe.http.Headers;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.Map;
 
 class HTTPRequestInfo {
 
-    private Headers headers = new Headers();
+    private final Headers headers = new Headers();
     private String uri, username, secret;
 
     HTTPRequestInfo(String uri) {
@@ -33,8 +34,9 @@ class HTTPRequestInfo {
 
     String getBasicAuthToken() {
         if (getUsername() != null && getSecret() != null) {
-            return Base64.getEncoder().encodeToString(
-                    (getUsername() + ":" + getSecret()).getBytes());
+            byte[] bytes = (getUsername() + ":" + getSecret())
+                    .getBytes(StandardCharsets.UTF_8);
+            return Base64.getEncoder().encodeToString(bytes);
         }
         return null;
     }
