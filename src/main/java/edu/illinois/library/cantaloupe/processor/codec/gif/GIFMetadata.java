@@ -14,7 +14,7 @@ import java.util.Optional;
 
 public class GIFMetadata extends Metadata {
 
-    public class NativeMetadata {
+    public static class NativeMetadata {
         private int delayTime, loopCount;
 
         @JsonProperty
