@@ -27,7 +27,7 @@ public final class Directory {
      */
     private final Map<Field, Object> fields = new TreeMap<>();
 
-    private TagSet tagSet;
+    private final TagSet tagSet;
 
     /**
      * Converts a {@link TIFFDirectory} structure into an instance.
@@ -120,9 +120,9 @@ public final class Directory {
                 return false;
             }
             // Check values.
-            for (Field field : fields.keySet()) {
-                final Object value      = fields.get(field);
-                final Object otherValue = other.fields.get(field);
+            for (Map.Entry<Field, Object> entry : fields.entrySet()) {
+                final Object value      = entry.getValue();
+                final Object otherValue = other.fields.get(entry.getKey());
                 if (value instanceof byte[]) {
                     if (otherValue instanceof byte[]) {
                         if (!Arrays.equals((byte[]) value, (byte[]) otherValue)) {

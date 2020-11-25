@@ -76,8 +76,8 @@ public class ConfigurationResource extends AbstractAdminResource {
 
         // Copy configuration keys and values from the request JSON payload to
         // the application configuration.
-        for (final Object key : submittedConfig.keySet()) {
-            config.setProperty((String) key, submittedConfig.get(key));
+        for (final Map.Entry<?, ?> entry : submittedConfig.entrySet()) {
+            config.setProperty((String) entry.getKey(), entry.getValue());
         }
 
         config.save();
