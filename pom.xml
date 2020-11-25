@@ -436,6 +436,9 @@
                         <version>4.1.4</version>
                     </dependency>
                 </dependencies>
+                <configuration>
+                    <excludeFilterFile>spotbugsfilter.xml</excludeFilterFile>
+                </configuration>
             </plugin>
 
             <plugin>
