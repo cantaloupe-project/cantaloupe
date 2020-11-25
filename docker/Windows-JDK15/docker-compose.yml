@@ -8,11 +8,11 @@ services:
   cantaloupe:
     build:
       context: ../../
-      dockerfile: docker/Windows10-JDK11/Dockerfile
+      dockerfile: docker/Windows-JDK15/Dockerfile
   minio:
     build:
       context: ../../
-      dockerfile: docker/Windows10-JDK11/Dockerfile-minio
+      dockerfile: docker/Windows-JDK15/Dockerfile-minio
     environment:
       MINIO_ACCESS_KEY: MinioUser
       MINIO_SECRET_KEY: OpenSesame
