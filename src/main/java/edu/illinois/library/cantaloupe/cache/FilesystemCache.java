@@ -893,12 +893,11 @@ class FilesystemCache implements SourceCache, DerivativeCache {
             return;
         }
 
-        final ReadWriteLock lock = acquireInfoLock(identifier);
-        lock.writeLock().lock();
-
         final Path destFile = infoFile(identifier);
         final Path tempFile = infoTempFile(identifier);
 
+        final ReadWriteLock lock = acquireInfoLock(identifier);
+        lock.writeLock().lock();
         try {
             LOGGER.debug("put(): writing {} to {}", identifier, tempFile);
 
