@@ -824,6 +824,28 @@ public class OperationListTest extends BaseTest {
         ops.validate(fullSize, Format.PNG);
     }
 
+    @Test
+    public void validateWithScaleGreaterThanMaxAllowedBy1Pixel() throws Exception {
+        Dimension fullSize = new Dimension(639, 343);
+        OperationList ops = new OperationList(
+                new Identifier("cats"),
+                new Scale(320, 172, Scale.Mode.NON_ASPECT_FILL),
+                new Encode(Format.JPG));
+        ops.setScaleConstraint(new ScaleConstraint(1, 2));
+        ops.validate(fullSize, Format.PNG);
+    }
+
+    @Test(expected = IllegalScaleException.class)
+    public void validateWithScaleGreaterThanMaxAllowedBy2Pixels() throws Exception {
+        Dimension fullSize = new Dimension(639, 343);
+        OperationList ops = new OperationList(
+                new Identifier("cats"),
+                new Scale(321, 173, Scale.Mode.NON_ASPECT_FILL),
+                new Encode(Format.JPG));
+        ops.setScaleConstraint(new ScaleConstraint(1, 2));
+        ops.validate(fullSize, Format.PNG);
+    }
+
     @Test(expected = IllegalSizeException.class)
     public void validateWithAreaGreaterThanMaxAllowed() throws Exception {
         Configuration.getInstance().setProperty(Key.MAX_PIXELS, 100);

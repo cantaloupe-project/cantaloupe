@@ -1,5 +1,10 @@
 # Change Log
 
+## 4.1.8
+
+* Fixed a rounding bug that could cause requests for certain scale-constrained
+  images to return HTTP 403 status.
+
 ## 4.1.7
 
 * Fixed a sporadic JVM crash when using KakaduNativeProcessor under load with a
