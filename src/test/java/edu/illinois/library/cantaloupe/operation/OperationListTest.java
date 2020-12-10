@@ -949,6 +949,41 @@ class OperationListTest extends BaseTest {
     }
 
     @Test
+    void validateWithScaleGreaterThanMaxAllowedBy1Pixel() throws Exception {
+        Dimension fullSize = new Dimension(639, 343);
+        Identifier identifier = new Identifier("cats");
+        OperationList ops = OperationList.builder()
+                .withIdentifier(identifier)
+                .withMetaIdentifier(MetaIdentifier.builder()
+                        .withIdentifier(identifier)
+                        .withScaleConstraint(1, 2)
+                        .build())
+                .withOperations(
+                        new ScaleByPixels(320, 172, ScaleByPixels.Mode.NON_ASPECT_FILL),
+                        new Encode(Format.get("png")))
+                .build();
+        ops.validate(fullSize, Format.get("png"));
+    }
+
+    @Test
+    void validateWithScaleGreaterThanMaxAllowedBy2Pixels() {
+        Dimension fullSize = new Dimension(639, 343);
+        Identifier identifier = new Identifier("cats");
+        OperationList ops = OperationList.builder()
+                .withIdentifier(identifier)
+                .withMetaIdentifier(MetaIdentifier.builder()
+                        .withIdentifier(identifier)
+                        .withScaleConstraint(1, 2)
+                        .build())
+                .withOperations(
+                        new ScaleByPixels(321, 173, ScaleByPixels.Mode.NON_ASPECT_FILL),
+                        new Encode(Format.get("jpg")))
+                .build();
+        assertThrows(IllegalScaleException.class,
+                () -> ops.validate(fullSize, Format.get("png")));
+    }
+
+    @Test
     void validateWithAreaGreaterThanMaxAllowed() {
         Configuration.getInstance().setProperty(Key.MAX_PIXELS, 100);
         Dimension fullSize = new Dimension(1000, 1000);

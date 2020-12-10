@@ -774,10 +774,10 @@ public final class OperationList implements Iterable<Operation> {
             if (scale == null) {
                 scale = new ScaleByPercent();
             }
-
-            double[] scales = scale.getResultingScales(fullSize, scaleConstraint);
+            final double delta = Math.max(1 / fullSize.width(), 1 / fullSize.height());
+            final double[] scales = scale.getResultingScales(fullSize, scaleConstraint);
             if (Arrays.stream(scales)
-                    .filter(s -> s > scaleConstraint.getRational().doubleValue())
+                    .filter(s -> Math.abs(s - scaleConstraint.getRational().doubleValue()) > delta)
                     .findAny()
                     .isPresent()) {
                 throw new IllegalScaleException();
