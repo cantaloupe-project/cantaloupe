@@ -115,20 +115,19 @@ redesign that breaks backwards compatibility significantly. Minor releases
 
 ### Branching
 
-Cantaloupe uses the
+Cantaloupe uses a basic version of the
 [Gitflow](https://www.atlassian.com/git/tutorials/comparing-workflows#gitflow-workflow)
 branching model. `develop` is the main branch that tracks the current state of
 the next non-bugfix release. Significant features branch off of that into
 feature branches (`feature/feature-name`), from which they can be integrated
 into a particular release.
 
-When a major or minor version is ready for release in `develop`, it branches
-off into a `release/n.n` branch, where its version is set. Finally, that is
-merged into `master`, where the release is tagged and the release archive is
+When a major or minor version in `develop` is ready for release, it merges into
+a `release/n.n` branch, where the release is tagged and the release archive is
 created.
 
-Bugfixes that would increment a minor version of a release are applied to the
-release branch for that release, and merged back into `develop`.
+Bugfixes that would increment a minor version of a release are applied to its
+release branch and merged back into `develop`.
 
 ## Prerelease
 
@@ -147,13 +146,13 @@ release branch for that release, and merged back into `develop`.
 2. Update the version in `pom.xml` and commit this change
 3. `git push origin release/x.x`
 4. Wait for CI tests to pass
-5. Merge into `master` and push
-6. Tag the release: `git tag -a v{version} -m 'Tag v{version}'`
-7. `git push --tags`
-8. Wait for GitHub actions to add the release artifact to the tag
-9. Add the change log to the release on GitHub
-10. Deploy the updated website (if necessary)
-11. Close the release's issue milestone
+5. Tag the release: `git tag -a v{version} -m 'Tag v{version}'; git push --tags`
+6. Wait for GitHub Actions to add the release artifact to the tag
+7. Add the change log to the release on GitHub
+8. Close the release's issue milestone
+9. Deploy the updated
+    [website](https://github.com/cantaloupe-project/cantaloupe-project.github.io)
+    (if necessary)
 
 ## License
 
