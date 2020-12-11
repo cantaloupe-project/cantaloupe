@@ -4,9 +4,12 @@ import edu.illinois.library.cantaloupe.image.Rectangle;
 import edu.illinois.library.cantaloupe.util.Rational;
 import org.libjpegturbo.turbojpeg.TJ;
 import org.libjpegturbo.turbojpeg.TJDecompressor;
+import org.libjpegturbo.turbojpeg.TJException;
 import org.libjpegturbo.turbojpeg.TJScalingFactor;
 import org.libjpegturbo.turbojpeg.TJTransform;
 import org.libjpegturbo.turbojpeg.TJTransformer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
@@ -46,12 +49,15 @@ public final class TurboJPEGImageReader implements AutoCloseable {
         ROTATE_180(TJTransform.OP_ROT180),
         ROTATE_270(TJTransform.OP_ROT270);
 
-        private int tjEquivalentTx;
+        private final int tjEquivalentTx;
 
         Transform(int tjEquivalentTx) {
             this.tjEquivalentTx = tjEquivalentTx;
         }
     }
+
+    private static final Logger LOGGER =
+            LoggerFactory.getLogger(TurboJPEGImageReader.class);
 
     /**
      * Array of fractional scaling factors that the TurboJPEG decompressor
@@ -571,9 +577,18 @@ public final class TurboJPEGImageReader implements AutoCloseable {
         width  = scalingFactor.getScaled(width);
         height = scalingFactor.getScaled(height);
 
-        return decompressor.decompress(
-                width, height,
-                BufferedImage.TYPE_INT_ARGB, getFlags());
+        BufferedImage image = new BufferedImage(width, height,
+                BufferedImage.TYPE_INT_ARGB);
+        try {
+            decompressor.decompress(image, getFlags());
+        } catch (TJException e) {
+            if (e.getErrorCode() == TJ.ERR_FATAL) {
+                throw e;
+            } else {
+                LOGGER.warn("readAsBufferedImage(): image is corrupt");
+            }
+        }
+        return image;
     }
 
 }

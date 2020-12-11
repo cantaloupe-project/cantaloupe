@@ -4,6 +4,7 @@
 
 * Fixed a rounding bug that could cause requests for certain scale-constrained
   images to return HTTP 403 status.
+* Improved TurboJpegProcessor's ability to handle corrupt source images.
 
 ## 4.1.7
 
