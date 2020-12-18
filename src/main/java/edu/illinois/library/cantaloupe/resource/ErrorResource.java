@@ -34,7 +34,7 @@ class ErrorResource extends AbstractResource {
     private static final List<String> SUPPORTED_MEDIA_TYPES =
             List.of("text/plain", "text/html", "application/xhtml+xml");
 
-    private Throwable error;
+    private final Throwable error;
 
     private static Status toStatus(Throwable t) {
         Status status;
@@ -79,6 +79,8 @@ class ErrorResource extends AbstractResource {
     @Override
     public void doGET() throws Exception {
         final Status status = toStatus(error);
+        log(status.getCode());
+
         final Map<String,Object> templateVars = getCommonTemplateVars();
         templateVars.put("pageTitle", status.toString());
         templateVars.put("message", error.getMessage());
@@ -123,6 +125,24 @@ class ErrorResource extends AbstractResource {
         } catch (IOException e) {
             LOGGER.error("getStackTrace(): {}", e.getMessage(), e);
             return "Stack trace unavailable";
+        }
+    }
+
+    private void log(int statusCode) {
+        if (!Configuration.getInstance().getBoolean(Key.LOG_ERROR_RESPONSES, false)) {
+            return;
+        }
+        String message = "Responding with HTTP {} to {} {}: {}";
+        Object[] args = {
+                statusCode,
+                getRequest().getMethod(),
+                getRequest().getReference(),
+                error.getMessage(),
+                error };
+        if (statusCode >= 500) {
+            LOGGER.error(message, args);
+        } else {
+            LOGGER.warn(message, args);
         }
     }
 

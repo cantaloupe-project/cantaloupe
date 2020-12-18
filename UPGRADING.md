@@ -11,6 +11,7 @@ current version.
 3.  Add the following keys from the sample configuration:
     * `http.min_threads`
     * `http.max_threads`
+    * `log_error_responses`
     * `meta_identifier.*`
     * `endpoint.iiif.3.enabled`
     * `S3Source.region`

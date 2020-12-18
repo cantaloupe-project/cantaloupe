@@ -246,6 +246,7 @@ public class AdminResourceUITest extends AbstractAdminResourceTest {
         inputNamed(Key.HTTP_ACCEPT_QUEUE_LIMIT).sendKeys("50");
         inputNamed(Key.BASE_URI).sendKeys("http://bla/bla/");
         inputNamed(Key.SLASH_SUBSTITUTE).sendKeys("^");
+        inputNamed(Key.LOG_ERROR_RESPONSES).click();
         inputNamed(Key.PRINT_STACK_TRACE_ON_ERROR_PAGES).click();
 
         // Submit the form
@@ -269,6 +270,7 @@ public class AdminResourceUITest extends AbstractAdminResourceTest {
         assertEquals("50", config.getString(Key.HTTP_ACCEPT_QUEUE_LIMIT));
         assertEquals("http://bla/bla/", config.getString(Key.BASE_URI));
         assertEquals("^", config.getString(Key.SLASH_SUBSTITUTE));
+        assertTrue(config.getBoolean(Key.LOG_ERROR_RESPONSES));
         assertTrue(config.getBoolean(Key.PRINT_STACK_TRACE_ON_ERROR_PAGES));
     }
 

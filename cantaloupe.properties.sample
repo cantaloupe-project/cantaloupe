@@ -70,6 +70,11 @@ meta_identifier.transformer = StandardMetaIdentifierTransformer
 # the identifier portion of a URI.
 meta_identifier.transformer.StandardMetaIdentifierTransformer.delimiter = ;
 
+# If true, HTTP >= 400-level responses are logged at WARN and ERROR level.
+# This may result in multiple log statements for the same error, but it may
+# also help diagnose errors that have evaded logging.
+log_error_responses = false
+
 print_stack_trace_on_error_pages = true
 
 ###########################################################################

@@ -134,6 +134,7 @@ public enum Key {
     JDBCSOURCE_JDBC_URL("JdbcSource.url"),
     JDBCSOURCE_PASSWORD("JdbcSource.password"),
     JDBCSOURCE_USER("JdbcSource.user"),
+    LOG_ERROR_RESPONSES("log_error_responses"),
     MAX_PIXELS("max_pixels"),
     MAX_SCALE("max_scale"),
     META_IDENTIFIER_TRANSFORMER("meta_identifier.transformer"),

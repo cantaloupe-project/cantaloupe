@@ -685,9 +685,7 @@
                                         <a tabindex="0" class="btn btn-sm cl-help"
                                            role="button" data-toggle="popover"
                                            data-trigger="focus"
-                                           data-content="Whether to enable the built-in HTTP server.
-                                           &lt;br&gt;&lt;br&gt;(This has no effect in a
-                                           Servlet container.)">?</a>
+                                           data-content="Whether to enable the built-in HTTP server.">?</a>
                                     </td>
                                     <td>
                                         <div class="checkbox">
@@ -739,9 +737,7 @@
                                         <a tabindex="0" class="btn btn-sm cl-help"
                                            role="button" data-toggle="popover"
                                            data-trigger="focus"
-                                           data-content="Whether to enable the built-in HTTPS server.
-                                           &lt;br&gt;&lt;br&gt;(This has no effect in a
-                                           Servlet container.)">?</a>
+                                           data-content="Whether to enable the built-in HTTPS server.">?</a>
                                     </td>
                                     <td>
                                         <div class="checkbox">
@@ -889,6 +885,27 @@
                                                name="slash_substitute"
                                                size="4" maxlength="4"
                                                data-requires-restart="false">
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <a tabindex="0" class="btn btn-sm cl-help"
+                                           role="button" data-toggle="popover"
+                                           data-trigger="focus"
+                                           data-content="If enabled, HTTP &gt;= 400-level responses are logged at WARN and ERROR level.
+                                                         This may result in multiple log statements for the same error, but it may
+                                                         also help diagnose errors that have evaded logging.">?</a>
+                                    </td>
+                                    <td>
+                                        <div class="checkbox">
+                                            <label>
+                                                <input type="checkbox"
+                                                       name="log_error_responses"
+                                                       value="true"
+                                                       data-requires-restart="false">
+                                                Log error responses
+                                            </label>
+                                        </div>
                                     </td>
                                 </tr>
                                 <tr>
