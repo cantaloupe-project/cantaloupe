@@ -776,14 +776,16 @@ public final class OperationList implements Iterable<Operation> {
             }
             final double delta = Math.max(1 / fullSize.width(), 1 / fullSize.height());
             final double[] scales = scale.getResultingScales(fullSize, scaleConstraint);
+
             if (Arrays.stream(scales)
-                    .filter(s -> Math.abs(s - scaleConstraint.getRational().doubleValue()) > delta)
+                    .filter(s -> s - delta > scaleConstraint.getRational().doubleValue())
                     .findAny()
                     .isPresent()) {
                 throw new IllegalScaleException();
             }
         }
 
+        System.out.println("----");
         // Ensure that the resulting pixel area is positive.
         if (resultingSize.isEmpty()) {
             throw new ValidationException("Resulting pixel area is empty.");

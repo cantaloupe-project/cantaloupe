@@ -949,6 +949,40 @@ class OperationListTest extends BaseTest {
     }
 
     @Test
+    void validateWithAllowedSmallerScale() throws Exception {
+        Dimension fullSize = new Dimension(2000, 1000);
+        Identifier identifier = new Identifier("cats");
+        OperationList ops = OperationList.builder()
+                .withIdentifier(identifier)
+                .withMetaIdentifier(MetaIdentifier.builder()
+                        .withIdentifier(identifier)
+                        .withScaleConstraint(1, 2)
+                        .build())
+                .withOperations(
+                        new ScaleByPixels(100, 50, ScaleByPixels.Mode.NON_ASPECT_FILL),
+                        new Encode(Format.get("png")))
+                .build();
+        ops.validate(fullSize, Format.get("png"));
+    }
+
+    @Test
+    void validateWithMaxAllowedScale() throws Exception {
+        Dimension fullSize = new Dimension(2000, 1000);
+        Identifier identifier = new Identifier("cats");
+        OperationList ops = OperationList.builder()
+                .withIdentifier(identifier)
+                .withMetaIdentifier(MetaIdentifier.builder()
+                        .withIdentifier(identifier)
+                        .withScaleConstraint(1, 2)
+                        .build())
+                .withOperations(
+                        new ScaleByPixels(1000, 500, ScaleByPixels.Mode.NON_ASPECT_FILL),
+                        new Encode(Format.get("png")))
+                .build();
+        ops.validate(fullSize, Format.get("png"));
+    }
+
+    @Test
     void validateWithScaleGreaterThanMaxAllowedBy1Pixel() throws Exception {
         Dimension fullSize = new Dimension(639, 343);
         Identifier identifier = new Identifier("cats");
@@ -960,23 +994,6 @@ class OperationListTest extends BaseTest {
                         .build())
                 .withOperations(
                         new ScaleByPixels(320, 172, ScaleByPixels.Mode.NON_ASPECT_FILL),
-                        new Encode(Format.get("png")))
-                .build();
-        ops.validate(fullSize, Format.get("png"));
-    }
-
-    @Test
-    void validateWithAllowedScale() throws Exception {
-        Dimension fullSize = new Dimension(1000, 1000);
-        Identifier identifier = new Identifier("cats");
-        OperationList ops = OperationList.builder()
-                .withIdentifier(identifier)
-                .withMetaIdentifier(MetaIdentifier.builder()
-                        .withIdentifier(identifier)
-                        .withScaleConstraint(1, 2)
-                        .build())
-                .withOperations(
-                        new ScaleByPixels(100, 100, ScaleByPixels.Mode.NON_ASPECT_FILL),
                         new Encode(Format.get("png")))
                 .build();
         ops.validate(fullSize, Format.get("png"));
