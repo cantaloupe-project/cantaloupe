@@ -143,7 +143,7 @@ public final class Reader implements AutoCloseable {
                 final Tag tag = tagSet.getTag(tagNum);
                 // Is the tag value a pointer to a sub-IFD?
                 final TagSet subIFDTagSet = TagSet.forIFDPointerTag(tagNum);
-                if (subIFDTagSet != null) {
+                if (subIFDTagSet != null && tagNum != 0) {
                     final long pos = inputStream.getStreamPosition();
                     seek(valueOrOffset);
                     Directory subDir = read(subIFDTagSet);
