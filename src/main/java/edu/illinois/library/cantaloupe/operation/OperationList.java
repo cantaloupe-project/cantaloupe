@@ -785,7 +785,6 @@ public final class OperationList implements Iterable<Operation> {
             }
         }
 
-        System.out.println("----");
         // Ensure that the resulting pixel area is positive.
         if (resultingSize.isEmpty()) {
             throw new ValidationException("Resulting pixel area is empty.");
