@@ -147,7 +147,9 @@ class Util {
                         if (orientationField != null) {
                             return orientationForExifValue(orientationField.getAsInt(0));
                         }
-                    } catch (IOException e) {
+                    } catch (NullPointerException | IOException e) {
+                        // N.B.: NPE is caught due to a bug in the GeoSolutions
+                        // TIFF plugin: https://github.com/cantaloupe-project/cantaloupe/issues/424
                         LOGGER.info("readOrientation(byte[]): {}", e.getMessage());
                     } finally {
                         reader.dispose();
