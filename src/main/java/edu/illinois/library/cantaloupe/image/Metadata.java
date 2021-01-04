@@ -134,12 +134,17 @@ public class Metadata {
     @JsonIgnore
     public Orientation getOrientation() {
         if (orientation == null) {
-            getEXIF().ifPresent(exif -> readOrientationFromEXIF());
+            try {
+                getEXIF().ifPresent(exif -> readOrientationFromEXIF());
 
-            if (orientation == null) {
-                getXMP().ifPresent(xmp -> readOrientationFromXMP());
-            }
-            if (orientation == null) {
+                if (orientation == null) {
+                    getXMP().ifPresent(xmp -> readOrientationFromXMP());
+                }
+                if (orientation == null) {
+                    orientation = Orientation.ROTATE_0;
+                }
+            } catch (IllegalArgumentException e) {
+                LOGGER.info("readOrientation(): {}", e.getMessage());
                 orientation = Orientation.ROTATE_0;
             }
         }

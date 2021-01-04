@@ -195,6 +195,8 @@ public class MetadataTest extends BaseTest {
         }
     }
 
+    /* getOrientation() */
+
     @Test
     void testGetOrientationWithNoOrientation() {
         assertEquals(Orientation.ROTATE_0, instance.getOrientation());
@@ -208,6 +210,19 @@ public class MetadataTest extends BaseTest {
         try {
             Metadata metadata = reader.getMetadata(0);
             assertEquals(Orientation.ROTATE_270, metadata.getOrientation());
+        } finally {
+            reader.dispose();
+        }
+    }
+
+    @Test
+    void testGetOrientationWithOnlyIllegalEXIFOrientation() throws Exception {
+        Path fixture = TestUtil.getImage("jpg-exif-orientation-illegal.jpg");
+        ImageReader reader = new ImageReaderFactory()
+                .newImageReader(Format.get("jpg"), fixture);
+        try {
+            Metadata metadata = reader.getMetadata(0);
+            assertEquals(Orientation.ROTATE_0, metadata.getOrientation());
         } finally {
             reader.dispose();
         }
