@@ -94,6 +94,8 @@
 
 * Fixed a rounding bug that could cause requests for certain scale-constrained
   images to return HTTP 403 status.
+* Fixed a potential NullPointerException from Java2dProcessor when the
+  `processor.metadata.respect_orientation` configuration key is set to `true`.
 * Improved TurboJpegProcessor's ability to handle corrupt source images.
 
 ## 4.1.7
