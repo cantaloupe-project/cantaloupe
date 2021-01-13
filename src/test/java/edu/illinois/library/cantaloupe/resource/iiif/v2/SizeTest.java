@@ -39,7 +39,7 @@ public class SizeTest extends BaseTest {
     @Test
     void testFromUriFull() {
         Size s = Size.fromUri("full");
-        assertEquals(Size.ScaleMode.MAX, s.getScaleMode());
+        assertEquals(Size.ScaleMode.FULL, s.getScaleMode());
     }
 
     /**
@@ -250,6 +250,12 @@ public class SizeTest extends BaseTest {
     }
 
     @Test
+    void testToScaleWithFull() {
+        instance.setScaleMode(Size.ScaleMode.FULL);
+        assertEquals(new ScaleByPercent(), instance.toScale());
+    }
+
+    @Test
     void testToScaleWithMax() {
         instance.setScaleMode(Size.ScaleMode.MAX);
         assertEquals(new ScaleByPercent(), instance.toScale());
@@ -300,6 +306,9 @@ public class SizeTest extends BaseTest {
         Size s = Size.fromUri("full");
         assertEquals("full", s.toString());
 
+        s = Size.fromUri("max");
+        assertEquals("max", s.toString());
+
         s = Size.fromUri("50,");
         assertEquals("50,", s.toString());
 
@@ -322,6 +331,9 @@ public class SizeTest extends BaseTest {
 
         Size s = Size.fromUri("full");
         assertEquals("full", s.toCanonicalString(fullSize));
+
+        s = Size.fromUri("max");
+        assertEquals("max", s.toCanonicalString(fullSize));
 
         s = Size.fromUri("50,");
         assertEquals("50,", s.toCanonicalString(fullSize));

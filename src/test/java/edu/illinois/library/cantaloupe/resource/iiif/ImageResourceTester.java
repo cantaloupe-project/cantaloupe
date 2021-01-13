@@ -6,11 +6,16 @@ import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.http.Client;
 import edu.illinois.library.cantaloupe.http.ResourceException;
 import edu.illinois.library.cantaloupe.http.Response;
+import edu.illinois.library.cantaloupe.image.Dimension;
 import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.InputStream;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -370,14 +375,12 @@ public class ImageResourceTester extends ImageAPIResourceTester {
     public void testLessThanOrEqualToMaxScale(URI uri) {
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.MAX_SCALE, 1.0);
-
         assertStatus(200, uri);
     }
 
     public void testGreaterThanMaxScale(URI uri, int expectedStatus) {
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.MAX_SCALE, 1.0);
-
         assertStatus(expectedStatus, uri);
     }
 
@@ -388,29 +391,60 @@ public class ImageResourceTester extends ImageAPIResourceTester {
     public void testLessThanMaxPixels(URI uri) {
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.MAX_PIXELS, 100000000);
-
         assertStatus(200, uri);
     }
 
-    public void testMoreThanMaxPixels(URI uri) {
+    /**
+     * When an image is requested with size {@code full}, and would end up
+     * being larger than {@link Key#MAX_PIXELS}, the request should be
+     * forbidden.
+     */
+    public void testForbiddingMoreThanMaxPixels(URI uri) {
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.MAX_PIXELS, 1000);
-
         assertStatus(403, uri);
     }
 
-    public void testMaxPixelsIgnoredWhenStreamingSource(URI uri) {
+    /**
+     * When an image is requested with size {@code max}, and would end up being
+     * larger than {@link Key#MAX_PIXELS}, it should be downscaled to {@link
+     * Key#MAX_PIXELS}.
+     *
+     * @param originalWidth  Source (or post-crop if cropped) image width.
+     * @param originalHeight Source (or post-crop if cropped) image height.
+     * @param maxPixels      Value to set to {@link Key#MAX_PIXELS}, which must
+     *                       be less than
+     *                       {@code originalWidth * originalHeight}.
+     */
+    public void testDownscalingToMaxPixels(URI uri,
+                                           int originalWidth,
+                                           int originalHeight,
+                                           int maxPixels) throws Exception {
         Configuration config = Configuration.getInstance();
-        config.setProperty(Key.MAX_PIXELS, 1000);
+        config.setProperty(Key.MAX_PIXELS, maxPixels);
 
-        assertStatus(200, uri);
+        Client client = newClient(uri);
+        try {
+            Response response = client.send();
+            assertEquals(200, response.getStatus());
+            byte[] body = response.getBody();
+            try (InputStream is = new ByteArrayInputStream(body)) {
+                BufferedImage image = ImageIO.read(is);
+                Dimension expectedSize = Dimension.ofScaledArea(
+                        new Dimension(originalWidth, originalHeight),
+                        config.getInt(Key.MAX_PIXELS));
+                assertEquals(Math.floor(expectedSize.width()), image.getWidth());
+                assertEquals(Math.floor(expectedSize.height()), image.getHeight());
+            }
+        } finally {
+            client.stop();
+        }
     }
 
     public void testProcessorValidationFailure(URI uri) {
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.PROCESSOR_SELECTION_STRATEGY, "ManualSelectionStrategy");
         config.setProperty(Key.PROCESSOR_FALLBACK, "PdfBoxProcessor");
-
         assertStatus(400, uri);
     }
 

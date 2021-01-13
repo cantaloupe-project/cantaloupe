@@ -15,6 +15,19 @@ public final class Dimension {
     private double width, height;
 
     /**
+     * @param size       Pre-scaled size.
+     * @param scaledArea Area to fill.
+     * @return           Resulting dimensions when {@code size} is scaled to
+     *                   fill {@code scaledArea}.
+     */
+    public static Dimension ofScaledArea(Dimension size, int scaledArea) {
+        double aspectRatio = size.width() / size.height();
+        double height      = Math.sqrt(scaledArea / aspectRatio);
+        double width       = scaledArea / height;
+        return new Dimension(width, height);
+    }
+
+    /**
      * Double constructor.
      */
     public Dimension(double width, double height) {
@@ -36,6 +49,10 @@ public final class Dimension {
      */
     public Dimension(Dimension dimension) {
         this(dimension.width(), dimension.height());
+    }
+
+    public double area() {
+        return width * height;
     }
 
     @Override
@@ -62,6 +79,10 @@ public final class Dimension {
 
     public double height() {
         return height;
+    }
+
+    public int intArea() {
+        return (int) Math.round(area());
     }
 
     /**

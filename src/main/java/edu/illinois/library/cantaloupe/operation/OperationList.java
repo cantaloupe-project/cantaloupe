@@ -149,6 +149,19 @@ public final class OperationList implements Iterable<Operation> {
     }
 
     /**
+     * Inserts an operation at the given index in the list.
+     *
+     * @param op Operation to add. {@code null} values are silently discarded.
+     * @throws IllegalStateException if the instance is frozen.
+     */
+    public void add(int index, Operation op) {
+        if (op != null) {
+            checkFrozen();
+            operations.add(index, op);
+        }
+    }
+
+    /**
      * Adds an operation immediately after the last instance of the given
      * class in the list. If there are no such instances in the list, the
      * operation will be added to the end of the list.
@@ -400,7 +413,8 @@ public final class OperationList implements Iterable<Operation> {
     }
 
     /**
-     * "Freezes" the instance and all of its operations.
+     * "Freezes" the instance and all of its operations so that they can no
+     * longer be mutated.
      */
     public void freeze() {
         isFrozen = true;
@@ -577,6 +591,11 @@ public final class OperationList implements Iterable<Operation> {
         return -1;
     }
 
+    public void remove(Operation op) {
+        checkFrozen();
+        operations.remove(op);
+    }
+
     /**
      * @param identifier
      * @throws IllegalStateException if the instance is frozen.
@@ -737,6 +756,8 @@ public final class OperationList implements Iterable<Operation> {
      *     <li>Checks that the resulting pixel area is greater than zero and
      *     less than or equal to {@link Key#MAX_PIXELS} (if set)</li>
      * </ol>
+     *
+     * These are all general validations that are not endpoint-specific.
      *
      * @param fullSize     Full size of the source image on which the instance
      *                     is being applied.

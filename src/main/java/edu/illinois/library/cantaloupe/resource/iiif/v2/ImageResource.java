@@ -85,15 +85,18 @@ public class ImageResource extends IIIF2Resource {
 
             @Override
             public void infoAvailable(Info info) {
+                if (Size.ScaleMode.MAX.equals(params.getSize().getScaleMode())) {
+                    constrainSizeToMaxPixels(info.getSize(), ops);
+                }
             }
 
             @Override
             public void willProcessImage(Processor processor,
                                          Info info) throws Exception {
-                final Metadata metadata = info.getMetadata();
+                final Metadata metadata       = info.getMetadata();
                 final Orientation orientation = (metadata != null) ?
                         metadata.getOrientation() : Orientation.ROTATE_0;
-                final Dimension virtualSize = orientation.adjustedSize(info.getSize(pageIndex));
+                final Dimension virtualSize   = orientation.adjustedSize(info.getSize(pageIndex));
                 final Dimension resultingSize = ops.getResultingSize(info.getSize());
                 validateScale(
                         virtualSize,

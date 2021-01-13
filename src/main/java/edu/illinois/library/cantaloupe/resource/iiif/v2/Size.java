@@ -33,8 +33,12 @@ class Size {
         ASPECT_FIT_INSIDE,
 
         /**
-         * Represents a {@literal full} (Image API 2.0 & 2.1) or {@literal max}
-         * (Image API 2.1) size argument.
+         * Represents a {@literal full} size argument.
+         */
+        FULL,
+
+        /**
+         * Represents a {@literal max} size argument.
          */
         MAX,
 
@@ -58,7 +62,9 @@ class Size {
     public static Size fromUri(String uriSize) {
         Size size = new Size();
         try {
-            if (uriSize.equals("max") || uriSize.equals("full")) {
+            if (uriSize.equals("full")) {
+                size.setScaleMode(ScaleMode.FULL);
+            } else if (uriSize.equals("max")) {
                 size.setScaleMode(ScaleMode.MAX);
             } else {
                 if (uriSize.endsWith(",")) {
@@ -167,6 +173,8 @@ class Size {
             return new ScaleByPercent(getPercent() / 100.0);
         }
         switch (getScaleMode()) {
+            case FULL:
+                return new ScaleByPercent();
             case MAX:
                 return new ScaleByPercent();
             case ASPECT_FIT_WIDTH:
@@ -194,9 +202,10 @@ class Size {
     @Override
     public String toString() {
         String str = "";
-        if (ScaleMode.MAX.equals(getScaleMode())) {
-            // Use "full" because "max" is not available in Image API 2.0.
+        if (ScaleMode.FULL.equals(getScaleMode())) {
             str += "full";
+        } else if (ScaleMode.MAX.equals(getScaleMode())) {
+            str += "max";
         } else if (getPercent() != null) {
             str += "pct:" + StringUtils.removeTrailingZeroes(getPercent());
         } else {
@@ -221,7 +230,8 @@ class Size {
      * @see            #toString()
      */
     String toCanonicalString(Dimension fullSize) {
-        if (ScaleMode.MAX.equals(getScaleMode())) {
+        if (ScaleMode.FULL.equals(getScaleMode()) ||
+                ScaleMode.MAX.equals(getScaleMode())) {
             return toString();
         } else if (ScaleMode.NON_ASPECT_FILL.equals(getScaleMode())) { // w,h syntax
             return getWidth() + "," + getHeight();

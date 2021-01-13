@@ -202,7 +202,8 @@ class Parameters {
         if (!Region.Type.FULL.equals(getRegion().getType())) {
             ops.add(getRegion().toCrop());
         }
-        if (!Size.ScaleMode.MAX.equals(getSize().getScaleMode())) {
+        if (!Size.ScaleMode.FULL.equals(getSize().getScaleMode()) &&
+                !Size.ScaleMode.MAX.equals(getSize().getScaleMode())) {
             ops.add(getSize().toScale());
         }
         ops.add(getRotation().toTranspose());

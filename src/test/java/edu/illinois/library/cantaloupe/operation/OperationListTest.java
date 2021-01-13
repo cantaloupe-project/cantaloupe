@@ -111,7 +111,7 @@ class OperationListTest extends BaseTest {
     }
 
     @Test
-    void add() {
+    void add1() {
         assertFalse(instance.iterator().hasNext());
 
         instance.add(new Rotate());
@@ -119,16 +119,47 @@ class OperationListTest extends BaseTest {
     }
 
     @Test
-    void addWithNullArgument() {
+    void add1WithNullArgument() {
         instance.add(null);
         assertFalse(instance.iterator().hasNext());
     }
 
     @Test
-    void addWhileFrozen() {
+    void add1WhileFrozen() {
         instance.freeze();
         assertThrows(IllegalStateException.class,
                 () -> instance.add(new Rotate()));
+    }
+
+    @Test
+    void add2() {
+        instance.add(new Rotate());
+        instance.add(new Rotate());
+        instance.add(new Rotate());
+        instance.add(1, new ScaleByPercent());
+
+        Iterator<Operation> it = instance.iterator();
+        it.next();
+        assertTrue(it.next() instanceof ScaleByPercent);
+    }
+
+    @Test
+    void add2WithNullOperationArgument() {
+        instance.add(0, null);
+        assertFalse(instance.iterator().hasNext());
+    }
+
+    @Test
+    void add2WithIllegalIndex() {
+        assertThrows(IndexOutOfBoundsException.class,
+                () -> instance.add(8, new Rotate()));
+    }
+
+    @Test
+    void add2WhileFrozen() {
+        instance.freeze();
+        assertThrows(IllegalStateException.class,
+                () -> instance.add(0, new Rotate()));
     }
 
     @Test
@@ -740,6 +771,28 @@ class OperationListTest extends BaseTest {
         Iterator<Operation> it = instance.iterator();
         it.next();
         assertThrows(UnsupportedOperationException.class, it::remove);
+    }
+
+    @Test
+    void removeWithPresentOperation() {
+        Operation op = new Rotate();
+        instance.add(op);
+        instance.remove(op);
+        assertFalse(instance.iterator().hasNext());
+    }
+
+    @Test
+    void removeWithAbsentOperation() {
+        assertFalse(instance.iterator().hasNext());
+        instance.remove(new Rotate());
+        assertFalse(instance.iterator().hasNext());
+    }
+
+    @Test
+    void removeWhileFrozen() {
+        instance.freeze();
+        assertThrows(IllegalStateException.class,
+                () -> instance.remove(new Rotate()));
     }
 
     @Test

@@ -362,15 +362,9 @@ public class ImageResourceTest extends ResourceTest {
     }
 
     @Test
-    void testGETMoreThanMaxPixels() {
+    void testGETMoreThanMaxPixelsWithMaxSizeArgument() throws Exception {
         URI uri = getHTTPURI("/" + IMAGE + "/full/max/0/color.png");
-        tester.testMoreThanMaxPixels(uri);
-    }
-
-    @Test
-    void testGETMaxPixelsIgnoredWhenStreamingSource() {
-        URI uri = getHTTPURI("/" + IMAGE + "/full/max/0/color.jpg");
-        tester.testMaxPixelsIgnoredWhenStreamingSource(uri);
+        tester.testDownscalingToMaxPixels(uri, 64, 56, 1000);
     }
 
     @Test

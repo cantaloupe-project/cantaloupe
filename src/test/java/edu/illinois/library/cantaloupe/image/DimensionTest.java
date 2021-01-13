@@ -19,6 +19,13 @@ public class DimensionTest extends BaseTest {
     }
 
     @Test
+    void testOfScaledArea() {
+        instance = new Dimension(1000, 800);
+        assertEquals(new Dimension(500, 400),
+                Dimension.ofScaledArea(instance, 200000));
+    }
+
+    @Test
     void testDoubleConstructor() {
         instance = new Dimension(5.5, 4.4);
         assertEquals(5.5, instance.width(), DELTA);
@@ -51,6 +58,11 @@ public class DimensionTest extends BaseTest {
     }
 
     @Test
+    void testArea() {
+        assertEquals(800000, instance.area());
+    }
+
+    @Test
     void testEqualsWithEqualInstances() {
         assertEquals(instance, new Dimension(1000, 800));
     }
@@ -76,6 +88,13 @@ public class DimensionTest extends BaseTest {
     @Test
     void testHeight() {
         assertEquals(800, instance.height(), DELTA);
+    }
+
+    @Test
+    void testIntArea() {
+        instance.setWidth(45.2);
+        instance.setHeight(45.6);
+        assertEquals(2061, instance.intArea());
     }
 
     @Test

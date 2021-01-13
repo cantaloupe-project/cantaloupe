@@ -88,6 +88,9 @@ public class ImageResource extends IIIF3Resource {
 
             @Override
             public void infoAvailable(Info info) {
+                if (Size.Type.MAX.equals(params.getSize().getType())) {
+                    constrainSizeToMaxPixels(info.getSize(), ops);
+                }
             }
 
             @Override

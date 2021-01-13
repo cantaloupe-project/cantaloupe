@@ -5,6 +5,10 @@
 ### Endpoints
 
 * Added an endpoint supporting the IIIF Image API version 3.0 at `/iiif/3`.
+* When an image requested at `max` size is larger than the value of the
+  `max_pixels` configuration key, it is downscaled to that value instead of the
+  request being forbidden. This behavior aligns more closely with the IIIF
+  Image API.
 * The minimum and maximum size of the built-in web server's thread pool is
   configurable.
 * A `cache=recache` URL query argument is available that reprocesses and
