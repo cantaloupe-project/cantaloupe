@@ -96,6 +96,49 @@ class ParametersTest extends BaseTest {
         assertThrows(NoSuchElementException.class, it::next);
     }
 
+
+    @Test
+    void testToOperationListOmitsCropIfRegionIsFull() {
+        DelegateProxy delegateProxy = TestUtil.newDelegateProxy();
+        instance = new Parameters(
+                "identifier", "full", "pct:50", "5", "default", "jpg");
+        OperationList opList = instance.toOperationList(delegateProxy, 1);
+
+        assertEquals(instance.getIdentifier(),
+                opList.getMetaIdentifier().getIdentifier().toString());
+        Iterator<Operation> it = opList.iterator();
+        assertTrue(it.next() instanceof Scale);
+        assertTrue(it.next() instanceof Rotate);
+    }
+
+    @Test
+    void testToOperationListOmitsScaleIfSizeIsMax() {
+        DelegateProxy delegateProxy = TestUtil.newDelegateProxy();
+        instance = new Parameters(
+                "identifier", "0,0,30,30", "max", "5", "default", "jpg");
+        OperationList opList = instance.toOperationList(delegateProxy, 1);
+
+        assertEquals(instance.getIdentifier(),
+                opList.getMetaIdentifier().getIdentifier().toString());
+        Iterator<Operation> it = opList.iterator();
+        assertTrue(it.next() instanceof Crop);
+        assertTrue(it.next() instanceof Rotate);
+    }
+
+    @Test
+    void testToOperationListOmitsRotateIfRotationIsZero() {
+        DelegateProxy delegateProxy = TestUtil.newDelegateProxy();
+        instance = new Parameters(
+                "identifier", "0,0,30,30", "max", "0", "default", "jpg");
+        OperationList opList = instance.toOperationList(delegateProxy, 1);
+
+        assertEquals(instance.getIdentifier(),
+                opList.getMetaIdentifier().getIdentifier().toString());
+        Iterator<Operation> it = opList.iterator();
+        assertTrue(it.next() instanceof Crop);
+        assertTrue(it.next() instanceof Encode);
+    }
+
     @Test
     void testToString() {
         assertEquals("identifier/0,0,200,200/pct:50/5/default.jpg",

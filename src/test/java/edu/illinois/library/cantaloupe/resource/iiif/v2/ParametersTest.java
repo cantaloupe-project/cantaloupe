@@ -3,6 +3,7 @@ package edu.illinois.library.cantaloupe.resource.iiif.v2;
 import edu.illinois.library.cantaloupe.delegate.DelegateProxy;
 import edu.illinois.library.cantaloupe.image.Dimension;
 import edu.illinois.library.cantaloupe.operation.Crop;
+import edu.illinois.library.cantaloupe.operation.Encode;
 import edu.illinois.library.cantaloupe.operation.Operation;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.operation.Rotate;
@@ -91,6 +92,62 @@ public class ParametersTest extends BaseTest {
         assertTrue(it.next() instanceof Crop);
         assertTrue(it.next() instanceof Scale);
         assertTrue(it.next() instanceof Rotate);
+    }
+
+    @Test
+    void testToOperationListOmitsCropIfRegionIsFull() {
+        DelegateProxy delegateProxy = TestUtil.newDelegateProxy();
+        instance = new Parameters(
+                "identifier", "full", "pct:50", "5", "default", "jpg");
+        OperationList opList = instance.toOperationList(delegateProxy);
+
+        assertEquals(instance.getIdentifier(),
+                opList.getMetaIdentifier().getIdentifier().toString());
+        Iterator<Operation> it = opList.iterator();
+        assertTrue(it.next() instanceof Scale);
+        assertTrue(it.next() instanceof Rotate);
+    }
+
+    @Test
+    void testToOperationListOmitsScaleIfSizeIsFull() {
+        DelegateProxy delegateProxy = TestUtil.newDelegateProxy();
+        instance = new Parameters(
+                "identifier", "0,0,30,30", "full", "5", "default", "jpg");
+        OperationList opList = instance.toOperationList(delegateProxy);
+
+        assertEquals(instance.getIdentifier(),
+                opList.getMetaIdentifier().getIdentifier().toString());
+        Iterator<Operation> it = opList.iterator();
+        assertTrue(it.next() instanceof Crop);
+        assertTrue(it.next() instanceof Rotate);
+    }
+
+    @Test
+    void testToOperationListOmitsScaleIfSizeIsMax() {
+        DelegateProxy delegateProxy = TestUtil.newDelegateProxy();
+        instance = new Parameters(
+                "identifier", "0,0,30,30", "max", "5", "default", "jpg");
+        OperationList opList = instance.toOperationList(delegateProxy);
+
+        assertEquals(instance.getIdentifier(),
+                opList.getMetaIdentifier().getIdentifier().toString());
+        Iterator<Operation> it = opList.iterator();
+        assertTrue(it.next() instanceof Crop);
+        assertTrue(it.next() instanceof Rotate);
+    }
+
+    @Test
+    void testToOperationListOmitsRotateIfRotationIsZero() {
+        DelegateProxy delegateProxy = TestUtil.newDelegateProxy();
+        instance = new Parameters(
+                "identifier", "0,0,30,30", "max", "0", "default", "jpg");
+        OperationList opList        = instance.toOperationList(delegateProxy);
+
+        assertEquals(instance.getIdentifier(),
+                opList.getMetaIdentifier().getIdentifier().toString());
+        Iterator<Operation> it = opList.iterator();
+        assertTrue(it.next() instanceof Crop);
+        assertTrue(it.next() instanceof Encode);
     }
 
     /**
