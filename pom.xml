@@ -462,6 +462,8 @@
                         <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
                             <manifestEntries>
                                 <Main-Class>edu.illinois.library.cantaloupe.StandaloneEntry</Main-Class>
+                                <Specification-Vendor>University of Illinois at Urbana-Champaign Library</Specification-Vendor>
+                                <Implementation-Vendor>University of Illinois at Urbana-Champaign Library</Implementation-Vendor>
                                 <Implementation-Vendor-Id>${project.groupId}</Implementation-Vendor-Id>
                                 <Implementation-Version>${project.version}</Implementation-Version>
                                 <Implementation-URL>${project.url}</Implementation-URL>
@@ -477,7 +479,6 @@
                                 <exclude>META-INF/*.SF</exclude>
                                 <exclude>META-INF/*.DSA</exclude>
                                 <exclude>META-INF/*.RSA</exclude>
-                                <exclude>META-INF/services/javax.imageio.*</exclude>
                             </excludes>
                         </filter>
                     </filters>
