@@ -10,6 +10,14 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 		maven \
 		wget \
   		libopenjp2-tools \
+                liblcms2-dev \
+                libpng-dev \
+                libzstd-dev \
+                libtiff-dev \
+                libjpeg-dev \
+                zlib1g-dev \
+                libwebp-dev \
+                libimage-exiftool-perl \
     && rm -rf /var/lib/apt/lists/*
 
 # Install TurboJpegProcessor dependencies
@@ -20,10 +28,10 @@ COPY docker/Linux-JDK11/image_files/libjpeg-turbo/lib64 /opt/libjpeg-turbo/lib
 COPY dist/deps/Linux-x86-64/lib/* /usr/lib/
 
 # Install GrokProcessor dependencies
-RUN wget -q https://github.com/GrokImageCompression/grok/releases/download/v7.6.1/libgrokj2k1_7.6.1-1_amd64.deb \
-    && wget -q https://github.com/GrokImageCompression/grok/releases/download/v7.6.1/grokj2k-tools_7.6.1-1_amd64.deb \
-    && dpkg -i ./libgrokj2k1_7.6.1-1_amd64.deb \
-    && dpkg -i --ignore-depends=libjpeg62-turbo ./grokj2k-tools_7.6.1-1_amd64.deb
+RUN wget -q https://github.com/GrokImageCompression/grok/releases/download/v7.6.5/libgrokj2k1_7.6.5-1_amd64.deb \
+    && wget -q https://github.com/GrokImageCompression/grok/releases/download/v7.6.5/grokj2k-tools_7.6.5-1_amd64.deb \
+    && dpkg -i ./libgrokj2k1_7.6.5-1_amd64.deb \
+    && dpkg -i --ignore-depends=libjpeg62-turbo ./grokj2k-tools_7.6.5-1_amd64.deb
 
 # Install OpenJDK
 RUN wget -q https://github.com/AdoptOpenJDK/openjdk15-binaries/releases/download/jdk-15.0.1%2B9/OpenJDK15U-jdk_x64_linux_hotspot_15.0.1_9.tar.gz \
