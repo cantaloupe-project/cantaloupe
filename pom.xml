@@ -376,7 +376,6 @@
             <artifactId>bom</artifactId>
             <version>${aws-sdk.version}</version>
             <type>pom</type>
-            <scope>import</scope>
         </dependency>
         <dependency>
             <groupId>software.amazon.awssdk</groupId>
