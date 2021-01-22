@@ -34,7 +34,6 @@ import org.slf4j.LoggerFactory;
 
 import javax.imageio.stream.ImageInputStream;
 import java.awt.image.BufferedImage;
-import java.awt.image.DataBufferInt;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
@@ -696,18 +695,19 @@ public final class JPEG2000KakaduImageReader implements AutoCloseable {
                     regionDims.Access_size().Get_x(),
                     regionDims.Access_size().Get_y(),
                     BufferedImage.TYPE_INT_ARGB);
-            DataBufferInt rasterBuffer =
-                    (DataBufferInt) image.getRaster().getDataBuffer();
 
-            //noinspection StatementWithEmptyBody
-            while (decompressor.Process(
-                    rasterBuffer.getData(),  // pixel ints
-                    regionDims.Access_pos(), // buffer origin (ignored when row gap == 0)
-                    0,                       // row gap
-                    0,                       // suggested increment
-                    rasterBuffer.getSize(),  // max region pixels
-                    incompleteRegion,        // returns incomplete region
-                    newRegion)) {            // returns completed region
+            final int regionBufferSize = regionDims.Access_size().Get_x() * 32;
+            final int[] regionBuffer   = new int[regionBufferSize];
+
+            while (decompressor.Process(regionBuffer, regionDims.Access_pos(),
+                    0, 0, regionBufferSize, incompleteRegion, newRegion)) {
+                Kdu_coords newPos = newRegion.Access_pos();
+                Kdu_coords newSize = newRegion.Access_size();
+                newPos.Subtract(viewDims.Access_pos());
+
+                image.setRGB(newPos.Get_x(), newPos.Get_y(),
+                        newSize.Get_x(), newSize.Get_y(),
+                        regionBuffer, 0, newSize.Get_x());
             }
             if (decompressor.Finish()) {
                 // If the incomplete region is non-empty, this means that the
