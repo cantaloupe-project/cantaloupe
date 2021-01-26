@@ -235,7 +235,7 @@ final class ImageInfoFactory {
      *                 #maxScale}.
      */
     private long getEffectiveMaxPixels(Dimension fullSize) {
-        final double area = fullSize.width() * fullSize.height();
+        final double area = fullSize.area();
         if (maxPixels == 0) {
             return Math.round(area * maxScale);
         } else if (maxScale < DELTA) {

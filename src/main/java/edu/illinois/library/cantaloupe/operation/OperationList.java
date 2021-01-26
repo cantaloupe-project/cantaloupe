@@ -816,7 +816,7 @@ public final class OperationList implements Iterable<Operation> {
         final long maxAllowedSize =
                 Configuration.getInstance().getLong(Key.MAX_PIXELS, 0);
         if (maxAllowedSize > 0 && hasEffect(fullSize, sourceFormat) &&
-                resultingSize.width() * resultingSize.height() > maxAllowedSize) {
+                resultingSize.area() > maxAllowedSize) {
             throw new IllegalSizeException();
         }
     }

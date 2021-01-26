@@ -217,8 +217,7 @@ public abstract class Scale implements Operation {
                         ScaleConstraint comparedToScaleConstraint) {
         Dimension resultingSize = getResultingSize(
                 comparedToSize, comparedToScaleConstraint);
-        return ((resultingSize.width() * resultingSize.height()) -
-                (comparedToSize.width() * comparedToSize.height()) > DELTA);
+        return (resultingSize.area() - comparedToSize.area() > DELTA);
     }
 
     /**

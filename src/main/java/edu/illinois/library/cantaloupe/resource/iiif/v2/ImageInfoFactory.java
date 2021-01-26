@@ -233,8 +233,7 @@ final class ImageInfoFactory {
      *                 #maxScale}.
      */
     private int getEffectiveMaxPixels(Dimension fullSize) {
-        final double area = fullSize.width() * fullSize.height();
-        return (int) Math.min(area * maxScale, maxPixels);
+        return (int) Math.min(fullSize.area() * maxScale, maxPixels);
     }
 
     void setDelegateProxy(DelegateProxy proxy) {

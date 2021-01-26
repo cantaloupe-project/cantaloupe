@@ -41,7 +41,7 @@ public final class ImageInfoUtil {
         int factor = 0;
         Dimension nextSize = new Dimension(fullSize);
 
-        while (nextSize.width() * nextSize.height() > maxPixels) {
+        while (nextSize.area() > maxPixels) {
             nextSize.scale(0.5);
             factor++;
         }
