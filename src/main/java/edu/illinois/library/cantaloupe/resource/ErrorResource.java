@@ -141,7 +141,7 @@ class ErrorResource extends AbstractResource {
                 error };
         if (statusCode >= 500) {
             LOGGER.error(message, args);
-        } else {
+        } else if (statusCode != 404) {
             LOGGER.warn(message, args);
         }
     }
