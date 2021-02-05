@@ -2,8 +2,8 @@ package edu.illinois.library.cantaloupe.processor.codec.jpeg2000;
 
 import edu.illinois.library.cantaloupe.image.Rectangle;
 import edu.illinois.library.cantaloupe.image.ScaleConstraint;
+import edu.illinois.library.cantaloupe.image.exif.Directory;
 import edu.illinois.library.cantaloupe.image.iptc.DataSet;
-import edu.illinois.library.cantaloupe.image.iptc.Reader;
 import edu.illinois.library.cantaloupe.operation.ReductionFactor;
 import edu.illinois.library.cantaloupe.operation.Scale;
 import edu.illinois.library.cantaloupe.operation.ScaleByPercent;
@@ -40,12 +40,23 @@ public class JPEG2000KakaduImageReaderTest extends BaseTest {
     }
 
     @Test
+    public void testGetEXIF() throws Exception {
+        instance.setSource(TestUtil.getImage("jp2-exif.jp2"));
+        try (edu.illinois.library.cantaloupe.image.exif.Reader reader =
+                     new edu.illinois.library.cantaloupe.image.exif.Reader()) {
+            reader.setSource(instance.getEXIF());
+            Directory dir = reader.read();
+            assertEquals(5, dir.size());
+        }
+    }
+
+    @Test
     public void testGetHeight() throws Exception {
         assertEquals(56, instance.getHeight());
     }
 
     @Test
-    public void testGetHeightWithInvalidImage() throws Exception {
+    public void testGetHeightWithInvalidImage() {
         instance.setSource(TestUtil.getImage("unknown"));
         assertThrows(SourceFormatException.class, () -> instance.getHeight());
     }
@@ -53,7 +64,8 @@ public class JPEG2000KakaduImageReaderTest extends BaseTest {
     @Test
     public void testGetIPTC() throws Exception {
         instance.setSource(TestUtil.getImage("jp2-iptc.jp2"));
-        try (Reader reader = new Reader()) {
+        try (edu.illinois.library.cantaloupe.image.iptc.Reader reader =
+                     new edu.illinois.library.cantaloupe.image.iptc.Reader()) {
             reader.setSource(instance.getIPTC());
             List<DataSet> dataSets = reader.read();
             assertEquals(2, dataSets.size());
@@ -61,7 +73,7 @@ public class JPEG2000KakaduImageReaderTest extends BaseTest {
     }
 
     @Test
-    public void testGetIPTCWithInvalidImage() throws Exception {
+    public void testGetIPTCWithInvalidImage() {
         instance.setSource(TestUtil.getImage("unknown"));
         assertThrows(SourceFormatException.class, () -> instance.getIPTC());
     }
@@ -72,7 +84,7 @@ public class JPEG2000KakaduImageReaderTest extends BaseTest {
     }
 
     @Test
-    public void testGetNumDecompositionLevelsWithInvalidImage() throws Exception {
+    public void testGetNumDecompositionLevelsWithInvalidImage() {
         instance.setSource(TestUtil.getImage("unknown"));
         assertThrows(SourceFormatException.class,
                 () -> instance.getNumDecompositionLevels());
@@ -84,7 +96,7 @@ public class JPEG2000KakaduImageReaderTest extends BaseTest {
     }
 
     @Test
-    public void testGetTileHeightWithInvalidImage() throws Exception {
+    public void testGetTileHeightWithInvalidImage() {
         instance.setSource(TestUtil.getImage("unknown"));
         assertThrows(SourceFormatException.class, () -> instance.getTileHeight());
     }
@@ -95,7 +107,7 @@ public class JPEG2000KakaduImageReaderTest extends BaseTest {
     }
 
     @Test
-    public void testGetTileWidthWithInvalidImage() throws Exception {
+    public void testGetTileWidthWithInvalidImage() {
         instance.setSource(TestUtil.getImage("unknown"));
         assertThrows(SourceFormatException.class, () -> instance.getTileWidth());
     }
@@ -106,7 +118,7 @@ public class JPEG2000KakaduImageReaderTest extends BaseTest {
     }
 
     @Test
-    public void testGetWidthWithInvalidImage() throws Exception {
+    public void testGetWidthWithInvalidImage() {
         instance.setSource(TestUtil.getImage("unknown"));
         assertThrows(SourceFormatException.class, () -> instance.getWidth());
     }
@@ -120,7 +132,7 @@ public class JPEG2000KakaduImageReaderTest extends BaseTest {
     }
 
     @Test
-    public void testGetXMPWithInvalidImage() throws Exception {
+    public void testGetXMPWithInvalidImage() {
         instance.setSource(TestUtil.getImage("unknown"));
         assertThrows(SourceFormatException.class, () -> instance.getXMP());
     }
@@ -143,7 +155,7 @@ public class JPEG2000KakaduImageReaderTest extends BaseTest {
     }
 
     @Test
-    public void testReadRegionWithInvalidImage() throws Exception {
+    public void testReadRegionWithInvalidImage() {
         instance.setSource(TestUtil.getImage("unknown"));
 
         final Rectangle roi = new Rectangle(0, 0, 32, 28);

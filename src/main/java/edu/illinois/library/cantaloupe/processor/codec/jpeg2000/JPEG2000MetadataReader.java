@@ -52,7 +52,7 @@ public final class JPEG2000MetadataReader implements AutoCloseable {
                     .orElse(UNKNOWN);
         }
 
-        private byte[] bytes;
+        private final byte[] bytes;
 
         Box(byte[] bytes) {
             this.bytes = bytes;
@@ -100,7 +100,7 @@ public final class JPEG2000MetadataReader implements AutoCloseable {
                     .orElse(UNKNOWN);
         }
 
-        private byte[] bytes;
+        private final byte[] bytes;
 
         SegmentMarker(byte[] bytes) {
             this.bytes = bytes;
@@ -115,14 +115,17 @@ public final class JPEG2000MetadataReader implements AutoCloseable {
             0x00, 0x00, 0x00, 0x0c, 0x6a, 0x50, 0x20, 0x20, 0x0d, 0x0a,
             (byte) 0x87, 0x0a };
 
-    private static final byte[] IPTC_UUID = new byte[] {
+    private static final byte[] EXIF_BOX_UUID = {
+            0x4a, 0x70, 0x67, 0x54, 0x69, 0x66, 0x66, 0x45,
+            0x78, 0x69, 0x66, 0x2d, 0x3e, 0x4a, 0x50, 0x32};
+    private static final byte[] IPTC_BOX_UUID = {
             (byte) 0x33, (byte) 0xc7, (byte) 0xa4, (byte) 0xd2, (byte) 0xb8,
             0x1d, 0x47, 0x23, (byte) 0xa0, (byte) 0xba, (byte) 0xf1,
-            (byte) 0xa3, (byte) 0xe0, (byte) 0x97, (byte) 0xad, 0x38 };
-    private static final byte[] XMP_UUID = new byte[] {
+            (byte) 0xa3, (byte) 0xe0, (byte) 0x97, (byte) 0xad, 0x38};
+    private static final byte[] XMP_BOX_UUID = {
             (byte) 0xbe, 0x7a, (byte) 0xcf, (byte) 0xcb, (byte) 0x97,
             (byte) 0xa9, 0x42, (byte) 0xe8, (byte) 0x9c, 0x71, (byte) 0x99,
-            (byte) 0x94, (byte) 0x91, (byte) 0xe3, (byte) 0xaf, (byte) 0xac };
+            (byte) 0x94, (byte) 0x91, (byte) 0xe3, (byte) 0xaf, (byte) 0xac};
 
     /**
      * Set to {@literal true} once reading begins.
@@ -141,7 +144,7 @@ public final class JPEG2000MetadataReader implements AutoCloseable {
     private int width, height, tileWidth, tileHeight,
             componentSize, numComponents, numDecompositionLevels;
 
-    private byte[] iptc;
+    private byte[] exif, iptc;
     private String xmp;
 
     @Override
@@ -162,6 +165,14 @@ public final class JPEG2000MetadataReader implements AutoCloseable {
     public int getComponentSize() throws IOException {
         readData();
         return componentSize;
+    }
+
+    /**
+     * @return EXIF data from a UUID box.
+     */
+    public byte[] getEXIF() throws IOException {
+        readData();
+        return exif;
     }
 
     /**
@@ -307,15 +318,16 @@ public final class JPEG2000MetadataReader implements AutoCloseable {
 
     private void readUUIDBox(long dataLength) throws IOException {
         byte[] uuid = read(16);
-        // A UUID box can contain any kind of data, signified by the UUID.
-        // This reader supports IPTC and XMP.
-        if (Arrays.equals(uuid, XMP_UUID)) {
+        // A UUID box can contain any kind of data, signified by its UUID.
+        if (Arrays.equals(uuid, EXIF_BOX_UUID)) {
+            exif = read((int) dataLength - 16);
+        } else if (Arrays.equals(uuid, XMP_BOX_UUID)) {
             byte[] data = new byte[(int)dataLength  - 16];
             inputStream.readFully(data,  0, (int) dataLength - 16);
             xmp = new String(data, StandardCharsets.UTF_8);
             xmp = xmp.substring(xmp.indexOf("<rdf:RDF "),
                     xmp.indexOf("</rdf:RDF>") + 10);
-        } else if (Arrays.equals(uuid, IPTC_UUID)) {
+        } else if (Arrays.equals(uuid, IPTC_BOX_UUID)) {
             iptc = read((int) dataLength - 16);
         } else {
             inputStream.skipBytes(dataLength - 16);

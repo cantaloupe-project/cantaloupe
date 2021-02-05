@@ -67,6 +67,62 @@ public class JPEG2000MetadataReaderTest extends BaseTest {
                 () -> instance.getComponentSize());
     }
 
+    /* getEXIF() */
+
+    @Test
+    void testGetEXIFWithValidImageContainingEXIF() throws Exception {
+        Path file = TestUtil.getImage("jp2-exif.jp2");
+        try (ImageInputStream is = ImageIO.createImageInputStream(file.toFile())) {
+            instance.setSource(is);
+            try (edu.illinois.library.cantaloupe.image.exif.Reader reader =
+                         new edu.illinois.library.cantaloupe.image.exif.Reader()) {
+                reader.setSource(instance.getEXIF());
+                assertEquals(5, reader.read().size());
+            }
+        }
+    }
+
+    @Test
+    void testGetEXIFWithValidImageNotContainingEXIF() throws Exception {
+        Path file = TestUtil.getImage("jp2");
+        try (ImageInputStream is = ImageIO.createImageInputStream(file.toFile())) {
+            instance.setSource(is);
+            assertNull(instance.getEXIF());
+        }
+    }
+
+    @Test
+    void testGetEXIFWithInvalidImage1() throws Exception {
+        Path file = TestUtil.getImage("jpg");
+        try (ImageInputStream is = ImageIO.createImageInputStream(file.toFile())) {
+            instance.setSource(is);
+            assertThrows(SourceFormatException.class, () -> instance.getEXIF());
+        }
+    }
+
+    @Test
+    void testGetEXIFWithInvalidImage2() throws Exception {
+        Path file = TestUtil.getImage("unknown");
+        try (ImageInputStream is = ImageIO.createImageInputStream(file.toFile())) {
+            instance.setSource(is);
+            assertThrows(SourceFormatException.class, () -> instance.getEXIF());
+        }
+    }
+
+    @Test
+    void testGetEXIFWithEmptyImage() throws Exception {
+        Path file = TestUtil.getImage("empty");
+        try (ImageInputStream is = ImageIO.createImageInputStream(file.toFile())) {
+            instance.setSource(is);
+            assertThrows(SourceFormatException.class, () -> instance.getEXIF());
+        }
+    }
+
+    @Test
+    void testGetEXIFWithSourceNotSet() {
+        assertThrows(IllegalStateException.class, () -> instance.getEXIF());
+    }
+
     /* getHeight() */
 
     @Test
@@ -117,7 +173,8 @@ public class JPEG2000MetadataReaderTest extends BaseTest {
         Path file = TestUtil.getImage("jp2-iptc.jp2");
         try (ImageInputStream is = ImageIO.createImageInputStream(file.toFile())) {
             instance.setSource(is);
-            try (Reader reader = new Reader()) {
+            try (edu.illinois.library.cantaloupe.image.iptc.Reader reader =
+                         new edu.illinois.library.cantaloupe.image.iptc.Reader()) {
                 reader.setSource(instance.getIPTC());
                 assertEquals(2, reader.read().size());
             }

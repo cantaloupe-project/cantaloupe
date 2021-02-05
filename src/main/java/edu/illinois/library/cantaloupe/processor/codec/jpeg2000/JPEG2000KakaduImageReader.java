@@ -183,6 +183,9 @@ public final class JPEG2000KakaduImageReader implements AutoCloseable {
      */
     private static final int EXPAND_DENOMINATOR = 10000000;
     private static final int MAX_LAYERS         = 16384;
+    private static final byte[] EXIF_BOX_UUID   = {
+            0x4a, 0x70, 0x67, 0x54, 0x69, 0x66, 0x66, 0x45,
+            0x78, 0x69, 0x66, 0x2d, 0x3e, 0x4a, 0x50, 0x32};
 
     /**
      * N.B.: {@link Kdu_global#Kdu_get_num_processors()} is another way of
@@ -223,8 +226,8 @@ public final class JPEG2000KakaduImageReader implements AutoCloseable {
             isDecompressing;
 
     private int width, height, tileWidth, tileHeight, numDWTLevels = -1;
+    private byte[] exif, iptc;
     private String xmp;
-    private byte[] iptc;
 
     static {
         try {
@@ -340,6 +343,14 @@ public final class JPEG2000KakaduImageReader implements AutoCloseable {
         limiter      = new Kdu_quality_limiter(1 / 256f, false);
     }
 
+    /**
+     * @return Raw contents of the EXIF box.
+     */
+    public byte[] getEXIF() throws IOException {
+        readMetadata();
+        return exif;
+    }
+
     public int getHeight() throws IOException {
         if (height == 0) {
             openImage();
@@ -348,6 +359,9 @@ public final class JPEG2000KakaduImageReader implements AutoCloseable {
         return height;
     }
 
+    /**
+     * @return Raw contents of the IPTC box.
+     */
     public byte[] getIPTC() throws IOException {
         readMetadata();
         return iptc;
@@ -393,6 +407,9 @@ public final class JPEG2000KakaduImageReader implements AutoCloseable {
         return width;
     }
 
+    /**
+     * @return Contents of the XMP box.
+     */
     public String getXMP() throws IOException {
         readMetadata();
         return xmp;
@@ -488,7 +505,15 @@ public final class JPEG2000KakaduImageReader implements AutoCloseable {
                     manager.Load_matches(-1, new int[] {}, -1, new int[] {});
                     lastNode = manager.Enumerate_matches(
                             lastNode, -1, -1, false, new Kdu_dims(), 0);
-                    if (lastNode.Is_iptc_uuid() || lastNode.Is_xmp_uuid()) {
+
+                    final byte[] uuid = new byte[16];
+                    lastNode.Get_uuid(uuid);
+
+                    final boolean isEXIF = Arrays.equals(EXIF_BOX_UUID, uuid);
+                    final boolean isIPTC = lastNode.Is_iptc_uuid();
+                    final boolean isXMP  = lastNode.Is_xmp_uuid();
+
+                    if (isEXIF || isIPTC || isXMP) {
                         byte[] buffer;
                         final Jpx_input_box box = new Jpx_input_box();
                         try {
@@ -496,9 +521,11 @@ public final class JPEG2000KakaduImageReader implements AutoCloseable {
                             final int bufferSize = (int) box.Get_box_bytes();
                             buffer = new byte[bufferSize];
                             box.Read(buffer, bufferSize);
-                            if (lastNode.Is_iptc_uuid() && bufferSize > 16) {
+                            if (isEXIF && bufferSize > 16) {
+                                exif = Arrays.copyOfRange(buffer, 16, buffer.length);
+                            } else if (isIPTC && bufferSize > 16) {
                                 iptc = Arrays.copyOfRange(buffer, 16, buffer.length);
-                            } else if (lastNode.Is_xmp_uuid()) {
+                            } else if (isXMP) {
                                 xmp = new String(buffer, StandardCharsets.UTF_8);
                                 xmp = StringUtils.trimXMP(xmp);
                             }
