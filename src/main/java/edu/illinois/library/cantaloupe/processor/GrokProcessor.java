@@ -10,7 +10,6 @@ import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.image.Metadata;
 import edu.illinois.library.cantaloupe.image.Rectangle;
-import edu.illinois.library.cantaloupe.image.iptc.Reader;
 import edu.illinois.library.cantaloupe.operation.Encode;
 import edu.illinois.library.cantaloupe.operation.Operation;
 import edu.illinois.library.cantaloupe.operation.OperationList;
@@ -343,11 +342,20 @@ class GrokProcessor  extends AbstractProcessor implements FileProcessor {
             reader.setSource(new BufferedImageInputStream(
                     new FileImageInputStream(getSourceFile().toFile())));
 
-            Metadata metadata = new Metadata();
-            byte[] iptc = reader.getIPTC();
-            if (iptc != null) {
-                try (Reader iptcReader = new Reader()) {
-                    iptcReader.setSource(iptc);
+            final Metadata metadata = new Metadata();
+            byte[] bytes = reader.getEXIF();
+            if (bytes != null) {
+                try (edu.illinois.library.cantaloupe.image.exif.Reader exifReader =
+                             new edu.illinois.library.cantaloupe.image.exif.Reader()) {
+                    exifReader.setSource(bytes);
+                    metadata.setEXIF(exifReader.read());
+                }
+            }
+            bytes = reader.getIPTC();
+            if (bytes != null) {
+                try (edu.illinois.library.cantaloupe.image.iptc.Reader iptcReader =
+                             new edu.illinois.library.cantaloupe.image.iptc.Reader()) {
+                    iptcReader.setSource(bytes);
                     metadata.setIPTC(iptcReader.read());
                 }
             }

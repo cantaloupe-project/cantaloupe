@@ -52,8 +52,8 @@
   to version 8.0.3.
 * KakaduNativeProcessor, OpenJpegProcessor, and TurboJpegProcessor respect the
   EXIF `Orientation` tag.
-* KakaduNativeProcessor and OpenJpegProcessor support IPTC and XMP metadata.
-* TurboJpegProcessor supports EXIF, IPTC, and XMP metadata.
+* KakaduNativeProcessor, OpenJpegProcessor, and TurboJpegProcessor support
+  EXIF, IPTC IIM, and XMP metadata.
 * Java2dProcessor supports the XPM source format.
 * FfmpegProcessor, KakaduNativeProcessor, OpenJpegProcessor, and
   PdfBoxProcessor use libjpeg-turbo to write JPEGs if it is available.
