@@ -3,7 +3,6 @@ package edu.illinois.library.cantaloupe.processor;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.operation.OperationList;
-import edu.illinois.library.cantaloupe.resource.iiif.v1.Quality;
 
 import java.io.OutputStream;
 import java.nio.file.Path;
@@ -53,6 +52,11 @@ public class MockFileProcessor implements FileProcessor {
     @Override
     public void setSourceFile(Path file) {
         this.file = file;
+    }
+
+    @Override
+    public boolean supportsSourceFormat(Format format) {
+        return true;
     }
 
 }

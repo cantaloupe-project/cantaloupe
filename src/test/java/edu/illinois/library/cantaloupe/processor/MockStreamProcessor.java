@@ -4,7 +4,6 @@ import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.source.StreamFactory;
-import edu.illinois.library.cantaloupe.resource.iiif.v1.Quality;
 
 import java.io.OutputStream;
 import java.util.HashSet;
@@ -69,6 +68,11 @@ public class MockStreamProcessor implements StreamProcessor {
     @Override
     public void setStreamFactory(StreamFactory source) {
         this.streamFactory = source;
+    }
+
+    @Override
+    public boolean supportsSourceFormat(Format format) {
+        return true;
     }
 
 }

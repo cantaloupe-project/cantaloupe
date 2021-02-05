@@ -150,6 +150,11 @@ public class TurboJpegProcessor extends AbstractProcessor
     }
 
     @Override
+    public boolean supportsSourceFormat(Format format) {
+        return Format.get("jpg").equals(format);
+    }
+
+    @Override
     public void process(final OperationList opList,
                         final Info info,
                         final OutputStream outputStream) throws FormatException, ProcessorException {

@@ -58,7 +58,7 @@ abstract class AbstractImageIOProcessor extends AbstractProcessor {
     public Set<Format> getAvailableOutputFormats() {
         Set<Format> formats = FORMATS.get(getSourceFormat());
         if (formats == null) {
-            formats = Collections.unmodifiableSet(Collections.emptySet());
+            formats = Collections.emptySet();
         }
         return formats;
     }
@@ -149,6 +149,10 @@ abstract class AbstractImageIOProcessor extends AbstractProcessor {
         close();
         this.sourceFile = null;
         this.streamFactory = streamFactory;
+    }
+
+    public boolean supportsSourceFormat(Format format) {
+        return ImageReaderFactory.supportedFormats().contains(format);
     }
 
 }

@@ -123,6 +123,20 @@ public class FfmpegProcessorTest extends AbstractProcessorTest {
     }
 
     @Test
+    void testSupportsSourceFormatWithSupportedFormat() {
+        try (Processor instance = newInstance()) {
+            assertTrue(instance.supportsSourceFormat(Format.get("mp4")));
+        }
+    }
+
+    @Test
+    void testSupportsSourceFormatWithUnsupportedFormat() {
+        try (Processor instance = newInstance()) {
+            assertFalse(instance.supportsSourceFormat(Format.get("gif")));
+        }
+    }
+
+    @Test
     void testValidateWithOutOfBoundsTime() {
         OperationList ops = OperationList.builder()
                 .withIdentifier(new Identifier("cats"))

@@ -38,13 +38,13 @@ import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import static edu.illinois.library.cantaloupe.test.Assert.ImageAssert.*;
 import static org.junit.jupiter.api.Assertions.*;
@@ -87,15 +87,10 @@ abstract class AbstractProcessorTest extends BaseTest {
     }
 
     private Set<Format> getSupportedSourceFormats(Processor processor) {
-        Set<Format> formats = new HashSet<>();
-        for (Format format : Format.all()) {
-            try {
-                processor.setSourceFormat(format);
-                formats.add(format);
-            } catch (SourceFormatException ignore) {
-            }
-        }
-        return formats;
+        return Format.all().
+                stream().
+                filter(processor::supportsSourceFormat).
+                collect(Collectors.toSet());
     }
 
     /* process() */

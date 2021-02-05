@@ -19,6 +19,7 @@ import edu.illinois.library.cantaloupe.operation.Transpose;
 import edu.illinois.library.cantaloupe.operation.overlay.Overlay;
 import edu.illinois.library.cantaloupe.image.Compression;
 import edu.illinois.library.cantaloupe.processor.codec.ImageReader;
+import edu.illinois.library.cantaloupe.processor.codec.ImageReaderFactory;
 import edu.illinois.library.cantaloupe.processor.codec.ImageWriter;
 import edu.illinois.library.cantaloupe.processor.codec.ImageWriterFactory;
 import edu.illinois.library.cantaloupe.processor.codec.ReaderHint;
@@ -65,6 +66,14 @@ class JaiProcessor extends AbstractImageIOProcessor
             formats = super.getAvailableOutputFormats();
         }
         return formats;
+    }
+
+    @Override
+    public boolean supportsSourceFormat(Format format) {
+        return ImageReaderFactory.supportedFormats().
+                stream().
+                filter(f -> !Format.get("gif").equals(f)).
+                anyMatch(f -> f.equals(format));
     }
 
     @Override

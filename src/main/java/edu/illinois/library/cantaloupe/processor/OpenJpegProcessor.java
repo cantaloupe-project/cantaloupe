@@ -403,6 +403,11 @@ class OpenJpegProcessor extends AbstractProcessor implements FileProcessor {
     }
 
     @Override
+    public boolean supportsSourceFormat(Format format) {
+        return Format.get("jp2").equals(format);
+    }
+
+    @Override
     public Info readInfo() throws IOException {
         final Info info = new Info();
         info.setSourceFormat(getSourceFormat());

@@ -147,7 +147,7 @@ class KakaduNativeProcessor implements FileProcessor, StreamProcessor {
     @Override
     public void setSourceFormat(Format format)
             throws SourceFormatException {
-        if (!Format.get("jp2").equals(format)) {
+        if (!supportsSourceFormat(format)) {
             throw new SourceFormatException(format);
         }
     }
@@ -160,6 +160,11 @@ class KakaduNativeProcessor implements FileProcessor, StreamProcessor {
         } catch (IOException e) {
             LOGGER.error(e.getMessage());
         }
+    }
+
+    @Override
+    public boolean supportsSourceFormat(Format format) {
+        return Format.get("jp2").equals(format);
     }
 
     @Override

@@ -94,4 +94,18 @@ public class GrokProcessorTest extends AbstractProcessorTest {
         assertEquals(expectedInfo, instance.readInfo());
     }
 
+    @Test
+    void testSupportsSourceFormatWithSupportedFormat() {
+        try (Processor instance = newInstance()) {
+            assertTrue(instance.supportsSourceFormat(Format.get("jp2")));
+        }
+    }
+
+    @Test
+    void testSupportsSourceFormatWithUnsupportedFormat() {
+        try (Processor instance = newInstance()) {
+            assertFalse(instance.supportsSourceFormat(Format.get("gif")));
+        }
+    }
+
 }

@@ -282,10 +282,14 @@ class FfmpegProcessor extends AbstractProcessor implements FileProcessor {
     }
 
     @Override
-    public void setSourceFormat(Format format)
-            throws SourceFormatException {
+    public void setSourceFormat(Format format) throws SourceFormatException {
         super.setSourceFormat(format);
         reset();
+    }
+
+    @Override
+    public boolean supportsSourceFormat(Format format) {
+        return format.isVideo();
     }
 
     @Override

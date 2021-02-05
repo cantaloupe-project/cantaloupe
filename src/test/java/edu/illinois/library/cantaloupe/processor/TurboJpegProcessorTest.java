@@ -88,4 +88,18 @@ public class TurboJpegProcessorTest extends AbstractProcessorTest {
         assertTrue(info.getMetadata().getXMP().isPresent());
     }
 
+    @Test
+    void testSupportsSourceFormatWithSupportedFormat() {
+        try (Processor instance = newInstance()) {
+            assertTrue(instance.supportsSourceFormat(Format.get("jpg")));
+        }
+    }
+
+    @Test
+    void testSupportsSourceFormatWithUnsupportedFormat() {
+        try (Processor instance = newInstance()) {
+            assertFalse(instance.supportsSourceFormat(Format.get("gif")));
+        }
+    }
+
 }

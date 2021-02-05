@@ -158,6 +158,16 @@ public interface Processor extends AutoCloseable {
     void setSourceFormat(Format format) throws SourceFormatException;
 
     /**
+     * For a supported source format, an instance is able to generate an image
+     * in at least one {@link #getAvailableOutputFormats() output format}.
+     *
+     * @param format Format to check.
+     * @return Whether the instance supports source images of the given format.
+     * @since 5.0
+     */
+    boolean supportsSourceFormat(Format format);
+
+    /**
      * <p>Validates the given operation list, throwing an exception if
      * invalid.</p>
      *

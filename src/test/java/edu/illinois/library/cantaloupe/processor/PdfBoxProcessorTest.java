@@ -100,6 +100,20 @@ public class PdfBoxProcessorTest extends AbstractProcessorTest {
     }
 
     @Test
+    void testSupportsSourceFormatWithSupportedFormat() {
+        try (Processor instance = newInstance()) {
+            assertTrue(instance.supportsSourceFormat(Format.get("pdf")));
+        }
+    }
+
+    @Test
+    void testSupportsSourceFormatWithUnsupportedFormat() {
+        try (Processor instance = newInstance()) {
+            assertFalse(instance.supportsSourceFormat(Format.get("gif")));
+        }
+    }
+
+    @Test
     void testValidateWithNoPageArgument() throws Exception {
         instance.setSourceFile(TestUtil.getImage("pdf.pdf"));
 

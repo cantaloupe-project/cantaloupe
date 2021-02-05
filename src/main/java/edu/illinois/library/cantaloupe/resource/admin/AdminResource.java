@@ -98,12 +98,7 @@ public class AdminResource extends AbstractAdminResource {
         }
 
         public boolean supports(FormatProxy format) {
-            try {
-                ((Processor) object).setSourceFormat((Format) format.object);
-                return true;
-            } catch (SourceFormatException e) {
-                return false;
-            }
+            return ((Processor) object).supportsSourceFormat((Format) format.object);
         }
 
         /**

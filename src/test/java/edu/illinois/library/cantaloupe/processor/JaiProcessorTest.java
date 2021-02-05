@@ -45,4 +45,18 @@ public class JaiProcessorTest extends AbstractImageIOProcessorTest {
         // This processor doesn't use TurboJPEG ever.
     }
 
+    @Test
+    void testSupportsSourceFormatWithSupportedFormat() {
+        try (Processor instance = newInstance()) {
+            assertTrue(instance.supportsSourceFormat(Format.get("jpg")));
+        }
+    }
+
+    @Test
+    void testSupportsSourceFormatWithUnsupportedFormat() {
+        try (Processor instance = newInstance()) {
+            assertFalse(instance.supportsSourceFormat(Format.get("mp4")));
+        }
+    }
+
 }

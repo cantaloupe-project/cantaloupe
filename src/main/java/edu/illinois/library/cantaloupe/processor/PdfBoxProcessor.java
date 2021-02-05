@@ -266,6 +266,11 @@ class PdfBoxProcessor extends AbstractProcessor
     }
 
     @Override
+    public boolean supportsSourceFormat(Format format) {
+        return Format.get("pdf").equals(format);
+    }
+
+    @Override
     public void validate(OperationList opList, Dimension fullSize)
             throws ValidationException, ProcessorException, OutputFormatException {
         StreamProcessor.super.validate(opList, fullSize);

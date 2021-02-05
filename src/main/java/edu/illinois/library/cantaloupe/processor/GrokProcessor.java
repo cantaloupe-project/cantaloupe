@@ -25,8 +25,6 @@ import edu.illinois.library.cantaloupe.processor.codec.jpeg2000.JPEG2000Metadata
 import edu.illinois.library.cantaloupe.processor.codec.ReaderHint;
 import edu.illinois.library.cantaloupe.source.stream.BufferedImageInputStream;
 import edu.illinois.library.cantaloupe.util.CommandLocator;
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.SystemUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,8 +50,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * <p>Processor using the Grok {@literal grk_decompress} command-line
@@ -331,6 +327,11 @@ class GrokProcessor  extends AbstractProcessor implements FileProcessor {
                 sourceSymlink = null;
             }
         }
+    }
+
+    @Override
+    public boolean supportsSourceFormat(Format format) {
+        return Format.get("jp2").equals(format);
     }
 
     @Override

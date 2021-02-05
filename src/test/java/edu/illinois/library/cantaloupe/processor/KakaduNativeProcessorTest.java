@@ -87,4 +87,18 @@ public class KakaduNativeProcessorTest extends AbstractProcessorTest {
         assertTrue(info.getMetadata().getXMP().isPresent());
     }
 
+    @Test
+    void testSupportsSourceFormatWithSupportedFormat() {
+        try (Processor instance = newInstance()) {
+            assertTrue(instance.supportsSourceFormat(Format.get("jp2")));
+        }
+    }
+
+    @Test
+    void testSupportsSourceFormatWithUnsupportedFormat() {
+        try (Processor instance = newInstance()) {
+            assertFalse(instance.supportsSourceFormat(Format.get("gif")));
+        }
+    }
+
 }
