@@ -226,6 +226,14 @@ class KakaduNativeProcessor implements FileProcessor, StreamProcessor {
 
         final Dimension fullSize = info.getSize();
 
+        final Metadata metadata = info.getMetadata();
+        if (metadata != null) {
+            Orientation orientation = metadata.getOrientation();
+            if (!Orientation.ROTATE_0.equals(orientation)) {
+                image = Java2DUtil.rotate(image, orientation);
+            }
+        }
+
         // Apply redactions.
         final Set<Redaction> redactions = opList.stream()
                 .filter(op -> op instanceof Redaction)

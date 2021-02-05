@@ -4,6 +4,7 @@ import edu.illinois.library.cantaloupe.image.Dimension;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.image.Metadata;
+import edu.illinois.library.cantaloupe.image.Orientation;
 import edu.illinois.library.cantaloupe.image.Rectangle;
 import edu.illinois.library.cantaloupe.image.ScaleConstraint;
 import edu.illinois.library.cantaloupe.operation.Color;
@@ -172,6 +173,12 @@ public class TurboJpegProcessor extends AbstractProcessor
             BufferedImage image =
                     imageReader.readAsBufferedImage(roiWithinSafeRegion);
 
+            Orientation orientation = Orientation.ROTATE_0;
+            final Metadata metadata = info.getMetadata();
+            if (metadata != null) {
+                orientation = metadata.getOrientation();
+            }
+
             // Apply the crop operation, if present, and retain a reference
             // to it for subsequent operations to refer to.
             Crop crop = new CropByPercent();
@@ -185,7 +192,12 @@ public class TurboJpegProcessor extends AbstractProcessor
                 }
             }
 
-            // Redactions happen immediately after cropping.
+            // All operations have already been corrected for the orientation,
+            // but the image itself has not yet been corrected.
+            if (!Orientation.ROTATE_0.equals(orientation)) {
+                image = Java2DUtil.rotate(image, orientation);
+            }
+
             final Set<Redaction> redactions = opList.stream()
                     .filter(op -> op instanceof Redaction)
                     .filter(op -> op.hasEffect(fullSize, opList))
@@ -199,7 +211,6 @@ public class TurboJpegProcessor extends AbstractProcessor
             final Color bgColor = encode.getBackgroundColor();
             writer.setQuality(encode.getQuality());
             writer.setProgressive(encode.isInterlacing());
-            Metadata metadata = encode.getMetadata();
             if (metadata != null) {
                 metadata.getXMP().ifPresent(writer::setXMP);
             }

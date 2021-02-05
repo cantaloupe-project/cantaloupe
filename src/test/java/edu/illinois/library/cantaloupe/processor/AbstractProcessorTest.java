@@ -137,6 +137,49 @@ abstract class AbstractProcessorTest extends BaseTest {
     }
 
     @Test
+    public void testProcessWithNonzeroOrientation() throws Exception {
+        OperationList ops = OperationList.builder()
+                .withMetaIdentifier(MetaIdentifier.builder()
+                        .withIdentifier("cats")
+                        .build())
+                .withOperations(
+                        new ScaleByPercent(),
+                        new Encode(Format.get("jpg")))
+                .build();
+
+        Path fixture;
+        Format sourceFormat;
+        Dimension size;
+        try (Processor processor = newInstance()) {
+            if (processor.supportsSourceFormat(Format.get("jpg"))) {
+                sourceFormat = Format.get("jpg");
+                fixture = TestUtil.getImage("jpg-exif-orientation-270.jpg");
+                size = new Dimension(64, 56);
+            } else if (processor.supportsSourceFormat(Format.get("jp2"))) {
+                sourceFormat = Format.get("jp2");
+                fixture = TestUtil.getImage("jp2-orientation-90.jp2");
+                size = new Dimension(64, 56);
+            } else {
+                return;
+            }
+        }
+
+        doProcessTest(fixture, sourceFormat, ops, new ProcessorAssertion() {
+            {
+                this.sourceSize = size;
+            }
+            @Override
+            public void run() {
+                assertEquals(this.sourceSize.width(),
+                        this.resultingImage.getHeight(), DELTA);
+                assertEquals(this.sourceSize.height(),
+                        this.resultingImage.getWidth(), DELTA);
+
+            }
+        });
+    }
+
+    @Test
     public void testProcessWithScaleConstraint() throws Exception {
         OperationList ops = OperationList.builder()
                 .withMetaIdentifier(MetaIdentifier.builder()
@@ -702,17 +745,16 @@ abstract class AbstractProcessorTest extends BaseTest {
                     assertTrue(actualInfo.getSize().width() >= 1);
                     assertTrue(actualInfo.getSize().height() >= 1);
 
-                    // Parse the resolution count from the filename, or else
-                    // assert 1.
+                    // Parse the resolution count from the filename.
                     int expectedNumResolutions = 1;
                     Pattern pattern = Pattern.compile("\\dres");
                     Matcher matcher = pattern.matcher(fixture.getFileName().toString());
                     if (matcher.find()) {
                         expectedNumResolutions =
                                 Integer.parseInt(matcher.group(0).substring(0, 1));
+                        assertEquals(expectedNumResolutions,
+                                actualInfo.getNumResolutions());
                     }
-                    assertEquals(expectedNumResolutions,
-                            actualInfo.getNumResolutions());
                 } catch (SourceFormatException ignore) {
                     // The processor doesn't support this format, which is
                     // fine. No processor supports all formats.
