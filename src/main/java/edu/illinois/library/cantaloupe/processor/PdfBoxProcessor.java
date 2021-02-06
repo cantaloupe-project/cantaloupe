@@ -19,6 +19,7 @@ import edu.illinois.library.cantaloupe.source.StreamFactory;
 import edu.illinois.library.cantaloupe.util.Stopwatch;
 import org.apache.commons.io.IOUtils;
 import org.apache.pdfbox.cos.COSObject;
+import org.apache.pdfbox.io.MemoryUsageSetting;
 import org.apache.pdfbox.pdmodel.DefaultResourceCache;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDDocumentInformation;
@@ -31,10 +32,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.image.BufferedImage;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.nio.file.Path;
 import java.util.Collections;
 import java.util.EnumSet;
@@ -141,10 +139,11 @@ class PdfBoxProcessor extends AbstractProcessor
             final Stopwatch watch = new Stopwatch();
 
             if (sourceFile != null) {
-                doc = PDDocument.load(sourceFile.toFile());
+                doc = PDDocument.load(sourceFile.toFile(),
+                        getMemoryUsageSetting());
             } else {
                 try (InputStream is = streamFactory.newInputStream()) {
-                    doc = PDDocument.load(is);
+                    doc = PDDocument.load(is, getMemoryUsageSetting());
                 } catch (IOException e) {
                     throw new SourceFormatException();
                 }
@@ -184,6 +183,25 @@ class PdfBoxProcessor extends AbstractProcessor
             }
 
             LOGGER.debug("Loaded document in {}", watch);
+        }
+    }
+
+    private MemoryUsageSetting getMemoryUsageSetting() {
+        final Configuration config = Configuration.getInstance();
+        final boolean scratchFileEnabled =
+                config.getBoolean(Key.PROCESSOR_PDF_SCRATCH_FILE_ENABLED, false);
+        final long maxMainMemoryBytes =
+                config.getLong(Key.PROCESSOR_PDF_MAX_MEMORY_BYTES, -1);
+        final long maxStorageBytes =
+                config.getLong(Key.PROCESSOR_PDF_MAX_STORAGE_BYTES, -1);
+        final String scratchFileLocation =
+                config.getString(Key.PROCESSOR_PDF_SCRATCH_LOCATION);
+        if (scratchFileEnabled) {
+            File filePath = new File(scratchFileLocation);
+            return MemoryUsageSetting.setupMixed(maxMainMemoryBytes,
+                    maxStorageBytes).setTempDir(filePath);
+        } else {
+            return MemoryUsageSetting.setupMainMemoryOnly(maxMainMemoryBytes);
         }
     }
 
