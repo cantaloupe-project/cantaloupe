@@ -533,7 +533,7 @@ public final class JPEG2000KakaduImageReader implements AutoCloseable {
                             box.Close();
                         }
                     }
-                } while ((xmp == null || iptc == null) && lastNode.Exists());
+                } while ((exif == null || xmp == null || iptc == null) && lastNode.Exists());
             } catch (KduException e) {
                 handle(e);
                 throw new IOException(e);
