@@ -199,7 +199,7 @@ public final class StringUtils {
      */
     public static long toByteSize(String str) {
         str = str.toUpperCase();
-        final String numberStr = str.replaceAll("[^\\d.]", "");
+        final String numberStr = str.replaceAll("[^-\\d.]", "");
         final double number = Double.parseDouble(numberStr);
         short exponent = 0;
 

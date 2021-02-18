@@ -2423,42 +2423,12 @@
                                                    role="button" data-toggle="popover"
                                                    data-trigger="focus"
                                                    data-content="Maximum number of main-
-                                                   memory to be used; if -1 then unlimited">?</a>
+                                                   memory to be used, in bytes or a number
+                                                   ending in M, MB, G, GB, etc.; if -1 then unlimited">?</a>
                                             </td>
                                             <td>
-                                                <input type="number" class="form-control"
+                                                <input type="text" class="form-control"
                                                        name="processor.pdf.max_memory_bytes"
-                                                       min="-1"
-                                                       data-requires-restart="false">
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td>Max Storage Bytes
-                                                <a tabindex="0" class="btn btn-sm cl-help"
-                                                   role="button" data-toggle="popover"
-                                                   data-trigger="focus"
-                                                   data-content="Maximum size the main-
-                                                   memory and temporary file(s) may have
-                                                   all together">?</a>
-                                            </td>
-                                            <td>
-                                                <input type="number" class="form-control"
-                                                       name="processor.pdf.max_storage_bytes"
-                                                       min="-1"
-                                                       data-requires-restart="false">
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td>Scratch File Location
-                                                <a tabindex="0" class="btn btn-sm cl-help"
-                                                   role="button" data-toggle="popover"
-                                                   data-trigger="focus"
-                                                   data-content="Directory to be used for
-                                                   scratch file">?</a>
-                                            </td>
-                                            <td>
-                                                <input class="form-control" type="text"
-                                                       name="processor.pdf.scratch_location"
                                                        data-requires-restart="false">
                                             </td>
                                         </tr>

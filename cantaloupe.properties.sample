@@ -364,8 +364,6 @@ processor.dpi = 150
 # location on disk where the temporary file lives.
 processor.pdf.scratch_file_enabled = false
 processor.pdf.max_memory_bytes = -1
-processor.pdf.max_storage_bytes = -1
-processor.pdf.scratch_location =
 
 # Color of the background when an image is rotated or alpha-flattened, for
 # output formats that don't support transparency.

@@ -164,8 +164,6 @@ public enum Key {
     PROCESSOR_DPI("processor.dpi"),
     PROCESSOR_PDF_SCRATCH_FILE_ENABLED("processor.pdf.scratch_file_enabled"),
     PROCESSOR_PDF_MAX_MEMORY_BYTES("processor.pdf.max_memory_bytes"),
-    PROCESSOR_PDF_MAX_STORAGE_BYTES("processor.pdf.max_storage_bytes"),
-    PROCESSOR_PDF_SCRATCH_LOCATION("processor.pdf.scratch_location"),
     PROCESSOR_FALLBACK("processor.ManualSelectionStrategy.fallback"),
     PROCESSOR_FALLBACK_RETRIEVAL_STRATEGY("processor.fallback_retrieval_strategy"),
     PROCESSOR_JPG_PROGRESSIVE("processor.jpg.progressive"),

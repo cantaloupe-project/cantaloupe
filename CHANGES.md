@@ -62,8 +62,6 @@
 * PdfBoxProcessor properties added to better control memory
     * `processor.pdf.scratch_file_enabled` allows use of a scratch file
     * `processor.pdf.max_memory_bytes` allows control over how much memory a PDF thread consumes (-1 means unlimited)
-    * `processor.pdf.max_storage_bytes` allows control over how much total bytes are used to render a PDF image (memory + temp file)
-    * `processor.pdf.scratch_location` allows customization of path to PDF scratch file
 
 ### Caches
 

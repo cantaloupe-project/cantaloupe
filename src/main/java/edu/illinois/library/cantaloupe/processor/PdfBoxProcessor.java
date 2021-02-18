@@ -191,17 +191,15 @@ class PdfBoxProcessor extends AbstractProcessor
         final boolean scratchFileEnabled =
                 config.getBoolean(Key.PROCESSOR_PDF_SCRATCH_FILE_ENABLED, false);
         final long maxMainMemoryBytes =
-                config.getLong(Key.PROCESSOR_PDF_MAX_MEMORY_BYTES, -1);
-        final long maxStorageBytes =
-                config.getLong(Key.PROCESSOR_PDF_MAX_STORAGE_BYTES, -1);
+                config.getLongBytes(Key.PROCESSOR_PDF_MAX_MEMORY_BYTES, -1);
         final String scratchFileLocation =
-                config.getString(Key.PROCESSOR_PDF_SCRATCH_LOCATION);
+                config.getString(Key.TEMP_PATHNAME);
         if (scratchFileEnabled) {
             File filePath = new File(scratchFileLocation);
-            return MemoryUsageSetting.setupMixed(maxMainMemoryBytes,
-                    maxStorageBytes).setTempDir(filePath);
+            return MemoryUsageSetting.setupMixed(maxMainMemoryBytes, -1)
+                    .setTempDir(filePath);
         } else {
-            return MemoryUsageSetting.setupMainMemoryOnly(maxMainMemoryBytes);
+            return MemoryUsageSetting.setupMainMemoryOnly(-1);
         }
     }
 
@@ -219,7 +217,7 @@ class PdfBoxProcessor extends AbstractProcessor
     /**
      * @return Rasterized page of the PDF.
      * @throws IllegalArgumentException if the given page index is out of
-     *                                   bounds.
+     *                                  bounds.
      */
     private BufferedImage readImage(int pageIndex,
                                     double dpi) throws IOException {
@@ -247,22 +245,22 @@ class PdfBoxProcessor extends AbstractProcessor
         for (int i = 0; i < doc.getNumberOfPages(); i++) {
             // PDF doesn't have native dimensions, so figure out the dimensions
             // at the current DPI setting.
-            final PDPage page         = doc.getPage(i);
+            final PDPage page = doc.getPage(i);
             final PDRectangle cropBox = page.getCropBox();
-            final float widthPt       = cropBox.getWidth();
-            final float heightPt      = cropBox.getHeight();
-            final int rotationAngle   = page.getRotation();
+            final float widthPt = cropBox.getWidth();
+            final float heightPt = cropBox.getHeight();
+            final int rotationAngle = page.getRotation();
 
-            int widthPx  = Math.round(widthPt * scale);
+            int widthPx = Math.round(widthPt * scale);
             int heightPx = Math.round(heightPt * scale);
             if (rotationAngle == 90 || rotationAngle == 270) {
-                int tmp  = widthPx;
+                int tmp = widthPx;
                 //noinspection SuspiciousNameCombination
-                widthPx  = heightPx;
+                widthPx = heightPx;
                 heightPx = tmp;
             }
 
-            Dimension size   = new Dimension(widthPx, heightPx);
+            Dimension size = new Dimension(widthPx, heightPx);
             Info.Image image = new Info.Image();
             image.setSize(size);
             image.setTileSize(size);
