@@ -221,7 +221,7 @@ class PdfBoxProcessor extends AbstractProcessor
     /**
      * @return Rasterized page of the PDF.
      * @throws IllegalArgumentException if the given page index is out of
-     *                                  bounds.
+     *                                   bounds.
      */
     private BufferedImage readImage(int pageIndex,
                                     double dpi) throws IOException {
@@ -249,22 +249,22 @@ class PdfBoxProcessor extends AbstractProcessor
         for (int i = 0; i < doc.getNumberOfPages(); i++) {
             // PDF doesn't have native dimensions, so figure out the dimensions
             // at the current DPI setting.
-            final PDPage page = doc.getPage(i);
+            final PDPage page         = doc.getPage(i);
             final PDRectangle cropBox = page.getCropBox();
-            final float widthPt = cropBox.getWidth();
-            final float heightPt = cropBox.getHeight();
-            final int rotationAngle = page.getRotation();
+            final float widthPt       = cropBox.getWidth();
+            final float heightPt      = cropBox.getHeight();
+            final int rotationAngle   = page.getRotation();
 
-            int widthPx = Math.round(widthPt * scale);
+            int widthPx  = Math.round(widthPt * scale);
             int heightPx = Math.round(heightPt * scale);
             if (rotationAngle == 90 || rotationAngle == 270) {
-                int tmp = widthPx;
+                int tmp  = widthPx;
                 //noinspection SuspiciousNameCombination
-                widthPx = heightPx;
+                widthPx  = heightPx;
                 heightPx = tmp;
             }
 
-            Dimension size = new Dimension(widthPx, heightPx);
+            Dimension size   = new Dimension(widthPx, heightPx);
             Info.Image image = new Info.Image();
             image.setSize(size);
             image.setTileSize(size);
