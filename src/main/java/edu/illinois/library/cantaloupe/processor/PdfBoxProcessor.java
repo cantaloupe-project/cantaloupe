@@ -1,5 +1,6 @@
 package edu.illinois.library.cantaloupe.processor;
 
+import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Dimension;
@@ -192,13 +193,10 @@ class PdfBoxProcessor extends AbstractProcessor
 
     private MemoryUsageSetting getMemoryUsageSetting() {
         final Configuration config = Configuration.getInstance();
-        final boolean scratchFileEnabled =
-                config.getBoolean(Key.PROCESSOR_PDF_SCRATCH_FILE_ENABLED, false);
-        final long maxMainMemoryBytes =
-                config.getLongBytes(Key.PROCESSOR_PDF_MAX_MEMORY_BYTES, -1);
-        final String scratchFileLocation =
-                config.getString(Key.TEMP_PATHNAME);
-        if (scratchFileEnabled) {
+        if (config.getBoolean(Key.PROCESSOR_PDF_SCRATCH_FILE_ENABLED, false)) {
+            final long maxMainMemoryBytes =
+                    config.getLongBytes(Key.PROCESSOR_PDF_MAX_MEMORY_BYTES, -1);
+            final String scratchFileLocation = Application.getTempPath().toString();
             File filePath = new File(scratchFileLocation);
             return MemoryUsageSetting.setupMixed(maxMainMemoryBytes, -1)
                     .setTempDir(filePath);
