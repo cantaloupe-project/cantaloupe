@@ -136,7 +136,6 @@ public class ResampleOp extends AdvancedResizeOp {
         } else {
             // super-sampling
             // Scales from smaller to bigger height
-
             numContributors = (int) (fwidth * 2.0f + 1);
             arrWeight = new float[dstSize * numContributors];
             arrPixel = new int[dstSize * numContributors];
@@ -220,8 +219,7 @@ public class ResampleOp extends AdvancedResizeOp {
                 srcImage.getType() == BufferedImage.TYPE_CUSTOM)
             srcImage = ImageUtils.convert(srcImage, srcImage.getColorModel().hasAlpha() ?
                     BufferedImage.TYPE_4BYTE_ABGR : BufferedImage.TYPE_3BYTE_BGR);
-
-        this.numChannels = ImageUtils.numberOfChannels(srcImage);
+        this.numChannels = srcImage.getSampleModel().getNumBands();
         assert numChannels > 0;
         this.srcWidth = srcImage.getWidth();
         this.srcHeight = srcImage.getHeight();
@@ -270,13 +268,12 @@ public class ResampleOp extends AdvancedResizeOp {
         if (destImage != null && dstWidth == destImage.getWidth() &&
                 dstHeight == destImage.getHeight()) {
             out = destImage;
-            int nrDestChannels = ImageUtils.numberOfChannels(destImage);
+            int nrDestChannels = destImage.getSampleModel().getNumBands();
             if (nrDestChannels != numChannels) {
-                String errorMgs = String.format("Destination image must be " +
-                                "compatible width source image. Source image had %d " +
-                                "channels destination image had %d channels",
+                String errorMsg = String.format("Source image has %d " +
+                                "channels; destination image has %d channels",
                         numChannels, nrDestChannels);
-                throw new RuntimeException(errorMgs);
+                throw new RuntimeException(errorMsg);
             }
         } else {
             out = new BufferedImage(dstWidth, dstHeight,
@@ -316,7 +313,6 @@ public class ResampleOp extends AdvancedResizeOp {
                 final int max = verticalSubsamplingData.arrN[y];
                 final int sampleLocation = (y * destWidth + x) * numChannels;
 
-
                 float sample0 = 0.0f;
                 float sample1 = 0.0f;
                 float sample2 = 0.0f;
@@ -331,11 +327,10 @@ public class ResampleOp extends AdvancedResizeOp {
                     if (useChannel3) {
                         sample3 += (workPixels[valueLocation][xLocation + 3] & 0xff) * arrWeight;
                     }
-
                     index++;
                 }
 
-                outPixels[sampleLocation] = toByte(sample0);
+                outPixels[sampleLocation]     = toByte(sample0);
                 outPixels[sampleLocation + 1] = toByte(sample1);
                 outPixels[sampleLocation + 2] = toByte(sample2);
                 if (useChannel3) {

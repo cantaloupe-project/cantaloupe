@@ -18,36 +18,6 @@ import java.awt.image.WritableRaster;
  */
 class ImageUtils {
 
-    static public int numberOfChannels(BufferedImage img) {
-        switch (img.getType()) {
-            case BufferedImage.TYPE_3BYTE_BGR:
-                return 3;
-            case BufferedImage.TYPE_4BYTE_ABGR:
-                return 4;
-            case BufferedImage.TYPE_BYTE_GRAY:
-                return 1;
-            case BufferedImage.TYPE_INT_BGR:
-                return 3;
-            case BufferedImage.TYPE_INT_ARGB:
-                return 4;
-            case BufferedImage.TYPE_INT_RGB:
-                return 3;
-            case BufferedImage.TYPE_CUSTOM:
-                return 4;
-            case BufferedImage.TYPE_4BYTE_ABGR_PRE:
-                return 4;
-            case BufferedImage.TYPE_INT_ARGB_PRE:
-                return 4;
-            case BufferedImage.TYPE_USHORT_555_RGB:
-                return 3;
-            case BufferedImage.TYPE_USHORT_565_RGB:
-                return 3;
-            case BufferedImage.TYPE_USHORT_GRAY:
-                return 1;
-        }
-        return 0;
-    }
-
     /**
      * Returns one row (height == 1) of byte packed image data in BGR or AGBR
      * form.
@@ -58,15 +28,16 @@ class ImageUtils {
      * @param array Array into which the pixels will be read.
      * @param temp  must be either null or a array with length of width * height.
      */
-    public static void readPixelsBGR(BufferedImage img,
-                                     int y,
-                                     int w,
-                                     byte[] array,
-                                     int[] temp) {
+    static void readPixelsBGR(BufferedImage img,
+                              int y,
+                              int w,
+                              byte[] array,
+                              int[] temp) {
         final int x = 0;
         final int h = 1;
 
-        assert array.length == temp.length * numberOfChannels(img);
+        final int numBands = img.getSampleModel().getNumBands();
+        assert array.length == temp.length * numBands;
         assert (temp.length == w);
 
         int imageType = img.getType();
@@ -96,9 +67,13 @@ class ImageUtils {
                 raster.getDataElements(x, y, w, h, temp);
                 ints2bytes(temp, array, 2, 1, 0, 3);  // argb -->  abgr
                 break;
-            case BufferedImage.TYPE_CUSTOM: // TODO: works for my icon image loader, but else ???
+            case BufferedImage.TYPE_CUSTOM:
                 img.getRGB(x, y, w, h, temp, 0, w);
-                ints2bytes(temp, array, 2, 1, 0, 3);  // argb -->  abgr
+                if (numBands == 3) {
+                    ints2bytes(temp, array, 2, 1, 0);  // rgb -->  bgr
+                } else {
+                    ints2bytes(temp, array, 2, 1, 0, 3);  // argb -->  abgr
+                }
                 break;
             default:
                 img.getRGB(x, y, w, h, temp, 0, w);
@@ -116,9 +91,9 @@ class ImageUtils {
      * <p>Does not unmange the image for all (A)RGN and (A)BGR and gray
      * images.</p>
      */
-    public static void setBGRPixels(byte[] bgrPixels,
-                                    BufferedImage image,
-                                    int x, int y, int w, int h) {
+    static void setBGRPixels(byte[] bgrPixels,
+                             BufferedImage image,
+                             int x, int y, int w, int h) {
         int imageType = image.getType();
         WritableRaster raster = image.getRaster();
         //int ttype= raster.getTransferType();
