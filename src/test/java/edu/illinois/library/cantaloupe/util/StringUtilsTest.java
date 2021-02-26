@@ -150,6 +150,7 @@ class StringUtilsTest extends BaseTest {
     void testToByteSizeWithNumber() {
         assertEquals(254254254, StringUtils.toByteSize("254254254"));
         assertEquals(255, StringUtils.toByteSize("254.9"));
+        assertEquals(-255, StringUtils.toByteSize("-254.9"));
     }
 
     @Test
