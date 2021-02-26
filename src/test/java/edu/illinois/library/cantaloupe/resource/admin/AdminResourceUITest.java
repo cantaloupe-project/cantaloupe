@@ -513,6 +513,11 @@ public class AdminResourceUITest extends AbstractAdminResourceTest {
         // GrokProcessor
         css("#cl-processors li > a[href=\"#GrokProcessor\"]").click();
         inputNamed(Key.GROKPROCESSOR_PATH_TO_BINARIES).sendKeys("/grkpath");
+        // PdfBoxProcessor
+        css("#cl-processors li > a[href=\"#PdfBoxProcessor\"]").click();
+        inputNamed(Key.PROCESSOR_PDF_SCRATCH_FILE_ENABLED).click();
+        inputNamed(Key.PROCESSOR_PDF_MAX_MEMORY_BYTES).sendKeys("-1");
+
         // Submit the form
         css("#cl-processors input[type=\"submit\"]").click();
 
@@ -549,7 +554,10 @@ public class AdminResourceUITest extends AbstractAdminResourceTest {
                 config.getString(Key.OPENJPEGPROCESSOR_PATH_TO_BINARIES));
         // GrokProcessor
         assertEquals("/grkpath",
-                config.getString(Key.GROKPROCESSOR_PATH_TO_BINARIES));        
+                config.getString(Key.GROKPROCESSOR_PATH_TO_BINARIES));
+        // PdfBoxProcessor
+        assertEquals(-1,
+                config.getLongBytes(Key.PROCESSOR_PDF_MAX_MEMORY_BYTES));
     }
 
     @Test
