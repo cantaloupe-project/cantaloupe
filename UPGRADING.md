@@ -20,6 +20,7 @@ current version.
     * `processor.ManualSelectionStrategy.xpm`
     * `processor.imageio.xpm.reader`
     * `GrokProcessor.path_to_binaries`
+    * `processor.pdf.*`
     * `S3Cache.region`
         * If you had set `S3Cache.endpoint` to an AWS endpoint, unset that and
           set this key to your AWS region instead.
