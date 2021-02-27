@@ -18,7 +18,7 @@ import java.awt.image.ColorModel;
 /**
  * @author Morten Nobel-Joergensen
  */
-public abstract class AdvancedResizeOp implements BufferedImageOp {
+abstract class AdvancedResizeOp implements BufferedImageOp {
 
     private final DimensionConstraint dimensionConstraint;
 

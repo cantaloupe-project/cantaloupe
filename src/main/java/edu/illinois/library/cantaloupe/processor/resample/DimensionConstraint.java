@@ -8,7 +8,7 @@ package edu.illinois.library.cantaloupe.processor.resample;
 
 import java.awt.Dimension;
 
-public class DimensionConstraint {
+class DimensionConstraint {
 
     /**
      * Used when the destination size is fixed. This may not preserve the image
@@ -18,8 +18,8 @@ public class DimensionConstraint {
      * @param height Destination dimension height.
      * @return Destination dimension area.
      */
-    public static DimensionConstraint createAbsolutionDimension(final int width,
-                                                                final int height) {
+    static DimensionConstraint createAbsolutionDimension(final int width,
+                                                         final int height) {
         assert width > 0 && height > 0 : "Dimension must be a positive integer";
 
         return new DimensionConstraint() {
@@ -40,7 +40,7 @@ public class DimensionConstraint {
      * @param dimension Dimension of the source image.
      * @return Dimension of the scaled image.
      */
-    public Dimension getDimension(Dimension dimension) {
+    Dimension getDimension(Dimension dimension) {
         return dimension;
     }
 
