@@ -261,14 +261,16 @@ public final class OperationList implements Iterable<Operation> {
         }
 
         // Redactions
-        try {
-            final RedactionService service = new RedactionService();
-            List<Redaction> redactions = service.redactionsFor(delegateProxy);
-            for (Redaction redaction : redactions) {
-                addBefore(redaction, Encode.class);
+        if (delegateProxy != null) {
+            try {
+                final RedactionService service = new RedactionService();
+                List<Redaction> redactions = service.redactionsFor(delegateProxy);
+                for (Redaction redaction : redactions) {
+                    addBefore(redaction, Encode.class);
+                }
+            } catch (Exception e) {
+                LOGGER.error(e.getMessage(), e);
             }
-        } catch (Exception e) {
-            LOGGER.error(e.getMessage(), e);
         }
 
         // Scale customization
