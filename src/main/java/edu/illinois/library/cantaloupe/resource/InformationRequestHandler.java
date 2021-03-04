@@ -111,8 +111,8 @@ public class InformationRequestHandler extends AbstractRequestHandler
 
         /**
          * @return New instance.
-         * @throws NullPointerException if any of the required builder methods
-         *                              have not been called.
+         * @throws IllegalArgumentException if any of the required builder
+         *         methods have not been called.
          */
         public InformationRequestHandler build() {
             if (handler.identifier == null) {
@@ -121,10 +121,6 @@ public class InformationRequestHandler extends AbstractRequestHandler
                     handler.requestContext == null) {
                 throw new IllegalArgumentException("If a delegate proxy is " +
                         "set, a request context must also be set.");
-            } else if (handler.delegateProxy == null &&
-                    handler.requestContext != null) {
-                throw new IllegalArgumentException("If a request context is " +
-                        "set, a delegate proxy must also be set.");
             }
             if (handler.requestContext == null) {
                 handler.requestContext = new RequestContext();

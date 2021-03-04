@@ -36,15 +36,6 @@ public class InformationRequestHandlerTest extends BaseTest {
                             .build());
         }
 
-        @Test
-        void testBuildWithRequestContextButNoDelegateProxySet() {
-            assertThrows(IllegalArgumentException.class, () ->
-                    InformationRequestHandler.builder()
-                            .withIdentifier(new Identifier("cats"))
-                            .withRequestContext(new RequestContext())
-                            .build());
-        }
-
     }
 
     private static class IntrospectiveCallback implements InformationRequestHandler.Callback {
