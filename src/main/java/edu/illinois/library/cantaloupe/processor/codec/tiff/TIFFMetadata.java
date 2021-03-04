@@ -61,15 +61,17 @@ class TIFFMetadata extends IIOMetadata {
         TIFFField field = ifd.getTIFFField(IPTC_TAG_NUMBER);
         if (field != null) {
             try (Reader reader = new Reader()) {
-                reader.setSource(field.getAsBytes());
-                iptcDataSets = reader.read();
+                // The data returned by the GeoSolutions TIFF reader is
+                // expected to be a byte array, but sometimes it's an array of
+                // longs. Converting the long array to a byte array and passing
+                // it to the reader typically results in zero data sets read.
+                Object data = field.getData();
+                if (data instanceof byte[]) {
+                    reader.setSource((byte[]) data);
+                    iptcDataSets = reader.read();
+                }
             } catch (IOException e) {
                 LOGGER.info("getIPTC(): {}", e.getMessage(), e);
-            } catch (ClassCastException e) {
-                // TODO: possible bug in the GeoSolutions TIFF reader:
-                // class [J cannot be cast to class [B ([J and [B are in module java.base of loader 'bootstrap')
-                // at it.geosolutions.imageio.plugins.tiff.TIFFField.getAsBytes(TIFFField.java:821)
-                LOGGER.warn("getIPTC(): {}", e.getMessage(), e);
             }
         }
         return Optional.ofNullable(iptcDataSets);
