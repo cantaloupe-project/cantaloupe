@@ -7,7 +7,6 @@ import edu.illinois.library.cantaloupe.image.Metadata;
 import edu.illinois.library.cantaloupe.image.Orientation;
 import edu.illinois.library.cantaloupe.image.Rectangle;
 import edu.illinois.library.cantaloupe.image.ScaleConstraint;
-import edu.illinois.library.cantaloupe.operation.Color;
 import edu.illinois.library.cantaloupe.operation.ColorTransform;
 import edu.illinois.library.cantaloupe.operation.Crop;
 import edu.illinois.library.cantaloupe.operation.CropByPercent;
@@ -59,7 +58,7 @@ public class TurboJpegProcessor extends AbstractProcessor
 
     private static boolean isClassInitialized;
 
-    private static final boolean USE_FAST_DECODE_DCT = true;
+    private static final boolean USE_FAST_DECODE_DCT = false;
     private static final boolean USE_FAST_ENCODE_DCT = true;
 
     private static String initializationError;
@@ -187,7 +186,7 @@ public class TurboJpegProcessor extends AbstractProcessor
                     crop = (Crop) op;
                     if (crop.hasEffect(fullSize, opList)) {
                         image = Java2DUtil.crop(image, crop, reductionFactor,
-                                opList.getScaleConstraint());
+                                scaleConstraint);
                     }
                 }
             }
@@ -205,10 +204,9 @@ public class TurboJpegProcessor extends AbstractProcessor
                     .collect(Collectors.toSet());
             Java2DUtil.applyRedactions(image, fullSize, crop,
                     new double[] { 1.0, 1.0 }, reductionFactor,
-                    opList.getScaleConstraint(), redactions);
+                    scaleConstraint, redactions);
 
             final Encode encode = (Encode) opList.getFirst(Encode.class);
-            final Color bgColor = encode.getBackgroundColor();
             writer.setQuality(encode.getQuality());
             writer.setProgressive(encode.isInterlacing());
             if (metadata != null) {
@@ -220,12 +218,21 @@ public class TurboJpegProcessor extends AbstractProcessor
                     continue;
                 }
                 if (op instanceof Scale) {
-                    image = Java2DUtil.scale(image, (Scale) op,
-                            scaleConstraint, reductionFactor);
+                    final Scale scale = (Scale) op;
+                    final boolean isLinear = scale.isLinear() &&
+                            !scale.isUp(fullSize, scaleConstraint);
+                    if (isLinear) {
+                        image = Java2DUtil.convertColorToLinearRGB(image);
+                    }
+                    image = Java2DUtil.scale(image, scale,
+                            scaleConstraint, reductionFactor, true);
+                    if (isLinear) {
+                        image = Java2DUtil.convertColorToSRGB(image);
+                    }
                 } else if (op instanceof Transpose) {
                     image = Java2DUtil.transpose(image, (Transpose) op);
                 } else if (op instanceof Rotate) {
-                    image = Java2DUtil.rotate(image, (Rotate) op, bgColor);
+                    image = Java2DUtil.rotate(image, (Rotate) op);
                 } else if (op instanceof ColorTransform) {
                     image = Java2DUtil.transformColor(image, (ColorTransform) op);
                 } else if (op instanceof Sharpen) {
@@ -234,7 +241,6 @@ public class TurboJpegProcessor extends AbstractProcessor
                     Java2DUtil.applyOverlay(image, (Overlay) op);
                 }
             }
-
             writer.write(image, outputStream);
         } catch (SourceFormatException e) {
             throw e;

@@ -23,6 +23,9 @@ import javax.media.jai.PlanarImage;
 import javax.media.jai.RenderedOp;
 import javax.media.jai.operator.TransposeDescriptor;
 import java.awt.RenderingHints;
+import java.awt.color.ColorSpace;
+import java.awt.image.ColorModel;
+import java.awt.image.ComponentColorModel;
 import java.awt.image.renderable.ParameterBlock;
 
 /**
@@ -34,6 +37,29 @@ import java.awt.image.renderable.ParameterBlock;
 final class JAIUtil {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(JAIUtil.class);
+
+    /**
+     * @param inImage    Image to convert.
+     * @param colorSpace Target color space.
+     * @return           Converted image.
+     * @since 5.0
+     */
+    static RenderedOp convertColor(RenderedOp inImage, ColorSpace colorSpace) {
+        if (!colorSpace.equals(inImage.getColorModel().getColorSpace())) {
+            LOGGER.debug("convertColor(): converting to {}", colorSpace);
+            ColorModel model = new ComponentColorModel(
+                    colorSpace,
+                    inImage.getColorModel().hasAlpha(),
+                    inImage.getColorModel().isAlphaPremultiplied(),
+                    inImage.getColorModel().getTransparency(),
+                    inImage.getColorModel().getTransferType());
+            ParameterBlock pb = new ParameterBlock();
+            pb.addSource(inImage);
+            pb.add(model);
+            inImage = JAI.create("ColorConvert", pb);
+        }
+        return inImage;
+    }
 
     /**
      * @param inImage Image to crop.

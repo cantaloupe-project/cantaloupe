@@ -591,7 +591,7 @@ public final class TurboJPEGImageReader implements AutoCloseable {
         height = scalingFactor.getScaled(height);
 
         BufferedImage image = new BufferedImage(width, height,
-                BufferedImage.TYPE_INT_ARGB);
+                BufferedImage.TYPE_3BYTE_BGR);
         try {
             decompressor.decompress(image, getFlags());
         } catch (TJException e) {

@@ -421,6 +421,29 @@ class OperationListTest extends BaseTest {
     }
 
     @Test
+    void applyNonEndpointMutationsWithLinearScale() {
+        Configuration config = Configuration.getInstance();
+        config.setProperty(Key.PROCESSOR_DOWNSCALE_LINEAR, true);
+
+        final Dimension fullSize   = new Dimension(2000, 1000);
+        final Info info            = Info.builder().withSize(fullSize).build();
+        final OperationList opList = OperationList.builder()
+                .withIdentifier(new Identifier("cats"))
+                .withOperations(
+                        new ScaleByPercent(0.5),
+                        new Encode(Format.get("jpg")))
+                .build();
+
+        DelegateProxy proxy = TestUtil.newDelegateProxy();
+        proxy.getRequestContext().setOperationList(opList, fullSize);
+
+        opList.applyNonEndpointMutations(info, proxy);
+
+        Iterator<Operation> it = opList.iterator();
+        assertTrue(((Scale) it.next()).isLinear());
+    }
+
+    @Test
     void applyNonEndpointMutationsWithDownscaleFilter() {
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.PROCESSOR_DOWNSCALE_FILTER, "bicubic");

@@ -35,6 +35,7 @@ public final class ImageWriterFacade {
             LOGGER.debug("Writing with {}",
                     TurboJPEGImageWriter.class.getName());
             TurboJPEGImageWriter writer = new TurboJPEGImageWriter();
+            writer.setBackgroundColor(encode.getBackgroundColor());
             writer.setProgressive(encode.isInterlacing());
             writer.setQuality(encode.getQuality());
             Metadata metadata = encode.getMetadata();

@@ -11,6 +11,8 @@ import org.junit.jupiter.api.Test;
 import javax.imageio.ImageIO;
 import javax.imageio.stream.ImageInputStream;
 
+import java.awt.Color;
+import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -22,6 +24,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
 
+import static edu.illinois.library.cantaloupe.test.Assert.ImageAssert.assertRGBA;
 import static org.junit.jupiter.api.Assertions.*;
 
 @SuppressWarnings("WeakerAccess") // a JMH test extends this
@@ -158,6 +161,26 @@ public class TurboJPEGImageWriterTest extends BaseTest {
         try (ByteArrayOutputStream os = new ByteArrayOutputStream()) {
             instance.write(image, os);
             assertDimensions(os, image.getWidth(), image.getHeight());
+        }
+    }
+
+    @Test
+    public void testWriteWithBufferedImageWithBackgroundColor()
+            throws Exception {
+        BufferedImage image = new BufferedImage(50, 50,
+                BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g2d = image.createGraphics();
+        g2d.setBackground(Color.RED);
+        g2d.clearRect(0, 0, image.getWidth(), image.getHeight());
+        g2d.dispose();
+
+        try (ByteArrayOutputStream os = new ByteArrayOutputStream()) {
+            instance.write(image, os);
+            try (InputStream is = new ByteArrayInputStream(os.toByteArray())) {
+                ImageInputStream iis = ImageIO.createImageInputStream(is);
+                BufferedImage jpegImage = ImageIO.read(iis);
+                assertRGBA(jpegImage.getRGB(0, 0), 254, 0, 0, 255);
+            }
         }
     }
 

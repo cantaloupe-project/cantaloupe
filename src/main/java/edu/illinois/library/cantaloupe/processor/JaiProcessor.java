@@ -28,6 +28,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.media.jai.Interpolation;
 import javax.media.jai.RenderedOp;
+import java.awt.color.ColorSpace;
 import java.awt.image.BufferedImage;
 import java.awt.image.RenderedImage;
 import java.io.IOException;
@@ -92,7 +93,7 @@ class JaiProcessor extends AbstractImageIOProcessor
             final Orientation orientation = metadata.getOrientation();
             final Dimension fullSize      = info.getSize();
             final Crop crop               = (Crop) opList.getFirst(Crop.class);
-            final Scale scale             = (Scale) opList.getFirst(Scale.class);
+            Scale scale                   = (Scale) opList.getFirst(Scale.class);
             final ScaleConstraint sc      = opList.getScaleConstraint();
             final ReductionFactor rf      = new ReductionFactor();
             final Set<ReaderHint> hints   = EnumSet.noneOf(ReaderHint.class);
@@ -123,6 +124,14 @@ class JaiProcessor extends AbstractImageIOProcessor
             for (Operation op : opList) {
                 if (op.hasEffect(fullSize, opList)) {
                     if (op instanceof Scale) {
+                        scale = (Scale) op;
+                        final boolean isLinear = scale.isLinear() &&
+                                !scale.isUp(fullSize, opList.getScaleConstraint());
+                        if (isLinear) {
+                            renderedOp = JAIUtil.convertColor(renderedOp,
+                                    ColorSpace.getInstance(ColorSpace.CS_LINEAR_RGB));
+                        }
+
                         /*
                         JAI has a bug that causes it to fail on certain right-
                         edge compressed TIFF tiles when using the
@@ -167,6 +176,11 @@ class JaiProcessor extends AbstractImageIOProcessor
                             renderedOp = JAIUtil.scaleImageUsingSubsampleAverage(
                                     renderedOp, (Scale) op,
                                     opList.getScaleConstraint(), rf);
+                        }
+
+                        if (isLinear) {
+                            renderedOp = JAIUtil.convertColor(renderedOp,
+                                    ColorSpace.getInstance(ColorSpace.CS_sRGB));
                         }
                     } else if (op instanceof Transpose) {
                         renderedOp = JAIUtil.

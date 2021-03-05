@@ -99,7 +99,7 @@ public abstract class Scale implements Operation {
     static final double DELTA = 0.00000001;
 
     private Filter filter;
-    private boolean isFrozen;
+    private boolean isLinear, isFrozen;
 
     void checkFrozen() {
         if (isFrozen) {
@@ -210,6 +210,13 @@ public abstract class Scale implements Operation {
     }
 
     /**
+     * @return Whether downscaling should happen in a linear color space.
+     */
+    public boolean isLinear() {
+        return isLinear;
+    }
+
+    /**
      * @return Whether the instance would effectively upscale the image it is
      *         applied to on both axes.
      */
@@ -238,6 +245,14 @@ public abstract class Scale implements Operation {
     public void setFilter(Filter filter) {
         checkFrozen();
         this.filter = filter;
+    }
+
+    /**
+     * @param isLinear Whether downscaling should happen in a linear color
+     *                 space.
+     */
+    public void setLinear(boolean isLinear) {
+        this.isLinear = isLinear;
     }
 
     /**

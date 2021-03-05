@@ -18,6 +18,7 @@ current version.
         * If you had set `S3Source.endpoint` to an AWS endpoint, unset that and
           set this key to your AWS region instead.
     * `processor.ManualSelectionStrategy.xpm`
+    * `processor.downscale_linear`
     * `processor.imageio.xpm.reader`
     * `GrokProcessor.path_to_binaries`
     * `processor.pdf.*`

@@ -368,6 +368,11 @@ processor.background_color = white
 processor.downscale_filter = bicubic
 processor.upscale_filter = bicubic
 
+# If true, images are downscaled in a linear color space, which is more
+# accurate. This only works with mono-resolution (non-pyramidal) images. It
+# also may impair performance.
+processor.downscale_linear = false
+
 # Intensity of an unsharp mask from 0 to 1.
 processor.sharpen = 0
 

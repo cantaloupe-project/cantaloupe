@@ -1,5 +1,7 @@
 package edu.illinois.library.cantaloupe.processor.codec.jpeg;
 
+import edu.illinois.library.cantaloupe.operation.Color;
+import edu.illinois.library.cantaloupe.processor.Java2DUtil;
 import org.libjpegturbo.turbojpeg.TJ;
 import org.libjpegturbo.turbojpeg.TJCompressor;
 
@@ -17,13 +19,15 @@ public final class TurboJPEGImageWriter {
     /**
      * SOI (2 bytes) + APP0 (18 bytes)
      */
-    private static final int APP1_OFFSET         = 20;
-    private static final int DEFAULT_QUALITY     = 80;
-    private static final int DEFAULT_SUBSAMPLING = TJ.SAMP_444;
+    private static final int APP1_OFFSET                = 20;
+    private static final int DEFAULT_QUALITY            = 80;
+    private static final int DEFAULT_SUBSAMPLING        = TJ.SAMP_444;
+    private static final Color DEFAULT_BACKGROUND_COLOR = Color.WHITE;
 
     private static final AtomicBoolean HAVE_CHECKED_FOR_TURBOJPEG = new AtomicBoolean();
     private static final AtomicBoolean TURBOJPEG_AVAILABLE        = new AtomicBoolean();
 
+    private Color bgColor   = DEFAULT_BACKGROUND_COLOR;
     private int quality     = DEFAULT_QUALITY;
     private int subsampling = DEFAULT_SUBSAMPLING;
     private boolean useFastDCT, useAccurateDCT;
@@ -50,6 +54,14 @@ public final class TurboJPEGImageWriter {
     public static void setTurboJPEGAvailable(boolean isAvailable) {
         HAVE_CHECKED_FOR_TURBOJPEG.set(true);
         TURBOJPEG_AVAILABLE.set(isAvailable);
+    }
+
+    /**
+     * Controls the background color that the RGB channels will be overlaid
+     * onto when the image has alpha.
+     */
+    public void setBackgroundColor(Color color) {
+        this.bgColor = color;
     }
 
     public void setProgressive(boolean isProgressive) {
@@ -135,6 +147,11 @@ public final class TurboJPEGImageWriter {
      */
     public void write(BufferedImage image,
                       OutputStream os) throws IOException {
+        // removeAlpha() will never produce a custom-type image, so only one of
+        // these, at most, will produce a new image. TJCompressor cannot work
+        // with custom-type images and JPEG does not support alpha.
+        image = Java2DUtil.removeAlpha(image, bgColor);
+        image = Java2DUtil.convertCustomToRGB(image);
         try (TJCompressor tjc = new TJCompressor()) {
             tjc.setSubsamp(subsampling);
             tjc.setJPEGQuality(quality);

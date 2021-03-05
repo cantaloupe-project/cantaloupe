@@ -37,6 +37,8 @@ import java.awt.FontMetrics;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.Shape;
+import java.awt.Transparency;
+import java.awt.color.ColorSpace;
 import java.awt.font.FontRenderContext;
 import java.awt.font.GlyphVector;
 import java.awt.geom.AffineTransform;
@@ -45,6 +47,7 @@ import java.awt.image.BufferedImage;
 import java.awt.image.ColorConvertOp;
 import java.awt.image.ColorModel;
 import java.awt.image.ComponentColorModel;
+import java.awt.image.DataBuffer;
 import java.awt.image.WritableRaster;
 import java.io.IOException;
 import java.io.InputStream;
@@ -57,65 +60,11 @@ import java.util.Set;
  * <h1>{@link BufferedImage} Cliff's Notes</h1>
  *
  * <p>{@link BufferedImage}s can have a variety of different internal data
- * layouts that are partially dictated by their {@link BufferedImage#getType()
- * type}, which corresponds to <em>display hardware</em>, not necessarily
- * source image data. All of the standard types are limited to 8 bits per
- * sample; larger sample sizes require {@link BufferedImage#TYPE_CUSTOM}.
- * Unfortunately, whereas operations on many of the standard types (by e.g.
- * {@link Graphics2D}) tend to be well-optimized, that doesn't carry over to
- * {@link BufferedImage#TYPE_CUSTOM} and so most operations on images of this
- * type are relatively slow.</p>
- *
- * <h1>{@link BufferedImage} Type Cheat Sheet</h1>
- *
- * <dl>
- *     <dt>Color (non-indexed)</dt>
- *     <dd>
- *         <dl>
- *             <dt>&le;8 bits</dt>
- *             <dd>
- *                 <dl>
- *                     <dt>Alpha</dt>
- *                     <dd>{@link BufferedImage#TYPE_4BYTE_ABGR},
- *                     {@link BufferedImage#TYPE_INT_ARGB}</dd>
- *                     <dt>No Alpha</dt>
- *                     <dd>{@link BufferedImage#TYPE_3BYTE_BGR},
- *                     {@link BufferedImage#TYPE_INT_RGB},
- *                     {@link BufferedImage#TYPE_INT_BGR}</dd>
- *                 </dl>
- *             </dd>
- *             <dt>&gt;8 bits</dt>
- *             <dd>{@link BufferedImage#TYPE_CUSTOM}</dd>
- *         </dl>
- *     </dd>
- *     <dt>Gray</dt>
- *     <dd>
- *         <dl>
- *             <dt>&le;8 bits</dt>
- *             <dd>
- *                 <dl>
- *                     <dt>Alpha</dt>
- *                     <dd>{@link BufferedImage#TYPE_CUSTOM}</dd>
- *                     <dt>No Alpha</dt>
- *                     <dd>{@link BufferedImage#TYPE_BYTE_GRAY}</dd>
- *                 </dl>
- *             </dd>
- *             <dt>&gt;8 bits</dt>
- *             <dd>
- *                 <dl>
- *                     <dt>Alpha</dt>
- *                     <dd>{@link BufferedImage#TYPE_CUSTOM}</dd>
- *                     <dt>No Alpha</dt>
- *                     <dd>{@link BufferedImage#TYPE_USHORT_GRAY}</dd>
- *                 </dl>
- *             </dd>
- *         </dl>
- *     </dd>
- *     <dt>Bitonal</dt>
- *     <dd>{@link BufferedImage#TYPE_BYTE_BINARY}</dd>
- *     <dt>Indexed</dt>
- *     <dd>{@link BufferedImage#TYPE_BYTE_INDEXED}</dd>
- * </dl>
+ * layouts that are partially characterized by their {@link
+ * BufferedImage#getType() type}, which corresponds more than anything to
+ * <em>display hardware</em>, not necessarily source image data. All of the
+ * standard types are limited to 8 bits per sample; larger sample sizes require
+ * {@link BufferedImage#TYPE_CUSTOM}.</p>
  */
 public final class Java2DUtil {
 
@@ -155,7 +104,7 @@ public final class Java2DUtil {
                                 final double[] preScale,
                                 final ReductionFactor reductionFactor,
                                 final ScaleConstraint scaleConstraint,
-                                final Set<Redaction> redactions) { // TODO: could this method signature get any worse?
+                                final Set<Redaction> redactions) {
         if (image != null && !redactions.isEmpty()) {
             final Stopwatch watch = new Stopwatch();
 
@@ -214,23 +163,107 @@ public final class Java2DUtil {
     }
 
     /**
+     * @param inImage {@link BufferedImage#TYPE_CUSTOM Custom}-type image to
+     *                convert.
+     * @return New image of the closest non-custom type, or the input image if
+     *         it is not of custom type.
+     */
+    public static BufferedImage convertCustomToRGB(BufferedImage inImage) {
+        BufferedImage outImage = inImage;
+        if (inImage.getType() == BufferedImage.TYPE_CUSTOM) {
+            final Stopwatch watch = new Stopwatch();
+            outImage = new BufferedImage(
+                    inImage.getWidth(), inImage.getHeight(),
+                    inImage.getColorModel().hasAlpha() ?
+                            BufferedImage.TYPE_INT_ARGB :
+                            BufferedImage.TYPE_INT_RGB);
+            Graphics2D g2d = outImage.createGraphics();
+            g2d.drawImage(inImage, 0, 0, null);
+            g2d.dispose();
+            LOGGER.debug("convertCustomToRGB(): executed in {}", watch);
+        }
+        return outImage;
+    }
+
+    /**
      * @param inImage Image to convert.
      * @return New image of type {@link BufferedImage#TYPE_INT_ARGB}, or the
      *         input image if it is not indexed.
      */
-    static BufferedImage convertIndexedTo8BitARGB(BufferedImage inImage) {
+    static BufferedImage convertIndexedToARGB(BufferedImage inImage) {
         BufferedImage outImage = inImage;
         if (inImage.getType() == BufferedImage.TYPE_BYTE_INDEXED) {
             final Stopwatch watch = new Stopwatch();
-
             outImage = new BufferedImage(
                     inImage.getWidth(), inImage.getHeight(),
                     BufferedImage.TYPE_INT_ARGB);
             Graphics2D g2d = outImage.createGraphics();
             g2d.drawImage(inImage, 0, 0, null);
             g2d.dispose();
+            LOGGER.debug("convertIndexedToARGB(): executed in {}", watch);
+        }
+        return outImage;
+    }
 
-            LOGGER.debug("convertIndexedTo8BitARGB(): converted in {}", watch);
+    /**
+     * @param inImage Image to convert.
+     * @return        New image with a linear RGB color space, or the input
+     *                image if it is already in that space.
+     */
+    static BufferedImage convertColorToLinearRGB(BufferedImage inImage) {
+        BufferedImage outImage = inImage;
+
+        final ColorSpace linearCS =
+                ColorSpace.getInstance(ColorSpace.CS_LINEAR_RGB);
+        if (!linearCS.equals(inImage.getColorModel().getColorSpace())) {
+            final Stopwatch watch = new Stopwatch();
+
+            // Create the destination image.
+            ComponentColorModel cm = new ComponentColorModel(
+                    linearCS, false, false,
+                    Transparency.OPAQUE, DataBuffer.TYPE_BYTE);
+            WritableRaster raster = cm.createCompatibleWritableRaster(
+                    inImage.getWidth(), inImage.getHeight());
+            outImage = new BufferedImage(
+                    cm, raster, cm.isAlphaPremultiplied(), null);
+
+            RenderingHints hints = new RenderingHints(null);
+            ColorConvertOp op    = new ColorConvertOp(
+                    inImage.getColorModel().getColorSpace(),
+                    linearCS,
+                    hints);
+            op.filter(inImage, outImage);
+            LOGGER.debug("convertColorToLinearRGB(): executed in {}", watch);
+        }
+        return outImage;
+    }
+
+    /**
+     * @param inImage Image to convert.
+     * @return        New image with sRGB color space, or the input image if it
+     *                is already in that space.
+     */
+    static BufferedImage convertColorToSRGB(BufferedImage inImage) {
+        BufferedImage outImage = inImage;
+
+        final ColorSpace rgbCS = ColorSpace.getInstance(ColorSpace.CS_sRGB);
+        if (!rgbCS.equals(inImage.getColorModel().getColorSpace())) {
+            final Stopwatch watch = new Stopwatch();
+
+            // Create the destination image.
+            outImage = new BufferedImage(
+                    inImage.getWidth(), inImage.getHeight(),
+                    inImage.getColorModel().hasAlpha() ?
+                            BufferedImage.TYPE_4BYTE_ABGR :
+                            BufferedImage.TYPE_3BYTE_BGR);
+
+            RenderingHints hints = new RenderingHints(null);
+            ColorConvertOp op    = new ColorConvertOp(
+                    inImage.getColorModel().getColorSpace(),
+                    rgbCS,
+                    hints);
+            op.filter(inImage, outImage);
+            LOGGER.debug("convertColorToSRGB(): executed in {}", watch);
         }
         return outImage;
     }
@@ -238,10 +271,10 @@ public final class Java2DUtil {
     /**
      * @param image      Image to crop.
      * @param region     Crop region in source image coordinates.
-     * @param copyRaster Whether to copy the underlying raster. If {@literal
-     *                   true}, the crop will be a "hard crop" that creates a
-     *                   whole new image. If {@literal false}, the returned
-     *                   image will share the raster of the given image.
+     * @param copyRaster Whether to copy the underlying raster. If {@code
+     *                   true}, the crop will create a whole new image.
+     *                   Otherwise, the returned image will share the raster of
+     *                   the given image.
      * @return           Cropped image, or the input image if the given region
      *                   is a no-op.
      */
@@ -253,7 +286,7 @@ public final class Java2DUtil {
         } else {
             image = cropVirtually(image, region);
         }
-        return convertIndexedTo8BitARGB(image);
+        return image;
     }
 
     /**
@@ -261,6 +294,7 @@ public final class Java2DUtil {
      * only the needed region into it.
      *
      * @see #cropVirtually(BufferedImage, Rectangle)
+     * @deprecated  TODO: can this be removed?
      */
     private static BufferedImage cropPhysically(final BufferedImage inImage,
                                                 final Rectangle region) {
@@ -316,21 +350,21 @@ public final class Java2DUtil {
     }
 
     /**
-     * <p>Crops the given image taking into account a reduction factor
-     * ({@literal reductionFactor}). In other words, the dimensions of the
-     * input image have already been halved {@literal reductionFactor} times
-     * but the given region is relative to the full-sized image.</p>
+     * <p>Crops the given image taking into account a reduction factor. (In
+     * other words, the dimensions of the input image have already been halved
+     * {@code reductionFactor} times but the given region is relative to the
+     * full-sized image.</p>
      *
-     * <p>N.B.: This method should only be invoked if {@link
-     * Crop#hasEffect(Dimension, OperationList)} returns {@literal true}.</p>
+     * <p>This method should only be invoked if {@link
+     * Crop#hasEffect(Dimension, OperationList)} returns {@code true}.</p>
      *
      * @param inImage         Image to crop.
      * @param crop            Crop operation. Clients should call {@link
      *                        Operation#hasEffect(Dimension, OperationList)}
      *                        before invoking.
-     * @param rf              Number of times the dimensions of {@literal
-     *                        inImage} have already been halved relative to the
-     *                        full-sized version.
+     * @param rf              Number of times the dimensions of {@code inImage}
+     *                        have already been halved relative to the full-
+     *                        sized version.
      * @param scaleConstraint Scale constraint.
      * @return                Cropped image, or the input image if the given
      *                        region is a no-op. Note that the image is simply
@@ -343,11 +377,10 @@ public final class Java2DUtil {
         final Dimension inSize = new Dimension(
                 inImage.getWidth(), inImage.getHeight());
         final Rectangle roi = crop.getRectangle(inSize, rf, scaleConstraint);
-        return crop(inImage, roi, true);
+        return crop(inImage, roi, false);
     }
 
     /**
-     * @param overlay
      * @return Overlay image.
      */
     static BufferedImage getOverlayImage(ImageOverlay overlay) {
@@ -413,7 +446,7 @@ public final class Java2DUtil {
                     ScaleByPixels.Mode.ASPECT_FIT_INSIDE);
             ScaleConstraint sc = new ScaleConstraint(1, 1);
             ReductionFactor rf = new ReductionFactor(1);
-            BufferedImage scaledOverlay = Java2DUtil.scale(overlayImage, scale, sc, rf);
+            BufferedImage scaledOverlay = Java2DUtil.scale(overlayImage, scale, sc, rf, false);
             int xOffset = inset;
             int yOffset = inset;
             if (scaledOverlay.getWidth() < baseImage.getWidth()) {
@@ -422,7 +455,8 @@ public final class Java2DUtil {
             if (scaledOverlay.getHeight() < baseImage.getHeight()) {
                 yOffset = Math.round((baseImage.getHeight() - scaledOverlay.getHeight()) / 2f);
             }
-            g2d.drawImage(Java2DUtil.scale(overlayImage, scale, sc, rf), xOffset, yOffset, null);
+            g2d.drawImage(Java2DUtil.scale(overlayImage, scale, sc, rf, false),
+                    xOffset, yOffset, null);
         } else {
             int overlayX, overlayY;
             switch (position) {
@@ -716,7 +750,6 @@ public final class Java2DUtil {
                 boxX = inset;
                 boxY = imageSize.height() - boxHeight - inset - padding;
                 break;
-            // case BOTTOM_RIGHT: will be handled in default:
             case BOTTOM_CENTER:
                 boxX = (imageSize.width() - boxWidth) / 2.0;
                 boxY = imageSize.height() - boxHeight - inset - padding;
@@ -734,32 +767,31 @@ public final class Java2DUtil {
     }
 
     /**
-     * @param colorModel Color model of the new image.
      * @param width      Width of the new image.
      * @param height     Height of the new image.
-     * @param forceAlpha Whether the resulting image should definitely have
-     *                   alpha.
+     * @param colorModel Color model of the new image.
+     * @param alpha      Whether the resulting image should have alpha.
      * @return           New image with the given color model and dimensions.
      */
-    private static BufferedImage newImage(ColorModel colorModel,
-                                          final int width,
+    private static BufferedImage newImage(final int width,
                                           final int height,
-                                          final boolean forceAlpha) {
+                                          ColorModel colorModel,
+                                          final boolean alpha) {
         final boolean isAlphaPremultiplied = colorModel.isAlphaPremultiplied();
 
-        // Manually create a compatible ColorModel respecting forceAlpha.
+        // Create a compatible ColorModel.
         if (colorModel instanceof ComponentColorModel) {
             int[] componentSizes = colorModel.getComponentSize();
             // If the array does not contain an alpha element but we need it,
             // add it.
-            if (!colorModel.hasAlpha() && forceAlpha) {
+            if (!colorModel.hasAlpha() && alpha) {
                 int[] tmp = new int[componentSizes.length + 1];
                 System.arraycopy(componentSizes, 0, tmp, 0, componentSizes.length);
                 tmp[tmp.length - 1] = tmp[0];
                 componentSizes = tmp;
             }
             colorModel = new ComponentColorModel(colorModel.getColorSpace(),
-                    componentSizes, forceAlpha, isAlphaPremultiplied,
+                    componentSizes, alpha, isAlphaPremultiplied,
                     colorModel.getTransparency(), colorModel.getTransferType());
         }
 
@@ -797,59 +829,36 @@ public final class Java2DUtil {
                     inColorModel.getColorSpace(),
                     outImage.getColorModel().getColorSpace(), null);
             outImage.createGraphics().drawImage(inImage, op, 0, 0);
-            LOGGER.debug("reduceTo8Bits(): converted in {}", watch);
+            LOGGER.debug("reduceTo8Bits(): executed in {}", watch);
         }
         return outImage;
     }
 
     /**
-     * Removes alpha from an image. Transparent regions will be blended with an
-     * undefined color. This involves copying the given image into a new
-     * {@link BufferedImage}, which is expensive.
+     * Creates a new image without alpha, paints the given background color
+     * into it, draws the RGB channels of the given image into it, and returns
+     * it.
      *
-     * @param inImage Image to remove the alpha channel from.
-     * @return        Alpha-flattened image, or the input image if it has no
-     *                alpha.
-     */
-    public static BufferedImage removeAlpha(final BufferedImage inImage) {
-        return removeAlpha(inImage, null);
-    }
-
-    /**
-     * Removes alpha from an image, blending transparent regions with the given
-     * color. This involves copying the given image into a new {@link
-     * BufferedImage}, which is expensive.
-     *
-     * @param inImage Image to remove the alpha channel from.
-     * @return        Alpha-flattened image, or the input image if it has no
-     *                alpha.
+     * @param inImage Image with alpha.
+     * @return        Flattened image, or the input image if it has no alpha.
      */
     public static BufferedImage removeAlpha(final BufferedImage inImage,
                                             final Color bgColor) {
         BufferedImage outImage = inImage;
-
         if (inImage.getColorModel().hasAlpha()) {
             final Stopwatch watch = new Stopwatch();
-            int newType;
-            switch (inImage.getType()) {
-                case BufferedImage.TYPE_4BYTE_ABGR:
-                    newType = BufferedImage.TYPE_INT_BGR;
-                    break;
-                default:
-                    newType = BufferedImage.TYPE_INT_RGB;
-                    break;
-            }
+
             outImage = new BufferedImage(inImage.getWidth(),
-                    inImage.getHeight(), newType);
-            Graphics2D g = outImage.createGraphics();
+                    inImage.getHeight(), BufferedImage.TYPE_INT_RGB);
+            Graphics2D g2d = outImage.createGraphics();
 
             if (bgColor != null) {
-                g.setBackground(bgColor.toColor());
-                g.clearRect(0, 0, inImage.getWidth(), inImage.getHeight());
+                g2d.setBackground(bgColor.toColor());
+                g2d.clearRect(0, 0, inImage.getWidth(), inImage.getHeight());
             }
 
-            g.drawImage(inImage, 0, 0, null);
-            g.dispose();
+            g2d.drawImage(inImage, 0, 0, null);
+            g2d.dispose();
             LOGGER.debug("removeAlpha(): executed in {}", watch);
         }
         return outImage;
@@ -873,24 +882,11 @@ public final class Java2DUtil {
     /**
      * @param inImage Image to rotate.
      * @param rotate  Rotate operation.
-     * @return        Rotated image, or the input image if the given rotation
-     *                is a no-op.
+     * @return        Rotated image, or the input image if the given
+     *                rotation is a no-op.  The image has alpha.
      */
     static BufferedImage rotate(final BufferedImage inImage,
                                 final Rotate rotate) {
-        return rotate(inImage, rotate, null);
-    }
-
-    /**
-     * @param inImage         Image to rotate.
-     * @param rotate          Rotate operation.
-     * @param backgroundColor Color to paint underneath the image.
-     * @return                Rotated image, or the input image if the given
-     *                        rotation is a no-op.
-     */
-    static BufferedImage rotate(final BufferedImage inImage,
-                                final Rotate rotate,
-                                final Color backgroundColor) {
         BufferedImage outImage = inImage;
         if (rotate.hasEffect()) {
             final Stopwatch watch = new Stopwatch();
@@ -913,41 +909,38 @@ public final class Java2DUtil {
             // 1. translate the image so that it is rotated about the center
             tx.translate(-sourceWidth / 2f, -sourceHeight / 2f);
 
-            switch (inImage.getType()) {
-                case BufferedImage.TYPE_CUSTOM:
-                    outImage = newImage(inImage.getColorModel(),
-                            canvasWidth, canvasHeight, true);
-                    break;
-                case BufferedImage.TYPE_BYTE_BINARY:
+            final int compSize      = inImage.getColorModel().getComponentSize(0);
+            final int numComponents = inImage.getColorModel().getNumComponents();
+
+            // AffineTransformOp should be faster, but the G2D drawing method
+            // is more compatible.
+            if (compSize > 8 || numComponents < 3) {
+                if (compSize > 8) {
+                    outImage = newImage(canvasWidth, canvasHeight,
+                            inImage.getColorModel(), true);
+                } else {
                     outImage = new BufferedImage(
                             canvasWidth, canvasHeight,
                             BufferedImage.TYPE_INT_ARGB);
-                    break;
-                case BufferedImage.TYPE_USHORT_GRAY:
-                    outImage = newImage(inImage.getColorModel(),
-                            canvasWidth, canvasHeight, true);
-                    break;
-                default:
-                    outImage = new BufferedImage(
-                            canvasWidth, canvasHeight,
-                            BufferedImage.TYPE_INT_ARGB);
-                    break;
+                }
+
+                final Graphics2D g2d = outImage.createGraphics();
+                g2d.setRenderingHint(RenderingHints.KEY_RENDERING,
+                        RenderingHints.VALUE_RENDER_QUALITY);
+                g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+                        RenderingHints.VALUE_ANTIALIAS_ON);
+                g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
+                        RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+
+                g2d.drawImage(inImage, tx, null);
+                g2d.dispose();
+            } else {
+                AffineTransformOp op = new AffineTransformOp(
+                        tx, AffineTransformOp.TYPE_BILINEAR);
+                outImage = new BufferedImage(canvasWidth, canvasHeight,
+                        BufferedImage.TYPE_INT_ARGB);
+                op.filter(inImage, outImage);
             }
-
-            final Graphics2D g2d = outImage.createGraphics();
-            g2d.setRenderingHint(RenderingHints.KEY_RENDERING,
-                    RenderingHints.VALUE_RENDER_QUALITY);
-            g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
-                    RenderingHints.VALUE_ANTIALIAS_ON);
-            g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
-                    RenderingHints.VALUE_INTERPOLATION_BILINEAR);
-
-            if (backgroundColor != null) {
-                g2d.setBackground(backgroundColor.toColor());
-                g2d.clearRect(0, 0, outImage.getWidth(), outImage.getHeight());
-            }
-
-            g2d.drawImage(inImage, tx, null);
             LOGGER.debug("rotate(): executed in {}", watch);
         }
         return outImage;
@@ -960,8 +953,7 @@ public final class Java2DUtil {
      * relative to the full-sized image.</p>
      *
      * <p>If one or both target dimensions would end up being less than three
-     * pixels, an empty image (with the correct dimensions) will be
-     * returned.</p>
+     * pixels, an empty image (with the correct dimensions) is returned.</p>
      *
      * @param inImage         Image to scale.
      * @param scale           Requested size ignoring any reduction factor. If
@@ -972,13 +964,16 @@ public final class Java2DUtil {
      * @param scaleConstraint Scale constraint.
      * @param reductionFactor Reduction factor that has already been applied to
      *                        {@literal inImage}.
+     * @param isLinear        Whether the provided image is in a linear color
+     *                        space.
      * @return                Scaled image, or the input image if the given
      *                        arguments would result in a no-op.
      */
-    static BufferedImage scale(final BufferedImage inImage,
+    static BufferedImage scale(BufferedImage inImage,
                                final Scale scale,
                                final ScaleConstraint scaleConstraint,
-                               final ReductionFactor reductionFactor) {
+                               final ReductionFactor reductionFactor,
+                               final boolean isLinear) {
         /*
         This method uses resampling code derived from
         com.mortennobel.imagescaling (see
@@ -1039,7 +1034,8 @@ public final class Java2DUtil {
                 final Stopwatch watch = new Stopwatch();
 
                 final ResampleOp resampleOp = new ResampleOp(
-                        targetSize.intWidth(), targetSize.intHeight());
+                        targetSize.intWidth(), targetSize.intHeight(),
+                        isLinear);
 
                 // Try to use the requested resample filter.
                 ResampleFilter filter = null;
@@ -1066,6 +1062,7 @@ public final class Java2DUtil {
                         filter.getName(), watch);
             }
         } else {
+            // Dummy image.
             scaledImage = new BufferedImage(
                     targetSize.intWidth(),
                     targetSize.intHeight(),
@@ -1087,7 +1084,7 @@ public final class Java2DUtil {
                 final Stopwatch watch = new Stopwatch();
 
                 final ResampleOp resampleOp = new ResampleOp(
-                        inImage.getWidth(), inImage.getHeight());
+                        inImage.getWidth(), inImage.getHeight(), false);
                 resampleOp.setUnsharpenMask((float) sharpen.getAmount());
                 sharpenedImage = resampleOp.filter(inImage, null);
 
@@ -1114,11 +1111,11 @@ public final class Java2DUtil {
 
         switch (colorTransform) {
             case GRAY:
-                outImage = convertIndexedTo8BitARGB(outImage);
+                outImage = convertIndexedToARGB(outImage);
                 grayscale(outImage);
                 break;
             case BITONAL:
-                outImage = convertIndexedTo8BitARGB(outImage);
+                outImage = convertIndexedToARGB(outImage);
                 binarize(outImage);
                 break;
         }
@@ -1178,11 +1175,6 @@ public final class Java2DUtil {
      */
     private static int[] histogram(BufferedImage input) {
         int[] histogram = new int[256];
-
-        for (int i = 0; i < histogram.length; i++) {
-            histogram[i] = 0;
-        }
-
         for (int x = 0; x < input.getWidth(); x++) {
             for (int y = 0; y < input.getHeight(); y++) {
                 int red = new Color(input.getRGB(x, y)).getRed();
@@ -1193,7 +1185,6 @@ public final class Java2DUtil {
     }
 
     /**
-     * @param image
      * @return Binary threshold using Otsu's method.
      */
     private static int otsuThreshold(BufferedImage image) {
@@ -1233,7 +1224,6 @@ public final class Java2DUtil {
                 threshold = i;
             }
         }
-
         return threshold;
     }
 
@@ -1258,7 +1248,7 @@ public final class Java2DUtil {
                 AffineTransformOp.TYPE_BILINEAR);
         BufferedImage outImage = op.filter(inImage, null);
 
-        LOGGER.debug("transpose(): transposed image in {}", watch);
+        LOGGER.debug("transpose(): executed in {}", watch);
         return outImage;
     }
 

@@ -160,6 +160,7 @@ public enum Key {
     OVERLAY_TYPE("overlays.BasicStrategy.type"),
     PRINT_STACK_TRACE_ON_ERROR_PAGES("print_stack_trace_on_error_pages"),
     PROCESSOR_BACKGROUND_COLOR("processor.background_color"),
+    PROCESSOR_DOWNSCALE_LINEAR("processor.downscale_linear"),
     PROCESSOR_DOWNSCALE_FILTER("processor.downscale_filter"),
     PROCESSOR_DPI("processor.dpi"),
     PROCESSOR_PDF_SCRATCH_FILE_ENABLED("processor.pdf.scratch_file_enabled"),

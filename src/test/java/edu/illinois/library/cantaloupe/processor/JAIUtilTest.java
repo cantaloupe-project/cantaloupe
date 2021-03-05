@@ -24,6 +24,7 @@ import org.junit.jupiter.api.Test;
 import javax.media.jai.Interpolation;
 import javax.media.jai.PlanarImage;
 import javax.media.jai.RenderedOp;
+import java.awt.color.ColorSpace;
 import java.awt.image.BufferedImage;
 import java.awt.image.RenderedImage;
 
@@ -35,6 +36,17 @@ class JAIUtilTest extends BaseTest {
 
     private static final double DELTA = 0.00000001;
     private static final String IMAGE = "png-rgb-64x56x8.png";
+
+    /* convertColor(RenderedOp, ColorSpace) */
+
+    @Test
+    void convertColor() throws Exception {
+        RenderedOp inImage = readImage(IMAGE);
+        ColorSpace colorSpace = ColorSpace.getInstance(ColorSpace.CS_LINEAR_RGB);
+        assertNotEquals(colorSpace, inImage.getColorModel().getColorSpace());
+        RenderedOp outImage = JAIUtil.convertColor(inImage, colorSpace);
+        assertEquals(colorSpace, outImage.getColorModel().getColorSpace());
+    }
 
     /* cropImage(RenderedOp, Crop) */
 

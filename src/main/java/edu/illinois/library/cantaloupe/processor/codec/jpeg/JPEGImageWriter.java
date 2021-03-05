@@ -67,6 +67,7 @@ public final class JPEGImageWriter extends AbstractIIOImageWriter
     private static final Logger LOGGER =
             LoggerFactory.getLogger(JPEGImageWriter.class);
 
+    private static final Color DEFAULT_BACKGROUND_COLOR = Color.WHITE;
     static final String IMAGEIO_PLUGIN_CONFIG_KEY =
             "processor.imageio.jpg.writer";
 
@@ -132,17 +133,11 @@ public final class JPEGImageWriter extends AbstractIIOImageWriter
      * @return      Flattened image.
      */
     private BufferedImage removeAlpha(BufferedImage image) {
-        boolean haveBGColor = false;
-
         Color bgColor = encode.getBackgroundColor();
-        if (bgColor != null) {
-            haveBGColor = true;
-            image = Java2DUtil.removeAlpha(image, bgColor);
+        if (bgColor == null) {
+            bgColor = DEFAULT_BACKGROUND_COLOR;
         }
-        if (!haveBGColor) {
-            image = Java2DUtil.removeAlpha(image);
-        }
-        return image;
+        return Java2DUtil.removeAlpha(image, bgColor);
     }
 
     /**

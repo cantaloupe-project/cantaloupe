@@ -48,16 +48,19 @@
     * XMP metadata can be copied or edited using a delegate method.
     * The `processor.metadata.respect_orientation` configuration key has been
       removed and EXIF Orientation values are always respected.
-* The included Kakadu library used by KakaduNativeProcessor has been updated
-  to version 8.0.3.
 * KakaduNativeProcessor, OpenJpegProcessor, and TurboJpegProcessor respect the
   EXIF `Orientation` tag.
 * KakaduNativeProcessor, OpenJpegProcessor, and TurboJpegProcessor support
   EXIF, IPTC IIM, and XMP metadata.
 * Java2dProcessor supports the XPM source format.
+* Added a `processor.downscale_linear` configuration key to enable downscaling
+  in a linear color space.
+* TurboJpegProcessor decompresses with "accurate" rather than "fast" DCT.
 * FfmpegProcessor, KakaduNativeProcessor, OpenJpegProcessor, and
   PdfBoxProcessor use libjpeg-turbo to write JPEGs if it is available.
 * Added the `scaled` position for image overlays.
+* Updated the included Kakadu library used by KakaduNativeProcessor to version
+  8.0.3.
 * Updated Apache PDFBox to version 2.0.22.
 * PdfBoxProcessor properties added to better control memory
     * `processor.pdf.scratch_file_enabled` allows use of a scratch file

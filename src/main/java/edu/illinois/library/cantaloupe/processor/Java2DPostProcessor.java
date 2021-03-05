@@ -25,7 +25,6 @@ import org.slf4j.LoggerFactory;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -50,19 +49,6 @@ final class Java2DPostProcessor {
 
     private static final Logger LOGGER =
             LoggerFactory.getLogger(Java2DPostProcessor.class);
-
-    static final Set<edu.illinois.library.cantaloupe.resource.iiif.v1.Quality>
-            SUPPORTED_IIIF_1_QUALITIES = Collections.unmodifiableSet(EnumSet.of(
-            edu.illinois.library.cantaloupe.resource.iiif.v1.Quality.BITONAL,
-            edu.illinois.library.cantaloupe.resource.iiif.v1.Quality.COLOR,
-            edu.illinois.library.cantaloupe.resource.iiif.v1.Quality.GREY,
-            edu.illinois.library.cantaloupe.resource.iiif.v1.Quality.NATIVE));
-    static final Set<edu.illinois.library.cantaloupe.resource.iiif.v2.Quality>
-            SUPPORTED_IIIF_2_QUALITIES = Collections.unmodifiableSet(EnumSet.of(
-            edu.illinois.library.cantaloupe.resource.iiif.v2.Quality.BITONAL,
-            edu.illinois.library.cantaloupe.resource.iiif.v2.Quality.COLOR,
-            edu.illinois.library.cantaloupe.resource.iiif.v2.Quality.DEFAULT,
-            edu.illinois.library.cantaloupe.resource.iiif.v2.Quality.GRAY));
 
     /**
      * Can be used for all images but not {@link BufferedImageSequence image
@@ -135,21 +121,31 @@ final class Java2DPostProcessor {
 
         // Apply remaining operations.
         for (Operation op : opList) {
-            if (op.hasEffect(fullSize, opList)) {
-                if (op instanceof Scale) {
-                    image = Java2DUtil.scale(image, (Scale) op,
-                            opList.getScaleConstraint(), reductionFactor);
-                } else if (op instanceof Transpose) {
-                    image = Java2DUtil.transpose(image, (Transpose) op);
-                } else if (op instanceof Rotate) {
-                    image = Java2DUtil.rotate(image, (Rotate) op);
-                } else if (op instanceof ColorTransform) {
-                    image = Java2DUtil.transformColor(image, (ColorTransform) op);
-                } else if (op instanceof Sharpen) {
-                    image = Java2DUtil.sharpen(image, (Sharpen) op);
-                } else if (op instanceof Overlay) {
-                    Java2DUtil.applyOverlay(image, (Overlay) op);
+            if (!op.hasEffect(fullSize, opList)) {
+                continue;
+            }
+            if (op instanceof Scale) {
+                final Scale scale = (Scale) op;
+                final boolean isLinear = scale.isLinear() &&
+                        !scale.isUp(fullSize, opList.getScaleConstraint());
+                if (isLinear) {
+                    image = Java2DUtil.convertColorToLinearRGB(image);
                 }
+                image = Java2DUtil.scale(image, scale,
+                        opList.getScaleConstraint(), reductionFactor, true);
+                if (isLinear) {
+                    image = Java2DUtil.convertColorToSRGB(image);
+                }
+            } else if (op instanceof Transpose) {
+                image = Java2DUtil.transpose(image, (Transpose) op);
+            } else if (op instanceof Rotate) {
+                image = Java2DUtil.rotate(image, (Rotate) op);
+            } else if (op instanceof ColorTransform) {
+                image = Java2DUtil.transformColor(image, (ColorTransform) op);
+            } else if (op instanceof Sharpen) {
+                image = Java2DUtil.sharpen(image, (Sharpen) op);
+            } else if (op instanceof Overlay) {
+                Java2DUtil.applyOverlay(image, (Overlay) op);
             }
         }
         return image;

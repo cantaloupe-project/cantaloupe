@@ -8,10 +8,13 @@ package edu.illinois.library.cantaloupe.processor.resample;
 
 import edu.illinois.library.cantaloupe.async.ThreadPool;
 
+import java.awt.Transparency;
+import java.awt.color.ColorSpace;
 import java.awt.image.BufferedImage;
+import java.awt.image.ComponentColorModel;
 import java.awt.image.DataBuffer;
+import java.awt.image.WritableRaster;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * @author Morten Nobel-Joergensen
@@ -60,11 +63,10 @@ public class ResampleOp extends AdvancedResizeOp {
     private int numChannels;
     private int srcWidth, srcHeight;
     private int destWidth, destHeight;
+    private boolean isLinear;
 
     private SubSamplingData horizontalSubsamplingData;
     private SubSamplingData verticalSubsamplingData;
-
-    private final AtomicInteger multipleInvocationLock = new AtomicInteger();
 
     /**
      * Set by {@link #setFilter(ResampleFilter)}.
@@ -187,8 +189,15 @@ public class ResampleOp extends AdvancedResizeOp {
         super(dimensionConstraint);
     }
 
-    public ResampleOp(int destWidth, int destHeight) {
+    /**
+     * @param destWidth
+     * @param destHeight
+     * @param isLinear Whether to use a linear RGB output image.
+     *                 TurboJpegProcessor requires this to be false.
+     */
+    public ResampleOp(int destWidth, int destHeight, boolean isLinear) {
         this(DimensionConstraint.createAbsolutionDimension(destWidth, destHeight));
+        this.isLinear = isLinear;
     }
 
     public ResampleFilter getFilter() {
@@ -211,14 +220,11 @@ public class ResampleOp extends AdvancedResizeOp {
                     dstWidth + "x" + dstHeight + " but must be at least 3x3.");
         }
 
-        assert multipleInvocationLock.incrementAndGet() == 1 :
-                "Multiple concurrent invocations detected";
-
         if (srcImage.getType() == BufferedImage.TYPE_BYTE_BINARY ||
-                srcImage.getType() == BufferedImage.TYPE_BYTE_INDEXED ||
-                srcImage.getType() == BufferedImage.TYPE_CUSTOM)
+                srcImage.getType() == BufferedImage.TYPE_BYTE_INDEXED) {
             srcImage = ImageUtils.convert(srcImage, srcImage.getColorModel().hasAlpha() ?
                     BufferedImage.TYPE_4BYTE_ABGR : BufferedImage.TYPE_3BYTE_BGR);
+        }
         this.numChannels = srcImage.getSampleModel().getNumBands();
         assert numChannels > 0;
         this.srcWidth = srcImage.getWidth();
@@ -275,15 +281,20 @@ public class ResampleOp extends AdvancedResizeOp {
                         numChannels, nrDestChannels);
                 throw new RuntimeException(errorMsg);
             }
+        } else if (isLinear) {
+            ColorSpace cs = ColorSpace.getInstance(ColorSpace.CS_LINEAR_RGB);
+            ComponentColorModel cm = new ComponentColorModel(
+                    cs, false, false,
+                    Transparency.OPAQUE, DataBuffer.TYPE_BYTE);
+            WritableRaster raster = cm.createCompatibleWritableRaster(
+                    dstWidth, dstHeight);
+            out = new BufferedImage(cm, raster, cm.isAlphaPremultiplied(), null);
         } else {
             out = new BufferedImage(dstWidth, dstHeight,
                     getResultBufferedImageType(srcImage));
         }
 
         ImageUtils.setBGRPixels(outPixels, out, 0, 0, dstWidth, dstHeight);
-
-        assert multipleInvocationLock.decrementAndGet() == 0 :
-                "Multiple concurrent invocations detected";
 
         return out;
     }
@@ -373,8 +384,11 @@ public class ResampleOp extends AdvancedResizeOp {
             horizontalFromSrcToWorkGray(srcImg, workPixels, start, delta);
             return;
         }
-        final int[] tempPixels = new int[srcWidth];   // Used if we work on int based bitmaps, later used to keep channel values
-        final byte[] srcPixels = new byte[srcWidth * numChannels]; // create reusable row to minimize memory overhead
+
+        // create reusable row to minimize memory overhead
+        final byte[] srcPixels    = new byte[srcWidth * numChannels];
+        // Used if we work on int based bitmaps
+        final int[] tempPixels    = new int[srcWidth];
         final boolean useChannel3 = numChannels > 3;
 
         for (int k = start; k < srcHeight; k = k + delta) {

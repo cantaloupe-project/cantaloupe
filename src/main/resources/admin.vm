@@ -2236,6 +2236,27 @@
                                     </td>
                                 </tr>
                                 <tr>
+                                    <td>
+                                        <a tabindex="0" class="btn btn-sm cl-help"
+                                           role="button" data-toggle="popover"
+                                           data-trigger="focus"
+                                           data-content="If true, images are downscaled in a linear
+                                           color space, which is more accurate. This only works with
+                                           mono-resolution (non-pyramidal) images. It also may impair performance.">?</a>
+                                    </td>
+                                    <td>
+                                        <div class="checkbox">
+                                            <label>
+                                                <input type="checkbox"
+                                                       name="processor.downscale_linear"
+                                                       value="false"
+                                                       data-requires-restart="false">
+                                                Linear Downscaling
+                                            </label>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
                                     <td>Sharpening
                                         <a tabindex="0" class="btn btn-sm cl-help"
                                            role="button" data-toggle="popover"
