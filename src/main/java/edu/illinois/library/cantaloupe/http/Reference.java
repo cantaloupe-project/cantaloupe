@@ -1,11 +1,9 @@
 package edu.illinois.library.cantaloupe.http;
 
 import edu.illinois.library.cantaloupe.util.StringUtils;
+import okhttp3.HttpUrl;
 
-import java.net.MalformedURLException;
 import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
@@ -15,11 +13,12 @@ import java.util.List;
 /**
  * <p>Mutable URI class.</p>
  *
- * <p>Unlike {@link java.net.URL} and {@link java.net.URI}, this class does not
- * throw {@link java.net.MalformedURLException}s or {@link URISyntaxException}s,
- * which are unfortunately checked, making these classes a pain to use.</p>
+ * <p>Components are stored unencoded in order to enable assembly of a
+ * partially or fully encoded URI string via one of the {@link #toString()}
+ * overloads.</p>
  *
- * <p>Components are stored unencoded.</p>
+ * <p>Also, unlike {@link java.net.URL} and {@link java.net.URI}, no checked
+ * exceptions are thrown, making it less of a pain to use.</p>
  *
  * @see <a href="https://tools.ietf.org/html/rfc3986">RFC 3986: Uniform
  * Resource Identifier</a>
@@ -55,33 +54,20 @@ public final class Reference {
     }
 
     /**
-     * Initializes an instance from a string. Illegal unencoded characters are
-     * allowed as long as they don't break the URI structure.
-     *
      * @throws IllegalArgumentException if the argument is not a valid URI.
      */
     public Reference(String reference) {
-        try {
-            // N.B.: java.net.URL is less fussy than java.net.URI about
-            // URL-safe characters.
-            URL url = new URL(reference);
-            String userInfo = url.getUserInfo();
-            if (userInfo != null) {
-                String[] parts = userInfo.split(":");
-                setUser(parts[0]);
-                setSecret(parts[1]);
-            }
-            setScheme(url.getProtocol());
-            setHost(url.getHost());
-            setPort(url.getPort());
-            setPath(decode(url.getPath()));
-            if (url.getQuery() != null) {
-                setQuery(new Query(url.getQuery()));
-            }
-            setFragment(url.getRef());
-        } catch (MalformedURLException e) {
-            throw new IllegalArgumentException(e);
+        HttpUrl url = HttpUrl.get(reference);
+        setUser(url.username());
+        setSecret(url.password());
+        setScheme(url.scheme());
+        setHost(url.host());
+        setPort(url.port());
+        setPath(url.encodedPath());
+        if (url.query() != null) {
+            setQuery(new Query(url.query()));
         }
+        setFragment(url.fragment());
     }
 
     public Reference(URI uri) {
@@ -180,11 +166,11 @@ public final class Reference {
      */
     public String getAuthority() {
         final StringBuilder builder = new StringBuilder();
-        if (getUser() != null && !getUser().isEmpty() &&
-                getSecret() != null && !getSecret().isEmpty()) {
-            builder.append(getUser());
+        if (getUser() != null && !getUser().isBlank() &&
+                getSecret() != null && !getSecret().isBlank()) {
+            builder.append(encode(getUser()));
             builder.append(":");
-            builder.append(getSecret());
+            builder.append(encode(getSecret()));
             builder.append("@");
         }
         builder.append(getHost());
@@ -331,30 +317,32 @@ public final class Reference {
      */
     @Override
     public String toString() {
-        try {
-            String query = getQuery().toString();
-            URI uri = new URI(getScheme(),
-                    getAuthority(),
-                    getPath(),
-                    query.isBlank() ? null : query,
-                    getFragment());
-            return uri.toString();
-        } catch (URISyntaxException ignore) {
-            StringBuilder builder = new StringBuilder();
-            builder.append(getScheme());
-            builder.append("://");
-            builder.append(getAuthority());
+        return toString(false);
+    }
+
+    /**
+     * Overload which encodes all parts of the URI except the path, which is
+     * presumed to already be encoded.
+     */
+    public String toString(boolean encodePath) {
+        StringBuilder builder = new StringBuilder();
+        builder.append(getScheme());
+        builder.append("://");
+        builder.append(getAuthority());
+        if (encodePath) {
+            builder.append(encode(getPath()));
+        } else {
             builder.append(getPath());
-            if (!getQuery().isEmpty()) {
-                builder.append("?");
-                builder.append(getQuery().toString());
-            }
-            if (getFragment() != null) {
-                builder.append("#");
-                builder.append(getFragment());
-            }
-            return builder.toString();
         }
+        if (!getQuery().isEmpty()) {
+            builder.append("?");
+            builder.append(getQuery().toString());
+        }
+        if (getFragment() != null) {
+            builder.append("#");
+            builder.append(getFragment());
+        }
+        return builder.toString();
     }
 
 }

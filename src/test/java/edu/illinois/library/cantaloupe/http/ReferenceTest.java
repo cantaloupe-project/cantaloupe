@@ -62,6 +62,13 @@ public class ReferenceTest extends BaseTest {
     }
 
     @Test
+    void testStringConstructorWithEncodedCharacters() {
+        String uri = "http://example.org/cats%2Fdogs";
+        Reference ref = new Reference(uri);
+        assertEquals("http://example.org/cats%2Fdogs", ref.toString());
+    }
+
+    @Test
     void testURIConstructor() throws Exception {
         URI uri = new URI("http://example.org/cats/dogs?cats=dogs");
         Reference ref = new Reference(uri);
@@ -405,17 +412,40 @@ public class ReferenceTest extends BaseTest {
     }
 
     @Test
-    void testToString() {
+    void testToString1() {
         String expected = "http://user:secret@example.org:81/p1/p2.jpg?q1=cats&q2=dogs#35";
         String actual = instance.toString();
         assertEquals(expected, actual);
     }
 
     @Test
-    void testToStringEncodesComponents() {
+    void testToString1Encoding() {
         instance        = new Reference("http://user`:secret`@example.org:81/p`/p2.jpg?q1=cats`");
         String expected = "http://user%60:secret%60@example.org:81/p%60/p2.jpg?q1=cats%60";
         String actual   = instance.toString();
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    void testToString2() {
+        String expected = "http://user:secret@example.org:81/p1/p2.jpg?q1=cats&q2=dogs#35";
+        String actual = instance.toString();
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    void testToString2WithEncodingPath() {
+        instance        = new Reference("http://user`:secret`@example.org:81/p`/p2.jpg?q1=cats`");
+        String expected = "http://user%60:secret%60@example.org:81%2Fp%2560%2Fp2.jpg?q1=cats%60";
+        String actual   = instance.toString(true);
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    void testToString2WithNotEncodingPath() {
+        instance        = new Reference("http://user`:secret`@example.org:81/pp%2Fpp2.jpg?q1=cats`");
+        String expected = "http://user%60:secret%60@example.org:81/pp%2Fpp2.jpg?q1=cats%60";
+        String actual   = instance.toString(false);
         assertEquals(expected, actual);
     }
 
