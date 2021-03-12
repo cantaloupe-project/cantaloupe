@@ -129,7 +129,7 @@ public final class Java2DUtil {
                 redactionRegion.scaleY(preScale[1]);
 
                 if (!redactionRegion.isEmpty()) {
-                    LOGGER.debug("applyRedactions(): applying {} at {},{}/{}x{}",
+                    LOGGER.trace("applyRedactions(): applying {} at {},{}/{}x{}",
                             redaction,
                             redactionRegion.intX(),
                             redactionRegion.intY(),
@@ -137,12 +137,12 @@ public final class Java2DUtil {
                             redactionRegion.intHeight());
                     g2d.fill(redactionRegion.toAWTRectangle());
                 } else {
-                    LOGGER.debug("applyRedactions(): {} is outside crop area; skipping",
+                    LOGGER.trace("applyRedactions(): {} is outside crop area; skipping",
                             redaction);
                 }
             }
             g2d.dispose();
-            LOGGER.debug("applyRedactions() executed in {}", watch);
+            LOGGER.trace("applyRedactions() executed in {}", watch);
         }
     }
 
@@ -184,7 +184,7 @@ public final class Java2DUtil {
             Graphics2D g2d = outImage.createGraphics();
             g2d.drawImage(inImage, 0, 0, null);
             g2d.dispose();
-            LOGGER.debug("convertCustomToRGB(): executed in {}", watch);
+            LOGGER.trace("convertCustomToRGB(): executed in {}", watch);
         }
         return outImage;
     }
@@ -204,7 +204,7 @@ public final class Java2DUtil {
             Graphics2D g2d = outImage.createGraphics();
             g2d.drawImage(inImage, 0, 0, null);
             g2d.dispose();
-            LOGGER.debug("convertIndexedToARGB(): executed in {}", watch);
+            LOGGER.trace("convertIndexedToARGB(): executed in {}", watch);
         }
         return outImage;
     }
@@ -237,7 +237,7 @@ public final class Java2DUtil {
                     linearCS,
                     hints);
             op.filter(inImage, outImage);
-            LOGGER.debug("convertColorToLinearRGB(): executed in {}", watch);
+            LOGGER.trace("convertColorToLinearRGB(): executed in {}", watch);
         }
         return outImage;
     }
@@ -267,7 +267,7 @@ public final class Java2DUtil {
                     rgbCS,
                     hints);
             op.filter(inImage, outImage);
-            LOGGER.debug("convertColorToSRGB(): executed in {}", watch);
+            LOGGER.trace("convertColorToSRGB(): executed in {}", watch);
         }
         return outImage;
     }
@@ -319,7 +319,7 @@ public final class Java2DUtil {
                     region.intY() + region.intHeight(), null);
             g2d.dispose();
 
-            LOGGER.debug("cropPhysically(): cropped {}x{} image to {}x{} in {}",
+            LOGGER.trace("cropPhysically(): cropped {}x{} image to {}x{} in {}",
                     inImage.getWidth(), inImage.getHeight(),
                     region.intWidth(), region.intHeight(), watch);
         }
@@ -346,7 +346,7 @@ public final class Java2DUtil {
                     region.intX(), region.intY(),
                     region.intWidth(), region.intHeight());
 
-            LOGGER.debug("cropVirtually(): cropped {}x{} image to {}x{} in {}",
+            LOGGER.trace("cropVirtually(): cropped {}x{} image to {}x{} in {}",
                     inImage.getWidth(), inImage.getHeight(),
                     region.intWidth(), region.intHeight(), watch);
         }
@@ -518,7 +518,7 @@ public final class Java2DUtil {
         }
         g2d.dispose();
 
-        LOGGER.debug("overlayImage() executed in {}", watch);
+        LOGGER.trace("overlayImage() executed in {}", watch);
     }
 
     /**
@@ -615,7 +615,7 @@ public final class Java2DUtil {
         }
 
         if (!fits) {
-            LOGGER.debug("overlayString(): {}-point ({}x{}) text won't fit in {}x{} image",
+            LOGGER.trace("overlayString(): {}-point ({}x{}) text won't fit in {}x{} image",
                     fontSize,
                     maxLineWidth + inset,
                     totalHeight + inset,
@@ -625,7 +625,7 @@ public final class Java2DUtil {
             return;
         }
 
-        LOGGER.debug("overlayString(): using {}-point font ({} min; {} max)",
+        LOGGER.trace("overlayString(): using {}-point font ({} min; {} max)",
                 fontSize, overlay.getMinSize(),
                 overlay.getFont().getSize());
 
@@ -703,7 +703,7 @@ public final class Java2DUtil {
             g2d.drawString(lines[i], Math.round(x), Math.round(y));
         }
         g2d.dispose();
-        LOGGER.debug("overlayString() executed in {}", watch);
+        LOGGER.trace("overlayString() executed in {}", watch);
     }
 
     private static int[] getLineWidths(String[] lines, FontMetrics fm) {
@@ -833,7 +833,7 @@ public final class Java2DUtil {
                     inColorModel.getColorSpace(),
                     outImage.getColorModel().getColorSpace(), null);
             outImage.createGraphics().drawImage(inImage, op, 0, 0);
-            LOGGER.debug("reduceTo8Bits(): executed in {}", watch);
+            LOGGER.trace("reduceTo8Bits(): executed in {}", watch);
         }
         return outImage;
     }
@@ -863,7 +863,7 @@ public final class Java2DUtil {
 
             g2d.drawImage(inImage, 0, 0, null);
             g2d.dispose();
-            LOGGER.debug("removeAlpha(): executed in {}", watch);
+            LOGGER.trace("removeAlpha(): executed in {}", watch);
         }
         return outImage;
     }
@@ -949,7 +949,7 @@ public final class Java2DUtil {
                         BufferedImage.TYPE_INT_ARGB);
                 op.filter(inImage, outImage);
             }
-            LOGGER.debug("rotate(): executed in {}", watch);
+            LOGGER.trace("rotate(): executed in {}", watch);
         }
         return outImage;
     }
@@ -1063,7 +1063,7 @@ public final class Java2DUtil {
 
                 scaledImage = resampleOp.filter(inImage, null);
 
-                LOGGER.debug("scale(): scaled {}x{} image to {}x{} using " +
+                LOGGER.trace("scale(): scaled {}x{} image to {}x{} using " +
                                 "a {} filter in {}",
                         sourceSize.intWidth(), sourceSize.intHeight(),
                         targetSize.intWidth(), targetSize.intHeight(),
@@ -1096,10 +1096,10 @@ public final class Java2DUtil {
                 resampleOp.setUnsharpenMask((float) sharpen.getAmount());
                 sharpenedImage = resampleOp.filter(inImage, null);
 
-                LOGGER.debug("sharpen(): sharpened by {} in {}",
+                LOGGER.trace("sharpen(): sharpened by {} in {}",
                         sharpen.getAmount(), watch);
             } else {
-                LOGGER.debug("sharpen(): image must be at least 3 " +
+                LOGGER.trace("sharpen(): image must be at least 3 " +
                         "pixels on a side; skipping");
             }
         }
@@ -1128,7 +1128,7 @@ public final class Java2DUtil {
                 break;
         }
         if (outImage != inImage) {
-            LOGGER.debug("transformColor(): transformed {}x{} image in {}",
+            LOGGER.trace("transformColor(): transformed {}x{} image in {}",
                     inImage.getWidth(), inImage.getHeight(), watch);
         }
         return outImage;
@@ -1256,7 +1256,7 @@ public final class Java2DUtil {
                 AffineTransformOp.TYPE_NEAREST_NEIGHBOR);
         BufferedImage outImage = op.filter(inImage, null);
 
-        LOGGER.debug("transpose(): executed in {}", watch);
+        LOGGER.trace("transpose(): executed in {}", watch);
         return outImage;
     }
 
