@@ -56,4 +56,10 @@ public class KeyValuePairTest extends BaseTest {
         assertEquals("key=value", instance.toString());
     }
 
+    @Test
+    void testToStringEncoding() {
+        instance = new KeyValuePair("key`", "value`");
+        assertEquals("key%60=value%60", instance.toString());
+    }
+
 }

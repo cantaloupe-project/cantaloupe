@@ -51,15 +51,18 @@ class KeyValuePair {
         this.value = value;
     }
 
+    /**
+     * @return URL-encoded key-value pair.
+     */
     @Override
     public String toString() {
         StringBuilder builder = new StringBuilder();
-        if (getKey() != null && !getKey().isEmpty()) {
-            builder.append(getKey());
+        if (getKey() != null && !getKey().isBlank()) {
+            builder.append(Reference.encode(getKey()));
         }
-        if (getValue() != null && !getValue().isEmpty()) {
+        if (getValue() != null && !getValue().isBlank()) {
             builder.append("=");
-            builder.append(getValue());
+            builder.append(Reference.encode(getValue()));
         }
         return builder.length() > 0 ? builder.toString() : super.toString();
     }
