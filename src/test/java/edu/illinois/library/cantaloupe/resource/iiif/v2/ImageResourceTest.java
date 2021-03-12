@@ -561,14 +561,14 @@ public class ImageResourceTest extends ResourceTest {
     }
 
     @Test
-    void testGETResolverCheckAccessNotCalledWithSourceCacheHit()
+    void testGETSourceCheckAccessNotCalledWithSourceCacheHit()
             throws Exception {
         URI uri = getHTTPURI("/" + IMAGE + "/full/full/0/color.jpg");
         tester.testSourceCheckAccessNotCalledWithSourceCacheHit(new Identifier(IMAGE), uri);
     }
 
     @Test
-    void testGETResolverGetSourceFormatNotCalledWithSourceCacheHit()
+    void testGETSourceGetSourceFormatNotCalledWithSourceCacheHit()
             throws Exception {
         URI uri = getHTTPURI("/" + IMAGE + "/full/full/0/color.jpg");
         tester.testSourceGetFormatNotCalledWithSourceCacheHit(new Identifier(IMAGE), uri);
@@ -579,7 +579,7 @@ public class ImageResourceTest extends ResourceTest {
      * used with a non-StreamProcessor.
      */
     @Test
-    void testGETResolverProcessorCompatibility() {
+    void testGETSourceProcessorCompatibility() {
         URI uri = getHTTPURI("/jp2/full/full/0/color.jpg");
         tester.testSourceProcessorCompatibility(
                 uri, appServer.getHTTPHost(), appServer.getHTTPPort());

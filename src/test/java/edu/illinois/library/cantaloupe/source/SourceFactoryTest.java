@@ -53,7 +53,7 @@ public class SourceFactoryTest extends BaseTest {
     /* newSource(Identifier, DelegateProxy) */
 
     @Test
-    void newSourceWithIdentifierWithValidStaticResolverSimpleClassName() throws Exception {
+    void newSourceWithIdentifierWithValidStaticSourceSimpleClassName() throws Exception {
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.SOURCE_STATIC,
                 HttpSource.class.getSimpleName());
@@ -64,7 +64,7 @@ public class SourceFactoryTest extends BaseTest {
     }
 
     @Test
-    void newSourceWithIdentifierWithValidStaticResolverFullClassName()
+    void newSourceWithIdentifierWithValidStaticSourceFullClassName()
             throws Exception {
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.SOURCE_STATIC, HttpSource.class.getName());
@@ -76,7 +76,7 @@ public class SourceFactoryTest extends BaseTest {
     }
 
     @Test
-    void newSourceWithIdentifierWithInvalidStaticResolver() {
+    void newSourceWithIdentifierWithInvalidStaticSource() {
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.SOURCE_STATIC, "BogusSource");
 
