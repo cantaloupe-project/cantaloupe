@@ -930,17 +930,21 @@ public final class Java2DUtil {
 
                 final Graphics2D g2d = outImage.createGraphics();
                 g2d.setRenderingHint(RenderingHints.KEY_RENDERING,
-                        RenderingHints.VALUE_RENDER_QUALITY);
+                        RenderingHints.VALUE_RENDER_SPEED);
                 g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
                         RenderingHints.VALUE_ANTIALIAS_ON);
                 g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
-                        RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+                        RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
 
                 g2d.drawImage(inImage, tx, null);
                 g2d.dispose();
             } else {
+                // informal test with 6000^2 image:
+                // NN 14 sec, bilinear 15 sec, bicubic 16 sec
+                // We'll use NN assuming that anyone doing non-right-angle
+                // rotation does not require super high quality.
                 AffineTransformOp op = new AffineTransformOp(
-                        tx, AffineTransformOp.TYPE_BILINEAR);
+                        tx, AffineTransformOp.TYPE_NEAREST_NEIGHBOR);
                 outImage = new BufferedImage(canvasWidth, canvasHeight,
                         BufferedImage.TYPE_INT_ARGB);
                 op.filter(inImage, outImage);
