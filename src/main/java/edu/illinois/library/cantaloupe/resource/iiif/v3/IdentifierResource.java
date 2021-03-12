@@ -36,7 +36,7 @@ public class IdentifierResource extends IIIF3Resource {
                 "/" + getPublicIdentifier() +
                 "/info.json");
         getResponse().setStatus(Status.SEE_OTHER.getCode());
-        getResponse().setHeader("Location", newRef.toString());
+        getResponse().setHeader("Location", newRef.toString(false));
     }
 
 }
