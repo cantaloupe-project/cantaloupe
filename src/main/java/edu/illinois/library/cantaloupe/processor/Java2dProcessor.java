@@ -26,6 +26,8 @@ import java.util.Set;
 class Java2dProcessor extends AbstractImageIOProcessor
         implements StreamProcessor, FileProcessor {
 
+    private static final Format GIF = Format.get("gif");
+
     @Override
     public void process(final OperationList ops,
                         final Info info,
@@ -46,8 +48,8 @@ class Java2dProcessor extends AbstractImageIOProcessor
             final Encode encode = (Encode) ops.getFirst(Encode.class);
             final ImageWriter writer = new ImageWriterFactory()
                     .newImageWriter(encode);
-            if (Format.get("gif").equals(info.getSourceFormat()) &&
-                    Format.get("gif").equals(ops.getOutputFormat())) {
+            if (GIF.equals(info.getSourceFormat()) &&
+                    GIF.equals(ops.getOutputFormat())) {
                 BufferedImageSequence seq = reader.readSequence();
                 Java2DPostProcessor.postProcess(seq, ops, info);
                 writer.write(seq, outputStream);
