@@ -109,8 +109,12 @@ public final class Java2DUtil {
             final Stopwatch watch = new Stopwatch();
 
             final Graphics2D g2d = image.createGraphics();
+            // High quality is not needed for drawing solid rectangles.
             g2d.setRenderingHint(RenderingHints.KEY_RENDERING,
-                    RenderingHints.VALUE_RENDER_QUALITY);
+                    RenderingHints.VALUE_RENDER_SPEED);
+            g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+                    RenderingHints.VALUE_ANTIALIAS_OFF);
+
             g2d.setColor(java.awt.Color.BLACK);
 
             for (final Redaction redaction : redactions) {
