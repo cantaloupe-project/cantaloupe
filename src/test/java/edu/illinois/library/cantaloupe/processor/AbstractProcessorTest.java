@@ -249,6 +249,7 @@ abstract class AbstractProcessorTest extends BaseTest {
                     // Rotated images won't work due to the way the Crop operation
                     // is set up.
                     this.skippedFixtures.addAll(List.of(
+                            "gif-xmp-orientation-90.gif",
                             "jpg-exif-orientation-270.jpg",
                             "jpg-xmp-orientation-90.jpg",
                             "png-rotated.png",
