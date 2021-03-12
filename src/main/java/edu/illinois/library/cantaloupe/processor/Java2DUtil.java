@@ -1253,7 +1253,7 @@ public final class Java2DUtil {
                 break;
         }
         AffineTransformOp op = new AffineTransformOp(tx,
-                AffineTransformOp.TYPE_BILINEAR);
+                AffineTransformOp.TYPE_NEAREST_NEIGHBOR);
         BufferedImage outImage = op.filter(inImage, null);
 
         LOGGER.debug("transpose(): executed in {}", watch);
