@@ -56,7 +56,8 @@ class Java2dProcessor extends AbstractImageIOProcessor
                 Scale scale        = (Scale) ops.getFirst(Scale.class);
                 ScaleConstraint sc = ops.getScaleConstraint();
 
-                BufferedImage image = reader.read(crop, scale, sc, rf, hints);
+                BufferedImage image = reader.read(
+                        ops.getPageIndex(), crop, scale, sc, rf, hints);
                 image = Java2DPostProcessor.postProcess(
                         image, hints, ops, info, rf);
                 writer.write(image, outputStream);

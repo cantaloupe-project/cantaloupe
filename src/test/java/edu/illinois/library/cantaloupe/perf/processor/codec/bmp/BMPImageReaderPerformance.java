@@ -65,14 +65,14 @@ public class BMPImageReaderPerformance extends BMPImageReaderTest {
 
     @Benchmark
     @Override
-    public void testRead() throws Exception {
-        super.testRead();
+    public void testRead1() throws Exception {
+        super.testRead1();
     }
 
     @Benchmark
     @Override
-    public void testReadWithArguments() throws Exception {
-        super.testReadWithArguments();
+    public void testRead2() throws Exception {
+        super.testRead2();
     }
 
     @Benchmark

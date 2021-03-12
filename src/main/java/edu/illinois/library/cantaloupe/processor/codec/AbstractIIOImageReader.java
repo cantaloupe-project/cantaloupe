@@ -351,9 +351,9 @@ public abstract class AbstractIIOImageReader {
      * Expedient but not necessarily efficient method that reads a whole image
      * (excluding subimages) in one shot.
      */
-    public BufferedImage read() throws IOException {
+    public BufferedImage read(int imageIndex) throws IOException {
         try {
-            return iioReader.read(0);
+            return iioReader.read(imageIndex);
         } catch (IndexOutOfBoundsException e) { // thrown by GeoSolutions TIFFImageReader
             throw new SourceFormatException();
         } catch (IIOException e) {
@@ -371,6 +371,7 @@ public abstract class AbstractIIOImageReader {
      * <p>After reading, clients should check the reader hints to see whether
      * the returned image will require cropping.</p>
      *
+     * @param imageIndex      Image index.
      * @param crop            May be {@code null}.
      * @param scale           May be {@code null}.
      * @param scaleConstraint Scale constraint.
@@ -381,26 +382,25 @@ public abstract class AbstractIIOImageReader {
      *                        the reader.
      * @return                Image best matching the given arguments.
      */
-    public BufferedImage read(final Crop crop,
+    public BufferedImage read(final int imageIndex,
+                              final Crop crop,
                               final Scale scale,
                               final ScaleConstraint scaleConstraint,
                               final ReductionFactor reductionFactor,
                               final Set<ReaderHint> hints) throws IOException {
         BufferedImage image;
-
         try {
             if (crop != null && !hints.contains(ReaderHint.IGNORE_CROP)) {
                 final Dimension fullSize = new Dimension(
                         iioReader.getWidth(0), iioReader.getHeight(0));
-                image = tileAwareRead(0, crop.getRectangle(fullSize), hints);
+                image = tileAwareRead(
+                        imageIndex, crop.getRectangle(fullSize), hints);
             } else {
-                image = iioReader.read(0);
+                image = iioReader.read(imageIndex);
             }
-
             if (image == null) {
                 throw new SourceFormatException(iioReader.getFormatName());
             }
-
             return image;
         } catch (IndexOutOfBoundsException e) { // thrown by GeoSolutions TIFFImageReader
             throw new SourceFormatException();
@@ -411,8 +411,29 @@ public abstract class AbstractIIOImageReader {
     }
 
     /**
+     * Reads a particular image from a multi-image file.
+     *
+     * @param imageIndex      Image index.
+     * @param crop            Requested crop.
+     * @param scaleConstraint Virtual scale constraint applied to the image.
+     * @return                Smallest image fitting the requested operations.
+     * @see                   #readSmallestUsableSubimage
+     */
+    protected BufferedImage readMonoResolution(
+            final int imageIndex,
+            final Crop crop,
+            final ScaleConstraint scaleConstraint,
+            final Set<ReaderHint> hints) throws IOException {
+        final Dimension fullSize = new Dimension(
+                iioReader.getWidth(0), iioReader.getHeight(0));
+        final Rectangle regionRect = crop.getRectangle(
+                fullSize, new ReductionFactor(), scaleConstraint);
+        return tileAwareRead(imageIndex, regionRect, hints);
+    }
+
+    /**
      * Reads the smallest image that can fulfill the given crop and scale from
-     * a multi-resolution image.
+     * a multi-image file.
      *
      * @param crop            Requested crop.
      * @param scale           Requested scale.
@@ -422,6 +443,7 @@ public abstract class AbstractIIOImageReader {
      * @param hints           Will be populated by information returned by the
      *                        reader.
      * @return                Smallest image fitting the requested operations.
+     * @see                   #readMonoResolution
      */
     protected BufferedImage readSmallestUsableSubimage(
             final Crop crop,
@@ -570,9 +592,10 @@ public abstract class AbstractIIOImageReader {
     }
 
     /**
-     * <p>Attempts to reads an image as efficiently as possible, utilizing its
+     * <p>Attempts to read an image as efficiently as possible, utilizing its
      * tile layout and/or subimages, if possible.</p>
      *
+     * @param imageIndex
      * @param crop            May be {@code null}.
      * @param scale           May be {@code null}.
      * @param scaleConstraint Scale constraint.
@@ -586,7 +609,8 @@ public abstract class AbstractIIOImageReader {
      * @deprecated            Since version 4.0.
      */
     @Deprecated
-    public RenderedImage readRendered(Crop crop,
+    public RenderedImage readRendered(int imageIndex,
+                                      Crop crop,
                                       Scale scale,
                                       final ScaleConstraint scaleConstraint,
                                       final ReductionFactor reductionFactor,
@@ -604,7 +628,8 @@ public abstract class AbstractIIOImageReader {
                 image = readRendered();
             } else {
                 final Dimension fullSize = new Dimension(
-                        iioReader.getWidth(0), iioReader.getHeight(0));
+                        iioReader.getWidth(imageIndex),
+                        iioReader.getHeight(imageIndex));
                 image = readSmallestUsableSubimage(
                         crop.getRectangle(fullSize), scale, fullSize,
                         scaleConstraint, reductionFactor);
@@ -719,7 +744,7 @@ public abstract class AbstractIIOImageReader {
                          final ScaleConstraint scaleConstraint,
                          final double reducedScale) {
         final double scScale = scaleConstraint.getRational().doubleValue();
-        double cappedScale = (scale.getPercent() > 1) ? 1 : scale.getPercent();
+        double cappedScale   = (scale.getPercent() > 1) ? 1 : scale.getPercent();
         return (cappedScale * scScale <= reducedScale);
     }
 

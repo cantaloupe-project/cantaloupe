@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * <p>Contains JSON-serializable information about an image, including its
@@ -323,6 +324,18 @@ public final class Info {
     }
 
     /**
+     * Returns the number of "pages" contained in the image. If the {@link
+     * #getImages() images} appear to comprise a pyramid, this is {@code 1}.
+     * Otherwise, it is equal to their count.
+     *
+     * @return Page count.
+     * @since 5.0
+     */
+    public int getNumPages() {
+        return isPyramid() ? 1 : getImages().size();
+    }
+
+    /**
      * <p>Returns the number of resolutions contained in the image.</p>
      *
      * <ul>
@@ -395,17 +408,30 @@ public final class Info {
     /**
      * @return Whether the instance contains complete and full information
      *         about the source image.
-     * @since 5.0
+     * @since  5.0
      */
     public boolean isPersistable() {
         return isPersistable;
     }
 
     /**
+     * @return Whether the {@link #getImages() images} appear to comprise a
+     *         pyramid.
+     * @since  5.0
+     */
+    boolean isPyramid() {
+        List<Dimension> sizes = getImages()
+                .stream()
+                .map(Image::getSize)
+                .collect(Collectors.toUnmodifiableList());
+        return Dimension.isPyramid(sizes);
+    }
+
+    /**
      * @param version Application version string. This value is not serialized
-     *                (the current application version is instead).
-     *
-     * @since 5.0
+     *                (the {@link Application#getVersion() current application
+     *                version} is instead).
+     * @since         5.0
      */
     void setApplicationVersion(String version) {
         this.appVersion = version;
@@ -413,7 +439,7 @@ public final class Info {
 
     /**
      * @param identifier Identifier of the image described by the instance.
-     * @since 4.0
+     * @since            4.0
      */
     public void setIdentifier(Identifier identifier) {
         this.identifier = identifier;

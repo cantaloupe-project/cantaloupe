@@ -112,10 +112,10 @@ public final class JPEGImageReader extends AbstractIIOImageReader
      * Expedient but not necessarily efficient method that reads a whole image
      * (excluding subimages) in one shot.
      */
-    public BufferedImage read() throws IOException {
+    public BufferedImage read(int imageIndex) throws IOException {
         BufferedImage image = null;
         try {
-            image = super.read();
+            image = super.read(imageIndex);
         } catch (IllegalArgumentException e) {
             if (e.getMessage().contains("Numbers of source Raster bands " +
                     "and source color space components do not match")) {
@@ -142,7 +142,8 @@ public final class JPEGImageReader extends AbstractIIOImageReader
      * {@inheritDoc}
      */
     @Override
-    public BufferedImage read(Crop crop,
+    public BufferedImage read(int imageIndex,
+                              Crop crop,
                               Scale scale,
                               final ScaleConstraint scaleConstraint,
                               final ReductionFactor reductionFactor,
@@ -153,7 +154,7 @@ public final class JPEGImageReader extends AbstractIIOImageReader
             crop = new CropByPercent();
         }
 
-        Dimension fullSize = getSize(0);
+        Dimension fullSize = getSize(imageIndex);
         image = readRegion(crop.getRectangle(fullSize, scaleConstraint), hints);
 
         if (image == null) {

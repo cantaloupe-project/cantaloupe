@@ -501,6 +501,71 @@ class InfoTest extends BaseTest {
         assertEquals("<cats/>", instance.getMetadata().getXMP().orElseThrow());
     }
 
+    /* getNumPages() */
+
+    @Test
+    void testGetNumPagesWithSingleResolutionImage() {
+        instance = Info.builder()
+                .withIdentifier(new Identifier("cats"))
+                .withSize(100, 80)
+                .withTileSize(50, 40)
+                .withFormat(Format.get("jpg"))
+                .withNumResolutions(1)
+                .build();
+        assertEquals(1, instance.getNumPages());
+    }
+
+    @Test
+    void testGetNumPagesWithPyramidalImage() {
+        instance = Info.builder()
+                .withIdentifier(new Identifier("cats"))
+                .withSize(1000, 800)
+                .withFormat(Format.get("jpg"))
+                .withNumResolutions(6)
+                .build();
+        // level 2
+        Info.Image image = new Info.Image();
+        image.setSize(new Dimension(500, 400));
+        instance.getImages().add(image);
+        // level 3
+        image = new Info.Image();
+        image.setSize(new Dimension(250, 200));
+        instance.getImages().add(image);
+        // level 4
+        image = new Info.Image();
+        image.setSize(new Dimension(125, 100));
+        instance.getImages().add(image);
+        // level 5
+        image = new Info.Image();
+        image.setSize(new Dimension(63, 50));
+        instance.getImages().add(image);
+        // level 6
+        image = new Info.Image();
+        image.setSize(new Dimension(32, 25));
+        instance.getImages().add(image);
+
+        assertEquals(1, instance.getNumPages());
+    }
+
+    @Test
+    void testGetNumPagesWithNonPyramidalMultiImageImage() {
+        instance = Info.builder()
+                .withIdentifier(new Identifier("cats"))
+                .withSize(1000, 800)
+                .withFormat(Format.get("jpg"))
+                .withNumResolutions(1)
+                .build();
+        Info.Image image = new Info.Image();
+        image.setSize(new Dimension(600, 300));
+        instance.getImages().add(image);
+        // level 3
+        image = new Info.Image();
+        image.setSize(new Dimension(200, 900));
+        instance.getImages().add(image);
+
+        assertEquals(3, instance.getNumPages());
+    }
+
     /* getNumResolutions() */
 
     @Test
@@ -672,6 +737,71 @@ class InfoTest extends BaseTest {
                 .withMetadata(instance.getMetadata())
                 .build();
         assertNotEquals(instance.hashCode(), info2.hashCode());
+    }
+
+    /* isPyramid() */
+
+    @Test
+    void testIsPyramidWithSingleResolutionImage() {
+        instance = Info.builder()
+                .withIdentifier(new Identifier("cats"))
+                .withSize(100, 80)
+                .withTileSize(50, 40)
+                .withFormat(Format.get("jpg"))
+                .withNumResolutions(1)
+                .build();
+        assertFalse(instance.isPyramid());
+    }
+
+    @Test
+    void testIsPyramidWithPyramidalImage() {
+        instance = Info.builder()
+                .withIdentifier(new Identifier("cats"))
+                .withSize(1000, 800)
+                .withFormat(Format.get("jpg"))
+                .withNumResolutions(6)
+                .build();
+        // level 2
+        Info.Image image = new Info.Image();
+        image.setSize(new Dimension(500, 400));
+        instance.getImages().add(image);
+        // level 3
+        image = new Info.Image();
+        image.setSize(new Dimension(250, 200));
+        instance.getImages().add(image);
+        // level 4
+        image = new Info.Image();
+        image.setSize(new Dimension(125, 100));
+        instance.getImages().add(image);
+        // level 5
+        image = new Info.Image();
+        image.setSize(new Dimension(63, 50));
+        instance.getImages().add(image);
+        // level 6
+        image = new Info.Image();
+        image.setSize(new Dimension(32, 25));
+        instance.getImages().add(image);
+
+        assertTrue(instance.isPyramid());
+    }
+
+    @Test
+    void testIsPyramidWithNonPyramidalMultiImageImage() {
+        instance = Info.builder()
+                .withIdentifier(new Identifier("cats"))
+                .withSize(1000, 800)
+                .withFormat(Format.get("jpg"))
+                .withNumResolutions(1)
+                .build();
+        Info.Image image = new Info.Image();
+        image.setSize(new Dimension(600, 300));
+        instance.getImages().add(image);
+        // level 3
+        image = new Info.Image();
+        image.setSize(new Dimension(200, 900));
+        instance.getImages().add(image);
+
+        assertFalse(instance.isPyramid());
     }
 
     /* setApplicationVersion() */

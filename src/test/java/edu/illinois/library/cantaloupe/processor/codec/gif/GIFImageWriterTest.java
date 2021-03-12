@@ -50,7 +50,7 @@ public class GIFImageWriterTest extends AbstractImageWriterTest {
         metadata = reader.getMetadata(0);
 
         reader.setSource(fixture);
-        bufferedImage = reader.read();
+        bufferedImage = reader.read(0);
 
         reader.setSource(fixture);
         planarImage =  PlanarImage.wrapRenderedImage(reader.readRendered());

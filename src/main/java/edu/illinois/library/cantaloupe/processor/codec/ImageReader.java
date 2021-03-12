@@ -99,7 +99,7 @@ public interface ImageReader {
      * @throws SourceFormatException if the image format is not supported.
      * @throws IOException if there is some other error reading the image.
      */
-    BufferedImage read() throws IOException;
+    BufferedImage read(int imageIndex) throws IOException;
 
     /**
      * Reads the region of the image corresponding to the given arguments.
@@ -107,7 +107,8 @@ public interface ImageReader {
      * @throws SourceFormatException if the image format is not supported.
      * @throws IOException if there is some other error reading the image.
      */
-    BufferedImage read(Crop crop,
+    BufferedImage read(int imageIndex,
+                       Crop crop,
                        Scale scale,
                        ScaleConstraint scaleConstraint,
                        ReductionFactor reductionFactor,
@@ -121,7 +122,8 @@ public interface ImageReader {
      * @deprecated Since version 4.0.
      */
     @Deprecated
-    RenderedImage readRendered(Crop crop,
+    RenderedImage readRendered(int imaageIndex,
+                               Crop crop,
                                Scale scale,
                                ScaleConstraint scaleConstraint,
                                ReductionFactor reductionFactor,

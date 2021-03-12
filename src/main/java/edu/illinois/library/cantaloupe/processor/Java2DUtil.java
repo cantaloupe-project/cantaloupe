@@ -387,7 +387,7 @@ public final class Java2DUtil {
         ImageReader reader = null;
         try (InputStream is = overlay.openStream()) {
             reader = new ImageReaderFactory().newImageReader(Format.get("png"), is);
-            return reader.read();
+            return reader.read(0);
         } catch (IOException e) {
             LOGGER.warn("{} (skipping overlay)", e.getMessage());
         } finally {

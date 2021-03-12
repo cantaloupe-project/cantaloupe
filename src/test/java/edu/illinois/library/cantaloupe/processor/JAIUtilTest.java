@@ -561,7 +561,7 @@ class JAIUtilTest extends BaseTest {
             ReductionFactor rf = new ReductionFactor();
 
             RenderedImage image = reader.readRendered(
-                    crop, scale, sc, rf, null);
+                    ops.getPageIndex(), crop, scale, sc, rf, null);
             PlanarImage planarImage = PlanarImage.wrapRenderedImage(image);
             return JAIUtil.getAsRenderedOp(planarImage);
         } finally {

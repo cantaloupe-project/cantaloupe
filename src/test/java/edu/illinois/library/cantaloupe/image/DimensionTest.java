@@ -4,6 +4,9 @@ import edu.illinois.library.cantaloupe.test.BaseTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.util.Collections;
+import java.util.List;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 public class DimensionTest extends BaseTest {
@@ -17,6 +20,37 @@ public class DimensionTest extends BaseTest {
         super.setUp();
         instance = new Dimension(1000, 800);
     }
+
+    /* isPyramid() */
+
+    @Test
+    void testIsPyramidWithSingleLevel() {
+        List<Dimension> levels = Collections.singletonList(new Dimension(500, 500));
+        assertFalse(Dimension.isPyramid(levels));
+    }
+
+    @Test
+    void testIsPyramidWithPyramidalLevels() {
+        List<Dimension> levels = List.of(
+                new Dimension(1000, 800),
+                new Dimension(500, 400),
+                new Dimension(250, 200),
+                new Dimension(125, 100),
+                new Dimension(63, 50),
+                new Dimension(32, 25));
+        assertTrue(Dimension.isPyramid(levels));
+    }
+
+    @Test
+    void testIsPyramidWithNonPyramidalLevels() {
+        List<Dimension> levels = List.of(
+                new Dimension(1000, 800),
+                new Dimension(1200, 600),
+                new Dimension(900, 200));
+        assertFalse(Dimension.isPyramid(levels));
+    }
+
+    /* ofScaledArea() */
 
     @Test
     void testOfScaledArea() {

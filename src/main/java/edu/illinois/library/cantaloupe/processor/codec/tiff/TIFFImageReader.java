@@ -2,6 +2,7 @@ package edu.illinois.library.cantaloupe.processor.codec.tiff;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.image.Compression;
+import edu.illinois.library.cantaloupe.image.Dimension;
 import edu.illinois.library.cantaloupe.image.Metadata;
 import edu.illinois.library.cantaloupe.image.ScaleConstraint;
 import edu.illinois.library.cantaloupe.operation.Crop;
@@ -22,6 +23,8 @@ import javax.imageio.metadata.IIOMetadata;
 import javax.imageio.metadata.IIOMetadataNode;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
 public final class TIFFImageReader extends AbstractIIOImageReader
@@ -104,20 +107,36 @@ public final class TIFFImageReader extends AbstractIIOImageReader
     public Metadata getMetadata(int imageIndex) throws IOException {
         // Throw any contract-required exceptions.
         getSize(0);
-        final IIOMetadata metadata = iioReader.getImageMetadata(imageIndex);
+        final IIOMetadata metadata  = iioReader.getImageMetadata(imageIndex);
         final String metadataFormat = metadata.getNativeMetadataFormatName();
         return new TIFFMetadata(metadata, metadataFormat);
     }
 
+    /**
+     * Only a pyramidal TIFF will have more than one resolution; but there is
+     * no simple flag in a pyramidal TIFF that indicates that it's pyramidal.
+     * For files that contain multiple images, this method checks the
+     * dimensions of each, and if they look to make up a pyramid, returns their
+     * count. If not, it returns {@code 1}.
+     */
     @Override
     public int getNumResolutions() throws IOException {
-        return getNumImages();
+        return isPyramidal() ? getNumImages() : 1;
     }
 
     @Override
     protected String getUserPreferredIIOImplementation() {
         Configuration config = Configuration.getInstance();
         return config.getString(IMAGEIO_PLUGIN_CONFIG_KEY);
+    }
+
+    private boolean isPyramidal() throws IOException {
+        final int numImages = getNumImages();
+        final List<Dimension> sizes = new ArrayList<>(numImages);
+        for (int i = 0; i < numImages; i++) {
+            sizes.add(getSize(i));
+        }
+        return Dimension.isPyramid(sizes);
     }
 
     /**
@@ -127,7 +146,8 @@ public final class TIFFImageReader extends AbstractIIOImageReader
      * the returned image will require additional cropping.</p>
      */
     @Override
-    public BufferedImage read(Crop crop,
+    public BufferedImage read(int imageIndex,
+                              Crop crop,
                               Scale scale,
                               final ScaleConstraint scaleConstraint,
                               final ReductionFactor reductionFactor,
@@ -141,8 +161,8 @@ public final class TIFFImageReader extends AbstractIIOImageReader
 
         BufferedImage image;
         if (hints != null && hints.contains(ReaderHint.IGNORE_CROP)) {
-            image = read();
-        } else {
+            image = read(imageIndex);
+        } else if (getNumResolutions() > 1) {
             try {
                 image = readSmallestUsableSubimage(
                         crop, scale, scaleConstraint, reductionFactor,
@@ -150,6 +170,9 @@ public final class TIFFImageReader extends AbstractIIOImageReader
             } catch (IndexOutOfBoundsException e) {
                 throw new SourceFormatException();
             }
+        } else {
+            image = readMonoResolution(
+                    imageIndex, crop, scaleConstraint, hints);
         }
         if (image == null) {
             throw new SourceFormatException(iioReader.getFormatName());

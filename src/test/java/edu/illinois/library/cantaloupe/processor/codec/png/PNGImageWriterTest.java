@@ -76,7 +76,7 @@ public class PNGImageWriterTest extends AbstractImageWriterTest {
         final PNGImageReader reader = new PNGImageReader();
         reader.setSource(TestUtil.getImage("png-xmp.png"));
         final Metadata metadata = reader.getMetadata(0);
-        final BufferedImage image = reader.read();
+        final BufferedImage image = reader.read(0);
 
         ByteArrayOutputStream os = new ByteArrayOutputStream();
         Encode encode = new Encode(Format.get("png"));
@@ -93,7 +93,7 @@ public class PNGImageWriterTest extends AbstractImageWriterTest {
         final PNGImageReader reader = new PNGImageReader();
         reader.setSource(TestUtil.getImage("png-nativemetadata.png"));
         final Metadata srcMetadata = reader.getMetadata(0);
-        final BufferedImage image = reader.read();
+        final BufferedImage image = reader.read(0);
 
         ByteArrayOutputStream os = new ByteArrayOutputStream();
         instance.dispose();
@@ -112,7 +112,7 @@ public class PNGImageWriterTest extends AbstractImageWriterTest {
         final PNGImageReader reader = new PNGImageReader();
         reader.setSource(TestUtil.getImage("png-xmp.png"));
         final Metadata metadata = reader.getMetadata(0);
-        final BufferedImage image = reader.read();
+        final BufferedImage image = reader.read(0);
 
         ByteArrayOutputStream os = new ByteArrayOutputStream();
         instance.dispose();

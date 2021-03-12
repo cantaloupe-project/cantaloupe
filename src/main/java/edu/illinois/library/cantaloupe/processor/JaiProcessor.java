@@ -99,7 +99,7 @@ class JaiProcessor extends AbstractImageIOProcessor
             final Set<ReaderHint> hints   = EnumSet.noneOf(ReaderHint.class);
 
             final RenderedImage renderedImage = reader.readRendered(
-                    crop, scale, sc, rf, hints);
+                    opList.getPageIndex(), crop, scale, sc, rf, hints);
             RenderedOp renderedOp = JAIUtil.getAsRenderedOp(
                     RenderedOp.wrapRenderedImage(renderedImage));
 

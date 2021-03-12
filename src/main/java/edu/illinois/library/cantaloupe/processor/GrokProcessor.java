@@ -448,7 +448,7 @@ class GrokProcessor  extends AbstractProcessor implements FileProcessor {
             final ImageReader reader =
                     new ImageReaderFactory().newImageReader(Format.get("bmp"), is);
             try {
-                final BufferedImage image = reader.read();
+                final BufferedImage image = reader.read(0);
                 final Set<ReaderHint> hints =
                         EnumSet.of(ReaderHint.ALREADY_CROPPED);
 
@@ -496,7 +496,7 @@ class GrokProcessor  extends AbstractProcessor implements FileProcessor {
                 final Set<ReaderHint> hints =
                         EnumSet.of(ReaderHint.ALREADY_CROPPED);
 
-                BufferedImage image = reader.read();
+                BufferedImage image = reader.read(0);
                 image = Java2DPostProcessor.postProcess(
                         image, hints, opList, info, reductionFactor);
 

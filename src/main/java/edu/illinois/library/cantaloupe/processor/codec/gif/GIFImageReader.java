@@ -4,22 +4,12 @@ import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.image.Compression;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Metadata;
-import edu.illinois.library.cantaloupe.image.ScaleConstraint;
-import edu.illinois.library.cantaloupe.operation.Crop;
-import edu.illinois.library.cantaloupe.operation.ReductionFactor;
-import edu.illinois.library.cantaloupe.operation.Scale;
-import edu.illinois.library.cantaloupe.processor.SourceFormatException;
 import edu.illinois.library.cantaloupe.processor.codec.AbstractIIOImageReader;
 import edu.illinois.library.cantaloupe.processor.codec.ImageReader;
-import edu.illinois.library.cantaloupe.processor.codec.ReaderHint;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.imageio.IIOException;
-import java.awt.Rectangle;
-import java.awt.image.BufferedImage;
 import java.io.IOException;
-import java.util.Set;
 
 public final class GIFImageReader extends AbstractIIOImageReader
         implements ImageReader {
@@ -85,33 +75,6 @@ public final class GIFImageReader extends AbstractIIOImageReader
     protected String getUserPreferredIIOImplementation() {
         var config = Configuration.getInstance();
         return config.getString(IMAGEIO_PLUGIN_CONFIG_KEY);
-    }
-
-    /**
-     * The default Image I/O GIF reader apparently has a bug that can cause
-     * palette corruption when {@link
-     * javax.imageio.ImageReadParam#setSourceRegion(Rectangle) reading a
-     * region}. This override does not do that.
-     *
-     * {@inheritDoc}
-     */
-    @Override
-    public BufferedImage read(Crop crop,
-                              Scale scale,
-                              final ScaleConstraint scaleConstraint,
-                              final ReductionFactor reductionFactor,
-                              final Set<ReaderHint> hints) throws IOException {
-        try {
-            BufferedImage image = iioReader.read(0);
-            if (image == null) {
-                throw new SourceFormatException(iioReader.getFormatName());
-            }
-            hints.add(ReaderHint.ALREADY_ORIENTED);
-            return image;
-        } catch (IIOException e) {
-            handle(e);
-            return null;
-        }
     }
 
 }

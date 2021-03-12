@@ -77,7 +77,7 @@ public class JPEGImageWriterTest extends AbstractImageWriterTest {
         reader.setSource(TestUtil.getImage("jpg-xmp.jpg"));
         try {
             final Metadata metadata = reader.getMetadata(0);
-            final BufferedImage image = reader.read();
+            final BufferedImage image = reader.read(0);
 
             ByteArrayOutputStream os = new ByteArrayOutputStream();
             Encode encode = new Encode(Format.get("jpg"));
@@ -99,7 +99,7 @@ public class JPEGImageWriterTest extends AbstractImageWriterTest {
         reader.setSource(TestUtil.getImage("jpg-xmp.jpg"));
         try {
             final Metadata metadata = reader.getMetadata(0);
-            final BufferedImage image = reader.read();
+            final BufferedImage image = reader.read(0);
 
             ByteArrayOutputStream os = new ByteArrayOutputStream();
             Encode encode = new Encode(Format.get("jpg"));

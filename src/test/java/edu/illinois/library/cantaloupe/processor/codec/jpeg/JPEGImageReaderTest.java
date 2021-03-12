@@ -89,7 +89,7 @@ public class JPEGImageReaderTest extends AbstractImageReaderTest {
         instance = new JPEGImageReader();
         instance.setSource(TestUtil.getImage("jpg-ycck.jpg"));
 
-        BufferedImage result = instance.read();
+        BufferedImage result = instance.read(0);
         assertEquals(64, result.getWidth());
         assertEquals(56, result.getHeight());
     }

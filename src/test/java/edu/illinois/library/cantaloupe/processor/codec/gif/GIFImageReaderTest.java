@@ -103,12 +103,12 @@ public class GIFImageReaderTest extends AbstractImageReaderTest {
         ReductionFactor rf    = new ReductionFactor();
         Set<ReaderHint> hints = new HashSet<>();
 
-        BufferedImage image = instance.read(crop, scale, sc, rf, hints);
+        BufferedImage image = instance.read(0, crop, scale, sc, rf, hints);
 
-        assertEquals(64, image.getWidth());
-        assertEquals(56, image.getHeight());
+        assertEquals(40, image.getWidth());
+        assertEquals(40, image.getHeight());
         assertEquals(0, rf.factor);
-        assertFalse(hints.contains(ReaderHint.ALREADY_CROPPED));
+        assertTrue(hints.contains(ReaderHint.ALREADY_CROPPED));
     }
 
     /* readSequence() */

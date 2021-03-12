@@ -12,6 +12,7 @@ import edu.illinois.library.cantaloupe.operation.ScaleByPercent;
 import edu.illinois.library.cantaloupe.operation.ScaleByPixels;
 import edu.illinois.library.cantaloupe.processor.SourceFormatException;
 import edu.illinois.library.cantaloupe.test.BaseTest;
+import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -131,27 +132,27 @@ public abstract class AbstractImageReaderTest extends BaseTest {
     }
 
     @Test
-    public void testRead() throws Exception {
-        BufferedImage result = instance.read();
+    public void testRead1() throws Exception {
+        BufferedImage result = instance.read(0);
         assertEquals(FIXTURE_SIZE.width(), result.getWidth(), DELTA);
         assertEquals(FIXTURE_SIZE.height(), result.getHeight(), DELTA);
     }
 
     @Test
-    public void testReadWithIncompatibleImage() throws Exception {
+    public void testRead1WithIncompatibleImage() throws Exception {
         instance.setSource(getUnsupportedFixture());
-        assertThrows(SourceFormatException.class, () -> instance.read());
+        assertThrows(SourceFormatException.class, () -> instance.read(0));
     }
 
     @Test
-    public void testReadWithArguments() throws Exception {
+    public void testRead2() throws Exception {
         Crop crop             = new CropByPixels(10, 10, 40, 40);
         Scale scale           = new ScaleByPixels(35, 35, ScaleByPixels.Mode.ASPECT_FIT_INSIDE);
         ScaleConstraint sc    = new ScaleConstraint(1, 1);
         ReductionFactor rf    = new ReductionFactor();
         Set<ReaderHint> hints = new HashSet<>();
 
-        BufferedImage image = instance.read(crop, scale, sc, rf, hints);
+        BufferedImage image = instance.read(0, crop, scale, sc, rf, hints);
 
         assertEquals(40, image.getWidth());
         assertEquals(40, image.getHeight());
@@ -160,7 +161,7 @@ public abstract class AbstractImageReaderTest extends BaseTest {
     }
 
     @Test
-    public void testReadWithArgumentsWithIncompatibleImage() throws Exception {
+    void testRead2WithIncompatibleImage() throws Exception {
         Crop crop             = new CropByPercent();
         Scale scale           = new ScaleByPercent();
         ScaleConstraint sc    = new ScaleConstraint(1, 1);
@@ -169,7 +170,7 @@ public abstract class AbstractImageReaderTest extends BaseTest {
 
         instance.setSource(getUnsupportedFixture());
         assertThrows(SourceFormatException.class,
-                () -> instance.read(crop, scale, sc, rf, hints));
+                () -> instance.read(0, crop, scale, sc, rf, hints));
     }
 
     @Test
@@ -203,7 +204,7 @@ public abstract class AbstractImageReaderTest extends BaseTest {
 
         instance.setSource(getUnsupportedFixture());
         assertThrows(SourceFormatException.class,
-                () -> instance.readRendered(crop, scale, sc, rf, hints));
+                () -> instance.readRendered(0, crop, scale, sc, rf, hints));
     }
 
     @Test

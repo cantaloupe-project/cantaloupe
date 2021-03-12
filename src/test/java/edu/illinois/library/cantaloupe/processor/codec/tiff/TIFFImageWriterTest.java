@@ -79,7 +79,7 @@ public class TIFFImageWriterTest extends AbstractImageWriterTest {
         try {
             reader.setSource(TestUtil.getImage("tif-xmp.tif"));
             final Metadata metadata = reader.getMetadata(0);
-            final BufferedImage image = reader.read();
+            final BufferedImage image = reader.read(0);
 
             ByteArrayOutputStream os = new ByteArrayOutputStream();
             Encode encode = new Encode(Format.get("tif"));
@@ -100,7 +100,7 @@ public class TIFFImageWriterTest extends AbstractImageWriterTest {
         try {
             reader.setSource(TestUtil.getImage("tif-exif.tif"));
             final Metadata metadata = reader.getMetadata(0);
-            final BufferedImage image = reader.read();
+            final BufferedImage image = reader.read(0);
 
             ByteArrayOutputStream os = new ByteArrayOutputStream();
             Encode encode = new Encode(Format.get("tif"));
@@ -121,7 +121,7 @@ public class TIFFImageWriterTest extends AbstractImageWriterTest {
         try {
             reader.setSource(TestUtil.getImage("tif-xmp.tif"));
             final Metadata metadata = reader.getMetadata(0);
-            final BufferedImage image = reader.read();
+            final BufferedImage image = reader.read(0);
 
             ByteArrayOutputStream os = new ByteArrayOutputStream();
             Encode encode = new Encode(Format.get("tif"));

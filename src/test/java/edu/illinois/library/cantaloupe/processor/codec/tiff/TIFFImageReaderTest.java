@@ -3,12 +3,22 @@ package edu.illinois.library.cantaloupe.processor.codec.tiff;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.image.Compression;
 import edu.illinois.library.cantaloupe.image.Dimension;
+import edu.illinois.library.cantaloupe.image.ScaleConstraint;
+import edu.illinois.library.cantaloupe.operation.Crop;
+import edu.illinois.library.cantaloupe.operation.CropByPercent;
+import edu.illinois.library.cantaloupe.operation.ReductionFactor;
+import edu.illinois.library.cantaloupe.operation.Scale;
+import edu.illinois.library.cantaloupe.operation.ScaleByPercent;
 import edu.illinois.library.cantaloupe.processor.codec.AbstractImageReaderTest;
+import edu.illinois.library.cantaloupe.processor.codec.ReaderHint;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.junit.jupiter.api.Test;
 
+import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.HashSet;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -111,6 +121,13 @@ public class TIFFImageReaderTest extends AbstractImageReaderTest {
         assertEquals(3, instance.getNumResolutions());
     }
 
+    @Test
+    public void testGetNumResolutionsWithNonPyramidalMultiImageTIFF()
+            throws Exception {
+        instance.setSource(TestUtil.getImage("tif-bw-9image.tif"));
+        assertEquals(1, instance.getNumResolutions());
+    }
+
     /* getPreferredIIOImplementations() */
 
     @Test
@@ -148,10 +165,41 @@ public class TIFFImageReaderTest extends AbstractImageReaderTest {
         assertEquals(new Dimension(16, 16), instance.getTileSize(0));
     }
 
+    /* read() */
+
     @Test
-    public void testReadWithMultiResolutionImage() {
+    void testRead1WithMultiResolutionImage() {
         // TODO: write this
     }
+
+    @Test
+    void testRead1WithMultiImageImage() throws Exception {
+        instance.setSource(TestUtil.getImage("tif-bw-9image.tif"));
+        // Read two distinct images.
+        BufferedImage image1 = instance.read(0);
+        BufferedImage image2 = instance.read(2);
+        // Assert that they are different.
+        assertNotEquals(image1.getWidth(), image2.getWidth());
+    }
+
+    @Test
+    void testRead2WithMultiImageImage() throws Exception {
+        instance.setSource(TestUtil.getImage("tif-bw-9image.tif"));
+        Crop crop                       = new CropByPercent(0, 0, 1, 1);
+        Scale scale                     = new ScaleByPercent(1.0);
+        ScaleConstraint scaleConstraint = new ScaleConstraint(1, 1);
+        ReductionFactor reductionFactor = new ReductionFactor(1);
+        Set<ReaderHint> hints           = new HashSet<>();
+        // Read two distinct images.
+        BufferedImage image1 = instance.read(
+                1, crop, scale, scaleConstraint, reductionFactor, hints);
+        BufferedImage image2 = instance.read(
+                2, crop, scale, scaleConstraint, reductionFactor, hints);
+        // Assert that they are different.
+        assertNotEquals(image1.getWidth(), image2.getWidth());
+    }
+
+    /* readSequence() */
 
     @Test
     @Override

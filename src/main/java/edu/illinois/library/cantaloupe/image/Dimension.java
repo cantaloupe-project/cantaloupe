@@ -2,6 +2,8 @@ package edu.illinois.library.cantaloupe.image;
 
 import edu.illinois.library.cantaloupe.util.StringUtils;
 
+import java.util.List;
+
 /**
  * <p>Two-dimensional area, typically an image area. Values are stored as
  * doubles, in contrast to {@link java.awt.Dimension}.</p>
@@ -13,6 +15,34 @@ public final class Dimension {
     private static final double DELTA = 0.00000001;
 
     private double width, height;
+
+    /**
+     * @param levels Resolution levels in order from largest to smallest.
+     * @return       Whether the given dimensions appear to comprise a pyramid
+     *               of successively half-scaled dimensions.
+     * @since 5.0
+     */
+    public static boolean isPyramid(List<Dimension> levels) {
+        boolean isPyramid   = false;
+        final int numImages = levels.size();
+        if (numImages > 1) {
+            isPyramid = true;
+            double expectedWidth = 0, expectedHeight = 0;
+            // Either dimension may deviate from expectations by this amount.
+            final short tolerance = 2;
+            for (int i = 0; i < numImages; i++) {
+                Dimension size = levels.get(i);
+                if (i > 0 && (Math.abs(size.width() - expectedWidth) > tolerance ||
+                        Math.abs(size.height() - expectedHeight) > tolerance)) {
+                    isPyramid = false;
+                    break;
+                }
+                expectedWidth = size.width() / 2.0;
+                expectedHeight = size.height() / 2.0;
+            }
+        }
+        return isPyramid;
+    }
 
     /**
      * @param size       Pre-scaled size.
