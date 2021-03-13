@@ -433,9 +433,7 @@ GrokProcessor.path_to_binaries =
 
 # The following will enable disk to be used as well as memory during
 # PDF loading in PdfBoxProcessor.  If `max_memory_bytes` is -1 it
-# will use unlimited memory.  `max_storage_bytes` is the total amount
-# of memory plus scratch file size combined.  `scratch_location` is the
-# location on disk where the temporary file lives.
+# will use unlimited memory.
 processor.pdf.scratch_file_enabled = false
 processor.pdf.max_memory_bytes = -1
 
