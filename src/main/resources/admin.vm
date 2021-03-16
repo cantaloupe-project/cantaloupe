@@ -1117,6 +1117,33 @@
                         </section>
 
                         <section>
+                            <h3>Health Check</h3>
+                            <table class="table table-striped">
+                                <tr>
+                                    <td>
+                                        <a tabindex="0" class="btn btn-sm cl-help"
+                                           role="button" data-toggle="popover"
+                                           data-trigger="focus"
+                                           data-content="If true, sources and caches will be checked,
+                                           resulting in a more robust but slower health check. Set this
+                                           to false if these services already have their own health checks.">?</a>
+                                    </td>
+                                    <td>
+                                        <div class="checkbox">
+                                            <label>
+                                                <input type="checkbox"
+                                                       name="endpoint.health.dependency_check"
+                                                       value="false"
+                                                       data-requires-restart="false">
+                                                Check Dependencies
+                                            </label>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </table>
+                        </section>
+
+                        <section>
                             <h2>Meta-Identifiers</h2>
 
                             <table class="table table-striped">

@@ -26,6 +26,8 @@
   information like a page number and/or scale constraint.
 * The `page` and `time` query arguments have been deprecated in favor of the
   meta-identifier-expressed page number explained above.
+* Added an` endpoint.health.dependency_check` key to control whether the
+  health check also checks dependencies such as sources and caches.
 * Added a `log_error_responses` configuration key that causes all errors at all
   endpoints to be logged, which may help to track down errors that evade
   logging elsewhere.

@@ -126,6 +126,11 @@ endpoint.api.enabled = false
 endpoint.api.username =
 endpoint.api.secret =
 
+# If true, sources and caches will be checked, resulting in a more robust
+# but slower health check. Set this to false if these services already have
+# their own health checks.
+endpoint.health.dependency_check = false
+
 ###########################################################################
 # SOURCES
 ###########################################################################

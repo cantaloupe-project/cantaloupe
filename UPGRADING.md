@@ -14,6 +14,7 @@ current version.
     * `log_error_responses`
     * `meta_identifier.*`
     * `endpoint.iiif.3.enabled`
+    * `endpoint.health.dependency_check`
     * `S3Source.region`
         * If you had set `S3Source.endpoint` to an AWS endpoint, unset that and
           set this key to your AWS region instead.
