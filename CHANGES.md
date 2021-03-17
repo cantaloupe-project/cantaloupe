@@ -11,7 +11,8 @@
   Image API.
 * The minimum and maximum size of the built-in web server's thread pool is
   configurable.
-* Improved the configurability and efficiency of the health check endpoint.
+* Added a configuration option to control whether the health check includes
+  dependent sources and caches.
 * A `cache=recache` URL query argument is available that reprocesses and
   recaches the derivative image before delivering it.
 * The `X-IIIF-ID` reverse proxy header is no longer supported. `X-Forwarded-ID`
@@ -108,7 +109,9 @@
   images to return HTTP 403 status.
 * Fixed a potential NullPointerException from Java2dProcessor when the
   `processor.metadata.respect_orientation` configuration key is set to `true`.
-* Improved TurboJpegProcessor's ability to handle corrupt source images.
+* Improved TurboJpegProcessor's ability to partially decode corrupt source
+  images.
+* Improve the efficiency of the health check endpoint.
 
 ## 4.1.7
 
