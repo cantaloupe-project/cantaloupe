@@ -6,7 +6,9 @@
   images to return HTTP 403 status.
 * Fixed a potential NullPointerException from Java2dProcessor when the
   `processor.metadata.respect_orientation` configuration key is set to `true`.
-* Improved TurboJpegProcessor's ability to handle corrupt source images.
+* Improved TurboJpegProcessor's ability to partially decode corrupt source
+  images.
+* Improve the efficiency of the health check endpoint.
 
 ## 4.1.7
 

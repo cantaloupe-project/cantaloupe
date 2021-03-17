@@ -6,16 +6,16 @@ import edu.illinois.library.cantaloupe.cache.DerivativeCache;
 import edu.illinois.library.cantaloupe.cache.SourceCache;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.Info;
-import edu.illinois.library.cantaloupe.operation.OperationList;
-import edu.illinois.library.cantaloupe.processor.Processor;
-import edu.illinois.library.cantaloupe.processor.ProcessorConnector;
-import edu.illinois.library.cantaloupe.processor.ProcessorFactory;
+import edu.illinois.library.cantaloupe.source.FileSource;
 import edu.illinois.library.cantaloupe.source.Source;
+import edu.illinois.library.cantaloupe.source.StreamSource;
 import edu.illinois.library.cantaloupe.util.Stopwatch;
-import org.apache.commons.io.output.NullOutputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.imageio.stream.FileImageInputStream;
+import javax.imageio.stream.ImageInputStream;
+import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -25,7 +25,6 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -33,12 +32,11 @@ import java.util.concurrent.TimeUnit;
  * functioning correctly:</p>
  *
  * <dl>
- *     <dt>Processing I/O</dt>
+ *     <dt>Source I/O</dt>
  *     <dd>When an image endpoint successfully completes a request, it calls
- *     {@link #addSourceProcessorPair(Source, Processor, OperationList)} to
- *     register the various objects it used to do so. This class keeps track of
- *     every unique source-processor pair and tests each one against the last
- *     known image it worked with.</dd>
+ *     {@link #addSourceUsage(Source)} to register the various objects it used
+ *     to do so. This class keeps track of every unique source usage and tests
+ *     each one against the last known image it worked with.</dd>
  *     <dt>The source cache</dt>
  *     <dd>An image is written to the source cache (if available) and read
  *     back.</dd>
@@ -55,7 +53,7 @@ public final class HealthChecker {
     private static final Logger LOGGER =
             LoggerFactory.getLogger(HealthChecker.class);
 
-    private static final Set<SourceProcessorPair> SOURCE_PROCESSOR_PAIRS =
+    private static final Set<SourceUsage> SOURCE_USAGES =
             ConcurrentHashMap.newKeySet();
 
     /**
@@ -65,32 +63,29 @@ public final class HealthChecker {
     private static Health overriddenHealth;
 
     /**
-     * <p>Informs the class of a {@link Source}-{@link Processor} pair that has
-     * been used successfully, and could be used again in the course of a
-     * health check. Should be called by image processing endpoints after
-     * processing has completed successfully.</p>
+     * <p>Informs the class of a {@link Source} that has been used
+     * successfully, and could be used again in the course of a health check.
+     * Should be called by image processing endpoints after processing has
+     * completed successfully.</p>
      *
      * <p>This method is thread-safe.</p>
      */
-    public static void addSourceProcessorPair(Source source,
-                                              Processor processor,
-                                              OperationList opList) {
-        final SourceProcessorPair pair = new SourceProcessorPair(
-                source, processor.getClass().getName(), opList);
-        // The pair is configured to read a specific image. We want to remove
-        // any older "equal" (see this ivar's equals() method!) instance before
-        // adding the current one because the older one is more likely to be
-        // stale (no longer accessible), in light of the possibility that the
+    public static void addSourceUsage(Source source) {
+        final SourceUsage usage = new SourceUsage(source);
+        // The source is configured to read a specific image. We want to remove
+        // any older "equal" (see SourceUsage.equals()) instance before adding
+        // the current one because the older one is more likely to be stale
+        // (no longer accessible), in light of the possibility that the
         // application has been running for a while.
-        SOURCE_PROCESSOR_PAIRS.remove(pair);
-        SOURCE_PROCESSOR_PAIRS.add(pair);
+        SOURCE_USAGES.remove(usage);
+        SOURCE_USAGES.add(usage);
     }
 
     /**
      * For testing only!
      */
-    static Set<SourceProcessorPair> getSourceProcessorPairs() {
-        return SOURCE_PROCESSOR_PAIRS;
+    static Set<SourceUsage> getSourceUsages() {
+        return SOURCE_USAGES;
     }
 
     /**
@@ -104,64 +99,51 @@ public final class HealthChecker {
     }
 
     /**
-     * <p>Checks the functionality of every {@link #addSourceProcessorPair(
-     * Source, Processor, OperationList) known} source-processor pair. The
-     * checks exercise the full length of the processing pipeline, reading an
-     * image from a {@link Source}, running it through a {@link Processor}, and
-     * writing it to an output stream.</p>
+     * <p>Checks the functionality of every {@link #addSourceUsage(Source)
+     * known} source usage.</p>
      *
      * <p>The individual checks are done concurrently in as many threads as
      * there are unique pairs. This is intended to improve responsiveness,
      * assuming there aren't a whole lot more pairs than there are CPU
      * threads.</p>
      */
-    private static synchronized void checkProcessing(Health health) {
+    private static synchronized void checkSources(Health health) {
         // Make a local copy to ensure that another thread doesn't change it
         // underneath us.
-        final Set<SourceProcessorPair> localPairs =
-                new HashSet<>(SOURCE_PROCESSOR_PAIRS);
-        final int numPairs = localPairs.size();
+        final Set<SourceUsage> localUsages =
+                new HashSet<>(SOURCE_USAGES);
+        final int numUsages = localUsages.size();
 
-        LOGGER.trace("{} unique source/processor combinations.", numPairs);
+        LOGGER.trace("{} unique sources.", numUsages);
 
-        final CountDownLatch latch = new CountDownLatch(numPairs);
-        localPairs.forEach(pair -> {
+        final CountDownLatch latch = new CountDownLatch(numUsages);
+
+        localUsages.forEach(usage -> {
             ThreadPool.getInstance().submit(() -> {
-                LOGGER.debug("Exercising processing I/O: {}", pair);
-
-                Future<Path> tempFileFuture = null;
-                Source source = pair.getSource();
-
-                final ProcessorFactory pf = new ProcessorFactory();
-                try (Processor processor = pf.newProcessor(pair.getProcessorName());
-                     OutputStream os = new NullOutputStream()) {
-                    processor.setSourceFormat(source.getFormat());
-
-                    ProcessorConnector connector = new ProcessorConnector();
-                    tempFileFuture = connector.connect(
-                            source,
-                            processor,
-                            source.getIdentifier(),
-                            source.getFormat());
-                    Info info = processor.readInfo();
-                    processor.process(pair.getOperationList(), info, os);
+                LOGGER.debug("Exercising source I/O: {}", usage);
+                ImageInputStream is = null;
+                try {
+                    if (usage.getSource() instanceof FileSource) {
+                        FileSource source = (FileSource) usage.getSource();
+                        is = new FileImageInputStream(source.getPath().toFile());
+                    } else {
+                        StreamSource source = (StreamSource) usage.getSource();
+                        is = source.newStreamFactory().newSeekableStream();
+                    }
+                    is.length();
                 } catch (Throwable t) {
                     health.setMinColor(Health.Color.RED);
                     health.setMessage(String.format("%s (%s)",
-                            t.getMessage(), pair));
+                            t.getMessage(), usage));
                 } finally {
-                    latch.countDown();
-                    if (tempFileFuture != null) {
+                    if (is != null) {
                         try {
-                            Path tempFile = tempFileFuture.get();
-                            if (tempFile != null) {
-                                Files.deleteIfExists(tempFile);
-                            }
-                        } catch (Exception e) {
-                            LOGGER.error("checkProcessing(): failed to delete temp file: {}",
-                                    e.getMessage(), e);
+                            is.close();
+                        } catch (IOException e) {
+                            LOGGER.warn("checkSources(): {}", e.getMessage());
                         }
                     }
+                    latch.countDown();
                 }
             });
         });
@@ -237,7 +219,7 @@ public final class HealthChecker {
 
     /**
      * <p>Performs a health check as explained in the class documentation.
-     * Each group of checks (derivative cache, processor I/O, etc.) is
+     * Each group of checks (derivative cache, source I/O, etc.) is
      * performed sequentially. If any check fails, all remaining checks are
      * skipped.</p>
      *
@@ -262,10 +244,10 @@ public final class HealthChecker {
         final Stopwatch watch = new Stopwatch();
         final Health health   = new Health();
 
-        // Check processing I/O.
+        // Check source I/O.
         if (!Health.Color.RED.equals(health.getColor())) {
-            checkProcessing(health);
-            LOGGER.trace("Processing I/O check completed in {}; health so far is {}",
+            checkSources(health);
+            LOGGER.trace("Source I/O check completed in {}; health so far is {}",
                     watch, health.getColor());
         }
 
