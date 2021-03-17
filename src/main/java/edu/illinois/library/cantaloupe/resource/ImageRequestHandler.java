@@ -404,8 +404,7 @@ public class ImageRequestHandler extends AbstractRequestHandler
                         .write(outputStream);
 
                 // Notify the health checker of a successful response.
-                HealthChecker.addSourceProcessorPair(
-                        source, processor, operationList);
+                HealthChecker.addSourceUsage(source);
                 return;
             } catch (SourceFormatException e) {
                 LOGGER.debug("Format inferred by {} disagrees with the one " +

@@ -11,6 +11,7 @@
   Image API.
 * The minimum and maximum size of the built-in web server's thread pool is
   configurable.
+* Improved the configurability and efficiency of the health check endpoint.
 * A `cache=recache` URL query argument is available that reprocesses and
   recaches the derivative image before delivering it.
 * The `X-IIIF-ID` reverse proxy header is no longer supported. `X-Forwarded-ID`
@@ -26,8 +27,6 @@
   information like a page number and/or scale constraint.
 * The `page` and `time` query arguments have been deprecated in favor of the
   meta-identifier-expressed page number explained above.
-* Added an` endpoint.health.dependency_check` key to control whether the
-  health check also checks dependencies such as sources and caches.
 * Added a `log_error_responses` configuration key that causes all errors at all
   endpoints to be logged, which may help to track down errors that evade
   logging elsewhere.

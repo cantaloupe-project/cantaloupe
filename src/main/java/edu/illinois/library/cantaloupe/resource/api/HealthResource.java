@@ -42,7 +42,7 @@ public class HealthResource extends AbstractAPIResource {
         Health health;
         final var config = Configuration.getInstance();
         if (config.getBoolean(Key.HEALTH_DEPENDENCY_CHECK, false)) {
-            health = new HealthChecker().check();
+            health = new HealthChecker().checkConcurrently();
         } else {
             health = new Health();
         }

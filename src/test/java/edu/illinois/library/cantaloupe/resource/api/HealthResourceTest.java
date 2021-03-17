@@ -23,7 +23,7 @@ public class HealthResourceTest extends AbstractAPIResourceTest {
     @Override
     public void setUp() throws Exception {
         super.setUp();
-        HealthChecker.getSourceProcessorPairs().clear();
+        HealthChecker.getSourceUsages().clear();
         HealthChecker.overrideHealth(null);
     }
 
