@@ -1,8 +1,8 @@
 package edu.illinois.library.cantaloupe.processor.codec;
 
-import com.sun.media.imageio.plugins.tiff.TIFFDirectory;
-import com.sun.media.imageio.plugins.tiff.TIFFField;
 import edu.illinois.library.cantaloupe.image.Orientation;
+import it.geosolutions.imageio.plugins.tiff.TIFFDirectory;
+import it.geosolutions.imageio.plugins.tiff.TIFFField;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.NodeIterator;
