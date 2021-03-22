@@ -1138,16 +1138,16 @@ public final class Java2DUtil {
      * Grayscales the given image's pixels.
      */
     private static void grayscale(BufferedImage image) {
-        for (int x = 0; x < image.getWidth(); x++) {
-            for (int j = 0; j < image.getHeight(); j++) {
-                int alpha = new java.awt.Color(image.getRGB(x, j)).getAlpha();
-                int red   = new java.awt.Color(image.getRGB(x, j)).getRed();
-                int green = new java.awt.Color(image.getRGB(x, j)).getGreen();
-                int blue  = new java.awt.Color(image.getRGB(x, j)).getBlue();
-
-                red = (int) (0.21 * red + 0.71 * green + 0.07 * blue);
-                Color color = new Color(red, red, red, alpha);
-                image.setRGB(x, j, color.getARGB());
+        for (int y = 0; y < image.getHeight(); y++) {
+            for (int x = 0; x < image.getWidth(); x++) {
+                int argb  = image.getRGB(x, y);
+                int alpha = (argb >> 24) & 0xff;
+                int red   = (argb >> 16) & 0xff;
+                int green = (argb >> 8) & 0xff;
+                int blue  = argb & 0xff;
+                int luma  = (int) (0.21 * red + 0.71 * green + 0.07 * blue);
+                argb      = (alpha << 24) | (luma << 16) | (luma << 8) | luma;
+                image.setRGB(x, y, argb);
             }
         }
     }
