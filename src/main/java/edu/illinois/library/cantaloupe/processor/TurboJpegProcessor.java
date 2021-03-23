@@ -225,7 +225,7 @@ public class TurboJpegProcessor extends AbstractProcessor
                         image = Java2DUtil.convertColorToLinearRGB(image);
                     }
                     image = Java2DUtil.scale(image, scale,
-                            scaleConstraint, reductionFactor, true);
+                            scaleConstraint, reductionFactor, isLinear);
                     if (isLinear) {
                         image = Java2DUtil.convertColorToSRGB(image);
                     }

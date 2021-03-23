@@ -132,7 +132,7 @@ final class Java2DPostProcessor {
                     image = Java2DUtil.convertColorToLinearRGB(image);
                 }
                 image = Java2DUtil.scale(image, scale,
-                        opList.getScaleConstraint(), reductionFactor, true);
+                        opList.getScaleConstraint(), reductionFactor, isLinear);
                 if (isLinear) {
                     image = Java2DUtil.convertColorToSRGB(image);
                 }
