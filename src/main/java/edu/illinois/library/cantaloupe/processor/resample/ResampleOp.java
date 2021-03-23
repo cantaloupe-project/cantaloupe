@@ -216,8 +216,9 @@ public class ResampleOp extends AdvancedResizeOp {
         this.destHeight = dstHeight;
 
         if (dstWidth < 3 || dstHeight < 3) {
-            throw new RuntimeException("Error doing rescale. Target size was " +
-                    dstWidth + "x" + dstHeight + " but must be at least 3x3.");
+            throw new IllegalArgumentException("Error doing rescale. " +
+                    "Target size was " + dstWidth + "x" + dstHeight +
+                    " but must be at least 3x3.");
         }
 
         if (srcImage.getType() == BufferedImage.TYPE_BYTE_BINARY ||
@@ -274,12 +275,12 @@ public class ResampleOp extends AdvancedResizeOp {
         if (destImage != null && dstWidth == destImage.getWidth() &&
                 dstHeight == destImage.getHeight()) {
             out = destImage;
-            int nrDestChannels = destImage.getSampleModel().getNumBands();
+            int nrDestChannels = srcImage.getSampleModel().getNumBands();
             if (nrDestChannels != numChannels) {
                 String errorMsg = String.format("Source image has %d " +
                                 "channels; destination image has %d channels",
                         numChannels, nrDestChannels);
-                throw new RuntimeException(errorMsg);
+                throw new IllegalArgumentException(errorMsg);
             }
         } else if (isLinear) {
             ColorSpace cs = ColorSpace.getInstance(ColorSpace.CS_LINEAR_RGB);
