@@ -82,13 +82,14 @@ public class HealthResourceTest extends AbstractAPIResourceTest {
 
     @Test
     void testGETWithYellowStatus() throws Exception {
+        var config = Configuration.getInstance();
+        config.setProperty(Key.HEALTH_DEPENDENCY_CHECK, true);
+        config.setProperty(Key.API_ENABLED, true);
+
         Health health = new Health();
         health.setMinColor(Health.Color.YELLOW);
         try {
             HealthChecker.overrideHealth(health);
-
-            Configuration config = Configuration.getInstance();
-            config.setProperty(Key.API_ENABLED, true);
 
             client.send();
             fail("Expected HTTP 500");
@@ -99,13 +100,14 @@ public class HealthResourceTest extends AbstractAPIResourceTest {
 
     @Test
     void testGETWithRedStatus() throws Exception {
+        var config = Configuration.getInstance();
+        config.setProperty(Key.HEALTH_DEPENDENCY_CHECK, true);
+        config.setProperty(Key.API_ENABLED, true);
+
         Health health = new Health();
         health.setMinColor(Health.Color.RED);
         try {
             HealthChecker.overrideHealth(health);
-
-            Configuration config = Configuration.getInstance();
-            config.setProperty(Key.API_ENABLED, true);
 
             client.send();
             fail("Expected HTTP 500");
