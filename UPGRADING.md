@@ -89,7 +89,12 @@ current version.
 17. KakaduDemoProcessor is no longer available. If you were using it, you must
     switch to either KakaduNativeProcessor, OpenJpegProcessor, or
     GrokProcessor.
-18. Purge your derivative cache.
+18. If you are using a derivative cache, and are serving any images that have
+    non-zero orientations, or embedded metadata with which you might want to
+    use the new `metadata()` delegate method, you must purge all cached infos.
+    Unfortunately there is no API method to do this yet, so this will require
+    either deleting all `.json` files/objects manually, or else purging the
+    whole cache (manually or via the API).
 
 ## 4.0.x → 4.1
 
