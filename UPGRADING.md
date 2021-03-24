@@ -50,6 +50,7 @@ current version.
     * `serialize_meta_identifier()`
     * `pre_authorize()`
     * `extra_iiif3_information_response_keys()`
+    * `metadata()`
 7.  Note that the `pre_authorize()` delegate method added in step 6 may require
     refactoring the logic in `authorize()`. See the documentation of those
     methods for more information.
