@@ -75,14 +75,13 @@ class RequestContextMapTest extends BaseTest {
 
     @Test
     void testContainsValue() {
-        assertThrows(UnsupportedOperationException.class,
-                () -> instance.containsValue("bogus"));
+        assertTrue(instance.containsValue("1.2.3.4"));
+        assertFalse(instance.containsValue("bogus"));
     }
 
     @Test
     void testEntrySet() {
-        assertThrows(UnsupportedOperationException.class,
-                () -> instance.entrySet());
+        assertEquals(14, instance.entrySet().size());
     }
 
     @Test
@@ -157,14 +156,11 @@ class RequestContextMapTest extends BaseTest {
     @Test
     void testIsEmpty() {
         assertFalse(instance.isEmpty());
-        instance = new RequestContextMap<>(new RequestContext());
-        assertTrue(instance.isEmpty());
     }
 
     @Test
     void testKeySet() {
-        assertThrows(UnsupportedOperationException.class,
-                () -> instance.keySet());
+        assertEquals(14, instance.keySet().size());
     }
 
     @Test
@@ -192,8 +188,7 @@ class RequestContextMapTest extends BaseTest {
 
     @Test
     void testValues() {
-        assertThrows(UnsupportedOperationException.class,
-                () -> instance.values());
+        assertEquals(14, instance.values().size());
     }
 
 }
