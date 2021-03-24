@@ -238,7 +238,7 @@ class InfoTest extends BaseTest {
     /* fromJSON() serialization */
 
     @Test
-    void testFromJSONWithVersion34Serialization() throws Exception {
+    void testFromJSONWithVersion2Serialization() throws Exception {
         String v34json = "{\n" +
                 "  \"mediaType\": \"image/jpeg\",\n" +
                 "  \"images\": [\n" +
@@ -260,7 +260,7 @@ class InfoTest extends BaseTest {
     }
 
     @Test
-    void testFromJSONWithVersion4Serialization() throws Exception {
+    void testFromJSONWithVersion3Serialization() throws Exception {
         String v4json = "{\n" +
                 "  \"identifier\": \"cats\",\n" +
                 "  \"mediaType\": \"image/jpeg\",\n" +
@@ -270,7 +270,8 @@ class InfoTest extends BaseTest {
                 "      \"width\": 100,\n" +
                 "      \"height\": 80,\n" +
                 "      \"tileWidth\": 50,\n" +
-                "      \"tileHeight\": 40\n" +
+                "      \"tileHeight\": 40,\n" +
+                "      \"orientation\": 1\n" +
                 "    }\n" +
                 "  ]\n" +
                 "}";
@@ -286,7 +287,7 @@ class InfoTest extends BaseTest {
     }
 
     @Test
-    void testFromJSONWithVersion5Serialization() throws Exception {
+    void testFromJSONWithVersion4Serialization() throws Exception {
         String v5json = "{\n" +
                 "  \"applicationVersion\": \"5.0\",\n" +
                 "  \"serializationVersion\": 4,\n" +

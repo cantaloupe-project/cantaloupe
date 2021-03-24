@@ -1,6 +1,7 @@
 package edu.illinois.library.cantaloupe.image;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -111,6 +112,7 @@ public final class Info {
      * physical image such as an embedded EXIF thumbnail or embedded TIFF page.
      */
     @JsonPropertyOrder({ "width", "height", "tileWidth", "tileHeight" })
+    @JsonIgnoreProperties({"orientation"}) // this is from schema version <4
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public static final class Image {
 
