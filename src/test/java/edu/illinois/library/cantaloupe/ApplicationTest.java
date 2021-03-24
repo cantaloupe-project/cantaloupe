@@ -44,7 +44,7 @@ public class ApplicationTest extends BaseTest {
 
     /**
      * {@link Application#getVersion()} is not fully testable as it returns a
-     * different value when the app is running from a .war.
+     * different value when the app is running from a JAR.
      */
     @Test
     void testGetVersion() {
