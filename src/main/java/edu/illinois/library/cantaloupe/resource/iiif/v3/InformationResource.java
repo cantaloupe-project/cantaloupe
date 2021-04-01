@@ -8,6 +8,7 @@ import edu.illinois.library.cantaloupe.http.Method;
 import edu.illinois.library.cantaloupe.http.Status;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Info;
+import edu.illinois.library.cantaloupe.processor.codec.ImageWriterFactory;
 import edu.illinois.library.cantaloupe.resource.JacksonRepresentation;
 import edu.illinois.library.cantaloupe.resource.ResourceException;
 import edu.illinois.library.cantaloupe.resource.Route;
@@ -47,7 +48,11 @@ public class InformationResource extends IIIF3Resource {
         if (redirectToNormalizedScaleConstraint()) {
             return;
         }
-        final Set<Format> availableOutputFormats = new HashSet<>();
+        // TODO: we are supposed to get the available output formats from the
+        // processor, but the control flow may not lead to a processor ever
+        // being obtained.
+        final Set<Format> availableOutputFormats =
+                new HashSet<>(ImageWriterFactory.supportedFormats());
 
         class CustomCallback implements InformationRequestHandler.Callback {
             @Override

@@ -1,5 +1,10 @@
 # Change Log
 
+## 5.0.1
+
+* Fixed a bug that caused the `profile.formats` key to be missing from the
+  information responses of cached images.
+
 ## 5.0
 
 ### Endpoints
