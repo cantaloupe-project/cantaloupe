@@ -55,23 +55,27 @@ public final class S3ClientBuilder {
     public static AwsCredentialsProvider newCredentialsProvider(
             final String accessKeyIDFromConfig,
             final String secretKeyFromConfig) {
-        return AwsCredentialsProviderChain.builder()
-                .addCredentialsProvider(SystemPropertyCredentialsProvider.create())
-                .addCredentialsProvider(EnvironmentVariableCredentialsProvider.create())
-                .addCredentialsProvider(StaticCredentialsProvider.create(new AwsCredentials() {
-                    @Override
-                    public String accessKeyId() {
-                        return accessKeyIDFromConfig;
-                    }
-                    @Override
-                    public String secretAccessKey() {
-                        return secretKeyFromConfig;
-                    }
-                }))
-                .addCredentialsProvider(ProfileCredentialsProvider.create())
-                .addCredentialsProvider(ContainerCredentialsProvider.builder().build())
-                .addCredentialsProvider(InstanceProfileCredentialsProvider.builder().build())
-                .build();
+        final AwsCredentialsProviderChain.Builder builder =
+                AwsCredentialsProviderChain.builder();
+        builder.addCredentialsProvider(SystemPropertyCredentialsProvider.create());
+        builder.addCredentialsProvider(EnvironmentVariableCredentialsProvider.create());
+        if (accessKeyIDFromConfig != null && !accessKeyIDFromConfig.isBlank() &&
+                secretKeyFromConfig != null && !secretKeyFromConfig.isBlank()) {
+            builder.addCredentialsProvider(StaticCredentialsProvider.create(new AwsCredentials() {
+                @Override
+                public String accessKeyId() {
+                    return accessKeyIDFromConfig;
+                }
+                @Override
+                public String secretAccessKey() {
+                    return secretKeyFromConfig;
+                }
+            }));
+        }
+        builder.addCredentialsProvider(ProfileCredentialsProvider.create());
+        builder.addCredentialsProvider(ContainerCredentialsProvider.builder().build());
+        builder.addCredentialsProvider(InstanceProfileCredentialsProvider.builder().build());
+        return builder.build();
     }
 
     /**

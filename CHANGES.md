@@ -4,6 +4,8 @@
 
 * Fixed a bug that caused the `profile.formats` key to be missing from the
   information responses of cached images.
+* Fixed a bug that could cause S3 credentials from the configuration file to be
+  selected even when not set.
 
 ## 5.0
 
