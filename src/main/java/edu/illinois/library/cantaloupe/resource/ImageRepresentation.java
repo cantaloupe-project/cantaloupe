@@ -1,6 +1,7 @@
 package edu.illinois.library.cantaloupe.resource;
 
 import edu.illinois.library.cantaloupe.cache.CacheFacade;
+import edu.illinois.library.cantaloupe.cache.CompletableOutputStream;
 import edu.illinois.library.cantaloupe.cache.DerivativeCache;
 import edu.illinois.library.cantaloupe.image.Dimension;
 import edu.illinois.library.cantaloupe.image.Format;
@@ -104,24 +105,26 @@ public class ImageRepresentation implements Representation {
         // TeeOutputStream to write to the response output stream and the cache
         // pseudo-simultaneously.
         //
-        // N.B.: Closing responseOutputStream is the Servlet container's
-        // responsibility. This means we also can't close teeOutputStream,
-        // because doing so would close its wrapped streams. So, we have to
-        // leave its closure up to the finalizer. But, when teeOutputStream is
-        // closed, its wrapped streams' close() methods will have been called
-        // twice, so it's important that these two streams' close() methods can
-        // deal with being called twice.
-        try (OutputStream cacheOS =
+        // N.B.: Closing responseOS is the Servlet container's responsibility.
+        // This means we also can't close teeOS, because doing so would close
+        // its wrapped streams. So, we have to leave its closure up to the
+        // finalizer. But, when teeOS is closed, its wrapped streams' close()
+        // methods will have been called twice, so it's important that these
+        // two streams' close() methods can deal with that.
+        try (CompletableOutputStream cacheOS =
                      cacheFacade.newDerivativeImageOutputStream(opList)) {
-            OutputStream teeOS = new TeeOutputStream(responseOS, cacheOS);
-            LOGGER.debug("Writing to the response & derivative " +
-                    "cache simultaneously");
-            copyOrProcess(teeOS);
+            if (cacheOS != null) {
+                OutputStream teeOS = new TeeOutputStream(responseOS, cacheOS);
+                LOGGER.debug("Writing to the response & derivative " +
+                        "cache simultaneously");
+                copyOrProcess(teeOS);
+                cacheOS.flush();
+                cacheOS.setCompletelyWritten(true);
+            } else {
+                copyOrProcess(responseOS);
+            }
         } catch (IOException e) {
             LOGGER.debug("write(): {}", e.getMessage(), e);
-            // The cached image has been incompletely written and is corrupt,
-            // so it must be purged.
-            cacheFacade.purge(opList);
             // TODO: uncommenting this can cause KakaduNativeProcessor to crash
             //  the JVM (see
             //  https://github.com/cantaloupe-project/cantaloupe/issues/303).
@@ -131,9 +134,6 @@ public class ImageRepresentation implements Representation {
             //copyOrProcess(responseOS);
         } catch (Throwable t) {
             LOGGER.error("write(): {}", t.getMessage(), t);
-            // The cached image has been incompletely written and is corrupt,
-            // so it must be purged.
-            cacheFacade.purge(opList);
             throw t;
         }
     }
@@ -184,10 +184,10 @@ public class ImageRepresentation implements Representation {
         LOGGER.debug("Streamed with no processing in {}: {}", watch, opList);
     }
 
-    private void process(OutputStream responseOS) throws ProcessorException {
+    private void process(OutputStream outputStream) throws ProcessorException {
         final Stopwatch watch = new Stopwatch();
 
-        processor.process(opList, imageInfo, responseOS);
+        processor.process(opList, imageInfo, outputStream);
 
         LOGGER.debug("{} processed in {}: {}",
                 processor.getClass().getSimpleName(), watch, opList);

@@ -21,7 +21,6 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import java.io.OutputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
@@ -274,8 +273,10 @@ public class S3CacheTest extends AbstractCacheTest {
         // Add an image.
         // N.B.: This method may return before data is fully (or even
         // partially) written to the cache.
-        try (OutputStream os = instance.newDerivativeImageOutputStream(ops)) {
+        try (CompletableOutputStream os =
+                     instance.newDerivativeImageOutputStream(ops)) {
             Files.copy(fixture, os);
+            os.setCompletelyWritten(true);
         }
 
         // Wait for it to finish, hopefully.

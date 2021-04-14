@@ -45,8 +45,8 @@ class MockCache implements DerivativeCache, SourceCache {
     }
 
     @Override
-    public OutputStream newDerivativeImageOutputStream(OperationList opList)
-            throws IOException {
+    public CompletableOutputStream
+    newDerivativeImageOutputStream(OperationList opList) throws IOException {
         return null;
     }
 

@@ -11,7 +11,6 @@ import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
@@ -26,11 +25,11 @@ public class HeapCacheTest extends AbstractCacheTest {
             // Equal
             HeapCache.Key k1 = new HeapCache.Key("cats");
             HeapCache.Key k2 = new HeapCache.Key("cats");
-            assertTrue(k1.equals(k2));
+            assertEquals(k1, k2);
 
             // Unequal
             k2 = new HeapCache.Key("dogs");
-            assertFalse(k1.equals(k2));
+            assertNotEquals(k1, k2);
         }
 
         @Test
@@ -38,24 +37,24 @@ public class HeapCacheTest extends AbstractCacheTest {
             // Equal
             HeapCache.Key k1 = new HeapCache.Key("cats", "birds");
             HeapCache.Key k2 = new HeapCache.Key("cats", "birds");
-            assertTrue(k1.equals(k2));
+            assertEquals(k1, k2);
 
             // Unequal op lists
             k1 = new HeapCache.Key("cats", "birds");
             k2 = new HeapCache.Key("cats", "goats");
-            assertFalse(k1.equals(k2));
+            assertNotEquals(k1, k2);
 
             // Unequal identifiers and op lists
             k1 = new HeapCache.Key("cats", "birds");
             k2 = new HeapCache.Key("dogs", "goats");
-            assertFalse(k1.equals(k2));
+            assertNotEquals(k1, k2);
         }
 
         @Test
         public void testEqualsWithMixedKeys() {
             HeapCache.Key k1 = new HeapCache.Key("cats", "birds");
             HeapCache.Key k2 = new HeapCache.Key("cats");
-            assertFalse(k1.equals(k2));
+            assertNotEquals(k1, k2);
         }
 
     }
@@ -94,8 +93,10 @@ public class HeapCacheTest extends AbstractCacheTest {
 
             // Seed an image
             OperationList ops = new OperationList(new Identifier("cats"));
-            try (OutputStream os = instance.newDerivativeImageOutputStream(ops)) {
+            try (CompletableOutputStream os =
+                         instance.newDerivativeImageOutputStream(ops)) {
                 Files.copy(TestUtil.getImage(IMAGE), os);
+                os.setCompletelyWritten(true);
             }
 
             instance.dumpToPersistentStore();
@@ -121,8 +122,10 @@ public class HeapCacheTest extends AbstractCacheTest {
         // Seed an image
         Identifier id1 = new Identifier("cats");
         OperationList ops = new OperationList(id1);
-        try (OutputStream os = instance.newDerivativeImageOutputStream(ops)) {
+        try (CompletableOutputStream os =
+                     instance.newDerivativeImageOutputStream(ops)) {
             Files.copy(TestUtil.getImage(IMAGE), os);
+            os.setCompletelyWritten(true);
         }
 
         assertEquals(5439, instance.getByteSize());
@@ -223,8 +226,10 @@ public class HeapCacheTest extends AbstractCacheTest {
 
             // Seed an image
             OperationList ops = new OperationList(new Identifier("cats"));
-            try (OutputStream os = instance.newDerivativeImageOutputStream(ops)) {
+            try (CompletableOutputStream os =
+                         instance.newDerivativeImageOutputStream(ops)) {
                 Files.copy(TestUtil.getImage(IMAGE), os);
+                os.setCompletelyWritten(true);
             }
 
             instance.dumpToPersistentStore();
@@ -268,8 +273,10 @@ public class HeapCacheTest extends AbstractCacheTest {
 
         // Seed an image
         OperationList ops = new OperationList(new Identifier("cats"));
-        try (OutputStream os = instance.newDerivativeImageOutputStream(ops)) {
+        try (CompletableOutputStream os =
+                     instance.newDerivativeImageOutputStream(ops)) {
             Files.copy(TestUtil.getImage(IMAGE), os);
+            os.setCompletelyWritten(true);
         }
 
         assertEquals(5439, instance.getByteSize());
@@ -287,8 +294,10 @@ public class HeapCacheTest extends AbstractCacheTest {
 
         // Seed an image
         OperationList ops = new OperationList(new Identifier("cats"));
-        try (OutputStream os = instance.newDerivativeImageOutputStream(ops)) {
+        try (CompletableOutputStream os =
+                     instance.newDerivativeImageOutputStream(ops)) {
             Files.copy(TestUtil.getImage(IMAGE), os);
+            os.setCompletelyWritten(true);
         }
 
         long size = instance.getByteSize();

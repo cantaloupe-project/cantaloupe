@@ -46,14 +46,16 @@ class JdbcCache implements DerivativeCache {
 
     /**
      * Wraps a {@link Blob} OutputStream, for writing an image to a BLOB.
-     * The constructor creates a transaction that is committed on close.
+     * The constructor creates a transaction that is committed on close if the
+     * stream is {@link CompletableOutputStream#isCompletelyWritten()
+     * completely written}.
      */
-    private class ImageBlobOutputStream extends OutputStream {
+    private class ImageBlobOutputStream extends CompletableOutputStream {
 
-        private OutputStream blobOutputStream;
-        private OperationList ops;
-        private Connection connection;
-        private PreparedStatement statement;
+        private final OutputStream blobOutputStream;
+        private final OperationList ops;
+        private final Connection connection;
+        private final PreparedStatement statement;
 
         /**
          * Constructor for writing derivative images.
@@ -61,8 +63,8 @@ class JdbcCache implements DerivativeCache {
          * @param conn
          * @param ops Derivative image operation list
          */
-        ImageBlobOutputStream(Connection conn, OperationList ops)
-                throws SQLException {
+        ImageBlobOutputStream(Connection conn,
+                              OperationList ops) throws SQLException {
             this.connection = conn;
             this.ops = ops;
 
@@ -89,8 +91,12 @@ class JdbcCache implements DerivativeCache {
         public void close() throws IOException {
             LOGGER.debug("Closing stream for {}", ops);
             try {
-                statement.executeUpdate();
-                connection.commit();
+                if (isCompletelyWritten()) {
+                    statement.executeUpdate();
+                    connection.commit();
+                } else {
+                    connection.rollback();
+                }
             } catch (SQLException e) {
                 throw new IOException(e.getMessage(), e);
             } finally {
@@ -376,8 +382,8 @@ class JdbcCache implements DerivativeCache {
     }
 
     @Override
-    public OutputStream newDerivativeImageOutputStream(OperationList ops)
-            throws IOException {
+    public CompletableOutputStream
+    newDerivativeImageOutputStream(OperationList ops) throws IOException {
         // TODO: return a no-op stream when a write of an equal op list is in progress in another thread
         LOGGER.debug("Miss; caching {}", ops);
         try {

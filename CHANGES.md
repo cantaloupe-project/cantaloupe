@@ -1,5 +1,10 @@
 # Change Log
 
+## 4.1.9
+
+* Fixed a bug whereby corrupt image data could be written to a derivative
+  cache.
+
 ## 4.1.8
 
 * Fixed a rounding bug that could cause requests for certain scale-constrained

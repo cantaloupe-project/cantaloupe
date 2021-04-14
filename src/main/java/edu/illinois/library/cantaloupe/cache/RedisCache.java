@@ -21,7 +21,6 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 
@@ -136,7 +135,7 @@ class RedisCache implements DerivativeCache {
     /**
      * Buffers written data and then writes it asynchronously to Redis.
      */
-    private static class RedisOutputStream extends OutputStream {
+    private static class RedisOutputStream extends CompletableOutputStream {
 
         private ByteArrayOutputStream bufferStream = new ByteArrayOutputStream();
         private StatefulRedisConnection<String, byte[]> connection;
@@ -154,8 +153,10 @@ class RedisCache implements DerivativeCache {
         @Override
         public void close() throws IOException {
             try {
-                connection.async().hset(hashKey, valueKey,
-                        bufferStream.toByteArray());
+                if (isCompletelyWritten()) {
+                    connection.async().hset(hashKey, valueKey,
+                            bufferStream.toByteArray());
+                }
             } finally {
                 super.close();
             }
@@ -239,7 +240,8 @@ class RedisCache implements DerivativeCache {
     }
 
     @Override
-    public OutputStream newDerivativeImageOutputStream(OperationList opList) {
+    public CompletableOutputStream
+    newDerivativeImageOutputStream(OperationList opList) {
         return new RedisOutputStream(IMAGE_HASH_KEY, imageKey(opList),
                 getConnection());
     }

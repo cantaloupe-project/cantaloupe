@@ -15,7 +15,6 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import java.io.OutputStream;
 import java.nio.file.Files;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -100,8 +99,10 @@ public class JdbcCacheTest extends AbstractCacheTest {
         // persist some derivative images
         OperationList ops = new OperationList();
 
-        try (OutputStream os = instance.newDerivativeImageOutputStream(ops)) {
+        try (CompletableOutputStream os =
+                     instance.newDerivativeImageOutputStream(ops)) {
             Files.copy(TestUtil.getImage(IMAGE), os);
+            os.setCompletelyWritten(true);
         }
 
         Crop crop = new CropByPixels(50, 50, 50, 50);
@@ -109,8 +110,10 @@ public class JdbcCacheTest extends AbstractCacheTest {
         Rotate rotate = new Rotate();
         ops = new OperationList(crop, scale, rotate);
 
-        try (OutputStream os = instance.newDerivativeImageOutputStream(ops)) {
+        try (CompletableOutputStream os =
+                     instance.newDerivativeImageOutputStream(ops)) {
             Files.copy(TestUtil.getImage(IMAGE), os);
+            os.setCompletelyWritten(true);
         }
 
         crop = new CropByPixels(10, 20, 50, 90);
@@ -118,8 +121,10 @@ public class JdbcCacheTest extends AbstractCacheTest {
         rotate = new Rotate(15);
         ops = new OperationList(crop, scale, rotate);
 
-        try (OutputStream os = instance.newDerivativeImageOutputStream(ops)) {
+        try (CompletableOutputStream os =
+                     instance.newDerivativeImageOutputStream(ops)) {
             Files.copy(TestUtil.getImage(IMAGE), os);
+            os.setCompletelyWritten(true);
         }
 
         // persist some infos corresponding to the above images
