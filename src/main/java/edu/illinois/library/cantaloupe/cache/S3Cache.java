@@ -85,7 +85,7 @@ class S3Cache implements DerivativeCache {
      * {@link ThreadPool#getInstance() application thread pool} in order for
      * {@link #close()} to be able to return immediately.)</p>
      */
-    private static class S3OutputStream extends OutputStream {
+    private static class S3OutputStream extends CompletableOutputStream {
 
         private final ByteArrayOutputStream bufferStream =
                 new ByteArrayOutputStream();
@@ -115,7 +115,7 @@ class S3Cache implements DerivativeCache {
             try {
                 bufferStream.close();
                 byte[] data = bufferStream.toByteArray();
-                if (data.length > 0) {
+                if (isCompletelyWritten()) {
                     // At this point, the client has received all image data,
                     // but it is still waiting for the connection to close.
                     // Uploading in a separate thread will allow this to happen
@@ -334,7 +334,8 @@ class S3Cache implements DerivativeCache {
     }
 
     @Override
-    public OutputStream newDerivativeImageOutputStream(OperationList opList) {
+    public CompletableOutputStream
+    newDerivativeImageOutputStream(OperationList opList) {
         final String objectKey            = getObjectKey(opList);
         final String bucketName           = getBucketName();
         final S3Client client             = getClientInstance();

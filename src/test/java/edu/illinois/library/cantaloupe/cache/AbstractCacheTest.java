@@ -16,7 +16,6 @@ import org.junit.jupiter.api.Test;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Optional;
@@ -108,8 +107,10 @@ abstract class AbstractCacheTest extends BaseTest {
         Path imageFile = TestUtil.getImage(IMAGE);
 
         // Write an image to the cache
-        try (OutputStream os = instance.newDerivativeImageOutputStream(opList)) {
+        try (CompletableOutputStream os =
+                     instance.newDerivativeImageOutputStream(opList)) {
             Files.copy(imageFile, os);
+            os.setCompletelyWritten(true);
         }
 
         // Wait for it to upload
@@ -138,8 +139,12 @@ abstract class AbstractCacheTest extends BaseTest {
         // Add an image.
         // This method may return before data is fully (or even partially)
         // written to the cache.
-        try (OutputStream os = instance.newDerivativeImageOutputStream(ops)) {
+        // N.B.: This method may return before data is fully (or even
+        // partially) written to the cache.
+        try (CompletableOutputStream os =
+                     instance.newDerivativeImageOutputStream(ops)) {
             Files.copy(fixture, os);
+            os.setCompletelyWritten(true);
         }
 
         // Wait for it to finish, hopefully.
@@ -174,9 +179,10 @@ abstract class AbstractCacheTest extends BaseTest {
                 .build();
 
         new ConcurrentReaderWriter(() -> {
-            try (OutputStream os =
+            try (CompletableOutputStream os =
                          instance.newDerivativeImageOutputStream(ops)) {
                 Files.copy(TestUtil.getImage(IMAGE), os);
+                os.setCompletelyWritten(true);
             }
             return null;
         }, () -> {
@@ -207,9 +213,10 @@ abstract class AbstractCacheTest extends BaseTest {
         assertNull(instance.newDerivativeImageInputStream(ops));
 
         // Add it to the cache
-        try (OutputStream outputStream =
+        try (CompletableOutputStream outputStream =
                      instance.newDerivativeImageOutputStream(ops)) {
             Files.copy(fixture, outputStream);
+            outputStream.setCompletelyWritten(true);
         }
 
         // Wait for it to upload
@@ -221,6 +228,32 @@ abstract class AbstractCacheTest extends BaseTest {
             is.transferTo(os);
             os.close();
             assertEquals(Files.size(fixture), os.toByteArray().length);
+        }
+    }
+
+    @Test
+    void testNewDerivativeImageOutputStreamDoesNotLeaveDetritusWhenStreamIsIncompletelyWritten()
+            throws Exception {
+        final DerivativeCache instance = newInstance();
+        final OperationList ops = OperationList.builder()
+                .withIdentifier(new Identifier("cats"))
+                .withOperations(new Encode(Format.get("jpg")))
+                .build();
+        final Path fixture = TestUtil.getImage("jpg");
+
+        // Add it to the cache
+        try (CompletableOutputStream outputStream =
+                     instance.newDerivativeImageOutputStream(ops)) {
+            Files.copy(fixture, outputStream);
+            outputStream.setCompletelyWritten(false); // the whole point of the test
+        }
+
+        // Wait for it to upload
+        Thread.sleep(ASYNC_WAIT);
+
+        // Try to read it back in
+        try (InputStream is = instance.newDerivativeImageInputStream(ops)) {
+            assertNull(is);
         }
     }
 
@@ -255,10 +288,11 @@ abstract class AbstractCacheTest extends BaseTest {
         assertFalse(instance.getInfo(identifier).isPresent());
 
         // add the image
-        try (OutputStream outputStream =
+        try (CompletableOutputStream outputStream =
                      instance.newDerivativeImageOutputStream(opList)) {
             Path fixture = TestUtil.getImage(IMAGE);
             Files.copy(fixture, outputStream);
+            outputStream.setCompletelyWritten(true);
         }
 
         // add the info
@@ -290,12 +324,15 @@ abstract class AbstractCacheTest extends BaseTest {
 
         // add an image and an info
         final Identifier id1        = new Identifier("cats");
+
         final OperationList opList1 = OperationList.builder()
                 .withIdentifier(id1)
                 .withOperations(new Encode(Format.get("jpg")))
                 .build();
-        try (OutputStream os = instance.newDerivativeImageOutputStream(opList1)) {
+        try (CompletableOutputStream os =
+                     instance.newDerivativeImageOutputStream(opList1)) {
             Files.copy(fixture, os);
+            os.setCompletelyWritten(true);
         }
         instance.put(id1, new Info());
 
@@ -305,8 +342,10 @@ abstract class AbstractCacheTest extends BaseTest {
                 .withIdentifier(id2)
                 .withOperations(new Encode(Format.get("jpg")))
                 .build();
-        try (OutputStream os = instance.newDerivativeImageOutputStream(opList2)) {
+        try (CompletableOutputStream os =
+                     instance.newDerivativeImageOutputStream(opList2)) {
             Files.copy(fixture, os);
+            os.setCompletelyWritten(true);
         }
         instance.put(id2, new Info());
 
@@ -316,7 +355,7 @@ abstract class AbstractCacheTest extends BaseTest {
         // purge one of the info/image pairs
         instance.purge(id1);
 
-        Thread.sleep(1000);
+        Thread.sleep(2000);
 
         // assert that its info and image are gone
         assertFalse(instance.getInfo(id1).isPresent());
@@ -343,8 +382,10 @@ abstract class AbstractCacheTest extends BaseTest {
                 .withIdentifier(new Identifier("cats"))
                 .withOperations(new Encode(Format.get("jpg")))
                 .build();
-        try (OutputStream os = instance.newDerivativeImageOutputStream(ops1)) {
+        try (CompletableOutputStream os =
+                     instance.newDerivativeImageOutputStream(ops1)) {
             Files.copy(TestUtil.getImage(IMAGE), os);
+            os.setCompletelyWritten(true);
         }
 
         // Seed another derivative image
@@ -352,8 +393,10 @@ abstract class AbstractCacheTest extends BaseTest {
                 .withIdentifier(new Identifier("dogs"))
                 .withOperations(new Encode(Format.get("jpg")))
                 .build();
-        try (OutputStream os = instance.newDerivativeImageOutputStream(ops2)) {
+        try (CompletableOutputStream os =
+                     instance.newDerivativeImageOutputStream(ops2)) {
             Files.copy(TestUtil.getImage(IMAGE), os);
+            os.setCompletelyWritten(true);
         }
 
         Thread.sleep(ASYNC_WAIT);
@@ -383,9 +426,10 @@ abstract class AbstractCacheTest extends BaseTest {
 
         // add an image
         Path fixture = TestUtil.getImage(id1.toString());
-        try (OutputStream outputStream =
+        try (CompletableOutputStream outputStream =
                      instance.newDerivativeImageOutputStream(ops1)) {
             Files.copy(fixture, outputStream);
+            outputStream.setCompletelyWritten(true);
         }
 
         // add an Info
@@ -405,9 +449,10 @@ abstract class AbstractCacheTest extends BaseTest {
                 .withOperations(new Encode(Format.get("jpg")))
                 .build();
 
-        try (OutputStream outputStream =
+        try (CompletableOutputStream outputStream =
                      instance.newDerivativeImageOutputStream(ops2)) {
             Files.copy(fixture2, outputStream);
+            outputStream.setCompletelyWritten(true);
         }
 
         // add another info

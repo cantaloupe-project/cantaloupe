@@ -6,6 +6,8 @@
   information responses of cached images.
 * Fixed a bug that could cause S3 credentials from the configuration file to be
   selected even when not set.
+* Fixed a bug whereby corrupt image data could be written to a derivative
+  cache.
 
 ## 5.0
 
@@ -109,6 +111,11 @@
   to enable automatic wrapping of overlay strings.
 * The `-Dcantaloupe.list_fonts` VM argument has been replaced with the
   `-list-fonts` command-line argument.
+
+## 4.1.9
+
+* Fixed a bug whereby corrupt image data could be written to a derivative
+  cache.
 
 ## 4.1.8
 

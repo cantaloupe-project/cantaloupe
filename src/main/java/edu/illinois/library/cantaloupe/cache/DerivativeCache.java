@@ -6,7 +6,6 @@ import edu.illinois.library.cantaloupe.image.Info;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.util.Optional;
 
 /**
@@ -50,14 +49,25 @@ public interface DerivativeCache extends Cache {
      * <p>Returns an output stream for writing an image to the cache.</p>
      *
      * <p>If an image corresponding to the given identifier already
-     * exists, the stream should overwrite it.</p>
+     * exists, the stream should overwrite it. Implementations may choose to
+     * allow multiple streams to write data to the same target concurrently
+     * (assuming this wouldn't cause corruption), or else allow only one
+     * stream to write to a particular target at a time, with other clients
+     * writing to no-op streams.</p>
      *
-     * @param opList Operation list for which to retrieve an output stream for
-     *               writing to the cache.
+     * <p>The {@link CompletableOutputStream#close()} method of the returned
+     * instance must check the return value of {@link
+     * CompletableOutputStream#isCompletelyWritten()} before committing data
+     * to the cache. If it returns {@code false}, any written data should be
+     * discarded.</p>
+     *
+     * @param opList Operation list describing the target image in the cache.
      * @return       Output stream to which an image corresponding to the given
      *               operation list can be written.
+     * @throws IOException upon an I/O error. Any partially written data is
+     *         automatically cleaned up.
      */
-    OutputStream newDerivativeImageOutputStream(OperationList opList)
+    CompletableOutputStream newDerivativeImageOutputStream(OperationList opList)
             throws IOException;
 
     /**

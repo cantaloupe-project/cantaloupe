@@ -6,7 +6,6 @@ import edu.illinois.library.cantaloupe.operation.OperationList;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.util.Optional;
 
 public class MockBrokenDerivativeCache implements DerivativeCache {
@@ -22,7 +21,8 @@ public class MockBrokenDerivativeCache implements DerivativeCache {
     }
 
     @Override
-    public OutputStream newDerivativeImageOutputStream(OperationList opList) throws IOException {
+    public CompletableOutputStream
+    newDerivativeImageOutputStream(OperationList opList) throws IOException {
         throw new IOException("I'm broken");
     }
 

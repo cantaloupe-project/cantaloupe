@@ -1,6 +1,7 @@
 package edu.illinois.library.cantaloupe.resource;
 
 import edu.illinois.library.cantaloupe.cache.CacheFacade;
+import edu.illinois.library.cantaloupe.cache.CompletableOutputStream;
 import edu.illinois.library.cantaloupe.cache.DerivativeCache;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
@@ -214,8 +215,10 @@ public class ImageRequestHandlerTest extends BaseTest {
         cache.put(identifier, info);
 
         // Add an "image" to the derivative cache.
-        try (OutputStream os = cache.newDerivativeImageOutputStream(opList)) {
+        try (CompletableOutputStream os =
+                     cache.newDerivativeImageOutputStream(opList)) {
             os.write(new byte[] { 0x35, 0x35, 0x35 });
+            os.setCompletelyWritten(true);
         }
 
         final IntrospectiveCallback callback = new IntrospectiveCallback();
@@ -342,8 +345,10 @@ public class ImageRequestHandlerTest extends BaseTest {
 
         // Add an "image" to the derivative cache.
         final byte[] expected = new byte[] { 0x35, 0x35, 0x35 };
-        try (OutputStream os = cache.newDerivativeImageOutputStream(opList)) {
+        try (CompletableOutputStream os =
+                     cache.newDerivativeImageOutputStream(opList)) {
             os.write(expected);
+            os.setCompletelyWritten(true);
         }
 
         final IntrospectiveCallback callback = new IntrospectiveCallback();

@@ -12,7 +12,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
-import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
@@ -96,8 +95,10 @@ public class HeapCacheTest extends AbstractCacheTest {
 
             // Seed an image
             OperationList ops = new OperationList(new Identifier("cats"));
-            try (OutputStream os = instance.newDerivativeImageOutputStream(ops)) {
+            try (CompletableOutputStream os =
+                         instance.newDerivativeImageOutputStream(ops)) {
                 Files.copy(TestUtil.getImage(IMAGE), os);
+                os.setCompletelyWritten(true);
             }
 
             instance.dumpToPersistentStore();
@@ -123,8 +124,10 @@ public class HeapCacheTest extends AbstractCacheTest {
         // Seed an image
         Identifier id1 = new Identifier("cats");
         OperationList ops = new OperationList(id1);
-        try (OutputStream os = instance.newDerivativeImageOutputStream(ops)) {
+        try (CompletableOutputStream os =
+                     instance.newDerivativeImageOutputStream(ops)) {
             Files.copy(TestUtil.getImage(IMAGE), os);
+            os.setCompletelyWritten(true);
         }
 
         assertEquals(5439, instance.getByteSize());
@@ -225,8 +228,10 @@ public class HeapCacheTest extends AbstractCacheTest {
 
             // Seed an image
             OperationList ops = new OperationList(new Identifier("cats"));
-            try (OutputStream os = instance.newDerivativeImageOutputStream(ops)) {
+            try (CompletableOutputStream os =
+                         instance.newDerivativeImageOutputStream(ops)) {
                 Files.copy(TestUtil.getImage(IMAGE), os);
+                os.setCompletelyWritten(true);
             }
 
             instance.dumpToPersistentStore();
@@ -288,8 +293,10 @@ public class HeapCacheTest extends AbstractCacheTest {
 
         // Seed an image
         OperationList ops = new OperationList(new Identifier("cats"));
-        try (OutputStream os = instance.newDerivativeImageOutputStream(ops)) {
+        try (CompletableOutputStream os =
+                     instance.newDerivativeImageOutputStream(ops)) {
             Files.copy(TestUtil.getImage(IMAGE), os);
+            os.setCompletelyWritten(true);
         }
 
         assertEquals(5439, instance.getByteSize());
@@ -307,8 +314,10 @@ public class HeapCacheTest extends AbstractCacheTest {
 
         // Seed an image
         OperationList ops = new OperationList(new Identifier("cats"));
-        try (OutputStream os = instance.newDerivativeImageOutputStream(ops)) {
+        try (CompletableOutputStream os =
+                     instance.newDerivativeImageOutputStream(ops)) {
             Files.copy(TestUtil.getImage(IMAGE), os);
+            os.setCompletelyWritten(true);
         }
 
         long size = instance.getByteSize();

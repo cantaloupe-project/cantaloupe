@@ -22,7 +22,6 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.net.URISyntaxException;
 import java.security.InvalidKeyException;
 import java.time.Instant;
@@ -37,24 +36,79 @@ import java.util.concurrent.ConcurrentSkipListSet;
  */
 class AzureStorageCache implements DerivativeCache {
 
-    private static class AzureStorageOutputStream extends OutputStream {
+    private static class CustomBlobOutputStream
+            extends CompletableOutputStream {
 
-        private String blobKey;
-        private BlobOutputStream blobOutputStream;
-        private Set<String> uploadingKeys;
+        private final CloudBlobContainer container;
+        private final CloudBlockBlob blob;
+        private final String blobKey;
+        private final Set<String> uploadingKeys;
+        private final BlobOutputStream blobOutputStream;
 
-        AzureStorageOutputStream(String blobKey,
-                                 BlobOutputStream blobOutputStream,
-                                 Set<String> uploadingKeys) {
-            this.blobKey = blobKey;
-            this.blobOutputStream = blobOutputStream;
-            this.uploadingKeys = uploadingKeys;
+        /**
+         * Constructor for an instance that writes directly into the given
+         * blob.
+         *
+         * @param blob          Blob to write to.
+         * @param uploadingKeys All keys that are currently being uploaded in
+         *                      in any thread, including {@code
+         *                      permanentBlobKey}, which {@link #close()} will
+         *                      remove.
+         */
+        CustomBlobOutputStream(CloudBlockBlob blob,
+                               Set<String> uploadingKeys) throws StorageException {
+            this.container        = null;
+            this.blob             = blob;
+            this.blobKey          = blob.getName();
+            this.uploadingKeys    = uploadingKeys;
+            this.blobOutputStream = blob.openOutputStream();
+        }
+
+        /**
+         * Constructor for an instance that writes into the given temporary
+         * blob. Upon closure, if the stream is {@link #isCompletelyWritten()
+         * completely written}, the temporary blob is copied into place and
+         * deleted. Otherwise, the temporary blob is deleted.
+         *
+         * @param container        Container housing the blobs.
+         * @param tempBlob         Temporary blob.
+         * @param permanentBlobKey Key of the permanent blob.
+         * @param uploadingKeys    All keys that are currently being uploaded
+         *                         in any thread, including {@code
+         *                         permanentBlobKey}, which {@link #close()}
+         *                         will remove.
+         */
+        CustomBlobOutputStream(CloudBlobContainer container,
+                               CloudBlockBlob tempBlob,
+                               String permanentBlobKey,
+                               Set<String> uploadingKeys) throws StorageException {
+            this.container        = container;
+            this.blob             = tempBlob;
+            this.blobKey          = permanentBlobKey;
+            this.uploadingKeys    = uploadingKeys;
+            this.blobOutputStream = blob.openOutputStream();
         }
 
         @Override
         public void close() throws IOException {
             try {
+                blobOutputStream.flush();
                 blobOutputStream.close();
+                if (container != null) {
+                    if (isCompletelyWritten()) {
+                        // Copy the temporary blob into place.
+                        CloudBlockBlob destBlob =
+                                container.getBlockBlobReference(blobKey);
+                        destBlob.getProperties().setContentType(
+                                blob.getProperties().getContentType());
+                        destBlob.startCopy(blob);
+                    }
+                    blob.deleteIfExists();
+                }
+            } catch (URISyntaxException e) {
+                throw new IllegalArgumentException(e);
+            } catch (StorageException e) {
+                throw new IOException(e);
             } finally {
                 try {
                     super.close();
@@ -205,31 +259,31 @@ class AzureStorageCache implements DerivativeCache {
     }
 
     @Override
-    public OutputStream newDerivativeImageOutputStream(OperationList opList)
-            throws IOException {
+    public CompletableOutputStream
+    newDerivativeImageOutputStream(OperationList opList) throws IOException {
         final String objectKey = getObjectKey(opList);
         if (!uploadingKeys.contains(objectKey)) {
             uploadingKeys.add(objectKey);
-            final String containerName = getContainerName();
+            final String containerName   = getContainerName();
+            final String tempObjectKey   = getTempObjectKey(opList);
             final CloudBlobClient client = getClientInstance();
             try {
                 final CloudBlobContainer container =
                         client.getContainerReference(containerName);
-                final CloudBlockBlob blob = container.getBlockBlobReference(objectKey);
+                final CloudBlockBlob blob =
+                        container.getBlockBlobReference(tempObjectKey);
                 blob.getProperties().setContentType(opList.getOutputFormat().
                         getPreferredMediaType().toString());
-
-                return new AzureStorageOutputStream(
-                        objectKey, blob.openOutputStream(), uploadingKeys);
+                return new CustomBlobOutputStream(
+                        container, blob, objectKey, uploadingKeys);
             } catch (URISyntaxException | StorageException e) {
                 throw new IOException(e.getMessage(), e);
             }
         }
-        return OutputStream.nullOutputStream();
+        return new CompletableNullOutputStream();
     }
 
     /**
-     * @param identifier
      * @return Object key of the serialized {@link Info} associated with the
      *         given identifier.
      */
@@ -239,7 +293,6 @@ class AzureStorageCache implements DerivativeCache {
     }
 
     /**
-     * @param opList
      * @return Object key of the derivative image associated with the given
      *         operation list.
      */
@@ -264,10 +317,18 @@ class AzureStorageCache implements DerivativeCache {
     String getObjectKeyPrefix() {
         String prefix = Configuration.getInstance().
                 getString(Key.AZURESTORAGECACHE_OBJECT_KEY_PREFIX);
-        if (prefix.length() < 1 || prefix.equals("/")) {
+        if (prefix.isEmpty() || prefix.equals("/")) {
             return "";
         }
         return StringUtils.stripEnd(prefix, "/") + "/";
+    }
+
+    String getTempObjectKey(OperationList opList) {
+        return getObjectKey(opList) + getTempObjectKeySuffix();
+    }
+
+    private String getTempObjectKeySuffix() {
+        return "_" + Thread.currentThread().getName() + ".tmp";
     }
 
     private boolean isValid(CloudBlob blob) {
@@ -411,8 +472,8 @@ class AzureStorageCache implements DerivativeCache {
                 blob.getProperties().setContentEncoding("UTF-8");
 
                 // writeAsJSON() will close this.
-                OutputStream os = new AzureStorageOutputStream(
-                        objectKey, blob.openOutputStream(), uploadingKeys);
+                CustomBlobOutputStream os = new CustomBlobOutputStream(
+                        blob, uploadingKeys);
                 info.writeAsJSON(os);
             } catch (URISyntaxException | StorageException e) {
                 throw new IOException(e.getMessage(), e);

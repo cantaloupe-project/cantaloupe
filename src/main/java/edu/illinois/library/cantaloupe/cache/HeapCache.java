@@ -89,7 +89,7 @@ class HeapCache implements DerivativeCache {
      */
     static class Key implements Comparable<Key> {
 
-        private String imageId;
+        private final String imageId;
         private String opList;
         private long lastAccessedTime;
 
@@ -171,10 +171,10 @@ class HeapCache implements DerivativeCache {
     /**
      * Buffers written data and adds it to the cache upon closure.
      */
-    private class HeapCacheOutputStream extends OutputStream {
+    private class HeapCacheOutputStream extends CompletableOutputStream {
 
-        private OperationList opList;
-        private ByteArrayOutputStream wrappedStream =
+        private final OperationList opList;
+        private final ByteArrayOutputStream wrappedStream =
                 new ByteArrayOutputStream();
 
         HeapCacheOutputStream(OperationList opList) {
@@ -184,9 +184,11 @@ class HeapCache implements DerivativeCache {
         @Override
         public void close() throws IOException {
             LOGGER.debug("Closing stream for {}", opList);
-            Key key = itemKey(opList);
-            Item item = new Item(wrappedStream.toByteArray());
-            cache.put(key, item);
+            if (isCompletelyWritten()) {
+                Key key = itemKey(opList);
+                Item item = new Item(wrappedStream.toByteArray());
+                cache.put(key, item);
+            }
             try {
                 super.close();
             } finally {
@@ -240,7 +242,7 @@ class HeapCache implements DerivativeCache {
                         return;
                     }
                 } else {
-                    logger.info("run(): stopping");
+                    logger.debug("run(): stopping");
                     return;
                 }
             }
@@ -491,7 +493,7 @@ class HeapCache implements DerivativeCache {
                             e.getMessage());
                 }
             } else {
-                LOGGER.info("loadFromPersistentStore(): does not exist: {}", path);
+                LOGGER.debug("loadFromPersistentStore(): does not exist: {}", path);
             }
         }
     }
@@ -506,15 +508,16 @@ class HeapCache implements DerivativeCache {
     }
 
     @Override
-    public OutputStream newDerivativeImageOutputStream(OperationList opList) {
+    public CompletableOutputStream
+    newDerivativeImageOutputStream(OperationList opList) {
         final Key key = itemKey(opList);
         final Item item = cache.get(key);
         if (item != null) {
-            LOGGER.info("newDerivativeImageOutputStream(): hit for {}", opList);
+            LOGGER.debug("newDerivativeImageOutputStream(): hit for {}", opList);
             touch(item);
-            return OutputStream.nullOutputStream();
+            return new CompletableNullOutputStream();
         } else {
-            LOGGER.info("newDerivativeImageOutputStream(): miss; caching {}",
+            LOGGER.debug("newDerivativeImageOutputStream(): miss; caching {}",
                     opList);
             isDirty.lazySet(true);
             return new HeapCacheOutputStream(opList);
@@ -537,20 +540,20 @@ class HeapCache implements DerivativeCache {
 
     @Override
     public void purge() {
-        LOGGER.info("purge(): purging {} items", cache.size());
+        LOGGER.debug("purge(): purging {} items", cache.size());
         cache.clear();
     }
 
     @Override
     public void purge(Identifier identifier) {
-        LOGGER.info("purge(Identifier): purging {}...", identifier);
+        LOGGER.debug("purge(Identifier): purging {}...", identifier);
         final String imageId = itemKey(identifier).getIdentifier();
         cache.keySet().removeIf(k -> k.getIdentifier().equals(imageId));
     }
 
     @Override
     public void purge(OperationList opList) {
-        LOGGER.info("purge(OperationList): purging {}...", opList.toString());
+        LOGGER.debug("purge(OperationList): purging {}...", opList.toString());
         cache.remove(itemKey(opList));
     }
 
@@ -581,7 +584,7 @@ class HeapCache implements DerivativeCache {
                     }
                 }
                 isDirty.lazySet(true);
-                LOGGER.info("purgeExcess(): purged {} items ({} bytes)",
+                LOGGER.debug("purgeExcess(): purged {} items ({} bytes)",
                         purgedItems, purgedSize);
             }
         }
@@ -592,7 +595,7 @@ class HeapCache implements DerivativeCache {
      */
     @Override
     public void purgeInvalid() {
-        LOGGER.info("purgeInvalid() is not supported by this cache; aborting");
+        LOGGER.debug("purgeInvalid() is not supported by this cache; aborting");
     }
 
     @Override

@@ -117,7 +117,8 @@ class FilesystemCache implements SourceCache, DerivativeCache {
      * source image, or an {@link OperationList} corresponding to a derivative
      * image.</p>
      */
-    private static class ConcurrentFileOutputStream<T> extends OutputStream {
+    private static class ConcurrentFileOutputStream<T>
+            extends CompletableOutputStream {
 
         private static final Logger CFOS_LOGGER = LoggerFactory.
                 getLogger(ConcurrentFileOutputStream.class);
@@ -178,9 +179,9 @@ class FilesystemCache implements SourceCache, DerivativeCache {
                             "wrapped output stream: {}", e.getMessage());
                     }
 
-                    // If the written file isn't empty, move it into place.
+                    // If the written file is complete, move it into place.
                     // Otherwise, delete it.
-                    if (Files.size(tempFile) > 0) {
+                    if (isCompletelyWritten()) {
                         CFOS_LOGGER.debug("close(): moving {} to {}",
                                 tempFile, destinationFile);
                         Files.move(tempFile, destinationFile,
@@ -425,7 +426,6 @@ class FilesystemCache implements SourceCache, DerivativeCache {
     }
 
     /**
-     * @param identifier
      * @return Path of an info file corresponding to the image with the given
      *         identifier.
      */
@@ -437,7 +437,6 @@ class FilesystemCache implements SourceCache, DerivativeCache {
     }
 
     /**
-     * @param identifier
      * @return Temporary info file corresponding to the image with the given
      *         identifier.
      */
@@ -611,8 +610,8 @@ class FilesystemCache implements SourceCache, DerivativeCache {
      * @throws IOException If anything goes wrong.
      */
     @Override
-    public OutputStream newDerivativeImageOutputStream(OperationList ops)
-            throws IOException {
+    public CompletableOutputStream
+    newDerivativeImageOutputStream(OperationList ops) throws IOException {
         return newOutputStream(ops, derivativeImageTempFile(ops),
                 derivativeImageFile(ops), derivativeImageWriteLock);
     }
@@ -628,8 +627,15 @@ class FilesystemCache implements SourceCache, DerivativeCache {
     @Override
     public OutputStream newSourceImageOutputStream(Identifier identifier)
             throws IOException {
-        return newOutputStream(identifier, sourceImageTempFile(identifier),
+        CompletableOutputStream os = newOutputStream(
+                identifier, sourceImageTempFile(identifier),
                 sourceImageFile(identifier), sourceImageWriteLock);
+        // ConcurrentFileOutputStream is a CompletableOutputStream in order to
+        // work with newDerivativeImageOutputStream(). But this method does not
+        // need that extra functionality, so setting it as completely written
+        // here makes it behave like an ordinary OutputStream.
+        os.setCompletelyWritten(true);
+        return os;
     }
 
     /**
@@ -641,10 +647,10 @@ class FilesystemCache implements SourceCache, DerivativeCache {
      * @return Output stream for writing.
      * @throws IOException IF anything goes wrong.
      */
-    private OutputStream newOutputStream(Object imageIdentifier,
-                                         Path tempFile,
-                                         Path destFile,
-                                         Object notifyObj) throws IOException {
+    private CompletableOutputStream newOutputStream(Object imageIdentifier,
+                                                    Path tempFile,
+                                                    Path destFile,
+                                                    Object notifyObj) throws IOException {
         // If the image is being written in another thread, it may (or may not)
         // be present in the imagesBeingWritten set. If so, return a null
         // output stream to avoid interfering.
@@ -652,7 +658,7 @@ class FilesystemCache implements SourceCache, DerivativeCache {
             LOGGER.debug("newOutputStream(): miss, but cache file for {} is " +
                     "being written in another thread, so returning a no-op stream",
                     imageIdentifier);
-            return OutputStream.nullOutputStream();
+            return new CompletableNullOutputStream();
         }
 
         LOGGER.debug("newOutputStream(): miss; caching {}", imageIdentifier);
@@ -671,7 +677,7 @@ class FilesystemCache implements SourceCache, DerivativeCache {
             // need to write over it.
             LOGGER.debug("newOutputStream(): {} already exists; returning a no-op stream",
                     tempFile.getParent());
-            return OutputStream.nullOutputStream();
+            return new CompletableNullOutputStream();
         }
     }
 

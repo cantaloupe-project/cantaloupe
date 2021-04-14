@@ -10,7 +10,6 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.nio.file.Path;
 import java.util.Optional;
 
@@ -114,7 +113,7 @@ public final class CacheFacade {
     /**
      * @see DerivativeCache#newDerivativeImageOutputStream(OperationList)
      */
-    public OutputStream newDerivativeImageOutputStream(OperationList opList)
+    public CompletableOutputStream newDerivativeImageOutputStream(OperationList opList)
             throws IOException {
         Optional<DerivativeCache> optCache = getDerivativeCache();
         if (optCache.isPresent()) {
