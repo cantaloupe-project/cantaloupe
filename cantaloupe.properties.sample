@@ -167,6 +167,10 @@ FilesystemSource.BasicLookupStrategy.path_suffix =
 # Trusts insecure certificates and cipher suites.
 HttpSource.allow_insecure = false
 
+# Use GET request with header Range = bytes=0-0 instead of
+# HEAD request. Useful if using Cantaloupe with presigned S3 URLs.
+HttpSource.disable_head_request = false
+
 # Request timeout in seconds.
 HttpSource.request_timeout =
 

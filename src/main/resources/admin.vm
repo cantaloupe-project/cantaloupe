@@ -1688,6 +1688,26 @@
                                         </tr>
                                         <tr>
                                             <td>
+                                                <a tabindex="0" class="btn btn-sm cl-help"
+                                                   role="button" data-toggle="popover"
+                                                   data-trigger="focus"
+                                                   data-content="Use GET request with Range header instead of HEAD request.
+                                                   Useful if using Cantaloupe with presigned S3 URLs.">?</a>
+                                            </td>
+                                            <td>
+                                                <div class="checkbox">
+                                                    <label>
+                                                        <input type="checkbox"
+                                                               name="HttpSource.disable_head_request"
+                                                               value="true"
+                                                               data-requires-restart="false">
+                                                        Disable HEAD requests
+                                                    </label>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
                                                 Request Timeout
                                                 <a tabindex="0" class="btn btn-sm cl-help"
                                                    role="button" data-toggle="popover"

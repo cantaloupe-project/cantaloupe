@@ -109,6 +109,7 @@ public enum Key {
     HTTPSOURCE_CHUNK_CACHE_MAX_SIZE("HttpSource.chunking.cache.max_size"),
     HTTPSOURCE_LOOKUP_STRATEGY("HttpSource.lookup_strategy"),
     HTTPSOURCE_REQUEST_TIMEOUT("HttpSource.request_timeout"),
+    HTTPSOURCE_DISABLE_HEAD_REQUEST("HttpSource.disable_head_request"),
     HTTPSOURCE_URL_PREFIX("HttpSource.BasicLookupStrategy.url_prefix"),
     HTTPSOURCE_URL_SUFFIX("HttpSource.BasicLookupStrategy.url_suffix"),
     HTTPS_ENABLED("https.enabled"),

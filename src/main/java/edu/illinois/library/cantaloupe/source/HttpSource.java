@@ -34,6 +34,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * <p>Provides access to source content located on an HTTP(S) server. Backed by
@@ -117,12 +119,18 @@ class HttpSource extends AbstractSource implements Source {
 
         int status;
         Headers headers;
+        boolean isGetRequest = false;
+
+        private static final Pattern CONTENT_RANGE_PATTERN = Pattern.compile("bytes \\d+-\\d+/(\\d+)", Pattern.CASE_INSENSITIVE);
 
         static HEADResponseInfo fromResponse(Response response)
                 throws IOException {
             HEADResponseInfo info = new HEADResponseInfo();
             info.status           = response.code();
             info.headers          = response.headers();
+            if (response.request().method().equals("GET")) {
+                info.isGetRequest = true;
+            }
             return info;
         }
 
@@ -131,6 +139,17 @@ class HttpSource extends AbstractSource implements Source {
         }
 
         long getContentLength() {
+            if (isGetRequest && acceptsRanges()) {
+                String value = headers.get("Content-Range");
+                if (value != null) {
+                    Matcher matcher = CONTENT_RANGE_PATTERN.matcher(value);
+                    if (matcher.matches()) {
+                        return Long.parseLong(matcher.group(1));
+                    }
+                }
+                return 0;
+            }
+
             String value = headers.get("Content-Length");
             return (value != null) ? Long.parseLong(value) : 0;
         }
@@ -471,8 +490,16 @@ class HttpSource extends AbstractSource implements Source {
      */
     private HEADResponseInfo fetchHEADResponseInfo() throws IOException {
         if (headResponseInfo == null) {
-            try (Response response = request("HEAD")) {
-                headResponseInfo = HEADResponseInfo.fromResponse(response);
+            final Configuration config = Configuration.getInstance();
+
+            if (config.getBoolean(Key.HTTPSOURCE_DISABLE_HEAD_REQUEST)) {
+                try (Response response = request("GET", Collections.singletonMap("Range", "bytes=0-0"))) {
+                    headResponseInfo = HEADResponseInfo.fromResponse(response);
+                }
+            } else {
+                try (Response response = request("HEAD")) {
+                    headResponseInfo = HEADResponseInfo.fromResponse(response);
+                }
             }
         }
         return headResponseInfo;
