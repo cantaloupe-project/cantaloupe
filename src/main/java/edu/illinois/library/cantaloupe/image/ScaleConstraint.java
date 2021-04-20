@@ -1,5 +1,7 @@
 package edu.illinois.library.cantaloupe.image;
 
+import edu.illinois.library.cantaloupe.config.Configuration;
+import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.http.Reference;
 import edu.illinois.library.cantaloupe.util.Rational;
 
@@ -24,19 +26,29 @@ public final class ScaleConstraint {
 
     /**
      * <p>Format of a scale constraint suffix appended to an identifier in a
+     * URI path component. The numerator is designated by {@code {n}} and
+     * the denominator by {@code {d}}.</p>
+     *
+     * <p>N.B.: This must mesh with {@link
+     * #DEFAULT_IDENTIFIER_SUFFIX_PATTERN}.</p>
+     */
+    private static final String DEFAULT_IDENTIFIER_SUFFIX_FORMAT = "-{n}:{d}";
+
+    /**
+     * <p>Format of a scale constraint suffix appended to an identifier in a
      * URI path component.</p>
      *
      * <p>N.B.: This must be kept in sync with {@link
-     * #toIdentifierSuffix()}.</p>
+     * #DEFAULT_IDENTIFIER_SUFFIX_FORMAT}.</p>
      */
-    public static final Pattern IDENTIFIER_SUFFIX_PATTERN =
+    private static final Pattern DEFAULT_IDENTIFIER_SUFFIX_PATTERN =
             Pattern.compile("-(\\d+):(\\d+)\\b");
 
-    private Rational rational;
+    private final Rational rational;
 
     /**
      * An identifier URI path component may contain a {@link
-     * #IDENTIFIER_SUFFIX_PATTERN scale constraint suffix}. If so, this method
+     * #identifierSuffixPattern()} scale constraint suffix}. If so, this method
      * will parse it and return an instance reflecting it.
      *
      * @param pathComponent Identifier path component, not URI-decoded.
@@ -48,7 +60,7 @@ public final class ScaleConstraint {
         if (pathComponent != null) {
             final String decodedComponent = Reference.decode(pathComponent);
             final Matcher matcher =
-                    IDENTIFIER_SUFFIX_PATTERN.matcher(decodedComponent);
+                    identifierSuffixPattern().matcher(decodedComponent);
             if (matcher.find() && matcher.groupCount() == 2) {
                 return new ScaleConstraint(
                         Long.parseLong(matcher.group(1)),
@@ -56,6 +68,30 @@ public final class ScaleConstraint {
             }
         }
         return null;
+    }
+
+    /**
+     * @return Format from the application configuration, falling back to the
+     *         default format if not set.
+     */
+    public static String identifierSuffixFormat() {
+        Configuration config = Configuration.getInstance();
+        String formatStr     = config.getString(Key.SCALE_CONSTRAINT_SUFFIX_FORMAT, null);
+        return (formatStr != null) ?
+                formatStr : DEFAULT_IDENTIFIER_SUFFIX_FORMAT;
+    }
+
+    /**
+     * @return Pattern from the application configuration, falling back to the
+     *         default pattern if not set.
+     */
+    public static Pattern identifierSuffixPattern() {
+        Configuration config = Configuration.getInstance();
+        String patternStr    = config.getString(Key.SCALE_CONSTRAINT_SUFFIX_PATTERN, null);
+        if (patternStr != null) {
+            return Pattern.compile(patternStr);
+        }
+        return DEFAULT_IDENTIFIER_SUFFIX_PATTERN;
     }
 
     /**
@@ -134,10 +170,12 @@ public final class ScaleConstraint {
     }
 
     /**
-     * N.B.: This must be kept in sync with {@link #IDENTIFIER_SUFFIX_PATTERN}.
+     * N.B.: This must be kept in sync with {@link #identifierSuffixPattern()}.
      */
     public String toIdentifierSuffix() {
-        return "-" + rational.getNumerator() + ":" + rational.getDenominator();
+        return identifierSuffixFormat()
+                .replace("{n}", Long.toString(rational.getNumerator()))
+                .replace("{d}", Long.toString(rational.getDenominator()));
     }
 
     /**

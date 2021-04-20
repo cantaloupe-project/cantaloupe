@@ -3,6 +3,12 @@
 If you are skipping versions, work through these sections backwards from your
 current version.
 
+## 4.1.x → 4.1.9 (skip if migrating to 5.0)
+
+Add the following keys from the sample configuration:
+    * `scale_constraint_suffix.pattern`
+    * `scale_constraint_suffix.format`
+
 ## 4.0.x → 4.1
 
 1. Rename the following configuration keys:

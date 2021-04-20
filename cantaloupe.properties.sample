@@ -48,6 +48,15 @@ base_uri =
 # percent-encoded version in URLs.
 slash_substitute =
 
+# Parses an identifier's scale constraint suffix.
+# This key only applies to versions >= 4.1.9 and < 5.0.
+scale_constraint_suffix.pattern = -(\d+):(\d+)\b
+
+# Converts a scale constraint suffix to its URL format. {n} and {d} are the
+# numerator and denominator, respectively.
+# This key only applies to versions >= 4.1.9 and < 5.0.
+scale_constraint_suffix.format = -{n}:{d}
+
 # Maximum number of pixels to return in a response, to prevent overloading
 # the server. Requests for more pixels than this will receive an error
 # response. Set to 0 for no maximum.

@@ -27,8 +27,8 @@ import java.util.regex.Matcher;
  *
  * <ol>
  *     <li>URI decoding</li>
- *     <li>Strip off any {@link ScaleConstraint#IDENTIFIER_SUFFIX_PATTERN scale
- *     constraint suffix}</li>
+ *     <li>Strip off any {@link ScaleConstraint#identifierSuffixPattern()}
+ *     scale constraint suffix}</li>
  *     <li>{@link StringUtils#decodeSlashes(String) slash decoding}</li>
  * </ol>
  *
@@ -50,7 +50,7 @@ import java.util.regex.Matcher;
  *     edu.illinois.library.cantaloupe.resource.AbstractResource#PUBLIC_IDENTIFIER_HEADER},
  *     if present</li>
  *     <li>Encode slashes</li>
- *     <li>Append a {@link ScaleConstraint#IDENTIFIER_SUFFIX_PATTERN scale
+ *     <li>Append a {@link ScaleConstraint#identifierSuffixPattern()} scale
  *     constraint suffix}, if necessary</li>
  *     <li>URI encoding</li>
  * </ol>
@@ -118,7 +118,7 @@ public class Identifier implements Comparable<Identifier> {
      */
     private static String stripScaleConstraint(String pathComponent) {
         final Matcher matcher =
-                ScaleConstraint.IDENTIFIER_SUFFIX_PATTERN.matcher(pathComponent);
+                ScaleConstraint.identifierSuffixPattern().matcher(pathComponent);
         if (matcher.find()) {
             String group = matcher.group(0);
             return pathComponent.substring(0, pathComponent.length() - group.length());

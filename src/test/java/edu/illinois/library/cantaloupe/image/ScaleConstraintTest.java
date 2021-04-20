@@ -1,10 +1,13 @@
 package edu.illinois.library.cantaloupe.image;
 
+import edu.illinois.library.cantaloupe.config.Configuration;
+import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.util.Map;
+import java.util.regex.Pattern;
 
 import static org.junit.Assert.*;
 
@@ -34,6 +37,38 @@ public class ScaleConstraintTest extends BaseTest {
     @Test
     public void testFromIdentifierPathComponentWithNullArgument() {
         assertNull(ScaleConstraint.fromIdentifierPathComponent(null));
+    }
+
+    @Test
+    public void testIdentifierSuffixFormatWithValueFromConfiguration() {
+        final String expected = "-{n}-{d}";
+        final Configuration config = Configuration.getInstance();
+        config.setProperty(Key.SCALE_CONSTRAINT_SUFFIX_FORMAT, expected);
+        String actual = ScaleConstraint.identifierSuffixFormat();
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    public void testIdentifierSuffixFormatWithConfigurationValueNotSet() {
+        final String expected = "-{n}:{d}";
+        String actual = ScaleConstraint.identifierSuffixFormat();
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    public void testIdentifierSuffixPatternWithValueFromConfiguration() {
+        final Pattern expected = Pattern.compile("-(\\d+)-(\\d+)\\b");
+        final Configuration config = Configuration.getInstance();
+        config.setProperty(Key.SCALE_CONSTRAINT_SUFFIX_PATTERN, expected.toString());
+        Pattern actual = ScaleConstraint.identifierSuffixPattern();
+        assertEquals(expected.toString(), actual.toString());
+    }
+
+    @Test
+    public void testIdentifierSuffixPatternWithConfigurationValueNotSet() {
+        final Pattern expected = Pattern.compile("-(\\d+):(\\d+)\\b");
+        Pattern actual = ScaleConstraint.identifierSuffixPattern();
+        assertEquals(expected.toString(), actual.toString());
     }
 
     @Test(expected = IllegalArgumentException.class)
