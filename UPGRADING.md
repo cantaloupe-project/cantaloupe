@@ -34,6 +34,8 @@ current version.
 4.  Remove the following configuration keys:
     * `http.http2.enabled`
     * `https.http2.enabled`
+    * `scale_constraint_suffix.pattern`
+    * `scale_constraint_suffix.format`
     * `endpoint.iiif.content_disposition`
     * `delegate_script.cache.enabled`
     * `processor.metadata.*`
