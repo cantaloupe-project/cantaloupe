@@ -379,14 +379,14 @@ class Java2DUtilTest extends BaseTest {
         // no reduction factor or scale constraint
         ReductionFactor rf = new ReductionFactor();
         ScaleConstraint sc = new ScaleConstraint(1, 1);
-        outImage = Java2DUtil.crop(inImage, crop, rf, sc);
+        outImage = Java2DUtil.crop(inImage, crop, rf, sc, false);
         assertEquals(height, outImage.getWidth());
         assertEquals(height, outImage.getHeight());
 
         // reduction factor 1
         rf = new ReductionFactor();
         sc = new ScaleConstraint(1, 1);
-        outImage = Java2DUtil.crop(inImage, crop, rf, sc);
+        outImage = Java2DUtil.crop(inImage, crop, rf, sc, false);
         assertEquals(height, outImage.getWidth());
         assertEquals(height, outImage.getHeight());
     }
@@ -401,14 +401,14 @@ class Java2DUtilTest extends BaseTest {
         // no reduction factor or scale constraint
         ReductionFactor rf = new ReductionFactor();
         ScaleConstraint sc = new ScaleConstraint(1, 1);
-        outImage = Java2DUtil.crop(inImage, crop, rf, sc);
+        outImage = Java2DUtil.crop(inImage, crop, rf, sc, false);
         assertEquals(50, outImage.getWidth());
         assertEquals(50, outImage.getHeight());
 
         // reduction factor 1
         rf = new ReductionFactor(1);
         sc = new ScaleConstraint(1, 1);
-        outImage = Java2DUtil.crop(inImage, crop, rf, sc);
+        outImage = Java2DUtil.crop(inImage, crop, rf, sc, false);
         assertEquals(25, outImage.getWidth());
         assertEquals(25, outImage.getHeight());
     }
@@ -423,14 +423,14 @@ class Java2DUtilTest extends BaseTest {
         // no reduction factor or scale constraint
         ReductionFactor rf = new ReductionFactor();
         ScaleConstraint sc = new ScaleConstraint(1, 1);
-        outImage = Java2DUtil.crop(inImage, crop, rf, sc);
+        outImage = Java2DUtil.crop(inImage, crop, rf, sc, false);
         assertEquals(width * crop.getWidth(), outImage.getWidth(), DELTA);
         assertEquals(height * crop.getHeight(), outImage.getHeight(), DELTA);
 
         // reduction factor 1
         rf = new ReductionFactor(1);
         sc = new ScaleConstraint(1, 1);
-        outImage = Java2DUtil.crop(inImage, crop, rf, sc);
+        outImage = Java2DUtil.crop(inImage, crop, rf, sc, false);
         assertEquals(width * crop.getWidth(), outImage.getWidth(), DELTA);
         assertEquals(height * crop.getHeight(), outImage.getHeight(), DELTA);
     }

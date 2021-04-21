@@ -99,7 +99,7 @@ final class Java2DPostProcessor {
                 if (crop.hasEffect(fullSize, opList) &&
                         !readerHints.contains(ReaderHint.ALREADY_CROPPED)) {
                     image = Java2DUtil.crop(image, crop, reductionFactor,
-                            opList.getScaleConstraint());
+                            opList.getScaleConstraint(), false);
                 }
             }
         }

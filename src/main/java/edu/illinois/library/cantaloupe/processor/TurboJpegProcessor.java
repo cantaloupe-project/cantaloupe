@@ -185,8 +185,12 @@ public class TurboJpegProcessor extends AbstractProcessor
                 if (op instanceof Crop) {
                     crop = (Crop) op;
                     if (crop.hasEffect(fullSize, opList)) {
+                        // The TurboJPEG writer cannot deal with a
+                        // BufferedImage that has been "virtually cropped" by
+                        // BufferedImage.getSubimage(). We must tell this
+                        // method to copy the underlying raster.
                         image = Java2DUtil.crop(image, crop, reductionFactor,
-                                scaleConstraint);
+                                scaleConstraint, true);
                     }
                 }
             }

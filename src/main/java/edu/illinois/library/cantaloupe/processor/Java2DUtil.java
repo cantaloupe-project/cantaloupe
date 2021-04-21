@@ -298,7 +298,6 @@ public final class Java2DUtil {
      * only the needed region into it.
      *
      * @see #cropVirtually(BufferedImage, Rectangle)
-     * @deprecated  TODO: can this be removed?
      */
     private static BufferedImage cropPhysically(final BufferedImage inImage,
                                                 final Rectangle region) {
@@ -377,11 +376,12 @@ public final class Java2DUtil {
     static BufferedImage crop(final BufferedImage inImage,
                               final Crop crop,
                               final ReductionFactor rf,
-                              final ScaleConstraint scaleConstraint) {
+                              final ScaleConstraint scaleConstraint,
+                              final boolean copyRaster) {
         final Dimension inSize = new Dimension(
                 inImage.getWidth(), inImage.getHeight());
         final Rectangle roi = crop.getRectangle(inSize, rf, scaleConstraint);
-        return crop(inImage, roi, false);
+        return crop(inImage, roi, copyRaster);
     }
 
     /**

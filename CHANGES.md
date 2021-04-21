@@ -2,11 +2,13 @@
 
 ## 5.0.1
 
-* Fixed a bug that caused the `profile.formats` key to be missing from the
-  information responses of cached images.
+* Fixed a bug in the IIIF Image API 2 & 3 endpoints that caused the
+  `profile.formats` key to be missing from the information responses of cached
+  images.
+* Fixed a bug in TurboJpegProcessor that could cause incorrect cropping.
 * Fixed a bug that could cause S3 credentials from the configuration file to be
-  selected even when not set.
-* Fixed a bug whereby corrupt image data could be written to a derivative
+  erroneously used even when not set.
+* Fixed a bug that could cause corrupt image to be written to a derivative
   cache.
 
 ## 5.0
