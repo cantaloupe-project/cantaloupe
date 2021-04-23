@@ -50,6 +50,11 @@ public class ApplicationLogFilter extends Filter<ILoggingEvent> {
                 Level.TRACE.isGreaterOrEqual(event.getLevel())) {
             return FilterReply.DENY;
         }
+        // More PDFBox
+        else if ("org.apache.pdfbox.io.ScratchFile".equals(event.getLoggerName()) &&
+                Level.DEBUG.isGreaterOrEqual(event.getLevel())) {
+            return FilterReply.DENY;
+        }
         // Reject AWS SDK log messages.
         else if (Level.INFO.isGreaterOrEqual(event.getLevel()) &&
                 AWS_SDK_LOGGERS.contains(event.getLoggerName())) {
