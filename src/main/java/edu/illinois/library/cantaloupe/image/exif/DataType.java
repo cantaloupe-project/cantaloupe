@@ -1,9 +1,11 @@
 package edu.illinois.library.cantaloupe.image.exif;
 
+import edu.illinois.library.cantaloupe.util.ArrayUtils;
 import edu.illinois.library.cantaloupe.util.Rational;
 import it.geosolutions.imageio.plugins.tiff.TIFFTag;
 
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
@@ -72,7 +74,7 @@ public enum DataType {
      */
     DOUBLE(12, 8);
 
-    private short value, numBytesPerComponent;
+    private final short value, numBytesPerComponent;
 
     /**
      * @param tiffTagType One of the {@link TIFFTag} constants.
@@ -156,17 +158,20 @@ public enum DataType {
      *     <dd>{@link java.lang.Double}</dd>
      * </dl>
      *
-     * @param bytes Field value.
-     * @return      Java equivalent value.
+     * @param bytes     Field value.
+     * @param byteOrder Byte order.
+     * @return          Java equivalent value.
      */
-    Object decode(byte[] bytes) {
+    Object decode(byte[] bytes, ByteOrder byteOrder) {
         switch (this) {
-            case BYTE:
-                return bytes[0];
             case ASCII:
                 String str = new String(bytes, StandardCharsets.US_ASCII);
                 return str.substring(0, str.length() - 1); // strip null terminator
+            case BYTE:
+            case SBYTE:
+                return bytes[0];
             case SHORT:
+            case SSHORT:
                 ByteBuffer buffer = ByteBuffer.wrap(bytes);
                 if (bytes.length == 2) {
                     return buffer.getShort();
@@ -174,28 +179,6 @@ public enum DataType {
                     return (int) bytes[0];
                 }
             case LONG:
-                buffer = ByteBuffer.wrap(bytes);
-                if (bytes.length >= 8) {
-                    return buffer.getLong();
-                } else if (bytes.length >= 4) {
-                    return buffer.getInt();
-                } else if (bytes.length == 2) {
-                    return buffer.getShort();
-                } else {
-                    return (int) bytes[0];
-                }
-            case RATIONAL:
-                buffer = ByteBuffer.wrap(bytes);
-                return new Rational(buffer.getInt(), buffer.getInt(4));
-            case SBYTE:
-                return bytes[0];
-            case SSHORT:
-                buffer = ByteBuffer.wrap(bytes);
-                if (bytes.length == 2) {
-                    return buffer.getShort();
-                } else {
-                    return (int) bytes[0];
-                }
             case SLONG:
                 buffer = ByteBuffer.wrap(bytes);
                 if (bytes.length >= 8) {
@@ -207,9 +190,17 @@ public enum DataType {
                 } else {
                     return (int) bytes[0];
                 }
+            case RATIONAL:
             case SRATIONAL:
-                buffer = ByteBuffer.wrap(bytes);
-                return new Rational(buffer.getInt(), buffer.getInt(4));
+                byte[] numBytes = Arrays.copyOfRange(bytes, 0, 4);
+                byte[] denBytes = Arrays.copyOfRange(bytes, 4, 8);
+                if (ByteOrder.LITTLE_ENDIAN.equals(byteOrder)) {
+                    numBytes = ArrayUtils.reverse(numBytes);
+                    denBytes = ArrayUtils.reverse(denBytes);
+                }
+                int numerator   = toInt(numBytes);
+                int denominator = toInt(denBytes);
+                return new Rational(numerator, denominator);
             case FLOAT:
                 return ByteBuffer.wrap(bytes).getFloat();
             case DOUBLE:
@@ -225,6 +216,13 @@ public enum DataType {
 
     short getValue() {
         return value;
+    }
+
+    private static int toInt(byte[] fourBytes) {
+        return ((fourBytes[0] & 0xff) << 24) |
+                ((fourBytes[1] & 0xff) << 16) |
+                ((fourBytes[2] & 0xff) << 8) |
+                (fourBytes[3] & 0xff);
     }
 
 }

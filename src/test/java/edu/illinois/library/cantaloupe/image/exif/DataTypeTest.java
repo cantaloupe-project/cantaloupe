@@ -6,6 +6,7 @@ import it.geosolutions.imageio.plugins.tiff.TIFFTag;
 import org.junit.jupiter.api.Test;
 
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
@@ -50,58 +51,66 @@ public class DataTypeTest extends BaseTest {
     @Test
     void testDecodeWithByte() {
         byte[] bytes = new byte[] { 0x79 };
-        assertEquals((byte) 0x79, DataType.BYTE.decode(bytes));
+        assertEquals((byte) 0x79, DataType.BYTE.decode(bytes, ByteOrder.BIG_ENDIAN));
     }
 
     @Test
     void testDecodeWithASCII() {
         byte[] bytes = "cats\u0000".getBytes(StandardCharsets.US_ASCII);
-        assertEquals("cats", DataType.ASCII.decode(bytes));
+        assertEquals("cats", DataType.ASCII.decode(bytes, ByteOrder.BIG_ENDIAN));
     }
 
     @Test
     void testDecodeWithShort() {
         byte[] bytes = new byte[] { 0x12, 0x79 };
-        assertEquals((short) 4729, DataType.SHORT.decode(bytes));
+        assertEquals((short) 4729, DataType.SHORT.decode(bytes, ByteOrder.BIG_ENDIAN));
     }
 
     @Test
     void testDecodeWithLong() {
         final byte[] eightBytes = new byte[] { 0x00, 0x00, 0x03, 0x04, 0x05, 0x08, 0x12, 0x33 };
-        assertEquals(3315799167539L, DataType.LONG.decode(eightBytes));
+        assertEquals(3315799167539L, DataType.LONG.decode(eightBytes, ByteOrder.BIG_ENDIAN));
 
         byte[] sevenBytes = Arrays.copyOfRange(eightBytes, 0, 7);
-        assertEquals(772, DataType.LONG.decode(sevenBytes));
+        assertEquals(772, DataType.LONG.decode(sevenBytes, ByteOrder.BIG_ENDIAN));
 
         byte[] fiveBytes = Arrays.copyOfRange(eightBytes, 3, 8);
-        assertEquals(67438610, DataType.LONG.decode(fiveBytes));
+        assertEquals(67438610, DataType.LONG.decode(fiveBytes, ByteOrder.BIG_ENDIAN));
 
         byte[] threeBytes = Arrays.copyOfRange(eightBytes, 5, 8);
-        assertEquals(8, DataType.LONG.decode(threeBytes));
+        assertEquals(8, DataType.LONG.decode(threeBytes, ByteOrder.BIG_ENDIAN));
 
         byte[] twoBytes = Arrays.copyOfRange(eightBytes, 6, 8);
-        assertEquals((short) 4659, DataType.LONG.decode(twoBytes));
+        assertEquals((short) 4659, DataType.LONG.decode(twoBytes, ByteOrder.BIG_ENDIAN));
 
         byte[] oneByte = Arrays.copyOfRange(eightBytes, 7, 8);
-        assertEquals(51, DataType.LONG.decode(oneByte));
+        assertEquals(51, DataType.LONG.decode(oneByte, ByteOrder.BIG_ENDIAN));
     }
 
     @Test
-    void testDecodeWithRational() {
+    void testDecodeWithRationalBigEndian() {
         byte[] bytes = new byte[] { 0x00, 0x00, 0x03, 0x04, 0x05, 0x08, 0x12, 0x33 };
-        assertEquals(new Rational(772, 84415027), DataType.RATIONAL.decode(bytes));
+        assertEquals(new Rational(772, 84415027),
+                DataType.RATIONAL.decode(bytes, ByteOrder.BIG_ENDIAN));
+    }
+
+    @Test
+    void testDecodeWithRationalLittleEndian() {
+        byte[] bytes = new byte[] { 0x00, 0x00, 0x03, 0x04, 0x05, 0x08, 0x12, 0x33 };
+        assertEquals(new Rational(67305472, 856819717),
+                DataType.RATIONAL.decode(bytes, ByteOrder.LITTLE_ENDIAN));
     }
 
     @Test
     void testDecodeWithSignedByte() {
         byte[] bytes = new byte[] { 0x79 };
-        assertEquals((byte) 0x79, DataType.SBYTE.decode(bytes));
+        assertEquals((byte) 0x79, DataType.SBYTE.decode(bytes, ByteOrder.BIG_ENDIAN));
     }
 
     @Test
     void testDecodeWithSignedShort() {
         byte[] bytes = new byte[] { 0x12, 0x79 };
-        assertEquals((short) 4729, DataType.SSHORT.decode(bytes));
+        assertEquals((short) 4729, DataType.SSHORT.decode(bytes, ByteOrder.BIG_ENDIAN));
     }
 
     @Test
@@ -109,13 +118,21 @@ public class DataTypeTest extends BaseTest {
         final long value = 395834590832L;
         byte[] bytes = new byte[8];
         ByteBuffer.wrap(bytes).putLong(value);
-        assertEquals(value, DataType.LONG.decode(bytes));
+        assertEquals(value, DataType.LONG.decode(bytes, ByteOrder.BIG_ENDIAN));
     }
 
     @Test
-    void testDecodeWithSignedRational() {
+    void testDecodeWithSignedRationalBigEndian() {
         byte[] bytes = new byte[] { 0x00, 0x00, 0x03, 0x04, 0x05, 0x08, 0x12, 0x33 };
-        assertEquals(new Rational(772, 84415027), DataType.SRATIONAL.decode(bytes));
+        assertEquals(new Rational(772, 84415027),
+                DataType.SRATIONAL.decode(bytes, ByteOrder.BIG_ENDIAN));
+    }
+
+    @Test
+    void testDecodeWithSignedRationalLittleEndian() {
+        byte[] bytes = new byte[] { 0x00, 0x00, 0x03, 0x04, 0x05, 0x08, 0x12, 0x33 };
+        assertEquals(new Rational(67305472, 856819717),
+                DataType.SRATIONAL.decode(bytes, ByteOrder.LITTLE_ENDIAN));
     }
 
     @Test
@@ -123,7 +140,7 @@ public class DataTypeTest extends BaseTest {
         final float value = 342.234232f;
         byte[] bytes = new byte[4];
         ByteBuffer.wrap(bytes).putFloat(value);
-        assertEquals(value, (float) DataType.FLOAT.decode(bytes), DELTA_F);
+        assertEquals(value, (float) DataType.FLOAT.decode(bytes, ByteOrder.BIG_ENDIAN), DELTA_F);
     }
 
     @Test
@@ -131,7 +148,7 @@ public class DataTypeTest extends BaseTest {
         final double value = 342.234202;
         byte[] bytes = new byte[8];
         ByteBuffer.wrap(bytes).putDouble(value);
-        assertEquals(value, (double) DataType.DOUBLE.decode(bytes), DELTA_L);
+        assertEquals(value, (double) DataType.DOUBLE.decode(bytes, ByteOrder.BIG_ENDIAN), DELTA_L);
     }
 
 }

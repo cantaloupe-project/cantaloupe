@@ -19,21 +19,21 @@ public class ReaderTest extends BaseTest {
 
     private static Directory getExpectedIntelIFD0() {
         final Directory exifIFD = new Directory(TagSet.EXIF);
-        exifIFD.put(Tag.EXPOSURE_TIME, DataType.RATIONAL, new Rational(16777216, 671088640));
-        exifIFD.put(Tag.F_NUMBER, DataType.RATIONAL, new Rational(184549376, 83886080));
+        exifIFD.put(Tag.EXPOSURE_TIME, DataType.RATIONAL, new Rational(1, 40));
+        exifIFD.put(Tag.F_NUMBER, DataType.RATIONAL, new Rational(11, 5));
         exifIFD.put(Tag.EXPOSURE_PROGRAM, DataType.SHORT, 2);
         exifIFD.put(Tag.PHOTOGRAPHIC_SENSITIVITY, DataType.SHORT, 40);
         exifIFD.put(Tag.EXIF_VERSION, DataType.UNDEFINED, new byte[] { 0x31, 0x32, 0x32, 0x30});
         exifIFD.put(Tag.DATE_TIME_ORIGINAL, DataType.ASCII, "2015:12:31 12:42:48");
         exifIFD.put(Tag.DATE_TIME_DIGITIZED, DataType.ASCII, "2015:12:31 12:42:48");
         exifIFD.put(Tag.COMPONENTS_CONFIGURATION, DataType.UNDEFINED, new byte[] { 0x03, 0x02, 0x01 });
-        exifIFD.put(Tag.SHUTTER_SPEED, DataType.SRATIONAL, new Rational(1028849664, -1542520832));
-        exifIFD.put(Tag.APERTURE, DataType.RATIONAL, new Rational(-1977679872, -586350592));
-        exifIFD.put(Tag.BRIGHTNESS, DataType.SRATIONAL, new Rational(940703744, -1258029056));
-        exifIFD.put(Tag.EXPOSURE_BIAS, DataType.SRATIONAL, new Rational(0, 16777216));
+        exifIFD.put(Tag.SHUTTER_SPEED, DataType.SRATIONAL, new Rational(21309, 4004));
+        exifIFD.put(Tag.APERTURE, DataType.RATIONAL, new Rational(8074, 3549));
+        exifIFD.put(Tag.BRIGHTNESS, DataType.SRATIONAL, new Rational(4664, 1205));
+        exifIFD.put(Tag.EXPOSURE_BIAS, DataType.SRATIONAL, new Rational(0, 1));
         exifIFD.put(Tag.METERING_MODE, DataType.SHORT, 5);
         exifIFD.put(Tag.FLASH, DataType.SHORT, 16);
-        exifIFD.put(Tag.FOCAL_LENGTH, DataType.RATIONAL, new Rational(352321536, 83886080));
+        exifIFD.put(Tag.FOCAL_LENGTH, DataType.RATIONAL, new Rational(21, 5));
         exifIFD.put(Tag.SUBJECT_AREA, DataType.SHORT, 95);
         exifIFD.put(Tag.MAKER_NOTE, DataType.UNDEFINED, new byte[] {
                 0x41, 0x70, 0x70, 0x6C, 0x65, 0x20, 0x69, 0x4F, 0x53, 0x00,
@@ -67,7 +67,7 @@ public class ReaderTest extends BaseTest {
                 0x0E, 0x00, 0x00, 0x1A, (byte) 0xFB });
         exifIFD.put(Tag.SUB_SEC_TIME_ORIGINAL, DataType.ASCII, "56");
         exifIFD.put(Tag.SUB_SEC_TIME_DIGITIZED, DataType.ASCII, "56");
-        exifIFD.put(Tag.FLASHPIX_VERSION, DataType.UNDEFINED, new byte[] { 0x30, 0x30, 0x31, 0x30});
+        exifIFD.put(Tag.FLASHPIX_VERSION, DataType.UNDEFINED, new byte[] { 0x30, 0x30, 0x31, 0x30 });
         exifIFD.put(Tag.COLOR_SPACE, DataType.SHORT, 1);
         exifIFD.put(Tag.PIXEL_X_DIMENSION, DataType.SHORT, 64);
         exifIFD.put(Tag.PIXEL_Y_DIMENSION, DataType.SHORT, 56);
@@ -78,7 +78,7 @@ public class ReaderTest extends BaseTest {
         exifIFD.put(Tag.WHITE_BALANCE, DataType.SHORT, 0);
         exifIFD.put(Tag.FOCAL_LENGTH_IN_35MM_FILM, DataType.SHORT, 29);
         exifIFD.put(Tag.SCENE_CAPTURE_TYPE, DataType.SHORT, 0);
-        exifIFD.put(Tag.LENS_SPECIFICATION, DataType.RATIONAL, new Rational(1392508928, 335544320));
+        exifIFD.put(Tag.LENS_SPECIFICATION, DataType.RATIONAL, new Rational(83, 20));
         exifIFD.put(Tag.LENS_MAKE, DataType.ASCII, "Apple");
         exifIFD.put(Tag.LENS_MODEL, DataType.ASCII, "iPhone 5s back camera 4.15mm f/2.2");
 
@@ -86,8 +86,8 @@ public class ReaderTest extends BaseTest {
         ifd0.put(Tag.MAKE, DataType.ASCII, "Apple");
         ifd0.put(Tag.MODEL, DataType.ASCII, "iPhone 5s");
         ifd0.put(Tag.ORIENTATION, DataType.SHORT, 1);
-        ifd0.put(Tag.X_RESOLUTION, DataType.RATIONAL, new Rational(1207959552, 16777216));
-        ifd0.put(Tag.Y_RESOLUTION, DataType.RATIONAL, new Rational(1207959552, 16777216));
+        ifd0.put(Tag.X_RESOLUTION, DataType.RATIONAL, new Rational(72, 1));
+        ifd0.put(Tag.Y_RESOLUTION, DataType.RATIONAL, new Rational(72, 1));
         ifd0.put(Tag.RESOLUTION_UNIT, DataType.SHORT, 2);
         ifd0.put(Tag.SOFTWARE, DataType.ASCII, "Photos 1.5");
         ifd0.put(Tag.DATE_TIME, DataType.ASCII, "2015:12:31 12:42:48");

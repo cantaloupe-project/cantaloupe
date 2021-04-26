@@ -8,6 +8,7 @@ import it.geosolutions.imageio.plugins.tiff.TIFFField;
 import it.geosolutions.imageio.plugins.tiff.TIFFTag;
 import it.geosolutions.imageio.plugins.tiff.TIFFTagSet;
 
+import java.nio.ByteOrder;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -185,7 +186,7 @@ public final class Directory {
      *
      * @param field Field.
      * @param value Normalized value, typically returned from {@link
-     *              DataType#decode(byte[])}.
+     *              DataType#decode(byte[], ByteOrder)}.
      * @throws IllegalArgumentException if the {@link Field} argument's {@link
      *         Field#getTag() tag} does not exist in the instance's {@link
      *         TagSet}.
@@ -204,7 +205,7 @@ public final class Directory {
      * @param tag    Tag.
      * @param format Data format.
      * @param value  Normalized value, typically returned from {@link
-     *               DataType#decode(byte[])}.
+     *               DataType#decode(byte[], ByteOrder)}.
      */
     public void put(Tag tag, DataType format, Object value) {
         put(new Field(tag, format), value);

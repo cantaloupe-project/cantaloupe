@@ -31,31 +31,9 @@ import java.util.Arrays;
  */
 public final class Reader implements AutoCloseable {
 
-    private enum ByteAlignment {
-
-        INTEL(new byte[] { 0x49, 0x49 }, ByteOrder.LITTLE_ENDIAN),
-        MOTOROLA(new byte[] { 0x4d, 0x4d }, ByteOrder.BIG_ENDIAN);
-
-        private ByteOrder byteOrder;
-        private byte[] signature;
-
-        static ByteAlignment forSignature(byte[] signature) {
-            return Arrays.stream(values())
-                    .filter(a -> Arrays.equals(a.signature, signature))
-                    .findFirst()
-                    .orElseThrow(() -> new IllegalArgumentException(
-                            "Unrecognized alignment signature."));
-        }
-
-        ByteAlignment(byte[] signature, ByteOrder byteOrder) {
-            this.signature = signature;
-            this.byteOrder = byteOrder;
-        }
-
-    }
-
     private static final Logger LOGGER = LoggerFactory.getLogger(Reader.class);
 
+    private static final byte[] INTEL_BYTE_ORDER = { 0x49, 0x49 };
     private static final char[] JFIF_APP1_EXIF_HEADER =
             "Exif\u0000\u0000".toCharArray();
 
@@ -107,7 +85,9 @@ public final class Reader implements AutoCloseable {
 
         // Read the TIFF header, which contains the byte alignment.
         byte[] bytes = readBytes(2);
-        inputStream.setByteOrder(ByteAlignment.forSignature(bytes).byteOrder);
+        if (Arrays.equals(bytes, INTEL_BYTE_ORDER)) {
+            inputStream.setByteOrder(ByteOrder.LITTLE_ENDIAN);
+        }
         inputStream.skipBytes(2);
 
         // Find the location of IFD0 and seek to it.
@@ -156,13 +136,16 @@ public final class Reader implements AutoCloseable {
                     final Field field = new Field(tag, format);
 
                     if (valueLength <= 4) {
-                        dir.put(field, format.decode(BigInteger.valueOf(valueOrOffset).toByteArray()));
+                        dir.put(field, format.decode(
+                                BigInteger.valueOf(valueOrOffset).toByteArray(),
+                                inputStream.getByteOrder()));
                     } else {
                         inputStream.mark();
                         seek(valueOrOffset);
                         byte[] value = readBytes(valueLength);
                         inputStream.reset();
-                        dir.put(field, format.decode(value));
+                        dir.put(field, format.decode(
+                                value, inputStream.getByteOrder()));
                     }
                 }
             }
