@@ -175,9 +175,9 @@ public enum DataType {
                 }
             case LONG:
                 buffer = ByteBuffer.wrap(bytes);
-                if (bytes.length >= 4) {
+                if (bytes.length >= 8) {
                     return buffer.getLong();
-                } else if (bytes.length > 2) {
+                } else if (bytes.length >= 4) {
                     return buffer.getInt();
                 } else if (bytes.length == 2) {
                     return buffer.getShort();
@@ -198,9 +198,9 @@ public enum DataType {
                 }
             case SLONG:
                 buffer = ByteBuffer.wrap(bytes);
-                if (bytes.length >= 4) {
+                if (bytes.length >= 8) {
                     return buffer.getLong();
-                } else if (bytes.length > 2) {
+                } else if (bytes.length >= 4) {
                     return buffer.getInt();
                 } else if (bytes.length == 2) {
                     return buffer.getShort();

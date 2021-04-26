@@ -6,6 +6,8 @@
 * Fixed a bug in the IIIF Image API 2 & 3 endpoints that caused the
   `profile.formats` key to be missing from the information responses of cached
   images.
+* Fixed a potential BufferUnderflowException when parsing images with embedded
+  EXIF metadata.
 * Fixed a bug in TurboJpegProcessor that could cause incorrect cropping.
 * Fixed a bug that could cause S3 credentials from the configuration file to be
   erroneously used even when not set.

@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Test;
 
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -66,8 +67,23 @@ public class DataTypeTest extends BaseTest {
 
     @Test
     void testDecodeWithLong() {
-        byte[] bytes = new byte[] { 0x00, 0x00, 0x03, 0x04, 0x05, 0x08, 0x12, 0x33 };
-        assertEquals(3315799167539L, DataType.LONG.decode(bytes));
+        final byte[] eightBytes = new byte[] { 0x00, 0x00, 0x03, 0x04, 0x05, 0x08, 0x12, 0x33 };
+        assertEquals(3315799167539L, DataType.LONG.decode(eightBytes));
+
+        byte[] sevenBytes = Arrays.copyOfRange(eightBytes, 0, 7);
+        assertEquals(772, DataType.LONG.decode(sevenBytes));
+
+        byte[] fiveBytes = Arrays.copyOfRange(eightBytes, 3, 8);
+        assertEquals(67438610, DataType.LONG.decode(fiveBytes));
+
+        byte[] threeBytes = Arrays.copyOfRange(eightBytes, 5, 8);
+        assertEquals(8, DataType.LONG.decode(threeBytes));
+
+        byte[] twoBytes = Arrays.copyOfRange(eightBytes, 6, 8);
+        assertEquals((short) 4659, DataType.LONG.decode(twoBytes));
+
+        byte[] oneByte = Arrays.copyOfRange(eightBytes, 7, 8);
+        assertEquals(51, DataType.LONG.decode(oneByte));
     }
 
     @Test
