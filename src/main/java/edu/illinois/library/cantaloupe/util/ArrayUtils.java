@@ -52,6 +52,19 @@ public final class ArrayUtils {
         }
     }
 
+    /**
+     * @param inArray Array to reverse.
+     * @return New reversed array.
+     */
+    public static byte[] reverse(byte[] inArray) {
+        final int length = inArray.length;
+        byte[] reversed = new byte[inArray.length];
+        for (int i = 0; i < length; i++) {
+            reversed[length - 1 - i] = inArray[i];
+        }
+        return reversed;
+    }
+
     private ArrayUtils() {}
 
 }

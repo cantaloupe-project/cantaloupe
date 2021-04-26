@@ -11,7 +11,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class ArrayUtilsTest extends BaseTest {
 
     @Test
-    void testChunkifyWithSingleChunk() {
+    void chunkifyWithSingleChunk() {
         byte[] data = { 0x00, 0x01, 0x02, 0x03, 0x04 };
         List<byte[]> chunks = ArrayUtils.chunkify(data, 5);
         assertEquals(1, chunks.size());
@@ -19,7 +19,7 @@ class ArrayUtilsTest extends BaseTest {
     }
 
     @Test
-    void testChunkifyWithMultipleChunks() {
+    void chunkifyWithMultipleChunks() {
         byte[] data = { 0x00, 0x01, 0x02, 0x03, 0x04 };
         List<byte[]> chunks = ArrayUtils.chunkify(data, 2);
         assertEquals(3, chunks.size());
@@ -29,7 +29,7 @@ class ArrayUtilsTest extends BaseTest {
     }
 
     @Test
-    void testChunkifyWithEmptyArgument() {
+    void chunkifyWithEmptyArgument() {
         byte[] data = {};
         List<byte[]> chunks = ArrayUtils.chunkify(data, 5);
         assertEquals(1, chunks.size());
@@ -37,7 +37,7 @@ class ArrayUtilsTest extends BaseTest {
     }
 
     @Test
-    void testMergeWithOneArray() {
+    void mergeWithOneArray() {
         List<byte[]> arrays = new LinkedList<>();
         arrays.add(new byte[] { 0x32 });
 
@@ -45,13 +45,21 @@ class ArrayUtilsTest extends BaseTest {
     }
 
     @Test
-    void testMergeWithMultipleArrays() {
+    void mergeWithMultipleArrays() {
         List<byte[]> arrays = new LinkedList<>();
         arrays.add(new byte[] { 0x32, 0x38 });
         arrays.add(new byte[] { 0x1f });
 
         assertArrayEquals(new byte[] { 0x32, 0x38, 0x1f },
                 ArrayUtils.merge(arrays));
+    }
+
+    @Test
+    void reverse() {
+        byte[] inArray  = { 0x25, 0x3c, 0x0a };
+        byte[] expected = { 0x0a, 0x3c, 0x25 };
+        byte[] actual   = ArrayUtils.reverse(inArray);
+        assertArrayEquals(expected, actual);
     }
 
 }
