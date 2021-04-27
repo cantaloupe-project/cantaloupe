@@ -3,7 +3,6 @@ package edu.illinois.library.cantaloupe.image.exif;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
-import edu.illinois.library.cantaloupe.util.Rational;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;

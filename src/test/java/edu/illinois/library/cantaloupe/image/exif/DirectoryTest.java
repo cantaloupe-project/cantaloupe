@@ -3,7 +3,6 @@ package edu.illinois.library.cantaloupe.image.exif;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;
-import edu.illinois.library.cantaloupe.util.Rational;
 import it.geosolutions.imageio.plugins.tiff.TIFFDirectory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

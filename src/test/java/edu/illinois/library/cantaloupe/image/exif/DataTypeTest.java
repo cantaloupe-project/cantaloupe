@@ -1,7 +1,6 @@
 package edu.illinois.library.cantaloupe.image.exif;
 
 import edu.illinois.library.cantaloupe.test.BaseTest;
-import edu.illinois.library.cantaloupe.util.Rational;
 import it.geosolutions.imageio.plugins.tiff.TIFFTag;
 import org.junit.jupiter.api.Test;
 

@@ -1,7 +1,6 @@
 package edu.illinois.library.cantaloupe.image.exif;
 
 import edu.illinois.library.cantaloupe.util.ArrayUtils;
-import edu.illinois.library.cantaloupe.util.Rational;
 import it.geosolutions.imageio.plugins.tiff.TIFFTag;
 
 import java.nio.ByteBuffer;
