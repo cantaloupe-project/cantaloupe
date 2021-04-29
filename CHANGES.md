@@ -7,6 +7,8 @@
 * Fixed a bug in the IIIF Image API 2 & 3 endpoints that caused the
   `profile.formats` key to be missing from the information responses of cached
   images.
+* Fixed the `page_count` key not being set in the delegate context when
+  returning a cached info.
 * Fixed several issues related to EXIF metadata parsing.
 * Fixed a bug in TurboJpegProcessor that could cause incorrect cropping.
 * Fixed a bug that could cause S3 credentials from the configuration file to be

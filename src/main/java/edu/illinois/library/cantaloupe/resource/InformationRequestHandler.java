@@ -226,6 +226,7 @@ public class InformationRequestHandler extends AbstractRequestHandler
                     // serialized in version < 3.4.
                     final Format format = info.getSourceFormat();
                     if (format != null && !Format.UNKNOWN.equals(format)) {
+                        requestContext.setPageCount(info.getNumPages());
                         return info;
                     }
                 }
