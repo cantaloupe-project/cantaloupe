@@ -5,6 +5,8 @@
 * The identifier scale constraint suffix syntax is configurable via new
   `scale_constraint_suffix.format` and `scale_constraint_suffix.pattern`
   keys. (These are a stopgap addition that are not relevant in version 5.0.)
+* Fixed a floating-point rounding bug that could cause an excessively large
+  TIFF pyramid level to be selected, resulting in unnecessary scaling.
 * Fixed a bug whereby corrupt image data could be written to a derivative
   cache.
 

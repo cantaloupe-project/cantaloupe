@@ -441,7 +441,7 @@ abstract class AbstractIIOImageReader {
 
                     final double reducedScale =
                             (double) subimageWidth / fullSize.width();
-                    if (fits(regionRect.size(), scale, scaleConstraint,
+                    if (fits(fullSize, regionRect.size(), scale, scaleConstraint,
                             reducedScale)) {
                         reductionFactor.factor =
                                 ReductionFactor.forScale(reducedScale).factor;
@@ -633,7 +633,7 @@ abstract class AbstractIIOImageReader {
 
                     final double reducedScale =
                             (double) subimageWidth / fullSize.width();
-                    if (fits(regionRect.size(), scale, scaleConstraint,
+                    if (fits(fullSize, regionRect.size(), scale, scaleConstraint,
                             reducedScale)) {
                         rf.factor = ReductionFactor.forScale(reducedScale).factor;
                         getLogger().trace("Subimage {}: {}x{} - fits! " +
@@ -653,6 +653,7 @@ abstract class AbstractIIOImageReader {
     }
 
     /**
+     * @param fullSize        Size of the base pyramid image.
      * @param regionSize      Size of a cropped source image region.
      * @param scale           Requested scale.
      * @param scaleConstraint Scale constraint to be applied to the requested
@@ -662,35 +663,41 @@ abstract class AbstractIIOImageReader {
      *                        satisfied by the given reduced scale at the
      *                        requested scale.
      */
-    private boolean fits(final Dimension regionSize,
+    private boolean fits(final Dimension fullSize,
+                         final Dimension regionSize,
                          final Scale scale,
                          final ScaleConstraint scaleConstraint,
                          final double reducedScale) {
         final double scScale = scaleConstraint.getRational().doubleValue();
+        double tolerance;
 
         if (scale.getPercent() != null) {
-            double cappedScale = (scale.getPercent() > 1) ?
-                    1 : scale.getPercent();
-            return (cappedScale * scScale <= reducedScale);
+            tolerance = 1 / Math.max(fullSize.width(), fullSize.height());
+            double cappedScale = (scale.getPercent() > 1) ? 1 : scale.getPercent();
+            return (cappedScale * scScale <= reducedScale + tolerance);
         } else {
             switch (scale.getMode()) {
                 case FULL:
-                    return (scScale <= reducedScale);
+                    tolerance = 1 / Math.max(fullSize.width(), fullSize.height());
+                    return (scScale <= reducedScale + tolerance);
                 case ASPECT_FIT_WIDTH:
+                    tolerance = 1 / fullSize.width();
                     double cappedWidth = (scale.getWidth() > regionSize.width()) ?
                         regionSize.width() : scale.getWidth();
-                    return (cappedWidth / regionSize.width() <= reducedScale);
+                    return (cappedWidth / regionSize.width() <= reducedScale + tolerance);
                 case ASPECT_FIT_HEIGHT:
+                    tolerance = 1 / fullSize.height();
                     double cappedHeight = (scale.getHeight() > regionSize.height()) ?
                             regionSize.height() : scale.getHeight();
-                    return (cappedHeight / regionSize.height() <= reducedScale);
+                    return (cappedHeight / regionSize.height() <= reducedScale + tolerance);
                 default:
+                    tolerance = 1 / Math.max(fullSize.width(), fullSize.height());
                     cappedWidth = (scale.getWidth() > regionSize.width()) ?
                             regionSize.width() : scale.getWidth();
                     cappedHeight = (scale.getHeight() > regionSize.height()) ?
                             regionSize.height() : scale.getHeight();
-                    return (cappedWidth / regionSize.width() <= reducedScale &&
-                            cappedHeight / regionSize.height() <= reducedScale);
+                    return (cappedWidth / regionSize.width() <= reducedScale + tolerance &&
+                            cappedHeight / regionSize.height() <= reducedScale + tolerance);
             }
         }
     }
