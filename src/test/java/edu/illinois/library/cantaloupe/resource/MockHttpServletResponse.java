@@ -1,16 +1,22 @@
 package edu.illinois.library.cantaloupe.resource;
 
-import javax.servlet.ServletOutputStream;
+import edu.illinois.library.cantaloupe.http.Header;
+import edu.illinois.library.cantaloupe.http.Headers;
+
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletResponse;
 import java.io.PrintWriter;
 import java.util.Collection;
 import java.util.Locale;
+import java.util.stream.Collectors;
 
 public class MockHttpServletResponse implements HttpServletResponse {
 
-    private String description;
     private int status;
+    private String description;
+    private final Headers headers = new Headers();
+    private final ByteArrayServletOutputStream outputStream =
+            new ByteArrayServletOutputStream();
 
     @Override
     public void addCookie(Cookie cookie) {
@@ -22,15 +28,17 @@ public class MockHttpServletResponse implements HttpServletResponse {
 
     @Override
     public void addHeader(String s, String s1) {
+        headers.add(s, s1);
     }
 
     @Override
     public void addIntHeader(String s, int i) {
+        headers.add(s, Integer.toString(i));
     }
 
     @Override
     public boolean containsHeader(String s) {
-        return false;
+        return headers.toMap().containsKey(s);
     }
 
     @Override
@@ -74,17 +82,21 @@ public class MockHttpServletResponse implements HttpServletResponse {
 
     @Override
     public String getHeader(String s) {
-        return null;
+        return headers.getFirstValue(s);
     }
 
     @Override
     public Collection<String> getHeaderNames() {
-        return null;
+        return headers.stream()
+                .map(Header::getName)
+                .collect(Collectors.toList());
     }
 
     @Override
     public Collection<String> getHeaders(String s) {
-        return null;
+        return headers.getAll(s).stream()
+                .map(Header::getName)
+                .collect(Collectors.toList());
     }
 
     @Override
@@ -93,8 +105,8 @@ public class MockHttpServletResponse implements HttpServletResponse {
     }
 
     @Override
-    public ServletOutputStream getOutputStream() {
-        return null;
+    public ByteArrayServletOutputStream getOutputStream() {
+        return outputStream;
     }
 
     @Override
@@ -158,10 +170,12 @@ public class MockHttpServletResponse implements HttpServletResponse {
 
     @Override
     public void setHeader(String s, String s1) {
+        headers.set(s, s1);
     }
 
     @Override
     public void setIntHeader(String s, int i) {
+        headers.set(s, Integer.toString(i));
     }
 
     @Override

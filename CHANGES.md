@@ -2,6 +2,7 @@
 
 ## 5.0.1
 
+* Fixed several issues related to serving static assets from within the JAR.
 * Added several keys to the status endpoint response (`/status`).
 * Fixed a bug in the IIIF Image API 2 & 3 endpoints that caused the
   `profile.formats` key to be missing from the information responses of cached
