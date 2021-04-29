@@ -8,15 +8,15 @@ import java.util.Map;
  *
  * @since 5.0.1
  */
-class Rational {
+public class Rational {
 
     private final long numerator, denominator;
 
-    Rational(int numerator, int denominator) {
+    public Rational(int numerator, int denominator) {
         this(numerator, (long) denominator);
     }
 
-    Rational(long numerator, long denominator) {
+    public Rational(long numerator, long denominator) {
         this.numerator   = numerator;
         this.denominator = denominator;
     }
@@ -33,11 +33,11 @@ class Rational {
         return super.equals(obj);
     }
 
-    long getNumerator() {
+    public long getNumerator() {
         return numerator;
     }
 
-    long getDenominator() {
+    public long getDenominator() {
         return denominator;
     }
 
@@ -50,7 +50,7 @@ class Rational {
      * @return Unmodifiable map with {@code numerator} and {@code denominator}
      *         keys.
      */
-    Map<String,Long> toMap() {
+    public Map<String,Long> toMap() {
         return Map.of("numerator", getNumerator(),
                 "denominator", getDenominator());
     }

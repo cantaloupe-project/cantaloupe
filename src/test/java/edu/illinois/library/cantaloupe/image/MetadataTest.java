@@ -2,6 +2,7 @@ package edu.illinois.library.cantaloupe.image;
 
 import edu.illinois.library.cantaloupe.image.exif.DataType;
 import edu.illinois.library.cantaloupe.image.exif.Directory;
+import edu.illinois.library.cantaloupe.image.exif.Rational;
 import edu.illinois.library.cantaloupe.image.exif.Tag;
 import edu.illinois.library.cantaloupe.image.exif.TagSet;
 import edu.illinois.library.cantaloupe.image.iptc.DataSet;
@@ -9,7 +10,6 @@ import edu.illinois.library.cantaloupe.processor.codec.ImageReader;
 import edu.illinois.library.cantaloupe.processor.codec.ImageReaderFactory;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;
-import edu.illinois.library.cantaloupe.util.Rational;
 import org.apache.jena.rdf.model.Model;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
