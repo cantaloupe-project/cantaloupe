@@ -10,6 +10,8 @@
 * Fixed the `page_count` key not being set in the delegate context when
   returning a cached info.
 * Fixed several issues related to EXIF metadata parsing.
+* Fixed a floating-point rounding bug that could cause an excessively large
+  TIFF pyramid level to be selected, resulting in unnecessary scaling.
 * Fixed a bug in TurboJpegProcessor that could cause incorrect cropping.
 * Fixed a bug that could cause S3 credentials from the configuration file to be
   erroneously used even when not set.
@@ -124,6 +126,8 @@
 * The identifier scale constraint suffix syntax is configurable via new
   `scale_constraint_suffix.format` and `scale_constraint_suffix.pattern`
   keys. (These are a stopgap addition that are not relevant in version 5.0.)
+* Fixed a floating-point rounding bug that could cause an excessively large
+  TIFF pyramid level to be selected, resulting in unnecessary scaling.
 * Fixed a bug whereby corrupt image data could be written to a derivative
   cache.
 
