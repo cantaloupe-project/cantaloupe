@@ -17,6 +17,8 @@
   erroneously used even when not set.
 * Fixed a bug that could cause corrupt image to be written to a derivative
   cache.
+* Updated the PDFBox dependency to address the following security
+  vulnerability: CVE-2021-27807, CVE-2021-27906.
 
 ## 5.0
 
@@ -130,6 +132,8 @@
   TIFF pyramid level to be selected, resulting in unnecessary scaling.
 * Fixed a bug whereby corrupt image data could be written to a derivative
   cache.
+* Updated the PDFBox dependency to address the following security
+  vulnerability: CVE-2021-27807, CVE-2021-27906.
 
 ## 4.1.8
 
