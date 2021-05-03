@@ -279,13 +279,15 @@ class S3Cache implements DerivativeCache {
                 .build();
         final Stopwatch watch = new Stopwatch();
         try (ResponseInputStream<GetObjectResponse> is = client.getObject(request)) {
-            if (is != null) {
+            // This extra validity check may be needed with minio server
+            if (is != null && is.response().lastModified().isAfter(earliestValidInstant())) {
                 final Info info = Info.fromJSON(is);
                 LOGGER.debug("getInfo(): read {} from bucket {} in {}",
                         objectKey, bucketName, watch);
                 touchAsync(objectKey);
                 return Optional.of(info);
             } else {
+                consumeStreamAsync(is);
                 LOGGER.debug("{} in bucket {} is invalid; purging asynchronously",
                         objectKey, bucketName);
                 purgeAsync(bucketName, objectKey);
@@ -315,10 +317,12 @@ class S3Cache implements DerivativeCache {
                 .build();
         try {
             ResponseInputStream<GetObjectResponse> is = client.getObject(request);
-            if (is != null) {
+            // This extra validity check may be needed with minio server
+            if (is != null && is.response().lastModified().isAfter(earliestValidInstant())) {
                 touchAsync(objectKey);
                 return is;
             } else {
+                consumeStreamAsync(is);
                 LOGGER.debug("{} in bucket {} is invalid; purging asynchronously",
                         objectKey, bucketName);
                 purgeAsync(bucketName, objectKey);
@@ -499,6 +503,28 @@ class S3Cache implements DerivativeCache {
             new S3Upload(client, os.toByteArray(), bucketName, objectKey,
                     MediaType.APPLICATION_JSON.toString(), "UTF-8").run();
         }
+    }
+
+    /**
+     * The AWS client logs a warning when we close an InputStream without fully
+     * reading it. This method does that and then closes the stream.
+     */
+    private void consumeStreamAsync(InputStream inputStream) {
+        ThreadPool.getInstance().submit(() -> {
+            try {
+                inputStream.readAllBytes();
+            } catch (IOException e) {
+                LOGGER.warn("consumeStreamAsync(): failed to consume the stream: {}",
+                        e.getMessage());
+            } finally {
+                try {
+                    inputStream.close();
+                } catch (IOException e) {
+                    LOGGER.warn("consumeStreamAsync(): failed to close the stream: {}",
+                            e.getMessage());
+                }
+            }
+        });
     }
 
     /**

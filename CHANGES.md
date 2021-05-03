@@ -13,6 +13,7 @@
 * Fixed a floating-point rounding bug that could cause an excessively large
   TIFF pyramid level to be selected, resulting in unnecessary scaling.
 * Fixed a bug in TurboJpegProcessor that could cause incorrect cropping.
+* Fixed a bug in S3Cache that could cause hits against expired content.
 * Fixed a bug that could cause S3 credentials from the configuration file to be
   erroneously used even when not set.
 * Fixed a bug that could cause corrupt image to be written to a derivative
