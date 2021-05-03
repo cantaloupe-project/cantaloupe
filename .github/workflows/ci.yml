@@ -7,6 +7,7 @@ jobs:
       matrix:
         os: [ubuntu-latest, windows-latest]
         java: [jdk11, jdk15, graalvm]
+      fail-fast: false
     steps:
       - name: Check out the repository
         uses: actions/checkout@v2
