@@ -1,5 +1,10 @@
 # Change Log
 
+## 4.1.10
+
+* Suppressed an error-level log message from OpenJpegProcessor when reading
+  an image without a recognized filename extension on a read-only filesystem.
+
 ## 4.1.9
 
 * The identifier scale constraint suffix syntax is configurable via new

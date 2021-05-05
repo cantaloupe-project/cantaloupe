@@ -37,6 +37,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.FileSystemException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -392,8 +393,12 @@ class OpenJpegProcessor extends AbstractProcessor implements FileProcessor {
                 try {
                     Files.setLastModifiedTime(sourceFile,
                             FileTime.from(Instant.now()));
+                } catch (FileSystemException e) {
+                    // Probably a read-only filesystem
+                    LOGGER.debug("setSourceFile(): failed to touch file: {}",
+                            e.getMessage());
                 } catch (IOException e) {
-                    LOGGER.error("setSourceFile(): failed to touch file: {}",
+                    LOGGER.warn("setSourceFile(): failed to touch file: {}",
                             e.getMessage());
                 }
             });
