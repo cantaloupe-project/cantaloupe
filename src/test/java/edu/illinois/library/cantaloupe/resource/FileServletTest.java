@@ -31,8 +31,6 @@ class FileServletTest extends BaseTest {
         // Check the headers
         assertEquals("public, max-age=2592000", response.getHeader("Cache-Control"));
         assertEquals("text/css", response.getHeader("Content-Type"));
-        assertTrue(Integer.parseInt(response.getHeader("Content-Length")) > 0);
-        assertNotNull(response.getHeader("Last-Modified"));
         // Check the entity
         byte[] entityBytes = response.getOutputStream().toByteArray();
         String entity = new String(entityBytes, StandardCharsets.UTF_8);

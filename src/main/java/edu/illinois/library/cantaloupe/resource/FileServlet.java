@@ -7,14 +7,6 @@ import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
-import java.net.URLDecoder;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.attribute.FileTime;
-import java.time.OffsetDateTime;
-import java.time.ZoneOffset;
-import java.time.format.DateTimeFormatter;
 
 /**
  * Handles requests for static files.
@@ -30,12 +22,9 @@ public class FileServlet extends HttpServlet {
 
         final URL resURL = getClass().getResource(pathStr);
         if (resURL != null) {
-            final Path resPath = Paths.get(URLDecoder.decode(resURL.getPath()));
             try (InputStream is = new BufferedInputStream(resURL.openStream())) {
                 response.setStatus(200);
-                response.setHeader("Last-Modified", toRFC1123(Files.getLastModifiedTime(resPath)));
                 response.setHeader("Cache-Control", "public, max-age=2592000");
-                response.setHeader("Content-Length", "" + Files.size(resPath));
                 response.setHeader("Content-Type", getContentType(pathStr));
                 is.transferTo(response.getOutputStream());
             }
@@ -74,11 +63,6 @@ public class FileServlet extends HttpServlet {
             contextPath = "";
         }
         return fullPath.substring(contextPath.length());
-    }
-
-    private static String toRFC1123(FileTime fileTime) {
-        OffsetDateTime odt = fileTime.toInstant().atOffset(ZoneOffset.UTC);
-        return odt.format(DateTimeFormatter.RFC_1123_DATE_TIME);
     }
 
 }
