@@ -1,5 +1,9 @@
 # Change Log
 
+## 5.0.2
+
+* Fixed a bug introduced in 5.0.1 that broke static asset serving.
+
 ## 5.0.1
 
 * Fixed several issues related to serving static assets from within the JAR.
@@ -16,10 +20,10 @@
 * Fixed a bug in S3Cache that could cause hits against expired content.
 * Fixed a bug that could cause S3 credentials from the configuration file to be
   erroneously used even when not set.
-* Fixed a bug that could cause corrupt image to be written to a derivative
+* Fixed a bug that could cause corrupt image data to be written to a derivative
   cache.
 * Updated the PDFBox dependency to address the following security
-  vulnerability: CVE-2021-27807, CVE-2021-27906.
+  vulnerabilities: CVE-2021-27807, CVE-2021-27906.
 
 ## 5.0
 
@@ -131,7 +135,7 @@
   keys. (These are a stopgap addition that are not relevant in version 5.0.)
 * Fixed a floating-point rounding bug that could cause an excessively large
   TIFF pyramid level to be selected, resulting in unnecessary scaling.
-* Fixed a bug whereby corrupt image data could be written to a derivative
+* Fixed a bug that could cause corrupt image data to be written to a derivative
   cache.
 * Updated the PDFBox dependency to address the following security
   vulnerability: CVE-2021-27807, CVE-2021-27906.
