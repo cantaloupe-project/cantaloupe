@@ -1,5 +1,10 @@
 # Change Log
 
+## 5.0.3
+
+* Suppressed an error-level log message from OpenJpegProcessor when reading
+  an image without a recognized filename extension on a read-only filesystem.
+
 ## 5.0.2
 
 * Fixed a bug introduced in 5.0.1 that broke static asset serving.
@@ -127,6 +132,11 @@
   to enable automatic wrapping of overlay strings.
 * The `-Dcantaloupe.list_fonts` VM argument has been replaced with the
   `-list-fonts` command-line argument.
+
+## 4.1.10
+
+* Suppressed an error-level log message from OpenJpegProcessor when reading
+  an image without a recognized filename extension on a read-only filesystem.
 
 ## 4.1.9
 
