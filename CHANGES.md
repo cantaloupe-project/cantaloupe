@@ -2,6 +2,8 @@
 
 ## 5.0.3
 
+* Fixed a potential ConcurrentModificationException when using the delegate
+  script.
 * The application exits when it fails to bind to a port at startup.
 * Suppressed an error-level log message from OpenJpegProcessor when reading
   an image without a recognized filename extension on a read-only filesystem.
