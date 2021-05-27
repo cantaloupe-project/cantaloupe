@@ -138,7 +138,8 @@ public final class Client {
             }
             return customResponse;
         } catch (IOException e) {
-            if (e.getMessage().startsWith("too many authentication attempts")) {
+            if (e.getMessage() != null &&
+                    e.getMessage().startsWith("too many authentication attempts")) {
                 Response customResponse = new Response();
                 customResponse.setStatus(401);
                 throw new ResourceException(customResponse);
