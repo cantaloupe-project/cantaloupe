@@ -84,6 +84,8 @@ public class StandaloneEntry {
         } catch (MissingConfigurationException e) {
             printUsage();
             SystemUtils.exit(-1);
+        } catch (Exception e) {
+            SystemUtils.exit(-1);
         }
     }
 
