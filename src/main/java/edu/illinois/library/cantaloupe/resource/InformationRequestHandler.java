@@ -226,7 +226,7 @@ public class InformationRequestHandler extends AbstractRequestHandler
                     // serialized in version < 3.4.
                     final Format format = info.getSourceFormat();
                     if (format != null && !Format.UNKNOWN.equals(format)) {
-                        requestContext.setPageCount(info.getNumPages());
+                        setRequestContextKeys(info);
                         return info;
                     }
                 }
@@ -285,7 +285,7 @@ public class InformationRequestHandler extends AbstractRequestHandler
                 callback.knowAvailableOutputFormats(
                         processor.getAvailableOutputFormats());
                 Info info = getOrReadInfo(identifier, processor);
-                requestContext.setPageCount(info.getNumPages());
+                setRequestContextKeys(info);
                 return info;
             } catch (SourceFormatException e) {
                 LOGGER.debug("Format inferred by {} disagrees with the one " +
@@ -295,6 +295,12 @@ public class InformationRequestHandler extends AbstractRequestHandler
             }
         }
         throw new SourceFormatException();
+    }
+
+    private void setRequestContextKeys(Info info) {
+        requestContext.setFullSize(info.getSize());
+        requestContext.setPageCount(info.getNumPages());
+        requestContext.setMetadata(info.getMetadata());
     }
 
 }

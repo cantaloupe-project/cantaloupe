@@ -213,4 +213,13 @@ public class StandaloneEntryTest extends BaseTest {
         assertEquals(200, response.getStatus());
     }
 
+    @Test
+    void mainWithFailingToBindToPortExits() throws Exception {
+        final Configuration config = Configuration.getInstance();
+        config.setProperty(Key.HTTP_PORT, -1);
+
+        StandaloneEntry.main("");
+        assertEquals(-1, SystemUtils.requestedExitCode());
+    }
+
 }

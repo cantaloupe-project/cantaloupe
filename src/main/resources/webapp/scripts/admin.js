@@ -286,10 +286,6 @@ var StatusUpdater = function() {
                     .text(data.infoCache.size);
                 cacheStatusSection.find('tr:nth-child(2) > td:last-child')
                     .text(data.infoCache.maxSize);
-                cacheStatusSection.find('tr:nth-child(3) > td:last-child')
-                    .text(data.delegateMethodInvocationCache.size);
-                cacheStatusSection.find('tr:nth-child(4) > td:last-child')
-                    .text(data.delegateMethodInvocationCache.maxSize);
 
                 // Tasks section
                 if (data.tasks) {

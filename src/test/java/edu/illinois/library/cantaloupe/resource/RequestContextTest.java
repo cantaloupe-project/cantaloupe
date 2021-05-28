@@ -60,7 +60,7 @@ public class RequestContextTest extends BaseTest {
     }
 
     @Test
-    void testSetClientIP() {
+    void setClientIP() {
         instance.setClientIP("3.4.5.6");
         assertEquals("3.4.5.6", instance.getClientIP());
         instance.setClientIP(null);
@@ -68,7 +68,7 @@ public class RequestContextTest extends BaseTest {
     }
 
     @Test
-    void testSetCookies() {
+    void setCookies() {
         instance.setCookies(Collections.emptyMap());
         assertNotNull(instance.getCookies());
         instance.setCookies(null);
@@ -76,7 +76,15 @@ public class RequestContextTest extends BaseTest {
     }
 
     @Test
-    void testSetIdentifier() {
+    void setFullSize() {
+        instance.setFullSize(new Dimension(500, 200));
+        assertNotNull(instance.getFullSize());
+        instance.setFullSize(null);
+        assertNull(instance.getFullSize());
+    }
+
+    @Test
+    void setIdentifier() {
         instance.setIdentifier(new Identifier("cats"));
         assertNotNull(instance.getIdentifier());
         instance.setIdentifier(null);
@@ -84,7 +92,7 @@ public class RequestContextTest extends BaseTest {
     }
 
     @Test
-    void testSetLocalURI() {
+    void setLocalURI() {
         instance.setLocalURI(new Reference("http://example.org/"));
         assertNotNull(instance.getLocalURI());
         instance.setLocalURI(null);
@@ -92,7 +100,7 @@ public class RequestContextTest extends BaseTest {
     }
 
     @Test
-    void testSetMetadata() {
+    void setMetadata() {
         instance.setMetadata(new Metadata());
         assertNotNull(instance.getMetadata());
         instance.setMetadata(null);
@@ -100,7 +108,7 @@ public class RequestContextTest extends BaseTest {
     }
 
     @Test
-    void testSetOperationList() {
+    void setOperationList() {
         OperationList opList = OperationList.builder()
                 .withIdentifier(new Identifier("cats"))
                 .withOperations(new Encode(Format.get("jpg")))
@@ -121,7 +129,7 @@ public class RequestContextTest extends BaseTest {
     }
 
     @Test
-    void testSetPageCount() {
+    void setPageCount() {
         instance.setPageCount(5);
         assertEquals(5, instance.getPageCount());
         instance.setPageCount(null);
@@ -129,7 +137,7 @@ public class RequestContextTest extends BaseTest {
     }
 
     @Test
-    void testSetPageNumber() {
+    void setPageNumber() {
         instance.setPageNumber(5);
         assertEquals(5, instance.getPageNumber());
         instance.setPageNumber(null);
@@ -137,7 +145,7 @@ public class RequestContextTest extends BaseTest {
     }
 
     @Test
-    void testSetRequestHeaders() {
+    void setRequestHeaders() {
         instance.setRequestHeaders(Collections.emptyMap());
         assertNotNull(instance.getRequestHeaders());
         instance.setRequestHeaders(null);
@@ -145,7 +153,7 @@ public class RequestContextTest extends BaseTest {
     }
 
     @Test
-    void testSetRequestURI() {
+    void setRequestURI() {
         instance.setRequestURI(new Reference("http://example.org/"));
         assertNotNull(instance.getRequestURI());
         instance.setRequestURI(null);
@@ -153,7 +161,7 @@ public class RequestContextTest extends BaseTest {
     }
 
     @Test
-    void testSetScaleConstraint() {
+    void setScaleConstraint() {
         instance.setScaleConstraint(new ScaleConstraint(1, 3));
         assertNotNull(instance.getScaleConstraint());
         instance.setScaleConstraint(null);
@@ -161,7 +169,7 @@ public class RequestContextTest extends BaseTest {
     }
 
     @Test
-    void testToJavaContext() {
+    void toJavaContext() {
         JavaContext actual = instance.toJavaContext();
         // client IP
         assertEquals("1.2.3.4", actual.getClientIPAddress());
@@ -186,7 +194,7 @@ public class RequestContextTest extends BaseTest {
     }
 
     @Test
-    void testToJavaContextLiveView() {
+    void toJavaContextLiveView() {
         instance.setClientIP("2.3.4.5");
         JavaContext actual = instance.toJavaContext();
         assertEquals("2.3.4.5", actual.getClientIPAddress());
@@ -195,7 +203,7 @@ public class RequestContextTest extends BaseTest {
     }
 
     @Test
-    void testToMap() {
+    void toMap() {
         Map<String,Object> actual = instance.toMap();
         // client IP
         assertEquals("1.2.3.4", actual.get(CLIENT_IP_KEY));
@@ -224,7 +232,7 @@ public class RequestContextTest extends BaseTest {
     }
 
     @Test
-    void testToMapLiveView() {
+    void toMapLiveView() {
         instance.setClientIP("2.3.4.5");
         Map<String,Object> actual = instance.toMap();
         assertEquals("2.3.4.5", actual.get(CLIENT_IP_KEY));

@@ -112,6 +112,16 @@ public final class RequestContext {
     }
 
     /**
+     * N.B.: {@link #setOperationList(OperationList, Dimension)} also sets
+     * this.
+     *
+     * @param fullSize May be {@code null}.
+     */
+    public void setFullSize(Dimension fullSize) {
+        this.fullSize = fullSize;
+    }
+
+    /**
      * @param identifier May be {@code null}.
      */
     public void setIdentifier(Identifier identifier) {

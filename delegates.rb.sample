@@ -26,14 +26,20 @@ class CustomDelegate
   #
   # * `client_ip`        [String] Client IP address.
   # * `cookies`          [Hash<String,String>] Hash of cookie name-value pairs.
+  # * `full_size`        [Hash<String,Integer>] Hash with `width` and `height`
+  #                      keys corresponding to the pixel dimensions of the
+  #                      source image.
   # * `identifier`       [String] Image identifier.
+  # * `local_uri`        [String] URI seen by the application, which may be
+  #                      different from `request_uri` when operating behind a
+  #                      reverse-proxy server.
+  # * `metadata`         [Hash<String,Object>] Embedded image metadata. Object
+  #                      structure varies depending on the source image.
+  #                      See the `metadata()` method.
   # * `page_count`       [Integer] Page count.
   # * `page_number`      [Integer] Page number.
   # * `request_headers`  [Hash<String,String>] Hash of header name-value pairs.
   # * `request_uri`      [String] URI requested by the client.
-  # * `local_uri`        [String] URI seen by the application, which may be
-  #                      different from `request_uri` when operating behind a
-  #                      reverse-proxy server.
   # * `scale_constraint` [Array<Integer>] Two-element array with scale
   #                      constraint numerator at position 0 and denominator at
   #                      position 1.
@@ -41,12 +47,6 @@ class CustomDelegate
   # It will contain the following additional string keys in response to image
   # requests, after the image has been accessed:
   #
-  # * `full_size`      [Hash<String,Integer>] Hash with `width` and `height`
-  #                    keys corresponding to the pixel dimensions of the
-  #                    source image.
-  # * `metadata`       [Hash<String,Object>] Embedded image metadata. Object
-  #                    structure varies depending on the source image.
-  #                    See the `metadata()` method.
   # * `operations`     [Array<Hash<String,Object>>] Array of operations in
   #                    order of application. Only operations that are not
   #                    no-ops will be included. Every hash contains a `class`

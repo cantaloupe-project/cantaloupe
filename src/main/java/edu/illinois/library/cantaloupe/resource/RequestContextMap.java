@@ -11,10 +11,11 @@ import edu.illinois.library.cantaloupe.util.Rational;
 
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Unmodifiable {@link Map} interface to a {@link RequestContext}. Changes to
@@ -25,6 +26,99 @@ import java.util.Set;
  */
 @SuppressWarnings("unchecked")
 final class RequestContextMap<K, V> implements Map<K, V> {
+
+    /**
+     * Class that supports null values, unlike e.g. the return value of {@link
+     * Map#entry(Object, Object)}.
+     */
+    private static class NullableEntry<K,V> implements Entry<K,V> {
+
+        private final K key;
+        private final V value;
+
+        NullableEntry(K key, V value) {
+            this.key   = key;
+            this.value = value;
+        }
+
+        @Override
+        public K getKey() {
+            return key;
+        }
+
+        @Override
+        public V getValue() {
+            return value;
+        }
+
+        @Override
+        public V setValue(V value) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (!(o instanceof Map.Entry)) {
+                return false;
+            }
+            Map.Entry<?,?> e = (Map.Entry<?,?>) o;
+            return Objects.equals(key, e.getKey()) &&
+                    Objects.equals(value, e.getValue());
+        }
+
+        @Override
+        public int hashCode() {
+            return (key == null ? 0 : key.hashCode()) ^
+                    (value == null ? 0 : value.hashCode());
+        }
+
+    }
+
+    /**
+     * Supports "live values" in the {@link #cachedMap internal backing map}.
+     */
+    private class ValueGetter {
+        private final String key;
+
+        ValueGetter(String key) {
+            this.key = key;
+        }
+
+        V get() {
+            switch (key) {
+                case CLIENT_IP_KEY:
+                    return clientIP();
+                case COOKIES_KEY:
+                    return cookies();
+                case FULL_SIZE_KEY:
+                    return fullSize();
+                case IDENTIFIER_KEY:
+                    return identifier();
+                case LOCAL_URI_KEY:
+                    return localURI();
+                case METADATA_KEY:
+                    return metadata();
+                case OPERATIONS_KEY:
+                    return operations();
+                case OUTPUT_FORMAT_KEY:
+                    return outputFormat();
+                case PAGE_COUNT_KEY:
+                    return pageCount();
+                case PAGE_NUMBER_KEY:
+                    return pageNumber();
+                case REQUEST_HEADERS_KEY:
+                    return requestHeaders();
+                case REQUEST_URI_KEY:
+                    return requestURI();
+                case RESULTING_SIZE_KEY:
+                    return resultingSize();
+                case SCALE_CONSTRAINT_KEY:
+                    return scaleConstraint();
+                default:
+                    return null;
+            }
+        }
+    }
 
     static final String CLIENT_IP_KEY        = "client_ip";
     static final String COOKIES_KEY          = "cookies";
@@ -50,6 +144,7 @@ final class RequestContextMap<K, V> implements Map<K, V> {
             SCALE_CONSTRAINT_KEY);
 
     private final RequestContext backingContext;
+    private transient Map<String,ValueGetter> cachedMap;
 
     RequestContextMap(RequestContext backingContext) {
         this.backingContext = backingContext;
@@ -67,17 +162,22 @@ final class RequestContextMap<K, V> implements Map<K, V> {
 
     @Override
     public boolean containsValue(Object value) {
-        return map().containsValue(value);
+        return map().values()
+                .stream()
+                .anyMatch(v -> Objects.equals(v.get(), value));
     }
 
     @Override
     public Set<Entry<K, V>> entrySet() {
-        return Collections.unmodifiableSet(map().entrySet());
+        return map().entrySet()
+                .stream()
+                .map(e -> new NullableEntry<>((K) e.getKey(), e.getValue().get()))
+                .collect(Collectors.toUnmodifiableSet());
     }
 
     @Override
     public V get(Object key) {
-        return map().get(key);
+        return map().get(key).get();
     }
 
     @Override
@@ -90,23 +190,25 @@ final class RequestContextMap<K, V> implements Map<K, V> {
         return (Set<K>) KEY_SET;
     }
 
-    private Map<K, V> map() {
-        final Map<K, V> map = new HashMap<>(14);
-        map.put((K) CLIENT_IP_KEY, clientIP());
-        map.put((K) COOKIES_KEY, cookies());
-        map.put((K) FULL_SIZE_KEY, fullSize());
-        map.put((K) IDENTIFIER_KEY, identifier());
-        map.put((K) LOCAL_URI_KEY, localURI());
-        map.put((K) METADATA_KEY, metadata());
-        map.put((K) OPERATIONS_KEY, operations());
-        map.put((K) OUTPUT_FORMAT_KEY, outputFormat());
-        map.put((K) PAGE_COUNT_KEY, pageCount());
-        map.put((K) PAGE_NUMBER_KEY, pageNumber());
-        map.put((K) REQUEST_HEADERS_KEY, requestHeaders());
-        map.put((K) REQUEST_URI_KEY, requestURI());
-        map.put((K) RESULTING_SIZE_KEY, resultingSize());
-        map.put((K) SCALE_CONSTRAINT_KEY, scaleConstraint());
-        return map;
+    private Map<String,ValueGetter> map() {
+        if (cachedMap == null) {
+            cachedMap = Map.ofEntries(
+                    Map.entry(CLIENT_IP_KEY, new ValueGetter(CLIENT_IP_KEY)),
+                    Map.entry(COOKIES_KEY, new ValueGetter(COOKIES_KEY)),
+                    Map.entry(FULL_SIZE_KEY, new ValueGetter(FULL_SIZE_KEY)),
+                    Map.entry(IDENTIFIER_KEY, new ValueGetter(IDENTIFIER_KEY)),
+                    Map.entry(LOCAL_URI_KEY, new ValueGetter(LOCAL_URI_KEY)),
+                    Map.entry(METADATA_KEY, new ValueGetter(METADATA_KEY)),
+                    Map.entry(OPERATIONS_KEY, new ValueGetter(OPERATIONS_KEY)),
+                    Map.entry(OUTPUT_FORMAT_KEY, new ValueGetter(OUTPUT_FORMAT_KEY)),
+                    Map.entry(PAGE_COUNT_KEY, new ValueGetter(PAGE_COUNT_KEY)),
+                    Map.entry(PAGE_NUMBER_KEY, new ValueGetter(PAGE_NUMBER_KEY)),
+                    Map.entry(REQUEST_HEADERS_KEY, new ValueGetter(REQUEST_HEADERS_KEY)),
+                    Map.entry(REQUEST_URI_KEY, new ValueGetter(REQUEST_URI_KEY)),
+                    Map.entry(RESULTING_SIZE_KEY, new ValueGetter(RESULTING_SIZE_KEY)),
+                    Map.entry(SCALE_CONSTRAINT_KEY, new ValueGetter(SCALE_CONSTRAINT_KEY)));
+        }
+        return cachedMap;
     }
 
     @Override
@@ -133,7 +235,10 @@ final class RequestContextMap<K, V> implements Map<K, V> {
 
     @Override
     public Collection<V> values() {
-        return map().values();
+        return map().values()
+                .stream()
+                .map(ValueGetter::get)
+                .collect(Collectors.toList());
     }
 
     private V clientIP() {
@@ -170,7 +275,7 @@ final class RequestContextMap<K, V> implements Map<K, V> {
     private V operations() {
         OperationList opList = backingContext.getOperationList();
         return (opList != null) ?
-                (V) opList.toMap(backingContext.getFullSize()).get("operations") : null;
+                (V) opList.toMap(backingContext.getFullSize()).get(OPERATIONS_KEY) : null;
     }
 
     private V outputFormat() {
@@ -215,7 +320,8 @@ final class RequestContextMap<K, V> implements Map<K, V> {
     }
 
     private static Map<String,Integer> toMap(Dimension size) {
-        return Map.of("width", size.intWidth(), "height", size.intHeight());
+        return Map.of("width", size.intWidth(),
+                "height", size.intHeight());
     }
 
     private void throwUnmodifiable() {

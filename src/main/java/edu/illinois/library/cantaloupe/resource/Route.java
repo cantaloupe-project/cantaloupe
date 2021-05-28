@@ -45,26 +45,6 @@ public final class Route {
         MAPPINGS.put(Pattern.compile("/$"),
                 TrailingSlashRemovingResource.class);
 
-        // Control Panel routes
-        MAPPINGS.put(Pattern.compile("^" + ADMIN_CONFIG_PATH + "$"),
-                edu.illinois.library.cantaloupe.resource.admin.ConfigurationResource.class);
-        MAPPINGS.put(Pattern.compile("^" + ADMIN_PATH + "$"),
-                edu.illinois.library.cantaloupe.resource.admin.AdminResource.class);
-        MAPPINGS.put(Pattern.compile("^" + ADMIN_STATUS_PATH + "$"),
-                edu.illinois.library.cantaloupe.resource.admin.StatusResource.class);
-
-        // API routes
-        MAPPINGS.put(Pattern.compile("^" + CONFIGURATION_PATH + "$"),
-                edu.illinois.library.cantaloupe.resource.api.ConfigurationResource.class);
-        MAPPINGS.put(Pattern.compile("^" + HEALTH_PATH + "$"),
-                edu.illinois.library.cantaloupe.resource.api.HealthResource.class);
-        MAPPINGS.put(Pattern.compile("^" + STATUS_PATH + "$"),
-                edu.illinois.library.cantaloupe.resource.api.StatusResource.class);
-        MAPPINGS.put(Pattern.compile("^" + TASKS_PATH + "$"),
-                edu.illinois.library.cantaloupe.resource.api.TasksResource.class);
-        MAPPINGS.put(Pattern.compile("^" + TASKS_PATH + "/([^/]+)$"),
-                edu.illinois.library.cantaloupe.resource.api.TaskResource.class);
-
         // IIIF Image API v3 routes
         MAPPINGS.put(Pattern.compile("^" + IIIF_3_PATH + "$"),
                 edu.illinois.library.cantaloupe.resource.iiif.v3.LandingResource.class);
@@ -96,6 +76,26 @@ public final class Route {
                 edu.illinois.library.cantaloupe.resource.iiif.v1.ImageResource.class);
         MAPPINGS.put(Pattern.compile("^" + IIIF_1_PATH + "/([^/]+)/([^/]+)/([^/]+)/([^/]+)/([^/.]+)\\.([^/]+)$"),
                 edu.illinois.library.cantaloupe.resource.iiif.v1.ImageResource.class);
+
+        // Control Panel routes
+        MAPPINGS.put(Pattern.compile("^" + ADMIN_CONFIG_PATH + "$"),
+                edu.illinois.library.cantaloupe.resource.admin.ConfigurationResource.class);
+        MAPPINGS.put(Pattern.compile("^" + ADMIN_PATH + "$"),
+                edu.illinois.library.cantaloupe.resource.admin.AdminResource.class);
+        MAPPINGS.put(Pattern.compile("^" + ADMIN_STATUS_PATH + "$"),
+                edu.illinois.library.cantaloupe.resource.admin.StatusResource.class);
+
+        // API routes
+        MAPPINGS.put(Pattern.compile("^" + CONFIGURATION_PATH + "$"),
+                edu.illinois.library.cantaloupe.resource.api.ConfigurationResource.class);
+        MAPPINGS.put(Pattern.compile("^" + HEALTH_PATH + "$"),
+                edu.illinois.library.cantaloupe.resource.api.HealthResource.class);
+        MAPPINGS.put(Pattern.compile("^" + STATUS_PATH + "$"),
+                edu.illinois.library.cantaloupe.resource.api.StatusResource.class);
+        MAPPINGS.put(Pattern.compile("^" + TASKS_PATH + "$"),
+                edu.illinois.library.cantaloupe.resource.api.TasksResource.class);
+        MAPPINGS.put(Pattern.compile("^" + TASKS_PATH + "/([^/]+)$"),
+                edu.illinois.library.cantaloupe.resource.api.TaskResource.class);
     }
 
     /**
@@ -124,7 +124,7 @@ public final class Route {
      * arguments, as extracted from the string argument to {@link
      * #forPath(String)}. For example, this URI path has six arguments:</p>
      *
-     * {@code /iiif/2/[identifier]/[region]/[size]/[rotation]/[quality].[format]}
+     * <p>{@code /iiif/2/[identifier]/[region]/[size]/[rotation]/[quality].[format]}</p>
      */
     List<String> getPathArguments() {
         return pathArguments;
