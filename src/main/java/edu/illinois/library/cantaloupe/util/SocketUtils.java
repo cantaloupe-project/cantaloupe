@@ -28,15 +28,25 @@ public final class SocketUtils {
         return ports.stream().mapToInt(i -> i).toArray();
     }
 
-        for (ServerSocket socket : triedSockets) {
-            try {
-                socket.close();
+    public static int getUsedPort() {
+        return getUsedPorts(1)[0];
+    }
+
+    public static int[] getUsedPorts(int howMany) {
+        final List<Integer> ports = new ArrayList<>(65535);
+        int numFound = 0;
+        for (int port = 1; port < 65535; port++) {
+            if (numFound >= howMany) {
+                break;
+            }
+            //noinspection EmptyTryBlock
+            try (ServerSocket socket = new ServerSocket(port)) {
             } catch (IOException e) {
-                System.err.println("TestUtil.getOpenPort(): " + e.getMessage());
+                ports.add(port);
+                numFound++;
             }
         }
-
-        return ports;
+        return ports.stream().mapToInt(i -> i).toArray();
     }
 
     private SocketUtils() {}
