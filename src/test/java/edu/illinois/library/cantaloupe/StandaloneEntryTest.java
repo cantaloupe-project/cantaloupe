@@ -216,7 +216,8 @@ public class StandaloneEntryTest extends BaseTest {
     @Test
     void mainWithFailingToBindToPortExits() throws Exception {
         final Configuration config = Configuration.getInstance();
-        config.setProperty(Key.HTTP_PORT, -1);
+        int port = SocketUtils.getUsedPort();
+        config.setProperty(Key.HTTP_PORT, port);
 
         StandaloneEntry.main("");
         assertEquals(-1, SystemUtils.requestedExitCode());
