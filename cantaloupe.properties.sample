@@ -189,6 +189,12 @@ HttpSource.BasicLookupStrategy.url_suffix =
 HttpSource.BasicLookupStrategy.auth.basic.username =
 HttpSource.BasicLookupStrategy.auth.basic.secret =
 
+# Before an image is retrieved, a preliminary request is sent to check
+# various characteristics. Typically this is a HEAD request, but some
+# resources, such as those using pre-signed URLs, may not support HEAD
+# requests. This key enables a ranged GET request to be sent instead.
+HttpSource.BasicLookupStrategy.send_head_requests = true
+
 # Read data in chunks when it may be more efficient. (This also may end up
 # being less efficient, depending on many variables; see the user manual.)
 HttpSource.chunking.enabled = true

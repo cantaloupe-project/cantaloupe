@@ -181,14 +181,16 @@ class CustomDelegate
             'uri' => 'http://example.org/bla/' + URI.escape(identifier),
             'headers' => {
                 'X-Custom' => 'yes'
-            }
+            },
+            'send_head_request' => true
         }
       when 'https-jpg-rgb-64x56x8-baseline.jpg'
         return {
             'uri' => 'https://example.org/bla/' + URI.escape(identifier),
             'headers' => {
                 'X-Custom' => 'yes'
-            }
+            },
+            'send_head_request' => true
         }
       when 'http-jpg-rgb-64x56x8-plane.jpg'
         return {
@@ -197,7 +199,8 @@ class CustomDelegate
             'secret' => 'secret',
             'headers' => {
                 'X-Custom' => 'yes'
-            }
+            },
+            'send_head_request' => true
         }
       when 'https-jpg-rgb-64x56x8-plane.jpg'
         return {
@@ -206,7 +209,8 @@ class CustomDelegate
             'secret' => 'secret',
             'headers' => {
                 'X-Custom' => 'yes'
-            }
+            },
+            'send_head_request' => true
         }
     end
     nil

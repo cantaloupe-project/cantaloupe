@@ -374,6 +374,7 @@ public class AdminResourceUITest extends AbstractAdminResourceTest {
         inputNamed(Key.HTTPSOURCE_URL_SUFFIX).sendKeys("/suffix");
         inputNamed(Key.HTTPSOURCE_BASIC_AUTH_USERNAME).sendKeys("username");
         inputNamed(Key.HTTPSOURCE_BASIC_AUTH_SECRET).sendKeys("password");
+        inputNamed(Key.HTTPSOURCE_SEND_HEAD_REQUESTS).click();
         // JdbcSource
         css("#cl-source li > a[href=\"#JdbcSource\"]").click();
         inputNamed(Key.JDBCSOURCE_JDBC_URL).sendKeys("cats://dogs");
@@ -463,6 +464,8 @@ public class AdminResourceUITest extends AbstractAdminResourceTest {
                 config.getString(Key.HTTPSOURCE_BASIC_AUTH_USERNAME));
         assertEquals("password",
                 config.getString(Key.HTTPSOURCE_BASIC_AUTH_SECRET));
+        assertTrue(
+                config.getBoolean(Key.HTTPSOURCE_SEND_HEAD_REQUESTS));
         // JdbcSource
         assertEquals("cats://dogs",
                 config.getString(Key.JDBCSOURCE_JDBC_URL));

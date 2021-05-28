@@ -221,10 +221,17 @@ class CustomDelegate
   #
   # 1. String URI
   # 2. Hash with the following keys:
-  #     * `uri`      [String] (required)
-  #     * `username` [String] For HTTP Basic authentication (optional).
-  #     * `secret`   [String] For HTTP Basic authentication (optional).
-  #     * `headers`  [Hash<String,String>] Hash of request headers (optional).
+  #     * `uri`               [String] (required)
+  #     * `username`          [String] For HTTP Basic authentication
+  #                           (optional).
+  #     * `secret`            [String] For HTTP Basic authentication
+  #                           (optional).
+  #     * `headers`           [Hash<String,String>] Hash of request headers
+  #                           (optional).
+  #     * `send_head_request` [Boolean] Optional; defaults to `true`. See the
+  #                           documentation of the
+  #                           `HttpSource.BasicLookupStrategy.send_head_requests`
+  #                           configuration key.
   # 3. nil if not found.
   #
   # N.B.: this method should not try to perform authorization. `authorize()`

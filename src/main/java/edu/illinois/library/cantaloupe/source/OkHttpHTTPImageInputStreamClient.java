@@ -53,7 +53,7 @@ class OkHttpHTTPImageInputStreamClient implements HTTPImageInputStreamClient {
         Request.Builder builder = new Request.Builder()
                 .method("HEAD", null)
                 .url(uri)
-                .addHeader("User-Agent", HttpSource.getUserAgent());
+                .addHeader("User-Agent", HttpSource.USER_AGENT);
         extraHeaders.forEach(h -> builder.addHeader(h.getName(), h.getValue()));
 
         Request request = builder.build();
@@ -71,7 +71,7 @@ class OkHttpHTTPImageInputStreamClient implements HTTPImageInputStreamClient {
         Request.Builder builder = new Request.Builder()
                 .url(uri)
                 .addHeader("Range", "bytes=" + range.start + "-" + range.end)
-                .addHeader("User-Agent", HttpSource.getUserAgent());
+                .addHeader("User-Agent", HttpSource.USER_AGENT);
         extraHeaders.forEach(h -> builder.addHeader(h.getName(), h.getValue()));
 
         Request request = builder.build();

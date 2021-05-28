@@ -50,11 +50,11 @@ public class HTTPStreamFactoryTest extends BaseTest {
     }
 
     private HTTPStreamFactory newInstance(boolean serverAcceptsRanges) {
-        Map<String,String> headers = new HashMap<>();
-        headers.put("X-Custom", "yes");
-        HTTPRequestInfo requestInfo = new HTTPRequestInfo(
-                server.getHTTPURI().resolve("/" + PRESENT_READABLE_IDENTIFIER).toString(),
-                null, null, headers);
+        Map<String,Object> headers = Map.of("X-Custom", "yes");
+        HTTPRequestInfo requestInfo = new HTTPRequestInfo();
+        requestInfo.setURI(
+                server.getHTTPURI().resolve("/" + PRESENT_READABLE_IDENTIFIER).toString());
+        requestInfo.setHeaders(headers);
 
         return new HTTPStreamFactory(
                 HttpSource.getHTTPClient(),

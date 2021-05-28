@@ -179,6 +179,11 @@ public interface JavaDelegate {
      *             <dd>String (required for HTTP Basic authentication)</dd>
      *             <dt>{@code headers}</dt>
      *             <dd>Map of request header name-value pairs (optional)</dd>
+     *             <dt>{@code send_head_request}</dt>
+     *             <dd>Boolean (optional). Defaults to {@code true}. See the
+     *             documentation of the {@code
+     *             HttpSource.BasicLookupStrategy.send_head_requests}
+     *             configuration key.</dd>
      *         </dl>
      *     </li>
      *     <li>{@code null} if not found</li>

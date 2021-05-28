@@ -3,6 +3,11 @@
 If you are skipping versions, work through these sections backwards from your
 current version.
 
+## 5.0 → 6.0
+
+1. Add the following keys from the sample configuration:
+    * `HttpSource.BasicLookupStrategy.send_head_requests`
+
 ## 4.1.x → 5.0
 
 1.  Note that the application is now packaged as a JAR file which can no longer
