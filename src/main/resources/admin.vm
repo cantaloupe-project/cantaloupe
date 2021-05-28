@@ -238,7 +238,9 @@
                                            data-content="Location of the delegate script. This can be an
                                            absolute path, or a filename; if only a filename is specified,
                                            it will be searched for in the same folder as the config file,
-                                           and then the current working directory.">?</a>
+                                           and then the current working directory. The delegate script
+                                           pathname can also be set using the &lt;code&gt;-Dcantaloupe.delegate_script&lt;/code&gt;
+                                           VM argument, which overrides this value.">?</a>
                                     </td>
                                     <td>
                                         <input class="form-control" type="text"

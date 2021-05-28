@@ -1,5 +1,11 @@
 # Change Log
 
+# 6.0
+
+* The delegate script pathname can be set using the
+  `-Dcantaloupe.delegate_script` VM argument, which takes precedence over the
+  `delegate_script.pathname` configuration key.
+
 ## 5.0.3
 
 * Suppressed an error-level log message from OpenJpegProcessor when reading

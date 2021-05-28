@@ -88,6 +88,8 @@ delegate_script.enabled = false
 # !! This can be an absolute path, or a filename; if only a filename is
 # specified, it will be searched for in the same folder as this file, and
 # then the current working directory.
+# The delegate script pathname can also be set using the
+# -Dcantaloupe.delegate_script VM argument, which overrides this value.
 delegate_script.pathname = delegates.rb
 
 ###########################################################################
