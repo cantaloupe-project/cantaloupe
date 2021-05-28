@@ -131,7 +131,7 @@ public class InformationRequestHandlerTest extends BaseTest {
     }
 
     @Test
-    void testHandleSetsRequestContextPageCountBeforeReturningInstanceFromDerivativeCache()
+    void testHandleSetsRequestContextKeysBeforeReturningInstanceFromDerivativeCache()
             throws Exception {
         {   // Configure the application.
             final Configuration config = Configuration.getInstance();
@@ -170,6 +170,8 @@ public class InformationRequestHandlerTest extends BaseTest {
                 .build()) {
             handler.handle();
             assertEquals(1, context.getPageCount());
+            assertEquals(new Dimension(64, 48), context.getFullSize());
+            assertNotNull(context.getMetadata());
         }
     }
 

@@ -2,6 +2,8 @@
 
 ## 5.0.3
 
+* The `full_size` and `metadata` keys are available in the delegate context
+  in response to information requests as well as image requests.
 * Fixed a potential ConcurrentModificationException when using the delegate
   script.
 * The application exits when it fails to bind to a port at startup.
