@@ -22,7 +22,7 @@ import org.slf4j.LoggerFactory;
 import java.util.List;
 
 /**
- * Handles IIIF Image API 3.x image requests.
+ * Handles image requests.
  *
  * @see <a href="https://iiif.io/api/image/3.0/#4-image-requests">Image
  * Requests</a>
@@ -169,8 +169,8 @@ public class ImageResource extends IIIF3Resource {
      * @param virtualSize        Source image size post-rotation and post-scale
      *                           constraint.
      * @param scale              May be {@code null}.
-     * @param isUpscalingAllowed Whether the {@literal size} URI path component
-     *                           begins with {@literal ^}.
+     * @param isUpscalingAllowed Whether the {@code size} URI path component
+     *                           begins with {@code ^}.
      */
     private void validateScale(Dimension virtualSize,
                                Scale scale,
@@ -202,8 +202,8 @@ public class ImageResource extends IIIF3Resource {
                               Dimension resultingSize) throws SizeRestrictedException {
         final Configuration config = Configuration.getInstance();
         if (config.getBoolean(Key.IIIF_RESTRICT_TO_SIZES, false)) {
-            var factory = new ImageInfoFactory();
-            factory.getSizes(virtualSize).stream()
+            new InformationFactory().getSizes(virtualSize)
+                    .stream()
                     .filter(s -> s.width == resultingSize.intWidth() &&
                             s.height == resultingSize.intHeight())
                     .findAny()

@@ -40,7 +40,7 @@ public class InformationResource extends IIIF1Resource {
     }
 
     /**
-     * Writes a JSON-serialized {@link ImageInfo} instance to the response.
+     * Writes a JSON-serialized {@link Information} instance to the response.
      */
     @Override
     public void doGET() throws Exception {
@@ -79,7 +79,7 @@ public class InformationResource extends IIIF1Resource {
                 .build()) {
             Info info = handler.handle();
 
-            ImageInfo iiifInfo = new ImageInfoFactory().newImageInfo(
+            Information iiifInfo = new InformationFactory().newImageInfo(
                     getImageURI(),
                     availableOutputFormats,
                     info,
@@ -92,7 +92,7 @@ public class InformationResource extends IIIF1Resource {
         }
     }
 
-    private void addHeaders(ImageInfo info) {
+    private void addHeaders(Information info) {
         getResponse().setHeader("Content-Type", getNegotiatedMediaType());
         getResponse().setHeader("Link",
                 String.format("<%s>;rel=\"profile\";", info.profile));

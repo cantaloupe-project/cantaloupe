@@ -17,7 +17,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Handles IIIF Image API 2.x information requests.
+ * Handles information requests.
  *
  * @see <a href="http://iiif.io/api/image/2.1/#information-request">Information
  *      Requests</a>
@@ -41,7 +41,7 @@ public class InformationResource extends IIIF2Resource {
     }
 
     /**
-     * Writes a JSON-serialized {@link ImageInfo} instance to the response.
+     * Writes a JSON-serialized {@link Information} instance to the response.
      */
     @Override
     public void doGET() throws Exception {
@@ -119,16 +119,16 @@ public class InformationResource extends IIIF2Resource {
 
     private JacksonRepresentation newRepresentation(Info info,
                                                     Set<Format> availableOutputFormats) {
-        final ImageInfoFactory factory = new ImageInfoFactory();
+        final InformationFactory factory = new InformationFactory();
         factory.setDelegateProxy(getDelegateProxy());
 
-        final ImageInfo<String, Object> imageInfo = factory.newImageInfo(
+        final Information<String, Object> iiifInfo = factory.newImageInfo(
                 availableOutputFormats,
                 getImageURI(),
                 info,
                 getPageIndex(),
                 getMetaIdentifier().getScaleConstraint());
-        return new JacksonRepresentation(imageInfo);
+        return new JacksonRepresentation(iiifInfo);
     }
 
 }

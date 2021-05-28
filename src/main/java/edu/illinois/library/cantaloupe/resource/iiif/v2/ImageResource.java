@@ -20,7 +20,7 @@ import org.slf4j.LoggerFactory;
 import java.util.List;
 
 /**
- * Handles IIIF Image API 2.x image requests.
+ * Handles image requests.
  *
  * @see <a href="http://iiif.io/api/image/2.1/#image-request-parameters">Image
  * Request Operations</a>
@@ -160,8 +160,8 @@ public class ImageResource extends IIIF2Resource {
                               Dimension virtualSize) throws SizeRestrictedException {
         final var config = Configuration.getInstance();
         if (config.getBoolean(Key.IIIF_RESTRICT_TO_SIZES, false)) {
-            var factory = new ImageInfoFactory();
-            factory.getSizes(virtualSize).stream()
+            new InformationFactory().getSizes(virtualSize)
+                    .stream()
                     .filter(s -> s.width == resultingSize.intWidth() &&
                             s.height == resultingSize.intHeight())
                     .findAny()

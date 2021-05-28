@@ -437,7 +437,7 @@ public class InformationResourceTest extends ResourceTest {
 
         String json = response.getBodyAsString();
         ObjectMapper mapper = new ObjectMapper();
-        ImageInfo info = mapper.readValue(json, ImageInfo.class);
+        Information info = mapper.readValue(json, Information.class);
         assertEquals("http://localhost:" + HTTP_PORT +
                 Route.IIIF_1_PATH + "/" + IMAGE, info.id);
     }
@@ -452,7 +452,7 @@ public class InformationResourceTest extends ResourceTest {
 
         String json = response.getBodyAsString();
         ObjectMapper mapper = new ObjectMapper();
-        ImageInfo info = mapper.readValue(json, ImageInfo.class);
+        Information info = mapper.readValue(json, Information.class);
         assertEquals("http://example.org" + Route.IIIF_1_PATH + "/" + IMAGE,
                 info.id);
     }
@@ -468,7 +468,7 @@ public class InformationResourceTest extends ResourceTest {
 
         String json = response.getBodyAsString();
         ObjectMapper mapper = new ObjectMapper();
-        ImageInfo info = mapper.readValue(json, ImageInfo.class);
+        Information info = mapper.readValue(json, Information.class);
         assertEquals("http://localhost:" + HTTP_PORT + Route.IIIF_1_PATH + path,
                 info.id);
     }
@@ -484,7 +484,7 @@ public class InformationResourceTest extends ResourceTest {
 
         String json = response.getBodyAsString();
         ObjectMapper mapper = new ObjectMapper();
-        ImageInfo info = mapper.readValue(json, ImageInfo.class);
+        Information info = mapper.readValue(json, Information.class);
         assertEquals("http://localhost:" + HTTP_PORT +
                 Route.IIIF_1_PATH + path, info.id);
     }
@@ -502,7 +502,7 @@ public class InformationResourceTest extends ResourceTest {
 
         String json = response.getBodyAsString();
         ObjectMapper mapper = new ObjectMapper();
-        ImageInfo info = mapper.readValue(json, ImageInfo.class);
+        Information info = mapper.readValue(json, Information.class);
         assertEquals("http://example.org:8080/cats" +
                 Route.IIIF_1_PATH + "/originalID", info.id);
     }
@@ -521,7 +521,7 @@ public class InformationResourceTest extends ResourceTest {
 
         String json = response.getBodyAsString();
         ObjectMapper mapper = new ObjectMapper();
-        ImageInfo info = mapper.readValue(json, ImageInfo.class);
+        Information info = mapper.readValue(json, Information.class);
         assertEquals("https://example.net" +
                 Route.IIIF_1_PATH + "/" + IMAGE, info.id);
     }
