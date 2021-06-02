@@ -10,6 +10,7 @@
 * Improved the resiliency of the built-in EXIF reader.
 * Fixed a potential ConcurrentModificationException when using the delegate
   script.
+* Updated JRuby to version 9.2.17.0.
 
 ## 5.0.2
 
