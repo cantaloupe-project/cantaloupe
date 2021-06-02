@@ -5,6 +5,7 @@
 * HttpSource can be configured to send a ranged GET request instead of a HEAD
   request, enabling it to work with pre-signed URLs that do not allow HEAD
   requests.
+* Added an HTTP API method to purge all infos from the derivative cache.
 * The delegate script pathname can be set using the
   `-Dcantaloupe.delegate_script` VM argument, which takes precedence over the
   `delegate_script.pathname` configuration key.
