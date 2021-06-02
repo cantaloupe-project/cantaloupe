@@ -78,7 +78,7 @@ class JdbcCache implements DerivativeCache {
                     DERIVATIVE_IMAGE_TABLE_OPERATIONS_COLUMN,
                     DERIVATIVE_IMAGE_TABLE_IMAGE_COLUMN,
                     DERIVATIVE_IMAGE_TABLE_LAST_ACCESSED_COLUMN);
-            LOGGER.debug(sql);
+            LOGGER.trace(sql);
 
             final Blob blob = connection.createBlob();
             blobOutputStream = blob.setBinaryStream(1);
@@ -250,7 +250,7 @@ class JdbcCache implements DerivativeCache {
             statement.setTimestamp(1, now());
             statement.setString(2, opList.toString());
 
-            LOGGER.debug(sql);
+            LOGGER.trace(sql);
             statement.executeUpdate();
         }
     }
@@ -285,7 +285,7 @@ class JdbcCache implements DerivativeCache {
             statement.setTimestamp(1, now());
             statement.setString(2, identifier.toString());
 
-            LOGGER.debug(sql);
+            LOGGER.trace(sql);
             statement.executeUpdate();
         }
     }
@@ -329,7 +329,7 @@ class JdbcCache implements DerivativeCache {
             statement.setString(1, identifier.toString());
             statement.setTimestamp(2, earliestValidDate());
 
-            LOGGER.debug(sql);
+            LOGGER.trace(sql);
             try (ResultSet resultSet = statement.executeQuery()) {
                 if (resultSet.next()) {
                     accessInfoAsync(identifier);
@@ -365,7 +365,7 @@ class JdbcCache implements DerivativeCache {
             statement.setString(1, opList.toString());
             statement.setTimestamp(2, earliestValidDate());
 
-            LOGGER.debug(sql);
+            LOGGER.trace(sql);
             try (ResultSet resultSet = statement.executeQuery()) {
                 if (resultSet.next()) {
                     LOGGER.debug("Hit for image: {}", opList);
@@ -470,7 +470,7 @@ class JdbcCache implements DerivativeCache {
                 DERIVATIVE_IMAGE_TABLE_LAST_ACCESSED_COLUMN);
         try (PreparedStatement statement = conn.prepareStatement(sql)) {
             statement.setTimestamp(1, earliestValidDate());
-            LOGGER.debug(sql);
+            LOGGER.trace(sql);
             return statement.executeUpdate();
         }
     }
@@ -485,7 +485,7 @@ class JdbcCache implements DerivativeCache {
                 getInfoTableName(), INFO_TABLE_LAST_ACCESSED_COLUMN);
         try (PreparedStatement statement = conn.prepareStatement(sql)) {
             statement.setTimestamp(1, earliestValidDate());
-            LOGGER.debug(sql);
+            LOGGER.trace(sql);
             return statement.executeUpdate();
         }
     }
@@ -502,7 +502,7 @@ class JdbcCache implements DerivativeCache {
                 DERIVATIVE_IMAGE_TABLE_OPERATIONS_COLUMN);
         try (PreparedStatement statement = conn.prepareStatement(sql)) {
             statement.setString(1, ops.toString());
-            LOGGER.debug(sql);
+            LOGGER.trace(sql);
             return statement.executeUpdate();
         }
     }
@@ -529,7 +529,7 @@ class JdbcCache implements DerivativeCache {
     private int purgeDerivativeImages(Connection conn) throws SQLException {
         final String sql = "DELETE FROM " + getDerivativeImageTableName();
         try (PreparedStatement statement = conn.prepareStatement(sql)) {
-            LOGGER.debug(sql);
+            LOGGER.trace(sql);
             return statement.executeUpdate();
         }
     }
@@ -549,7 +549,7 @@ class JdbcCache implements DerivativeCache {
                 " LIKE ?";
         try (PreparedStatement statement = conn.prepareStatement(sql)) {
             statement.setString(1, identifier.toString() + "%");
-            LOGGER.debug(sql);
+            LOGGER.trace(sql);
             return statement.executeUpdate();
         }
     }
@@ -583,7 +583,7 @@ class JdbcCache implements DerivativeCache {
                 getInfoTableName(), INFO_TABLE_IDENTIFIER_COLUMN);
         try (PreparedStatement statement = conn.prepareStatement(sql)) {
             statement.setString(1, identifier.toString());
-            LOGGER.debug(sql);
+            LOGGER.trace(sql);
             return statement.executeUpdate();
         }
     }
@@ -605,7 +605,7 @@ class JdbcCache implements DerivativeCache {
     private int purgeInfos(Connection conn) throws SQLException {
         final String sql = "DELETE FROM " + getInfoTableName();
         try (PreparedStatement statement = conn.prepareStatement(sql)) {
-            LOGGER.debug(sql);
+            LOGGER.trace(sql);
             return statement.executeUpdate();
         }
     }
@@ -613,7 +613,7 @@ class JdbcCache implements DerivativeCache {
     @Override
     public void put(Identifier identifier, Info info) throws IOException {
         if (!info.isPersistable()) {
-            LOGGER.debug("put(): info for {} is incomplete; ignoring",
+            LOGGER.trace("put(): info for {} is incomplete; ignoring",
                     identifier);
             return;
         }
