@@ -34,6 +34,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 /**
  * <p>Provides access to source content located on an HTTP(S) server. Backed by
@@ -354,7 +355,7 @@ class HttpSource extends AbstractSource implements Source {
      */
     private HTTPRequestInfo requestInfo;
 
-    private FormatIterator<Format> formatIterator = new FormatIterator<>();
+    private final FormatIterator<Format> formatIterator = new FormatIterator<>();
 
     static synchronized OkHttpClient getHTTPClient() {
         if (httpClient == null) {
@@ -417,6 +418,15 @@ class HttpSource extends AbstractSource implements Source {
                 System.getProperty("java.version"),
                 System.getProperty("os.name"),
                 System.getProperty("os.version"));
+    }
+
+    static String toString(Headers headers) {
+        return headers.toMultimap().entrySet()
+                .stream()
+                .map(entry -> entry.getKey() + ": " +
+                        ("authorization".equalsIgnoreCase(entry.getKey()) ?
+                                "********" : entry.getValue()))
+                .collect(Collectors.joining("; "));
     }
 
     @Override
@@ -526,8 +536,8 @@ class HttpSource extends AbstractSource implements Source {
 
         Request request = builder.build();
 
-        LOGGER.debug("Requesting {} {} (extra headers: {})",
-                method, requestInfo.getURI(), extraHeaders);
+        LOGGER.debug("Requesting {} {} [extra headers: {}]",
+                method, requestInfo.getURI(), toString(request.headers()));
 
         return getHTTPClient().newCall(request).execute();
     }

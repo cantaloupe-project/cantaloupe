@@ -55,10 +55,11 @@ final class HTTPStreamFactory implements StreamFactory {
                     "Basic " + requestInfo.getBasicAuthToken());
         }
 
-        LOGGER.trace("Requesting GET {} (extra headers: {})",
-                requestInfo.getURI(), extraHeaders);
-
         Request request   = builder.build();
+
+        LOGGER.trace("Requesting GET {} [extra headers: {}]",
+                requestInfo.getURI(), HttpSource.toString(request.headers()));
+
         Response response = getHTTPClient().newCall(request).execute();
         ResponseBody body = response.body();
 

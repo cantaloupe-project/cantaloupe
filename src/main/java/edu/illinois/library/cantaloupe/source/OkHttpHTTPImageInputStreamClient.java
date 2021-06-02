@@ -58,8 +58,8 @@ class OkHttpHTTPImageInputStreamClient implements HTTPImageInputStreamClient {
 
         Request request = builder.build();
 
-        LOGGER.trace("Requesting HEAD {} (extra headers: {})",
-                uri, extraHeaders);
+        LOGGER.trace("Requesting HEAD {} [extra headers: {}]",
+                uri, HttpSource.toString(request.headers()));
 
         try (okhttp3.Response response = okHttpClient.newCall(request).execute()) {
             return toResponse(response);
@@ -76,8 +76,8 @@ class OkHttpHTTPImageInputStreamClient implements HTTPImageInputStreamClient {
 
         Request request = builder.build();
 
-        LOGGER.trace("Requesting GET {} (extra headers: {})",
-                uri, extraHeaders);
+        LOGGER.trace("Requesting GET {} [extra headers: {}]",
+                uri, HttpSource.toString(request.headers()));
 
         try (okhttp3.Response okHttpResponse =
                      okHttpClient.newCall(request).execute()) {
