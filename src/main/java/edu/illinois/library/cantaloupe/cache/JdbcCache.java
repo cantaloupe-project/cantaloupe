@@ -428,6 +428,23 @@ class JdbcCache implements DerivativeCache {
     }
 
     @Override
+    public void purgeInfos() throws IOException {
+        try (Connection connection = getConnection()) {
+            connection.setAutoCommit(false);
+            int numDeleted;
+            final String sql = "DELETE FROM " + getInfoTableName();
+            try (PreparedStatement statement = connection.prepareStatement(sql)) {
+                LOGGER.trace(sql);
+                numDeleted = statement.executeUpdate();
+            }
+            connection.commit();
+            LOGGER.debug("purgeInfos(): purged {} info(s)", numDeleted);
+        } catch (SQLException e) {
+            throw new IOException(e.getMessage(), e);
+        }
+    }
+
+    @Override
     public void purgeInvalid() throws IOException {
         try (Connection connection = getConnection()) {
             connection.setAutoCommit(false);

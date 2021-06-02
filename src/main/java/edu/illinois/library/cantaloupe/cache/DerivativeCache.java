@@ -81,6 +81,16 @@ public interface DerivativeCache extends Cache {
     void purge(OperationList opList) throws IOException;
 
     /**
+     * Deletes all cached infos.
+     *
+     * @throws IOException upon fatal error. Implementations should do the
+     *         best they can to complete the operation and swallow and log
+     *         non-fatal errors.
+     * @since 5.0
+     */
+    void purgeInfos() throws IOException;
+
+    /**
      * <p>Synchronously adds image information to the cache.</p>
      *
      * <p>If the information corresponding to the given identifier already

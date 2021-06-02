@@ -143,6 +143,8 @@ class AzureStorageCache implements DerivativeCache {
     private static final Logger LOGGER =
             LoggerFactory.getLogger(AzureStorageCache.class);
 
+    private static final String INFO_EXTENSION = ".json";
+
     private static CloudBlobClient client;
 
     /**
@@ -289,7 +291,7 @@ class AzureStorageCache implements DerivativeCache {
      */
     String getObjectKey(Identifier identifier) {
         return getObjectKeyPrefix() + "info/" +
-                StringUtils.md5(identifier.toString()) + ".json";
+                StringUtils.md5(identifier.toString()) + INFO_EXTENSION;
     }
 
     /**
@@ -387,6 +389,32 @@ class AzureStorageCache implements DerivativeCache {
                         blob, e.getMessage());
             }
         });
+    }
+
+    @Override
+    public void purgeInfos() throws IOException {
+        final String containerName   = getContainerName();
+        final CloudBlobClient client = getClientInstance();
+        try {
+            final CloudBlobContainer container =
+                    client.getContainerReference(containerName);
+            int count = 0, deletedCount = 0;
+            for (ListBlobItem item : container.listBlobs(getObjectKeyPrefix(), true)) {
+                if (item instanceof CloudBlob) {
+                    CloudBlob blob = (CloudBlob) item;
+                    count++;
+                    if (blob.getName().endsWith(INFO_EXTENSION)) {
+                        if (blob.deleteIfExists()) {
+                            deletedCount++;
+                        }
+                    }
+                }
+            }
+            LOGGER.debug("purgeInfos(): deleted {} of {} items",
+                    deletedCount, count);
+        } catch (URISyntaxException | StorageException e) {
+            throw new IOException(e.getMessage(), e);
+        }
     }
 
     @Override

@@ -238,7 +238,7 @@ class FilesystemCache implements SourceCache, DerivativeCache {
     private static final String INFO_FOLDER = "info";
     private static final String SOURCE_IMAGE_FOLDER = "source";
 
-    private static final String INFO_EXTENSION = ".json";
+    static final String INFO_EXTENSION = ".json";
     private static final String TEMP_EXTENSION = ".tmp";
 
     /**
@@ -844,6 +844,44 @@ class FilesystemCache implements SourceCache, DerivativeCache {
                 LOGGER.warn("purgeAsync(): unable to delete {}", path);
             }
         });
+    }
+
+    @Override
+    public void purgeInfos() throws IOException {
+        if (isGlobalPurgeInProgress.get()) {
+            LOGGER.debug("purgeInfos() called with a purge in progress. Aborting.");
+            return;
+        }
+        synchronized (infoPurgeLock) {
+            while (!infosBeingPurged.isEmpty()) {
+                try {
+                    LOGGER.debug("purgeInfos(): waiting...");
+                    infoPurgeLock.wait();
+                } catch (InterruptedException e) {
+                    break;
+                }
+            }
+        }
+
+        try {
+            isGlobalPurgeInProgress.set(true);
+
+            final InfoFileVisitor visitor = new InfoFileVisitor();
+
+            LOGGER.debug("purgeInfos(): starting...");
+            Files.walkFileTree(rootPath(),
+                    EnumSet.of(FileVisitOption.FOLLOW_LINKS),
+                    Integer.MAX_VALUE,
+                    visitor);
+            LOGGER.debug("purgeInfos(): purged {} info(s) totaling {} bytes",
+                    visitor.getDeletedFileCount(),
+                    visitor.getDeletedFileSize());
+        } finally {
+            isGlobalPurgeInProgress.set(false);
+            synchronized (infoPurgeLock) {
+                infoPurgeLock.notifyAll();
+            }
+        }
     }
 
     /**

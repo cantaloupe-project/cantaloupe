@@ -31,14 +31,16 @@ import java.util.Optional;
  *
  * <p>Content is structured as follows:</p>
  *
- * <code><pre>{
+ * {@code {
  *     #{@link #IMAGE_HASH_KEY}: {
  *         "operation list string representation": image byte array
  *     },
  *     #{@link #INFO_HASH_KEY}: {
  *         "identifier": "UTF-8 JSON string"
  *     }
- * }</pre></code>
+ * }}
+ *
+ * @since 3.4
  */
 class RedisCache implements DerivativeCache {
 
@@ -202,7 +204,7 @@ class RedisCache implements DerivativeCache {
                     RedisURI.Builder.redis(config.getString(Key.REDISCACHE_HOST)).
                             withPort(config.getInt(Key.REDISCACHE_PORT, 6379)).
                             withSsl(config.getBoolean(Key.REDISCACHE_SSL, false)).
-                            withPassword(config.getString(Key.REDISCACHE_PASSWORD, "")).
+                            withPassword(config.getString(Key.REDISCACHE_PASSWORD, "").toCharArray()).
                             withDatabase(config.getInt(Key.REDISCACHE_DATABASE, 0)).
                             build();
             RedisClient client = RedisClient.create(redisUri);
@@ -249,13 +251,8 @@ class RedisCache implements DerivativeCache {
 
     @Override
     public void purge() {
-        // Purge infos
-        LOGGER.debug("purge(): purging {}...", INFO_HASH_KEY);
-        getConnection().sync().del(INFO_HASH_KEY);
-
-        // Purge images
-        LOGGER.debug("purge(): purging {}...", IMAGE_HASH_KEY);
-        getConnection().sync().del(IMAGE_HASH_KEY);
+        purgeInfos();
+        purgeImages();
     }
 
     @Override
@@ -271,9 +268,20 @@ class RedisCache implements DerivativeCache {
 
         MapScanCursor<String, byte[]> cursor = getConnection().sync().
                 hscan(IMAGE_HASH_KEY, imagePattern);
-        for (Object key : cursor.getMap().keySet()) {
-            getConnection().sync().hdel(IMAGE_HASH_KEY, (String) key);
+        for (String key : cursor.getMap().keySet()) {
+            getConnection().sync().hdel(IMAGE_HASH_KEY, key);
         }
+    }
+
+    private void purgeImages() {
+        LOGGER.debug("purgeImages(): purging {}...", IMAGE_HASH_KEY);
+        getConnection().sync().del(IMAGE_HASH_KEY);
+    }
+
+    @Override
+    public void purgeInfos() {
+        LOGGER.debug("purgeInfos(): purging {}...", INFO_HASH_KEY);
+        getConnection().sync().del(INFO_HASH_KEY);
     }
 
     /**

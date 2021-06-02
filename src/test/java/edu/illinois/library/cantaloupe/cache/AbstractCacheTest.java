@@ -411,13 +411,60 @@ abstract class AbstractCacheTest extends BaseTest {
         assertExists(instance, ops2);
     }
 
+    /* purgeInfos() */
+
+    @Test
+    void testPurgeInfos() throws Exception {
+        DerivativeCache instance = newInstance();
+        Identifier identifier    = new Identifier(IMAGE);
+        OperationList opList     = OperationList.builder()
+                .withIdentifier(identifier)
+                .withOperations(new Encode(Format.get("jpg")))
+                .build();
+        Info info = new Info();
+
+        // assert that a particular image doesn't exist
+        try (InputStream is = instance.newDerivativeImageInputStream(opList)) {
+            assertNull(is);
+        }
+
+        // assert that a particular info doesn't exist
+        assertFalse(instance.getInfo(identifier).isPresent());
+
+        // add the image
+        try (CompletableOutputStream outputStream =
+                     instance.newDerivativeImageOutputStream(opList)) {
+            Path fixture = TestUtil.getImage(IMAGE);
+            Files.copy(fixture, outputStream);
+            outputStream.setCompletelyWritten(true);
+        }
+
+        // add the info
+        instance.put(identifier, info);
+
+        Thread.sleep(ASYNC_WAIT);
+
+        // assert that they've been added
+        assertExists(instance, opList);
+        assertNotNull(instance.getInfo(identifier));
+
+        // purge infos
+        instance.purgeInfos();
+
+        // assert that the info has been purged
+        assertFalse(instance.getInfo(identifier).isPresent());
+
+        // assert that the image has NOT been purged
+        assertExists(instance, opList);
+    }
+
     /* purgeInvalid() */
 
     @Test
     void testPurgeInvalid() throws Exception {
         DerivativeCache instance = newInstance();
-        Identifier id1 = new Identifier(IMAGE);
-        OperationList ops1 = OperationList.builder()
+        Identifier id1           = new Identifier(IMAGE);
+        OperationList ops1       = OperationList.builder()
                 .withIdentifier(id1)
                 .withOperations(new Encode(Format.get("jpg")))
                 .build();

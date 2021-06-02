@@ -216,6 +216,10 @@ class S3Cache implements DerivativeCache {
     private static final Logger LOGGER =
             LoggerFactory.getLogger(S3Cache.class);
 
+    private static final String IMAGE_KEY_PREFIX = "image/";
+    private static final String INFO_EXTENSION   = ".json";
+    private static final String INFO_KEY_PREFIX  = "info/";
+
     /**
      * Lazy-initialized by {@link #getClientInstance}.
      */
@@ -352,8 +356,8 @@ class S3Cache implements DerivativeCache {
      *         given identifier.
      */
     String getObjectKey(Identifier identifier) {
-        return getObjectKeyPrefix() + "info/" +
-                StringUtils.md5(identifier.toString()) + ".json";
+        return getObjectKeyPrefix() + INFO_KEY_PREFIX +
+                StringUtils.md5(identifier.toString()) + INFO_EXTENSION;
     }
 
     /**
@@ -369,8 +373,8 @@ class S3Cache implements DerivativeCache {
         if (encode != null) {
             extension = "." + encode.getFormat().getPreferredExtension();
         }
-        return String.format("%simage/%s/%s%s",
-                getObjectKeyPrefix(), idHash, opsHash, extension);
+        return getObjectKeyPrefix() + IMAGE_KEY_PREFIX + idHash + "/" +
+                opsHash + extension;
     }
 
     /**
@@ -414,7 +418,7 @@ class S3Cache implements DerivativeCache {
         // purge images
         final S3Client client       = getClientInstance();
         final String bucketName     = getBucketName();
-        final String prefix         = getObjectKeyPrefix() + "image/" +
+        final String prefix         = getObjectKeyPrefix() + IMAGE_KEY_PREFIX +
                 StringUtils.md5(identifier.toString());
         final AtomicInteger counter = new AtomicInteger();
 
@@ -453,6 +457,24 @@ class S3Cache implements DerivativeCache {
                     .build());
             return null;
         });
+    }
+
+    @Override
+    public void purgeInfos() {
+        final S3Client client       = getClientInstance();
+        final String bucketName     = getBucketName();
+        final String prefix         = getObjectKeyPrefix() + INFO_KEY_PREFIX;
+        final AtomicInteger counter = new AtomicInteger();
+
+        S3Utils.walkObjects(client, bucketName, prefix, (object) -> {
+            LOGGER.trace("purgeInfos(): deleting {}", object.key());
+            client.deleteObject(DeleteObjectRequest.builder()
+                    .bucket(bucketName)
+                    .key(object.key())
+                    .build());
+            counter.incrementAndGet();
+        });
+        LOGGER.debug("purgeInfos(): deleted {} items", counter.get());
     }
 
     @Override
