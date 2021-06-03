@@ -219,8 +219,8 @@ class HttpSource extends AbstractSource implements Source {
                         if (field != null) {
                             Format format = MediaType.fromContentType(field).toFormat();
                             if (Format.UNKNOWN.equals(format)) {
-                                LOGGER.debug("Unrecognized Content-Type header value for HEAD {}",
-                                        requestInfo.getURI());
+                                LOGGER.debug("Unrecognized Content-Type header value for HEAD {}: {}",
+                                        requestInfo.getURI(), field);
                             }
                             return format;
                         } else {
