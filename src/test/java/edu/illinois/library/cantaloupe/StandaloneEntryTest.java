@@ -12,6 +12,7 @@ import edu.illinois.library.cantaloupe.util.SocketUtils;
 import edu.illinois.library.cantaloupe.util.SystemUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayOutputStream;
@@ -213,6 +214,7 @@ public class StandaloneEntryTest extends BaseTest {
         assertEquals(200, response.getStatus());
     }
 
+    @Disabled // TODO: this sometimes passes and sometimes fails
     @Test
     void mainWithFailingToBindToPortExits() throws Exception {
         final Configuration config = Configuration.getInstance();
