@@ -4,7 +4,6 @@ import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.http.Headers;
 import edu.illinois.library.cantaloupe.source.stream.HTTPImageInputStream;
-import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
@@ -25,16 +24,13 @@ final class HTTPStreamFactory implements StreamFactory {
     private static final int DEFAULT_CHUNK_SIZE       = (int) Math.pow(2, 19);
     private static final int DEFAULT_CHUNK_CACHE_SIZE = (int) Math.pow(1024, 2);
 
-    private final OkHttpClient client;
     private final HTTPRequestInfo requestInfo;
     private final long contentLength;
     private final boolean serverAcceptsRanges;
 
-    HTTPStreamFactory(OkHttpClient client,
-                      HTTPRequestInfo requestInfo,
+    HTTPStreamFactory(HTTPRequestInfo requestInfo,
                       long contentLength,
                       boolean serverAcceptsRanges) {
-        this.client              = client;
         this.requestInfo         = requestInfo;
         this.contentLength       = contentLength;
         this.serverAcceptsRanges = serverAcceptsRanges;
@@ -74,9 +70,7 @@ final class HTTPStreamFactory implements StreamFactory {
                 LOGGER.debug("newSeekableStream(): using {}-byte chunks",
                         chunkSize);
                 OkHttpHTTPImageInputStreamClient rangingClient =
-                        new OkHttpHTTPImageInputStreamClient(
-                                client, requestInfo.getURI());
-                rangingClient.setExtraRequestHeaders(requestInfo.getHeaders());
+                        new OkHttpHTTPImageInputStreamClient(requestInfo);
 
                 HTTPImageInputStream stream = new HTTPImageInputStream(
                         rangingClient, contentLength);

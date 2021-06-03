@@ -8,6 +8,8 @@
 * Suppressed an error-level log message from OpenJpegProcessor when reading
   an image without a recognized filename extension on a read-only filesystem.
 * Improved the resiliency of the built-in EXIF reader.
+* Fixed HttpSource failing to use HTTP Basic credentials when chunking is
+  enabled.
 * Fixed a potential ConcurrentModificationException when using the delegate
   script.
 * Updated JRuby to version 9.2.17.0.

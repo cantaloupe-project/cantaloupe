@@ -1,86 +1,59 @@
 package edu.illinois.library.cantaloupe.source;
 
-import edu.illinois.library.cantaloupe.http.Headers;
 import edu.illinois.library.cantaloupe.http.Range;
 
 import edu.illinois.library.cantaloupe.http.Response;
 import edu.illinois.library.cantaloupe.source.stream.HTTPImageInputStreamClient;
 import okhttp3.OkHttpClient;
-import okhttp3.Request;
 import okhttp3.ResponseBody;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.util.Map;
 
 /**
  * Implementation backed by an {@link OkHttpClient}.
  */
 class OkHttpHTTPImageInputStreamClient implements HTTPImageInputStreamClient {
 
-    private static final Logger LOGGER =
-            LoggerFactory.getLogger(OkHttpHTTPImageInputStreamClient.class);
-
-    private OkHttpClient okHttpClient;
-    private String uri;
-    private Headers extraHeaders = new Headers();
+    private final HTTPRequestInfo requestInfo;
 
     /**
-     * Converts a {@link okhttp3.Response} into a {@link Response}.
+     * @return New instance corresponding to the argument.
      */
     private static Response toResponse(okhttp3.Response okHttpResponse)
             throws IOException {
         Response response = new Response();
+        // Set status code
         response.setStatus(okHttpResponse.code());
-
+        // Set headers
+        okHttpResponse.headers().toMultimap().forEach((k, list) ->
+                list.forEach(v -> response.getHeaders().add(k, v)));
+        // Set body
         ResponseBody body = okHttpResponse.body();
         if (body != null) {
             response.setBody(body.bytes());
         }
-
-        okHttpResponse.headers().toMultimap().forEach((k, list) ->
-                list.forEach(v -> response.getHeaders().add(k, v)));
         return response;
     }
 
-    OkHttpHTTPImageInputStreamClient(OkHttpClient okHttpClient, String uri) {
-        this.okHttpClient = okHttpClient;
-        this.uri = uri;
+    OkHttpHTTPImageInputStreamClient(HTTPRequestInfo requestInfo) {
+        this.requestInfo = requestInfo;
     }
 
     @Override
     public Response sendHEADRequest() throws IOException {
-        Request.Builder builder = new Request.Builder()
-                .method("HEAD", null)
-                .url(uri)
-                .addHeader("User-Agent", HttpSource.getUserAgent());
-        extraHeaders.forEach(h -> builder.addHeader(h.getName(), h.getValue()));
-
-        Request request = builder.build();
-
-        LOGGER.trace("Requesting HEAD {} [extra headers: {}]",
-                uri, HttpSource.toString(request.headers()));
-
-        try (okhttp3.Response response = okHttpClient.newCall(request).execute()) {
+        try (okhttp3.Response response =
+                     HttpSource.request(requestInfo, "HEAD")) {
             return toResponse(response);
         }
     }
 
     @Override
     public Response sendGETRequest(Range range) throws IOException {
-        Request.Builder builder = new Request.Builder()
-                .url(uri)
-                .addHeader("Range", "bytes=" + range.start + "-" + range.end)
-                .addHeader("User-Agent", HttpSource.getUserAgent());
-        extraHeaders.forEach(h -> builder.addHeader(h.getName(), h.getValue()));
-
-        Request request = builder.build();
-
-        LOGGER.trace("Requesting GET {} [extra headers: {}]",
-                uri, HttpSource.toString(request.headers()));
-
+        final Map<String,String> extraHeaders =
+                Map.of("Range", "bytes=" + range.start + "-" + range.end);
         try (okhttp3.Response okHttpResponse =
-                     okHttpClient.newCall(request).execute()) {
+                     HttpSource.request(requestInfo, "GET", extraHeaders)) {
             if (okHttpResponse.code() == 200 || okHttpResponse.code() == 206) {
                 return toResponse(okHttpResponse);
             } else {
@@ -88,10 +61,6 @@ class OkHttpHTTPImageInputStreamClient implements HTTPImageInputStreamClient {
                         okHttpResponse.code());
             }
         }
-    }
-
-    void setExtraRequestHeaders(Headers headers) {
-        this.extraHeaders = new Headers(headers);
     }
 
 }

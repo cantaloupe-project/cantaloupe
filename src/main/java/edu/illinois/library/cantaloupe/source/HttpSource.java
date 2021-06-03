@@ -357,6 +357,9 @@ class HttpSource extends AbstractSource implements Source {
 
     private final FormatIterator<Format> formatIterator = new FormatIterator<>();
 
+    /**
+     * @return Shared instance.
+     */
     static synchronized OkHttpClient getHTTPClient() {
         if (httpClient == null) {
             final OkHttpClient.Builder builder = new OkHttpClient.Builder()
@@ -420,6 +423,50 @@ class HttpSource extends AbstractSource implements Source {
                 System.getProperty("os.version"));
     }
 
+    /**
+     * @see #request(HTTPRequestInfo, String, Map)
+     */
+    static Response request(HTTPRequestInfo requestInfo,
+                            String method) throws IOException {
+        return request(requestInfo, method, Collections.emptyMap());
+    }
+
+    /**
+     * Sends a request using the {@link #getHTTPClient() shared client},
+     * respecting any credentials and/or extra headers set on {@code
+     * requestInfo}.
+     *
+     * @param requestInfo Request info.
+     * @param method HTTP method.
+     * @param extraHeaders Any additional headers to send.
+     * @return Response.
+     */
+    static Response request(HTTPRequestInfo requestInfo,
+                            String method,
+                            Map<String,String> extraHeaders) throws IOException {
+        Request.Builder builder = new Request.Builder()
+                .method(method, null)
+                .url(requestInfo.getURI())
+                .addHeader("User-Agent", getUserAgent());
+        // Add credentials.
+        if (requestInfo.getUsername() != null &&
+                requestInfo.getSecret() != null) {
+            builder.addHeader("Authorization",
+                    "Basic " + requestInfo.getBasicAuthToken());
+        }
+        // Add any additional headers.
+        requestInfo.getHeaders().forEach(h ->
+                builder.addHeader(h.getName(), h.getValue()));
+        extraHeaders.forEach(builder::addHeader);
+
+        Request request = builder.build();
+
+        LOGGER.debug("Requesting {} {} [extra headers: {}]",
+                method, requestInfo.getURI(), toString(request.headers()));
+
+        return getHTTPClient().newCall(request).execute();
+    }
+
     static String toString(Headers headers) {
         return headers.toMultimap().entrySet()
                 .stream()
@@ -467,7 +514,6 @@ class HttpSource extends AbstractSource implements Source {
             LOGGER.debug("Resolved {} to {}", identifier, info.getURI());
             fetchHEADResponseInfo();
             return new HTTPStreamFactory(
-                    getHTTPClient(),
                     info,
                     headResponseInfo.getContentLength(),
                     headResponseInfo.acceptsRanges());
@@ -518,28 +564,7 @@ class HttpSource extends AbstractSource implements Source {
             LOGGER.error("request(): {}", e.getMessage());
             throw new IOException(e.getMessage(), e);
         }
-
-        Request.Builder builder = new Request.Builder()
-                .method(method, null)
-                .url(requestInfo.getURI())
-                .addHeader("User-Agent", getUserAgent());
-        // Add any additional headers.
-        requestInfo.getHeaders().forEach(h ->
-                builder.addHeader(h.getName(), h.getValue()));
-        extraHeaders.forEach(builder::addHeader);
-
-        if (requestInfo.getUsername() != null &&
-                requestInfo.getSecret() != null) {
-            builder.addHeader("Authorization",
-                    "Basic " + requestInfo.getBasicAuthToken());
-        }
-
-        Request request = builder.build();
-
-        LOGGER.debug("Requesting {} {} [extra headers: {}]",
-                method, requestInfo.getURI(), toString(request.headers()));
-
-        return getHTTPClient().newCall(request).execute();
+        return request(requestInfo, method, extraHeaders);
     }
 
     /**

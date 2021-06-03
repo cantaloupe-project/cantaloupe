@@ -57,14 +57,13 @@ public class HTTPStreamFactoryTest extends BaseTest {
                 null, null, headers);
 
         return new HTTPStreamFactory(
-                HttpSource.getHTTPClient(),
                 requestInfo,
                 5439,
                 serverAcceptsRanges);
     }
 
     @Test
-    void testIsSeekingDirect() {
+    void isSeekingDirect() {
         final HTTPStreamFactory instance = newInstance();
         final Configuration config = Configuration.getInstance();
         config.setProperty(Key.HTTPSOURCE_CHUNKING_ENABLED, false);
@@ -74,7 +73,7 @@ public class HTTPStreamFactoryTest extends BaseTest {
     }
 
     @Test
-    void testNewInputStreamSendsCustomHeaders() throws Exception {
+    void newInputStreamSendsCustomHeaders() throws Exception {
         server.setHandler(new DefaultHandler() {
             @Override
             public void handle(String target,
@@ -91,7 +90,7 @@ public class HTTPStreamFactoryTest extends BaseTest {
     }
 
     @Test
-    void testNewInputStreamReturnsContent() throws Exception {
+    void newInputStreamReturnsContent() throws Exception {
         server.start();
 
         int length = 0;
@@ -104,7 +103,7 @@ public class HTTPStreamFactoryTest extends BaseTest {
     }
 
     @Test
-    void testNewSeekableStreamWhenChunkingIsEnabledAndServerAcceptsRanges()
+    void newSeekableStreamWhenChunkingIsEnabledAndServerAcceptsRanges()
             throws Exception {
         server.start();
 
@@ -119,7 +118,7 @@ public class HTTPStreamFactoryTest extends BaseTest {
     }
 
     @Test
-    void testNewSeekableStreamWhenChunkingIsEnabledButServerDoesNotAcceptRanges()
+    void newSeekableStreamWhenChunkingIsEnabledButServerDoesNotAcceptRanges()
             throws Exception {
         server.setAcceptingRanges(false);
         server.start();
@@ -131,7 +130,7 @@ public class HTTPStreamFactoryTest extends BaseTest {
     }
 
     @Test
-    void testNewSeekableStreamWhenChunkingIsDisabled() throws Exception {
+    void newSeekableStreamWhenChunkingIsDisabled() throws Exception {
         server.start();
 
         Configuration.getInstance().setProperty(Key.HTTPSOURCE_CHUNKING_ENABLED, false);
@@ -141,7 +140,7 @@ public class HTTPStreamFactoryTest extends BaseTest {
     }
 
     @Test
-    void testNewSeekableStreamSendsCustomHeaders() throws Exception {
+    void newSeekableStreamSendsCustomHeaders() throws Exception {
         server.setHandler(new DefaultHandler() {
             @Override
             public void handle(String target,
@@ -158,7 +157,7 @@ public class HTTPStreamFactoryTest extends BaseTest {
     }
 
     @Test
-    void testNewSeekableStreamReturnsContent() throws Exception {
+    void newSeekableStreamReturnsContent() throws Exception {
         server.start();
 
         int length = 0;
@@ -171,7 +170,7 @@ public class HTTPStreamFactoryTest extends BaseTest {
     }
 
     @Test
-    void testNewSeekableStreamWithChunkCacheEnabled() throws Exception {
+    void newSeekableStreamWithChunkCacheEnabled() throws Exception {
         final Configuration config = Configuration.getInstance();
         config.setProperty(Key.HTTPSOURCE_CHUNKING_ENABLED, true);
         config.setProperty(Key.HTTPSOURCE_CHUNK_SIZE, "777K");
