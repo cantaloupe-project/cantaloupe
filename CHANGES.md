@@ -14,11 +14,15 @@
 
 * The `full_size` and `metadata` keys are available in the delegate context
   in response to information requests as well as image requests.
-* Fixed a potential ConcurrentModificationException when using the delegate
-  script.
 * The application exits when it fails to bind to a port at startup.
 * Suppressed an error-level log message from OpenJpegProcessor when reading
   an image without a recognized filename extension on a read-only filesystem.
+* Improved the resiliency of the built-in EXIF reader.
+* Fixed HttpSource failing to use HTTP Basic credentials when chunking is
+  enabled.
+* Fixed a potential ConcurrentModificationException when using the delegate
+  script.
+* Updated JRuby to version 9.2.17.0.
 
 ## 5.0.2
 

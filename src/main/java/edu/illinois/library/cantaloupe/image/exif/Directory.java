@@ -6,6 +6,8 @@ import it.geosolutions.imageio.plugins.tiff.TIFFDirectory;
 import it.geosolutions.imageio.plugins.tiff.TIFFField;
 import it.geosolutions.imageio.plugins.tiff.TIFFTag;
 import it.geosolutions.imageio.plugins.tiff.TIFFTagSet;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.nio.ByteOrder;
 import java.util.Arrays;
@@ -22,6 +24,9 @@ import java.util.TreeMap;
 @JsonDeserialize(using = DirectoryDeserializer.class)
 public final class Directory {
 
+    private static final Logger LOGGER =
+            LoggerFactory.getLogger(Directory.class);
+
     /**
      * N.B.: {@link TreeMap} preserves natural order.
      */
@@ -32,7 +37,7 @@ public final class Directory {
     /**
      * Converts a {@link TIFFDirectory} structure into an instance.
      *
-     * @return Instance equivalent to the argument, or {@literal null} if the
+     * @return Instance equivalent to the argument, or {@code null} if the
      *         argument's tag set is not {@link TagSet recognized}.
      */
     public static Directory fromTIFFDirectory(TIFFDirectory tiffDirectory) {
@@ -44,14 +49,15 @@ public final class Directory {
             for (TIFFField tiffField : tiffDirectory.getTIFFFields()) {
                 final TIFFTag tiffTag = tiffField.getTag();
                 final int tagNum      = tiffTag.getNumber();
-                if (tiffTag.isIFDPointer()) {
-                    final TIFFDirectory subIFD = (TIFFDirectory) tiffField.getData();
-                    final Directory subDir     = fromTIFFDirectory(subIFD);
-                    final Tag tag              = tagSet.getTag(tagNum);
-                    dir.put(tag, subDir);
-                } else {
-                    final Tag tag = tagSet.getTag(tagNum);
-                    if (tag != null) {
+                final Tag tag         = tagSet.getTag(tagNum);
+                // A null tags here is common, as this reader does not
+                // recognize any that are not related to EXIF.
+                if (tag != null) {
+                    if (tiffTag.isIFDPointer()) {
+                        final TIFFDirectory subIFD = (TIFFDirectory) tiffField.getData();
+                        final Directory subDir = fromTIFFDirectory(subIFD);
+                        dir.put(tag, subDir);
+                    } else {
                         final DataType dataType =
                                 DataType.forTIFFTagType(tiffField.getType());
                         if (tiffField.getData() != null) {
@@ -59,6 +65,8 @@ public final class Directory {
                             dir.put(tag, dataType, value);
                         }
                     }
+                } else {
+                    LOGGER.trace("fromTIFFDirectory(): unrecognized tag: {}", tagNum);
                 }
             }
         }

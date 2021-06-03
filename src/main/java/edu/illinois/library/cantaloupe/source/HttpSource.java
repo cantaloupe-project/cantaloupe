@@ -34,6 +34,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 /**
  * <p>Provides access to source content located on an HTTP(S) server. Backed by
@@ -211,9 +212,10 @@ class HttpSource extends AbstractSource implements Source {
                         if (value != null) {
                             Format format = MediaType.fromContentType(value).toFormat();
                             if (Format.UNKNOWN.equals(format)) {
-                                LOGGER.debug("Unrecognized Content-Type header value for {} {}",
+                                LOGGER.debug("Unrecognized Content-Type header value for {} {}: {}",
                                         resourceInfo.requestMethod,
-                                        requestInfo.getURI());
+                                        requestInfo.getURI(),
+                                        value);
                             }
                             return format;
                         } else {
@@ -434,6 +436,70 @@ class HttpSource extends AbstractSource implements Source {
         return Duration.ofSeconds(timeout);
     }
 
+    static String getUserAgent() {
+        return String.format("%s/%s (%s/%s; java/%s; %s/%s)",
+                HttpSource.class.getSimpleName(),
+                Application.getVersion(),
+                Application.getName(),
+                Application.getVersion(),
+                System.getProperty("java.version"),
+                System.getProperty("os.name"),
+                System.getProperty("os.version"));
+    }
+
+    /**
+     * @see #request(HTTPRequestInfo, String, Map)
+     */
+    static Response request(HTTPRequestInfo requestInfo,
+                            String method) throws IOException {
+        return request(requestInfo, method, Collections.emptyMap());
+    }
+
+    /**
+     * Sends a request using the {@link #getHTTPClient() shared client},
+     * respecting any credentials and/or extra headers set on {@code
+     * requestInfo}.
+     *
+     * @param requestInfo Request info.
+     * @param method HTTP method.
+     * @param extraHeaders Any additional headers to send.
+     * @return Response.
+     */
+    static Response request(HTTPRequestInfo requestInfo,
+                            String method,
+                            Map<String,String> extraHeaders) throws IOException {
+        Request.Builder builder = new Request.Builder()
+                .method(method, null)
+                .url(requestInfo.getURI())
+                .addHeader("User-Agent", getUserAgent());
+        // Add credentials.
+        if (requestInfo.getUsername() != null &&
+                requestInfo.getSecret() != null) {
+            builder.addHeader("Authorization",
+                    "Basic " + requestInfo.getBasicAuthToken());
+        }
+        // Add any additional headers.
+        requestInfo.getHeaders().forEach(h ->
+                builder.addHeader(h.getName(), h.getValue()));
+        extraHeaders.forEach(builder::addHeader);
+
+        Request request = builder.build();
+
+        LOGGER.debug("Requesting {} {} [extra headers: {}]",
+                method, requestInfo.getURI(), toString(request.headers()));
+
+        return getHTTPClient().newCall(request).execute();
+    }
+
+    static String toString(Headers headers) {
+        return headers.toMultimap().entrySet()
+                .stream()
+                .map(entry -> entry.getKey() + ": " +
+                        ("authorization".equalsIgnoreCase(entry.getKey()) ?
+                                "********" : entry.getValue()))
+                .collect(Collectors.joining("; "));
+    }
+
     @Override
     public void checkAccess() throws IOException {
         ResourceInfo info = getResourceInfo();
@@ -495,33 +561,7 @@ class HttpSource extends AbstractSource implements Source {
 
     private Response request(String method,
                              Map<String,String> extraHeaders) throws IOException {
-        try {
-            HTTPRequestInfo requestInfo = getRequestInfo();
-
-            Request.Builder builder = new Request.Builder()
-                    .method(method, null)
-                    .url(requestInfo.getURI())
-                    .addHeader("User-Agent", USER_AGENT);
-            // Add any additional headers.
-            requestInfo.getHeaders().forEach(h ->
-                    builder.addHeader(h.getName(), h.getValue()));
-            extraHeaders.forEach(builder::addHeader);
-
-            if (requestInfo.getUsername() != null &&
-                    requestInfo.getSecret() != null) {
-                builder.addHeader("Authorization",
-                        "Basic " + requestInfo.getBasicAuthToken());
-            }
-
-            Request request = builder.build();
-
-            LOGGER.debug("Requesting {} {} (extra headers: {})",
-                    method, requestInfo.getURI(), extraHeaders);
-            return getHTTPClient().newCall(request).execute();
-        } catch (Exception e) {
-            LOGGER.error("request(): {}", e.getMessage());
-            throw new IOException(e.getMessage(), e);
-        }
+        return request(requestInfo, method, extraHeaders);
     }
 
     /**
@@ -602,7 +642,6 @@ class HttpSource extends AbstractSource implements Source {
             LOGGER.debug("Resolved {} to {}", identifier, info.getURI());
             getResourceInfo();
             return new HTTPStreamFactory(
-                    getHTTPClient(),
                     info,
                     resourceInfo.contentLength(),
                     resourceInfo.acceptsRanges());
