@@ -5,6 +5,7 @@
 * The `full_size` and `metadata` keys are available in the delegate context
   in response to information requests as well as image requests.
 * The application exits when it fails to bind to a port at startup.
+* Improved recovery from corrupt cached infos.
 * Suppressed an error-level log message from OpenJpegProcessor when reading
   an image without a recognized filename extension on a read-only filesystem.
 * Improved the resiliency of the built-in EXIF reader.

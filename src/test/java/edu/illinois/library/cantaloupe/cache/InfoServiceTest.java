@@ -96,6 +96,20 @@ public class InfoServiceTest extends BaseTest {
     }
 
     @Test
+    void testGetInfoWithCorruptHitInDerivativeCache() throws Exception {
+        useFilesystemCache();
+
+        final Identifier identifier = new Identifier("jpg");
+        final String info           = "{\"this\": is corrupt JSON}";
+
+        DerivativeCache cache = CacheFactory.getDerivativeCache().get();
+        cache.put(identifier, info);
+
+        Optional<Info> actualInfo = instance.getInfo(identifier);
+        assertFalse(actualInfo.isPresent());
+    }
+
+    @Test
     void testGetInfoWithMissEverywhere() throws Exception {
         final Identifier identifier = new Identifier("jpg");
 
@@ -127,6 +141,24 @@ public class InfoServiceTest extends BaseTest {
 
         Optional<Info> actualInfo = instance.getOrReadInfo(identifier, newMockProcessor());
         assertEquals(info, actualInfo.orElse(null));
+    }
+
+    /**
+     * Tests that, if a cached info exists but is corrupt, an info is retrieved
+     * from the processor instead.
+     */
+    @Test
+    void testGetOrReadInfoWithCorruptHitInDerivativeCache() throws Exception {
+        useFilesystemCache();
+
+        final Identifier identifier = new Identifier("jpg");
+        final String info = "{\"this\": is corrupt JSON}";
+
+        DerivativeCache cache = CacheFactory.getDerivativeCache().get();
+        cache.put(identifier, info);
+
+        Optional<Info> actualInfo = instance.getOrReadInfo(identifier, newMockProcessor());
+        assertEquals(identifier, actualInfo.get().getIdentifier());
     }
 
     @Test
