@@ -95,7 +95,10 @@ class MockCache implements DerivativeCache, SourceCache {
     }
 
     @Override
-    public void put(Identifier identifier, Info imageInfo) {}
+    public void put(Identifier identifier, Info info) {}
+
+    @Override
+    public void put(Identifier identifier, String info) {}
 
     @Override
     public void shutdown() {

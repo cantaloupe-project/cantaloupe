@@ -475,10 +475,10 @@ abstract class AbstractCacheTest extends BaseTest {
     /* put(Identifier, Info) */
 
     @Test
-    void testPut() throws Exception {
+    void testPutWithInfo() throws Exception {
         final DerivativeCache instance = newInstance();
-        final Identifier identifier = new Identifier("cats");
-        final Info info = new Info();
+        final Identifier identifier    = new Identifier("cats");
+        final Info info                = new Info();
 
         instance.put(identifier, info);
 
@@ -492,10 +492,10 @@ abstract class AbstractCacheTest extends BaseTest {
      * DerivativeCache#getInfo(Identifier)} don't conflict.
      */
     @Test
-    void testPutConcurrently() throws Exception {
+    void testPutWithInfoConcurrently() throws Exception {
         final DerivativeCache instance = newInstance();
-        final Identifier identifier = new Identifier("monkeys");
-        final Info info = new Info();
+        final Identifier identifier    = new Identifier("monkeys");
+        final Info info                = new Info();
 
         new ConcurrentReaderWriter(() -> {
             instance.put(identifier, info);
@@ -510,16 +510,55 @@ abstract class AbstractCacheTest extends BaseTest {
     }
 
     @Test
-    void testPutWithNonPersistableInstance() throws Exception {
+    void testPutWithInfoWithNonPersistableInstance() throws Exception {
         final DerivativeCache instance = newInstance();
-        final Identifier identifier = new Identifier("incomplete");
-        final Info info = new Info();
+        final Identifier identifier    = new Identifier("incomplete");
+        final Info info                = new Info();
         info.setPersistable(false);
 
         instance.put(identifier, info);
 
         Optional<Info> actualInfo = instance.getInfo(identifier);
         assertFalse(actualInfo.isPresent());
+    }
+
+    /* put(Identifier, String) */
+
+    @Test
+    void testPutWithString() throws Exception {
+        final DerivativeCache instance = newInstance();
+        final Identifier identifier    = new Identifier("cats");
+        final Info info                = new Info();
+        final String infoStr           = info.toJSON();
+
+        instance.put(identifier, infoStr);
+
+        Optional<Info> actualInfo = instance.getInfo(identifier);
+        assertEquals(info, actualInfo.orElseThrow());
+    }
+
+    /**
+     * Tests that concurrent calls of {@link
+     * DerivativeCache#put(Identifier, String)} and {@link
+     * DerivativeCache#getInfo(Identifier)} don't conflict.
+     */
+    @Test
+    void testPutWithStringConcurrently() throws Exception {
+        final DerivativeCache instance = newInstance();
+        final Identifier identifier    = new Identifier("monkeys");
+        final Info info                = new Info();
+        final String infoStr           = info.toJSON();
+
+        new ConcurrentReaderWriter(() -> {
+            instance.put(identifier, infoStr);
+            return null;
+        }, () -> {
+            Optional<Info> otherInfo = instance.getInfo(identifier);
+            if (otherInfo.isPresent() && !info.equals(otherInfo.get())) {
+                fail();
+            }
+            return null;
+        }).run();
     }
 
 }

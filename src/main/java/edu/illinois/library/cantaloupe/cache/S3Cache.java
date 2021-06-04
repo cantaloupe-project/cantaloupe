@@ -36,6 +36,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.Map;
 import java.util.Optional;
@@ -493,16 +494,25 @@ class S3Cache implements DerivativeCache {
                     identifier);
             return;
         }
+        put(identifier, info.toJSON());
+    }
+
+    /**
+     * Uploads the given info to S3.
+     *
+     * @param identifier Image identifier.
+     * @param info       Info to upload to S3.
+     */
+    @Override
+    public void put(Identifier identifier, String info) throws IOException {
         LOGGER.debug("put(): caching info for {}", identifier);
         final S3Client client   = getClientInstance();
         final String objectKey  = getObjectKey(identifier);
         final String bucketName = getBucketName();
 
-        try (ByteArrayOutputStream os = new ByteArrayOutputStream()) {
-            info.writeAsJSON(os);
-            new S3Upload(client, os.toByteArray(), bucketName, objectKey,
-                    MediaType.APPLICATION_JSON.toString(), "UTF-8").run();
-        }
+        new S3Upload(client, info.getBytes(StandardCharsets.UTF_8),
+                bucketName, objectKey, MediaType.APPLICATION_JSON.toString(),
+                "UTF-8").run();
     }
 
     /**

@@ -299,16 +299,21 @@ class RedisCache implements DerivativeCache {
                     identifier);
             return;
         }
-        LOGGER.debug("put(): caching info for {}", identifier);
         try {
-            getConnection().async().hset(
-                    INFO_HASH_KEY,
-                    infoKey(identifier),
-                    info.toJSON().getBytes(StandardCharsets.UTF_8));
+            put(identifier, info.toJSON());
         } catch (JsonProcessingException e) {
             LOGGER.error("put(): {}", e.getMessage());
             throw new IOException(e.getMessage(), e);
         }
+    }
+
+    @Override
+    public void put(Identifier identifier, String info) throws IOException {
+        LOGGER.debug("put(): caching info for {}", identifier);
+        getConnection().async().hset(
+                INFO_HASH_KEY,
+                infoKey(identifier),
+                info.getBytes(StandardCharsets.UTF_8));
     }
 
     @Override
