@@ -108,9 +108,9 @@ public class ImageResource extends IIIF2Resource {
                 }
 
                 if (cacheStream != null) {
-                    addHeaders(disposition,
-                            params.getOutputFormat().toFormat().getPreferredMediaType().toString());
-
+                    addHeaders(params,
+                            info.getSize(getPageIndex()),
+                            disposition);
                     new CachedImageRepresentation(cacheStream)
                             .write(getResponse().getOutputStream());
                     return;
@@ -206,8 +206,7 @@ public class ImageResource extends IIIF2Resource {
                 throw new UnsupportedSourceFormatException(sourceFormat);
             }
 
-            addHeaders(params, fullSize, disposition,
-                    params.getOutputFormat().toFormat().getPreferredMediaType().toString());
+            addHeaders(params, fullSize, disposition);
 
             new ImageRepresentation(info, processor, ops, isBypassingCache)
                     .write(getResponse().getOutputStream());
@@ -219,29 +218,20 @@ public class ImageResource extends IIIF2Resource {
     }
 
     /**
-     * Adds {@code Content-Disposition} and {@code Content-Type} response
-     * headers.
+     * Adds {@code Content-Disposition}, {@code Content-Type}, and {@code Link}
+     * response headers.
      */
-    private void addHeaders(String disposition,
-                            String contentType) {
+    private void addHeaders(Parameters params,
+                            Dimension fullSize,
+                            String disposition) {
         // Content-Disposition
         if (disposition != null) {
             getResponse().setHeader("Content-Disposition", disposition);
         }
         // Content-Type
-        getResponse().setHeader("Content-Type", contentType);
-    }
-
-    /**
-     * Invokes {@link #addHeaders(String, String)} and also adds a {@code Link}
-     * header.
-     */
-    private void addHeaders(Parameters params,
-                            Dimension fullSize,
-                            String disposition,
-                            String contentType) {
-        addHeaders(disposition, contentType);
-
+        getResponse().setHeader("Content-Type",
+                params.getOutputFormat().toFormat().getPreferredMediaType().toString());
+        // Link
         Parameters paramsCopy = new Parameters(params);
         paramsCopy.setIdentifier(new Identifier(getPublicIdentifier()));
         String paramsStr = paramsCopy.toCanonicalString(fullSize);

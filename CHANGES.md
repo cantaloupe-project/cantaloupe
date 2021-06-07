@@ -2,6 +2,8 @@
 
 ## 4.1.10
 
+* Fixed a `Link` header not being sent in response to requests for cached
+  images.
 * Suppressed an error-level log message from OpenJpegProcessor when reading
   an image without a recognized filename extension on a read-only filesystem.
 
