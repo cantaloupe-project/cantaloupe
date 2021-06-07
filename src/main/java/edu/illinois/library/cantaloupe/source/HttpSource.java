@@ -377,8 +377,7 @@ class HttpSource extends AbstractSource implements Source {
             if (httpProxyEnabled) {
               final String httpProxyServer = config.getString(Key.HTTPSOURCE_HTTP_PROXY_SERVER, "");
               if (httpProxyServer == "") {
-                LOGGER.error("proxy server setting HttpSource.proxy.http.server must not be empty");
-                throw new RuntimeException(e);
+                throw new RuntimeException("proxy server setting HttpSource.proxy.http.server should not be empty");
               }
               final int httpProxyPort = config.getInt(Key.HTTPSOURCE_HTTP_PROXY_PORT, 8080);
             
