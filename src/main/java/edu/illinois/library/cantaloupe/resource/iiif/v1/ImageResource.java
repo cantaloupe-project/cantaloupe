@@ -67,11 +67,6 @@ public class ImageResource extends IIIF1Resource {
 
         class CustomCallback implements ImageRequestHandler.Callback {
             @Override
-            public void willStreamImageFromDerivativeCache() {
-                throw new RuntimeException("This method is not supposed to get called");
-            }
-
-            @Override
             public boolean preAuthorize() throws Exception {
                 return ImageResource.this.preAuthorize();
             }
@@ -83,6 +78,11 @@ public class ImageResource extends IIIF1Resource {
 
             @Override
             public void infoAvailable(Info info) {
+            }
+
+            @Override
+            public void willStreamImageFromDerivativeCache() {
+                throw new RuntimeException("This method is not supposed to get called");
             }
 
             @Override
