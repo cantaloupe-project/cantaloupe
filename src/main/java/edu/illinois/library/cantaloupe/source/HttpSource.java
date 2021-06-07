@@ -20,6 +20,8 @@ import javax.net.ssl.X509TrustManager;
 import javax.script.ScriptException;
 import java.io.IOException;
 import java.net.URI;
+import java.net.Proxy;
+import java.net.InetSocketAddress;
 import java.net.URISyntaxException;
 import java.nio.file.AccessDeniedException;
 import java.nio.file.NoSuchFileException;
@@ -362,13 +364,29 @@ class HttpSource extends AbstractSource implements Source {
      */
     static synchronized OkHttpClient getHTTPClient() {
         if (httpClient == null) {
+            
             final OkHttpClient.Builder builder = new OkHttpClient.Builder()
                     .followRedirects(true)
                     .connectTimeout(getRequestTimeout().getSeconds(), TimeUnit.SECONDS)
                     .readTimeout(getRequestTimeout().getSeconds(), TimeUnit.SECONDS)
                     .writeTimeout(getRequestTimeout().getSeconds(), TimeUnit.SECONDS);
-
+            
             final Configuration config = Configuration.getInstance();
+            
+            final boolean httpProxyEnabled = config.getBoolean(Key.HTTPSOURCE_HTTP_PROXY_ENABLED, false);
+            if (httpProxyEnabled) {
+              final String httpProxyServer = config.getString(Key.HTTPSOURCE_HTTP_PROXY_SERVER, "");
+              if (httpProxyServer == "") {
+                LOGGER.error("proxy server setting HttpSource.proxy.http.server must not be empty");
+                throw new RuntimeException(e);
+              }
+              final int httpProxyPort = config.getInt(Key.HTTPSOURCE_HTTP_PROXY_PORT, 8080);
+            
+              LOGGER.debug("Using HTTP Proxy at server {} on port {}", httpProxyServer, httpProxyPort);
+              Proxy httpProxy = new Proxy(Proxy.Type.HTTP,new InetSocketAddress(httpProxyServer, httpProxyPort));
+              builder.proxy(httpProxy);
+            }
+
             final boolean allowInsecure = config.getBoolean(
                     Key.HTTPSOURCE_ALLOW_INSECURE, false);
 
