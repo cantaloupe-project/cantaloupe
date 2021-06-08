@@ -511,6 +511,12 @@ public class ImageResourceTest extends ResourceTest {
     }
 
     @Test
+    void testGETScaleConstraintIsRespected() throws Exception {
+        URI uri = getHTTPURI("/" + IMAGE + ";1:2/full/max/0/color.jpg");
+        tester.testDimensions(uri, 32, 28);
+    }
+
+    @Test
     void testGETSourceCheckAccessNotCalledWithSourceCacheHit()
             throws Exception {
         URI uri = getHTTPURI("/" + IMAGE + "/full/max/0/color.jpg");

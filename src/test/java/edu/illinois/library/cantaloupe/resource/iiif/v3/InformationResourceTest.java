@@ -370,6 +370,18 @@ public class InformationResourceTest extends ResourceTest {
     }
 
     @Test
+    void testGETScaleConstraintIsRespected() throws Exception {
+        client = newClient("/" + IMAGE + ";1:2/info.json");
+        Response response = client.send();
+
+        String json = response.getBodyAsString();
+        ObjectMapper mapper = new ObjectMapper();
+        ImageInfo<?, ?> info = mapper.readValue(json, ImageInfo.class);
+        assertEquals(32, info.get("width"));
+        assertEquals(28, info.get("height"));
+    }
+
+    @Test
     void testGETSourceCheckAccessNotCalledWithSourceCacheHit()
             throws Exception {
         URI uri = getHTTPURI("/" + IMAGE + "/info.json");

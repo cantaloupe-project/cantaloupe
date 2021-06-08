@@ -217,6 +217,13 @@ class MetaIdentifierTest extends BaseTest {
                 () -> instance.setIdentifier(null));
     }
 
+    @Test
+    void testSetIdentifierWithFrozenInstance() {
+        instance.freeze();
+        assertThrows(IllegalStateException.class,
+                () -> instance.setIdentifier(new Identifier("cats")));
+    }
+
     /* setPageNumber() */
 
     @Test
@@ -233,6 +240,13 @@ class MetaIdentifierTest extends BaseTest {
                 () -> instance.setPageNumber(0));
     }
 
+    @Test
+    void testSetPageNumberWithFrozenInstance() {
+        instance.freeze();
+        assertThrows(IllegalStateException.class,
+                () -> instance.setPageNumber(2));
+    }
+
     /* setScaleConstraint() */
 
     @Test
@@ -240,6 +254,14 @@ class MetaIdentifierTest extends BaseTest {
         ScaleConstraint scaleConstraint = new ScaleConstraint(5, 6);
         instance.setScaleConstraint(scaleConstraint);
         assertEquals(scaleConstraint, instance.getScaleConstraint());
+    }
+
+    @Test
+    void testSetScaleConstraintWithFrozenInstance() {
+        instance.freeze();
+        ScaleConstraint scaleConstraint = new ScaleConstraint(5, 6);
+        assertThrows(IllegalStateException.class,
+                () -> instance.setScaleConstraint(scaleConstraint));
     }
 
     /* toString() */

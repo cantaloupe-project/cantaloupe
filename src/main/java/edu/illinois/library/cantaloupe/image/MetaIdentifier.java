@@ -38,7 +38,8 @@ import java.util.Objects;
  * <h1>Output</h1>
  *
  * <p>The input steps must be reversed for output. Note that requests can
- * supply a {@link edu.illinois.library.cantaloupe.resource.AbstractResource#PUBLIC_IDENTIFIER_HEADER}
+ * supply a {@link
+ * edu.illinois.library.cantaloupe.resource.AbstractResource#PUBLIC_IDENTIFIER_HEADER}
  * to suggest that the meta-identifier supplied in a URI is different from the
  * one the user agent is seeing and supplying to a reverse proxy.</p>
  *
@@ -107,6 +108,7 @@ public final class MetaIdentifier {
     private Identifier identifier;
     private Integer pageNumber;
     private ScaleConstraint scaleConstraint;
+    private transient boolean isFrozen;
 
     public static MetaIdentifier.Builder builder() {
         return new Builder();
@@ -187,6 +189,14 @@ public final class MetaIdentifier {
     }
 
     /**
+     * Makes the instance immutable, so that future invocations of setter
+     * methods will throw {@link IllegalStateException}s.
+     */
+    public void freeze() {
+        this.isFrozen = true;
+    }
+
+    /**
      * @return Identifier. Never {@code null}.
      */
     public Identifier getIdentifier() {
@@ -216,6 +226,7 @@ public final class MetaIdentifier {
      * @param identifier Identifier to set. Must not be {@code null}.
      */
     public void setIdentifier(Identifier identifier) {
+        checkFrozen();
         if (identifier == null) {
             throw new IllegalArgumentException("Identifier cannot be null");
         }
@@ -227,6 +238,7 @@ public final class MetaIdentifier {
      *                   {@code null}.
      */
     public void setPageNumber(Integer pageNumber) {
+        checkFrozen();
         if (pageNumber != null && pageNumber < 1) {
             throw new IllegalArgumentException("Page number must be >= 1");
         }
@@ -237,7 +249,14 @@ public final class MetaIdentifier {
      * @param scaleConstraint Scale constraint. May be {@code null}.
      */
     public void setScaleConstraint(ScaleConstraint scaleConstraint) {
+        checkFrozen();
         this.scaleConstraint = scaleConstraint;
+    }
+
+    private void checkFrozen() {
+        if (isFrozen) {
+            throw new IllegalStateException("Instance is frozen.");
+        }
     }
 
     @Override

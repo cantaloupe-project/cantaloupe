@@ -9,6 +9,8 @@
 * Suppressed an error-level log message from OpenJpegProcessor when reading
   an image without a recognized filename extension on a read-only filesystem.
 * Improved the resiliency of the built-in EXIF reader.
+* Fixed IIIF Image API image and information endpoints not respecting scale
+  constraints.
 * Fixed the IIIF Image API v2 and v3 image endpoints not sending a `Link`
   header in response to requests for cached images.
 * Fixed HttpSource failing to use HTTP Basic credentials when chunking is
