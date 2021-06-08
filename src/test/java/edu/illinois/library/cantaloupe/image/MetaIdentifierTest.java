@@ -98,6 +98,17 @@ class MetaIdentifierTest extends BaseTest {
         assertEquals(expected, actual);
     }
 
+    /* MetaIdentifier(MetaIdentifier) */
+
+    @Test
+    void testCopyConstructor() {
+        MetaIdentifier copy = new MetaIdentifier(instance);
+        assertNotSame(copy, instance);
+        assertEquals(new Identifier("cats"), copy.getIdentifier());
+        assertEquals(2, copy.getPageNumber());
+        assertEquals(new ScaleConstraint(1, 2), copy.getScaleConstraint());
+    }
+
     /* equals() */
 
     @Test

@@ -164,6 +164,15 @@ public final class MetaIdentifier {
         this.setIdentifier(identifier);
     }
 
+    /**
+     * Copy constructor.
+     */
+    public MetaIdentifier(MetaIdentifier metaIdentifier) {
+        this(metaIdentifier.getIdentifier());
+        setPageNumber(metaIdentifier.getPageNumber());
+        setScaleConstraint(metaIdentifier.getScaleConstraint());
+    }
+
     @Override
     public boolean equals(Object obj) {
         if (this == obj) {
