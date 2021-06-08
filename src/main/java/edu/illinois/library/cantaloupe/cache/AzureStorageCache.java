@@ -22,6 +22,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStreamWriter;
 import java.net.URISyntaxException;
 import java.security.InvalidKeyException;
 import java.time.Instant;
@@ -485,7 +486,6 @@ class AzureStorageCache implements DerivativeCache {
                     identifier);
             return;
         }
-
         LOGGER.debug("put(): caching info for {}", identifier);
         final String objectKey = getObjectKey(identifier);
         if (!uploadingKeys.contains(objectKey)) {
@@ -508,4 +508,31 @@ class AzureStorageCache implements DerivativeCache {
             }
         }
     }
+
+    @Override
+    public void put(Identifier identifier, String info) throws IOException {
+        LOGGER.debug("put(): caching info for {}", identifier);
+        final String objectKey = getObjectKey(identifier);
+        if (!uploadingKeys.contains(objectKey)) {
+            uploadingKeys.add(objectKey);
+            try {
+                final String containerName = getContainerName();
+                final CloudBlobClient client = getClientInstance();
+                final CloudBlobContainer container =
+                        client.getContainerReference(containerName);
+                final CloudBlockBlob blob = container.getBlockBlobReference(objectKey);
+                blob.getProperties().setContentType("application/json");
+                blob.getProperties().setContentEncoding("UTF-8");
+
+                CustomBlobOutputStream os =
+                        new CustomBlobOutputStream(blob, uploadingKeys);
+                try (OutputStreamWriter writer = new OutputStreamWriter(os)) {
+                    writer.write(info);
+                }
+            } catch (URISyntaxException | StorageException e) {
+                throw new IOException(e.getMessage(), e);
+            }
+        }
+    }
+
 }

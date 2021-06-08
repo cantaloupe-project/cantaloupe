@@ -107,10 +107,4 @@ public class AzureStorageCacheTest extends AbstractCacheTest {
         assertEquals("cats/", instance.getObjectKeyPrefix());
     }
 
-    /* put(Identifier, Info) */
-
-    @Override
-    @Test
-    void testPutConcurrently() {}
-
 }

@@ -936,15 +936,12 @@ class FilesystemCache implements SourceCache, DerivativeCache {
                     identifier);
             return;
         }
-
-        final Path destFile = infoFile(identifier);
-        final Path tempFile = infoTempFile(identifier);
-
+        final Path destFile      = infoFile(identifier);
+        final Path tempFile      = infoTempFile(identifier);
         final ReadWriteLock lock = acquireInfoLock(identifier);
         lock.writeLock().lock();
         try {
             LOGGER.debug("put(): writing {} to {}", identifier, tempFile);
-
             try {
                 // Create the containing directory.
                 Files.createDirectories(tempFile.getParent());
@@ -961,8 +958,44 @@ class FilesystemCache implements SourceCache, DerivativeCache {
             }
 
             LOGGER.debug("put(): moving {} to {}", tempFile, destFile);
-            Files.move(tempFile, destFile,
-                    StandardCopyOption.REPLACE_EXISTING);
+            Files.move(tempFile, destFile, StandardCopyOption.REPLACE_EXISTING);
+        } catch (IOException e) {
+            try {
+                Files.deleteIfExists(tempFile);
+            } catch (IOException e2) {
+                // Swallow this because the outer exception is more important.
+                LOGGER.error("put(): failed to delete file: {}",
+                        e2.getMessage());
+            }
+            throw e;
+        } finally {
+            lock.writeLock().unlock();
+        }
+    }
+
+    @Override
+    public void put(Identifier identifier, String info) throws IOException {
+        final Path destFile      = infoFile(identifier);
+        final Path tempFile      = infoTempFile(identifier);
+        final ReadWriteLock lock = acquireInfoLock(identifier);
+        lock.writeLock().lock();
+        try {
+            LOGGER.debug("put(): writing {} to {}", identifier, tempFile);
+            try {
+                // Create the containing directory.
+                Files.createDirectories(tempFile.getParent());
+            } catch (FileAlreadyExistsException e) {
+                // When this method runs concurrently with an equal Identifier
+                // argument, all of the other invocations will throw this,
+                // which is fine.
+                LOGGER.debug("put(): failed to create directory: {}",
+                        e.getMessage());
+            }
+
+            Files.writeString(tempFile, info);
+
+            LOGGER.debug("put(): moving {} to {}", tempFile, destFile);
+            Files.move(tempFile, destFile, StandardCopyOption.REPLACE_EXISTING);
         } catch (IOException e) {
             try {
                 Files.deleteIfExists(tempFile);

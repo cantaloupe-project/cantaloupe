@@ -618,6 +618,16 @@ class JdbcCache implements DerivativeCache {
             return;
         }
         LOGGER.debug("put(): {}", identifier);
+        try {
+            put(identifier, info.toJSON());
+        } catch (JsonProcessingException e) {
+            throw new IOException(e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public void put(Identifier identifier, String info) throws IOException {
+        LOGGER.debug("put(): {}", identifier);
 
         final String sql = String.format(
                 "INSERT INTO %s (%s, %s, %s) VALUES (?, ?, ?)",
@@ -635,13 +645,13 @@ class JdbcCache implements DerivativeCache {
 
             // Add a new info corresponding to the given identifier.
             statement.setString(1, identifier.toString());
-            statement.setString(2, info.toJSON());
+            statement.setString(2, info);
             statement.setTimestamp(3, now());
 
             LOGGER.trace(sql);
             statement.executeUpdate();
             conn.commit();
-        } catch (SQLException | JsonProcessingException e) {
+        } catch (SQLException e) {
             throw new IOException(e.getMessage(), e);
         }
     }

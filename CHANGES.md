@@ -15,9 +15,14 @@
 * The `full_size` and `metadata` keys are available in the delegate context
   in response to information requests as well as image requests.
 * The application exits when it fails to bind to a port at startup.
+* Improved recovery from corrupt cached infos.
 * Suppressed an error-level log message from OpenJpegProcessor when reading
   an image without a recognized filename extension on a read-only filesystem.
 * Improved the resiliency of the built-in EXIF reader.
+* Fixed IIIF Image API image and information endpoints not respecting scale
+  constraints.
+* Fixed the IIIF Image API v2 and v3 image endpoints not sending a `Link`
+  header in response to requests for cached images.
 * Fixed HttpSource failing to use HTTP Basic credentials when chunking is
   enabled.
 * Fixed a potential ConcurrentModificationException when using the delegate
@@ -154,6 +159,8 @@
 
 ## 4.1.10
 
+* Fixed the IIIF Image API v2 image endpoint not sending a `Link` header in
+  response to requests for cached images.
 * Suppressed an error-level log message from OpenJpegProcessor when reading
   an image without a recognized filename extension on a read-only filesystem.
 

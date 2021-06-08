@@ -11,13 +11,16 @@ import edu.illinois.library.cantaloupe.image.Orientation;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.operation.Scale;
 import edu.illinois.library.cantaloupe.processor.Processor;
+import edu.illinois.library.cantaloupe.resource.IllegalClientArgumentException;
 import edu.illinois.library.cantaloupe.resource.Route;
 import edu.illinois.library.cantaloupe.resource.ImageRequestHandler;
 import edu.illinois.library.cantaloupe.resource.iiif.SizeRestrictedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Handles image requests.
@@ -32,6 +35,11 @@ public class ImageResource extends IIIF2Resource {
 
     private static final Method[] SUPPORTED_METHODS =
             new Method[] { Method.GET, Method.OPTIONS };
+
+    /**
+     * Map of response headers to be added to the response upon success.
+     */
+    private final Map<String,String> queuedHeaders = new HashMap<>();
 
     @Override
     protected Logger getLogger() {
@@ -67,13 +75,6 @@ public class ImageResource extends IIIF2Resource {
 
         class CustomCallback implements ImageRequestHandler.Callback {
             @Override
-            public void willStreamImageFromDerivativeCache() {
-                addHeaders(disposition,
-                        params.getOutputFormat().toFormat()
-                                .getPreferredMediaType().toString());
-            }
-
-            @Override
             public boolean preAuthorize() throws Exception {
                 return ImageResource.this.preAuthorize();
             }
@@ -88,6 +89,16 @@ public class ImageResource extends IIIF2Resource {
                 if (Size.ScaleMode.MAX.equals(params.getSize().getScaleMode())) {
                     constrainSizeToMaxPixels(info.getSize(), ops);
                 }
+                try {
+                    enqueueHeaders(params, info.getSize(pageIndex), disposition);
+                } catch (IndexOutOfBoundsException e) {
+                    throw new IllegalClientArgumentException(e);
+                }
+            }
+
+            @Override
+            public void willStreamImageFromDerivativeCache() {
+                sendHeaders();
             }
 
             @Override
@@ -103,11 +114,7 @@ public class ImageResource extends IIIF2Resource {
                         (Scale) ops.getFirst(Scale.class),
                         Status.FORBIDDEN);
                 validateSize(resultingSize, virtualSize);
-
-                addHeaders(params,
-                        info.getSize(pageIndex),
-                        disposition,
-                        params.getOutputFormat().toFormat().getPreferredMediaType().toString());
+                sendHeaders();
             }
         }
 
@@ -123,37 +130,32 @@ public class ImageResource extends IIIF2Resource {
     }
 
     /**
-     * Adds {@code Content-Disposition} and {@code Content-Type} response
-     * headers.
+     * Adds {@code Content-Disposition}, {@code Content-Type}, and {@code Link}
+     * response headers to a queue which will be sent upon a success response.
      */
-    private void addHeaders(String disposition,
-                            String contentType) {
+    private void enqueueHeaders(Parameters params,
+                                Dimension fullSize,
+                                String disposition) {
         // Content-Disposition
         if (disposition != null) {
-            getResponse().setHeader("Content-Disposition", disposition);
+            queuedHeaders.put("Content-Disposition", disposition);
         }
         // Content-Type
-        getResponse().setHeader("Content-Type", contentType);
-    }
-
-    /**
-     * Invokes {@link #addHeaders(String, String)} and also adds a {@code Link}
-     * header.
-     */
-    private void addHeaders(Parameters params,
-                            Dimension fullSize,
-                            String disposition,
-                            String contentType) {
-        addHeaders(disposition, contentType);
-
+        queuedHeaders.put("Content-Type",
+                params.getOutputFormat().toFormat().getPreferredMediaType().toString());
+        // Link
         Parameters paramsCopy = new Parameters(params);
         paramsCopy.setIdentifier(getPublicIdentifier());
         String paramsStr = paramsCopy.toCanonicalString(fullSize);
-        getResponse().setHeader("Link",
+        queuedHeaders.put("Link",
                 String.format("<%s%s/%s>;rel=\"canonical\"",
                         getPublicRootReference(),
                         Route.IIIF_2_PATH,
                         paramsStr));
+    }
+
+    private void sendHeaders() {
+        queuedHeaders.forEach((k, v) -> getResponse().setHeader(k, v));
     }
 
     private void validateSize(Dimension resultingSize,

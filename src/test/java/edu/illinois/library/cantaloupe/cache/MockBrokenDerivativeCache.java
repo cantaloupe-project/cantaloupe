@@ -16,7 +16,8 @@ public class MockBrokenDerivativeCache implements DerivativeCache {
     }
 
     @Override
-    public InputStream newDerivativeImageInputStream(OperationList opList) throws IOException {
+    public InputStream newDerivativeImageInputStream(OperationList opList)
+            throws IOException {
         throw new IOException("I'm broken");
     }
 
@@ -52,7 +53,12 @@ public class MockBrokenDerivativeCache implements DerivativeCache {
     }
 
     @Override
-    public void put(Identifier identifier, Info imageInfo) throws IOException {
+    public void put(Identifier identifier, Info info) throws IOException {
+        throw new IOException("I'm broken");
+    }
+
+    @Override
+    public void put(Identifier identifier, String info) throws IOException {
         throw new IOException("I'm broken");
     }
 

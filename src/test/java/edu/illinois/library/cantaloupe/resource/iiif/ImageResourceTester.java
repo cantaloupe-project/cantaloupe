@@ -372,6 +372,23 @@ public class ImageResourceTester extends ImageAPIResourceTester {
         }
     }
 
+    public void testDimensions(URI uri,
+                               int expectedWidth,
+                               int expectedHeight) throws Exception {
+        Client client = newClient(uri);
+        try {
+            Response response = client.send();
+            byte[] imageData = response.getBody();
+            try (InputStream is = new ByteArrayInputStream(imageData)) {
+                BufferedImage image = ImageIO.read(is);
+                assertEquals(expectedWidth, image.getWidth());
+                assertEquals(expectedHeight, image.getHeight());
+            }
+        } finally {
+            client.stop();
+        }
+    }
+
     public void testLessThanOrEqualToMaxScale(URI uri) {
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.MAX_SCALE, 1.0);

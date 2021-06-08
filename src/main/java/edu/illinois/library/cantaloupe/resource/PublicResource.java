@@ -200,7 +200,7 @@ public abstract class PublicResource extends AbstractResource {
      */
     protected final boolean redirectToNormalizedScaleConstraint()
             throws IOException {
-        final MetaIdentifier metaIdentifier = getMetaIdentifier();
+        MetaIdentifier metaIdentifier = getMetaIdentifier();
         // If a meta-identifier is present in the URI...
         if (metaIdentifier != null) {
             final ScaleConstraint scaleConstraint =
@@ -211,6 +211,7 @@ public abstract class PublicResource extends AbstractResource {
                 // ...and the numerator and denominator are equal, redirect to
                 // the non-suffixed identifier.
                 if (!scaleConstraint.hasEffect()) {
+                    metaIdentifier = new MetaIdentifier(metaIdentifier);
                     metaIdentifier.setScaleConstraint(null);
                     newRef = getPublicReference(metaIdentifier);
                 } else {
@@ -219,6 +220,7 @@ public abstract class PublicResource extends AbstractResource {
                     // ...and the fraction is not reduced, redirect to the
                     // reduced version.
                     if (!reducedConstraint.equals(scaleConstraint)) {
+                        metaIdentifier = new MetaIdentifier(metaIdentifier);
                         metaIdentifier.setScaleConstraint(reducedConstraint);
                         newRef = getPublicReference(metaIdentifier);
                     }

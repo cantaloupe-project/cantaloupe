@@ -182,6 +182,15 @@ public class ImageRequestHandler extends AbstractRequestHandler
         boolean authorize() throws Exception;
 
         /**
+         * Called when image information is available; always before {@link
+         * #willProcessImage(Processor, Info)} and {@link
+         * #willStreamImageFromDerivativeCache()}.
+         *
+         * @param info Efficiently obtained instance.
+         */
+        void infoAvailable(Info info) throws Exception;
+
+        /**
          * <p>Called when a hit is found in the derivative cache. In this case,
          * no further processing will be necessary and the streaming will begin
          * very soon after this method returns.</p>
@@ -190,18 +199,9 @@ public class ImageRequestHandler extends AbstractRequestHandler
          * called.</p>
          *
          * <p>This method tends to be called relatively early. No other
-         * callback methods have been or will be called.</p>
+         * callback methods will be called after this one.</p>
          */
         void willStreamImageFromDerivativeCache() throws Exception;
-
-        /**
-         * Called when image information is available. Always called before
-         * {@link #willProcessImage(Processor, Info)}, but not called if {@link
-         * #willStreamImageFromDerivativeCache()} is called.
-         *
-         * @param info Efficiently obtained instance.
-         */
-        void infoAvailable(Info info) throws Exception;
 
         /**
          * <p>All setup is complete and processing will begin very soon after
@@ -312,6 +312,7 @@ public class ImageRequestHandler extends AbstractRequestHandler
                 }
 
                 if (cacheStream != null) {
+                    callback.infoAvailable(info);
                     callback.willStreamImageFromDerivativeCache();
                     new InputStreamRepresentation(cacheStream).write(outputStream);
                     return;

@@ -100,9 +100,24 @@ public interface DerivativeCache extends Cache {
      * ignored.</p>
      *
      * @param identifier Image identifier.
-     * @param imageInfo  Info containing information about the image with the
+     * @param info       Information about the image corresponding with the
      *                   given identifier.
      */
-    void put(Identifier identifier, Info imageInfo) throws IOException;
+    void put(Identifier identifier, Info info) throws IOException;
+
+    /**
+     * <p>Alternative to {@link #put(Identifier, Info)} that adds a raw UTF-8
+     * string to the cache, trusting that it is a JSON-serialized {@link Info}
+     * instance.</p>
+     *
+     * <p>This method is used mainly for testing. {@link
+     * #put(Identifier, Info)} should normally be used instead.</p>
+     *
+     * @param identifier Image identifier.
+     * @param info       JSON-encoded information about the image corresponding
+     *                   with the given identifier, obtained (for example) from
+     *                   {@link Info#toJSON()}.
+     */
+    void put(Identifier identifier, String info) throws IOException;
 
 }

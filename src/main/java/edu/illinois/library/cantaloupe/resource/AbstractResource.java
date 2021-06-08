@@ -340,7 +340,7 @@ public abstract class AbstractResource {
             throws IOException, ResourceException {
         final int code                      = info.getResponseStatus();
         final String location               = info.getRedirectURI();
-        final MetaIdentifier metaIdentifier = getMetaIdentifier();
+        final MetaIdentifier metaIdentifier = new MetaIdentifier(getMetaIdentifier());
         metaIdentifier.setScaleConstraint(info.getScaleConstraint());
 
         if (location != null) {
@@ -469,6 +469,7 @@ public abstract class AbstractResource {
             if (pathComponent != null) {
                 metaIdentifier = MetaIdentifier.fromURIPathComponent(
                         pathComponent, getDelegateProxy());
+                metaIdentifier.freeze();
             }
         }
         return metaIdentifier;
