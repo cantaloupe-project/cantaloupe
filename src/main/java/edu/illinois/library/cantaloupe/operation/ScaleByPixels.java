@@ -89,22 +89,27 @@ public class ScaleByPixels extends Scale implements Operation {
         return scaleMode;
     }
 
+    /**
+     * @param reducedSize     Size of an image that has been halved {@literal
+     *                        n} times.
+     * @param scaleConstraint Ignored.
+     * @param maxFactor       Maximum factor to return.
+     */
     @Override
     public ReductionFactor getReductionFactor(final Dimension reducedSize,
                                               final ScaleConstraint scaleConstraint,
                                               final int maxFactor) {
-        final double scScale = scaleConstraint.getRational().doubleValue();
         double rfScale = 1;
         switch (getMode()) {
             case ASPECT_FIT_WIDTH:
-                rfScale = getWidth() / reducedSize.width() * scScale;
+                rfScale = getWidth() / reducedSize.width();
                 break;
             case ASPECT_FIT_HEIGHT:
-                rfScale = getHeight() / reducedSize.height() * scScale;
+                rfScale = getHeight() / reducedSize.height();
                 break;
             case ASPECT_FIT_INSIDE:
-                double xScale = getWidth() / reducedSize.width() * scScale;
-                double yScale = getHeight() / reducedSize.height() * scScale;
+                double xScale = getWidth() / reducedSize.width();
+                double yScale = getHeight() / reducedSize.height();
                 rfScale       = Math.min(xScale, yScale);
                 break;
         }
