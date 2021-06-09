@@ -26,7 +26,7 @@ public class ScaleByPixelsTest extends ScaleTest {
     }
 
     @Test
-    void testNoOpConstructor() {
+    void noOpConstructor() {
         instance = new ScaleByPixels();
         assertNull(instance.getWidth());
         assertNull(instance.getHeight());
@@ -34,21 +34,23 @@ public class ScaleByPixelsTest extends ScaleTest {
     }
 
     @Test
-    void testConstructor2() {
+    void constructor2() {
         assertEquals(100, instance.getWidth());
         assertEquals(50, instance.getHeight());
         assertEquals(ScaleByPixels.Mode.ASPECT_FIT_INSIDE, instance.getMode());
     }
 
     @Test
-    void testConstructor3() {
+    void constructor3() {
         assertEquals(100, instance.getWidth());
         assertEquals(50, instance.getHeight());
         assertEquals(ScaleByPixels.Mode.ASPECT_FIT_INSIDE, instance.getMode());
     }
 
+    /* getDifferentialScales() */
+
     @Test
-    void testGetDifferentialScalesWithAspectFitWidth() {
+    void getDifferentialScalesWithAspectFitWidth() {
         final Dimension fullSize = new Dimension(1000, 800);
         final ScaleConstraint sc = new ScaleConstraint(1, 4); // client sees 250x200
         final ReductionFactor rf = new ReductionFactor(2); // reader returns 250x200
@@ -60,7 +62,7 @@ public class ScaleByPixelsTest extends ScaleTest {
     }
 
     @Test
-    void testGetDifferentialScalesWithAspectFitHeight() {
+    void getDifferentialScalesWithAspectFitHeight() {
         final Dimension fullSize = new Dimension(1000, 800);
         final ScaleConstraint sc = new ScaleConstraint(1, 4); // client sees 250x200
         final ReductionFactor rf = new ReductionFactor(2); // reader returns 250x200
@@ -72,7 +74,7 @@ public class ScaleByPixelsTest extends ScaleTest {
     }
 
     @Test
-    void testGetDifferentialScalesWithAspectFitInside() {
+    void getDifferentialScalesWithAspectFitInside() {
         final Dimension fullSize = new Dimension(1000, 800);
         final ScaleConstraint sc = new ScaleConstraint(1, 4); // client sees 250x200
         final ReductionFactor rf = new ReductionFactor(2); // reader returns 250x200
@@ -85,7 +87,7 @@ public class ScaleByPixelsTest extends ScaleTest {
     }
 
     @Test
-    void testGetDifferentialScalesWithNonAspectFill() {
+    void getDifferentialScalesWithNonAspectFill() {
         final Dimension fullSize = new Dimension(1000, 800);
         final ScaleConstraint sc = new ScaleConstraint(1, 4); // client sees 250x200
         final ReductionFactor rf = new ReductionFactor(2); // reader returns 250x200
@@ -97,8 +99,10 @@ public class ScaleByPixelsTest extends ScaleTest {
                 instance.getDifferentialScales(fullSize, rf, sc), DELTA);
     }
 
+    /* getReductionFactor() */
+
     @Test
-    void testGetReductionFactorWithAspectFitWidth() {
+    void getReductionFactorWithAspectFitWidth() {
         Dimension size = new Dimension(300, 300);
         ScaleConstraint sc = new ScaleConstraint(1, 1);
 
@@ -109,7 +113,18 @@ public class ScaleByPixelsTest extends ScaleTest {
     }
 
     @Test
-    void testGetReductionFactorWithAspectFitHeight() {
+    void getReductionFactorWithAspectFitWidthAndScaleConstraint() {
+        Dimension size = new Dimension(300, 300);
+        ScaleConstraint sc = new ScaleConstraint(1, 2);
+
+        instance.setMode(ScaleByPixels.Mode.ASPECT_FIT_WIDTH);
+        instance.setWidth(145);
+        instance.setHeight(145);
+        assertEquals(1, instance.getReductionFactor(size, sc, 999).factor);
+    }
+
+    @Test
+    void getReductionFactorWithAspectFitHeight() {
         Dimension size = new Dimension(300, 300);
         ScaleConstraint sc = new ScaleConstraint(1, 1);
 
@@ -120,7 +135,18 @@ public class ScaleByPixelsTest extends ScaleTest {
     }
 
     @Test
-    void testGetReductionFactorWithAspectFitInside() {
+    void getReductionFactorWithAspectFitHeightAndScaleConstraint() {
+        Dimension size = new Dimension(300, 300);
+        ScaleConstraint sc = new ScaleConstraint(1, 2);
+
+        instance.setMode(ScaleByPixels.Mode.ASPECT_FIT_HEIGHT);
+        instance.setWidth(145);
+        instance.setHeight(145);
+        assertEquals(1, instance.getReductionFactor(size, sc, 999).factor);
+    }
+
+    @Test
+    void getReductionFactorWithAspectFitInside() {
         Dimension size = new Dimension(300, 300);
         ScaleConstraint sc = new ScaleConstraint(1, 1);
 
@@ -131,7 +157,18 @@ public class ScaleByPixelsTest extends ScaleTest {
     }
 
     @Test
-    void testGetReductionFactorWithNonAspectFill() {
+    void getReductionFactorWithAspectFitInsideAndScaleConstraint() {
+        Dimension size = new Dimension(300, 300);
+        ScaleConstraint sc = new ScaleConstraint(1, 2);
+
+        instance.setMode(ScaleByPixels.Mode.ASPECT_FIT_INSIDE);
+        instance.setWidth(145);
+        instance.setHeight(145);
+        assertEquals(1, instance.getReductionFactor(size, sc, 999).factor);
+    }
+
+    @Test
+    void getReductionFactorWithNonAspectFill() {
         Dimension size = new Dimension(300, 300);
         ScaleConstraint sc = new ScaleConstraint(1, 1);
 
@@ -142,7 +179,20 @@ public class ScaleByPixelsTest extends ScaleTest {
     }
 
     @Test
-    void testGetResultingScalesWithAspectFitWidth() {
+    void getReductionFactorWithNonAspectFillAndScaleConstraint() {
+        Dimension size = new Dimension(300, 300);
+        ScaleConstraint sc = new ScaleConstraint(1, 2);
+
+        instance.setMode(ScaleByPixels.Mode.NON_ASPECT_FILL);
+        instance.setWidth(145);
+        instance.setHeight(145);
+        assertEquals(0, instance.getReductionFactor(size, sc, 999).factor);
+    }
+
+    /* getResultingScales() */
+
+    @Test
+    void getResultingScalesWithAspectFitWidth() {
         final Dimension fullSize = new Dimension(900, 600);
         final ScaleConstraint scaleConstraint = new ScaleConstraint(1, 3); // 300x200
         instance.setMode(ScaleByPixels.Mode.ASPECT_FIT_WIDTH);
@@ -153,7 +203,7 @@ public class ScaleByPixelsTest extends ScaleTest {
     }
 
     @Test
-    void testGetResultingScalesWithAspectFitHeight() {
+    void getResultingScalesWithAspectFitHeight() {
         final Dimension fullSize = new Dimension(900, 600);
         final ScaleConstraint scaleConstraint = new ScaleConstraint(1, 3);
         instance.setMode(ScaleByPixels.Mode.ASPECT_FIT_HEIGHT);
@@ -164,7 +214,7 @@ public class ScaleByPixelsTest extends ScaleTest {
     }
 
     @Test
-    void testGetResultingScalesWithAspectFitInsideAndDownscaling() {
+    void getResultingScalesWithAspectFitInsideAndDownscaling() {
         final Dimension fullSize = new Dimension(900, 600);
         final ScaleConstraint scaleConstraint = new ScaleConstraint(1, 3);
         instance.setMode(ScaleByPixels.Mode.ASPECT_FIT_INSIDE);
@@ -179,7 +229,7 @@ public class ScaleByPixelsTest extends ScaleTest {
     }
 
     @Test
-    void testGetResultingScalesWithAspectFitInside() {
+    void getResultingScalesWithAspectFitInside() {
         final Dimension fullSize = new Dimension(900, 600);
         final ScaleConstraint scaleConstraint = new ScaleConstraint(1, 3);
         instance.setMode(ScaleByPixels.Mode.ASPECT_FIT_INSIDE);
@@ -194,7 +244,7 @@ public class ScaleByPixelsTest extends ScaleTest {
     }
 
     @Test
-    void testGetResultingScalesWithNonAspectFill() {
+    void getResultingScalesWithNonAspectFill() {
         final Dimension fullSize = new Dimension(300, 200);
         final ScaleConstraint scaleConstraint = new ScaleConstraint(1, 3);
         instance.setMode(ScaleByPixels.Mode.NON_ASPECT_FILL);
@@ -206,7 +256,7 @@ public class ScaleByPixelsTest extends ScaleTest {
     }
 
     @Test
-    void testGetResultingSize1WithAspectFitWidthAndDownscaling() {
+    void getResultingSize1WithAspectFitWidthAndDownscaling() {
         final Dimension fullSize = new Dimension(600, 400);
         final ScaleConstraint scaleConstraint = new ScaleConstraint(1, 1);
         instance.setMode(ScaleByPixels.Mode.ASPECT_FIT_WIDTH);
@@ -219,7 +269,7 @@ public class ScaleByPixelsTest extends ScaleTest {
     }
 
     @Test
-    void testGetResultingSize1WithAspectFitWidthAndUpscaling() {
+    void getResultingSize1WithAspectFitWidthAndUpscaling() {
         final Dimension fullSize = new Dimension(600, 400);
         final ScaleConstraint scaleConstraint = new ScaleConstraint(1, 1);
         instance.setMode(ScaleByPixels.Mode.ASPECT_FIT_WIDTH);
@@ -232,7 +282,7 @@ public class ScaleByPixelsTest extends ScaleTest {
     }
 
     @Test
-    void testGetResultingSize1WithAspectFitHeightAndDownscaling() {
+    void getResultingSize1WithAspectFitHeightAndDownscaling() {
         final Dimension fullSize = new Dimension(600, 400);
         final ScaleConstraint scaleConstraint = new ScaleConstraint(1, 1);
         instance.setMode(ScaleByPixels.Mode.ASPECT_FIT_HEIGHT);
@@ -244,7 +294,7 @@ public class ScaleByPixelsTest extends ScaleTest {
     }
 
     @Test
-    void testGetResultingSize1WithAspectFitHeightAndUpscaling() {
+    void getResultingSize1WithAspectFitHeightAndUpscaling() {
         final Dimension fullSize = new Dimension(600, 400);
         final ScaleConstraint scaleConstraint = new ScaleConstraint(1, 1);
         instance.setMode(ScaleByPixels.Mode.ASPECT_FIT_HEIGHT);
@@ -256,7 +306,7 @@ public class ScaleByPixelsTest extends ScaleTest {
     }
 
     @Test
-    void testGetResultingSize1WithAspectFitInsideAndDownscaling() {
+    void getResultingSize1WithAspectFitInsideAndDownscaling() {
         final Dimension fullSize = new Dimension(600, 400);
         final ScaleConstraint scaleConstraint = new ScaleConstraint(1, 1);
         instance.setMode(ScaleByPixels.Mode.ASPECT_FIT_INSIDE);
@@ -268,7 +318,7 @@ public class ScaleByPixelsTest extends ScaleTest {
     }
 
     @Test
-    void testGetResultingSize1WithAspectFitInside() {
+    void getResultingSize1WithAspectFitInside() {
         final Dimension fullSize = new Dimension(600, 400);
         final ScaleConstraint scaleConstraint = new ScaleConstraint(1, 1);
         instance.setMode(ScaleByPixels.Mode.ASPECT_FIT_INSIDE);
@@ -280,7 +330,7 @@ public class ScaleByPixelsTest extends ScaleTest {
     }
 
     @Test
-    void testGetResultingSize1WithNonAspectFillAndDownscaling() {
+    void getResultingSize1WithNonAspectFillAndDownscaling() {
         final Dimension fullSize = new Dimension(600, 400);
         final ScaleConstraint scaleConstraint = new ScaleConstraint(1, 1);
         instance.setMode(ScaleByPixels.Mode.NON_ASPECT_FILL);
@@ -292,7 +342,7 @@ public class ScaleByPixelsTest extends ScaleTest {
     }
 
     @Test
-    void testGetResultingSize1WithNonAspectFillAndUpscaling() {
+    void getResultingSize1WithNonAspectFillAndUpscaling() {
         final Dimension fullSize = new Dimension(600, 400);
         final ScaleConstraint scaleConstraint = new ScaleConstraint(1, 1);
         instance.setMode(ScaleByPixels.Mode.NON_ASPECT_FILL);
@@ -304,7 +354,7 @@ public class ScaleByPixelsTest extends ScaleTest {
     }
 
     @Test
-    void testGetResultingSize2WithAspectFitWidthAndDownscaling() {
+    void getResultingSize2WithAspectFitWidthAndDownscaling() {
         final Dimension fullSize = new Dimension(600, 400);
         final ReductionFactor rf = new ReductionFactor(1);
         final ScaleConstraint sc = new ScaleConstraint(1, 2);
@@ -317,7 +367,7 @@ public class ScaleByPixelsTest extends ScaleTest {
     }
 
     @Test
-    void testGetResultingSize2WithAspectFitWidthAndUpscaling() {
+    void getResultingSize2WithAspectFitWidthAndUpscaling() {
         final Dimension fullSize = new Dimension(600, 400);
         final ReductionFactor rf = new ReductionFactor(1);
         final ScaleConstraint sc = new ScaleConstraint(1, 2);
@@ -330,7 +380,7 @@ public class ScaleByPixelsTest extends ScaleTest {
     }
 
     @Test
-    void testGetResultingSize2WithAspectFitHeightAndDownscaling() {
+    void getResultingSize2WithAspectFitHeightAndDownscaling() {
         final Dimension fullSize = new Dimension(600, 400);
         final ReductionFactor rf = new ReductionFactor(1);
         final ScaleConstraint sc = new ScaleConstraint(1, 2);
@@ -343,7 +393,7 @@ public class ScaleByPixelsTest extends ScaleTest {
     }
 
     @Test
-    void testGetResultingSize2WithAspectFitHeightAndUpscaling() {
+    void getResultingSize2WithAspectFitHeightAndUpscaling() {
         final Dimension fullSize = new Dimension(600, 400);
         final ReductionFactor rf = new ReductionFactor(1);
         final ScaleConstraint sc = new ScaleConstraint(1, 2);
@@ -356,7 +406,7 @@ public class ScaleByPixelsTest extends ScaleTest {
     }
 
     @Test
-    void testGetResultingSize2WithAspectFitInsideAndDownscaling() {
+    void getResultingSize2WithAspectFitInsideAndDownscaling() {
         final Dimension fullSize = new Dimension(600, 400);
         final ReductionFactor rf = new ReductionFactor(1);
         final ScaleConstraint sc = new ScaleConstraint(1, 2);
@@ -369,7 +419,7 @@ public class ScaleByPixelsTest extends ScaleTest {
     }
 
     @Test
-    void testGetResultingSize2WithAspectFitInside() {
+    void getResultingSize2WithAspectFitInside() {
         final Dimension fullSize = new Dimension(600, 400);
         final ReductionFactor rf = new ReductionFactor(1);
         final ScaleConstraint sc = new ScaleConstraint(1, 2);
@@ -382,7 +432,7 @@ public class ScaleByPixelsTest extends ScaleTest {
     }
 
     @Test
-    void testGetResultingSize2WithNonAspectFillAndDownscaling() {
+    void getResultingSize2WithNonAspectFillAndDownscaling() {
         final Dimension fullSize = new Dimension(600, 400);
         final ReductionFactor rf = new ReductionFactor(1);
         final ScaleConstraint sc = new ScaleConstraint(1, 2);
@@ -395,7 +445,7 @@ public class ScaleByPixelsTest extends ScaleTest {
     }
 
     @Test
-    void testGetResultingSize2WithNonAspectFillAndUpscaling() {
+    void getResultingSize2WithNonAspectFillAndUpscaling() {
         final Dimension fullSize = new Dimension(600, 400);
         final ReductionFactor rf = new ReductionFactor(1);
         final ScaleConstraint sc = new ScaleConstraint(1, 2);
@@ -408,7 +458,7 @@ public class ScaleByPixelsTest extends ScaleTest {
     }
 
     @Test
-    void testHasEffect() {
+    void hasEffect() {
         instance = new ScaleByPixels(100, 100, ScaleByPixels.Mode.ASPECT_FIT_INSIDE);
         assertTrue(instance.hasEffect());
         instance.setMode(ScaleByPixels.Mode.ASPECT_FIT_WIDTH);
@@ -418,7 +468,7 @@ public class ScaleByPixelsTest extends ScaleTest {
     }
 
     @Test
-    void testHasEffectWithArguments() {
+    void hasEffectWithArguments() {
         final Dimension fullSize = new Dimension(600, 400);
         final OperationList opList = OperationList.builder()
                 .withOperations(new CropByPixels(0, 0, 300, 200))
@@ -453,7 +503,7 @@ public class ScaleByPixelsTest extends ScaleTest {
     }
 
     @Test
-    void testIsHeightUpWithAspectFitWidth() {
+    void isHeightUpWithAspectFitWidth() {
         Dimension size = new Dimension(600, 400);
         ScaleConstraint scaleConstraint = new ScaleConstraint(1, 1);
 
@@ -468,7 +518,7 @@ public class ScaleByPixelsTest extends ScaleTest {
     }
 
     @Test
-    void testIsHeightUpWithAspectFitHeight() {
+    void isHeightUpWithAspectFitHeight() {
         Dimension size = new Dimension(600, 400);
         ScaleConstraint scaleConstraint = new ScaleConstraint(1, 1);
 
@@ -483,7 +533,7 @@ public class ScaleByPixelsTest extends ScaleTest {
     }
 
     @Test
-    void testIsHeightUpWithAspectFitInside() {
+    void isHeightUpWithAspectFitInside() {
         Dimension size = new Dimension(600, 400);
         ScaleConstraint scaleConstraint = new ScaleConstraint(1, 1);
 
@@ -501,7 +551,7 @@ public class ScaleByPixelsTest extends ScaleTest {
     }
 
     @Test
-    void testIsHeightUpWithNonAspectFill() {
+    void isHeightUpWithNonAspectFill() {
         Dimension size = new Dimension(600, 400);
         ScaleConstraint scaleConstraint = new ScaleConstraint(1, 1);
 
@@ -525,7 +575,7 @@ public class ScaleByPixelsTest extends ScaleTest {
     }
 
     @Test
-    void testIsUpWithAspectFitWidth() {
+    void isUpWithAspectFitWidth() {
         Dimension size = new Dimension(600, 400);
         ScaleConstraint scaleConstraint = new ScaleConstraint(1, 1);
 
@@ -540,7 +590,7 @@ public class ScaleByPixelsTest extends ScaleTest {
     }
 
     @Test
-    void testIsUpWithAspectFitHeight() {
+    void isUpWithAspectFitHeight() {
         Dimension size = new Dimension(600, 400);
         ScaleConstraint scaleConstraint = new ScaleConstraint(1, 1);
 
@@ -555,7 +605,7 @@ public class ScaleByPixelsTest extends ScaleTest {
     }
 
     @Test
-    void testIsUpWithAspectFitInside() {
+    void isUpWithAspectFitInside() {
         Dimension size = new Dimension(600, 400);
         ScaleConstraint scaleConstraint = new ScaleConstraint(1, 1);
 
@@ -573,7 +623,7 @@ public class ScaleByPixelsTest extends ScaleTest {
     }
 
     @Test
-    void testIsUpWithNonAspectFill() {
+    void isUpWithNonAspectFill() {
         Dimension size = new Dimension(600, 400);
         ScaleConstraint scaleConstraint = new ScaleConstraint(1, 1);
 
@@ -597,7 +647,7 @@ public class ScaleByPixelsTest extends ScaleTest {
     }
 
     @Test
-    void testIsWidthUpWithAspectFitWidth() {
+    void isWidthUpWithAspectFitWidth() {
         Dimension size = new Dimension(600, 400);
         ScaleConstraint scaleConstraint = new ScaleConstraint(1, 1);
 
@@ -612,7 +662,7 @@ public class ScaleByPixelsTest extends ScaleTest {
     }
 
     @Test
-    void testIsWidthUpWithAspectFitHeight() {
+    void isWidthUpWithAspectFitHeight() {
         Dimension size = new Dimension(600, 400);
         ScaleConstraint scaleConstraint = new ScaleConstraint(1, 1);
 
@@ -627,7 +677,7 @@ public class ScaleByPixelsTest extends ScaleTest {
     }
 
     @Test
-    void testIsWidthUpWithAspectFitInside() {
+    void isWidthUpWithAspectFitInside() {
         Dimension size = new Dimension(600, 400);
         ScaleConstraint scaleConstraint = new ScaleConstraint(1, 1);
 
@@ -645,7 +695,7 @@ public class ScaleByPixelsTest extends ScaleTest {
     }
 
     @Test
-    void testIsWidthUpWithNonAspectFill() {
+    void isWidthUpWithNonAspectFill() {
         Dimension size = new Dimension(600, 400);
         ScaleConstraint scaleConstraint = new ScaleConstraint(1, 1);
 
@@ -669,77 +719,77 @@ public class ScaleByPixelsTest extends ScaleTest {
     }
 
     @Test
-    void testSetHeight() {
+    void setHeight() {
         Integer height = 50;
         instance.setHeight(height);
         assertEquals(height, instance.getHeight());
     }
 
     @Test
-    void testSetHeightWithNegativeHeight() {
+    void setHeightWithNegativeHeight() {
         assertThrows(IllegalArgumentException.class,
                 () -> instance.setHeight(-1));
     }
 
     @Test
-    void testSetHeightWithZeroHeight() {
+    void setHeightWithZeroHeight() {
         assertThrows(IllegalArgumentException.class,
                 () -> instance.setHeight(0));
     }
 
     @Test
-    void testSetHeightWithNullHeight() {
+    void setHeightWithNullHeight() {
         instance.setHeight(null);
         assertNull(instance.getHeight());
     }
 
     @Test
-    void testSetHeightWhenFrozenThrowsException() {
+    void setHeightWhenFrozenThrowsException() {
         instance.freeze();
         assertThrows(IllegalStateException.class,
                 () -> instance.setHeight(80));
     }
 
     @Test
-    void testSetModeWhenFrozenThrowsException() {
+    void setModeWhenFrozenThrowsException() {
         instance.freeze();
         assertThrows(IllegalStateException.class,
                 () -> instance.setMode(ScaleByPixels.Mode.ASPECT_FIT_HEIGHT));
     }
 
     @Test
-    void testSetWidth() {
+    void setWidth() {
         Integer width = 50;
         instance.setWidth(width);
         assertEquals(width, instance.getWidth());
     }
 
     @Test
-    void testSetWidthWithNegativeWidth() {
+    void setWidthWithNegativeWidth() {
         assertThrows(IllegalArgumentException.class,
                 () -> instance.setWidth(-1));
     }
 
     @Test
-    void testSetWidthWithZeroWidth() {
+    void setWidthWithZeroWidth() {
         assertThrows(IllegalArgumentException.class,
                 () -> instance.setWidth(0));
     }
 
     @Test
-    void testSetWidthWithNullWidth() {
+    void setWidthWithNullWidth() {
         instance.setWidth(null);
         assertNull(instance.getWidth());
     }
 
     @Test
-    void testSetWidthWhenFrozenThrowsException() {
+    void setWidthWhenFrozenThrowsException() {
         instance.freeze();
         assertThrows(IllegalStateException.class, () -> instance.setWidth(50));
     }
 
     @Test
-    void testToMap() {
+    void toMap() {
         Dimension fullSize = new Dimension(100, 100);
         ScaleConstraint scaleConstraint = new ScaleConstraint(1, 1);
         Dimension resultingSize =
