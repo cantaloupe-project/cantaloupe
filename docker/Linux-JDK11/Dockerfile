@@ -17,7 +17,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
                 libjpeg-dev \
                 zlib1g-dev \
                 libwebp-dev \
-                libimage-exiftool-perl \
     && rm -rf /var/lib/apt/lists/*
 
 # Install TurboJpegProcessor dependencies
@@ -28,10 +27,10 @@ COPY docker/Linux-JDK11/image_files/libjpeg-turbo/lib64 /opt/libjpeg-turbo/lib
 COPY dist/deps/Linux-x86-64/lib/* /usr/lib/
 
 # Install GrokProcessor dependencies
-RUN wget -q https://github.com/GrokImageCompression/grok/releases/download/v7.6.5/libgrokj2k1_7.6.5-1_amd64.deb \
-    && wget -q https://github.com/GrokImageCompression/grok/releases/download/v7.6.5/grokj2k-tools_7.6.5-1_amd64.deb \
-    && dpkg -i ./libgrokj2k1_7.6.5-1_amd64.deb \
-    && dpkg -i --ignore-depends=libjpeg62-turbo ./grokj2k-tools_7.6.5-1_amd64.deb
+RUN wget -q https://github.com/GrokImageCompression/grok/releases/download/v9.2.0/libgrokj2k1_9.2.0-1_amd64.deb \
+    && wget -q https://github.com/GrokImageCompression/grok/releases/download/v9.2.0/grokj2k-tools_9.2.0-1_amd64.deb \
+    && dpkg -i ./libgrokj2k1_9.2.0-1_amd64.deb \
+    && dpkg -i --ignore-depends=libjpeg62-turbo ./grokj2k-tools_9.2.0-1_amd64.deb
 
 # A non-root user is needed for some FilesystemSourceTest tests to work.
 ARG user=cantaloupe
