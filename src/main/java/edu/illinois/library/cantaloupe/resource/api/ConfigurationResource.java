@@ -77,9 +77,4 @@ public class ConfigurationResource extends AbstractAPIResource {
         getResponse().setStatus(Status.NO_CONTENT.getCode());
     }
 
-    @Override
-    boolean requiresAuth() {
-        return true;
-    }
-
 }

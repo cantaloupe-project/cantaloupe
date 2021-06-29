@@ -22,17 +22,13 @@ abstract class AbstractAPIResource extends AbstractResource {
             throw new EndpointDisabledException();
         }
 
-        if (requiresAuth()) {
-            authenticateUsingBasic(BASIC_REALM, user -> {
-                final String configUser = config.getString(Key.API_USERNAME, "");
-                if (!configUser.isEmpty() && configUser.equals(user)) {
-                    return config.getString(Key.API_SECRET);
-                }
-                return null;
-            });
-        }
+        authenticateUsingBasic(BASIC_REALM, user -> {
+            final String configUser = config.getString(Key.API_USERNAME, "");
+            if (!configUser.isEmpty() && configUser.equals(user)) {
+                return config.getString(Key.API_SECRET);
+            }
+            return null;
+        });
     }
-
-    abstract boolean requiresAuth();
 
 }
