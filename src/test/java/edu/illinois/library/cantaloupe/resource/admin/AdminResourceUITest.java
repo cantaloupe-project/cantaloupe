@@ -291,6 +291,8 @@ public class AdminResourceUITest extends AbstractAdminResourceTest {
         inputNamed(Key.API_ENABLED).click();
         inputNamed(Key.API_USERNAME).sendKeys("cats");
         inputNamed(Key.API_SECRET).sendKeys("dogs");
+        inputNamed(Key.HEALTH_ENDPOINT_ENABLED).click();
+        inputNamed(Key.HEALTH_DEPENDENCY_CHECK).click();
         inputNamed(Key.META_IDENTIFIER_TRANSFORMER).sendKeys("Bla");
         css("#cl-endpoints li > a[href=\"#StandardMetaIdentifierTransformer\"]").click();
         inputNamed(Key.STANDARD_META_IDENTIFIER_TRANSFORMER_DELIMITER).sendKeys("---");
@@ -313,6 +315,8 @@ public class AdminResourceUITest extends AbstractAdminResourceTest {
         assertTrue(config.getBoolean(Key.API_ENABLED));
         assertEquals("cats", config.getString(Key.API_USERNAME));
         assertEquals("dogs", config.getString(Key.API_SECRET));
+        assertTrue(config.getBoolean(Key.HEALTH_ENDPOINT_ENABLED));
+        assertTrue(config.getBoolean(Key.HEALTH_DEPENDENCY_CHECK));
         assertEquals("StandardMetaIdentifierTransformer",
                 config.getString(Key.META_IDENTIFIER_TRANSFORMER));
         assertEquals("---",

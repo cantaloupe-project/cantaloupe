@@ -2,6 +2,8 @@
 
 # 6.0
 
+* The health endpoint is en/disabled via `endpoint.health.enabled` rather than
+  `endpoint.api.enabled`.
 * HttpSource can be configured to send a ranged GET request instead of a HEAD
   request, enabling it to work with pre-signed URLs that do not allow HEAD
   requests.

@@ -6,6 +6,7 @@ current version.
 ## 5.0 → 6.0
 
 1. Add the following keys from the sample configuration:
+    * `endpoint.health.enabled`
     * `HttpSource.BasicLookupStrategy.send_head_requests`
 
 ## 4.1.x → 5.0

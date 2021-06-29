@@ -91,6 +91,7 @@ public enum Key {
     FILESYSTEMSOURCE_PATH_PREFIX("FilesystemSource.BasicLookupStrategy.path_prefix"),
     FILESYSTEMSOURCE_PATH_SUFFIX("FilesystemSource.BasicLookupStrategy.path_suffix"),
     HEALTH_DEPENDENCY_CHECK("endpoint.health.dependency_check"),
+    HEALTH_ENDPOINT_ENABLED("endpoint.health.enabled"),
     HEAPCACHE_PATHNAME("HeapCache.persist.filesystem.pathname"),
     HEAPCACHE_PERSIST("HeapCache.persist"),
     HEAPCACHE_TARGET_SIZE("HeapCache.target_size"),
