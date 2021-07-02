@@ -24,7 +24,9 @@ public class RedisCacheTest extends AbstractCacheTest {
         config.setProperty(Key.REDISCACHE_DATABASE,
                 testConfig.getProperty(ConfigurationConstants.REDIS_DATABASE.getKey()));
 
-        return new RedisCache();
+        RedisCache instance = new RedisCache();
+        instance.purge();
+        return instance;
     }
 
 
