@@ -57,7 +57,7 @@ public interface DerivativeCache extends Cache {
      *
      * <p>The {@link CompletableOutputStream#close()} method of the returned
      * instance must check the return value of {@link
-     * CompletableOutputStream#isCompletelyWritten()} before committing data
+     * CompletableOutputStream#isComplete()} before committing data
      * to the cache. If it returns {@code false}, any written data should be
      * discarded.</p>
      *

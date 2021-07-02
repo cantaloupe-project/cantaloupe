@@ -67,7 +67,7 @@ class AzureStorageCache implements DerivativeCache {
 
         /**
          * Constructor for an instance that writes into the given temporary
-         * blob. Upon closure, if the stream is {@link #isCompletelyWritten()
+         * blob. Upon closure, if the stream is {@link #isComplete()
          * completely written}, the temporary blob is copied into place and
          * deleted. Otherwise, the temporary blob is deleted.
          *
@@ -96,7 +96,7 @@ class AzureStorageCache implements DerivativeCache {
                 blobOutputStream.flush();
                 blobOutputStream.close();
                 if (container != null) {
-                    if (isCompletelyWritten()) {
+                    if (isComplete()) {
                         // Copy the temporary blob into place.
                         CloudBlockBlob destBlob =
                                 container.getBlockBlobReference(blobKey);
