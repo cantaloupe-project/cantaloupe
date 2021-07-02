@@ -242,7 +242,7 @@ public class S3CacheTest extends AbstractCacheTest {
         try (CompletableOutputStream os =
                      instance.newDerivativeImageOutputStream(ops)) {
             Files.copy(fixture, os);
-            os.complete();
+            os.setCompletelyWritten(true);
         }
 
         // Wait for it to finish, hopefully.

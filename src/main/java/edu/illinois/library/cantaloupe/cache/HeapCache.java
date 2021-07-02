@@ -184,7 +184,7 @@ class HeapCache implements DerivativeCache {
         @Override
         public void close() throws IOException {
             LOGGER.debug("Closing stream for {}", opList);
-            if (isComplete()) {
+            if (isCompletelyWritten()) {
                 Key key = itemKey(opList);
                 Item item = new Item(wrappedStream.toByteArray());
                 cache.put(key, item);

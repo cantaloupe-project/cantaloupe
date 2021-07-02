@@ -110,7 +110,7 @@ abstract class AbstractCacheTest extends BaseTest {
         try (CompletableOutputStream os =
                      instance.newDerivativeImageOutputStream(opList)) {
             Files.copy(imageFile, os);
-            os.complete();
+            os.setCompletelyWritten(true);
         }
 
         // Wait for it to upload
@@ -144,7 +144,7 @@ abstract class AbstractCacheTest extends BaseTest {
         try (CompletableOutputStream os =
                      instance.newDerivativeImageOutputStream(ops)) {
             Files.copy(fixture, os);
-            os.complete();
+            os.setCompletelyWritten(true);
         }
 
         // Wait for it to finish, hopefully.
@@ -182,7 +182,7 @@ abstract class AbstractCacheTest extends BaseTest {
             try (CompletableOutputStream os =
                          instance.newDerivativeImageOutputStream(ops)) {
                 Files.copy(TestUtil.getImage(IMAGE), os);
-                os.complete();
+                os.setCompletelyWritten(true);
             }
             return null;
         }, () -> {
@@ -216,7 +216,7 @@ abstract class AbstractCacheTest extends BaseTest {
         try (CompletableOutputStream outputStream =
                      instance.newDerivativeImageOutputStream(ops)) {
             Files.copy(fixture, outputStream);
-            outputStream.complete();
+            outputStream.setCompletelyWritten(true);
         }
 
         // Wait for it to upload
@@ -245,7 +245,7 @@ abstract class AbstractCacheTest extends BaseTest {
         try (CompletableOutputStream outputStream =
                      instance.newDerivativeImageOutputStream(ops)) {
             Files.copy(fixture, outputStream);
-            outputStream.complete(); // the whole point of the test
+            outputStream.setCompletelyWritten(false); // the whole point of the test
         }
 
         // Wait for it to upload
@@ -292,7 +292,7 @@ abstract class AbstractCacheTest extends BaseTest {
                      instance.newDerivativeImageOutputStream(opList)) {
             Path fixture = TestUtil.getImage(IMAGE);
             Files.copy(fixture, outputStream);
-            outputStream.complete();
+            outputStream.setCompletelyWritten(true);
         }
 
         // add the info
@@ -332,7 +332,7 @@ abstract class AbstractCacheTest extends BaseTest {
         try (CompletableOutputStream os =
                      instance.newDerivativeImageOutputStream(opList1)) {
             Files.copy(fixture, os);
-            os.complete();
+            os.setCompletelyWritten(true);
         }
         instance.put(id1, new Info());
 
@@ -345,7 +345,7 @@ abstract class AbstractCacheTest extends BaseTest {
         try (CompletableOutputStream os =
                      instance.newDerivativeImageOutputStream(opList2)) {
             Files.copy(fixture, os);
-            os.complete();
+            os.setCompletelyWritten(true);
         }
         instance.put(id2, new Info());
 
@@ -385,7 +385,7 @@ abstract class AbstractCacheTest extends BaseTest {
         try (CompletableOutputStream os =
                      instance.newDerivativeImageOutputStream(ops1)) {
             Files.copy(TestUtil.getImage(IMAGE), os);
-            os.complete();
+            os.setCompletelyWritten(true);
         }
 
         // Seed another derivative image
@@ -396,7 +396,7 @@ abstract class AbstractCacheTest extends BaseTest {
         try (CompletableOutputStream os =
                      instance.newDerivativeImageOutputStream(ops2)) {
             Files.copy(TestUtil.getImage(IMAGE), os);
-            os.complete();
+            os.setCompletelyWritten(true);
         }
 
         Thread.sleep(ASYNC_WAIT);
@@ -436,7 +436,7 @@ abstract class AbstractCacheTest extends BaseTest {
                      instance.newDerivativeImageOutputStream(opList)) {
             Path fixture = TestUtil.getImage(IMAGE);
             Files.copy(fixture, outputStream);
-            outputStream.complete();
+            outputStream.setCompletelyWritten(true);
         }
 
         // add the info
@@ -476,7 +476,7 @@ abstract class AbstractCacheTest extends BaseTest {
         try (CompletableOutputStream outputStream =
                      instance.newDerivativeImageOutputStream(ops1)) {
             Files.copy(fixture, outputStream);
-            outputStream.complete();
+            outputStream.setCompletelyWritten(true);
         }
 
         // add an Info
@@ -499,7 +499,7 @@ abstract class AbstractCacheTest extends BaseTest {
         try (CompletableOutputStream outputStream =
                      instance.newDerivativeImageOutputStream(ops2)) {
             Files.copy(fixture2, outputStream);
-            outputStream.complete();
+            outputStream.setCompletelyWritten(true);
         }
 
         // add another info

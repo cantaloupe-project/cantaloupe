@@ -181,7 +181,7 @@ class FilesystemCache implements SourceCache, DerivativeCache {
 
                     // If the written file is complete, move it into place.
                     // Otherwise, delete it.
-                    if (isComplete()) {
+                    if (isCompletelyWritten()) {
                         CFOS_LOGGER.debug("close(): moving {} to {}",
                                 tempFile, destinationFile);
                         Files.move(tempFile, destinationFile,
@@ -634,7 +634,7 @@ class FilesystemCache implements SourceCache, DerivativeCache {
         // work with newDerivativeImageOutputStream(). But this method does not
         // need that extra functionality, so setting it as completely written
         // here makes it behave like an ordinary OutputStream.
-        os.complete();
+        os.setCompletelyWritten(true);
         return os;
     }
 

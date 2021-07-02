@@ -48,7 +48,7 @@ class JdbcCache implements DerivativeCache {
     /**
      * Wraps a {@link Blob} OutputStream, for writing an image to a BLOB.
      * The constructor creates a transaction that is committed on close if the
-     * stream is {@link CompletableOutputStream#isComplete()
+     * stream is {@link CompletableOutputStream#isCompletelyWritten()
      * completely written}.
      */
     private class ImageBlobOutputStream extends CompletableOutputStream {
@@ -92,7 +92,7 @@ class JdbcCache implements DerivativeCache {
         public void close() throws IOException {
             LOGGER.debug("Closing stream for {}", ops);
             try {
-                if (isComplete()) {
+                if (isCompletelyWritten()) {
                     statement.executeUpdate();
                     connection.commit();
                 } else {

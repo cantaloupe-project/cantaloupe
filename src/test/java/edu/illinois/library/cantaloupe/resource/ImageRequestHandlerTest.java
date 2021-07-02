@@ -218,7 +218,7 @@ public class ImageRequestHandlerTest extends BaseTest {
         try (CompletableOutputStream os =
                      cache.newDerivativeImageOutputStream(opList)) {
             os.write(new byte[] { 0x35, 0x35, 0x35 });
-            os.complete();
+            os.setCompletelyWritten(true);
         }
 
         final IntrospectiveCallback callback = new IntrospectiveCallback();
@@ -348,7 +348,7 @@ public class ImageRequestHandlerTest extends BaseTest {
         try (CompletableOutputStream os =
                      cache.newDerivativeImageOutputStream(opList)) {
             os.write(expected);
-            os.complete();
+            os.setCompletelyWritten(true);
         }
 
         final IntrospectiveCallback callback = new IntrospectiveCallback();

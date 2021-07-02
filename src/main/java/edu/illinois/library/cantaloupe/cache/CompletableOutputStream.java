@@ -12,12 +12,12 @@ public abstract class CompletableOutputStream extends OutputStream {
 
     private boolean isCompletelyWritten;
 
-    public void complete() {
-        this.isCompletelyWritten = true;
+    public boolean isCompletelyWritten() {
+        return isCompletelyWritten;
     }
 
-    public boolean isComplete() {
-        return isCompletelyWritten;
+    public void setCompletelyWritten(boolean isCompletelyWritten) {
+        this.isCompletelyWritten = isCompletelyWritten;
     }
 
 }

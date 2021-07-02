@@ -129,7 +129,7 @@ public class ImageRepresentation implements Representation {
                         "cache simultaneously");
                 copyOrProcess(teeOS);
                 cacheOS.flush();
-                cacheOS.complete();
+                cacheOS.setCompletelyWritten(true);
             } else {
                 copyOrProcess(responseOS);
             }
