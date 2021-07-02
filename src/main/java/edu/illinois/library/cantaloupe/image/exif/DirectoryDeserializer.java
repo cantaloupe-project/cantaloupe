@@ -5,6 +5,12 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.BooleanNode;
+import com.fasterxml.jackson.databind.node.DoubleNode;
+import com.fasterxml.jackson.databind.node.FloatNode;
+import com.fasterxml.jackson.databind.node.IntNode;
+import com.fasterxml.jackson.databind.node.LongNode;
+import com.fasterxml.jackson.databind.node.TextNode;
 
 import java.io.IOException;
 import java.util.Iterator;
@@ -119,6 +125,21 @@ public class DirectoryDeserializer extends JsonDeserializer<Directory> {
                                JsonNode valueNode) throws IOException {
         switch (dataType) {
             case BYTE:
+                // IntNode has been seen in the wild; the other conditions may
+                // or may not be needed here but they can't hurt.
+                if (valueNode instanceof IntNode) {
+                    return valueNode.longValue();
+                } else if (valueNode instanceof LongNode) {
+                    return valueNode.longValue();
+                } else if (valueNode instanceof FloatNode) {
+                    return valueNode.floatValue();
+                } else if (valueNode instanceof DoubleNode) {
+                    return valueNode.doubleValue();
+                } else if (valueNode instanceof BooleanNode) {
+                    return valueNode.booleanValue();
+                } else if (valueNode instanceof TextNode) {
+                    return valueNode.textValue();
+                }
                 return valueNode.binaryValue();
             case ASCII:
                 return valueNode.asText();

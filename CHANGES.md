@@ -12,6 +12,11 @@
   `-Dcantaloupe.delegate_script` VM argument, which takes precedence over the
   `delegate_script.pathname` configuration key.
 
+## 5.0.4
+
+* Fixed a bug involving deserialization of BYTE-type EXIF fields containing
+  numeric values.
+
 ## 5.0.3
 
 * The `full_size` and `metadata` keys are available in the delegate context
