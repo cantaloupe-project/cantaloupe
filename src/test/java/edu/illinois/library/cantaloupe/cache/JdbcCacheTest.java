@@ -106,7 +106,7 @@ public class JdbcCacheTest extends AbstractCacheTest {
         try (CompletableOutputStream os =
                      instance.newDerivativeImageOutputStream(ops)) {
             Files.copy(TestUtil.getImage(IMAGE), os);
-            os.setCompletelyWritten(true);
+            os.complete();
         }
 
         Crop crop     = new CropByPixels(50, 50, 50, 50);
@@ -119,7 +119,7 @@ public class JdbcCacheTest extends AbstractCacheTest {
         try (CompletableOutputStream os =
                      instance.newDerivativeImageOutputStream(ops)) {
             Files.copy(TestUtil.getImage(IMAGE), os);
-            os.setCompletelyWritten(true);
+            os.complete();
         }
 
         crop   = new CropByPixels(10, 20, 50, 90);
@@ -132,7 +132,7 @@ public class JdbcCacheTest extends AbstractCacheTest {
         try (CompletableOutputStream os =
                      instance.newDerivativeImageOutputStream(ops)) {
             Files.copy(TestUtil.getImage(IMAGE), os);
-            os.setCompletelyWritten(true);
+            os.complete();
         }
 
         // persist some infos corresponding to the above images

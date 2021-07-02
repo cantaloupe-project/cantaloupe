@@ -156,7 +156,7 @@ class RedisCache implements DerivativeCache {
         @Override
         public void close() throws IOException {
             try {
-                if (isCompletelyWritten()) {
+                if (isComplete()) {
                     connection.async().hset(hashKey, valueKey,
                             bufferStream.toByteArray());
                 }

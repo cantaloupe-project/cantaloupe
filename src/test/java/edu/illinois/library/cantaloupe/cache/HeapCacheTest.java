@@ -98,7 +98,7 @@ public class HeapCacheTest extends AbstractCacheTest {
             try (CompletableOutputStream os =
                          instance.newDerivativeImageOutputStream(ops)) {
                 Files.copy(TestUtil.getImage(IMAGE), os);
-                os.setCompletelyWritten(true);
+                os.complete();
             }
 
             instance.dumpToPersistentStore();
@@ -127,7 +127,7 @@ public class HeapCacheTest extends AbstractCacheTest {
         try (CompletableOutputStream os =
                      instance.newDerivativeImageOutputStream(ops)) {
             Files.copy(TestUtil.getImage(IMAGE), os);
-            os.setCompletelyWritten(true);
+            os.complete();
         }
 
         assertEquals(5439, instance.getByteSize());
@@ -231,7 +231,7 @@ public class HeapCacheTest extends AbstractCacheTest {
             try (CompletableOutputStream os =
                          instance.newDerivativeImageOutputStream(ops)) {
                 Files.copy(TestUtil.getImage(IMAGE), os);
-                os.setCompletelyWritten(true);
+                os.complete();
             }
 
             instance.dumpToPersistentStore();
@@ -296,7 +296,7 @@ public class HeapCacheTest extends AbstractCacheTest {
         try (CompletableOutputStream os =
                      instance.newDerivativeImageOutputStream(ops)) {
             Files.copy(TestUtil.getImage(IMAGE), os);
-            os.setCompletelyWritten(true);
+            os.complete();
         }
 
         assertEquals(5439, instance.getByteSize());
@@ -317,7 +317,7 @@ public class HeapCacheTest extends AbstractCacheTest {
         try (CompletableOutputStream os =
                      instance.newDerivativeImageOutputStream(ops)) {
             Files.copy(TestUtil.getImage(IMAGE), os);
-            os.setCompletelyWritten(true);
+            os.complete();
         }
 
         long size = instance.getByteSize();

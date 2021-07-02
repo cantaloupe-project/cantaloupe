@@ -189,7 +189,7 @@ public class CacheFacadeTest extends BaseTest {
         try (CompletableOutputStream os =
                      instance.newDerivativeImageOutputStream(opList)) {
             Files.copy(TestUtil.getImage("jpg"), os);
-            os.setCompletelyWritten(true);
+            os.complete();
         }
 
         try (InputStream is = instance.newDerivativeImageInputStream(opList)) {
@@ -217,7 +217,7 @@ public class CacheFacadeTest extends BaseTest {
         try (CompletableOutputStream os =
                      instance.newDerivativeImageOutputStream(opList)) {
             assertNotNull(os);
-            os.setCompletelyWritten(true);
+            os.complete();
         }
     }
 
@@ -253,7 +253,7 @@ public class CacheFacadeTest extends BaseTest {
         try (CompletableOutputStream os =
                      instance.newDerivativeImageOutputStream(ops)) {
             Files.copy(TestUtil.getImage("jpg"), os);
-            os.setCompletelyWritten(true);
+            os.complete();
         }
 
         // Add info to the derivative cache.
@@ -299,7 +299,7 @@ public class CacheFacadeTest extends BaseTest {
         try (CompletableOutputStream os =
                      instance.newDerivativeImageOutputStream(ops)) {
             Files.copy(TestUtil.getImage("jpg"), os);
-            os.setCompletelyWritten(true);
+            os.complete();
         }
 
         // Add info to the derivative cache.
@@ -343,7 +343,7 @@ public class CacheFacadeTest extends BaseTest {
         try (CompletableOutputStream os =
                      instance.newDerivativeImageOutputStream(ops)) {
             Files.copy(TestUtil.getImage("jpg"), os);
-            os.setCompletelyWritten(true);
+            os.complete();
         }
 
         // Add info to the derivative cache.
@@ -378,7 +378,7 @@ public class CacheFacadeTest extends BaseTest {
         try (CompletableOutputStream os =
                      instance.newDerivativeImageOutputStream(opList)) {
             Files.copy(TestUtil.getImage("jpg"), os);
-            os.setCompletelyWritten(true);
+            os.complete();
         }
 
         try (InputStream is = instance.newDerivativeImageInputStream(opList)) {
@@ -447,7 +447,7 @@ public class CacheFacadeTest extends BaseTest {
         try (CompletableOutputStream os =
                      instance.newDerivativeImageOutputStream(ops)) {
             Files.copy(TestUtil.getImage("jpg"), os);
-            os.setCompletelyWritten(true);
+            os.complete();
         }
 
         // Add info to the derivative cache.
