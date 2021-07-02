@@ -1,7 +1,6 @@
 package edu.illinois.library.cantaloupe.resource;
 
 import edu.illinois.library.cantaloupe.http.ResourceException;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -10,13 +9,6 @@ import static org.junit.jupiter.api.Assertions.*;
  * Functional test of error responses.
  */
 public class ErrorResourceTest extends ResourceTest {
-
-    @AfterEach
-    public void tearDown() throws Exception {
-        if (client != null) {
-            client.stop();
-        }
-    }
 
     @Override
     protected String getEndpointPath() {
