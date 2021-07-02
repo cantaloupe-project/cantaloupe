@@ -453,7 +453,7 @@ public class InformationResourceTest extends ResourceTest {
         String json = response.getBodyAsString();
         ObjectMapper mapper = new ObjectMapper();
         Information<?, ?> info = mapper.readValue(json, Information.class);
-        assertEquals("http://localhost:" + HTTP_PORT +
+        assertEquals("http://localhost:" + getHTTPPort() +
                 Route.IIIF_2_PATH + "/" + IMAGE, info.get("@id"));
     }
 
@@ -484,7 +484,7 @@ public class InformationResourceTest extends ResourceTest {
         String json = response.getBodyAsString();
         ObjectMapper mapper = new ObjectMapper();
         Information<?, ?> info = mapper.readValue(json, Information.class);
-        assertEquals("http://localhost:" + HTTP_PORT +
+        assertEquals("http://localhost:" + getHTTPPort() +
                 Route.IIIF_2_PATH + path, info.get("@id"));
     }
 
@@ -500,7 +500,7 @@ public class InformationResourceTest extends ResourceTest {
         String json = response.getBodyAsString();
         ObjectMapper mapper = new ObjectMapper();
         Information<?, ?> info = mapper.readValue(json, Information.class);
-        assertEquals("http://localhost:" + HTTP_PORT +
+        assertEquals("http://localhost:" + getHTTPPort() +
                 Route.IIIF_2_PATH + path, info.get("@id"));
     }
 

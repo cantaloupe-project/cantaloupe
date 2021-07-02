@@ -22,23 +22,20 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 public abstract class ResourceTest extends BaseTest {
 
-    protected static int HTTP_PORT = SocketUtils.getOpenPort();
-    protected static int HTTPS_PORT;
-
     protected static ApplicationServer appServer;
 
     protected Client client;
-
-    static {
-        do {
-            HTTPS_PORT = SocketUtils.getOpenPort();
-        } while (HTTPS_PORT == HTTP_PORT);
-    }
+    private int httpPort, httpsPort;
 
     @Override
     @BeforeEach
     public void setUp() throws Exception {
         super.setUp();
+
+        httpPort = SocketUtils.getOpenPort();
+        do {
+            httpsPort = SocketUtils.getOpenPort();
+        } while (httpsPort == httpPort);
 
         final Configuration config = Configuration.getInstance();
         config.setProperty(Key.MAX_SCALE, 0);
@@ -61,10 +58,10 @@ public abstract class ResourceTest extends BaseTest {
 
         appServer = StandaloneEntry.getAppServer();
         appServer.setHTTPEnabled(true);
-        appServer.setHTTPPort(HTTP_PORT);
+        appServer.setHTTPPort(httpPort);
 
         appServer.setHTTPSEnabled(true);
-        appServer.setHTTPSPort(HTTPS_PORT);
+        appServer.setHTTPSPort(httpsPort);
         appServer.setHTTPSKeyStoreType("JKS");
         appServer.setHTTPSKeyStorePath(
                 TestUtil.getFixture("keystore-password.jks").toString());
@@ -87,6 +84,10 @@ public abstract class ResourceTest extends BaseTest {
 
     abstract protected String getEndpointPath();
 
+    protected int getHTTPPort() {
+        return httpPort;
+    }
+
     /**
      * @param path URI path relative to {@link #getEndpointPath()}.
      */
@@ -105,6 +106,10 @@ public abstract class ResourceTest extends BaseTest {
     protected String getHTTPURIString(String path) {
         return "http://localhost:" + appServer.getHTTPPort() +
                 getEndpointPath() + path;
+    }
+
+    protected int getHTTPSPort() {
+        return httpsPort;
     }
 
     /**
