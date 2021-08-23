@@ -419,6 +419,8 @@
                 <configuration>
                     <runOrder>random</runOrder>
                     <reuseForks>false</reuseForks>
+                    <!-- JAI requires this in JDK >= 16. -->
+                    <argLine>--illegal-access=permit</argLine>
                 </configuration>
             </plugin>
 
