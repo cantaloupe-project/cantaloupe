@@ -172,6 +172,7 @@ public enum Key {
     PROCESSOR_FALLBACK_RETRIEVAL_STRATEGY("processor.fallback_retrieval_strategy"),
     PROCESSOR_JPG_PROGRESSIVE("processor.jpg.progressive"),
     PROCESSOR_JPG_QUALITY("processor.jpg.quality"),
+    PROCESSOR_PURGE_INCOMPATIBLE_FROM_SOURCE_CACHE("processor.purge_incompatible_from_source_cache"),
     PROCESSOR_SELECTION_STRATEGY("processor.selection_strategy"),
     PROCESSOR_SHARPEN("processor.sharpen"),
     PROCESSOR_STREAM_RETRIEVAL_STRATEGY("processor.stream_retrieval_strategy"),

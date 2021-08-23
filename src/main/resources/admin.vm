@@ -2236,6 +2236,26 @@
                                     </td>
                                 </tr>
                                 <tr>
+                                    <td>
+                                        <a tabindex="0" class="btn btn-sm cl-help"
+                                           role="button" data-toggle="popover"
+                                           data-trigger="focus"
+                                           data-content="If enabled, images stored in the source cache for which no
+                                           format can be inferred will be purged.">?</a>
+                                    </td>
+                                    <td>
+                                        <div class="checkbox">
+                                            <label>
+                                                <input type="checkbox"
+                                                       name="processor.purge_incompatible_from_source_cache"
+                                                       value="false"
+                                                       data-requires-restart="false">
+                                                Purge Incompatible From Source Cache
+                                            </label>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
                                     <td>DPI
                                         <a tabindex="0" class="btn btn-sm cl-help"
                                            role="button" data-toggle="popover"

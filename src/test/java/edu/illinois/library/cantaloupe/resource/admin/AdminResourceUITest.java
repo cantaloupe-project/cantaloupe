@@ -497,6 +497,7 @@ public class AdminResourceUITest extends AbstractAdminResourceTest {
                 selectByValue("StreamStrategy");
         selectNamed(Key.PROCESSOR_FALLBACK_RETRIEVAL_STRATEGY).
                 selectByValue("CacheStrategy");
+        inputNamed(Key.PROCESSOR_PURGE_INCOMPATIBLE_FROM_SOURCE_CACHE).click();
         inputNamed(Key.PROCESSOR_DPI).sendKeys("300");
         selectNamed(Key.PROCESSOR_BACKGROUND_COLOR).selectByValue("white");
         selectNamed(Key.PROCESSOR_UPSCALE_FILTER).
@@ -542,6 +543,7 @@ public class AdminResourceUITest extends AbstractAdminResourceTest {
                 config.getString(Key.PROCESSOR_STREAM_RETRIEVAL_STRATEGY));
         assertEquals("CacheStrategy",
                 config.getString(Key.PROCESSOR_FALLBACK_RETRIEVAL_STRATEGY));
+        assertTrue(config.getBoolean(Key.PROCESSOR_PURGE_INCOMPATIBLE_FROM_SOURCE_CACHE));
         assertEquals(300, config.getInt(Key.PROCESSOR_DPI));
         assertEquals("white", config.getString(Key.PROCESSOR_BACKGROUND_COLOR));
         assertEquals("triangle",

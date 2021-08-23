@@ -1,5 +1,6 @@
 package edu.illinois.library.cantaloupe.resource;
 
+import edu.illinois.library.cantaloupe.async.TaskQueue;
 import edu.illinois.library.cantaloupe.cache.CacheFacade;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
@@ -23,6 +24,7 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
@@ -413,6 +415,23 @@ public class ImageRequestHandler extends AbstractRequestHandler
                         processorName, source.getClass().getSimpleName(),
                         format, identifier);
             }
+        }
+        if (config.getBoolean(Key.PROCESSOR_PURGE_INCOMPATIBLE_FROM_SOURCE_CACHE, false)) {
+            TaskQueue.getInstance().submit(() -> {
+                try {
+                    cacheFacade.getSourceCacheFile(identifier).ifPresent(file -> {
+                        try {
+                            getLogger().debug("Deleting {}", file);
+                            Files.delete(file);
+                        } catch (IOException e) {
+                            getLogger().warn("Failed to delete file from source cache: {}",
+                                    e.getMessage());
+                        }
+                    });
+                } catch (IOException e) {
+                    throw new UncheckedIOException(e);
+                }
+            });
         }
         throw new SourceFormatException();
     }

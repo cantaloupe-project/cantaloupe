@@ -370,6 +370,10 @@ processor.stream_retrieval_strategy = StreamStrategy
 # * `AbortStrategy` causes the request to fail.
 processor.fallback_retrieval_strategy = DownloadStrategy
 
+# If true, images stored in the source cache for which no format can be
+# inferred will be purged.
+processor.purge_incompatible_from_source_cache = false
+
 # Resolution of vector rasterization (of e.g. PDFs) at a scale of 1.
 processor.dpi = 150
 

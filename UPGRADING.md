@@ -8,6 +8,7 @@ current version.
 1. Add the following keys from the sample configuration:
     * `endpoint.health.enabled`
     * `HttpSource.BasicLookupStrategy.send_head_requests`
+    * `processor.purge_incompatible_from_source_cache`
 
 ## 4.1.x → 5.0
 
