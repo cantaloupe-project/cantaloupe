@@ -8,8 +8,8 @@ Thumbs.db
 .settings/*
 
 # IntelliJ stuff
-.idea/*
-*.iml
+/.idea
+/*.iws
 
 # NetBeans stuff
 nbactions.xml

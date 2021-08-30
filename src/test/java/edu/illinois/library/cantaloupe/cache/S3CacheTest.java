@@ -18,16 +18,23 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.HeadObjectRequest;
+import software.amazon.awssdk.services.s3.model.HeadObjectResponse;
+import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.junit.jupiter.api.Assumptions.assumeFalse;
+import static org.junit.jupiter.api.Assumptions.*;
 
 public class S3CacheTest extends AbstractCacheTest {
 
@@ -260,12 +267,145 @@ public class S3CacheTest extends AbstractCacheTest {
         assertExists(instance, ops);
     }
 
+    /* purge() */
+
+    @Test
+    void testPurgeWithKeyPrefix() throws Exception {
+        final String prefix = "prefix/";
+        final Configuration config = Configuration.getInstance();
+        config.setProperty(Key.S3CACHE_OBJECT_KEY_PREFIX, prefix);
+
+        DerivativeCache instance = newInstance();
+        Identifier identifier = new Identifier(IMAGE);
+        OperationList opList = OperationList.builder()
+                .withIdentifier(identifier)
+                .withOperations(new Encode(Format.get("jpg")))
+                .build();
+        Info info = new Info();
+
+        // Add a random file outside the cache key prefix
+        final S3Client client         = S3Cache.getClientInstance();
+        final String keyOutsidePrefix = "some-key";
+        final String bucketName       = getBucket();
+        final byte[] data             = "some data".getBytes(StandardCharsets.UTF_8);
+        PutObjectRequest request = PutObjectRequest.builder()
+                .bucket(bucketName)
+                .key(keyOutsidePrefix)
+                .build();
+        try (ByteArrayInputStream is = new ByteArrayInputStream(data)) {
+            client.putObject(request,
+                    RequestBody.fromInputStream(is, data.length));
+        }
+
+        // Add a cached derivative image
+        try (CompletableOutputStream outputStream =
+                     instance.newDerivativeImageOutputStream(opList)) {
+            Path fixture = TestUtil.getImage(IMAGE);
+            Files.copy(fixture, outputStream);
+            outputStream.setComplete(true);
+        }
+
+        // Add a cached info
+        instance.put(identifier, info);
+
+        Thread.sleep(ASYNC_WAIT);
+
+        // assert that everything has been added
+        assertExists(instance, opList);
+        assertNotNull(instance.getInfo(identifier));
+
+        // purge everything
+        instance.purge();
+
+        // assert that the info has been purged
+        assertFalse(instance.getInfo(identifier).isPresent());
+
+        // assert that the image has been purged
+        assertNotExists(instance, opList);
+
+        // assert that the other file has NOT been purged
+        HeadObjectRequest headRequest = HeadObjectRequest.builder()
+                .bucket(bucketName)
+                .key(keyOutsidePrefix)
+                .build();
+        HeadObjectResponse response = client.headObject(headRequest);
+        assertEquals(200, response.sdkHttpResponse().statusCode());
+    }
+
+    /* purgeInvalid() */
+
     @Test
     @Override
     void testPurgeInvalid() throws Exception {
         assumeFalse(SystemUtils.IS_OS_WINDOWS); // TODO: this fails in Windows sometimes
         super.testPurgeInvalid();
     }
+
+    @Test
+    void testPurgeInvalidWithKeyPrefix() throws Exception {
+        final String prefix        = "prefix/";
+        final Configuration config = Configuration.getInstance();
+        config.setProperty(Key.DERIVATIVE_CACHE_TTL, 2);
+        config.setProperty(Key.S3CACHE_OBJECT_KEY_PREFIX, prefix);
+
+        // Add a random file outside the key prefix, which will be allowed to
+        // "expire" as if it were cached. This test will assert that it still
+        // exists after purging invalid content.
+        final S3Client client         = S3Cache.getClientInstance();
+        final String keyOutsidePrefix = "some-key";
+        final String bucketName       = getBucket();
+        final byte[] data             = "some data".getBytes(StandardCharsets.UTF_8);
+
+        PutObjectRequest request = PutObjectRequest.builder()
+                .bucket(bucketName)
+                .key(keyOutsidePrefix)
+                .build();
+        try (ByteArrayInputStream is = new ByteArrayInputStream(data)) {
+            client.putObject(request,
+                    RequestBody.fromInputStream(is, data.length));
+        }
+
+        // add a cached derivative image
+        DerivativeCache instance = newInstance();
+        Identifier id1 = new Identifier(IMAGE);
+        OperationList ops1 = OperationList.builder()
+                .withIdentifier(id1)
+                .withOperations(new Encode(Format.get("jpg")))
+                .build();
+        Path fixture = TestUtil.getImage(id1.toString());
+        try (CompletableOutputStream outputStream =
+                     instance.newDerivativeImageOutputStream(ops1)) {
+            Files.copy(fixture, outputStream);
+            outputStream.setComplete(true);
+        }
+
+        // add a cached Info
+        Info info1 = new Info();
+        instance.put(id1, info1);
+
+        // assert that they've been added
+        assertNotNull(instance.getInfo(id1));
+        assertExists(instance, ops1);
+
+        // wait for them to invalidate
+        Thread.sleep(ASYNC_WAIT);
+
+        instance.purgeInvalid();
+
+        // assert that the image and info have been purged
+        assertFalse(instance.getInfo(id1).isPresent());
+        assertNotExists(instance, ops1);
+
+        // assert that the object outside the cache prefix has NOT been purged
+        HeadObjectRequest headRequest = HeadObjectRequest.builder()
+                .bucket(bucketName)
+                .key(keyOutsidePrefix)
+                .build();
+        HeadObjectResponse response = client.headObject(headRequest);
+        assertEquals(200, response.sdkHttpResponse().statusCode());
+    }
+
+    /* purge(Identifier) */
 
     @Test
     @Override

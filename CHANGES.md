@@ -18,6 +18,8 @@
 
 * Fixed a bug involving deserialization of BYTE-type EXIF fields containing
   numeric values.
+* Fixed a bug in S3Cache that could cause source content to be purged when 
+  sharing a bucket with S3Source with the cache worker enabled.
 
 ## 5.0.3
 
