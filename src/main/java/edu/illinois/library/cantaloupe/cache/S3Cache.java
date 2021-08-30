@@ -393,7 +393,7 @@ class S3Cache implements DerivativeCache {
         final String bucketName     = getBucketName();
         final AtomicInteger counter = new AtomicInteger();
 
-        S3Utils.walkObjects(client, bucketName, (object) -> {
+        S3Utils.walkObjects(client, bucketName, getObjectKeyPrefix(), (object) -> {
             try {
                 client.deleteObject(DeleteObjectRequest.builder()
                         .bucket(bucketName)
@@ -463,7 +463,7 @@ class S3Cache implements DerivativeCache {
         final AtomicInteger counter        = new AtomicInteger();
         final AtomicInteger deletedCounter = new AtomicInteger();
 
-        S3Utils.walkObjects(client, bucketName, (object) -> {
+        S3Utils.walkObjects(client, bucketName, getObjectKeyPrefix(), (object) -> {
             counter.incrementAndGet();
             if (!isValid(object)) {
                 try {
