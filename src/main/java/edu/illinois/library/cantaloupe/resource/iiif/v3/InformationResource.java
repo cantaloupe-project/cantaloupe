@@ -62,7 +62,7 @@ public class InformationResource extends IIIF3Resource {
                     // documentation for more information.
                     return InformationResource.this.preAuthorize();
                 } catch (ResourceException e) {
-                    if (Status.FORBIDDEN.equals(e.getStatus())) {
+                    if (e.getStatus().getCode() > 400) {
                         throw e;
                     }
                 }

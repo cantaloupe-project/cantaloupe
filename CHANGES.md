@@ -14,6 +14,11 @@
   `-Dcantaloupe.delegate_script` VM argument, which takes precedence over the
   `delegate_script.pathname` configuration key.
 
+## 5.0.5
+
+* Fixed an uncaught exception when returning HTTP 401 status from the
+  `pre_authorize()` or `authorize()` delegate methods.
+
 ## 5.0.4
 
 * Fixed a bug involving deserialization of BYTE-type EXIF fields containing

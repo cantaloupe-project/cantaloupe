@@ -36,7 +36,7 @@ class CustomDelegate
     case context['identifier']
       when 'forbidden.jpg', 'forbidden-boolean.jpg'
         return false
-      when 'forbidden-code.jpg'
+      when 'forbidden-code.jpg', 'unauthorized.jpg'
         return {
             'status_code' => 401,
             'challenge' => 'Basic'
