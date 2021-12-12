@@ -280,8 +280,11 @@ class CustomDelegate
   # should be used instead.
   #
   # @param options [Hash] Empty hash.
-  # @return [Hash<String,Object>,nil] Hash containing `bucket` and `key` keys;
-  #                                   or nil if not found.
+  # @return [Hash<String,Object>,nil] Hash containing `bucket` and `key` keys.
+  #         It may also contain an `endpoint` key, indicating that the endpoint
+  #         is different from the one set in the configuration. In that case,
+  #         it may also contain `region`, `access_key_id`, and/or
+  #         `secret_access_key` keys.
   #
   def s3source_object_info(options = {})
   end

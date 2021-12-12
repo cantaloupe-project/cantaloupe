@@ -7,6 +7,7 @@
 * HttpSource can be configured to send a ranged GET request instead of a HEAD
   request, enabling it to work with pre-signed URLs that do not allow HEAD
   requests.
+* S3Source supports multiple endpoints when using ScriptLookupStrategy.
 * Added a configuration option to automatically purge source-cached images
   whose format cannot be inferred.
 * Added an HTTP API method to purge all infos from the derivative cache.

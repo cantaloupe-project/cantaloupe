@@ -28,6 +28,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.AccessDeniedException;
 import java.nio.file.NoSuchFileException;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -79,8 +80,6 @@ import java.util.NoSuchElementException;
  * </ol>
  *
  * @author Alex Dolski UIUC
- * @see <a href="https://docs.minio.io/docs/java-client-api-reference">
- *     Minio Java Client API Reference</a>
  */
 final class S3Source extends AbstractSource implements Source {
 
@@ -189,11 +188,16 @@ final class S3Source extends AbstractSource implements Source {
             LoggerFactory.getLogger(S3Source.class);
 
     /**
-     * Range used to infer the source image format.
+     * Byte range used to infer the source image format.
      */
     private static final Range FORMAT_INFERENCE_RANGE = new Range(0, 32);
 
-    private static S3Client client;
+    /**
+     * The keys are endpoint URIs. The default client's key is {@code null}.
+     * This is not thread-safe, so should only be accessed via {@link
+     * #getClientInstance(S3ObjectInfo)}.
+     */
+    private static final Map<String,S3Client> CLIENTS = new HashMap<>();
 
     /**
      * Cached by {@link #getObjectInfo()}.
@@ -207,25 +211,44 @@ final class S3Source extends AbstractSource implements Source {
 
     private FormatIterator<Format> formatIterator = new FormatIterator<>();
 
-    static synchronized S3Client getClientInstance() {
+    static synchronized S3Client getClientInstance(S3ObjectInfo info) {
+        String endpoint = info.getEndpoint();
+        S3Client client = CLIENTS.get(endpoint);
         if (client == null) {
             final Configuration config = Configuration.getInstance();
-            final String endpointStr = config.getString(Key.S3SOURCE_ENDPOINT);
+            if (endpoint == null) {
+                endpoint = config.getString(Key.S3SOURCE_ENDPOINT);
+            }
+            // Convert the endpoint string into a URI which is required by the
+            // client builder.
             URI endpointURI = null;
-            if (endpointStr != null) {
+            if (endpoint != null) {
                 try {
-                    endpointURI = new URI(endpointStr);
+                    endpointURI = new URI(endpoint);
                 } catch (URISyntaxException e) {
                     LOGGER.error("Invalid URI for {}: {}",
                             Key.S3SOURCE_ENDPOINT, e.getMessage());
                 }
             }
+            String region = info.getRegion();
+            if (region == null) {
+                region = config.getString(Key.S3SOURCE_REGION);
+            }
+            String accessKeyID = info.getAccessKeyID();
+            if (accessKeyID == null) {
+                accessKeyID = config.getString(Key.S3SOURCE_ACCESS_KEY_ID);
+            }
+            String secretAccessKey = info.getSecretAccessKey();
+            if (secretAccessKey == null) {
+                secretAccessKey = config.getString(Key.S3SOURCE_SECRET_KEY);
+            }
             client = new S3ClientBuilder()
-                    .accessKeyID(config.getString(Key.S3SOURCE_ACCESS_KEY_ID))
-                    .secretAccessKey(config.getString(Key.S3SOURCE_SECRET_KEY))
+                    .accessKeyID(accessKeyID)
+                    .secretAccessKey(secretAccessKey)
                     .endpointURI(endpointURI)
-                    .region(config.getString(Key.S3SOURCE_REGION))
+                    .region(region)
                     .build();
+            CLIENTS.put(endpoint, client);
         }
         return client;
     }
@@ -248,7 +271,7 @@ final class S3Source extends AbstractSource implements Source {
      */
     static InputStream newObjectInputStream(S3ObjectInfo info,
                                             Range range) throws IOException {
-        final S3Client client = getClientInstance();
+        final S3Client client = getClientInstance(info);
         try {
             GetObjectRequest request;
             if (range != null) {
@@ -290,7 +313,7 @@ final class S3Source extends AbstractSource implements Source {
             final S3ObjectInfo info = getObjectInfo();
             final String bucket     = info.getBucketName();
             final String key        = info.getKey();
-            final S3Client client   = getClientInstance();
+            final S3Client client   = getClientInstance(info);
             try {
                 HeadObjectResponse response = client.headObject(HeadObjectRequest.builder()
                         .bucket(bucket)
@@ -349,7 +372,10 @@ final class S3Source extends AbstractSource implements Source {
         final String keyPrefix  = config.getString(Key.S3SOURCE_PATH_PREFIX, "");
         final String keySuffix  = config.getString(Key.S3SOURCE_PATH_SUFFIX, "");
         final String key        = keyPrefix + identifier.toString() + keySuffix;
-        return new S3ObjectInfo(key, bucketName);
+        S3ObjectInfo info       = new S3ObjectInfo();
+        info.setBucketName(bucketName);
+        info.setKey(key);
+        return info;
     }
 
     /**
@@ -372,12 +398,18 @@ final class S3Source extends AbstractSource implements Source {
         }
 
         if (result.containsKey("bucket") && result.containsKey("key")) {
-            String bucketName = result.get("bucket");
-            String objectKey  = result.get("key");
-            return new S3ObjectInfo(objectKey, bucketName);
+            final S3ObjectInfo info = new S3ObjectInfo();
+            info.setBucketName(result.get("bucket"));
+            info.setKey(result.get("key"));
+            // These may be null.
+            info.setRegion(result.get("region"));
+            info.setEndpoint(result.get("endpoint"));
+            info.setAccessKeyID(result.get("access_key_id"));
+            info.setSecretAccessKey(result.get("secret_access_key"));
+            return info;
         } else {
             throw new IllegalArgumentException(
-                    "Returned hash does not include bucket and key");
+                    "Returned hash must include bucket and key");
         }
     }
 

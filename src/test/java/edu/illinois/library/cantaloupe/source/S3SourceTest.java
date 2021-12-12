@@ -202,27 +202,55 @@ public class S3SourceTest extends AbstractSourceTest {
         }
     }
 
+    /* getClientInstance() */
+
+    @Test
+    void getClientInstanceReturnsDefaultClient() {
+        assertNotNull(S3Source.getClientInstance(new S3ObjectInfo()));
+    }
+
+    @Test
+    void getClientInstanceReturnsUniqueClientsPerEndpoint() {
+        S3ObjectInfo info1 = new S3ObjectInfo();
+        S3ObjectInfo info2 = new S3ObjectInfo();
+        info2.setEndpoint("http://example.org/endpoint");
+        S3Client client1 = S3Source.getClientInstance(info1);
+        S3Client client2 = S3Source.getClientInstance(info2);
+        assertNotSame(client1, client2);
+    }
+
+    @Test
+    void getClientInstanceCachesReturnedClients() {
+        S3ObjectInfo info1 = new S3ObjectInfo();
+        S3ObjectInfo info2 = new S3ObjectInfo();
+        info1.setEndpoint("http://example.org/endpoint");
+        info2.setEndpoint(info1.getEndpoint());
+        S3Client client1 = S3Source.getClientInstance(info1);
+        S3Client client2 = S3Source.getClientInstance(info2);
+        assertSame(client1, client2);
+    }
+
     /* checkAccess() */
 
     @Test
-    void testCheckAccessUsingBasicLookupStrategyWithPresentUnreadableImage() {
+    void checkAccessUsingBasicLookupStrategyWithPresentUnreadableImage() {
         // TODO: write this
     }
 
     @Test
-    void testCheckAccessUsingScriptLookupStrategyWithPresentReadableImage()
+    void checkAccessUsingScriptLookupStrategyWithPresentReadableImage()
             throws Exception {
         useScriptLookupStrategy();
         instance.checkAccess();
     }
 
     @Test
-    void testCheckAccessUsingScriptLookupStrategyWithPresentUnreadableImage() {
+    void checkAccessUsingScriptLookupStrategyWithPresentUnreadableImage() {
         // TODO: write this
     }
 
     @Test
-    void testCheckAccessUsingScriptLookupStrategyWithMissingImage() {
+    void checkAccessUsingScriptLookupStrategyWithMissingImage() {
         useScriptLookupStrategy();
 
         Identifier identifier = new Identifier("bogus");
@@ -235,8 +263,7 @@ public class S3SourceTest extends AbstractSourceTest {
     }
 
     @Test
-    void testCheckAccessUsingScriptLookupStrategyReturningHash()
-            throws Exception {
+    void checkAccessUsingScriptLookupStrategyReturningHash() throws Exception {
         useScriptLookupStrategy();
 
         Identifier identifier = new Identifier("bucket:" + getBucket() +
@@ -251,7 +278,7 @@ public class S3SourceTest extends AbstractSourceTest {
     }
 
     @Test
-    void testCheckAccessUsingScriptLookupStrategyWithMissingKeyInReturnedHash() {
+    void checkAccessUsingScriptLookupStrategyWithMissingKeyInReturnedHash() {
         useScriptLookupStrategy();
 
         Identifier identifier = new Identifier("key:" + OBJECT_KEY_WITH_CONTENT_TYPE_AND_RECOGNIZED_EXTENSION);
@@ -266,7 +293,7 @@ public class S3SourceTest extends AbstractSourceTest {
     /* getFormatIterator() */
 
     @Test
-    void testGetFormatIteratorHasNext() {
+    void getFormatIteratorHasNext() {
         S3Source source = newInstance();
         source.setIdentifier(new Identifier(OBJECT_KEY_WITH_CONTENT_TYPE_AND_RECOGNIZED_EXTENSION));
         S3Source.FormatIterator<Format> it = source.getFormatIterator();
@@ -283,7 +310,7 @@ public class S3SourceTest extends AbstractSourceTest {
     }
 
     @Test
-    void testGetFormatIteratorNext() {
+    void getFormatIteratorNext() {
         S3Source source = newInstance();
         source.setIdentifier(new Identifier(OBJECT_KEY_WITH_NO_CONTENT_TYPE_AND_INCORRECT_EXTENSION));
 
@@ -298,12 +325,12 @@ public class S3SourceTest extends AbstractSourceTest {
     /* getObjectInfo() */
 
     @Test
-    void testGetObjectInfo() throws Exception {
+    void getObjectInfo() throws Exception {
         assertNotNull(instance.getObjectInfo());
     }
 
     @Test
-    void testGetObjectInfoUsingBasicLookupStrategyWithPrefixAndSuffix()
+    void getObjectInfoUsingBasicLookupStrategyWithPrefixAndSuffix()
             throws Exception {
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.S3SOURCE_PATH_PREFIX, "/prefix/");
@@ -314,7 +341,7 @@ public class S3SourceTest extends AbstractSourceTest {
     }
 
     @Test
-    void testGetObjectInfoUsingBasicLookupStrategyWithoutPrefixOrSuffix()
+    void getObjectInfoUsingBasicLookupStrategyWithoutPrefixOrSuffix()
             throws Exception {
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.S3SOURCE_PATH_PREFIX, "");
@@ -327,13 +354,12 @@ public class S3SourceTest extends AbstractSourceTest {
     /* newStreamFactory() */
 
     @Test
-    void testNewStreamFactoryUsingBasicLookupStrategy() throws Exception {
+    void newStreamFactoryUsingBasicLookupStrategy() throws Exception {
         assertNotNull(instance.newStreamFactory());
     }
 
     @Test
-    void testNewStreamFactoryUsingScriptLookupStrategy()
-            throws Exception {
+    void newStreamFactoryUsingScriptLookupStrategy() throws Exception {
         useScriptLookupStrategy();
         assertNotNull(instance.newStreamFactory());
     }
