@@ -9,6 +9,8 @@ Thumbs.db
 
 # IntelliJ stuff
 /.idea
+/*.iml
+/*.ipr
 /*.iws
 
 # NetBeans stuff
