@@ -6,6 +6,7 @@
   images.
 * Suppressed an error-level log message from OpenJpegProcessor when reading
   an image without a recognized filename extension on a read-only filesystem.
+* Updated the Logback dependency to version 1.2.8.
 
 ## 4.1.9
 
