@@ -5,7 +5,7 @@
     <groupId>edu.illinois.library.cantaloupe</groupId>
     <artifactId>cantaloupe</artifactId>
     <packaging>war</packaging>
-    <version>4.1.10</version>
+    <version>4.1.11</version>
     <name>Cantaloupe</name>
     <url>https://cantaloupe-project.github.io/</url>
     <inceptionYear>2015</inceptionYear>
@@ -16,6 +16,7 @@
         </project.reporting.outputEncoding>
         <aws-sdk.version>1.11.291</aws-sdk.version>
         <jackson.version>2.11.0</jackson.version>
+        <logback.version>1.2.8</logback.version>
         <!-- N.B.: Jetty does not use semantic versioning. New x.x.x releases
         frequently break features and API. -->
         <jetty.version>9.4.24.v20191120</jetty.version>
@@ -68,12 +69,12 @@
         <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
-            <version>1.2.8</version>
+            <version>${logback.version}</version>
         </dependency>
         <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-core</artifactId>
-            <version>1.2.3</version>
+            <version>${logback.version}</version>
         </dependency>
         <!-- Used by S3Source and S3Cache -->
         <dependency>

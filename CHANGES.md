@@ -1,5 +1,10 @@
 # Change Log
 
+## 4.1.11
+
+* Fixed an issue with the 4.1.10 build whereby the logback-classic dependency
+  had been updated to version 1.2.8 but not logback-core.
+
 ## 4.1.10
 
 * Fixed a `Link` header not being sent in response to requests for cached
