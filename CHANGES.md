@@ -1,5 +1,10 @@
 # Change Log
 
+## 5.0.6
+
+* Fixed a crop-offset bug that could occur when using PdfBoxProcessor to
+  generate JPEGs with libjpeg-turbo active.
+
 ## 5.0.5
 
 * Fixed an uncaught exception when returning HTTP 401 status from the
