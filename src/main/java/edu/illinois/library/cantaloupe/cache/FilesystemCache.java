@@ -9,7 +9,6 @@ import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.util.DeletingFileVisitor;
 import edu.illinois.library.cantaloupe.util.StringUtils;
 import org.apache.commons.codec.binary.Hex;
-import org.apache.commons.lang3.SystemUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -288,9 +287,9 @@ class FilesystemCache implements SourceCache, DerivativeCache {
             new ConcurrentHashMap<>();
 
     /**
-     * Returns the last-accessed time of the given file. On some OS/filesystem
-     * combinations, this may be unreliable or not available, in which case the
-     * last-modified time is returned instead.
+     * Returns the last-accessed time of the given file. On some filesystems,
+     * particularly those mounted with a {@code noatime} option, this may be
+     * the same as the last-modified time.
      *
      * @param file File to check.
      * @return Last-accessed time of the given file, if available, or the
@@ -300,12 +299,6 @@ class FilesystemCache implements SourceCache, DerivativeCache {
      */
     static FileTime getLastAccessedTime(Path file) throws IOException {
         try {
-            // Last-accessed time is not reliable on macOS+APFS 10.13.2.
-            if (SystemUtils.IS_OS_MAC) {
-                LOGGER.trace("macOS detected; using file last-modified " +
-                        "instead of last-accessed times.");
-                return Files.getLastModifiedTime(file);
-            }
             return (FileTime) Files.getAttribute(file, "lastAccessTime");
         } catch (UnsupportedOperationException e) {
             LOGGER.error("getLastAccessedTime(): {}", e.getMessage(), e);
@@ -1012,7 +1005,7 @@ class FilesystemCache implements SourceCache, DerivativeCache {
 
     /**
      * Sets the age threshold for cleaning files. Cleanable files last
-     * modified less than this many milliseconds ago will not be subject to
+     * accessed less than this many milliseconds ago will not be subject to
      * cleanup.
      *
      * @param age Age in milliseconds.

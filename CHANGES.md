@@ -15,10 +15,16 @@
   `-Dcantaloupe.delegate_script` VM argument, which takes precedence over the
   `delegate_script.pathname` configuration key.
 
+## 5.0.6
+
+* Fixed a crop-offset bug that could occur when using PdfBoxProcessor to
+  generate JPEGs with libjpeg-turbo active.
+
 ## 5.0.5
 
 * Fixed an uncaught exception when returning HTTP 401 status from the
   `pre_authorize()` or `authorize()` delegate methods.
+* Updated the Logback dependency to version 1.2.8.
 
 ## 5.0.4
 
@@ -174,12 +180,18 @@
 * The `-Dcantaloupe.list_fonts` VM argument has been replaced with the
   `-list-fonts` command-line argument.
 
+## 4.1.11
+
+* Fixed an issue with the 4.1.10 build whereby the logback-classic dependency
+  had been updated to version 1.2.8 but not logback-core.
+
 ## 4.1.10
 
 * Fixed the IIIF Image API v2 image endpoint not sending a `Link` header in
   response to requests for cached images.
 * Suppressed an error-level log message from OpenJpegProcessor when reading
   an image without a recognized filename extension on a read-only filesystem.
+* Updated the Logback dependency to version 1.2.8.
 
 ## 4.1.9
 

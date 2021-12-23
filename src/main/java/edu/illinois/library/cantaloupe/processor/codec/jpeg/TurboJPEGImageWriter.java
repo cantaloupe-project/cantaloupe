@@ -5,6 +5,7 @@ import edu.illinois.library.cantaloupe.processor.Java2DUtil;
 import org.libjpegturbo.turbojpeg.TJ;
 import org.libjpegturbo.turbojpeg.TJCompressor;
 
+import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -147,11 +148,25 @@ public final class TurboJPEGImageWriter {
      */
     public void write(BufferedImage image,
                       OutputStream os) throws IOException {
-        // removeAlpha() will never produce a custom-type image, so only one of
-        // these, at most, will produce a new image. TJCompressor cannot work
-        // with custom-type images and JPEG does not support alpha.
+        // N.B.: TJCompressor doesn't understand custom-type BufferedImages and
+        // it also doesn't support images that have been "virtually cropped"
+        // with getSubimage(). In either of these cases we have to redraw the
+        // image into a new one of a standard type.
+        // Also, JPEG doesn't support alpha, so we have to remove that,
+        // otherwise readers will interpret as CMYK.
+        if (image.getRaster().getSampleModelTranslateX() < 0 ||
+                image.getRaster().getSampleModelTranslateX() < 0) {
+            BufferedImage newImage = new BufferedImage(
+                    image.getWidth(), image.getHeight(),
+                    BufferedImage.TYPE_INT_RGB);
+            Graphics2D g2d = newImage.createGraphics();
+            g2d.drawImage(image, null, 0, 0);
+            g2d.dispose();
+            image = newImage;
+        }
         image = Java2DUtil.removeAlpha(image, bgColor);
         image = Java2DUtil.convertCustomToRGB(image);
+
         try (TJCompressor tjc = new TJCompressor()) {
             tjc.setSubsamp(subsampling);
             tjc.setJPEGQuality(quality);
