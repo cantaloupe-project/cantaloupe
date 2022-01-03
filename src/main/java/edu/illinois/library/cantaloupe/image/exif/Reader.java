@@ -157,6 +157,10 @@ public final class Reader implements AutoCloseable {
         byte[] data = new byte[length];
         int n, offset = 0;
         while ((n = inputStream.read(data, offset, data.length - offset)) < offset) {
+            if (n == -1) {
+                LOGGER.trace("readBytes(): No more data to read");
+                break;
+            }
             offset += n;
         }
         return data;
