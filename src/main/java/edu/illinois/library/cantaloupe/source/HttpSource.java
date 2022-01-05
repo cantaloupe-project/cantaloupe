@@ -21,6 +21,8 @@ import javax.script.ScriptException;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.Proxy;
+import java.net.InetSocketAddress;
 import java.nio.file.AccessDeniedException;
 import java.nio.file.NoSuchFileException;
 import java.security.KeyManagementException;
@@ -393,6 +395,21 @@ class HttpSource extends AbstractSource implements Source {
                     .writeTimeout(getRequestTimeout().getSeconds(), TimeUnit.SECONDS);
 
             final Configuration config = Configuration.getInstance();
+            
+            final boolean httpProxyEnabled = config.getBoolean(
+                Key.HTTPSOURCE_HTTP_PROXY_ENABLED, false);
+            if (httpProxyEnabled) {
+              final String httpProxyServer = config.getString(Key.HTTPSOURCE_HTTP_PROXY_SERVER, "");
+              if (httpProxyServer == "") {
+                throw new RuntimeException("proxy server setting HttpSource.proxy.http.server should not be empty");
+              }
+              final int httpProxyPort = config.getInt(Key.HTTPSOURCE_HTTP_PROXY_PORT, 8080);
+
+              LOGGER.trace("Using HTTP Proxy at server {} on port {}", httpProxyServer, httpProxyPort);
+              Proxy httpProxy = new Proxy(Proxy.Type.HTTP,new InetSocketAddress(httpProxyServer, httpProxyPort));
+              builder.proxy(httpProxy);
+            }
+
             final boolean allowInsecure = config.getBoolean(
                     Key.HTTPSOURCE_ALLOW_INSECURE, false);
 
@@ -488,7 +505,11 @@ class HttpSource extends AbstractSource implements Source {
         LOGGER.debug("Requesting {} {} [extra headers: {}]",
                 method, requestInfo.getURI(), toString(request.headers()));
 
-        return getHTTPClient().newCall(request).execute();
+        Response response = getHTTPClient().newCall(request).execute();
+        LOGGER.debug("Response status code: {}", response.code());
+        LOGGER.debug("Response Content-Type: {}", response.headers().get("content-type"));
+        LOGGER.debug("Response Headers: {}", toString(response.headers()));
+        return response;
     }
 
     static String toString(Headers headers) {
