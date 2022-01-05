@@ -505,11 +505,7 @@ class HttpSource extends AbstractSource implements Source {
         LOGGER.debug("Requesting {} {} [extra headers: {}]",
                 method, requestInfo.getURI(), toString(request.headers()));
 
-        Response response = getHTTPClient().newCall(request).execute();
-        LOGGER.debug("Response status code: {}", response.code());
-        LOGGER.debug("Response Content-Type: {}", response.headers().get("content-type"));
-        LOGGER.debug("Response Headers: {}", toString(response.headers()));
-        return response;
+        return getHTTPClient().newCall(request).execute();
     }
 
     static String toString(Headers headers) {
