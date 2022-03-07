@@ -14,6 +14,8 @@
 * The delegate script pathname can be set using the
   `-Dcantaloupe.delegate_script` VM argument, which takes precedence over the
   `delegate_script.pathname` configuration key.
+* S3Cache uses multipart uploads, which reduces memory usage when caching
+  derivatives larger than 5 MB.
 
 ## 5.0.6
 
