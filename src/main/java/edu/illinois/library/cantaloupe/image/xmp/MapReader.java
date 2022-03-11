@@ -54,7 +54,7 @@ public final class MapReader {
 
     /**
      * @param xmp XMP string. {@code <rdf:RDF>} must be the root element.
-     * @see edu.illinois.library.cantaloupe.util.StringUtils#trimXMP
+     * @see Utils#trimXMP
      */
     public MapReader(String xmp) throws IOException {
         RIOT.init();

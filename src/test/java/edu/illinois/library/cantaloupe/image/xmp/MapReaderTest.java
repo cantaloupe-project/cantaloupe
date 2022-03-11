@@ -1,7 +1,6 @@
 package edu.illinois.library.cantaloupe.image.xmp;
 
 import edu.illinois.library.cantaloupe.test.TestUtil;
-import edu.illinois.library.cantaloupe.util.StringUtils;
 import org.junit.jupiter.api.Test;
 
 import java.nio.file.Files;
@@ -14,7 +13,7 @@ class MapReaderTest {
     @Test
     void readElements1() throws Exception {
         String xmp                  = Files.readString(TestUtil.getFixture("xmp/xmp.xmp"));
-        xmp                         = StringUtils.trimXMP(xmp);
+        xmp                         = Utils.trimXMP(xmp);
         MapReader reader               = new MapReader(xmp);
         Map<String,Object> elements = reader.readElements();
 
@@ -26,7 +25,7 @@ class MapReaderTest {
     @Test
     void readElements2() throws Exception {
         String xmp                  = Files.readString(TestUtil.getFixture("xmp/xmp2.xmp"));
-        xmp                         = StringUtils.trimXMP(xmp);
+        xmp                         = Utils.trimXMP(xmp);
         MapReader reader               = new MapReader(xmp);
         Map<String,Object> elements = reader.readElements();
         assertEquals(61, elements.size());

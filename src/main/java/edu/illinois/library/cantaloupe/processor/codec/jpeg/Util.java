@@ -2,7 +2,6 @@ package edu.illinois.library.cantaloupe.processor.codec.jpeg;
 
 import edu.illinois.library.cantaloupe.image.xmp.Utils;
 import edu.illinois.library.cantaloupe.util.ArrayUtils;
-import edu.illinois.library.cantaloupe.util.StringUtils;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.RDFNode;
@@ -60,12 +59,12 @@ final class Util {
         final int numChunks = xmpChunks.size();
         if (numChunks > 0) {
             standardXMP = new String(xmpChunks.get(0), StandardCharsets.UTF_8);
-            standardXMP = StringUtils.trimXMP(standardXMP);
+            standardXMP = Utils.trimXMP(standardXMP);
             if (numChunks > 1) {
                 String extendedXMP = new String(
                         mergeChunks(xmpChunks.subList(1, numChunks)),
                         StandardCharsets.UTF_8);
-                extendedXMP = StringUtils.trimXMP(extendedXMP);
+                extendedXMP = Utils.trimXMP(extendedXMP);
                 return mergeXMPModels(standardXMP, extendedXMP);
             }
         }

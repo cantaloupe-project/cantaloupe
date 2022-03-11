@@ -4,12 +4,11 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.image.exif.Directory;
 import edu.illinois.library.cantaloupe.image.exif.Tag;
 import edu.illinois.library.cantaloupe.image.iptc.DataSet;
 import edu.illinois.library.cantaloupe.image.xmp.MapReader;
-import edu.illinois.library.cantaloupe.util.StringUtils;
+import edu.illinois.library.cantaloupe.image.xmp.Utils;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.NodeIterator;
@@ -269,7 +268,7 @@ public class Metadata {
      */
     public void setXMP(String xmp) {
         if (xmp != null) {
-            this.xmp = StringUtils.trimXMP(xmp);
+            this.xmp = Utils.trimXMP(xmp);
         } else {
             this.xmp         = null;
             this.xmpModel = null;
