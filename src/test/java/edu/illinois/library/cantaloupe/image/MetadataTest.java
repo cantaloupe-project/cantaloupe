@@ -6,6 +6,7 @@ import edu.illinois.library.cantaloupe.image.exif.Rational;
 import edu.illinois.library.cantaloupe.image.exif.Tag;
 import edu.illinois.library.cantaloupe.image.exif.TagSet;
 import edu.illinois.library.cantaloupe.image.iptc.DataSet;
+import edu.illinois.library.cantaloupe.image.xmp.Utils;
 import edu.illinois.library.cantaloupe.processor.codec.ImageReader;
 import edu.illinois.library.cantaloupe.processor.codec.ImageReaderFactory;
 import edu.illinois.library.cantaloupe.test.BaseTest;
@@ -31,16 +32,6 @@ public class MetadataTest extends BaseTest {
     public void setUp() throws Exception {
         super.setUp();
         instance = new Metadata();
-    }
-
-    /* encapsulateXMP() */
-
-    @Test
-    void testEncapsulateXMP() {
-        final String xmp = "<rdf:RDF></rdf:RDF>";
-        String actual    = Metadata.encapsulateXMP(xmp);
-        assertTrue(actual.startsWith("<?xpacket"));
-        assertTrue(actual.endsWith("<?xpacket end=\"r\"?>"));
     }
 
     /* equals() */
