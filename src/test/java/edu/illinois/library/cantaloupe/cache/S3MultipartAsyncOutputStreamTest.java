@@ -118,6 +118,7 @@ class S3MultipartAsyncOutputStreamTest extends BaseTest {
             byte[] bytes = new byte[1024 * 1024];
             new SecureRandom().nextBytes(bytes);
             instance.write(bytes);
+            instance.setComplete(true);
             instance.close();
 
             //noinspection SynchronizationOnLocalVariableOrMethodParameter
@@ -146,6 +147,7 @@ class S3MultipartAsyncOutputStreamTest extends BaseTest {
             for (byte b : expectedBytes) {
                 instance.write(b);
             }
+            instance.setComplete(true);
             instance.close();
 
             //noinspection SynchronizationOnLocalVariableOrMethodParameter
@@ -174,6 +176,7 @@ class S3MultipartAsyncOutputStreamTest extends BaseTest {
             for (byte b : expectedBytes) {
                 instance.write(b);
             }
+            instance.setComplete(true);
             instance.close();
 
             //noinspection SynchronizationOnLocalVariableOrMethodParameter
@@ -205,6 +208,7 @@ class S3MultipartAsyncOutputStreamTest extends BaseTest {
 
         try {
             instance.write(expectedBytes);
+            instance.setComplete(true);
             instance.close();
 
             //noinspection SynchronizationOnLocalVariableOrMethodParameter
@@ -234,6 +238,7 @@ class S3MultipartAsyncOutputStreamTest extends BaseTest {
             byte[] expectedBytes = new byte[1024 * 1024]; // smaller than part size
             new SecureRandom().nextBytes(expectedBytes);
             instance.write(expectedBytes);
+            instance.setComplete(true);
             instance.close();
 
             //noinspection SynchronizationOnLocalVariableOrMethodParameter
@@ -265,6 +270,7 @@ class S3MultipartAsyncOutputStreamTest extends BaseTest {
 
         try {
             instance.write(expectedBytes, 0, expectedBytes.length);
+            instance.setComplete(true);
             instance.close();
 
             //noinspection SynchronizationOnLocalVariableOrMethodParameter
@@ -294,6 +300,7 @@ class S3MultipartAsyncOutputStreamTest extends BaseTest {
             byte[] expectedBytes = new byte[1024 * 1024]; // smaller than part size
             new SecureRandom().nextBytes(expectedBytes);
             instance.write(expectedBytes, 0, expectedBytes.length);
+            instance.setComplete(true);
             instance.close();
 
             //noinspection SynchronizationOnLocalVariableOrMethodParameter
