@@ -15,6 +15,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.nio.file.Path;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -32,17 +33,21 @@ public class MetadataTest extends BaseTest {
         instance = new Metadata();
     }
 
+    /* encapsulateXMP() */
+
     @Test
     void testEncapsulateXMP() {
         final String xmp = "<rdf:RDF></rdf:RDF>";
-        String actual = Metadata.encapsulateXMP(xmp);
+        String actual    = Metadata.encapsulateXMP(xmp);
         assertTrue(actual.startsWith("<?xpacket"));
         assertTrue(actual.endsWith("<?xpacket end=\"r\"?>"));
     }
 
+    /* equals() */
+
     @Test
     void testEqualsWithEqualInstances() {
-        Directory exif = new Directory(TagSet.EXIF);
+        Directory exif     = new Directory(TagSet.EXIF);
         List<DataSet> iptc = List.of(new DataSet(
                 edu.illinois.library.cantaloupe.image.iptc.Tag.CITY,
                 "Urbana".getBytes()));
@@ -117,9 +122,11 @@ public class MetadataTest extends BaseTest {
         assertNotEquals(m1, m2);
     }
 
+    /* getEXIF() */
+
     @Test
     void testGetEXIFWithPresentEXIFData() throws Exception {
-        Path fixture = TestUtil.getImage("jpg-exif.jpg");
+        Path fixture       = TestUtil.getImage("jpg-exif.jpg");
         ImageReader reader = new ImageReaderFactory()
                 .newImageReader(Format.get("jpg"), fixture);
         try {
@@ -132,7 +139,7 @@ public class MetadataTest extends BaseTest {
 
     @Test
     void testGetEXIFWithNoEXIFData() throws Exception {
-        Path fixture = TestUtil.getImage("jpg");
+        Path fixture       = TestUtil.getImage("jpg");
         ImageReader reader = new ImageReaderFactory()
                 .newImageReader(Format.get("jpg"), fixture);
         try {
@@ -143,9 +150,11 @@ public class MetadataTest extends BaseTest {
         }
     }
 
+    /* getIPTC() */
+
     @Test
     void testGetIPTCWithPresentIPTCData() throws Exception {
-        Path fixture = TestUtil.getImage("jpg-iptc.jpg");
+        Path fixture       = TestUtil.getImage("jpg-iptc.jpg");
         ImageReader reader = new ImageReaderFactory()
                 .newImageReader(Format.get("jpg"), fixture);
         try {
@@ -158,7 +167,7 @@ public class MetadataTest extends BaseTest {
 
     @Test
     void testGetIPTCWithNoIPTCData() throws Exception {
-        Path fixture = TestUtil.getImage("jpg");
+        Path fixture       = TestUtil.getImage("jpg");
         ImageReader reader = new ImageReaderFactory()
                 .newImageReader(Format.get("jpg"), fixture);
         try {
@@ -168,6 +177,8 @@ public class MetadataTest extends BaseTest {
             reader.dispose();
         }
     }
+
+    /* getNativeMetadata() */
 
     @Test
     void testGetNativeMetadataWithPresentData() throws Exception {
@@ -247,9 +258,40 @@ public class MetadataTest extends BaseTest {
         assertEquals(Orientation.ROTATE_0, instance.getOrientation());
     }
 
+    /* getXMPElements() */
+
+    @Test
+    void testGetXMPElementsWithPresentXMPData() throws Exception {
+        Path fixture       = TestUtil.getImage("jpg-xmp.jpg");
+        ImageReader reader = new ImageReaderFactory()
+                .newImageReader(Format.get("jpg"), fixture);
+        try {
+            Metadata metadata        = reader.getMetadata(0);
+            Map<String,Object> model = metadata.getXMPElements();
+            assertEquals(6, model.size());
+        } finally {
+            reader.dispose();
+        }
+    }
+
+    @Test
+    void testGetXMPElementsWithNoXMPData() throws Exception {
+        Path fixture       = TestUtil.getImage("jpg");
+        ImageReader reader = new ImageReaderFactory()
+                .newImageReader(Format.get("jpg"), fixture);
+        try {
+            Metadata metadata = reader.getMetadata(0);
+            assertTrue(metadata.getXMPElements().isEmpty());
+        } finally {
+            reader.dispose();
+        }
+    }
+
+    /* getXMPModel() */
+
     @Test
     void testGetXMPModelWithPresentXMPData() throws Exception {
-        Path fixture = TestUtil.getImage("jpg-xmp.jpg");
+        Path fixture       = TestUtil.getImage("jpg-xmp.jpg");
         ImageReader reader = new ImageReaderFactory()
                 .newImageReader(Format.get("jpg"), fixture);
         try {
@@ -263,7 +305,7 @@ public class MetadataTest extends BaseTest {
 
     @Test
     void testGetXMPModelWithNoXMPData() throws Exception {
-        Path fixture = TestUtil.getImage("jpg");
+        Path fixture       = TestUtil.getImage("jpg");
         ImageReader reader = new ImageReaderFactory()
                 .newImageReader(Format.get("jpg"), fixture);
         try {
@@ -274,10 +316,12 @@ public class MetadataTest extends BaseTest {
         }
     }
 
+    /* hashCode() */
+
     @Test
     void testHashCodeWithEqualInstances() {
         Directory exif = new Directory(TagSet.EXIF);
-        String xmp = "<rdf:RDF>cats</rdf:RDF>";
+        String xmp     = "<rdf:RDF>cats</rdf:RDF>";
 
         Metadata m1 = new Metadata();
         m1.setEXIF(exif);
@@ -346,17 +390,23 @@ public class MetadataTest extends BaseTest {
         assertNotEquals(m1.hashCode(), m2.hashCode());
     }
 
+    /* setEXIF() */
+
     @Test
     void testSetEXIFWithNullArgument() {
         instance.setEXIF(null);
         assertFalse(instance.getEXIF().isPresent());
     }
 
+    /* setIPTC() */
+
     @Test
     void testSetIPTCWithNullArgument() {
         instance.setIPTC(null);
         assertFalse(instance.getIPTC().isPresent());
     }
+
+    /* setXMP() */
 
     @Test
     void testSetXMPWithNullByteArrayArgument() {
@@ -377,6 +427,8 @@ public class MetadataTest extends BaseTest {
         assertTrue(xmp.startsWith("<rdf:RDF"));
         assertTrue(xmp.endsWith("</rdf:RDF>"));
     }
+
+    /* toMap() */
 
     @Test
     void testToMap() {
@@ -402,6 +454,7 @@ public class MetadataTest extends BaseTest {
                 edu.illinois.library.cantaloupe.image.iptc.Tag.CITY,
                 "Urbana".getBytes()).toMap()));
         expectedMap.put("xmp_string", "<rdf:RDF></rdf:RDF>");
+        expectedMap.put("xmp_elements", Collections.emptyMap());
         expectedMap.put("native", Map.of("key1", "value1", "key2", "value2"));
 
         // assemble the Metadata

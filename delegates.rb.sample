@@ -366,7 +366,14 @@ class CustomDelegate
   #         "Field2Name": value
   #     ],
   #     "xmp_string": "<rdf:RDF>...</rdf:RDF>",
-  #     "xmp_model": https://jena.apache.org/documentation/javadoc/jena/org/apache/jena/rdf/model/Model.html
+  #     "xmp_model": See https://jena.apache.org/documentation/javadoc/jena/org/apache/jena/rdf/model/Model.html,
+  #     "xmp_elements": {
+  #         "Field1Name": "value",
+  #         "Field2Name": [
+  #             "value1",
+  #             "value2"
+  #         ]
+  #     },
   #     "native": {
   #         # structure varies
   #     }
@@ -376,10 +383,13 @@ class CustomDelegate
   # * The `exif` key refers to embedded EXIF data. This also includes IFD0
   #   metadata from source TIFFs, whether or not an EXIF IFD is present.
   # * The `iptc` key refers to embedded IPTC IIM data.
-  # * The `xmp_string` key refers to raw embedded XMP data, which may or may
-  #   not contain EXIF and/or IPTC information.
+  # * The `xmp_string` key refers to raw embedded XMP data.
   # * The `xmp_model` key contains a Jena Model object pre-loaded with the
   #   contents of `xmp_string`.
+  # * The `xmp_elements` key contains a view of the embedded XMP data as key-
+  #   value pairs. This is convenient to use, but may not work correctly with
+  #   all XMP fields--in particular, those that cannot be expressed as
+  #   key-value pairs.
   # * The `native` key refers to format-specific metadata.
   #
   # Any combination of the above keys may be present or missing depending on

@@ -16,6 +16,8 @@
   `delegate_script.pathname` configuration key.
 * S3Cache uses multipart uploads, which reduces memory usage when caching
   derivatives larger than 5 MB.
+* The delegate script's `metadata` context key contains a new field,
+  `xmp_elements`, that provides a high-level key-value view of the XMP data.
 
 ## 5.0.6
 
