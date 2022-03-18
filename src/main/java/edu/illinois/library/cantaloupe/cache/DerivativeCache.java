@@ -20,6 +20,13 @@ public interface DerivativeCache extends Cache {
      * <p>Reads the cached image information corresponding to the given
      * identifier.</p>
      *
+     * <p>If the returned instance's {@link Info#getSerializationTimestamp()
+     * serialization timestamp} is {@code null} (which it will be for {@link
+     * Info.Serialization serialization versions} earlier than {@link
+     * Info.Serialization#VERSION_5}), implementations should try to
+     * populate it with the last-modified time of the cached resource, if
+     * possible.</p>
+     *
      * <p>If invalid image information exists in the cache, implementations
      * should delete it&mdash;ideally asynchronously.</p>
      *

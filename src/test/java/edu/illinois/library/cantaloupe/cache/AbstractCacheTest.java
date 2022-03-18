@@ -21,6 +21,7 @@ import java.nio.file.Path;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assumptions.*;
 
 abstract class AbstractCacheTest extends BaseTest {
 
@@ -86,6 +87,23 @@ abstract class AbstractCacheTest extends BaseTest {
     void testGetInfoWithNonexistentImage() throws Exception {
         final DerivativeCache instance = newInstance();
         assertFalse(instance.getInfo(new Identifier("bogus")).isPresent());
+    }
+
+    @Test
+    void testGetInfoPopulatesSerializationTimestampWhenNotAlreadySet()
+            throws Exception {
+        // These caches don't support this feature.
+        assumeFalse(this instanceof HeapCacheTest ||
+                this instanceof JdbcCacheTest ||
+                this instanceof RedisCacheTest);
+        final DerivativeCache instance = newInstance();
+
+        Identifier identifier = new Identifier("cats");
+        Info info = new Info();
+        instance.put(identifier, info);
+
+        info = instance.getInfo(identifier).get();
+        assertNotNull(info.getSerializationTimestamp());
     }
 
     @Test

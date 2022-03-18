@@ -17,7 +17,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.FileVisitOption;
 import java.nio.file.Files;
@@ -126,8 +126,8 @@ class FilesystemCache implements SourceCache, DerivativeCache {
         private boolean isClosed = false;
         private final Object lock;
         private final Path tempFile;
-        private T toRemove;
-        private OutputStream wrappedOutputStream;
+        private final T toRemove;
+        private final OutputStream wrappedOutputStream;
 
         /**
          * @param tempFile Pathname of the temp file to write to.
@@ -316,7 +316,7 @@ class FilesystemCache implements SourceCache, DerivativeCache {
         try {
             final MessageDigest digest =
                     MessageDigest.getInstance(HASH_ALGORITHM);
-            digest.update(uniqueString.getBytes(Charset.forName("UTF8")));
+            digest.update(uniqueString.getBytes(StandardCharsets.UTF_8));
             final String sum = Hex.encodeHexString(digest.digest());
 
             final Configuration config = Configuration.getInstance();
@@ -526,7 +526,14 @@ class FilesystemCache implements SourceCache, DerivativeCache {
             final Path cacheFile = infoFile(identifier);
             if (!isExpired(cacheFile)) {
                 LOGGER.debug("getInfo(): hit: {}", cacheFile);
-                return Optional.of(Info.fromJSON(cacheFile));
+                Info info = Info.fromJSON(cacheFile);
+                // Populate the serialization timestamp if it is not
+                // already, as suggested by the method contract.
+                if (info.getSerializationTimestamp() == null) {
+                    info.setSerializationTimestamp(
+                            Files.getLastModifiedTime(cacheFile).toInstant());
+                }
+                return Optional.of(info);
             } else {
                 purgeAsync(cacheFile);
             }

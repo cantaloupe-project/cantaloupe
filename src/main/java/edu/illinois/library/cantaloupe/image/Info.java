@@ -517,7 +517,7 @@ public final class Info {
      * @param timestamp Time at which the instance is serialized.
      * @since 6.0
      */
-    void setSerializationTimestamp(Instant timestamp) {
+    public void setSerializationTimestamp(Instant timestamp) {
         this.serializationTimestamp = timestamp;
     }
 

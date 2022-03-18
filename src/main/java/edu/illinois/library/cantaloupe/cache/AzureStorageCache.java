@@ -199,7 +199,7 @@ class AzureStorageCache implements DerivativeCache {
 
     @Override
     public Optional<Info> getInfo(Identifier identifier) throws IOException {
-        final String containerName = getContainerName();
+        final String containerName   = getContainerName();
         final CloudBlobClient client = getClientInstance();
 
         try {
@@ -213,6 +213,12 @@ class AzureStorageCache implements DerivativeCache {
                 if (isValid(blob)) {
                     try (InputStream is = blob.openInputStream()) {
                         Info info = Info.fromJSON(is);
+                        // Populate the serialization timestamp if it is not
+                        // already, as suggested by the method contract.
+                        if (info.getSerializationTimestamp() == null) {
+                            info.setSerializationTimestamp(
+                                    blob.getProperties().getLastModified().toInstant());
+                        }
                         LOGGER.debug("getInfo(): read {} from container {} in {}",
                                 objectKey, containerName, watch);
                         return Optional.of(info);

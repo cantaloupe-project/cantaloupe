@@ -135,6 +135,11 @@ class S3Cache implements DerivativeCache {
             // This extra validity check may be needed with minio server
             if (is != null && is.response().lastModified().isAfter(earliestValidInstant())) {
                 final Info info = Info.fromJSON(is);
+                // Populate the serialization timestamp if it is not already,
+                // as suggested by the method contract.
+                if (info.getSerializationTimestamp() == null) {
+                    info.setSerializationTimestamp(is.response().lastModified());
+                }
                 LOGGER.debug("getInfo(): read {} from bucket {} in {}",
                         objectKey, bucketName, watch);
                 touchAsync(objectKey);
