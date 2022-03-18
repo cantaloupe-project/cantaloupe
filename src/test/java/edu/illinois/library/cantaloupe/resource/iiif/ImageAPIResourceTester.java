@@ -290,6 +290,22 @@ public class ImageAPIResourceTester {
         assertStatus(403, uri);
     }
 
+    public void testLastModifiedHeaderWhenDerivativeCacheIsEnabled(URI uri)
+            throws Exception {
+        initializeFilesystemCache();
+
+        Client client = newClient(uri);
+        try {
+            // request a resource once to cache it
+            client.send();
+            // request it again to get the Last-Modified header
+            Response response = client.send();
+            assertNotNull(response.getHeaders().getFirstValue("Last-Modified"));
+        } finally {
+            client.stop();
+        }
+    }
+
     public void testNotFound(URI uri) {
         assertStatus(404, uri);
     }

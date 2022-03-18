@@ -2,6 +2,7 @@
 
 # 6.0
 
+* Responses for cached infos include a `Last-Modified` header.
 * The health endpoint is enabled via `endpoint.health.enabled` rather than
   `endpoint.api.enabled`.
 * HttpSource can be configured to send a ranged GET request instead of a HEAD

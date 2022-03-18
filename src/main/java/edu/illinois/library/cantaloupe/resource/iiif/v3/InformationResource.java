@@ -1,11 +1,14 @@
 package edu.illinois.library.cantaloupe.resource.iiif.v3;
 
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 
 import edu.illinois.library.cantaloupe.http.Method;
-import edu.illinois.library.cantaloupe.http.Status;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.processor.codec.ImageWriterFactory;
@@ -83,14 +86,23 @@ public class InformationResource extends IIIF3Resource {
                 .withCallback(new CustomCallback())
                 .build()) {
             Info info = handler.handle();
-            addHeaders();
+            addHeaders(info);
             newRepresentation(info, availableOutputFormats)
                     .write(getResponse().getOutputStream());
         }
     }
 
-    private void addHeaders() {
+    private void addHeaders(Info info) {
+        // Content-Type
         getResponse().setHeader("Content-Type", getNegotiatedContentType());
+        // Last-Modified
+        if (info.getSerializationTimestamp() != null) {
+            getResponse().setHeader("Last-Modified",
+                    DateTimeFormatter.RFC_1123_DATE_TIME
+                            .withLocale(Locale.UK)
+                            .withZone(ZoneId.systemDefault())
+                            .format(info.getSerializationTimestamp()));
+        }
     }
 
     /**

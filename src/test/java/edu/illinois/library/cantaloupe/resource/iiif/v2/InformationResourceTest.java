@@ -567,6 +567,8 @@ public class InformationResourceTest extends ResourceTest {
                 headers.getFirstValue("Content-Type")));
         // Date
         assertNotNull(headers.getFirstValue("Date"));
+        // Last-Modified (only present for cached infos, tested separately)
+        assertNull(headers.getFirstValue("Last-Modified"));
         // Server
         assertNotNull(headers.getFirstValue("Server"));
         // Vary
@@ -581,6 +583,13 @@ public class InformationResourceTest extends ResourceTest {
         // X-Powered-By
         assertEquals(Application.getName() + "/" + Application.getVersion(),
                 headers.getFirstValue("X-Powered-By"));
+    }
+
+    @Test
+    void testGETLastModifiedResponseHeaderWhenDerivativeCacheIsEnabled()
+            throws Exception {
+        URI uri = getHTTPURI("/" + IMAGE + "/info.json");
+        tester.testLastModifiedHeaderWhenDerivativeCacheIsEnabled(uri);
     }
 
     @Test

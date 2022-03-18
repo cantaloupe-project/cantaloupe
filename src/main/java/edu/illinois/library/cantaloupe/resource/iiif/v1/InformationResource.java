@@ -1,11 +1,14 @@
 package edu.illinois.library.cantaloupe.resource.iiif.v1;
 
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 
 import edu.illinois.library.cantaloupe.http.Method;
-import edu.illinois.library.cantaloupe.http.Status;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.resource.JacksonRepresentation;
@@ -86,16 +89,26 @@ public class InformationResource extends IIIF1Resource {
                     getPageIndex(),
                     getMetaIdentifier().getScaleConstraint());
 
-            addHeaders(iiifInfo);
+            addHeaders(info, iiifInfo);
             new JacksonRepresentation(iiifInfo)
                     .write(getResponse().getOutputStream());
         }
     }
 
-    private void addHeaders(Information info) {
+    private void addHeaders(Info info, Information iiifInfo) {
+        // Content-Type
         getResponse().setHeader("Content-Type", getNegotiatedMediaType());
+        // Link
         getResponse().setHeader("Link",
-                String.format("<%s>;rel=\"profile\";", info.profile));
+                String.format("<%s>;rel=\"profile\";", iiifInfo.profile));
+        // Last-Modified
+        if (info.getSerializationTimestamp() != null) {
+            getResponse().setHeader("Last-Modified",
+                    DateTimeFormatter.RFC_1123_DATE_TIME
+                            .withLocale(Locale.UK)
+                            .withZone(ZoneId.systemDefault())
+                            .format(info.getSerializationTimestamp()));
+        }
     }
 
     /**
