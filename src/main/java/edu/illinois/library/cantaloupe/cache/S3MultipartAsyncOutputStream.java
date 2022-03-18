@@ -37,11 +37,19 @@ import java.util.concurrent.LinkedBlockingQueue;
  * After {@link #close()} returns, the resulting object will take a little bit
  * of time to appear in the bucket.</p>
  *
+ * <p>Note that because this is a {@link CompletableOutputStream}, if the
+ * instance is not {@link #setComplete(boolean) marked as complete} before
+ * closure, the upload will be aborted.</p>
+ *
  * <p>Multi-part uploads can reduce memory usage when uploading objects larger
  * than the part length, as that is roughly the maximum amount that has to be
  * buffered in memory (provided that the length of the byte array passed to
  * either of the {@link #write} methods is not greater than the part
  * length).</p>
+ *
+ * <p>N.B.: Incomplete uploads should be aborted automatically, but when using
+ * Amazon S3, it may be helpful to enable the {@literal
+ * AbortIncompleteMultipartUpload} lifecycle rule as a fallback.</p>
  *
  * @author Alex Dolski UIUC
  * @since 6.0
@@ -57,10 +65,6 @@ public class S3MultipartAsyncOutputStream extends CompletableOutputStream {
 
         void add(Runnable task) {
             workQueue.add(task);
-        }
-
-        void stop() {
-            isStopped = true;
         }
 
         @Override
