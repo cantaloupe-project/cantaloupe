@@ -12,6 +12,7 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.Instant;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -207,7 +208,8 @@ class InfoTest extends BaseTest {
             Files.write(tempFile, json.getBytes(StandardCharsets.UTF_8));
 
             Info info = Info.fromJSON(tempFile);
-            assertEquals(info.toString(), instance.toString());
+            assertEquals(obscureTimestamps(info.toString()),
+                    obscureTimestamps(instance.toString()));
         } finally {
             if (tempFile != null) {
                 Files.deleteIfExists(tempFile);
@@ -223,7 +225,8 @@ class InfoTest extends BaseTest {
         InputStream inputStream = new ByteArrayInputStream(json.getBytes());
 
         Info info = Info.fromJSON(inputStream);
-        assertEquals(info.toString(), instance.toString());
+        assertEquals(obscureTimestamps(info.toString()),
+                obscureTimestamps(instance.toString()));
     }
 
     /* fromJSON(String) */
@@ -232,14 +235,15 @@ class InfoTest extends BaseTest {
     void testFromJSONWithString() throws Exception {
         String json = instance.toJSON();
         Info info = Info.fromJSON(json);
-        assertEquals(info.toString(), instance.toString());
+        assertEquals(obscureTimestamps(info.toString()),
+                obscureTimestamps(instance.toString()));
     }
 
     /* fromJSON() serialization */
 
     @Test
     void testFromJSONWithVersion2Serialization() throws Exception {
-        String v34json = "{\n" +
+        String v2json = "{\n" +
                 "  \"mediaType\": \"image/jpeg\",\n" +
                 "  \"images\": [\n" +
                 "    {\n" +
@@ -250,7 +254,7 @@ class InfoTest extends BaseTest {
                 "    }\n" +
                 "  ]\n" +
                 "}";
-        Info actual = Info.fromJSON(v34json);
+        Info actual = Info.fromJSON(v2json);
         Info expected = Info.builder()
                 .withFormat(Format.get("jpg"))
                 .withSize(100, 80)
@@ -261,7 +265,7 @@ class InfoTest extends BaseTest {
 
     @Test
     void testFromJSONWithVersion3Serialization() throws Exception {
-        String v4json = "{\n" +
+        String v3json = "{\n" +
                 "  \"identifier\": \"cats\",\n" +
                 "  \"mediaType\": \"image/jpeg\",\n" +
                 "  \"numResolutions\": 3,\n" +
@@ -275,7 +279,7 @@ class InfoTest extends BaseTest {
                 "    }\n" +
                 "  ]\n" +
                 "}";
-        Info actual = Info.fromJSON(v4json);
+        Info actual = Info.fromJSON(v3json);
         Info expected = Info.builder()
                 .withIdentifier(new Identifier("cats"))
                 .withFormat(Format.get("jpg"))
@@ -288,7 +292,7 @@ class InfoTest extends BaseTest {
 
     @Test
     void testFromJSONWithVersion4Serialization() throws Exception {
-        String v5json = "{\n" +
+        String v4json = "{\n" +
                 "  \"applicationVersion\": \"5.0\",\n" +
                 "  \"serializationVersion\": 4,\n" +
                 "  \"identifier\": \"cats\",\n" +
@@ -306,9 +310,10 @@ class InfoTest extends BaseTest {
                 "    \"xmp\": \"<cats/>\"\n" +
                 "  }\n" +
                 "}";
+        Info actual = Info.fromJSON(v4json);
+
         Metadata metadata = new Metadata();
         metadata.setXMP("<cats/>");
-        Info actual = Info.fromJSON(v5json);
         Info expected = Info.builder()
                 .withIdentifier(new Identifier("cats"))
                 .withFormat(Format.get("jpg"))
@@ -318,6 +323,45 @@ class InfoTest extends BaseTest {
                 .withTileSize(50, 40)
                 .build();
         expected.setApplicationVersion("5.0");
+        actual.setSerializationVersion(Info.Serialization.CURRENT.getVersion());
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    void testFromJSONWithVersion5Serialization() throws Exception {
+        Instant timestamp = Instant.now();
+        String v6json = "{\n" +
+                "  \"applicationVersion\": \"6.0\",\n" +
+                "  \"serializationVersion\": 5,\n" +
+                "  \"serializationTimestamp\": \"" + timestamp.toString() + "\",\n" +
+                "  \"identifier\": \"cats\",\n" +
+                "  \"mediaType\": \"image/jpeg\",\n" +
+                "  \"numResolutions\": 3,\n" +
+                "  \"images\": [\n" +
+                "    {\n" +
+                "      \"width\": 100,\n" +
+                "      \"height\": 80,\n" +
+                "      \"tileWidth\": 50,\n" +
+                "      \"tileHeight\": 40\n" +
+                "    }\n" +
+                "  ],\n" +
+                "  \"metadata\": {\n" +
+                "    \"xmp\": \"<cats/>\"\n" +
+                "  }\n" +
+                "}";
+        Metadata metadata = new Metadata();
+        metadata.setXMP("<cats/>");
+        Info actual = Info.fromJSON(v6json);
+        Info expected = Info.builder()
+                .withIdentifier(new Identifier("cats"))
+                .withFormat(Format.get("jpg"))
+                .withNumResolutions(3)
+                .withMetadata(metadata)
+                .withSize(100, 80)
+                .withTileSize(50, 40)
+                .build();
+        expected.setApplicationVersion("6.0");
+        expected.setSerializationTimestamp(timestamp);
         assertEquals(expected, actual);
     }
 
@@ -371,6 +415,20 @@ class InfoTest extends BaseTest {
                 .build();
         info2.setSerializationVersion(2);
         assertNotEquals(instance, info2);
+    }
+
+    @Test
+    void testEqualsWithDifferentSerializationTimestamps() {
+        Info info2 = Info.builder()
+                .withIdentifier(instance.getIdentifier())
+                .withSize(instance.getSize())
+                .withTileSize(instance.getImages().get(0).getTileSize())
+                .withFormat(instance.getSourceFormat())
+                .withNumResolutions(instance.getNumResolutions())
+                .withMetadata(instance.getMetadata())
+                .build();
+        info2.setSerializationTimestamp(Instant.now());
+        assertEquals(instance, info2);
     }
 
     @Test
@@ -634,6 +692,23 @@ class InfoTest extends BaseTest {
     }
 
     @Test
+    void testHashCodeWithDifferentSerializationTimestamps() {
+        Metadata metadata2 = new Metadata();
+        metadata2.setXMP("<cats/>");
+
+        Info info2 = Info.builder()
+                .withIdentifier(instance.getIdentifier())
+                .withSize(instance.getSize())
+                .withTileSize(instance.getImages().get(0).getTileSize())
+                .withFormat(instance.getSourceFormat())
+                .withNumResolutions(instance.getNumResolutions())
+                .withMetadata(metadata2)
+                .build();
+        info2.setSerializationTimestamp(Instant.now());
+        assertEquals(instance.hashCode(), info2.hashCode());
+    }
+
+    @Test
     void testHashCodeWithDifferentIdentifiers() {
         Info info2 = Info.builder()
                 .withIdentifier(new Identifier("cows"))
@@ -859,6 +934,15 @@ class InfoTest extends BaseTest {
         assertFalse(instance.isPersistable());
     }
 
+    /* setSerializationTimestamp() */
+
+    @Test
+    void testSetSerializationTimestamp() {
+        Instant timestamp = Instant.now();
+        instance.setSerializationTimestamp(timestamp);
+        assertEquals(timestamp, instance.getSerializationTimestamp());
+    }
+
     /* setSerializationVersion() */
 
     @Test
@@ -889,6 +973,7 @@ class InfoTest extends BaseTest {
         assertEquals("{" +
                         "\"applicationVersion\":\"" + Application.getVersion() + "\"," +
                         "\"serializationVersion\":" + Info.Serialization.CURRENT.getVersion() + "," +
+                        "\"serializationTimestamp\":\"0000-00-00T00:00:00.000000Z\"," +
                         "\"identifier\":\"cats\"," +
                         "\"mediaType\":\"image/jpeg\"," +
                         "\"numResolutions\":3," +
@@ -903,7 +988,7 @@ class InfoTest extends BaseTest {
                         "\"xmp\":\"<cats/>\"" +
                         "}" +
                         "}",
-                instance.toJSON());
+                obscureTimestamps(instance.toJSON()));
     }
 
     @Test
@@ -923,7 +1008,8 @@ class InfoTest extends BaseTest {
 
     @Test
     void testToString() throws Exception {
-        assertEquals(instance.toJSON(), instance.toString());
+        assertEquals(obscureTimestamps(instance.toJSON()),
+                obscureTimestamps(instance.toString()));
     }
 
     /* writeAsJSON() */
@@ -932,7 +1018,20 @@ class InfoTest extends BaseTest {
     void testWriteAsJSON() throws Exception {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         instance.writeAsJSON(baos);
-        assertArrayEquals(baos.toByteArray(), instance.toJSON().getBytes());
+
+        String expected = baos.toString(StandardCharsets.UTF_8);
+        String actual   = new String(instance.toJSON().getBytes(),
+                StandardCharsets.UTF_8);
+        assertEquals(obscureTimestamps(expected), obscureTimestamps(actual));
+    }
+
+    /**
+     * Converts any ISO-8601 timestamps in the given string to
+     * {@literal 0000-00-00T00:00:00.000000Z}.
+     */
+    private static String obscureTimestamps(String inString) {
+        return inString.replaceAll("\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}.\\d+Z",
+                "0000-00-00T00:00:00.000000Z");
     }
 
 }
