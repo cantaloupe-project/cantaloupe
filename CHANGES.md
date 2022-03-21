@@ -2,9 +2,8 @@
 
 # 6.0
 
-* Responses for infos serialized in this version or later by any cache, or in
-  earlier versions by AzureStorageCache, FilesystemCache, or S3Cache, include a
-  `Last-Modified` header.
+* Image and information responses include a `Last-Modified` header when
+  possible.
 * The health endpoint is enabled via `endpoint.health.enabled` rather than
   `endpoint.api.enabled`.
 * HttpSource can be configured to send a ranged GET request instead of a HEAD

@@ -30,7 +30,12 @@ import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.FileTime;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.TemporalAccessor;
 import java.util.Iterator;
+import java.util.Locale;
 
 import static edu.illinois.library.cantaloupe.test.Assert.HTTPAssert.*;
 import static edu.illinois.library.cantaloupe.test.Assert.PathAssert.*;
@@ -301,7 +306,14 @@ public class ImageAPIResourceTester {
             client.send();
             // request it again to get the Last-Modified header
             Response response = client.send();
-            assertNotNull(response.getHeaders().getFirstValue("Last-Modified"));
+            String value = response.getHeaders().getFirstValue("Last-Modified");
+            TemporalAccessor ta = DateTimeFormatter.RFC_1123_DATE_TIME
+                    .withLocale(Locale.UK)
+                    .withZone(ZoneId.systemDefault())
+                    .parse(value);
+            Instant instant = Instant.from(ta);
+            // assert that the header value is less than 2 seconds in the past
+            assertTrue(Instant.now().getEpochSecond() - instant.getEpochSecond() < 2);
         } finally {
             client.stop();
         }

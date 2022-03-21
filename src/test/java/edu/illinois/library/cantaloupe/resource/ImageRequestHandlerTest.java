@@ -13,6 +13,7 @@ import edu.illinois.library.cantaloupe.operation.ValidationException;
 import edu.illinois.library.cantaloupe.processor.Processor;
 import edu.illinois.library.cantaloupe.delegate.DelegateProxy;
 import edu.illinois.library.cantaloupe.processor.SourceFormatException;
+import edu.illinois.library.cantaloupe.source.StatResult;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import edu.illinois.library.cantaloupe.test.WebServer;
@@ -103,6 +104,7 @@ class ImageRequestHandlerTest extends BaseTest {
 
     private static class IntrospectiveCallback implements ImageRequestHandler.Callback {
         private boolean isPreAuthorizeCalled, isAuthorizeCalled,
+                isSourceAccessedCalled,
                 isWillStreamImageFromDerivativeCacheCalled,
                 isInfoAvailableCalled, isWillProcessImageCalled;
 
@@ -116,6 +118,11 @@ class ImageRequestHandlerTest extends BaseTest {
         public boolean authorize() {
             isAuthorizeCalled = true;
             return true;
+        }
+
+        @Override
+        public void sourceAccessed(StatResult result) {
+            isSourceAccessedCalled = true;
         }
 
         @Override
@@ -183,6 +190,32 @@ class ImageRequestHandlerTest extends BaseTest {
              OutputStream outputStream = OutputStream.nullOutputStream()) {
             handler.handle(outputStream);
             assertTrue(callback.isAuthorizeCalled);
+        }
+    }
+
+    @Test
+    void handleCallsSourceAccessedCallback() throws Exception {
+        { // Configure the application.
+            final Configuration config = Configuration.getInstance();
+            config.setProperty(Key.CACHE_SERVER_RESOLVE_FIRST, false);
+            config.setProperty(Key.SOURCE_STATIC, "FilesystemSource");
+            config.setProperty(Key.FILESYSTEMSOURCE_PATH_PREFIX,
+                    TestUtil.getImagesPath() + "/");
+        }
+
+        // Configure the request.
+        final OperationList opList  = new OperationList();
+        opList.setIdentifier(new Identifier("jpg-rgb-64x48x8.jpg"));
+        opList.add(new Encode(Format.get("jpg")));
+
+        final IntrospectiveCallback callback = new IntrospectiveCallback();
+        try (ImageRequestHandler handler = ImageRequestHandler.builder()
+                .withCallback(callback)
+                .withOperationList(opList)
+                .build();
+             OutputStream outputStream = OutputStream.nullOutputStream()) {
+            handler.handle(outputStream);
+            assertTrue(callback.isSourceAccessedCalled);
         }
     }
 
@@ -393,6 +426,9 @@ class ImageRequestHandlerTest extends BaseTest {
                         return true;
                     }
                     @Override
+                    public void sourceAccessed(StatResult result) {
+                    }
+                    @Override
                     public void willStreamImageFromDerivativeCache() {
                     }
                     @Override
@@ -433,6 +469,9 @@ class ImageRequestHandlerTest extends BaseTest {
                     @Override
                     public boolean authorize() {
                         return false;
+                    }
+                    @Override
+                    public void sourceAccessed(StatResult result) {
                     }
                     @Override
                     public void willStreamImageFromDerivativeCache() {

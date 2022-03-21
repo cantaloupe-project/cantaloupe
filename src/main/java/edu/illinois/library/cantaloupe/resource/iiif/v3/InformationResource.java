@@ -1,11 +1,7 @@
 package edu.illinois.library.cantaloupe.resource.iiif.v3;
 
-import java.time.Instant;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Locale;
 import java.util.Set;
 
 import edu.illinois.library.cantaloupe.http.Method;
@@ -16,6 +12,7 @@ import edu.illinois.library.cantaloupe.resource.JacksonRepresentation;
 import edu.illinois.library.cantaloupe.resource.ResourceException;
 import edu.illinois.library.cantaloupe.resource.Route;
 import edu.illinois.library.cantaloupe.resource.InformationRequestHandler;
+import edu.illinois.library.cantaloupe.source.StatResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -71,6 +68,14 @@ public class InformationResource extends IIIF3Resource {
                 }
                 return false;
             }
+
+            @Override
+            public void sourceAccessed(StatResult result) {
+                if (result.getLastModified() != null) {
+                    setLastModifiedHeader(result.getLastModified());
+                }
+            }
+
             @Override
             public void knowAvailableOutputFormats(Set<Format> formats) {
                 availableOutputFormats.addAll(formats);
@@ -97,11 +102,7 @@ public class InformationResource extends IIIF3Resource {
         getResponse().setHeader("Content-Type", getNegotiatedContentType());
         // Last-Modified
         if (info.getSerializationTimestamp() != null) {
-            getResponse().setHeader("Last-Modified",
-                    DateTimeFormatter.RFC_1123_DATE_TIME
-                            .withLocale(Locale.UK)
-                            .withZone(ZoneId.systemDefault())
-                            .format(info.getSerializationTimestamp()));
+            setLastModifiedHeader(info.getSerializationTimestamp());
         }
     }
 

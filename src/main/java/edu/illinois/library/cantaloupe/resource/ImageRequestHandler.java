@@ -185,6 +185,13 @@ public class ImageRequestHandler extends AbstractRequestHandler
         boolean authorize() throws Exception;
 
         /**
+         * Called immediately after the source image has first been accessed.
+         *
+         * @param result Information about the source image.
+         */
+        void sourceAccessed(StatResult result);
+
+        /**
          * Called when image information is available; always before {@link
          * #willProcessImage(Processor, Info)} and {@link
          * #willStreamImageFromDerivativeCache()}.
@@ -231,6 +238,9 @@ public class ImageRequestHandler extends AbstractRequestHandler
         @Override
         public boolean authorize() {
             return true;
+        }
+        @Override
+        public void sourceAccessed(StatResult result) {
         }
         @Override
         public void willStreamImageFromDerivativeCache() {
@@ -339,6 +349,7 @@ public class ImageRequestHandler extends AbstractRequestHandler
         if (sourceImage.isEmpty() || isResolvingFirst()) {
             try {
                 StatResult result = source.stat();
+                callback.sourceAccessed(result);
             } catch (NoSuchFileException e) { // this needs to be rethrown!
                 if (config.getBoolean(Key.CACHE_SERVER_PURGE_MISSING, false)) {
                     // If the image was not found, purge it from the cache.

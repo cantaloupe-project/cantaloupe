@@ -541,7 +541,7 @@ public class InformationResourceTest extends ResourceTest {
         client = newClient("/" + IMAGE + "/info.json");
         Response response = client.send();
         Headers headers = response.getHeaders();
-        assertEquals(8, headers.size());
+        assertEquals(9, headers.size());
 
         // Access-Control-Allow-Origin
         assertEquals("*", headers.getFirstValue("Access-Control-Allow-Origin"));
@@ -552,8 +552,8 @@ public class InformationResourceTest extends ResourceTest {
                 headers.getFirstValue("Content-Type")));
         // Date
         assertNotNull(headers.getFirstValue("Date"));
-        // Last-Modified (only present for cached infos, tested separately)
-        assertNull(headers.getFirstValue("Last-Modified"));
+        // Last-Modified
+        assertNotNull(headers.getFirstValue("Last-Modified"));
         // Link
         assertTrue(headers.getFirstValue("Link").contains("://"));
         // Server
