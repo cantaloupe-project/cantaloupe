@@ -237,6 +237,14 @@ public class JRubyDelegateProxyTest extends BaseTest {
         assertEquals("cats", result);
     }
 
+    /* getJdbcSourceLastModified() */
+
+    @Test
+    void testGetJdbcSourceLastModified() throws Exception {
+        String result = instance.getJdbcSourceLastModified();
+        assertEquals("SELECT last_modified FROM items WHERE filename = ?", result);
+    }
+
     /* getJdbcSourceMediaType() */
 
     @Test

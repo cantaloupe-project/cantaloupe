@@ -220,6 +220,10 @@ class CustomDelegate
     context['identifier']
   end
 
+  def jdbcsource_last_modified(options = {})
+    'SELECT last_modified FROM items WHERE filename = ?'
+  end
+
   def jdbcsource_media_type(options = {})
     'SELECT media_type FROM items WHERE filename = ?'
   end

@@ -159,7 +159,7 @@ abstract class HttpSourceTest extends AbstractSourceTest {
         instance.setDelegateProxy(proxy);
         instance.setIdentifier(identifier);
 
-        instance.checkAccess();
+        instance.stat();
     }
 
     private void doTestCheckAccessWithPresentUnreadableImage(Identifier identifier)
@@ -181,7 +181,7 @@ abstract class HttpSourceTest extends AbstractSourceTest {
         instance.setDelegateProxy(proxy);
         instance.setIdentifier(identifier);
         instance.setIdentifier(identifier);
-        assertThrows(AccessDeniedException.class, instance::checkAccess);
+        assertThrows(AccessDeniedException.class, instance::stat);
     }
 
     private void doTestCheckAccessWithMissingImage(Identifier identifier)
@@ -194,7 +194,7 @@ abstract class HttpSourceTest extends AbstractSourceTest {
             instance.setDelegateProxy(proxy);
             instance.setIdentifier(identifier);
 
-            instance.checkAccess();
+            instance.stat();
             fail("Expected exception");
         } catch (NoSuchFileException e) {
             // pass
@@ -216,7 +216,7 @@ abstract class HttpSourceTest extends AbstractSourceTest {
         instance.setDelegateProxy(proxy);
         instance.setIdentifier(identifier);
 
-        instance.checkAccess();
+        instance.stat();
     }
 
     @Test
@@ -234,7 +234,7 @@ abstract class HttpSourceTest extends AbstractSourceTest {
         instance.setDelegateProxy(proxy);
         instance.setIdentifier(identifier);
 
-        assertThrows(AccessDeniedException.class, instance::checkAccess);
+        assertThrows(AccessDeniedException.class, instance::stat);
     }
 
     @Test
@@ -253,7 +253,7 @@ abstract class HttpSourceTest extends AbstractSourceTest {
 
         try {
             instance.setIdentifier(PRESENT_READABLE_IDENTIFIER);
-            instance.checkAccess();
+            instance.stat();
             fail("Expected exception");
         } catch (AccessDeniedException e) {
             assertTrue(e.getMessage().contains("403"));
@@ -276,7 +276,7 @@ abstract class HttpSourceTest extends AbstractSourceTest {
 
         try {
             instance.setIdentifier(PRESENT_READABLE_IDENTIFIER);
-            instance.checkAccess();
+            instance.stat();
             fail("Expected exception");
         } catch (IOException e) {
             assertTrue(e.getMessage().contains("500"));
@@ -305,7 +305,7 @@ abstract class HttpSourceTest extends AbstractSourceTest {
         });
         server.start();
 
-        instance.checkAccess();
+        instance.stat();
     }
 
     @Test
@@ -331,7 +331,7 @@ abstract class HttpSourceTest extends AbstractSourceTest {
         instance.setDelegateProxy(proxy);
         instance.setIdentifier(identifier);
 
-        instance.checkAccess();
+        instance.stat();
     }
 
     @Test
@@ -346,7 +346,7 @@ abstract class HttpSourceTest extends AbstractSourceTest {
                         PRESENT_READABLE_IDENTIFIER);
         instance.setIdentifier(identifier);
 
-        assertThrows(IOException.class, () -> instance.checkAccess());
+        assertThrows(IOException.class, () -> instance.stat());
     }
 
     /* getFormatIterator() */
@@ -589,7 +589,7 @@ abstract class HttpSourceTest extends AbstractSourceTest {
         server.setHandler(handler);
         server.start();
 
-        instance.checkAccess();
+        instance.stat();
         instance.getFormatIterator().next();
 
         StreamFactory source = instance.newStreamFactory();
@@ -614,7 +614,7 @@ abstract class HttpSourceTest extends AbstractSourceTest {
         server.setHandler(handler);
         server.start();
 
-        instance.checkAccess();
+        instance.stat();
         instance.getFormatIterator().next();
 
         StreamFactory source = instance.newStreamFactory();

@@ -241,7 +241,7 @@ public class S3SourceTest extends AbstractSourceTest {
     void checkAccessUsingScriptLookupStrategyWithPresentReadableImage()
             throws Exception {
         useScriptLookupStrategy();
-        instance.checkAccess();
+        instance.stat();
     }
 
     @Test
@@ -259,7 +259,7 @@ public class S3SourceTest extends AbstractSourceTest {
         instance.setDelegateProxy(proxy);
         instance.setIdentifier(identifier);
 
-        assertThrows(NoSuchFileException.class, () -> instance.checkAccess());
+        assertThrows(NoSuchFileException.class, () -> instance.stat());
     }
 
     @Test
@@ -274,7 +274,7 @@ public class S3SourceTest extends AbstractSourceTest {
         proxy.getRequestContext().setIdentifier(identifier);
         instance.setDelegateProxy(proxy);
 
-        instance.checkAccess();
+        instance.stat();
     }
 
     @Test
@@ -287,7 +287,7 @@ public class S3SourceTest extends AbstractSourceTest {
         instance.setDelegateProxy(proxy);
         instance.setIdentifier(identifier);
 
-        assertThrows(IllegalArgumentException.class, () -> instance.checkAccess());
+        assertThrows(IllegalArgumentException.class, () -> instance.stat());
     }
 
     /* getFormatIterator() */

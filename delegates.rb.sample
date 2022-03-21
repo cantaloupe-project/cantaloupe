@@ -248,18 +248,33 @@ class CustomDelegate
   # should be used instead.
   #
   # @param options [Hash] Empty hash.
-  # @return [String] Identifier of the image corresponding to the given
-  #                  identifier in the database.
+  # @return [String, nil] Database identifier of the image corresponding to the
+  #                       identifier in the context, or nil if not found.
   #
   def jdbcsource_database_identifier(options = {})
   end
 
   ##
+  # Returns either the last-modified timestamp of an image in ISO 8601 format,
+  # or an SQL statement that can be used to retrieve it from a `TIMESTAMP`-type
+  # column in the database. In the latter case, the "SELECT" and "FROM" clauses
+  # should be in uppercase in order to be autodetected.
+  #
+  # Implementing this method is optional, but may be necessary for certain
+  # features (like `Last-Modified` response headers) to work.
+  #
+  # @param options [Hash] Empty hash.
+  # @return [String, nil]
+  #
+  def jdbcsource_last_modified(options = {})
+  end
+
+  ##
   # Returns either the media (MIME) type of an image, or an SQL statement that
-  # can be used to retrieve it, if it is stored in the database. In the latter
-  # case, the "SELECT" and "FROM" clauses should be in uppercase in order to
-  # be autodetected. If nil is returned, the media type will be inferred some
-  # other way, such as by identifier extension or magic bytes.
+  # can be used to retrieve it from a `CHAR`-type column in the database. In
+  # the latter case, the "SELECT" and "FROM" clauses should be in uppercase in
+  # order to be autodetected. If nil is returned, the media type will be
+  # inferred some other way, such as by identifier extension or magic bytes.
   #
   # @param options [Hash] Empty hash.
   # @return [String, nil]

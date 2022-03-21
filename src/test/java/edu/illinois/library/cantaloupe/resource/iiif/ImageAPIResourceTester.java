@@ -16,6 +16,7 @@ import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.source.AccessDeniedSource;
 import edu.illinois.library.cantaloupe.source.PathStreamFactory;
 import edu.illinois.library.cantaloupe.source.Source;
+import edu.illinois.library.cantaloupe.source.StatResult;
 import edu.illinois.library.cantaloupe.source.StreamFactory;
 import edu.illinois.library.cantaloupe.delegate.DelegateProxy;
 import edu.illinois.library.cantaloupe.test.TestUtil;
@@ -359,7 +360,7 @@ public class ImageAPIResourceTester {
     public static class NotCheckingAccessSource implements Source {
 
         @Override
-        public void checkAccess() throws IOException {
+        public StatResult stat() throws IOException {
             throw new IOException("checkAccess called!");
         }
 
@@ -434,7 +435,9 @@ public class ImageAPIResourceTester {
     public static class NotReadingSourceFormatSource implements Source {
 
         @Override
-        public void checkAccess() {}
+        public StatResult stat() {
+            return null;
+        }
 
         @Override
         public Iterator<Format> getFormatIterator() {

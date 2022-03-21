@@ -15,6 +15,7 @@ import edu.illinois.library.cantaloupe.processor.ProcessorConnector;
 import edu.illinois.library.cantaloupe.processor.ProcessorFactory;
 import edu.illinois.library.cantaloupe.processor.SourceFormatException;
 import edu.illinois.library.cantaloupe.delegate.DelegateProxy;
+import edu.illinois.library.cantaloupe.source.StatResult;
 import edu.illinois.library.cantaloupe.status.HealthChecker;
 import edu.illinois.library.cantaloupe.source.Source;
 import edu.illinois.library.cantaloupe.source.SourceFactory;
@@ -337,7 +338,7 @@ public class ImageRequestHandler extends AbstractRequestHandler
         final Optional<Path> sourceImage = cacheFacade.getSourceCacheFile(identifier);
         if (sourceImage.isEmpty() || isResolvingFirst()) {
             try {
-                source.checkAccess();
+                StatResult result = source.stat();
             } catch (NoSuchFileException e) { // this needs to be rethrown!
                 if (config.getBoolean(Key.CACHE_SERVER_PURGE_MISSING, false)) {
                     // If the image was not found, purge it from the cache.

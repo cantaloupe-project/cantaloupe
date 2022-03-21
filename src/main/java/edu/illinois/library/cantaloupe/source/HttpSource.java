@@ -30,9 +30,14 @@ import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.security.cert.X509Certificate;
 import java.time.Duration;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.TemporalAccessor;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.concurrent.TimeUnit;
@@ -168,6 +173,18 @@ class HttpSource extends AbstractSource implements Source {
                 }
             }
             return format;
+        }
+
+        Instant lastModified() {
+            String str = headers.get("Last-Modified");
+            if (str != null) {
+                TemporalAccessor ta = DateTimeFormatter.RFC_1123_DATE_TIME
+                        .withLocale(Locale.UK)
+                        .withZone(ZoneId.systemDefault())
+                        .parse(str);
+                return Instant.from(ta);
+            }
+            return null;
         }
 
     }
@@ -518,9 +535,9 @@ class HttpSource extends AbstractSource implements Source {
     }
 
     @Override
-    public void checkAccess() throws IOException {
+    public StatResult stat() throws IOException {
         ResourceInfo info = getResourceInfo();
-        final int status = info.status;
+        final int status  = info.status;
         if (status >= 400) {
             final String statusLine = "HTTP " + status;
             if (status == 404 || status == 410) {        // not found or gone
@@ -531,6 +548,9 @@ class HttpSource extends AbstractSource implements Source {
                 throw new IOException(statusLine);
             }
         }
+        StatResult result = new StatResult();
+        result.setLastModified(info.lastModified());
+        return result;
     }
 
     @Override

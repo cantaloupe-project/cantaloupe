@@ -205,12 +205,27 @@ public interface JavaDelegate {
     String getJDBCSourceDatabaseIdentifier();
 
     /**
+     * <p>Returns either the last-modified timestamp of an image in ISO 8601
+     * format, or an SQL statement that can be used to retrieve it from a
+     * {@code TIMESTAMP}-type column in the database. In the latter case, the
+     * {@code SELECT} and {@code FROM} clauses should be in uppercase in order
+     * to be autodetected.</p>
+     *
+     * <p>Implementing this method is optional, but may be necessary for
+     * certain features (like {@code Last-Modified} response headers) to
+     * work.</p>
+     *
+     * @since 6.0
+     */
+    String getJDBCSourceLastModified();
+
+    /**
      * Returns either the media (MIME) type of an image, or an SQL statement
-     * that can be used to retrieve it, if it is stored in the database. In the
-     * latter case, the {@code SELECT} and {@code FROM} clauses should be in
-     * uppercase in order to be autodetected. If {@code null} is returned, the
-     * media type will be inferred some other way, such as by identifier
-     * extension or magic bytes.
+     * that can be used to retrieve it from a {@code CHAR}-type column in the
+     * database. In the latter case, the {@code SELECT} and {@code FROM}
+     * clauses should be in uppercase in order to be autodetected. If {@code
+     * null} is returned, the media type will be inferred some other way, such
+     * as by identifier extension or magic bytes.
      */
     String getJDBCSourceMediaType();
 

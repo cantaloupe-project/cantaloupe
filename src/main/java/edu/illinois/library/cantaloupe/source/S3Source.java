@@ -28,6 +28,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.AccessDeniedException;
 import java.nio.file.NoSuchFileException;
+import java.time.Instant;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -85,6 +86,7 @@ final class S3Source extends AbstractSource implements Source {
 
     private static class S3ObjectAttributes {
         String contentType;
+        Instant lastModified;
         long length;
     }
 
@@ -298,8 +300,11 @@ final class S3Source extends AbstractSource implements Source {
     }
 
     @Override
-    public void checkAccess() throws IOException {
-        getObjectAttributes();
+    public StatResult stat() throws IOException {
+        S3ObjectAttributes attrs = getObjectAttributes();
+        StatResult result = new StatResult();
+        result.setLastModified(attrs.lastModified);
+        return result;
     }
 
     @Override
@@ -319,8 +324,9 @@ final class S3Source extends AbstractSource implements Source {
                         .bucket(bucket)
                         .key(key)
                         .build());
-                objectAttributes        = new S3ObjectAttributes();
-                objectAttributes.length = response.contentLength();
+                objectAttributes              = new S3ObjectAttributes();
+                objectAttributes.length       = response.contentLength();
+                objectAttributes.lastModified = response.lastModified();
             } catch (NoSuchBucketException | NoSuchKeyException e) {
                 throw new NoSuchFileException(info.toString());
             } catch (S3Exception e) {
@@ -346,6 +352,7 @@ final class S3Source extends AbstractSource implements Source {
      */
     S3ObjectInfo getObjectInfo() throws IOException {
         if (objectInfo == null) {
+            //noinspection SwitchStatementWithTooFewBranches
             switch (LookupStrategy.from(Key.S3SOURCE_LOOKUP_STRATEGY)) {
                 case DELEGATE_SCRIPT:
                     try {

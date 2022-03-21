@@ -9,6 +9,11 @@ current version.
     * `endpoint.health.enabled`
     * `HttpSource.BasicLookupStrategy.send_head_requests`
     * `processor.purge_incompatible_from_source_cache`
+2. Add the following methods from the sample delegate script:
+    * `jdbcsource_last_modified()`
+3. If you are using a Java delegate, add the following method to your delegate 
+   class: 
+    * `getJDBCSourceLastModified()`
 
 ## 4.1.x → 5.0
 

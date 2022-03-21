@@ -14,6 +14,7 @@ import edu.illinois.library.cantaloupe.processor.SourceFormatException;
 import edu.illinois.library.cantaloupe.delegate.DelegateProxy;
 import edu.illinois.library.cantaloupe.source.Source;
 import edu.illinois.library.cantaloupe.source.SourceFactory;
+import edu.illinois.library.cantaloupe.source.StatResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -245,7 +246,7 @@ public class InformationRequestHandler extends AbstractRequestHandler
         final Optional<Path> optSrcImage = cacheFacade.getSourceCacheFile(identifier);
         if (optSrcImage.isEmpty() || isResolvingFirst()) {
             try {
-                source.checkAccess();
+                StatResult result = source.stat();
             } catch (NoSuchFileException e) { // this needs to be rethrown!
                 if (config.getBoolean(Key.CACHE_SERVER_PURGE_MISSING, false)) {
                     // If the image was not found, purge it from the cache.
