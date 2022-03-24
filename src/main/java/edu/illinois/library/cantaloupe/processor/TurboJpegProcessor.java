@@ -20,6 +20,8 @@ import edu.illinois.library.cantaloupe.operation.Sharpen;
 import edu.illinois.library.cantaloupe.operation.Transpose;
 import edu.illinois.library.cantaloupe.operation.overlay.Overlay;
 import edu.illinois.library.cantaloupe.operation.redaction.Redaction;
+import edu.illinois.library.cantaloupe.processor.codec.ImageWriter;
+import edu.illinois.library.cantaloupe.processor.codec.ImageWriterFactory;
 import edu.illinois.library.cantaloupe.processor.codec.jpeg.JPEGMetadataReader;
 import edu.illinois.library.cantaloupe.processor.codec.jpeg.TurboJPEGImageReader;
 import edu.illinois.library.cantaloupe.processor.codec.jpeg.TurboJPEGImageWriter;
@@ -52,9 +54,6 @@ public class TurboJpegProcessor extends AbstractProcessor
 
     private static final Logger LOGGER =
             LoggerFactory.getLogger(TurboJpegProcessor.class);
-
-    private static final Set<Format> SUPPORTED_OUTPUT_FORMATS =
-            Set.of(Format.get("jpg"));
 
     private static boolean isClassInitialized;
 
@@ -101,7 +100,7 @@ public class TurboJpegProcessor extends AbstractProcessor
 
     @Override
     public Set<Format> getAvailableOutputFormats() {
-        return SUPPORTED_OUTPUT_FORMATS;
+        return ImageWriterFactory.supportedFormats();
     }
 
     @Override
@@ -158,6 +157,17 @@ public class TurboJpegProcessor extends AbstractProcessor
     public void process(final OperationList opList,
                         final Info info,
                         final OutputStream outputStream) throws FormatException, ProcessorException {
+        if (Format.get("jpg").equals(opList.getOutputFormat())) {
+            processUsingTurboJPEGWriter(opList, info, outputStream);
+        } else {
+            processUsingImageIOWriter(opList, info, outputStream);
+        }
+    }
+
+    private void processUsingTurboJPEGWriter(
+            final OperationList opList,
+            final Info info,
+            final OutputStream outputStream) throws FormatException, ProcessorException {
         final Dimension fullSize              = info.getSize();
         final ReductionFactor reductionFactor = new ReductionFactor();
         final ScaleConstraint scaleConstraint = opList.getScaleConstraint();
@@ -245,6 +255,97 @@ public class TurboJpegProcessor extends AbstractProcessor
                     Java2DUtil.applyOverlay(image, (Overlay) op);
                 }
             }
+            writer.write(image, outputStream);
+        } catch (SourceFormatException e) {
+            throw e;
+        } catch (IOException e) {
+            throw new ProcessorException(e);
+        }
+    }
+
+    private void processUsingImageIOWriter(
+            final OperationList opList,
+            final Info info,
+            final OutputStream outputStream) throws FormatException, ProcessorException {
+        final Dimension fullSize              = info.getSize();
+        final ReductionFactor reductionFactor = new ReductionFactor();
+        final ScaleConstraint scaleConstraint = opList.getScaleConstraint();
+
+        try {
+            imageReader.setUseFastDCT(USE_FAST_DECODE_DCT);
+
+            final Rectangle roiWithinSafeRegion = new Rectangle();
+            BufferedImage image =
+                    imageReader.readAsBufferedImage(roiWithinSafeRegion);
+
+            Orientation orientation = Orientation.ROTATE_0;
+            final Metadata metadata = info.getMetadata();
+            if (metadata != null) {
+                orientation = metadata.getOrientation();
+            }
+
+            // Apply the crop operation, if present, and retain a reference
+            // to it for subsequent operations to refer to.
+            Crop crop = new CropByPercent();
+            for (Operation op : opList) {
+                if (op instanceof Crop) {
+                    crop = (Crop) op;
+                    if (crop.hasEffect(fullSize, opList)) {
+                        // The TurboJPEG writer cannot deal with a
+                        // BufferedImage that has been "virtually cropped" by
+                        // BufferedImage.getSubimage(). We must tell this
+                        // method to copy the underlying raster.
+                        image = Java2DUtil.crop(image, crop, reductionFactor,
+                                scaleConstraint, true);
+                    }
+                }
+            }
+
+            // All operations have already been corrected for the orientation,
+            // but the image itself has not yet been corrected.
+            if (!Orientation.ROTATE_0.equals(orientation)) {
+                image = Java2DUtil.rotate(image, orientation);
+            }
+
+            final Set<Redaction> redactions = opList.stream()
+                    .filter(op -> op instanceof Redaction)
+                    .filter(op -> op.hasEffect(fullSize, opList))
+                    .map(op -> (Redaction) op)
+                    .collect(Collectors.toSet());
+            Java2DUtil.applyRedactions(image, fullSize, crop,
+                    new double[] { 1.0, 1.0 }, reductionFactor,
+                    scaleConstraint, redactions);
+
+            for (Operation op : opList) {
+                if (!op.hasEffect(fullSize, opList)) {
+                    continue;
+                }
+                if (op instanceof Scale) {
+                    final Scale scale = (Scale) op;
+                    final boolean isLinear = scale.isLinear() &&
+                            !scale.isUp(fullSize, scaleConstraint);
+                    if (isLinear) {
+                        image = Java2DUtil.convertColorToLinearRGB(image);
+                    }
+                    image = Java2DUtil.scale(image, scale,
+                            scaleConstraint, reductionFactor, isLinear);
+                    if (isLinear) {
+                        image = Java2DUtil.convertColorToSRGB(image);
+                    }
+                } else if (op instanceof Transpose) {
+                    image = Java2DUtil.transpose(image, (Transpose) op);
+                } else if (op instanceof Rotate) {
+                    image = Java2DUtil.rotate(image, (Rotate) op);
+                } else if (op instanceof ColorTransform) {
+                    image = Java2DUtil.transformColor(image, (ColorTransform) op);
+                } else if (op instanceof Sharpen) {
+                    image = Java2DUtil.sharpen(image, (Sharpen) op);
+                } else if (op instanceof Overlay) {
+                    Java2DUtil.applyOverlay(image, (Overlay) op);
+                }
+            }
+            Encode encode = (Encode) opList.getFirst(Encode.class);
+            ImageWriter writer = new ImageWriterFactory().newImageWriter(encode);
             writer.write(image, outputStream);
         } catch (SourceFormatException e) {
             throw e;

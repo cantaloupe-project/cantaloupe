@@ -2,6 +2,8 @@
 
 ## 5.0.6
 
+* TurboJpegProcessor is able to generate non-JPEG derivative images, which
+  fixes an HTTP 415 error that would occur when trying to do that.
 * Fixed a crop-offset bug that could occur when using PdfBoxProcessor to
   generate JPEGs with libjpeg-turbo active.
 
