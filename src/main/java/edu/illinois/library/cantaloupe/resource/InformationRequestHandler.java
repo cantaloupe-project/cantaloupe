@@ -140,6 +140,10 @@ public class InformationRequestHandler extends AbstractRequestHandler
          * <p>Performs authorization using an {@link
          * edu.illinois.library.cantaloupe.auth.Authorizer}.</p>
          *
+         * <p>Any exceptions will bubble up through {@link #handle()}. This
+         * feature can be used to support e.g. a {@link ResourceException} with
+         * a custom status depending on the authorization result.</p>
+         *
          * <p>This is the first callback to get called.</p>
          *
          * @return Authorization result.
