@@ -39,14 +39,14 @@ RUN wget -q https://github.com/GrokImageCompression/grok/releases/download/v7.6.
     && dpkg -i ./libgrokj2k1_7.6.5-1_amd64.deb \
     && dpkg -i --ignore-depends=libjpeg62-turbo ./grokj2k-tools_7.6.5-1_amd64.deb \
     # Install OpenJDK
-    && wget -q https://github.com/AdoptOpenJDK/openjdk16-binaries/releases/download/jdk-16.0.1%2B9/OpenJDK16U-jdk_x64_linux_hotspot_16.0.1_9.tar.gz \
-    && tar xfz OpenJDK16U-jdk_x64_linux_hotspot_16.0.1_9.tar.gz \
-    && mv jdk-16.0.1+9 /opt/jdk \
-    # Install Maven (the one in apt is too old for JDK16 as of 2020-05-14)
-    && wget -q https://mirrors.ocf.berkeley.edu/apache/maven/maven-3/3.8.1/binaries/apache-maven-3.8.1-bin.tar.gz \
-    && tar xfz apache-maven-3.8.1-bin.tar.gz \
-    && mv apache-maven-3.8.1 /opt/maven \
-    && rm apache-maven-3.8.1-bin.tar.gz
+    && wget -q https://download.java.net/java/GA/jdk18/43f95e8614114aeaa8e8a5fcf20a682d/36/GPL/openjdk-18_linux-x64_bin.tar.gz \
+    && tar xfz openjdk-18_linux-x64_bin.tar.gz \
+    && mv jdk-18 /opt/jdk \
+    # Install a newer Maven than the one in apt
+    && wget -q https://dlcdn.apache.org/maven/maven-3/3.8.5/binaries/apache-maven-3.8.5-bin.tar.gz \
+    && tar xfz apache-maven-3.8.5-bin.tar.gz \
+    && mv apache-maven-3.8.5 /opt/maven \
+    && rm apache-maven-3.8.5-bin.tar.gz
 
 # A non-root user is needed for some FilesystemSourceTest tests to work.
 ARG user=cantaloupe
