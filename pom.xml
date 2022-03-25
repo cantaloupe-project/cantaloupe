@@ -20,7 +20,7 @@
         <jetty.version>11.0.5</jetty.version>
         <jruby.version>9.2.17.0</jruby.version>
         <logback.version>1.2.8</logback.version>
-        <surefire.version>3.0.0-M3</surefire.version>
+        <surefire.version>3.0.0-M5</surefire.version>
     </properties>
 
     <developers>
@@ -421,7 +421,8 @@
                     <runOrder>random</runOrder>
                     <reuseForks>false</reuseForks>
                     <!-- JAI requires this in JDK >= 16. -->
-                    <argLine>--illegal-access=permit</argLine>
+                    <!-- JAI requires this in JDK 16+. It should be removed when JAI is. -->
+                    <argLine>--illegal-access=permit --add-opens java.desktop/sun.awt.image=ALL-UNNAMED</argLine>
                 </configuration>
             </plugin>
 
@@ -557,6 +558,8 @@
                         <configuration>
                             <runOrder>random</runOrder>
                             <reuseForks>false</reuseForks>
+                            <!-- JAI requires this in JDK 16+. It should be removed when JAI is. -->
+                            <argLine>--add-opens java.desktop/sun.awt.image=ALL-UNNAMED</argLine>
                             <excludes>
                                 <exclude>AzureStorage*Test</exclude>
                                 <exclude>FfmpegProcessorTest</exclude>
@@ -586,6 +589,8 @@
                         <configuration>
                             <runOrder>random</runOrder>
                             <reuseForks>false</reuseForks>
+                            <!-- JAI requires this in JDK 16+. It should be removed when JAI is. -->
+                            <argLine>--add-opens java.desktop/sun.awt.image=ALL-UNNAMED</argLine>
                             <excludes>
                                 <exclude>Azure*Test</exclude>
                             </excludes>
