@@ -1,7 +1,9 @@
 package edu.illinois.library.cantaloupe.resource.iiif.v2;
 
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import edu.illinois.library.cantaloupe.http.Method;
@@ -15,6 +17,8 @@ import edu.illinois.library.cantaloupe.resource.Route;
 import edu.illinois.library.cantaloupe.resource.InformationRequestHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.script.ScriptException;
 
 /**
  * Handles IIIF Image API 2.x information requests.
@@ -57,16 +61,7 @@ public class InformationResource extends IIIF2Resource {
         class CustomCallback implements InformationRequestHandler.Callback {
             @Override
             public boolean authorize() throws Exception {
-                try {
-                    // The logic here is somewhat convoluted. See the method
-                    // documentation for more information.
-                    return InformationResource.this.preAuthorize();
-                } catch (ResourceException e) {
-                    if (e.getStatus().getCode() > 400) {
-                        throw e;
-                    }
-                }
-                return false;
+                return InformationResource.this.preAuthorize();
             }
             @Override
             public void knowAvailableOutputFormats(Set<Format> formats) {
@@ -82,10 +77,19 @@ public class InformationResource extends IIIF2Resource {
                 .withRequestContext(getRequestContext())
                 .withCallback(new CustomCallback())
                 .build()) {
-            Info info = handler.handle();
             addHeaders();
-            newRepresentation(info, availableOutputFormats)
-                    .write(getResponse().getOutputStream());
+            try {
+                Info info = handler.handle();
+                newRepresentation(info, availableOutputFormats)
+                        .write(getResponse().getOutputStream());
+            } catch (ResourceException e) {
+                if (e.getStatus().getCode() < 500) {
+                    newHTTP4xxRepresentation(e.getStatus(), e.getMessage())
+                            .write(getResponse().getOutputStream());
+                } else {
+                    throw e;
+                }
+            }
         }
     }
 
@@ -129,6 +133,19 @@ public class InformationResource extends IIIF2Resource {
                 getPageIndex(),
                 getMetaIdentifier().getScaleConstraint());
         return new JacksonRepresentation(imageInfo);
+    }
+
+    private JacksonRepresentation newHTTP4xxRepresentation(
+            Status status,
+            String message) throws ScriptException {
+        final Map<String,Object> map = new LinkedHashMap<>(); // preserves key order
+        map.put("@context", "http://iiif.io/api/image/2/context.json");
+        map.put("@id", getImageURI());
+        map.put("protocol", "http://iiif.io/api/image");
+        map.put("status", status.getCode());
+        map.put("message", message);
+        map.putAll(getDelegateProxy().getExtraIIIF2InformationResponseKeys());
+        return new JacksonRepresentation(map);
     }
 
 }

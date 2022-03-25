@@ -1,7 +1,9 @@
 package edu.illinois.library.cantaloupe.resource.iiif.v1;
 
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import edu.illinois.library.cantaloupe.http.Method;
@@ -52,16 +54,7 @@ public class InformationResource extends IIIF1Resource {
         class CustomCallback implements InformationRequestHandler.Callback {
             @Override
             public boolean authorize() throws Exception {
-                try {
-                    // The logic here is somewhat convoluted. See the method
-                    // documentation for more information.
-                    return InformationResource.this.preAuthorize();
-                } catch (ResourceException e) {
-                    if (e.getStatus().getCode() > 400) {
-                        throw e;
-                    }
-                }
-                return false;
+                return InformationResource.this.preAuthorize();
             }
             @Override
             public void knowAvailableOutputFormats(Set<Format> formats) {
@@ -77,18 +70,25 @@ public class InformationResource extends IIIF1Resource {
                 .withRequestContext(getRequestContext())
                 .withCallback(new CustomCallback())
                 .build()) {
-            Info info = handler.handle();
-
-            ImageInfo iiifInfo = new ImageInfoFactory().newImageInfo(
-                    getImageURI(),
-                    availableOutputFormats,
-                    info,
-                    getPageIndex(),
-                    getMetaIdentifier().getScaleConstraint());
-
-            addHeaders(iiifInfo);
-            new JacksonRepresentation(iiifInfo)
-                    .write(getResponse().getOutputStream());
+            try {
+                Info info = handler.handle();
+                ImageInfo iiifInfo = new ImageInfoFactory().newImageInfo(
+                        getImageURI(),
+                        availableOutputFormats,
+                        info,
+                        getPageIndex(),
+                        getMetaIdentifier().getScaleConstraint());
+                addHeaders(iiifInfo);
+                new JacksonRepresentation(iiifInfo)
+                        .write(getResponse().getOutputStream());
+            } catch (ResourceException e) {
+                if (e.getStatus().getCode() < 500) {
+                    newHTTP4xxRepresentation(e.getStatus(), e.getMessage())
+                            .write(getResponse().getOutputStream());
+                } else {
+                    throw e;
+                }
+            }
         }
     }
 
@@ -120,6 +120,16 @@ public class InformationResource extends IIIF1Resource {
             mediaType = "application/json";
         }
         return mediaType + ";charset=UTF-8";
+    }
+
+    private JacksonRepresentation newHTTP4xxRepresentation(Status status,
+                                                           String message) {
+        final Map<String, Object> map = new LinkedHashMap<>(); // preserves key order
+        map.put("@context", "http://library.stanford.edu/iiif/image-api/1.1/context.json");
+        map.put("@id", getImageURI());
+        map.put("status", status.getCode());
+        map.put("message", message);
+        return new JacksonRepresentation(map);
     }
 
 }

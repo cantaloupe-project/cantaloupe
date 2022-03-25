@@ -30,6 +30,20 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 public class ImageResourceTester extends ImageAPIResourceTester {
 
+    public void testAuthorizationWhenUnauthorized(URI uri) {
+        // This may vary depending on the return value of a delegate method,
+        // but the test delegate script returns 403.
+        assertStatus(401, uri);
+        assertRepresentationContains("401 Unauthorized", uri);
+    }
+
+    public void testAuthorizationWhenForbidden(URI uri) {
+        // This may vary depending on the return value of a delegate method,
+        // but the test delegate script returns 403.
+        assertStatus(403, uri);
+        assertRepresentationContains("403 Forbidden", uri);
+    }
+
     public void testAuthorizationWhenRedirecting(URI uri)
             throws Exception {
         Client client = newClient(uri);
