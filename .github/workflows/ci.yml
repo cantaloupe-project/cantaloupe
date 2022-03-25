@@ -13,24 +13,24 @@ jobs:
         uses: actions/checkout@v2
       - name: Test in Linux JDK 11
         if: matrix.os == 'ubuntu-latest' && matrix.java == 'jdk11'
-        run: docker-compose -f docker/Linux-JDK11/docker-compose.yml up --exit-code-from cantaloupe
+        run: docker-compose -f docker/Linux-JDK11/docker-compose.yml up --build --exit-code-from cantaloupe
       - name: Test in Linux JDK 15
         if: matrix.os == 'ubuntu-latest' && matrix.java == 'jdk15'
-        run: docker-compose -f docker/Linux-JDK15/docker-compose.yml up --exit-code-from cantaloupe
+        run: docker-compose -f docker/Linux-JDK15/docker-compose.yml up --build --exit-code-from cantaloupe
       - name: Test in Linux JDK 16
         if: matrix.os == 'ubuntu-latest' && matrix.java == 'jdk16'
-        run: docker-compose -f docker/Linux-JDK16/docker-compose.yml up --exit-code-from cantaloupe
+        run: docker-compose -f docker/Linux-JDK16/docker-compose.yml up --build --exit-code-from cantaloupe
       - name: Test in Linux GraalVM
         if: matrix.os == 'ubuntu-latest' && matrix.java == 'graalvm'
-        run: docker-compose -f docker/Linux-GraalVM20/docker-compose.yml up --exit-code-from cantaloupe
+        run: docker-compose -f docker/Linux-GraalVM20/docker-compose.yml up --build --exit-code-from cantaloupe
       - name: Test in Windows JDK 11
         if: matrix.os == 'windows-latest' && matrix.java == 'jdk11'
-        run: docker-compose -f docker/Windows-JDK11/docker-compose.yml up --exit-code-from cantaloupe
+        run: docker-compose -f docker/Windows-JDK11/docker-compose.yml up --build --exit-code-from cantaloupe
       - name: Test in Windows JDK 15
         if: matrix.os == 'windows-latest' && matrix.java == 'jdk15'
-        run: docker-compose -f docker/Windows-JDK15/docker-compose.yml up --exit-code-from cantaloupe
+        run: docker-compose -f docker/Windows-JDK15/docker-compose.yml up --build --exit-code-from cantaloupe
       - name: Test in Windows JDK 16
         if: matrix.os == 'windows-latest' && matrix.java == 'jdk16'
-        run: docker-compose -f docker/Windows-JDK16/docker-compose.yml up --exit-code-from cantaloupe
+        run: docker-compose -f docker/Windows-JDK16/docker-compose.yml up --build --exit-code-from cantaloupe
       # TODO: Windows+GraalVM
 
