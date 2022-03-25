@@ -9,10 +9,12 @@ import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.delegate.DelegateProxy;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import edu.illinois.library.cantaloupe.test.WebServer;
+import edu.illinois.library.cantaloupe.util.SocketUtils;
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.handler.DefaultHandler;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -117,16 +119,16 @@ abstract class HttpSourceTest extends AbstractSourceTest {
                 "ScriptLookupStrategy");
     }
 
-    /* checkAccess() */
+    /* stat() */
 
     @Test
-    void testCheckAccessUsingBasicLookupStrategyWithPresentUnreadableImage()
+    void testStatUsingBasicLookupStrategyWithPresentUnreadableImage()
             throws Exception {
         doTestCheckAccessWithPresentUnreadableImage(new Identifier("gif"));
     }
 
     @Test
-    void testCheckAccessUsingScriptLookupStrategyWithPresentReadableImage()
+    void testStatUsingScriptLookupStrategyWithPresentReadableImage()
             throws Exception {
         useScriptLookupStrategy();
         Identifier identifier = new Identifier(getServerURI() + "/" +
@@ -135,7 +137,7 @@ abstract class HttpSourceTest extends AbstractSourceTest {
     }
 
     @Test
-    void testCheckAccessUsingScriptLookupStrategyWithMissingImage()
+    void testStatUsingScriptLookupStrategyWithMissingImage()
             throws Exception {
         useScriptLookupStrategy();
         Identifier identifier = new Identifier(getServerURI() + "/bogus");
@@ -143,7 +145,7 @@ abstract class HttpSourceTest extends AbstractSourceTest {
     }
 
     @Test
-    void testCheckAccessUsingScriptLookupStrategyWithPresentUnreadableImage()
+    void testStatUsingScriptLookupStrategyWithPresentUnreadableImage()
             throws Exception {
         useScriptLookupStrategy();
         Identifier identifier = new Identifier(getServerURI() + "/gif");
@@ -202,7 +204,7 @@ abstract class HttpSourceTest extends AbstractSourceTest {
     }
 
     @Test
-    void testCheckAccessUsingScriptLookupStrategyWithValidAuthentication()
+    void testStatUsingScriptLookupStrategyWithValidAuthentication()
             throws Exception {
         useScriptLookupStrategy();
 
@@ -220,7 +222,7 @@ abstract class HttpSourceTest extends AbstractSourceTest {
     }
 
     @Test
-    void testCheckAccessUsingScriptLookupStrategyWithInvalidAuthentication()
+    void testStatUsingScriptLookupStrategyWithInvalidAuthentication()
             throws Exception {
         useScriptLookupStrategy();
 
@@ -238,7 +240,7 @@ abstract class HttpSourceTest extends AbstractSourceTest {
     }
 
     @Test
-    void testCheckAccessWith403Response() throws Exception {
+    void testStatWith403Response() throws Exception {
         server.setHandler(new DefaultHandler() {
             @Override
             public void handle(String target,
@@ -261,7 +263,7 @@ abstract class HttpSourceTest extends AbstractSourceTest {
     }
 
     @Test
-    void testCheckAccessWith500Response() throws Exception {
+    void testStatWith500Response() throws Exception {
         server.setHandler(new DefaultHandler() {
             @Override
             public void handle(String target,
@@ -283,8 +285,27 @@ abstract class HttpSourceTest extends AbstractSourceTest {
         }
     }
 
+    @Disabled
     @Test
-    void testCheckAccessSendsUserAgentHeader() throws Exception {
+    void testStatUsingProxy() throws Exception {
+        server.start();
+
+        final int proxyPort = SocketUtils.getOpenPort();
+
+        // Set up the proxy
+        // TODO; write this
+
+        // Set up HttpSource
+        final Configuration config = Configuration.getInstance();
+        config.setProperty(Key.HTTPSOURCE_HTTP_PROXY_HOST, "127.0.0.1");
+        config.setProperty(Key.HTTPSOURCE_HTTP_PROXY_PORT, proxyPort);
+
+        // Expect no exception
+        instance.stat();
+    }
+
+    @Test
+    void testStatSendsUserAgentHeader() throws Exception {
         server.setHandler(new DefaultHandler() {
             @Override
             public void handle(String target,
@@ -309,7 +330,7 @@ abstract class HttpSourceTest extends AbstractSourceTest {
     }
 
     @Test
-    void testCheckAccessSendsCustomHeaders() throws Exception {
+    void testStatSendsCustomHeaders() throws Exception {
         useScriptLookupStrategy();
 
         server.setHandler(new DefaultHandler() {
@@ -335,7 +356,7 @@ abstract class HttpSourceTest extends AbstractSourceTest {
     }
 
     @Test
-    void testCheckAccessWithMalformedURI() throws Exception {
+    void testStatWithMalformedURI() throws Exception {
         server.start();
 
         Configuration config = Configuration.getInstance();

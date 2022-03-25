@@ -175,6 +175,10 @@ HttpSource.allow_insecure = false
 # Request timeout in seconds.
 HttpSource.request_timeout =
 
+# !! Client HTTP proxy.
+HttpSource.proxy.http.host =
+HttpSource.proxy.http.port =
+
 # Tells HttpSource how to look up resources. Allowed values are
 # `BasicLookupStrategy` and `ScriptLookupStrategy`. ScriptLookupStrategy
 # uses a delegate method for dynamic lookups; see the user manual.
@@ -211,11 +215,6 @@ HttpSource.chunking.cache.enabled = true
 
 # Max per-request chunk cache size.
 HttpSource.chunking.cache.max_size = 5M
-
-# Enable HTTP Proxy for HttpSource
-HttpSource.proxy.http.enabled = false
-HttpSource.proxy.http.server = proxy.example.com
-HttpSource.proxy.http.port = 8080
 
 #----------------------------------------
 # S3Source

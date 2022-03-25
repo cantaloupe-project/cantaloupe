@@ -19,10 +19,10 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.X509TrustManager;
 import javax.script.ScriptException;
 import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.net.Proxy;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.Proxy;
-import java.net.InetSocketAddress;
 import java.nio.file.AccessDeniedException;
 import java.nio.file.NoSuchFileException;
 import java.security.KeyManagementException;
@@ -410,27 +410,24 @@ class HttpSource extends AbstractSource implements Source {
                     .connectTimeout(getRequestTimeout().getSeconds(), TimeUnit.SECONDS)
                     .readTimeout(getRequestTimeout().getSeconds(), TimeUnit.SECONDS)
                     .writeTimeout(getRequestTimeout().getSeconds(), TimeUnit.SECONDS);
-
             final Configuration config = Configuration.getInstance();
-            
-            final boolean httpProxyEnabled = config.getBoolean(
-                Key.HTTPSOURCE_HTTP_PROXY_ENABLED, false);
-            if (httpProxyEnabled) {
-              final String httpProxyServer = config.getString(Key.HTTPSOURCE_HTTP_PROXY_SERVER, "");
-              if (httpProxyServer == "") {
-                throw new RuntimeException("proxy server setting HttpSource.proxy.http.server should not be empty");
-              }
-              final int httpProxyPort = config.getInt(Key.HTTPSOURCE_HTTP_PROXY_PORT, 8080);
 
-              LOGGER.trace("Using HTTP Proxy at server {} on port {}", httpProxyServer, httpProxyPort);
-              Proxy httpProxy = new Proxy(Proxy.Type.HTTP,new InetSocketAddress(httpProxyServer, httpProxyPort));
-              builder.proxy(httpProxy);
+            final String proxyHost =
+                    config.getString(Key.HTTPSOURCE_HTTP_PROXY_HOST, "");
+            if (!proxyHost.isBlank()) {
+                final int proxyPort =
+                        config.getInt(Key.HTTPSOURCE_HTTP_PROXY_PORT);
+                if (proxyPort == 0) {
+                    throw new RuntimeException("Proxy port setting " +
+                            Key.HTTPSOURCE_HTTP_PROXY_PORT + " must be set");
+                }
+                LOGGER.debug("Using HTTP proxy: {}:{}", proxyHost, proxyPort);
+                Proxy httpProxy = new Proxy(Proxy.Type.HTTP,
+                        new InetSocketAddress(proxyHost, proxyPort));
+                builder.proxy(httpProxy);
             }
 
-            final boolean allowInsecure = config.getBoolean(
-                    Key.HTTPSOURCE_ALLOW_INSECURE, false);
-
-            if (allowInsecure) {
+            if (config.getBoolean(Key.HTTPSOURCE_ALLOW_INSECURE, false)) {
                 try {
                     X509TrustManager[] tm = new X509TrustManager[]{
                             new X509TrustManager() {
@@ -470,17 +467,6 @@ class HttpSource extends AbstractSource implements Source {
         return Duration.ofSeconds(timeout);
     }
 
-    static String getUserAgent() {
-        return String.format("%s/%s (%s/%s; java/%s; %s/%s)",
-                HttpSource.class.getSimpleName(),
-                Application.getVersion(),
-                Application.getName(),
-                Application.getVersion(),
-                System.getProperty("java.version"),
-                System.getProperty("os.name"),
-                System.getProperty("os.version"));
-    }
-
     /**
      * @see #request(HTTPRequestInfo, String, Map)
      */
@@ -505,7 +491,7 @@ class HttpSource extends AbstractSource implements Source {
         Request.Builder builder = new Request.Builder()
                 .method(method, null)
                 .url(requestInfo.getURI())
-                .addHeader("User-Agent", getUserAgent());
+                .addHeader("User-Agent", USER_AGENT);
         // Add credentials.
         if (requestInfo.getUsername() != null &&
                 requestInfo.getSecret() != null) {

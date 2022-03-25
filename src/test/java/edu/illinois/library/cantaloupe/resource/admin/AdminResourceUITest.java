@@ -371,6 +371,8 @@ public class AdminResourceUITest extends AbstractAdminResourceTest {
         inputNamed(Key.HTTPSOURCE_CHUNK_SIZE).sendKeys("412");
         inputNamed(Key.HTTPSOURCE_CHUNK_CACHE_ENABLED).click();
         inputNamed(Key.HTTPSOURCE_CHUNK_CACHE_MAX_SIZE).sendKeys("333");
+        inputNamed(Key.HTTPSOURCE_HTTP_PROXY_HOST).sendKeys("example.org");
+        inputNamed(Key.HTTPSOURCE_HTTP_PROXY_PORT).sendKeys("12345");
         inputNamed(Key.HTTPSOURCE_REQUEST_TIMEOUT).sendKeys("13");
         selectNamed(Key.HTTPSOURCE_LOOKUP_STRATEGY).
                 selectByValue("BasicLookupStrategy");
@@ -456,6 +458,10 @@ public class AdminResourceUITest extends AbstractAdminResourceTest {
                 config.getBoolean(Key.HTTPSOURCE_CHUNK_CACHE_ENABLED));
         assertEquals("333",
                 config.getString(Key.HTTPSOURCE_CHUNK_CACHE_MAX_SIZE));
+        assertEquals("example.org",
+                config.getString(Key.HTTPSOURCE_HTTP_PROXY_HOST));
+        assertEquals("12345",
+                config.getString(Key.HTTPSOURCE_HTTP_PROXY_PORT));
         assertEquals("13",
                 config.getString(Key.HTTPSOURCE_REQUEST_TIMEOUT));
         assertEquals("BasicLookupStrategy",

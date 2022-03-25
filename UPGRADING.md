@@ -7,6 +7,8 @@ current version.
 
 1. Add the following keys from the sample configuration:
     * `endpoint.health.enabled`
+    * `HttpSource.proxy.http.host`
+    * `HttpSource.proxy.http.port`
     * `HttpSource.BasicLookupStrategy.send_head_requests`
     * `processor.purge_incompatible_from_source_cache`
 2. Add the following methods from the sample delegate script:
