@@ -170,6 +170,14 @@ public final class Directory {
                 .orElse(null);
     }
 
+    public Field getField(Tag tag) {
+        return fields.keySet()
+                .stream()
+                .filter(f -> f.getTag().equals(tag))
+                .findFirst()
+                .orElse(null);
+    }
+
     @Override
     public int hashCode() {
         final Map<Integer,Integer> codes = new HashMap<>();
