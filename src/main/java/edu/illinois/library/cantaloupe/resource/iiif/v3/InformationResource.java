@@ -1,10 +1,12 @@
 package edu.illinois.library.cantaloupe.resource.iiif.v3;
 
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import edu.illinois.library.cantaloupe.http.Method;
 import edu.illinois.library.cantaloupe.http.Status;
@@ -20,6 +22,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.script.ScriptException;
+import jakarta.servlet.http.HttpServletResponse;
 
 /**
  * Handles IIIF Image API 3.x information requests.
@@ -43,6 +46,21 @@ public class InformationResource extends IIIF3Resource {
     @Override
     public Method[] getSupportedMethods() {
         return SUPPORTED_METHODS;
+    }
+
+    @Override
+    protected final void doOPTIONS() {
+        HttpServletResponse response = getResponse();
+        Method[] methods = getSupportedMethods();
+        if (methods.length > 0) {
+            response.setStatus(Status.NO_CONTENT.getCode());
+            response.setHeader("Access-Control-Allow-Headers", "Authorization");
+            response.setHeader("Allow", Arrays.stream(methods)
+                    .map(Method::toString)
+                    .collect(Collectors.joining(",")));
+        } else {
+            response.setStatus(Status.METHOD_NOT_ALLOWED.getCode());
+        }
     }
 
     /**

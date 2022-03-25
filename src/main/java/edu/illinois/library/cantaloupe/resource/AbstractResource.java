@@ -198,7 +198,10 @@ public abstract class AbstractResource {
         doGET();
     }
 
-    final void doOPTIONS() {
+    /**
+     * May be overridden by implementations that support {@literal OPTIONS}.
+     */
+    protected void doOPTIONS() {
         Method[] methods = getSupportedMethods();
         if (methods.length > 0) {
             response.setStatus(Status.NO_CONTENT.getCode());
