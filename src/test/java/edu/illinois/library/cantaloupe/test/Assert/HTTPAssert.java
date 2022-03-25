@@ -62,6 +62,26 @@ public final class HTTPAssert {
         assertRepresentationContains(contains, uri.toString());
     }
 
+    public static void assertRepresentationEquals(String expected,
+                                                  String uri) {
+        Client client = newClient();
+        try {
+            client.setURI(new URI(uri));
+            Response response = client.send();
+            assertEquals(expected, response.getBodyAsString());
+        } catch (ResourceException e) {
+            assertEquals(expected, e.getResponse().getBodyAsString());
+        } catch (Exception e) {
+            fail(e.getMessage());
+        } finally {
+            stopQuietly(client);
+        }
+    }
+
+    public static void assertRepresentationEquals(String equals, URI uri) {
+        assertRepresentationEquals(equals, uri.toString());
+    }
+
     public static void assertRepresentationsNotSame(URI uri1, URI uri2) {
         Client client = newClient();
         try {

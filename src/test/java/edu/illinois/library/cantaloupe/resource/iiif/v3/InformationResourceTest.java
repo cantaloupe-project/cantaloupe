@@ -51,7 +51,24 @@ public class InformationResourceTest extends ResourceTest {
     @Test
     void testGETAuthorizationWhenUnauthorized() {
         URI uri = getHTTPURI("/unauthorized.jpg/info.json");
-        tester.testAuthorizationWhenUnauthorized(uri);
+        // This may vary depending on the return value of a delegate method,
+        // but the test delegate script returns 401.
+        assertStatus(401, uri);
+        assertRepresentationEquals("{\"@context\":\"http://iiif.io/api/image/3/context.json\","+
+                "\"id\":\"" + uri.toString().replace("/info.json", "") + "\"," +
+                "\"type\":\"ImageService3\"," +
+                "\"protocol\":\"http://iiif.io/api/image\"," +
+                "\"profile\":\"level2\"," +
+                "\"status\":401," +
+                "\"message\":\"Unauthorized\"," +
+                "\"attribution\":\"Copyright My Great Organization. All rights reserved.\"," +
+                "\"license\":\"http://example.org/license.html\"," +
+                "\"service\":{" +
+                    "\"@context\":\"http://iiif.io/api/annex/services/physdim/1/context.json\"," +
+                    "\"profile\":\"http://iiif.io/api/annex/services/physdim\"," +
+                    "\"physicalScale\":0.0025," +
+                    "\"physicalUnits\":\"in\"}" +
+                "}", uri);
     }
 
     @Test

@@ -193,7 +193,7 @@ public class ImageResource extends IIIF3Resource {
             if (scale.isWidthUp(virtualSize, constraint) ||
                     scale.isHeightUp(virtualSize, constraint)) {
                 throw new ScaleRestrictedException("Requests for scales in " +
-                        "excess of 100% must prefix the scale path component " +
+                        "excess of 100% must prefix the size path component " +
                         "with a ^ character.",
                         Status.BAD_REQUEST);
             }

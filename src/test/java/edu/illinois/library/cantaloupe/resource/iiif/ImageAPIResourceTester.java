@@ -57,20 +57,6 @@ public class ImageAPIResourceTester {
         assertStatus(200, uri);
     }
 
-    public void testAuthorizationWhenUnauthorized(URI uri) {
-        // This may vary depending on the return value of a delegate method,
-        // but the way the tests are set up, it's 401.
-        assertStatus(401, uri);
-        assertRepresentationContains("401 Unauthorized", uri);
-    }
-
-    public void testAuthorizationWhenForbidden(URI uri) {
-        // This may vary depending on the return value of a delegate method,
-        // but the way the tests are set up, it's 403.
-        assertStatus(403, uri);
-        assertRepresentationContains("403 Forbidden", uri);
-    }
-
     public void testAuthorizationWhenNotAuthorizedWhenAccessingCachedResource(URI uri)
             throws Exception {
         initializeFilesystemCache();
