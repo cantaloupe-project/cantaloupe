@@ -27,13 +27,6 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 public class InformationResourceTester extends ImageAPIResourceTester {
 
-    public void testAuthorizationWhenForbidden(URI uri) {
-        // This may vary depending on the return value of a delegate method,
-        // but the test delegate script returns 401.
-        assertStatus(403, uri);
-        assertRepresentationContains("\"status\":403", uri);
-    }
-
     public void testCacheWithDerivativeCacheEnabledAndInfoCacheEnabledAndResolveFirstEnabled(
             URI uri, Path sourceFile) throws Exception {
         final Path cacheDir = initializeFilesystemCache();
