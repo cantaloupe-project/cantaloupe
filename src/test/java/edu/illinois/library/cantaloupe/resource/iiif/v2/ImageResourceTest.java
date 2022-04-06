@@ -47,7 +47,7 @@ public class ImageResourceTest extends ResourceTest {
     @Test
     void testGETAuthorizationWhenUnauthorized() {
         URI uri = getHTTPURI("/unauthorized.jpg/full/full/0/color.jpg");
-        tester.testAuthorizationWhenUnauthorized(uri);
+        tester.testAuthorizationWhenUnauthorized(uri, getEndpointPath());
     }
 
     @Test

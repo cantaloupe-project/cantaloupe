@@ -2,6 +2,7 @@
 
 ## 5.0.6
 
+* IIIF information endpoints return JSON in HTTP 401 responses.
 * Fixed a bug whereby the values of the `operations` and `page_count` keys
   in the delegate context were not set.
 * TurboJpegProcessor is able to generate non-JPEG derivative images, which

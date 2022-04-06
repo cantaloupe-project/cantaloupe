@@ -51,7 +51,7 @@ public class InformationResourceTest extends ResourceTest {
     @Test
     void testGETAuthorizationWhenUnauthorized() {
         URI uri = getHTTPURI("/unauthorized.jpg/info.json");
-        tester.testAuthorizationWhenUnauthorized(uri);
+        tester.testAuthorizationWhenUnauthorized(uri, getEndpointPath());
     }
 
     @Test

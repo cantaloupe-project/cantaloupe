@@ -51,7 +51,7 @@ public class ImageAPIResourceTester {
         assertStatus(200, uri);
     }
 
-    public void testAuthorizationWhenUnauthorized(URI uri) {
+    public void testAuthorizationWhenUnauthorized(URI uri, String endpointPath) {
         // This may vary depending on the return value of a delegate method,
         // but the way the tests are set up, it's 401.
         assertStatus(401, uri);
