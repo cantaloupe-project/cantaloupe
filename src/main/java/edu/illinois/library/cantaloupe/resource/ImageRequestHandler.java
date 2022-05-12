@@ -384,10 +384,12 @@ public class ImageRequestHandler extends AbstractRequestHandler
                 try {
                     fullSize = info.getSize(operationList.getPageIndex());
                     requestContext.setMetadata(info.getMetadata());
-                    operationList.applyNonEndpointMutations(info, delegateProxy);
-                    operationList.freeze();
                     requestContext.setOperationList(operationList, fullSize);
                     requestContext.setPageCount(info.getNumPages());
+                    // This must be done *after* the request context is fully
+                    // populated, as some of the mutations may depend on it.
+                    operationList.applyNonEndpointMutations(info, delegateProxy);
+                    operationList.freeze();
                 } catch (IllegalArgumentException | IndexOutOfBoundsException e) {
                     throw new IllegalClientArgumentException(e);
                 }
