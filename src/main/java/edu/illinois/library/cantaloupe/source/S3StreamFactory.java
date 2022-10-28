@@ -24,14 +24,15 @@ class S3StreamFactory implements StreamFactory {
     private static final int DEFAULT_CHUNK_SIZE       = 1024 * 512;
     private static final int DEFAULT_CHUNK_CACHE_SIZE = 1024 * 1024 * 10;
 
-    private S3ObjectInfo objectInfo;
+    private S3ObjectInfoSupplier objectInfo;
 
-    S3StreamFactory(S3ObjectInfo objectInfo) {
+    S3StreamFactory(S3ObjectInfoSupplier objectInfo) {
         this.objectInfo = objectInfo;
     }
 
     @Override
     public InputStream newInputStream() throws IOException {
+        final S3ObjectInfo objectInfo = this.objectInfo.get();
         final InputStream responseStream =
                 S3Source.newObjectInputStream(objectInfo);
 
@@ -100,6 +101,7 @@ class S3StreamFactory implements StreamFactory {
             LOGGER.debug("newSeekableStream(): using {}-byte chunks",
                     chunkSize);
 
+            final S3ObjectInfo objectInfo = this.objectInfo.get();
             final S3HTTPImageInputStreamClient client =
                     new S3HTTPImageInputStreamClient(objectInfo);
 
