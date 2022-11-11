@@ -146,6 +146,13 @@
             <artifactId>jaxb-api</artifactId>
             <version>2.3.0</version>
         </dependency>
+        <!-- ImageIO plugin providing bindings to OpenJpeg via JNR
+         https://github.com/dbmdz/imageio-jnr/ -->
+        <dependency>
+            <groupId>de.digitalcollections.imageio</groupId>
+            <artifactId>imageio-openjpeg</artifactId>
+            <version>0.6.2</version>
+        </dependency>
         <!-- Enhanced ImageIO TIFF plugin supporting BigTIFF:
          https://github.com/geosolutions-it/imageio-ext/ -->
         <dependency>
@@ -398,6 +405,14 @@
     </dependencies>
 
     <repositories>
+        <repository>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+            <id>central</id>
+            <name>Maven Repository Switchboard</name>
+            <url>https://repo1.maven.org/maven2</url>
+        </repository>
         <repository>
             <id>osgeo</id>
             <name>OSGeo Release Repository</name>

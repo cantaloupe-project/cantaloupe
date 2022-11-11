@@ -1,5 +1,6 @@
 package edu.illinois.library.cantaloupe.processor.codec;
 
+import de.digitalcollections.openjpeg.imageio.OpenJp2ImageWriter;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.operation.Encode;
 import edu.illinois.library.cantaloupe.processor.OutputFormatException;
@@ -8,6 +9,7 @@ import edu.illinois.library.cantaloupe.processor.codec.jpeg.JPEGImageWriter;
 import edu.illinois.library.cantaloupe.processor.codec.png.PNGImageWriter;
 import edu.illinois.library.cantaloupe.processor.codec.tiff.TIFFImageWriter;
 
+import javax.imageio.ImageIO;
 import java.util.Set;
 
 public final class ImageWriterFactory {
