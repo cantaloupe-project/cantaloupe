@@ -109,7 +109,7 @@ public class S3StreamFactoryTest extends BaseTest {
         info.setKey(FIXTURE_KEY);
         info.setLength(1584);
 
-        instance = new S3StreamFactory(info);
+        instance = new S3StreamFactory(() -> info);
     }
 
     @Test
