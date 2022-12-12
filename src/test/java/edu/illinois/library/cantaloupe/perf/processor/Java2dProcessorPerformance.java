@@ -33,7 +33,7 @@ import static edu.illinois.library.cantaloupe.test.PerformanceTestConstants.*;
 @Measurement(iterations = MEASUREMENT_ITERATIONS,
         time = MEASUREMENT_TIME)
 @State(Scope.Benchmark)
-@Fork(value = 1, jvmArgs = { "-server", "-Xms128M", "-Xmx128M", "-Dcantaloupe.config=memory" })
+@Fork(value = 1, jvmArgs = {"-server", "-Xms128M", "-Xmx128M", "-Dcantaloupe.config=memory"})
 public class Java2dProcessorPerformance {
 
     private static final Format OUTPUT_FORMAT = Format.get("png");
@@ -50,6 +50,16 @@ public class Java2dProcessorPerformance {
     @TearDown
     public void tearDown() {
         processor.close();
+    }
+
+    @Benchmark
+    public void processWithJP2() throws Exception {
+        processor.setSourceFormat(Format.get("jp2"));
+        processor.setSourceFile(TestUtil.getImage("jp2-5res-rgb-64x56x8-monotiled-lossy.jp2"));
+        processor.process(
+                OperationList.builder().withOperations(new Encode(OUTPUT_FORMAT)).build(),
+                Info.builder().withSize(64, 56).build(),
+                OutputStream.nullOutputStream());
     }
 
     @Benchmark
@@ -103,6 +113,13 @@ public class Java2dProcessorPerformance {
     }
 
     @Benchmark
+    public void readInfoWithJP2() throws Exception {
+        processor.setSourceFormat(Format.get("jp2"));
+        processor.setSourceFile(TestUtil.getImage("jp2-5res-rgb-64x56x8-monotiled-lossy.jp2"));
+        processor.readInfo();
+    }
+
+    @Benchmark
     public void readInfoWithBMP() throws Exception {
         processor.setSourceFormat(Format.get("bmp"));
         processor.setSourceFile(TestUtil.getImage("bmp-rgb-64x56x8.bmp"));
@@ -136,5 +153,4 @@ public class Java2dProcessorPerformance {
         processor.setSourceFile(TestUtil.getImage("tif-rgb-1res-64x56x8-striped-lzw.tif"));
         processor.readInfo();
     }
-
 }

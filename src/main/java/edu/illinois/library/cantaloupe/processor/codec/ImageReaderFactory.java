@@ -4,6 +4,7 @@ import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.processor.codec.bmp.BMPImageReader;
 import edu.illinois.library.cantaloupe.processor.codec.gif.GIFImageReader;
 import edu.illinois.library.cantaloupe.processor.codec.jpeg.JPEGImageReader;
+import edu.illinois.library.cantaloupe.processor.codec.jpeg2000.JPEG2000OpenJpegImageReader;
 import edu.illinois.library.cantaloupe.processor.codec.png.PNGImageReader;
 import edu.illinois.library.cantaloupe.processor.codec.tiff.TIFFImageReader;
 import edu.illinois.library.cantaloupe.processor.codec.xpm.XPMImageReader;
@@ -23,7 +24,8 @@ public final class ImageReaderFactory {
 
     private static final Set<Format> SUPPORTED_FORMATS = Set.of(
             Format.get("bmp"), Format.get("gif"), Format.get("jpg"),
-            Format.get("png"), Format.get("tif"), Format.get("xpm"));
+            Format.get("png"), Format.get("tif"), Format.get("xpm"),
+            Format.get("jp2"));
 
     /**
      * @return Map of available output formats for all known source formats,
@@ -46,6 +48,8 @@ public final class ImageReaderFactory {
             return new TIFFImageReader();
         } else if (Format.get("xpm").equals(format)) {
             return new XPMImageReader();
+        } else if (Format.get("jp2").equals(format)) {
+            return new JPEG2000OpenJpegImageReader();
         }
         throw new IllegalArgumentException("Unsupported format: " + format);
     }

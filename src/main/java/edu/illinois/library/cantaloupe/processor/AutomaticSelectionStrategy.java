@@ -11,8 +11,8 @@ import java.util.List;
 class AutomaticSelectionStrategy implements SelectionStrategy {
 
     private static final List<Class<? extends Processor>> JP2_CANDIDATES = List.of(
-            KakaduNativeProcessor.class,
             OpenJpegProcessor.class,
+            Java2dProcessor.class,
             GrokProcessor.class);
     private static final List<Class<? extends Processor>> JPG_CANDIDATES = List.of(
             TurboJpegProcessor.class,

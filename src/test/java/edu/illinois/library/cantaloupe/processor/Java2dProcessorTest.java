@@ -12,6 +12,8 @@ import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.FileOutputStream;
+import java.io.OutputStream;
 import java.nio.file.Path;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -43,6 +45,17 @@ public class Java2dProcessorTest extends AbstractImageIOProcessorTest {
         instance.setSourceFormat(Format.get("tif"));
         instance.setSourceFile(TestUtil.getImage("tif-rgb-1res-64x56x8-tiled-jpeg.tif"));
         assertTrue(instance.isSeeking());
+    }
+
+    @Test
+    void testIsSupportingJP2() throws Exception {
+        instance.setSourceFormat(Format.get("jp2"));
+        instance.setSourceFile(TestUtil.getImage("jp2-5res-rgb-64x56x8-monotiled-lossy.jp2"));
+
+        instance.process(
+                OperationList.builder().withOperations(new Encode(Format.get("jpg"))).build(),
+                Info.builder().withSize(64, 56).build(),
+                new FileOutputStream("/home/garytierney/test.jpg"));
     }
 
     @Test
