@@ -1,5 +1,7 @@
 package edu.illinois.library.cantaloupe.config;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -145,7 +147,8 @@ class PropertiesDocument {
     /**
      * @return Value for the given key.
      */
-    String get(String key) {
+    @Nullable
+    String get(@Nonnull String key) {
         return items.stream()
                 .filter(it -> {
                     if (it instanceof KeyValuePair) {

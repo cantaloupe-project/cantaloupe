@@ -3,6 +3,7 @@ package edu.illinois.library.cantaloupe.util;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
 
+import javax.annotation.Nullable;
 import javax.xml.bind.DatatypeConverter;
 import java.awt.FontMetrics;
 import java.nio.charset.StandardCharsets;
@@ -161,7 +162,7 @@ public final class StringUtils {
      * @return Boolean value of the given string.
      * @throws NumberFormatException if the string has an unrecognized format.
      */
-    public static boolean toBoolean(String str) {
+    public static boolean toBoolean(@Nullable String str) {
         if (str == null) {
             throw new NumberFormatException();
         }

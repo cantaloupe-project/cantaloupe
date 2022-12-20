@@ -395,6 +395,12 @@
             <artifactId>url-connection-client</artifactId>
             <version>${aws-sdk.version}</version>
         </dependency>
+        <!-- Allow use of javax.annotation -->
+        <dependency>
+            <groupId>com.github.spotbugs</groupId>
+            <artifactId>spotbugs-annotations</artifactId>
+            <version>4.2.0</version>
+        </dependency>
     </dependencies>
 
     <repositories>
