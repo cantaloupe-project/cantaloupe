@@ -12,6 +12,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.tika.detect.Detector;
 import org.apache.tika.io.TikaInputStream;
 import org.apache.tika.metadata.Metadata;
+import org.apache.tika.metadata.TikaCoreProperties;
 import org.apache.tika.parser.AutoDetectParser;
 
 import java.io.IOException;
@@ -99,7 +100,7 @@ public final class MediaType {
             AutoDetectParser parser = new AutoDetectParser();
             Detector detector = parser.getDetector();
             Metadata md = new Metadata();
-            md.add(Metadata.RESOURCE_NAME_KEY, path.toString());
+            md.add(TikaCoreProperties.RESOURCE_NAME_KEY, path.toString());
             org.apache.tika.mime.MediaType mediaType = detector.detect(is, md);
             types.add(new MediaType(mediaType.toString()));
         }
