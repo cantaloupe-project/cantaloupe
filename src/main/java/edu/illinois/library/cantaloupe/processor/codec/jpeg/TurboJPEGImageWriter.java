@@ -155,7 +155,7 @@ public final class TurboJPEGImageWriter {
         // Also, JPEG doesn't support alpha, so we have to remove that,
         // otherwise readers will interpret as CMYK.
         if (image.getRaster().getSampleModelTranslateX() < 0 ||
-                image.getRaster().getSampleModelTranslateX() < 0) {
+                image.getRaster().getSampleModelTranslateY() < 0) {
             BufferedImage newImage = new BufferedImage(
                     image.getWidth(), image.getHeight(),
                     BufferedImage.TYPE_INT_RGB);
