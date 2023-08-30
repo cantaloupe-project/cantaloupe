@@ -19,9 +19,10 @@
         <jackson.version>2.11.0</jackson.version>
         <jetty.version>9.4.34.v20201102</jetty.version>
         <jruby.version>9.2.17.0</jruby.version>
-        <logback.version>1.2.8</logback.version>
         <surefire.version>3.0.0-M5</surefire.version>
         <seleniumhq.version>2.53.0</seleniumhq.version><!-- There are many new versions for this library 4.10.0 latest-->
+        <logback.version>1.2.12</logback.version> <!-- The next two need to be updated in lockstep latest version 1.4 -->
+        <slf4j.version>1.7.36</slf4j.version> <!-- Latest version 2.0.7 -->
     </properties>
 
     <developers>
@@ -358,13 +359,13 @@
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
-            <version>2.0.7</version>
+            <version>${slf4j.version}</version>
         </dependency>
         <!-- intercepts jcl log messages from Commons etc. -->
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>jcl-over-slf4j</artifactId>
-            <version>2.0.7</version>
+            <version>${slf4j.version}</version>
         </dependency>
         <!-- Assembles the release zip archive. -->
         <dependency>
