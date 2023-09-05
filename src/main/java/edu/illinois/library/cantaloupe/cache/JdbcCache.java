@@ -56,7 +56,6 @@ class JdbcCache implements DerivativeCache {
         private final OutputStream blobOutputStream;
         private final OperationList ops;
         private final Connection connection;
-        private final PreparedStatement statement;
 
         /**
          * Constructor for writing derivative images.
@@ -82,17 +81,26 @@ class JdbcCache implements DerivativeCache {
 
             final Blob blob = connection.createBlob();
             blobOutputStream = blob.setBinaryStream(1);
-            statement = connection.prepareStatement(sql);
-            statement.setString(1, ops.toString());
-            statement.setBlob(2, blob);
-            statement.setTimestamp(3, now());
         }
 
         @Override
         public void close() throws IOException {
             LOGGER.debug("Closing stream for {}", ops);
+            PreparedStatement statement = null;
             try {
-                if (isComplete()) {
+                if (isCompletelyWritten()) {
+                    final Configuration config = Configuration.getInstance();
+                    final String sql = String.format(
+                            "INSERT INTO %s (%s, %s, %s) VALUES (?, ?, ?)",
+                                config.getString(Key.JDBCCACHE_DERIVATIVE_IMAGE_TABLE),
+                                DERIVATIVE_IMAGE_TABLE_OPERATIONS_COLUMN,
+                                DERIVATIVE_IMAGE_TABLE_IMAGE_COLUMN,
+                                DERIVATIVE_IMAGE_TABLE_LAST_ACCESSED_COLUMN);
+                    LOGGER.debug(sql);
+                    statement = connection.prepareStatement(sql);
+                    statement.setString(1, ops.toString());
+                    statement.setBlob(2, blob);
+                    statement.setTimestamp(3, now());
                     statement.executeUpdate();
                     connection.commit();
                 } else {
@@ -102,7 +110,9 @@ class JdbcCache implements DerivativeCache {
                 throw new IOException(e.getMessage(), e);
             } finally {
                 try {
-                    statement.close();
+                    if (statement != null) {
+                        statement.close();
+                    }
                 } catch (SQLException e) {
                     LOGGER.error(e.getMessage(), e);
                 }
@@ -390,6 +400,7 @@ class JdbcCache implements DerivativeCache {
         try {
             return new ImageBlobOutputStream(getConnection(), ops);
         } catch (SQLException e) {
+            LOGGER.error("Throwing Except: {}", e);
             throw new IOException(e.getMessage(), e);
         }
     }
