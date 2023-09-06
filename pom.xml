@@ -115,7 +115,7 @@
         <dependency>
             <groupId>com.zaxxer</groupId>
             <artifactId>HikariCP</artifactId>
-            <version>5.0.1</version>
+            <version>4.0.3</version> <!-- Pinned for Java 8 https://github.com/brettwooldridge/HikariCP#artifacts -->
         </dependency>
         <!-- Manages the test configuration. -->
         <dependency>
