@@ -119,8 +119,13 @@ final class Util {
 
     private static Model readModel(String rdfXML) {
         Model model = ModelFactory.createDefaultModel();
+        String base = null;
+        if (rdfXML.indexOf("rdf:about=''") != -1 || rdfXML.indexOf("rdf:about=\"\"") != -1) {
+            // Verison 4.8+ of jena requires a rdf:about link to not be empty
+            base = "http://example.com";
+        }
         try (StringReader reader = new StringReader(rdfXML)) {
-            model.read(reader, null, "RDF/XML");
+            model.read(reader, base, "RDF/XML");
         }
         return model;
     }
