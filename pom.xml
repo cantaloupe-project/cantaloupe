@@ -205,12 +205,12 @@
         <dependency>
             <groupId>org.apache.jena</groupId>
             <artifactId>jena-core</artifactId>
-            <version>4.8.0</version>
+            <version>4.9.0</version>
         </dependency>
         <dependency>
             <groupId>org.apache.jena</groupId>
             <artifactId>jena-arq</artifactId>
-            <version>4.8.0</version>
+            <version>4.9.0</version>
         </dependency>
         <!-- Used for media type detection -->
         <dependency>
