@@ -45,9 +45,10 @@ public class PNGMetadataTest extends BaseTest {
 
     @Test
     void testGetXMP() throws IOException {
-        final String rdf = getInstance("png-xmp.png").getXMP().orElseThrow();
+        final String fixtureName = "png-xmp.png";
+        final String rdf = getInstance(fixtureName).getXMP().orElseThrow();
         final Model model = ModelFactory.createDefaultModel();
-        model.read(new StringReader(rdf), null, "RDF/XML");
+        model.read(new StringReader(rdf), "file://" + TestUtil.getImage(fixtureName).getParent().toAbsolutePath(), "RDF/XML");
     }
 
 }
