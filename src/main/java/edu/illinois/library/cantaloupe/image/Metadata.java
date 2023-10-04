@@ -123,6 +123,9 @@ public class Metadata {
             } catch (IllegalArgumentException e) {
                 LOGGER.info("readOrientation(): {}", e.getMessage());
                 orientation = Orientation.ROTATE_0;
+            } catch (RiotException e) {    
+                LOGGER.info("readOrientation(): {}", e.getMessage());
+                orientation = Orientation.ROTATE_0;
             }
         }
         return orientation;
