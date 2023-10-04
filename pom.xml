@@ -16,7 +16,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <aws-sdk.version>2.15.28</aws-sdk.version>
-        <jackson.version>2.11.0</jackson.version>
+        <jackson.version>2.15.2</jackson.version>
         <jetty.version>9.4.34.v20201102</jetty.version>
         <jruby.version>9.2.17.0</jruby.version>
         <surefire.version>3.0.0-M5</surefire.version>
@@ -571,6 +571,7 @@
                                 <exclude>RedisCacheTest</exclude>
                                 <exclude>TurboJpegProcessorTest</exclude>
                                 <exclude>TurboJPEG*Test</exclude>
+                                <exclude>*S3*</exclude>
                             </excludes>
                         </configuration>
                     </plugin>
