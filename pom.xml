@@ -18,7 +18,7 @@
         <aws-sdk.version>2.15.28</aws-sdk.version>
         <jetty.version>11.0.5</jetty.version>
         <jackson.version>2.15.2</jackson.version>
-        <jruby.version>9.2.17.0</jruby.version>
+        <jruby.version>9.4.3.0</jruby.version>
         <surefire.version>3.0.0-M5</surefire.version>
         <seleniumhq.version>2.53.0</seleniumhq.version><!-- There are many new versions for this library 4.10.0 latest-->
         <logback.version>1.2.12</logback.version> <!-- The next two need to be updated in lockstep latest version 1.4 -->
@@ -139,7 +139,7 @@
         <dependency>
             <groupId>io.lettuce</groupId>
             <artifactId>lettuce-core</artifactId>
-            <version>6.2.4.RELEASE</version>
+            <version>6.2.6.RELEASE</version>
         </dependency>
         <!-- Dependency on part of Java EE that's available by default in Java 8
         but not 9 -->
@@ -221,8 +221,8 @@
         <!-- Assists PDFBox in decoding certain PDFs -->
         <dependency>
             <groupId>org.bouncycastle</groupId>
-            <artifactId>bcprov-jdk15on</artifactId>
-            <version>1.70</version>
+            <artifactId>bcprov-jdk18on</artifactId>
+            <version>1.76</version>
         </dependency>
         <!-- Supports <if> expressions in logback.xml -->
         <dependency>
@@ -503,7 +503,7 @@
             <!-- Assemble the JAR into a release package. -->
             <plugin>
                 <artifactId>maven-assembly-plugin</artifactId>
-                <version>3.1.1</version>
+                <version>3.6.0</version>
                 <executions>
                     <execution>
                         <phase>package</phase>
@@ -572,7 +572,6 @@
                                 <exclude>RedisCacheTest</exclude>
                                 <exclude>TurboJpegProcessorTest</exclude>
                                 <exclude>TurboJPEG*Test</exclude>
-                                <exclude>*S3*</exclude>
                             </excludes>
                         </configuration>
                     </plugin>
