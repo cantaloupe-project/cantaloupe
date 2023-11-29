@@ -9,6 +9,7 @@ import software.amazon.awssdk.auth.credentials.InstanceProfileCredentialsProvide
 import software.amazon.awssdk.auth.credentials.ProfileCredentialsProvider;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.auth.credentials.SystemPropertyCredentialsProvider;
+import software.amazon.awssdk.auth.credentials.WebIdentityTokenFileCredentialsProvider;
 import software.amazon.awssdk.core.exception.SdkClientException;
 import software.amazon.awssdk.http.urlconnection.UrlConnectionHttpClient;
 import software.amazon.awssdk.regions.Region;
@@ -72,6 +73,7 @@ public final class S3ClientBuilder {
                 }
             }));
         }
+        builder.addCredentialsProvider(WebIdentityTokenFileCredentialsProvider.builder().build());
         builder.addCredentialsProvider(ProfileCredentialsProvider.create());
         builder.addCredentialsProvider(ContainerCredentialsProvider.builder().build());
         builder.addCredentialsProvider(InstanceProfileCredentialsProvider.builder().build());
