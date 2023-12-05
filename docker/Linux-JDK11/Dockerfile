@@ -19,7 +19,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
                 libwebp-dev \
                 libimage-exiftool-perl \
                 libgrokj2k1 \
-                grokj2k-tools
+                grokj2k-tools \ 
     && rm -rf /var/lib/apt/lists/*
 
 # Install TurboJpegProcessor dependencies
