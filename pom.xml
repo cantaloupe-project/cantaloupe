@@ -15,7 +15,6 @@
         <maven.compile.target>11</maven.compile.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <aws-sdk.version>2.15.28</aws-sdk.version>
         <jetty.version>11.0.5</jetty.version>
         <jackson.version>2.15.2</jackson.version>
         <jruby.version>9.4.3.0</jruby.version>
@@ -139,7 +138,7 @@
         <dependency>
             <groupId>io.lettuce</groupId>
             <artifactId>lettuce-core</artifactId>
-            <version>6.2.6.RELEASE</version>
+            <version>6.2.7.RELEASE</version>
         </dependency>
         <!-- Dependency on part of Java EE that's available by default in Java 8
         but not 9 -->
