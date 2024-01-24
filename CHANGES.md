@@ -9,6 +9,8 @@
   fixes an HTTP 415 error that would occur when trying to do that.
 * Fixed a crop-offset bug that could occur when using PdfBoxProcessor to
   generate JPEGs with libjpeg-turbo active.
+* Updating libraries to fix security issues. Full details in [#634](https://github.com/cantaloupe-project/cantaloupe/issues/634)  
+* Update of Jena to 4.8 requires RDF to have a populated rdf:about field. May impact some XMP header processing.
 
 ## 5.0.5
 
