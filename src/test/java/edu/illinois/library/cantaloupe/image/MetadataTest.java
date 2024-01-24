@@ -11,6 +11,8 @@ import edu.illinois.library.cantaloupe.processor.codec.ImageReaderFactory;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.apache.jena.rdf.model.Model;
+import org.apache.jena.riot.RDFDataMgr;
+import org.apache.jena.riot.RDFFormat;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -401,7 +403,7 @@ public class MetadataTest extends BaseTest {
         expectedMap.put("iptc", List.of(new DataSet(
                 edu.illinois.library.cantaloupe.image.iptc.Tag.CITY,
                 "Urbana".getBytes()).toMap()));
-        expectedMap.put("xmp_string", "<rdf:RDF></rdf:RDF>");
+        expectedMap.put("xmp_string", "<rdf:RDF xmlns:rdf=\"http://www.w3.org/1999/02/22-rdf-syntax-ns#\"></rdf:RDF>");
         expectedMap.put("native", Map.of("key1", "value1", "key2", "value2"));
 
         // assemble the Metadata
@@ -420,7 +422,7 @@ public class MetadataTest extends BaseTest {
                 "Urbana".getBytes()));
         instance.setIPTC(iptc);
         // XMP
-        instance.setXMP("<rdf:RDF></rdf:RDF>");
+        instance.setXMP("<rdf:RDF xmlns:rdf=\"http://www.w3.org/1999/02/22-rdf-syntax-ns#\"></rdf:RDF>");
         // native
         instance.setNativeMetadata(Map.of("key1", "value1", "key2", "value2"));
 
