@@ -21,7 +21,7 @@
         <jruby.version>9.4.3.0</jruby.version>
         <surefire.version>3.0.0-M5</surefire.version>
         <seleniumhq.version>2.53.0</seleniumhq.version><!-- There are many new versions for this library 4.10.0 latest-->
-        <logback.version>1.2.12</logback.version> <!-- The next two need to be updated in lockstep latest version 1.4 -->
+        <logback.version>1.2.13</logback.version> <!-- The next two need to be updated in lockstep latest version 1.4 -->
         <slf4j.version>1.7.36</slf4j.version> <!-- Latest version 2.0.7 -->
     </properties>
 
