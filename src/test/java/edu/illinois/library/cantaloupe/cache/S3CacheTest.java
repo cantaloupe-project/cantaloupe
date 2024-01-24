@@ -317,6 +317,9 @@ public class S3CacheTest extends AbstractCacheTest {
         // purge everything
         instance.purge();
 
+        // Allow some time for the purge to succeed
+        Thread.sleep(ASYNC_WAIT / 2);
+
         // assert that the info has been purged
         assertFalse(instance.getInfo(identifier).isPresent());
 
