@@ -20,7 +20,7 @@
         <jackson.version>2.15.2</jackson.version>
         <jruby.version>9.4.3.0</jruby.version>
         <surefire.version>3.0.0-M5</surefire.version>
-        <seleniumhq.version>2.53.0</seleniumhq.version><!-- There are many new versions for this library 4.10.0 latest-->
+        <seleniumhq.version>2.53.1</seleniumhq.version><!-- There are many new versions for this library 4.10.0 latest-->
         <logback.version>1.2.13</logback.version> <!-- The next two need to be updated in lockstep latest version 1.4 -->
         <slf4j.version>1.7.36</slf4j.version> <!-- Latest version 2.0.7 -->
     </properties>
@@ -109,7 +109,7 @@
         <dependency>
             <groupId>com.squareup.okhttp3</groupId>
             <artifactId>okhttp</artifactId>
-            <version>5.0.0-alpha.11</version>
+            <version>5.0.0-alpha.12</version>
         </dependency>
         <!-- Provides a JDBC connection pool for JdbcSource and JdbcCache -->
         <dependency>
@@ -205,12 +205,12 @@
         <dependency>
             <groupId>org.apache.jena</groupId>
             <artifactId>jena-core</artifactId>
-            <version>4.9.0</version>
+            <version>4.10.0</version>
         </dependency>
         <dependency>
             <groupId>org.apache.jena</groupId>
             <artifactId>jena-arq</artifactId>
-            <version>4.9.0</version>
+            <version>4.10.0</version>
         </dependency>
         <!-- Used for media type detection -->
         <dependency>
