@@ -10,6 +10,7 @@ import edu.illinois.library.cantaloupe.http.ResourceException;
 import edu.illinois.library.cantaloupe.http.Response;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.resource.AbstractResource;
+import edu.illinois.library.cantaloupe.resource.Route;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 
 import java.io.File;
@@ -27,11 +28,18 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 public class InformationResourceTester extends ImageAPIResourceTester {
 
-    public void testAuthorizationWhenForbidden(URI uri) {
-        // This may vary depending on the return value of a delegate method,
-        // but the test delegate script returns 401.
-        assertStatus(403, uri);
-        assertRepresentationContains("\"status\":403", uri);
+    @Override
+    public void testAuthorizationWhenUnauthorized(URI uri, String endpointPath) {
+        final String requiredJsonLdContent;
+
+        if (endpointPath.equals(Route.IIIF_1_PATH)) {
+            requiredJsonLdContent = "\"@context\":\"http://library.stanford.edu/iiif/image-api/1.1/context.json\"";
+        } else {
+            requiredJsonLdContent = "\"protocol\":\"http://iiif.io/api/image\"";
+        }
+
+        assertStatus(401, uri);
+        assertRepresentationContains(requiredJsonLdContent, uri);
     }
 
     public void testCacheWithDerivativeCacheEnabledAndInfoCacheEnabledAndResolveFirstEnabled(

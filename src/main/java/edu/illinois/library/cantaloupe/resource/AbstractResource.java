@@ -364,6 +364,9 @@ public abstract class AbstractResource {
             if (code == 401) {
                 getResponse().setHeader("WWW-Authenticate",
                         info.getChallengeValue());
+                if (getRequestContext().getLocalURI().getPath().endsWith("info.json")) {
+                    return true;
+                }
             }
             throw new ResourceException(new Status(code));
         }
