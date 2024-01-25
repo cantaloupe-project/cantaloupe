@@ -41,6 +41,22 @@ public final class StringUtils {
         return uriPathComponent;
     }
 
+    /**
+     * Reverses {@link #decodeSlashes(String)}.
+     *
+     * @param slashedIdentifier Identifier with slashes to be substituted.
+     * @return                  Identifier with slashes substituted.
+     */
+    public static String encodeSlashes(final String slashedIdentifier) {
+        final String substitute = Configuration.getInstance().
+                getString(Key.SLASH_SUBSTITUTE, "");
+        if (!substitute.isEmpty()) {
+            return org.apache.commons.lang3.StringUtils.replace(
+                    slashedIdentifier, "/", substitute);
+        }
+        return slashedIdentifier;
+    }
+
     public static String escapeHTML(String html) {
         StringBuilder out = new StringBuilder(Math.max(16, html.length()));
         for (int i = 0, length = html.length(); i < length; i++) {

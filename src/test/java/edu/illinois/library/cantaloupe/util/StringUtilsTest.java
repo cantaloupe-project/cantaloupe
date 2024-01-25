@@ -26,6 +26,13 @@ class StringUtilsTest extends BaseTest {
     }
 
     @Test
+    void testEncodeSlashes() {
+        Configuration.getInstance().setProperty(Key.SLASH_SUBSTITUTE, "$$");
+        assertEquals("cats", StringUtils.encodeSlashes("cats"));
+        assertEquals("ca$$ts", StringUtils.encodeSlashes("ca/ts"));
+    }
+
+    @Test
     void testEscapeHTML() {
         String html = "the quick brown <script type=\"text/javascript\">alert('hi');</script> fox";
         String expected = "the quick brown &#60;script type=&#34;text/javascript&#34;&#62;alert('hi');&#60;/script&#62; fox";
