@@ -165,6 +165,17 @@ public class TurboJPEGImageWriterTest extends BaseTest {
     }
 
     @Test
+    public void testWriteWithGrayBufferedImage() throws Exception {
+        BufferedImage image = new BufferedImage(50, 50,
+                BufferedImage.TYPE_BYTE_GRAY);
+
+        try (ByteArrayOutputStream os = new ByteArrayOutputStream()) {
+            instance.write(image, os);
+            assertDimensions(os, image.getWidth(), image.getHeight());
+        }
+    }
+
+    @Test
     public void testWriteWithBufferedImageWithBackgroundColor()
             throws Exception {
         BufferedImage image = new BufferedImage(50, 50,
