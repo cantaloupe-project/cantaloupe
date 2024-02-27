@@ -167,6 +167,11 @@ public final class TurboJPEGImageWriter {
         image = Java2DUtil.removeAlpha(image, bgColor);
         image = Java2DUtil.convertCustomToRGB(image);
 
+        // Gray subsampling required to handle grayscale input
+        if (image.getType() == BufferedImage.TYPE_BYTE_GRAY) {
+            setSubsampling(TJ.SAMP_GRAY);
+        }
+
         try (TJCompressor tjc = new TJCompressor()) {
             tjc.setSubsamp(subsampling);
             tjc.setJPEGQuality(quality);
