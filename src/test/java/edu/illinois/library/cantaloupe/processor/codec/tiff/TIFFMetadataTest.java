@@ -4,6 +4,8 @@ import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
+import org.apache.jena.riot.RDFDataMgr;
+import org.apache.jena.riot.RDFFormat;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -80,7 +82,7 @@ public class TIFFMetadataTest extends BaseTest {
         try (ImageInputStream is = ImageIO.createImageInputStream(srcFile.toFile())) {
             final String rdf = newInstance(is).getXMP().orElseThrow();
             final Model model = ModelFactory.createDefaultModel();
-            model.read(new StringReader(rdf), null, "RDF/XML");
+            model.read(new StringReader(rdf), "file://" + srcFile.getParent().toAbsolutePath(), "RDF/XML");
         }
     }
 

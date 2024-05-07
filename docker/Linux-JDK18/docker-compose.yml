@@ -8,7 +8,7 @@ services:
   cantaloupe:
     build:
       context: ../../
-      dockerfile: $PWD/docker/Linux-JDK15/Dockerfile
+      dockerfile: $PWD/docker/Linux-JDK18/Dockerfile
   minio:
     image: minio/minio
     environment:

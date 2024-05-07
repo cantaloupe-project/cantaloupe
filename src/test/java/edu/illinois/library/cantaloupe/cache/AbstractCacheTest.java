@@ -325,6 +325,9 @@ abstract class AbstractCacheTest extends BaseTest {
         // purge everything
         instance.purge();
 
+        // Allow time for purge but not as long as upload
+        Thread.sleep(ASYNC_WAIT / 2);
+
         // assert that the info has been purged
         assertFalse(instance.getInfo(identifier).isPresent());
 

@@ -123,6 +123,9 @@ public class Metadata {
             } catch (IllegalArgumentException e) {
                 LOGGER.info("readOrientation(): {}", e.getMessage());
                 orientation = Orientation.ROTATE_0;
+            } catch (RiotException e) {    
+                LOGGER.info("readOrientation(): {}", e.getMessage());
+                orientation = Orientation.ROTATE_0;
             }
         }
         return orientation;
@@ -209,10 +212,27 @@ public class Metadata {
             RIOT.init();
 
             xmpModel = ModelFactory.createDefaultModel();
+            String base = null;
+            if (xmp.get().indexOf("rdf:about=''") != -1 || xmp.get().indexOf("rdf:about=\"\"") != -1) {
+                // Version 4.8+ of jena requires a rdf:about link to not be empty
+                base = "http://example.com";
+            }
 
             try (StringReader reader = new StringReader(xmp.get())) {
-                xmpModel.read(reader, null, "RDF/XML");
-            } catch (RiotException | NullPointerException e) {
+                xmpModel.read(reader, base, "RDF/XML");
+            } catch (RiotException e) {
+                if (e.getMessage().indexOf("Base URI is null, but there are relative URIs to resolve") != -1) {
+                    // Version 4.8+ of jena requires a rdf:about link to not be empty
+                    try (StringReader reader = new StringReader(xmp.get())) {
+                        xmpModel.read(reader, "http://example.com", "RDF/XML");
+                    } catch (RiotException exception) {
+                        LOGGER.info("loadXMP(): {}", exception.getMessage());
+                    }    
+                } else {
+                    LOGGER.info("loadXMP(): {}", e.getMessage());
+                    throw e;
+                }
+            } catch (NullPointerException e) {
                 // The XMP string may be invalid RDF/XML, or there may be a bug
                 // in Jena (that would be the NPE). Not much we can do.
                 LOGGER.info("loadXMP(): {}", e.getMessage());
