@@ -80,7 +80,7 @@ class JdbcCache implements DerivativeCache {
             LOGGER.debug("Closing stream for {}", ops);
             PreparedStatement statement = null;
             try {
-                if (isCompletelyWritten()) {
+                if (isComplete()) {
                     blobOutputStream.close();
                     final Configuration config = Configuration.getInstance();
                     final String sql = String.format(
