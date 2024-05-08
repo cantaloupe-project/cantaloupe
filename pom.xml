@@ -18,7 +18,8 @@
         <aws-sdk.version>2.21.4</aws-sdk.version>
         <jackson.version>2.15.2</jackson.version>
         <!-- develop version 11.0.5 -->
-        <jetty.version>9.4.53.v20231009</jetty.version>
+        <!--<jetty.version>9.4.53.v20231009</jetty.version>-->
+        <jetty.version>11.0.5</jetty.version>
         <jruby.version>9.4.3.0</jruby.version>
         <surefire.version>3.0.0-M5</surefire.version>
         <seleniumhq.version>2.53.1</seleniumhq.version><!-- There are many new versions for this library 4.10.0 latest-->
