@@ -249,7 +249,7 @@ public class S3CacheTest extends AbstractCacheTest {
         try (CompletableOutputStream os =
                      instance.newDerivativeImageOutputStream(ops)) {
             Files.copy(fixture, os);
-            os.setCompletelyWritten(true);
+            os.setComplete(true);
         }
 
         // Wait for it to finish, hopefully.
@@ -302,7 +302,7 @@ public class S3CacheTest extends AbstractCacheTest {
                      instance.newDerivativeImageOutputStream(opList)) {
             Path fixture = TestUtil.getImage(IMAGE);
             Files.copy(fixture, outputStream);
-            outputStream.setCompletelyWritten(true);
+            outputStream.setComplete(true);
         }
 
         // Add a cached info
@@ -379,7 +379,7 @@ public class S3CacheTest extends AbstractCacheTest {
         try (CompletableOutputStream outputStream =
                      instance.newDerivativeImageOutputStream(ops1)) {
             Files.copy(fixture, outputStream);
-            outputStream.setCompletelyWritten(true);
+            outputStream.setComplete(true);
         }
 
         // add a cached Info

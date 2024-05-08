@@ -15,10 +15,10 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class ImageInfoFactoryTest extends BaseTest {
+public class InformationFactoryTest extends BaseTest {
 
     private String imageUri;
-    private ImageInfo imageInfo;
+    private Information imageInfo;
     private Processor processor;
 
     @BeforeEach
@@ -35,9 +35,12 @@ public class ImageInfoFactoryTest extends BaseTest {
                 TestUtil.getImage("jpg-rgb-594x522x8-baseline.jpg"));
 
         Info info = processor.readInfo();
-        imageInfo = new ImageInfoFactory().newImageInfo(
-                imageUri, processor.getAvailableOutputFormats(),
-                info, 0, new ScaleConstraint(1, 1));
+        imageInfo = new InformationFactory().newImageInfo(
+                imageUri,
+                processor.getAvailableOutputFormats(),
+                info,
+                0,
+                new ScaleConstraint(1, 1));
     }
 
     @Override
@@ -56,7 +59,7 @@ public class ImageInfoFactoryTest extends BaseTest {
                 TestUtil.getImage("jpg-xmp-orientation-90.jpg"));
 
         Info info = processor.readInfo();
-        imageInfo = new ImageInfoFactory().newImageInfo(
+        imageInfo = new InformationFactory().newImageInfo(
                 imageUri, processor.getAvailableOutputFormats(),
                 info, 0, new ScaleConstraint(1, 1));
     }
@@ -68,7 +71,7 @@ public class ImageInfoFactoryTest extends BaseTest {
                 TestUtil.getImage("jpg-rgb-594x522x8-baseline.jpg"));
 
         Info info = processor.readInfo();
-        imageInfo = new ImageInfoFactory().newImageInfo(
+        imageInfo = new InformationFactory().newImageInfo(
                 imageUri, processor.getAvailableOutputFormats(),
                 info, 0, new ScaleConstraint(1, 2));
     }
@@ -160,7 +163,7 @@ public class ImageInfoFactoryTest extends BaseTest {
         ((FileProcessor) processor).setSourceFile(
                 TestUtil.getImage("tif-rgb-1res-64x56x8-tiled-uncompressed.tif"));
         Info info = processor.readInfo();
-        imageInfo = new ImageInfoFactory().newImageInfo(
+        imageInfo = new InformationFactory().newImageInfo(
                 imageUri, processor.getAvailableOutputFormats(),
                 info, 0, new ScaleConstraint(1, 1));
 
@@ -191,7 +194,7 @@ public class ImageInfoFactoryTest extends BaseTest {
         ((FileProcessor) processor).setSourceFile(
                 TestUtil.getImage("tif-rgb-1res-64x56x8-tiled-uncompressed.tif"));
         Info info = processor.readInfo();
-        imageInfo = new ImageInfoFactory().newImageInfo(
+        imageInfo = new InformationFactory().newImageInfo(
                 imageUri, processor.getAvailableOutputFormats(),
                 info, 0, new ScaleConstraint(1, 1));
 

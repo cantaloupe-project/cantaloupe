@@ -2,7 +2,7 @@ package edu.illinois.library.cantaloupe.processor.codec.gif;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import edu.illinois.library.cantaloupe.image.Metadata;
-import edu.illinois.library.cantaloupe.util.StringUtils;
+import edu.illinois.library.cantaloupe.image.xmp.Utils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -71,7 +71,7 @@ public class GIFMetadata extends Metadata {
             try {
                 xmp = reader.getXMP();
                 if (xmp != null) {
-                    xmp = StringUtils.trimXMP(xmp);
+                    xmp = Utils.trimXMP(xmp);
                 }
             } catch (IOException e) {
                 LOGGER.warn("getXMP(): {}", e.getMessage());

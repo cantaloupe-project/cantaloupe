@@ -5,7 +5,7 @@
     <groupId>edu.illinois.library.cantaloupe</groupId>
     <artifactId>cantaloupe</artifactId>
     <packaging>jar</packaging>
-    <version>5.0.5</version>
+    <version>6.0-SNAPSHOT</version>
     <name>Cantaloupe</name>
     <url>https://cantaloupe-project.github.io/</url>
     <inceptionYear>2015</inceptionYear>
@@ -17,6 +17,7 @@
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <aws-sdk.version>2.21.4</aws-sdk.version>
         <jackson.version>2.15.2</jackson.version>
+        <!-- develop version 11.0.5 -->
         <jetty.version>9.4.53.v20231009</jetty.version>
         <jruby.version>9.4.3.0</jruby.version>
         <surefire.version>3.0.0-M5</surefire.version>
@@ -423,8 +424,9 @@
                 <configuration>
                     <runOrder>random</runOrder>
                     <reuseForks>false</reuseForks>
-                    <!-- JAI requires this in JDK 16+. It should be removed when JAI is. -->
-                    <argLine>--add-opens java.desktop/sun.awt.image=ALL-UNNAMED</argLine>
+                    <!-- JAI requires add-opens in JDK 16+. It should be removed when JAI is. -->
+                    <!-- JAI requires illegal-access in JDK >= 16. -->
+                    <argLine>--add-opens java.desktop/sun.awt.image=ALL-UNNAMED --illegal-access=permit</argLine>
                 </configuration>
             </plugin>
 

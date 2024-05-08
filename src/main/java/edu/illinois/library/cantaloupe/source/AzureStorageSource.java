@@ -226,8 +226,11 @@ final class AzureStorageSource extends AbstractSource implements Source {
     }
 
     @Override
-    public void checkAccess() throws IOException {
-        fetchBlob();
+    public StatResult stat() throws IOException {
+        CloudBlockBlob blob = fetchBlob();
+        StatResult result = new StatResult();
+        result.setLastModified(blob.getProperties().getLastModified().toInstant());
+        return result;
     }
 
     private CloudBlockBlob fetchBlob() throws IOException {
@@ -275,6 +278,7 @@ final class AzureStorageSource extends AbstractSource implements Source {
         if (objectKey == null) {
             final LookupStrategy strategy =
                     LookupStrategy.from(Key.AZURESTORAGESOURCE_LOOKUP_STRATEGY);
+            //noinspection SwitchStatementWithTooFewBranches
             switch (strategy) {
                 case DELEGATE_SCRIPT:
                     try {

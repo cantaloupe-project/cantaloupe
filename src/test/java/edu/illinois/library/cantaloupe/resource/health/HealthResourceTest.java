@@ -1,4 +1,4 @@
-package edu.illinois.library.cantaloupe.resource.api;
+package edu.illinois.library.cantaloupe.resource.health;
 
 import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.config.Configuration;
@@ -7,6 +7,7 @@ import edu.illinois.library.cantaloupe.http.Client;
 import edu.illinois.library.cantaloupe.http.Headers;
 import edu.illinois.library.cantaloupe.http.ResourceException;
 import edu.illinois.library.cantaloupe.http.Response;
+import edu.illinois.library.cantaloupe.resource.ResourceTest;
 import edu.illinois.library.cantaloupe.resource.Route;
 import edu.illinois.library.cantaloupe.status.Health;
 import edu.illinois.library.cantaloupe.status.HealthChecker;
@@ -17,7 +18,7 @@ import java.net.URI;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class HealthResourceTest extends AbstractAPIResourceTest {
+public class HealthResourceTest extends ResourceTest {
 
     @BeforeEach
     @Override
@@ -25,6 +26,9 @@ public class HealthResourceTest extends AbstractAPIResourceTest {
         super.setUp();
         HealthChecker.getSourceUsages().clear();
         HealthChecker.overrideHealth(null);
+        Configuration config = Configuration.getInstance();
+        config.setProperty(Key.HEALTH_ENDPOINT_ENABLED, true);
+        client = newClient("");
     }
 
     @Override
@@ -35,7 +39,7 @@ public class HealthResourceTest extends AbstractAPIResourceTest {
     @Test
     void testGETWithEndpointDisabled() throws Exception {
         Configuration config = Configuration.getInstance();
-        config.setProperty(Key.API_ENABLED, false);
+        config.setProperty(Key.HEALTH_ENDPOINT_ENABLED, false);
         try {
             client.send();
             fail("Expected exception");
@@ -114,22 +118,6 @@ public class HealthResourceTest extends AbstractAPIResourceTest {
         } catch (ResourceException e) {
             assertEquals(500, e.getStatusCode());
         }
-    }
-
-    @Override // because this endpoint doesn't require auth
-    @Test
-    public void testGETWithNoCredentials() throws Exception {
-        client.setUsername(null);
-        client.setSecret(null);
-        client.send();
-    }
-
-    @Override // because this endpoint doesn't require auth
-    @Test
-    public void testGETWithInvalidCredentials() throws Exception {
-        client.setUsername("invalid");
-        client.setSecret("invalid");
-        client.send();
     }
 
     @Test

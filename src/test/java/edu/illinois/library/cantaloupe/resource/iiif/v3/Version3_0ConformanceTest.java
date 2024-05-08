@@ -882,7 +882,7 @@ public class Version3_0ConformanceTest extends ResourceTest {
      */
     @Test
     void testInformationRequestJSON() {
-        // this is tested in ImageInfoFactoryTest
+        // this is tested in InformationFactoryTest
     }
 
 }

@@ -6,6 +6,7 @@ import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.*;
 import edu.illinois.library.cantaloupe.delegate.DelegateProxy;
+import edu.illinois.library.cantaloupe.source.StatResult;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.junit.jupiter.api.Nested;
@@ -40,12 +41,18 @@ public class InformationRequestHandlerTest extends BaseTest {
 
     private static class IntrospectiveCallback implements InformationRequestHandler.Callback {
         private boolean isAuthorizeCalled,
+                isSourceAccessedCalled,
                 isKnowAvailableOutputFormatsCalled;
 
         @Override
         public boolean authorize() {
             isAuthorizeCalled = true;
             return true;
+        }
+
+        @Override
+        public void sourceAccessed(StatResult result) {
+            isSourceAccessedCalled = true;
         }
 
         @Override
@@ -71,6 +78,25 @@ public class InformationRequestHandlerTest extends BaseTest {
                 .build()) {
             handler.handle();
             assertTrue(callback.isAuthorizeCalled);
+        }
+    }
+
+    @Test
+    void testHandleCallsSourceAccessedCallback() throws Exception {
+        {   // Configure the application.
+            final Configuration config = Configuration.getInstance();
+            config.setProperty(Key.SOURCE_STATIC, "FilesystemSource");
+            config.setProperty(Key.FILESYSTEMSOURCE_PATH_PREFIX,
+                    TestUtil.getImagesPath() + "/");
+        }
+
+        final IntrospectiveCallback callback = new IntrospectiveCallback();
+        try (InformationRequestHandler handler = InformationRequestHandler.builder()
+                .withCallback(callback)
+                .withIdentifier(new Identifier("jpg-rgb-64x48x8.jpg"))
+                .build()) {
+            handler.handle();
+            assertTrue(callback.isSourceAccessedCalled);
         }
     }
 
@@ -223,6 +249,9 @@ public class InformationRequestHandlerTest extends BaseTest {
                     @Override
                     public boolean authorize() {
                         return false;
+                    }
+                    @Override
+                    public void sourceAccessed(StatResult result) {
                     }
                     @Override
                     public void knowAvailableOutputFormats(Set<Format> availableOutputFormats) {

@@ -1,9 +1,11 @@
-package edu.illinois.library.cantaloupe.resource.api;
+package edu.illinois.library.cantaloupe.resource.health;
 
 import com.fasterxml.jackson.databind.SerializationFeature;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.http.Method;
+import edu.illinois.library.cantaloupe.resource.AbstractResource;
+import edu.illinois.library.cantaloupe.resource.EndpointDisabledException;
 import edu.illinois.library.cantaloupe.resource.JacksonRepresentation;
 import edu.illinois.library.cantaloupe.status.Health;
 import edu.illinois.library.cantaloupe.status.HealthChecker;
@@ -16,7 +18,7 @@ import java.util.Map;
 /**
  * Provides health checks via the HTTP API.
  */
-public class HealthResource extends AbstractAPIResource {
+public class HealthResource extends AbstractResource {
 
     private static final Logger LOGGER =
             LoggerFactory.getLogger(HealthResource.class);
@@ -26,6 +28,17 @@ public class HealthResource extends AbstractAPIResource {
 
     private static final Map<SerializationFeature, Boolean> SERIALIZATION_FEATURES =
             Map.of(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, true);
+
+    @Override
+    public void doInit() throws Exception {
+        super.doInit();
+        getResponse().setHeader("Cache-Control", "no-cache");
+
+        final Configuration config = Configuration.getInstance();
+        if (!config.getBoolean(Key.HEALTH_ENDPOINT_ENABLED, false)) {
+            throw new EndpointDisabledException();
+        }
+    }
 
     @Override
     protected Logger getLogger() {
@@ -55,11 +68,6 @@ public class HealthResource extends AbstractAPIResource {
         new JacksonRepresentation(health).write(
                 getResponse().getOutputStream(),
                 SERIALIZATION_FEATURES);
-    }
-
-    @Override
-    boolean requiresAuth() {
-        return false;
     }
 
 }

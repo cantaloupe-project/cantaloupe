@@ -7,17 +7,18 @@ import edu.illinois.library.cantaloupe.source.stream.ClosingMemoryCacheImageInpu
 import edu.illinois.library.cantaloupe.source.stream.HTTPImageInputStream;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.WebServer;
+import edu.illinois.library.cantaloupe.util.SocketUtils;
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.handler.DefaultHandler;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import javax.imageio.stream.ImageInputStream;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.io.InputStream;
-import java.util.HashMap;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -50,11 +51,11 @@ public class HTTPStreamFactoryTest extends BaseTest {
     }
 
     private HTTPStreamFactory newInstance(boolean serverAcceptsRanges) {
-        Map<String,String> headers = new HashMap<>();
-        headers.put("X-Custom", "yes");
-        HTTPRequestInfo requestInfo = new HTTPRequestInfo(
-                server.getHTTPURI().resolve("/" + PRESENT_READABLE_IDENTIFIER).toString(),
-                null, null, headers);
+        Map<String,Object> headers = Map.of("X-Custom", "yes");
+        HTTPRequestInfo requestInfo = new HTTPRequestInfo();
+        requestInfo.setURI(
+                server.getHTTPURI().resolve("/" + PRESENT_READABLE_IDENTIFIER).toString());
+        requestInfo.setHeaders(headers);
 
         return new HTTPStreamFactory(
                 requestInfo,
@@ -70,6 +71,28 @@ public class HTTPStreamFactoryTest extends BaseTest {
         assertFalse(instance.isSeekingDirect());
         config.setProperty(Key.HTTPSOURCE_CHUNKING_ENABLED, true);
         assertTrue(instance.isSeekingDirect());
+    }
+
+    @Disabled
+    @Test
+    void newInputStreamWithProxy() throws Exception {
+        final int proxyPort = SocketUtils.getOpenPort();
+
+        // Set up the proxy
+        // TODO: write this
+
+        // Set up HttpSource
+        final var config = Configuration.getInstance();
+        config.setProperty(Key.HTTPSOURCE_HTTP_PROXY_HOST, "127.0.0.1");
+        config.setProperty(Key.HTTPSOURCE_HTTP_PROXY_PORT, proxyPort);
+
+        int length = 0;
+        try (InputStream is = newInstance(true).newInputStream()) {
+            while (is.read() != -1) {
+                length++;
+            }
+        }
+        assertTrue(length > 1000);
     }
 
     @Test
@@ -137,6 +160,28 @@ public class HTTPStreamFactoryTest extends BaseTest {
         try (ImageInputStream is = newInstance(true).newSeekableStream()) {
             assertTrue(is instanceof ClosingMemoryCacheImageInputStream);
         }
+    }
+
+    @Disabled
+    @Test
+    void newSeekableStreamWithProxy() throws Exception {
+        final int proxyPort = SocketUtils.getOpenPort();
+
+        // Set up the proxy
+        // TODO: write this
+
+        // Set up HttpSource
+        final var config = Configuration.getInstance();
+        config.setProperty(Key.HTTPSOURCE_HTTP_PROXY_HOST, "127.0.0.1");
+        config.setProperty(Key.HTTPSOURCE_HTTP_PROXY_PORT, proxyPort);
+
+        int length = 0;
+        try (ImageInputStream is = newInstance(true).newSeekableStream()) {
+            while (is.read() != -1) {
+                length++;
+            }
+        }
+        assertTrue(length > 1000);
     }
 
     @Test

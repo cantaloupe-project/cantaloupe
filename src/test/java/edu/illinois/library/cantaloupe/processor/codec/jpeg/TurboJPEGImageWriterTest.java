@@ -1,7 +1,7 @@
 package edu.illinois.library.cantaloupe.processor.codec.jpeg;
 
-import edu.illinois.library.cantaloupe.image.Metadata;
 import edu.illinois.library.cantaloupe.image.Rectangle;
+import edu.illinois.library.cantaloupe.image.xmp.Utils;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import edu.illinois.library.cantaloupe.util.Rational;
@@ -104,7 +104,7 @@ public class TurboJPEGImageWriterTest extends BaseTest {
 
             final ByteArrayOutputStream expectedSegment = new ByteArrayOutputStream();
             final byte[] headerBytes = "http://ns.adobe.com/xap/1.0/\0".getBytes();
-            final byte[] xmpBytes = Metadata.encapsulateXMP(xmp).
+            final byte[] xmpBytes = Utils.encapsulateXMP(xmp).
                     getBytes(StandardCharsets.UTF_8);
             // write segment marker
             expectedSegment.write(new byte[]{(byte) 0xff, (byte) 0xe1});

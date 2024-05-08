@@ -1,5 +1,39 @@
 # Change Log
 
+## 6.0
+
+### Endpoints
+
+* Image and information responses include a `Last-Modified` header when
+  possible.
+* The health endpoint is enabled via `endpoint.health.enabled` rather than
+  `endpoint.api.enabled`.
+* Added an HTTP API method to purge all infos from the derivative cache.
+* Added a configuration option to automatically purge source-cached images
+  whose format cannot be inferred.
+
+### Sources
+
+* HttpSource supports a client HTTP proxy. (Thanks to @mightymax and
+  @mlindeman)
+* HttpSource can be configured to send a ranged GET request instead of a HEAD
+  request, enabling it to work with pre-signed URLs that do not allow HEAD
+  requests.
+* S3Source supports multiple endpoints when using ScriptLookupStrategy.
+
+### Caches
+
+* S3Cache uses multipart uploads, which reduces memory usage when caching
+  derivatives larger than 5 MB.
+
+### Delegate Script
+
+* The delegate script pathname can be set using the
+  `-Dcantaloupe.delegate_script` VM argument, which takes precedence over the
+  `delegate_script.pathname` configuration key.
+* The delegate script's `metadata` context key contains a new field,
+  `xmp_elements`, that provides a high-level key-value view of the XMP data.
+
 ## 5.0.6
 
 * IIIF information endpoints always return JSON in HTTP 4xx responses.

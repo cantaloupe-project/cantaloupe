@@ -24,10 +24,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-final class ImageInfoFactory {
+/**
+ * Builds new {@link Information} instances.
+ */
+final class InformationFactory {
 
     private static final Logger LOGGER =
-            LoggerFactory.getLogger(ImageInfoFactory.class);
+            LoggerFactory.getLogger(InformationFactory.class);
 
     /**
      * Will be used if {@link Key#IIIF_MIN_SIZE} is not set.
@@ -52,7 +55,7 @@ final class ImageInfoFactory {
     private double maxScale;
     private int maxPixels, minSize, minTileSize;
 
-    ImageInfoFactory() {
+    InformationFactory() {
         var config  = Configuration.getInstance();
         maxPixels   = config.getInt(Key.MAX_PIXELS, 0);
         maxScale    = config.getDouble(Key.MAX_SCALE, Double.MAX_VALUE);
@@ -70,11 +73,11 @@ final class ImageInfoFactory {
      *                               list.
      * @param scaleConstraint        May be {@code null}.
      */
-    ImageInfo<String,Object> newImageInfo(final Set<Format> processorOutputFormats,
-                                          final String imageURI,
-                                          final Info info,
-                                          final int infoImageIndex,
-                                          ScaleConstraint scaleConstraint) {
+    Information<String,Object> newImageInfo(final Set<Format> processorOutputFormats,
+                                            final String imageURI,
+                                            final Info info,
+                                            final int infoImageIndex,
+                                            ScaleConstraint scaleConstraint) {
         if (scaleConstraint == null) {
             scaleConstraint = new ScaleConstraint(1, 1);
         }
@@ -89,7 +92,7 @@ final class ImageInfoFactory {
 
         // Create a Map instance, which will eventually be serialized to JSON
         // and returned in the response body.
-        final ImageInfo<String,Object> responseInfo = new ImageInfo<>();
+        final Information<String,Object> responseInfo = new Information<>();
         responseInfo.put("@context", "http://iiif.io/api/image/2/context.json");
         responseInfo.put("@id", imageURI);
         responseInfo.put("protocol", "http://iiif.io/api/image");
@@ -98,7 +101,7 @@ final class ImageInfoFactory {
 
         // sizes -- this will be a 2^n series that will work for both multi-
         // and monoresolution images.
-        final List<ImageInfo.Size> sizes = getSizes(virtualSize);
+        final List<Information.Size> sizes = getSizes(virtualSize);
         responseInfo.put("sizes", sizes);
 
         // The max reduction factor is the maximum number of times the full
@@ -115,7 +118,7 @@ final class ImageInfoFactory {
         // calculate a tile size close to minTileSize pixels.
         // Otherwise, use the smallest multiple of the tile size above that
         // of image resolution 0.
-        final List<ImageInfo.Tile> tiles = new ArrayList<>();
+        final List<Information.Tile> tiles = new ArrayList<>();
         responseInfo.put("tiles", tiles);
 
         info.getImages().forEach(image ->
@@ -125,7 +128,7 @@ final class ImageInfoFactory {
                         minTileSize)));
 
         for (Dimension uniqueTileSize : uniqueTileSizes) {
-            final ImageInfo.Tile tile = new ImageInfo.Tile();
+            final Information.Tile tile = new Information.Tile();
             tile.width = (int) Math.ceil(uniqueTileSize.width());
             tile.height = (int) Math.ceil(uniqueTileSize.height());
             // Add every scale factor up to 2^RFmax.
@@ -202,10 +205,10 @@ final class ImageInfoFactory {
      * @param virtualSize Orientation-aware and {@link ScaleConstraint
      *                    scale-constrained} full size.
      */
-    List<ImageInfo.Size> getSizes(Dimension virtualSize) {
+    List<Information.Size> getSizes(Dimension virtualSize) {
         // This will be a 2^n series that will work for both multi- and
         // monoresolution images.
-        final List<ImageInfo.Size> sizes = new ArrayList<>();
+        final List<Information.Size> sizes = new ArrayList<>();
 
         // The min reduction factor is the smallest number of reductions that
         // are required in order to fit within maxPixels.
@@ -222,7 +225,7 @@ final class ImageInfoFactory {
              i *= 2) {
             final int width = (int) Math.round(virtualSize.width() / i);
             final int height = (int) Math.round(virtualSize.height() / i);
-            sizes.add(0, new ImageInfo.Size(width, height));
+            sizes.add(0, new Information.Size(width, height));
         }
         return sizes;
     }

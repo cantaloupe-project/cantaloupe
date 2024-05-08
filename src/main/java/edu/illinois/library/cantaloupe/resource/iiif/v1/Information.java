@@ -8,8 +8,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Class whose instances are intended to be serialized to JSON for use in IIIF
- * Image Information responses.
+ * Class whose instances are intended to be serialized as JSON for use in
+ * information responses.
  *
  * @see <a href="http://iiif.io/api/image/1.1/#image-info-request">IIIF Image
  * API 1.1</a>
@@ -19,7 +19,7 @@ import java.util.List;
 @JsonPropertyOrder({ "@context", "@id", "width", "height", "scale_factors",
         "tile_width", "tile_height", "formats", "qualities", "profile" })
 @JsonInclude(JsonInclude.Include.NON_NULL)
-class ImageInfo {
+final class Information {
 
     @JsonProperty("@context")
     public final String context = "http://library.stanford.edu/iiif/image-api/1.1/context.json";
