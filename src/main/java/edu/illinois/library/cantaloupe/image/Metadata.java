@@ -329,7 +329,6 @@ public class Metadata {
         // XMP
         getXMP().ifPresent(xmp -> map.put("xmp_string", xmp));
         getXMPModel().ifPresent(model -> map.put("xmp_model", model));
-        map.put("xmp_elements", getXMPElements());
         // Native metadata
         getNativeMetadata().ifPresent(nm -> map.put("native", nm));
         return Collections.unmodifiableMap(map);
