@@ -91,22 +91,8 @@ class JdbcCache implements DerivativeCache {
         @Override
         public void close() throws IOException {
             LOGGER.debug("Closing stream for {}", ops);
-            PreparedStatement statement = null;
             try {
                 if (isComplete()) {
-                    blobOutputStream.close();
-                    final Configuration config = Configuration.getInstance();
-                    final String sql = String.format(
-                            "INSERT INTO %s (%s, %s, %s) VALUES (?, ?, ?)",
-                                config.getString(Key.JDBCCACHE_DERIVATIVE_IMAGE_TABLE),
-                                DERIVATIVE_IMAGE_TABLE_OPERATIONS_COLUMN,
-                                DERIVATIVE_IMAGE_TABLE_IMAGE_COLUMN,
-                                DERIVATIVE_IMAGE_TABLE_LAST_ACCESSED_COLUMN);
-                    LOGGER.debug(sql);
-                    statement = connection.prepareStatement(sql);
-                    statement.setString(1, ops.toString());
-                    statement.setBlob(2, blob);
-                    statement.setTimestamp(3, now());
                     statement.executeUpdate();
                     connection.commit();
                 } else {
