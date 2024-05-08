@@ -21,7 +21,7 @@ import edu.illinois.library.cantaloupe.delegate.UnavailableException;
 import edu.illinois.library.cantaloupe.util.StringUtils;
 import org.slf4j.Logger;
 
-import jakarta.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
@@ -41,7 +41,7 @@ import java.util.stream.Collectors;
  * more of the HTTP-method-specific methods {@link #doGET()} etc., and may
  * optionally use {@link #doInit()} and {@link #destroy()}.</p>
  *
- * <p>Unlike {@link jakarta.servlet.http.HttpServlet}s, instances are only used
+ * <p>Unlike {@link javax.servlet.http.HttpServlet}s, instances are only used
  * once and not shared across threads.</p>
  */
 public abstract class AbstractResource {

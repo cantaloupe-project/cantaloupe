@@ -3,8 +3,8 @@ package edu.illinois.library.cantaloupe.resource;
 import edu.illinois.library.cantaloupe.http.Header;
 import edu.illinois.library.cantaloupe.http.Headers;
 
-import jakarta.servlet.http.Cookie;
-import jakarta.servlet.http.HttpServletResponse;
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletResponse;
 import java.io.PrintWriter;
 import java.util.Collection;
 import java.util.Locale;
