@@ -2,7 +2,6 @@ package edu.illinois.library.cantaloupe.http;
 
 import edu.illinois.library.cantaloupe.util.SocketUtils;
 import org.eclipse.jetty.alpn.server.ALPNServerConnectionFactory;
-import org.eclipse.jetty.http.UriCompliance;
 import org.eclipse.jetty.http2.HTTP2Cipher;
 import org.eclipse.jetty.http2.server.HTTP2CServerConnectionFactory;
 import org.eclipse.jetty.http2.server.HTTP2ServerConnectionFactory;
@@ -74,7 +73,6 @@ public final class Server {
 
         ServerConnector connector;
         HttpConfiguration config = new HttpConfiguration();
-        config.setUriCompliance(UriCompliance.LEGACY);
 
         HttpConnectionFactory http1 = new HttpConnectionFactory(config);
         HTTP2CServerConnectionFactory http2c =
@@ -97,7 +95,6 @@ public final class Server {
         // Initialize HTTPS.
         if (isHTTPS1Enabled || isHTTPS2Enabled) {
             config = new HttpConfiguration();
-            config.setUriCompliance(UriCompliance.LEGACY);
             config.setSecureScheme("https");
             config.addCustomizer(new SecureRequestCustomizer());
 
