@@ -56,7 +56,7 @@ class JdbcCache implements DerivativeCache {
         private final OutputStream blobOutputStream;
         private final OperationList ops;
         private final Connection connection;
-        private final Blob blob;
+        private final PreparedStatement statement;
 
         /**
          * Constructor for writing derivative images.
@@ -82,6 +82,10 @@ class JdbcCache implements DerivativeCache {
 
             final Blob blob = connection.createBlob();
             blobOutputStream = blob.setBinaryStream(1);
+            statement = connection.prepareStatement(sql);
+            statement.setString(1, ops.toString());
+            statement.setBlob(2, blob);
+            statement.setTimestamp(3, now());
         }
 
         @Override
