@@ -251,35 +251,6 @@ public class MetadataTest extends BaseTest {
         assertEquals(Orientation.ROTATE_0, instance.getOrientation());
     }
 
-    /* getXMPElements() */
-
-    @Test
-    void testGetXMPElementsWithPresentXMPData() throws Exception {
-        Path fixture       = TestUtil.getImage("jpg-xmp.jpg");
-        ImageReader reader = new ImageReaderFactory()
-                .newImageReader(Format.get("jpg"), fixture);
-        try {
-            Metadata metadata        = reader.getMetadata(0);
-            Map<String,Object> model = metadata.getXMPElements();
-            assertEquals(6, model.size());
-        } finally {
-            reader.dispose();
-        }
-    }
-
-    @Test
-    void testGetXMPElementsWithNoXMPData() throws Exception {
-        Path fixture       = TestUtil.getImage("jpg");
-        ImageReader reader = new ImageReaderFactory()
-                .newImageReader(Format.get("jpg"), fixture);
-        try {
-            Metadata metadata = reader.getMetadata(0);
-            assertTrue(metadata.getXMPElements().isEmpty());
-        } finally {
-            reader.dispose();
-        }
-    }
-
     /* getXMPModel() */
 
     @Test

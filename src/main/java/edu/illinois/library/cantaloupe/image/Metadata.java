@@ -7,7 +7,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import edu.illinois.library.cantaloupe.image.exif.Directory;
 import edu.illinois.library.cantaloupe.image.exif.Tag;
 import edu.illinois.library.cantaloupe.image.iptc.DataSet;
-import edu.illinois.library.cantaloupe.image.xmp.MapReader;
 import edu.illinois.library.cantaloupe.image.xmp.Utils;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
@@ -156,24 +155,6 @@ public class Metadata {
     @JsonProperty
     public Optional<String> getXMP() {
         return Optional.ofNullable(xmp);
-    }
-
-    /**
-     * @return Map of elements found in the XMP data. If none are found, the
-     *         map is empty.
-     */
-    @JsonIgnore
-    public Map<String,Object> getXMPElements() {
-        loadXMP();
-        if (xmpModel != null) {
-            try {
-                MapReader reader = new MapReader(xmpModel);
-                return reader.readElements();
-            } catch (IOException e) {
-                LOGGER.warn("getXMPElements(): {}", e.getMessage());
-            }
-        }
-        return Collections.emptyMap();
     }
 
     /**
