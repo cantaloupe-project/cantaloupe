@@ -116,7 +116,7 @@ class S3Cache implements DerivativeCache {
             try {
                 bufferStream.close();
                 byte[] data = bufferStream.toByteArray();
-                if (isCompletelyWritten()) {
+                if (isComplete()) {
                     // At this point, the client has received all image data,
                     // but it is still waiting for the connection to close.
                     // Uploading in a separate thread will allow this to happen
