@@ -12,7 +12,8 @@
 
 ### Command line
 
-* `mvn clean compile exec:java -Dcantaloupe.config=...` will build and run the
+* `cp cantaloupe.properties.sample cantaloupe.properties` then edit cantaloupe.properties per your needs.
+* `mvn clean compile exec:java -Dcantaloupe.config=cantaloupe.properties` will build and run the
   project using the embedded web server listening on the port(s) specified in
   `cantaloupe.properties`.
 * `mvn clean package -DskipTests` will build a release JAR in the `target`
@@ -25,7 +26,7 @@
 1. Add a new run configuration using the "Java Application" template or
    similar.
 2. Set the main class to `edu.illinois.library.cantaloupe.StandaloneEntry` and
-   add the `-Dcantaloupe.config=...` VM option.
+   add the `-Dcantaloupe.config=cantaloupe.properties` VM option.
 
 ## Test
 
