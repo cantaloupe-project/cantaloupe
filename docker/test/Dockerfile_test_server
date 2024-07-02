@@ -1,17 +1,14 @@
-FROM openjdk:16
+FROM openjdk:11
 
 # Install various dependencies
-RUN apt-get update && apt-get install -y --no-install-recommends  \
-    curl
 RUN apt-get update && apt-get install -y --no-install-recommends \
+    curl
+RUN apt-get install -y --no-install-recommends \
     graphicsmagick \
     imagemagick \
     ffmpeg \
     maven \
     libopenjp2-tools
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    redis-server
-RUN rm -rf /var/lib/apt/lists/*
 
 # Install TurboJpegProcessor dependencies
 RUN mkdir -p /opt/libjpeg-turbo/lib
@@ -49,6 +46,11 @@ COPY ./src $home/src
 RUN mkdir -p $home/.m2/repository
 COPY docker/github/actions/cache/.m2/repository $home/.m2/repository
 COPY docker/test/image_files/.m2/settings.xml $home/.m2/settings.xml
+
+RUN apt-get install -y --no-install-recommends \
+    redis-server
+RUN rm -rf /var/lib/apt/lists/*
+
 RUN chown -R $user $home
 RUN chmod -R 755 $home
 
