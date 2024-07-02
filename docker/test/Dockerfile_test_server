@@ -1,14 +1,16 @@
 FROM openjdk:16
 
 # Install various dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends  \
+    curl
 RUN apt-get update && apt-get install -y --no-install-recommends \
-        curl \
-        graphicsmagick \
-        imagemagick \
-		ffmpeg \
-		maven \
-		libopenjp2-tools \
-		redis-server
+    graphicsmagick \
+    imagemagick \
+    ffmpeg \
+    maven \
+    libopenjp2-tools
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    redis-server
 RUN rm -rf /var/lib/apt/lists/*
 
 # Install TurboJpegProcessor dependencies
