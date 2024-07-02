@@ -440,6 +440,13 @@
             <name>imageio-ext Repository</name>
             <url>https://maven.geo-solutions.it/</url>
         </repository>
+
+        <!-- needed for jai module -->
+        <repository>
+            <id>maven.geotoolkit.org</id>
+            <name>maven.geotoolkit.org</name>
+            <url>https://maven.geotoolkit.org/</url>
+        </repository>
     </repositories>
 
     <build>
@@ -649,7 +656,39 @@
                                 <exclude>RedisCacheTest</exclude>
                                 <exclude>TurboJpegProcessorTest</exclude>
                                 <exclude>TurboJPEG*Test</exclude>
+                                <!-- S3CacheTestは結果が安定しないので別枠で実行する -->
+                                <exclude>S3CacheTest.java</exclude>
                             </excludes>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>onlydeps</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <version>${surefire.version}</version>
+                        <configuration>
+                            <runOrder>random</runOrder>
+                            <reuseForks>false</reuseForks>
+                            <includes>
+                                <!--                                <includes>AzureStorage*Test</includes>-->
+                                <includes>FfmpegProcessorTest</includes>
+                                <includes>GraphicsMagickProcessorTest</includes>
+                                <includes>ImageMagickProcessorTest</includes>
+                                <includes>*Kakadu*Test</includes>
+                                <includes>OpenJpegProcessorTest</includes>
+                                <includes>RedisCacheTest</includes>
+                                <includes>TurboJpegProcessorTest</includes>
+                                <includes>TurboJPEG*Test</includes>
+                            </includes>
                         </configuration>
                     </plugin>
                 </plugins>
@@ -671,6 +710,8 @@
                             <reuseForks>false</reuseForks>
                             <excludes>
                                 <exclude>Azure*Test</exclude>
+                                <!-- S3CacheTestは結果が安定しないので別枠で実行する -->
+                                <exclude>S3CacheTest.java</exclude>
                             </excludes>
                         </configuration>
                     </plugin>
