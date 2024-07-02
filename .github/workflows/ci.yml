@@ -1,16 +1,95 @@
 name: CI
 on: [push]
+
+env:
+  ROOT_DIR: /root
+  CANTALOUPE_HOME: /home/cantaloupe
+
 jobs:
   build:
-    name: Test in JDK 13
+    name: Test in JDK 11
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - name: Build & run Docker container
+
+      - uses: actions/checkout@v4
+
+      - name: Cache Dependency
+        uses: actions/cache@v4
+        id: cache_m2_repository
+        env:
+          cache-name: cache-m2-repository
+        with:
+          path: ./docker/github/actions/cache/.m2/repository
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('docker/github/actions/cache/.m2/repository') }}
+          restore-keys: ${{ runner.os }}-build-${{ env.cache-name }}-
+
+      - name: information
         run: |
-          docker pull amazon/dynamodb-local
-          docker build -f docker/test/Dockerfile -t cantaloupe/tests .
-          docker run --name cantaloupe-minio -d -p 7229:7229 cantaloupe/tests /bin/sh -c "./minio server --address :7229 /home/cantaloupe/s3"
-          docker run --name cantaloupe-redis -d -p 7230:7230 cantaloupe/tests /bin/sh -c "redis-server --port 7230 --protected-mode no"
-          docker run -d -p 8000:8000 amazon/dynamodb-local
-          docker run --net host --user cantaloupe cantaloupe/tests /bin/sh -c "cd /home/cantaloupe; mvn clean test -Pfreedeps"
+          pwd
+          ls -al
+          ls -al docker/github/actions/cache/.m2/repository
+          docker ps
+          docker images
+          docker-compose -f docker/test/docker-compose.yml down --rmi all --volumes --remove-orphans
+          docker images
+
+      - name: docker-compose up
+        run: |
+          docker-compose -f docker/test/docker-compose.yml -p cantaloupe up --build -d
+          docker ps
+
+      - run: sleep 3 # per seconds
+
+        # FIXME I want to write it at the entrypoint.sh
+      - name: boot
+        run: |
+          docker ps
+          docker exec -d TestCantaloupe /bin/sh -c "redis-server /data/redis.conf" 
+
+      - run: sleep 3
+
+      - name: info
+        run: |
+          docker ps
+          docker exec TestCantaloupe /bin/sh -c "ps aux |grep minio"
+          docker exec TestCantaloupe /bin/sh -c "ps aux |grep redis"
+          echo "ls -al /"
+          docker exec TestCantaloupe /bin/sh -c "ls -al /"
+          echo "ls -al /root"
+          docker exec TestCantaloupe /bin/sh -c "ls -al /root"
+          echo "ls -al ${CANTALOUPE_HOME}"
+          docker exec TestCantaloupe /bin/sh -c "ls -al ${CANTALOUPE_HOME}"
+          echo "ls -al ${CANTALOUPE_HOME}/.m2/repository"
+          docker exec TestCantaloupe /bin/sh -c "ls -al ${CANTALOUPE_HOME}/.m2/repository"
+
+      - name: mvn dependency:resolve
+        run: |
+          echo ".m2 finding"
+          docker exec --user cantaloupe TestCantaloupe /bin/sh -c "mvn help:evaluate -Dexpression=settings.localRepository -q -DforceStdout"
+          echo ""
+          docker exec --user cantaloupe TestCantaloupe /bin/sh -c "cd ${CANTALOUPE_HOME}; mvn dependency:resolve"
+
+      - name: test pickup
+        run: |
+          docker ps
+      #          docker exec --user cantaloupe TestCantaloupe /bin/sh -c "cd ${CANTALOUPE_HOME}; mvn clean test -Dtest=RedisCacheTest"
+
+      - name: test 'mvn clean test -Pnodeps'
+        run: |
+          docker ps
+          docker exec --user cantaloupe TestCantaloupe /bin/sh -c "cd ${CANTALOUPE_HOME}; mvn clean test -Pnodeps"
+
+      - name: test 'mvn clean test -Ponlydeps'
+        run: |
+          docker ps
+          docker exec --user cantaloupe TestCantaloupe /bin/sh -c "cd ${CANTALOUPE_HOME}; mvn clean test -Ponlydeps"
+
+      - name: test S3CacheTest
+        run: |
+          docker ps
+          docker exec --user cantaloupe TestCantaloupe /bin/sh -c "cd ${CANTALOUPE_HOME}; mvn clean test -Dtest=S3CacheTest"
+
+      - name: set cache modules
+        run: |
+          docker cp TestCantaloupe:${CANTALOUPE_HOME}/.m2/repository docker/github/actions/cache/.m2/
+
