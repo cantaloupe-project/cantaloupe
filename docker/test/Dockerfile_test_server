@@ -1,4 +1,4 @@
-FROM openjdk:11
+FROM openjdk:16.0.2-jdk-buster
 
 # Install various dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
