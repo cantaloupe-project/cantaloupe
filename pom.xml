@@ -21,6 +21,10 @@
         <jetty.version>9.4.24.v20191120</jetty.version>
         <jruby.version>9.2.11.1</jruby.version>
         <surefire.version>2.21.0</surefire.version>
+
+        <sentry.version>5.7.4</sentry.version>
+        <slf4j.version>1.7.36</slf4j.version>
+        <logback.version>1.2.13</logback.version>
     </properties>
 
     <developers>
@@ -68,12 +72,12 @@
         <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
-            <version>1.2.3</version>
+            <version>${logback.version}</version>
         </dependency>
         <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-core</artifactId>
-            <version>1.2.3</version>
+            <version>${logback.version}</version>
         </dependency>
         <!-- Allow the use of Logstash encoders with logback -->
         <dependency>
@@ -412,18 +416,34 @@
             <version>2.53.0</version>
             <scope>test</scope>
         </dependency>
+
+
+        <!-- for sentry -->
+        <dependency>
+            <groupId>io.sentry</groupId>
+            <artifactId>sentry-logback</artifactId>
+            <version>${sentry.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>ch.qos.logback</groupId>
+                    <artifactId>logback-classic</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
         <!-- Logging interface used by the application -->
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
-            <version>1.7.25</version>
+            <version>${slf4j.version}</version>
         </dependency>
         <!-- intercepts jcl log messages from Commons etc. -->
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>jcl-over-slf4j</artifactId>
-            <version>1.7.25</version>
+            <version>${slf4j.version}</version>
         </dependency>
+
         <!-- Assembles the release zip archive. -->
         <dependency>
             <groupId>org.apache.maven.plugins</groupId>

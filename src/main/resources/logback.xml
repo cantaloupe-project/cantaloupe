@@ -226,6 +226,17 @@
         </if>
     </logger>
 
+    <appender name="sentry" class="io.sentry.logback.SentryAppender">
+        <options>
+            <dsn>https://bdbc9a2a388dfaee11671cdda3955fa6@o4504965424283648.ingest.us.sentry.io/4507404975144960</dsn>
+            <environment>local</environment>
+            <sendDefaultPii>true</sendDefaultPii>
+            <attachStacktrace>true</attachStacktrace>
+        </options>
+        <minimumEventLevel>ERROR</minimumEventLevel>
+        <minimumBreadcrumbLevel>INFO</minimumBreadcrumbLevel>
+    </appender>
+
     <root level="${log.application.level}">
         <!--
         Access log appenders
@@ -285,6 +296,7 @@
                 <appender-ref ref="AppSyslogLog" />
             </then>
         </if>
+        <appender-ref ref="sentry" />
     </root>
 
 </configuration>
