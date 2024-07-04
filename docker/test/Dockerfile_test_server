@@ -1,0 +1,59 @@
+FROM openjdk:11
+
+# Install various dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    curl
+RUN apt-get install -y --no-install-recommends \
+    graphicsmagick \
+    imagemagick \
+    ffmpeg \
+    maven \
+    libopenjp2-tools
+
+# Install TurboJpegProcessor dependencies
+RUN mkdir -p /opt/libjpeg-turbo/lib
+COPY docker/test/image_files/libjpeg-turbo/lib64 /opt/libjpeg-turbo/lib
+
+# Install KakaduNativeProcessor & KakaduDemoProcessor dependencies
+COPY dist/deps/Linux-x86-64/bin/* /usr/bin/
+COPY dist/deps/Linux-x86-64/lib/* /usr/lib/
+
+# Install Minio S3 server for S3SourceTest and S3CacheTest
+ARG s3=/s3
+RUN mkdir -p $s3/.minio.sys/config $s3/test.cantaloupe.library.illinois.edu
+COPY docker/test/image_files/minio_config.json $s3/.minio.sys/config/config.json
+RUN curl -O https://dl.minio.io/server/minio/release/linux-amd64/minio
+RUN chmod +x minio
+
+# redis
+RUN mkdir -p /data/
+COPY docker/test/image_files/redis.conf /data/redis.conf
+
+# A non-root user is needed for some FilesystemSourceTest tests to work.
+# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ARG user=cantaloupe
+ARG home=/home/$user
+RUN adduser --home $home $user
+# github/actionsでは以下の設定はよくない挙動を起こすので使用しない
+# https://docs.github.com/ja/actions/creating-actions/dockerfile-support-for-github-actions#user
+#USER $user
+#WORKDIR $home
+
+# Copy the test resource
+COPY docker/test/image_files/test.properties $home/test.properties
+COPY ./pom.xml $home/pom.xml
+COPY ./src $home/src
+RUN mkdir -p $home/.m2/repository
+COPY docker/github/actions/cache/.m2/repository $home/.m2/repository
+COPY docker/test/image_files/.m2/settings.xml $home/.m2/settings.xml
+
+RUN apt-get install -y --no-install-recommends \
+    redis-server
+RUN rm -rf /var/lib/apt/lists/*
+
+RUN chown -R $user $home
+RUN chmod -R 755 $home
+
+COPY docker/test/image_files/entrypoint.sh /entrypoint.sh
+RUN chmod +x entrypoint.sh
+ENTRYPOINT ["/entrypoint.sh"]

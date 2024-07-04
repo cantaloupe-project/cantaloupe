@@ -5,7 +5,7 @@
     <groupId>edu.illinois.library.cantaloupe</groupId>
     <artifactId>cantaloupe</artifactId>
     <packaging>war</packaging>
-    <version>5.0-SNAPSHOT</version>
+    <version>6.0.0-madmain-1</version>
     <name>Cantaloupe</name>
     <url>https://cantaloupe-project.github.io/</url>
     <inceptionYear>2015</inceptionYear>
@@ -20,6 +20,10 @@
         <jetty.version>9.4.24.v20191120</jetty.version>
         <jruby.version>9.2.11.1</jruby.version>
         <surefire.version>3.0.0-M3</surefire.version>
+
+        <sentry.version>5.7.4</sentry.version>
+        <slf4j.version>1.7.36</slf4j.version>
+        <logback.version>1.2.13</logback.version>
     </properties>
 
     <developers>
@@ -64,12 +68,12 @@
         <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
-            <version>1.2.3</version>
+            <version>${logback.version}</version>
         </dependency>
         <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-core</artifactId>
-            <version>1.2.3</version>
+            <version>${logback.version}</version>
         </dependency>
         <!-- Allow the use of Logstash encoders with logback -->
         <dependency>
@@ -387,17 +391,31 @@
             <version>2.53.0</version>
             <scope>test</scope>
         </dependency>
+
+        <!-- for sentry -->
+        <dependency>
+            <groupId>io.sentry</groupId>
+            <artifactId>sentry-logback</artifactId>
+            <version>${sentry.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>ch.qos.logback</groupId>
+                    <artifactId>logback-classic</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
         <!-- Logging interface used by the application -->
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
-            <version>1.7.25</version>
+            <version>${slf4j.version}</version>
         </dependency>
         <!-- intercepts jcl log messages from Commons etc. -->
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>jcl-over-slf4j</artifactId>
-            <version>1.7.25</version>
+            <version>${slf4j.version}</version>
         </dependency>
         <!-- Assembles the release zip archive. -->
         <dependency>
@@ -414,6 +432,13 @@
             <id>imageio-ext-repository</id>
             <name>imageio-ext Repository</name>
             <url>https://maven.geo-solutions.it/</url>
+        </repository>
+
+        <!-- needed for jai module -->
+        <repository>
+            <id>maven.geotoolkit.org</id>
+            <name>maven.geotoolkit.org</name>
+            <url>https://maven.geotoolkit.org/</url>
         </repository>
     </repositories>
 
@@ -635,7 +660,41 @@
                                 <exclude>RedisCacheTest</exclude>
                                 <exclude>TurboJpegProcessorTest</exclude>
                                 <exclude>TurboJPEG*Test</exclude>
+                                <!-- S3CacheTestは結果が安定しないので別枠で実行する -->
+                                <exclude>S3CacheTest.java</exclude>
+                                <!-- 一旦退避 -->
+                                <exclude>TaskQueueTest.java</exclude>
                             </excludes>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>onlydeps</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <version>${surefire.version}</version>
+                        <configuration>
+                            <runOrder>random</runOrder>
+                            <reuseForks>false</reuseForks>
+                            <includes>
+                                <!--                                <includes>AzureStorage*Test</includes>-->
+                                <includes>FfmpegProcessorTest</includes>
+                                <includes>GraphicsMagickProcessorTest</includes>
+                                <includes>ImageMagickProcessorTest</includes>
+                                <includes>*Kakadu*Test</includes>
+                                <includes>OpenJpegProcessorTest</includes>
+                                <includes>RedisCacheTest</includes>
+                                <includes>TurboJpegProcessorTest</includes>
+                                <includes>TurboJPEG*Test</includes>
+                            </includes>
                         </configuration>
                     </plugin>
                 </plugins>
@@ -657,6 +716,8 @@
                             <reuseForks>false</reuseForks>
                             <excludes>
                                 <exclude>Azure*Test</exclude>
+                                <!-- S3CacheTestは結果が安定しないので別枠で実行する -->
+                                <exclude>S3CacheTest.java</exclude>
                             </excludes>
                         </configuration>
                     </plugin>

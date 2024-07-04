@@ -1,0 +1,30 @@
+version: '3.9'
+
+services:
+
+  test:
+    build:
+      context: ${PWD}
+      dockerfile: docker/test/Dockerfile_test_server
+    container_name: TestCantaloupe
+    hostname: test-host
+    tty: true
+    environment:
+      MINIO_ROOT_USER: MinioUser
+      MINIO_ROOT_PASSWORD: OpenSesame
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+      - "6379:6379"
+    networks:
+      image:
+        ipv4_address: 172.30.0.99
+
+networks:
+  image:
+    name: image
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.30.0.0/24
