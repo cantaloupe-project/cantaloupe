@@ -5,7 +5,7 @@
     <groupId>edu.illinois.library.cantaloupe</groupId>
     <artifactId>cantaloupe</artifactId>
     <packaging>war</packaging>
-    <version>6.0.0-madmain-1</version>
+    <version>6.0.0-medmain-1</version>
     <name>Cantaloupe</name>
     <url>https://cantaloupe-project.github.io/</url>
     <inceptionYear>2015</inceptionYear>
@@ -524,7 +524,7 @@
                             <goal>run</goal>
                         </goals>
                         <configuration>
-                            <tasks>
+                            <target>
                                 <copy todir="${project.build.directory}/${project.artifactId}-${project.version}/">
                                     <fileset dir="${project.build.directory}/classes/">
                                         <include name="edu/illinois/library/cantaloupe/config/*"/>
@@ -537,7 +537,7 @@
                                         <include name="edu/illinois/library/cantaloupe/StandaloneEntry.class"/>
                                     </fileset>
                                 </copy>
-                            </tasks>
+                            </target>
                         </configuration>
                     </execution>
 
@@ -550,12 +550,12 @@
                             <goal>run</goal>
                         </goals>
                         <configuration>
-                            <tasks>
+                            <target>
                                 <echo file="${project.build.directory}/${project.artifactId}-${project.version}/META-INF/services/org.eclipse.jetty.http.HttpFieldPreEncoder"
                                       append="true">
                                     ${line.separator}org.eclipse.jetty.http2.hpack.HpackFieldPreEncoder
                                 </echo>
-                            </tasks>
+                            </target>
                         </configuration>
                     </execution>
                 </executions>
