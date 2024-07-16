@@ -80,7 +80,6 @@ class JdbcCache implements DerivativeCache {
                     DERIVATIVE_IMAGE_TABLE_LAST_ACCESSED_COLUMN);
             LOGGER.trace(sql);
 
-            final Blob blob = connection.createBlob();
             blob = connection.createBlob();
             blobOutputStream = blob.setBinaryStream(1);
         }
