@@ -13,8 +13,8 @@ import edu.illinois.library.cantaloupe.delegate.DelegateProxyService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.servlet.ServletContextEvent;
-import javax.servlet.ServletContextListener;
+import jakarta.servlet.ServletContextEvent;
+import jakarta.servlet.ServletContextListener;
 import javax.script.ScriptEngineManager;
 import java.util.stream.Collectors;
 
