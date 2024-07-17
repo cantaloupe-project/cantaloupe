@@ -355,7 +355,54 @@ public class S3CacheTest extends AbstractCacheTest {
     @Override
     void testPurgeInvalid() throws Exception {
         assumeFalse(SystemUtils.IS_OS_WINDOWS); // TODO: this fails in Windows sometimes
-        super.testPurgeInvalid();
+
+        DerivativeCache instance = newInstance();
+        Identifier id1           = new Identifier(IMAGE);
+        OperationList ops1       = OperationList.builder()
+                .withIdentifier(id1)
+                .withOperations(new Encode(Format.get("jpg")))
+                .build();
+        Info info1 = new Info();
+        Configuration.getInstance().setProperty(Key.DERIVATIVE_CACHE_TTL, 2);
+
+        // add an image
+        Path fixture = TestUtil.getImage(id1.toString());
+        uploadDerivative(ops1, fixture);
+
+        // add an Info
+        instance.put(id1, info1);
+
+        // assert that they've been added
+        assertNotNull(instance.getInfo(id1));
+        assertExists(instance, ops1);
+
+        // wait for them to invalidate
+        Thread.sleep(2100);
+
+        // add another image
+        Path fixture2 = TestUtil.getImage("gif-rgb-64x56x8.gif");
+        OperationList ops2 = OperationList.builder()
+                .withIdentifier(new Identifier(fixture2.getFileName().toString()))
+                .withOperations(new Encode(Format.get("jpg")))
+                .build();
+
+        uploadDerivative(ops2, fixture2);
+
+        // add another info
+        Identifier id2 = new Identifier("cats");
+        instance.put(id2, new Info());
+
+        // assert that they've been added
+        assertNotNull(instance.getInfo(id2));
+        assertExists(instance, ops2);
+
+        instance.purgeInvalid();
+
+        // assert that one image and one info have been purged
+        assertFalse(instance.getInfo(id1).isPresent());
+        assertTrue(instance.getInfo(id2).isPresent());
+        assertNotExists(instance, ops1);
+        assertExists(instance, ops2);
     }
 
 
