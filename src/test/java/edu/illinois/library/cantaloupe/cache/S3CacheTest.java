@@ -25,7 +25,6 @@ import software.amazon.awssdk.services.s3.model.HeadObjectResponse;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
 import java.io.ByteArrayInputStream;
-import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
@@ -129,6 +128,25 @@ public class S3CacheTest extends AbstractCacheTest {
         org.apache.commons.configuration.Configuration testConfig =
                 TestUtil.getTestConfig();
         return Service.forKey(testConfig.getString(ConfigurationConstants.S3_SERVICE.getKey()));
+    }
+
+    private void uploadDerivative(OperationList ops1, Path fixture) throws Exception {
+        CompletableOutputStream outputStream = null;
+        try {
+            outputStream = instance.newDerivativeImageOutputStream(ops1);
+            if (outputStream instanceof S3MultipartAsyncOutputStream) {
+                ((S3MultipartAsyncOutputStream)outputStream).observer = this;
+            }    
+            Files.copy(fixture, outputStream);
+            outputStream.setComplete(true);
+        } finally {
+            outputStream.close();
+        }
+        if (outputStream instanceof S3MultipartAsyncOutputStream) {
+            synchronized (outputStream) {
+                outputStream.wait();
+            }
+        }
     }
 
     @BeforeEach
@@ -298,12 +316,8 @@ public class S3CacheTest extends AbstractCacheTest {
         }
 
         // Add a cached derivative image
-        try (CompletableOutputStream outputStream =
-                     instance.newDerivativeImageOutputStream(opList)) {
-            Path fixture = TestUtil.getImage(IMAGE);
-            Files.copy(fixture, outputStream);
-            outputStream.setComplete(true);
-        }
+        Path fixture = TestUtil.getImage(IMAGE);
+        uploadDerivative(opList, fixture);
 
         // Add a cached info
         instance.put(identifier, info);
@@ -344,6 +358,8 @@ public class S3CacheTest extends AbstractCacheTest {
         super.testPurgeInvalid();
     }
 
+
+
     @Test
     void testPurgeInvalidWithKeyPrefix() throws Exception {
         final String prefix        = "prefix/";
@@ -376,11 +392,7 @@ public class S3CacheTest extends AbstractCacheTest {
                 .withOperations(new Encode(Format.get("jpg")))
                 .build();
         Path fixture = TestUtil.getImage(id1.toString());
-        try (CompletableOutputStream outputStream =
-                     instance.newDerivativeImageOutputStream(ops1)) {
-            Files.copy(fixture, outputStream);
-            outputStream.setComplete(true);
-        }
+        uploadDerivative(ops1, fixture);
 
         // add a cached Info
         Info info1 = new Info();
