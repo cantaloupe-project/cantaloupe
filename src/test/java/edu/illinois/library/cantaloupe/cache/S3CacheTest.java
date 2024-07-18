@@ -25,6 +25,7 @@ import software.amazon.awssdk.services.s3.model.HeadObjectResponse;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
 import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
@@ -286,6 +287,51 @@ public class S3CacheTest extends AbstractCacheTest {
     }
 
     /* purge() */
+    @Test
+    @Override
+    void testPurge() throws Exception {
+        DerivativeCache instance = newInstance();
+        Identifier identifier = new Identifier(IMAGE);
+        OperationList opList = OperationList.builder()
+                .withIdentifier(identifier)
+                .withOperations(new Encode(Format.get("jpg")))
+                .build();
+        Info info = new Info();
+
+        // assert that a particular image doesn't exist
+        try (InputStream is = instance.newDerivativeImageInputStream(opList)) {
+            assertNull(is);
+        }
+
+        // assert that a particular info doesn't exist
+        assertFalse(instance.getInfo(identifier).isPresent());
+
+        // add the image
+
+        Path fixture = TestUtil.getImage(IMAGE);
+        uploadDerivative(opList, fixture);
+
+        // add the info
+        instance.put(identifier, info);
+
+        Thread.sleep(ASYNC_WAIT);
+
+        // assert that they've been added
+        assertExists(instance, opList);
+        assertNotNull(instance.getInfo(identifier));
+
+        // purge everything
+        instance.purge();
+
+        // Allow time for purge but not as long as upload
+        Thread.sleep(ASYNC_WAIT / 2);
+
+        // assert that the info has been purged
+        assertFalse(instance.getInfo(identifier).isPresent());
+
+        // assert that the image has been purged
+        assertNotExists(instance, opList);
+    }
 
     @Test
     void testPurgeWithKeyPrefix() throws Exception {
