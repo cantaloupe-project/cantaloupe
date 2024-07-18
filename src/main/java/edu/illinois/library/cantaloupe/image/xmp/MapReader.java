@@ -59,13 +59,22 @@ public final class MapReader {
     public MapReader(String xmp) throws IOException {
         RIOT.init();
         this.model = ModelFactory.createDefaultModel();
-        try (StringReader reader = new StringReader(xmp)) {
-            model.read(reader, null, "RDF/XML");
-        } catch (RiotException | NullPointerException e) {
-            // The XMP string may be invalid RDF/XML, or there may be a bug
-            // in Jena (that would be the NPE). Not much we can do.
-            throw new IOException(e);
-        }
+        if (xmp != null) {
+            String base = null;
+            if (xmp.indexOf("rdf:about=''") != -1 || xmp.indexOf("rdf:about=\"\"") != -1) {
+                // Version 4.8+ of jena requires a rdf:about link to not be empty
+                base = "http://example.com";
+            }
+            try (StringReader reader = new StringReader(xmp)) {
+                model.read(reader, base, "RDF/XML");
+            } catch (RiotException | NullPointerException e) {
+                // The XMP string may be invalid RDF/XML, or there may be a bug
+                // in Jena (that would be the NPE). Not much we can do.
+                throw new IOException(e);
+            }
+        } else {
+            throw new IOException(new NullPointerException("XMP not supplied"));
+        }    
     }
 
     /**

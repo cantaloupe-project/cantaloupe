@@ -117,8 +117,7 @@ public class S3MultipartAsyncOutputStream extends CompletableOutputStream {
         @Override
         public void run() {
             try {
-                final int partNumber = partIndex + 1;
-
+                final int partNumber = partIndex++;
                 UploadPartRequest uploadPartRequest = UploadPartRequest.builder()
                         .bucket(bucket)
                         .key(key)
@@ -229,7 +228,9 @@ public class S3MultipartAsyncOutputStream extends CompletableOutputStream {
     private boolean requestCreated;
 
     private String uploadID;
-    private int partIndex;
+    // Part number must start with 1
+    // minio will hang if this is 0
+    private int partIndex = 1;
     private long indexWithinPart;
 
     /** For an instance to wait for an upload notification during testing. */
@@ -315,7 +316,6 @@ public class S3MultipartAsyncOutputStream extends CompletableOutputStream {
             IOUtils.closeQuietly(currentPart);
             currentPart     = null;
             indexWithinPart = 0;
-            partIndex++;
         }
     }
 

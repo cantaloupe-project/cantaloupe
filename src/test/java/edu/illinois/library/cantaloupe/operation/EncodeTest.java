@@ -137,7 +137,7 @@ public class EncodeTest extends BaseTest {
         instance.setBackgroundColor(Color.BLUE);
         instance.setMaxComponentSize(10);
         Metadata metadata = new Metadata();
-        metadata.setXMP("<rdf:RDF></rdf:RDF>");
+        metadata.setXMP("<rdf:RDF xmlns:rdf=\"http://www.w3.org/1999/02/22-rdf-syntax-ns#\"></rdf:RDF>");
         instance.setMetadata(metadata);
 
         Dimension size = new Dimension(500, 500);
@@ -150,7 +150,7 @@ public class EncodeTest extends BaseTest {
         assertTrue((boolean) map.get("interlace"));
         assertEquals(50, map.get("quality"));
         assertEquals(10, map.get("max_sample_size"));
-        assertEquals("<rdf:RDF></rdf:RDF>",
+        assertEquals("<rdf:RDF xmlns:rdf=\"http://www.w3.org/1999/02/22-rdf-syntax-ns#\"></rdf:RDF>",
                 ((Map<String,Object>) map.get("metadata")).get("xmp_string"));
     }
 
