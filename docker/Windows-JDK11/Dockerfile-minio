@@ -1,4 +1,4 @@
-FROM mcr.microsoft.com/windows/servercore:ltsc2019
+FROM mcr.microsoft.com/windows/servercore:ltsc2022
 
 ENV MINIO_ACCESS_KEY=MinioUser
 ENV MINIO_SECRET_KEY=OpenSesame
