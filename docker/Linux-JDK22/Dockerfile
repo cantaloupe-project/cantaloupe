@@ -9,7 +9,6 @@ ARG DEBIAN_FRONTEND=noninteractive
 # * ffmpeg is needed by FfmpegProcessor
 # * wget download stuffs in this dockerfile
 # * libopenjp2-tools is needed by OpenJpegProcessor
-# * All the rest is needed by GrokProcessor
 RUN apt-get update && apt-get install -y --no-install-recommends \
   ca-certificates \
   ffmpeg \
@@ -23,8 +22,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
   zlib1g-dev \
   libwebp-dev \
   libimage-exiftool-perl \
-  libgrokj2k1 \
-  grokj2k-tools \
   adduser \
   && rm -rf /var/lib/apt/lists/*
 
@@ -35,7 +32,6 @@ COPY docker/image_files/libjpeg-turbo/lib64 /opt/libjpeg-turbo/lib
 # Install KakaduNativeProcessor dependencies
 COPY dist/deps/Linux-x86-64/lib/* /usr/lib/
 
-# Install various other dependencies that aren't in apt
 # Install OpenJDK
 RUN wget -q https://download.java.net/java/GA/jdk22.0.2/c9ecb94cd31b495da20a27d4581645e8/9/GPL/openjdk-22.0.2_linux-x64_bin.tar.gz \
   && tar xfz openjdk-22.0.2_linux-x64_bin.tar.gz \

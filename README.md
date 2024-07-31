@@ -50,7 +50,6 @@ continuous integration. The following dependencies are required:
 
 * MinIO (for S3SourceTest & S3CacheTest)
 * FFmpeg (for FfmpegProcessorTest)
-* Grok (for GrokProcessorTest)
 * OpenJPEG (for OpenJpegProcessorTest)
 * TurboJPEG with Java binding (for TurboJpegProcessorTest)
 * Redis (for RedisCacheTest)

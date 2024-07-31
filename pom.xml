@@ -340,7 +340,7 @@
         <dependency>
             <groupId>org.seleniumhq.selenium</groupId>
             <artifactId>htmlunit-driver</artifactId>
-            <version>2.21</version> 
+            <version>2.21</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -568,7 +568,6 @@
                                 <exclude>FfmpegProcessorTest</exclude>
                                 <exclude>*Kakadu*Test</exclude>
                                 <exclude>OpenJpegProcessorTest</exclude>
-                                <exclude>GrokProcessorTest</exclude>
                                 <exclude>RedisCacheTest</exclude>
                                 <exclude>TurboJpegProcessorTest</exclude>
                                 <exclude>TurboJPEG*Test</exclude>
