@@ -29,11 +29,7 @@ import java.net.URISyntaxException;
 import java.nio.file.AccessDeniedException;
 import java.nio.file.NoSuchFileException;
 import java.time.Instant;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.NoSuchElementException;
+import java.util.*;
 
 /**
  * <p>Maps an identifier to an <a href="https://aws.amazon.com/s3/">Amazon
@@ -326,6 +322,7 @@ final class S3Source extends AbstractSource implements Source {
                         .build());
                 objectAttributes              = new S3ObjectAttributes();
                 objectAttributes.length       = response.contentLength();
+                objectAttributes.contentType  = response.contentType();
                 objectAttributes.lastModified = response.lastModified();
             } catch (NoSuchBucketException | NoSuchKeyException e) {
                 throw new NoSuchFileException(info.toString());
