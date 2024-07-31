@@ -6,6 +6,7 @@ import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.rdf.model.StmtIterator;
+import org.apache.jena.riot.RiotException;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -119,8 +120,18 @@ final class Util {
 
     private static Model readModel(String rdfXML) {
         Model model = ModelFactory.createDefaultModel();
+        String base = null;
         try (StringReader reader = new StringReader(rdfXML)) {
-            model.read(reader, null, "RDF/XML");
+            model.read(reader, base, "RDF/XML");
+        } catch (RiotException exception) {
+            if (exception.getMessage().indexOf("Base URI is null, but there are relative URIs to resolve") != -1) {
+                // Version 4.8+ of jena requires a rdf:about link to not be empty
+                try (StringReader reader = new StringReader(rdfXML)) {
+                    model.read(reader, "http://example.com", "RDF/XML");
+                }    
+            } else {
+                throw exception;
+            }
         }
         return model;
     }

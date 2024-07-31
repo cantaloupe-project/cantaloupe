@@ -37,10 +37,14 @@
 ## 5.0.6
 
 * IIIF information endpoints always return JSON in HTTP 4xx responses.
+* Fixed a bug whereby the values of the `operations` and `page_count` keys
+  in the delegate context were not set.
 * TurboJpegProcessor is able to generate non-JPEG derivative images, which
   fixes an HTTP 415 error that would occur when trying to do that.
 * Fixed a crop-offset bug that could occur when using PdfBoxProcessor to
   generate JPEGs with libjpeg-turbo active.
+* Updating libraries to fix security issues. Full details in [#634](https://github.com/cantaloupe-project/cantaloupe/issues/634)  
+* Update of Jena to 4.8 requires RDF to have a populated rdf:about field. May impact some XMP header processing.
 
 ## 5.0.5
 

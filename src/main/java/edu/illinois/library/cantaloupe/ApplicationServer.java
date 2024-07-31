@@ -6,7 +6,6 @@ import edu.illinois.library.cantaloupe.processor.codec.IIOProviderContextListene
 import edu.illinois.library.cantaloupe.resource.FileServlet;
 import edu.illinois.library.cantaloupe.resource.HandlerServlet;
 import org.eclipse.jetty.alpn.server.ALPNServerConnectionFactory;
-import org.eclipse.jetty.http.UriCompliance;
 import org.eclipse.jetty.http2.HTTP2Cipher;
 import org.eclipse.jetty.http2.server.HTTP2CServerConnectionFactory;
 import org.eclipse.jetty.http2.server.HTTP2ServerConnectionFactory;
@@ -266,7 +265,6 @@ public class ApplicationServer {
             // HTTP/2.
             if (isHTTPEnabled()) {
                 HttpConfiguration config = new HttpConfiguration();
-                config.setUriCompliance(UriCompliance.LEGACY);
                 HttpConnectionFactory http1 = new HttpConnectionFactory(config);
 
                 HTTP2CServerConnectionFactory http2 =
@@ -282,7 +280,6 @@ public class ApplicationServer {
             // Initialize the HTTPS server.
             if (isHTTPSEnabled()) {
                 HttpConfiguration config = new HttpConfiguration();
-                config.setUriCompliance(UriCompliance.LEGACY);
                 config.setSecureScheme("https");
                 config.setSecurePort(getHTTPSPort());
                 config.addCustomizer(new SecureRequestCustomizer());
