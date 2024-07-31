@@ -371,7 +371,7 @@
         <dependency>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-assembly-plugin</artifactId>
-            <version>3.6.0</version>
+            <version>3.7.1</version>
             <type>maven-plugin</type>
         </dependency>
         <!-- Used by S3Source & S3Cache -->
@@ -503,7 +503,7 @@
             <!-- Assemble the JAR into a release package. -->
             <plugin>
                 <artifactId>maven-assembly-plugin</artifactId>
-                <version>3.6.0</version>
+                <version>3.7.1</version>
                 <executions>
                     <execution>
                         <phase>package</phase>
