@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import edu.illinois.library.cantaloupe.image.exif.Directory;
+import edu.illinois.library.cantaloupe.image.exif.Field;
 import edu.illinois.library.cantaloupe.image.exif.Tag;
 import edu.illinois.library.cantaloupe.image.iptc.DataSet;
 import edu.illinois.library.cantaloupe.image.xmp.MapReader;
@@ -132,9 +133,17 @@ public class Metadata {
     }
 
     private void readOrientationFromEXIF() {
+        Field field = exif.getField(Tag.ORIENTATION);
         Object value = exif.getValue(Tag.ORIENTATION);
-        if (value != null) {
-            orientation = Orientation.forEXIFOrientation((int) value);
+        if (field != null && value != null) {
+            switch (field.getDataType()) {
+              case LONG:
+                orientation = Orientation.forEXIFOrientation(Math.toIntExact((long) value));
+                break;
+              case SHORT:
+                orientation = Orientation.forEXIFOrientation((int) value);
+                break;
+            }
         }
     }
 
