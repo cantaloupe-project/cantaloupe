@@ -121,10 +121,7 @@ public class Metadata {
                 if (orientation == null) {
                     orientation = Orientation.ROTATE_0;
                 }
-            } catch (IllegalArgumentException e) {
-                LOGGER.info("readOrientation(): {}", e.getMessage());
-                orientation = Orientation.ROTATE_0;
-            } catch (RiotException e) {    
+            } catch (IllegalArgumentException | RiotException e) {
                 LOGGER.info("readOrientation(): {}", e.getMessage());
                 orientation = Orientation.ROTATE_0;
             }
@@ -138,11 +135,16 @@ public class Metadata {
         if (field != null && value != null) {
             switch (field.getDataType()) {
               case LONG:
+              case SLONG:
                 orientation = Orientation.forEXIFOrientation(Math.toIntExact((long) value));
                 break;
               case SHORT:
+              case SSHORT:
                 orientation = Orientation.forEXIFOrientation((int) value);
                 break;
+              default:
+                LOGGER.warn("readOrientationFromEXIF(): Unsupported Orientation data type: {}",
+                        field.getDataType());
             }
         }
     }
