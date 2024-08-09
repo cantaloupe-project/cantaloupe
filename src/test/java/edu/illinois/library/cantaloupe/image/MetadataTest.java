@@ -17,12 +17,15 @@ import org.apache.jena.riot.RDFFormat;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.nio.file.FileVisitOption;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -232,7 +235,21 @@ public class MetadataTest extends BaseTest {
         }
     }
 
-    @Test
+  @Test
+  void testGetOrientationWithOnlyLONGEXIFOrientation() throws Exception {
+      // This image has exif Orientation stored as SLONG, causing a failure (github issue #548)
+      Path fixture = TestUtil.getImage("jpg-exif-long-orientation.jpg");
+      ImageReader reader = new ImageReaderFactory()
+              .newImageReader(Format.get("jpg"), fixture);
+      try {
+          Metadata metadata = reader.getMetadata(0);
+          assertEquals(Orientation.ROTATE_0, metadata.getOrientation());
+      } finally {
+          reader.dispose();
+      }
+  }
+
+  @Test
     void testGetOrientationWithOnlyXMPOrientation() throws Exception {
         Path fixture = TestUtil.getImage("jpg-xmp-orientation-90.jpg");
         ImageReader reader = new ImageReaderFactory()
