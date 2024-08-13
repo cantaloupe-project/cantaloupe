@@ -22,9 +22,9 @@ jobs:
         run: docker compose -f docker/Linux-GraalVM20/docker-compose.yml up --build --exit-code-from cantaloupe
       - name: Test in Windows JDK 11
         if: matrix.os == 'windows-latest' && matrix.java == 'jdk11'
-        run: docker-compose -f docker/Windows-JDK11/docker-compose.yml up --build --exit-code-from cantaloupe
+        run: docker compose -f docker/Windows-JDK11/docker-compose.yml up --build --exit-code-from cantaloupe
       - name: Test in Windows JDK 18
         if: matrix.os == 'windows-latest' && matrix.java == 'jdk18'
-        run: docker-compose -f docker/Windows-JDK18/docker-compose.yml up --build --exit-code-from cantaloupe
+        run: docker compose -f docker/Windows-JDK18/docker-compose.yml up --build --exit-code-from cantaloupe
       # TODO: Windows+GraalVM
 
