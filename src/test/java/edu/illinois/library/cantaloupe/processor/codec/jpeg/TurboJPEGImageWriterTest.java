@@ -164,6 +164,28 @@ public class TurboJPEGImageWriterTest extends BaseTest {
         }
     }
 
+    /** 
+     * Note the TurboJPEGImageWriter.write method is used in the PDFbox processor
+     */
+    @Test
+    public void testWriteWithBufferedImageYZero() throws Exception {
+        Path path = TestUtil.getImage("jpg");
+        BufferedImage image = ImageIO.read(path.toFile());
+        
+        image =  image.getSubimage(0, 10, 10,10);
+
+        try (ByteArrayOutputStream os = new ByteArrayOutputStream()) {
+            instance.write(image, os);
+            ImageInputStream is = ImageIO.createImageInputStream(new ByteArrayInputStream(os.toByteArray()));
+            image = ImageIO.read(is); // also closes the stream
+            Color color = new Color(image.getRGB(0,0));
+            assertEquals(116, color.getRed(), "Expected a particular color pixel but it wasn't found. Potentially the TurboJPEGImageWriter is returning the wrong image. Red value");
+            assertEquals(151, color.getGreen(), "Expected a particular color pixel but it wasn't found. Potentially the TurboJPEGImageWriter is returning the wrong image. Green value");
+            assertEquals(97, color.getBlue(), "Expected a particular color pixel but it wasn't found. Potentially the TurboJPEGImageWriter is returning the wrong image. Blue value");
+            // ImageIO.write(image, "jpg", new java.io.File("/tmp/test.jpg"));
+        }
+    }
+
     @Test
     public void testWriteWithGrayBufferedImage() throws Exception {
         BufferedImage image = new BufferedImage(50, 50,
