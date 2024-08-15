@@ -10,7 +10,7 @@ jobs:
       fail-fast: false
     steps:
       - name: Check out the repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
       - name: Test in Linux JDK 11
         if: matrix.os == 'ubuntu-latest' && matrix.java == 'jdk11'
         run: docker compose -f docker/Linux-JDK11/docker-compose.yml up --build --exit-code-from cantaloupe
