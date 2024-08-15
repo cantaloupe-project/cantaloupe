@@ -11,7 +11,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest]
-        java: [jdk11, jdk18, graalvm]
+        java: [jdk11, jdk17, jdk18, graalvm]
       fail-fast: false
     steps:
       - name: Check out the repository
@@ -19,6 +19,9 @@ jobs:
       - name: Test in Linux JDK 11
         if: matrix.os == 'ubuntu-latest' && matrix.java == 'jdk11'
         run: docker compose -f docker/Linux-JDK11/docker-compose.yml up --build --exit-code-from cantaloupe
+      - name: Test in Linux JDK 17 (LTS)
+        if: matrix.os == 'ubuntu-latest' && matrix.java == 'jdk17'
+        run: docker compose -f docker/Linux-JDK17/compose.yml up --build --exit-code-from cantaloupe
       - name: Test in Linux JDK 18
         if: matrix.os == 'ubuntu-latest' && matrix.java == 'jdk18'
         run: docker compose -f docker/Linux-JDK18/docker-compose.yml up --build --exit-code-from cantaloupe
@@ -28,6 +31,9 @@ jobs:
       - name: Test in Windows JDK 11
         if: matrix.os == 'windows-latest' && matrix.java == 'jdk11'
         run: docker compose -f docker/Windows-JDK11/docker-compose.yml up --build --exit-code-from cantaloupe
+      - name: Test in Windows JDK 17 (LTS)
+        if: matrix.os == 'windows-latest' && matrix.java == 'jdk17'
+        run: docker compose -f docker/Windows-JDK17/compose.yml up --build --exit-code-from cantaloupe
       - name: Test in Windows JDK 18
         if: matrix.os == 'windows-latest' && matrix.java == 'jdk18'
         run: docker compose -f docker/Windows-JDK18/docker-compose.yml up --build --exit-code-from cantaloupe
