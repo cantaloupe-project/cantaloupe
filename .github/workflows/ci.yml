@@ -1,5 +1,10 @@
 name: CI
-on: [push, pull_request]
+on:
+  push:
+    branches:
+      - develop
+      - release/*
+  pull_request:
 jobs:
   build:
     runs-on: ${{ matrix.os }}
@@ -27,4 +32,3 @@ jobs:
         if: matrix.os == 'windows-latest' && matrix.java == 'jdk18'
         run: docker compose -f docker/Windows-JDK18/docker-compose.yml up --build --exit-code-from cantaloupe
       # TODO: Windows+GraalVM
-
