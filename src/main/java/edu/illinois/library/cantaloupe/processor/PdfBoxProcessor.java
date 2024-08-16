@@ -142,7 +142,8 @@ class PdfBoxProcessor extends AbstractProcessor
     private void readDocument() throws IOException {
         if (doc == null) {
             final Stopwatch watch = new Stopwatch();
-
+            // For PDF Box v3 this would need to change to a loader:
+            // https://pdfbox.apache.org/3.0/migration.html#use-loader-to-get-a-pdf-document
             if (sourceFile != null) {
                 doc = PDDocument.load(sourceFile.toFile(),
                         getMemoryUsageSetting());

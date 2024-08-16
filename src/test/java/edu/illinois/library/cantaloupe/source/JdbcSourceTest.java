@@ -16,7 +16,9 @@ import java.nio.file.NoSuchFileException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.sql.Types;
+import java.time.Instant;
 import java.util.NoSuchElementException;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -73,6 +75,7 @@ public class JdbcSourceTest extends AbstractSourceTest {
             String sql = "CREATE TABLE IF NOT EXISTS items (" +
                     "filename VARCHAR(255)," +
                     "media_type VARCHAR(255)," +
+                    "last_modified TIMESTAMP," +
                     "image BLOB);";
             try (PreparedStatement statement = conn.prepareStatement(sql)) {
                 statement.execute();
@@ -85,19 +88,21 @@ public class JdbcSourceTest extends AbstractSourceTest {
                     IMAGE_WITH_EXTENSION_WITHOUT_MEDIA_TYPE,
                     IMAGE_WITH_INCORRECT_EXTENSION_WITHOUT_MEDIA_TYPE,
                     IMAGE_WITHOUT_EXTENSION_OR_MEDIA_TYPE}) {
-                sql = "INSERT INTO items (filename, media_type, image) VALUES (?, ?, ?);";
+                sql = "INSERT INTO items (filename, last_modified, media_type, image) " +
+                        "VALUES (?, ?, ?, ?);";
 
                 try (PreparedStatement statement = conn.prepareStatement(sql)) {
                     statement.setString(1, filename);
+                    statement.setTimestamp(2, Timestamp.from(Instant.now()));
                     if (IMAGE_WITHOUT_EXTENSION_OR_MEDIA_TYPE.equals(filename) ||
                             IMAGE_WITH_EXTENSION_WITHOUT_MEDIA_TYPE.equals(filename) ||
                             IMAGE_WITH_INCORRECT_EXTENSION_WITHOUT_MEDIA_TYPE.equals(filename)) {
-                        statement.setNull(2, Types.VARCHAR);
+                        statement.setNull(3, Types.VARCHAR);
                     } else {
-                        statement.setString(2, "image/jpeg");
+                        statement.setString(3, "image/jpeg");
                     }
                     try (InputStream is = Files.newInputStream(TestUtil.getImage("jpg"))) {
-                        statement.setBinaryStream(3, is);
+                        statement.setBinaryStream(4, is);
                     }
                     statement.executeUpdate();
                 }
@@ -124,20 +129,6 @@ public class JdbcSourceTest extends AbstractSourceTest {
     @Override
     void useScriptLookupStrategy() {
         // This source is always using ScriptLookupStrategy.
-    }
-
-    /* checkAccess() */
-
-    @Override
-    @Test
-    void testCheckAccessUsingBasicLookupStrategyWithMissingImage() {
-        Identifier identifier = new Identifier("bogus");
-        DelegateProxy proxy = TestUtil.newDelegateProxy();
-        proxy.getRequestContext().setIdentifier(identifier);
-        instance.setDelegateProxy(proxy);
-        instance.setIdentifier(identifier);
-
-        assertThrows(NoSuchFileException.class, instance::checkAccess);
     }
 
     /* getFormatIterator() */
@@ -225,6 +216,20 @@ public class JdbcSourceTest extends AbstractSourceTest {
     @Test
     void testNewStreamFactoryWithPresentImage() throws Exception {
         assertNotNull(instance.newStreamFactory());
+    }
+
+    /* stat() */
+
+    @Override
+    @Test
+    void testStatUsingBasicLookupStrategyWithMissingImage() {
+        Identifier identifier = new Identifier("bogus");
+        DelegateProxy proxy = TestUtil.newDelegateProxy();
+        proxy.getRequestContext().setIdentifier(identifier);
+        instance.setDelegateProxy(proxy);
+        instance.setIdentifier(identifier);
+
+        assertThrows(NoSuchFileException.class, instance::stat);
     }
 
 }

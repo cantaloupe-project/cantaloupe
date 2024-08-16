@@ -98,7 +98,7 @@ public final class Server {
             config.setSecureScheme("https");
             config.addCustomizer(new SecureRequestCustomizer());
 
-            final SslContextFactory contextFactory =
+            final SslContextFactory.Server contextFactory =
                     new SslContextFactory.Server();
             contextFactory.setKeyStorePath(keyStorePath.toString());
             contextFactory.setKeyStorePassword(keyStorePassword);

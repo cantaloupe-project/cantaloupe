@@ -9,7 +9,20 @@ import edu.illinois.library.cantaloupe.operation.Scale;
 import edu.illinois.library.cantaloupe.operation.ScaleByPixels;
 import edu.illinois.library.cantaloupe.resource.PublicResource;
 
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.util.Locale;
+
 public abstract class IIIFResource extends PublicResource {
+
+    protected void setLastModifiedHeader(Instant lastModified) {
+        getResponse().setHeader("Last-Modified",
+                DateTimeFormatter.RFC_1123_DATE_TIME
+                        .withLocale(Locale.UK)
+                        .withZone(ZoneId.systemDefault())
+                        .format(lastModified));
+    }
 
     /**
      * When the size expressed in the endpoint URI is {@code max}, and the

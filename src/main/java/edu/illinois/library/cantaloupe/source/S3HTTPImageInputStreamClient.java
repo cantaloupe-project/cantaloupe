@@ -36,7 +36,7 @@ class S3HTTPImageInputStreamClient implements HTTPImageInputStreamClient {
 
     @Override
     public Response sendHEADRequest() throws IOException {
-        final S3Client client = S3Source.getClientInstance();
+        final S3Client client = S3Source.getClientInstance(objectInfo);
         final String bucket   = objectInfo.getBucketName();
         final String key      = objectInfo.getKey();
         try {

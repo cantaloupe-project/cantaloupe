@@ -187,6 +187,17 @@ public final class CacheFacade {
     }
 
     /**
+     * @see DerivativeCache#purgeInfos()
+     * @since 6.0
+     */
+    public void purgeInfos() throws IOException {
+        Optional<DerivativeCache> optCache = getDerivativeCache();
+        if (optCache.isPresent()) {
+            optCache.get().purgeInfos();
+        }
+    }
+
+    /**
      * @see Cache#purgeInvalid
      */
     public void purgeInvalid() throws IOException {

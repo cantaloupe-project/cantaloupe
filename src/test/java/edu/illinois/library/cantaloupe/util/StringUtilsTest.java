@@ -226,32 +226,6 @@ class StringUtilsTest extends BaseTest {
     }
 
     @Test
-    void testTrimXMPWithTrimmableXMP() {
-        String xmp = "<?xpacket id=\"cats\"?>" +
-                "<x:xmpmeta bla=\"dogs\">" +
-                "<rdf:RDF foxes=\"bugs\">" +
-                "</rdf:RDF>" +
-                "</x:xmpmeta>";
-        String result = StringUtils.trimXMP(xmp);
-        assertTrue(result.startsWith("<rdf:RDF"));
-        assertTrue(result.endsWith("</rdf:RDF>"));
-    }
-
-    @Test
-    void testTrimXMPWithNonTrimmableXMP() {
-        String xmp = "<rdf:RDF foxes=\"bugs\">" +
-                "</rdf:RDF>";
-        String result = StringUtils.trimXMP(xmp);
-        assertSame(xmp, result);
-    }
-
-    @Test
-    void testTrimXMPWithNullArgument() {
-        assertThrows(NullPointerException.class,
-                () -> StringUtils.trimXMP(null));
-    }
-
-    @Test
     void testWrap() {
         String str = "This is a very very very very very very very very long line.";
         final int maxWidth        = 200;

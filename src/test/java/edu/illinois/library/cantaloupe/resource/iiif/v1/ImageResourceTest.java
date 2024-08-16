@@ -544,7 +544,7 @@ public class ImageResourceTest extends ResourceTest {
         client = newClient("/" + IMAGE + "/full/full/0/color.jpg");
         Response response = client.send();
         Headers headers = response.getHeaders();
-        assertEquals(8, headers.size());
+        assertEquals(9, headers.size());
 
         // Access-Control-Allow-Origin
         assertEquals("*", headers.getFirstValue("Access-Control-Allow-Origin"));
@@ -554,6 +554,8 @@ public class ImageResourceTest extends ResourceTest {
         assertEquals("image/jpeg", headers.getFirstValue("Content-Type"));
         // Date
         assertNotNull(headers.getFirstValue("Date"));
+        // Last-Modified
+        assertNotNull(headers.getFirstValue("Last-Modified"));
         // Link
         assertTrue(headers.getFirstValue("Link").contains("://"));
         // Server

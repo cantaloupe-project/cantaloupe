@@ -17,7 +17,8 @@ public final class ArrayUtils {
      * @return             Chunked data.
      */
     public static List<byte[]> chunkify(byte[] bytes, int maxChunkSize) {
-        final List<byte[]> chunks = new ArrayList<>(10);
+        final int listSize = (int) Math.ceil(bytes.length / (double) maxChunkSize);
+        final List<byte[]> chunks = new ArrayList<>(listSize);
         if (bytes.length <= maxChunkSize) {
             chunks.add(bytes);
         } else {

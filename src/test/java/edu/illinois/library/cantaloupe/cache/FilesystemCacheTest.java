@@ -27,6 +27,7 @@ import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.DirectoryNotEmptyException;
 import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
@@ -59,7 +60,7 @@ public class FilesystemCacheTest extends AbstractCacheTest {
     public void tearDown() throws IOException {
         try {
             Files.walkFileTree(fixturePath, new DeletingFileVisitor());
-        } catch (DirectoryNotEmptyException e) {
+        } catch (NoSuchFileException | DirectoryNotEmptyException e) {
             // This happens in Windows 7 (maybe other versions?) sometimes; not
             // sure why, but it shouldn't result in a test failure.
             System.err.println(e.getMessage());

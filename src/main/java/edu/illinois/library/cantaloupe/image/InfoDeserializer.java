@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.time.Instant;
 
 import static edu.illinois.library.cantaloupe.image.InfoSerializer.APPLICATION_VERSION_KEY;
 import static edu.illinois.library.cantaloupe.image.InfoSerializer.IDENTIFIER_KEY;
@@ -15,6 +16,7 @@ import static edu.illinois.library.cantaloupe.image.InfoSerializer.IMAGES_KEY;
 import static edu.illinois.library.cantaloupe.image.InfoSerializer.MEDIA_TYPE_KEY;
 import static edu.illinois.library.cantaloupe.image.InfoSerializer.METADATA_KEY;
 import static edu.illinois.library.cantaloupe.image.InfoSerializer.NUM_RESOLUTIONS_KEY;
+import static edu.illinois.library.cantaloupe.image.InfoSerializer.SERIALIZATION_TIMESTAMP_KEY;
 import static edu.illinois.library.cantaloupe.image.InfoSerializer.SERIALIZATION_VERSION_KEY;
 
 /**
@@ -28,10 +30,16 @@ final class InfoDeserializer extends JsonDeserializer<Info> {
     public Info deserialize(JsonParser parser,
                             DeserializationContext deserializationContext) throws IOException {
         // N.B.: keys may or may not exist in different serializations,
-        // documented inline. Even for keys that are supposed to always exist,
-        // we have to check for them anyway because they may not exist in tests.
-        final Info info = new Info();
+        // documented inline. Even keys that are supposed to always exist may
+        // not exist in tests, so we have to check for them anyway.
+        final Info info     = new Info();
         final JsonNode node = parser.getCodec().readTree(parser);
+        { // serializationTimestamp (does not exist in < 6.0 serializations)
+            JsonNode timestampNode = node.get(SERIALIZATION_TIMESTAMP_KEY);
+            if (timestampNode != null) {
+                info.setSerializationTimestamp(Instant.parse(timestampNode.textValue()));
+            }
+        }
         { // applicationVersion (does not exist in < 5.0 serializations)
             JsonNode appVersionNode = node.get(APPLICATION_VERSION_KEY);
             if (appVersionNode != null) {

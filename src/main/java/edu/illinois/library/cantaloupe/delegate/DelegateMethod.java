@@ -55,6 +55,13 @@ public enum DelegateMethod {
     JDBCSOURCE_MEDIA_TYPE("jdbcsource_media_type"),
 
     /**
+     * Called by {@link DelegateProxy#getJdbcSourceLastModified()}.
+     *
+     * @since 6.0
+     */
+    JDBCSOURCE_LAST_MODIFIED("jdbcsource_last_modified"),
+
+    /**
      * Called by {@link DelegateProxy#getJdbcSourceLookupSQL()}.
      */
     JDBCSOURCE_LOOKUP_SQL("jdbcsource_lookup_sql"),

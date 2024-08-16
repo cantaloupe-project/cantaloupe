@@ -52,9 +52,4 @@ public class TaskResource extends AbstractAPIResource {
         }
     }
 
-    @Override
-    boolean requiresAuth() {
-        return true;
-    }
-
 }

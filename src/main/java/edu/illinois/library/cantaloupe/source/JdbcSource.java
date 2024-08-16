@@ -21,6 +21,8 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -28,7 +30,7 @@ import java.util.NoSuchElementException;
 /**
  * <p>Maps an identifier to a binary/BLOB field in a relational database.</p>
  *
- * <p>A custom schema is not required; any schema will work. However, several
+ * <p>A custom schema is not required; most schemas will work. However, several
  * delegate methods must be implemented in order to obtain the information
  * needed to run the SQL queries.</p>
  *
@@ -211,23 +213,11 @@ class JdbcSource extends AbstractSource implements Source {
     }
 
     @Override
-    public void checkAccess() throws IOException {
-        try (Connection connection = getConnection()) {
-            final String sql = getLookupSQL();
-
-            // Check that the image exists.
-            try (PreparedStatement statement = connection.prepareStatement(sql)) {
-                statement.setString(1, getDatabaseIdentifier());
-                LOGGER.debug(sql);
-                try (ResultSet result = statement.executeQuery()) {
-                    if (!result.next()) {
-                        throw new NoSuchFileException(sql);
-                    }
-                }
-            }
-        } catch (ScriptException | SQLException e) {
-            throw new IOException(e);
-        }
+    public StatResult stat() throws IOException {
+        Instant lastModified = getLastModified();
+        StatResult result = new StatResult();
+        result.setLastModified(lastModified);
+        return result;
     }
 
     /**
@@ -241,6 +231,41 @@ class JdbcSource extends AbstractSource implements Source {
     @Override
     public FormatIterator<Format> getFormatIterator() {
         return formatIterator;
+    }
+
+    Instant getLastModified() throws IOException {
+        try {
+            String methodResult = getDelegateProxy().getJdbcSourceLastModified();
+            if (methodResult != null) {
+                // the delegate method result may be an ISO 8601 string, or an
+                // SQL statement to look it up.
+                if (methodResult.toUpperCase().startsWith("SELECT")) {
+                    // It's called readability, IntelliJ!
+                    //noinspection UnnecessaryLocalVariable
+                    final String sql = methodResult;
+                    LOGGER.debug(sql);
+                    try (Connection connection = getConnection();
+                         PreparedStatement statement = connection.prepareStatement(sql)) {
+                        statement.setString(1, getDatabaseIdentifier());
+                        try (ResultSet resultSet = statement.executeQuery()) {
+                            if (resultSet.next()) {
+                                Timestamp value = resultSet.getTimestamp(1);
+                                if (value != null) {
+                                    return value.toInstant();
+                                }
+                            } else {
+                                throw new NoSuchFileException(sql);
+                            }
+                        }
+                    }
+                } else {
+                    return Instant.parse(methodResult);
+                }
+            }
+        } catch (SQLException | ScriptException e) {
+            throw new IOException(e);
+        }
+        return null;
     }
 
     /**

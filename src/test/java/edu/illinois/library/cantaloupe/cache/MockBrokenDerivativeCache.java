@@ -43,6 +43,11 @@ public class MockBrokenDerivativeCache implements DerivativeCache {
     }
 
     @Override
+    public void purgeInfos() throws IOException {
+        throw new IOException("I'm broken");
+    }
+
+    @Override
     public void purgeInvalid() throws IOException {
         throw new IOException("I'm broken");
     }

@@ -16,6 +16,7 @@ import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.source.AccessDeniedSource;
 import edu.illinois.library.cantaloupe.source.PathStreamFactory;
 import edu.illinois.library.cantaloupe.source.Source;
+import edu.illinois.library.cantaloupe.source.StatResult;
 import edu.illinois.library.cantaloupe.source.StreamFactory;
 import edu.illinois.library.cantaloupe.delegate.DelegateProxy;
 import edu.illinois.library.cantaloupe.test.TestUtil;
@@ -29,7 +30,12 @@ import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.FileTime;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.TemporalAccessor;
 import java.util.Iterator;
+import java.util.Locale;
 
 import static edu.illinois.library.cantaloupe.test.Assert.HTTPAssert.*;
 import static edu.illinois.library.cantaloupe.test.Assert.PathAssert.*;
@@ -276,6 +282,29 @@ public class ImageAPIResourceTester {
         assertStatus(403, uri);
     }
 
+    public void testLastModifiedHeaderWhenDerivativeCacheIsEnabled(URI uri)
+            throws Exception {
+        initializeFilesystemCache();
+
+        Client client = newClient(uri);
+        try {
+            // request a resource once to cache it
+            client.send();
+            // request it again to get the Last-Modified header
+            Response response = client.send();
+            String value = response.getHeaders().getFirstValue("Last-Modified");
+            TemporalAccessor ta = DateTimeFormatter.RFC_1123_DATE_TIME
+                    .withLocale(Locale.UK)
+                    .withZone(ZoneId.systemDefault())
+                    .parse(value);
+            Instant instant = Instant.from(ta);
+            // assert that the header value is less than 2 seconds in the past
+            assertTrue(Instant.now().getEpochSecond() - instant.getEpochSecond() < 2);
+        } finally {
+            client.stop();
+        }
+    }
+
     public void testNotFound(URI uri) {
         assertStatus(404, uri);
     }
@@ -329,7 +358,7 @@ public class ImageAPIResourceTester {
     public static class NotCheckingAccessSource implements Source {
 
         @Override
-        public void checkAccess() throws IOException {
+        public StatResult stat() throws IOException {
             throw new IOException("checkAccess called!");
         }
 
@@ -404,7 +433,9 @@ public class ImageAPIResourceTester {
     public static class NotReadingSourceFormatSource implements Source {
 
         @Override
-        public void checkAccess() {}
+        public StatResult stat() {
+            return null;
+        }
 
         @Override
         public Iterator<Format> getFormatIterator() {

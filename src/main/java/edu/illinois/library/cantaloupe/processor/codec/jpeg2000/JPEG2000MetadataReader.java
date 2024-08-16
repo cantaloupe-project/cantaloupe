@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.imageio.stream.ImageInputStream;
 import javax.xml.bind.DatatypeConverter;
+import java.io.EOFException;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
@@ -268,23 +269,29 @@ public final class JPEG2000MetadataReader implements AutoCloseable {
             throw new IllegalStateException("Source not set");
         }
 
-        inputStream.mark();
-        byte[] bytes = read(JP2_SIGNATURE.length);
-        if (!Arrays.equals(JP2_SIGNATURE, bytes)) {
-            String hexStr = DatatypeConverter.printHexBinary(bytes);
-            throw new SourceFormatException("Invalid signature: " + hexStr +
-                    " (is this a JP2?)");
+        try {
+          inputStream.mark();
+          byte[] bytes = read(JP2_SIGNATURE.length);
+          if (!Arrays.equals(JP2_SIGNATURE, bytes)) {
+              String hexStr = DatatypeConverter.printHexBinary(bytes);
+              throw new SourceFormatException("Invalid signature: " + hexStr +
+                      " (is this a JP2?)");
+          }
+          inputStream.reset();
+
+
+          final Stopwatch watch = new Stopwatch();
+
+          while (readBox() != -1) {
+              // Read boxes.
+              isReadAttempted = true;
+          }
+
+          LOGGER.debug("Read in {}: {}", watch, this);
         }
-        inputStream.reset();
-
-        final Stopwatch watch = new Stopwatch();
-
-        while (readBox() != -1) {
-            // Read boxes.
-            isReadAttempted = true;
+        catch (EOFException e) {
+          throw (SourceFormatException)(new SourceFormatException("JP2 appears to be corrupt; encountered EOF.").initCause(e));
         }
-
-        LOGGER.debug("Read in {}: {}", watch, this);
     }
 
     private int readBox() throws IOException {
@@ -434,11 +441,7 @@ public final class JPEG2000MetadataReader implements AutoCloseable {
 
     private byte[] read(int length) throws IOException {
         byte[] data = new byte[length];
-        int n, offset = 0;
-        while ((n = inputStream.read(
-                data, offset, data.length - offset)) < offset) {
-            offset += n;
-        }
+        inputStream.readFully(data);
         return data;
     }
 

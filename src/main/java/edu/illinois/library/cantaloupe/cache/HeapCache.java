@@ -184,7 +184,7 @@ class HeapCache implements DerivativeCache {
         @Override
         public void close() throws IOException {
             LOGGER.debug("Closing stream for {}", opList);
-            if (isCompletelyWritten()) {
+            if (isComplete()) {
                 Key key = itemKey(opList);
                 Item item = new Item(wrappedStream.toByteArray());
                 cache.put(key, item);
@@ -233,7 +233,7 @@ class HeapCache implements DerivativeCache {
                 if (workerShouldWork.get()) {
                     try {
                         purgeExcess();
-                        logger.debug("Cache size: {} items ({} bytes)",
+                        logger.trace("Cache size: {} items ({} bytes)",
                                 size(), getByteSize());
                         Thread.sleep(INTERVAL_SECONDS * 1000);
                     } catch (ConfigurationException e) {
@@ -588,6 +588,11 @@ class HeapCache implements DerivativeCache {
                         purgedItems, purgedSize);
             }
         }
+    }
+
+    @Override
+    public void purgeInfos() {
+        cache.entrySet().removeIf(entry -> entry.getKey().opList == null);
     }
 
     /**
