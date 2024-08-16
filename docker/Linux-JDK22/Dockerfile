@@ -1,4 +1,4 @@
-FROM ubuntu:noble
+FROM ubuntu:lunar
 
 ENV JAVA_HOME=/opt/jdk
 ENV PATH=$PATH:/opt/jdk/bin:/opt/maven/bin
@@ -36,15 +36,10 @@ COPY docker/image_files/libjpeg-turbo/lib64 /opt/libjpeg-turbo/lib
 COPY dist/deps/Linux-x86-64/lib/* /usr/lib/
 
 # Install various other dependencies that aren't in apt
-# Install GrokProcessor dependencies
-#RUN wget -q https://github.com/GrokImageCompression/grok/releases/download/v7.6.5/libgrokj2k1_7.6.5-1_amd64.deb \
-#    && wget -q https://github.com/GrokImageCompression/grok/releases/download/v7.6.5/grokj2k-tools_7.6.5-1_amd64.deb \
-#    && dpkg -i ./libgrokj2k1_7.6.5-1_amd64.deb \
-#    && dpkg -i --ignore-depends=libjpeg62-turbo ./grokj2k-tools_7.6.5-1_amd64.deb \
 # Install OpenJDK
-RUN wget -q https://download.java.net/java/GA/jdk18/43f95e8614114aeaa8e8a5fcf20a682d/36/GPL/openjdk-18_linux-x64_bin.tar.gz \
-  && tar xfz openjdk-18_linux-x64_bin.tar.gz \
-  && mv jdk-18 /opt/jdk \
+RUN wget -q https://download.java.net/java/GA/jdk22.0.2/c9ecb94cd31b495da20a27d4581645e8/9/GPL/openjdk-22.0.2_linux-x64_bin.tar.gz \
+  && tar xfz openjdk-22.0.2_linux-x64_bin.tar.gz \
+  && mv jdk-22.0.2 /opt/jdk \
   # Install a newer Maven than the one in apt
   && wget -q https://dlcdn.apache.org/maven/maven-3/3.8.8/binaries/apache-maven-3.8.8-bin.tar.gz \
   && tar xfz apache-maven-3.8.8-bin.tar.gz \
