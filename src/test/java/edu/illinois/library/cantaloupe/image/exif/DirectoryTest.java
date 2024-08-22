@@ -366,15 +366,15 @@ public class DirectoryTest extends BaseTest {
         assertNull(ifd.getValue(Tag.MAKE));
     }
 
-  @Test
-  void testGetField() {
-    final Directory ifd = new Directory(TagSet.BASELINE_TIFF);
-    ifd.put(Tag.MAKE, DataType.ASCII, "Cats");
-    Field field = ifd.getField(Tag.MAKE);
-    assertEquals(DataType.ASCII, field.getDataType());
-  }
+    @Test
+    void testGetField() {
+        final Directory ifd = new Directory(TagSet.BASELINE_TIFF);
+        ifd.put(Tag.MAKE, DataType.ASCII, "Cats");
+        Field field = ifd.getField(Tag.MAKE);
+        assertEquals(DataType.ASCII, field.getDataType());
+    }
 
-  @Test
+    @Test
     void testHashCodeWithEqualInstances() {
         final Directory subIFD1 = new Directory(TagSet.EXIF);
         subIFD1.put(Tag.EXPOSURE_TIME, DataType.RATIONAL, new Rational(1, 160));

@@ -134,22 +134,22 @@ public class Metadata {
         Object value = exif.getValue(Tag.ORIENTATION);
         if (field != null && value != null) {
             switch (field.getDataType()) {
-              case LONG:
-              case SLONG:
-              case SHORT:
-              case SSHORT:
-                // According to spec the orientation must be an unsigned short (16 bit)
-                // However, we have seen exif data in the wild with LONG and SLONG types
-                // Thus to be lenient we accept either and convert to int (github issue #548)
-                if (value instanceof Long) {
-                    orientation = Orientation.forEXIFOrientation(Math.toIntExact((long) value));
-                } else if (value instanceof Integer) {
-                    orientation = Orientation.forEXIFOrientation((int) value);
-                }
-                break;
-              default:
-                LOGGER.warn("readOrientationFromEXIF(): Unsupported Orientation data type: {}",
-                        field.getDataType());
+                case LONG:
+                case SLONG:
+                case SHORT:
+                case SSHORT:
+                    // According to spec the orientation must be an unsigned short (16 bit)
+                    // However, we have seen exif data in the wild with LONG and SLONG types
+                    // Thus to be lenient we accept either and convert to int (github issue #548)
+                    if (value instanceof Long) {
+                        orientation = Orientation.forEXIFOrientation(Math.toIntExact((long) value));
+                    } else if (value instanceof Integer) {
+                        orientation = Orientation.forEXIFOrientation((int) value);
+                    }
+                    break;
+                default:
+                    LOGGER.warn("readOrientationFromEXIF(): Unsupported Orientation data type: {}",
+                            field.getDataType());
             }
         }
     }
