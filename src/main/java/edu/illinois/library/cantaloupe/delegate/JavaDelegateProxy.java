@@ -63,6 +63,14 @@ final class JavaDelegateProxy implements DelegateProxy {
         return delegate.getJDBCSourceDatabaseIdentifier();
     }
 
+    /**
+     * @since 6.0
+     */
+    @Override
+    public String getJdbcSourceLastModified() {
+        return delegate.getJDBCSourceLastModified();
+    }
+
     @Override
     public String getJdbcSourceLookupSQL() {
         return delegate.getJDBCSourceLookupSQL();

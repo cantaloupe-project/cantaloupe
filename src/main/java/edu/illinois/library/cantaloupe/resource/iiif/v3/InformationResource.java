@@ -13,6 +13,7 @@ import edu.illinois.library.cantaloupe.resource.JacksonRepresentation;
 import edu.illinois.library.cantaloupe.resource.ResourceException;
 import edu.illinois.library.cantaloupe.resource.Route;
 import edu.illinois.library.cantaloupe.resource.InformationRequestHandler;
+import edu.illinois.library.cantaloupe.source.StatResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,7 +42,7 @@ public class InformationResource extends IIIF3Resource {
     }
 
     /**
-     * Writes a JSON-serialized {@link ImageInfo} instance to the response.
+     * Writes a JSON-serialized {@link Information} instance to the response.
      */
     @Override
     public void doGET() throws Exception {
@@ -68,6 +69,14 @@ public class InformationResource extends IIIF3Resource {
                 }
                 return false;
             }
+
+            @Override
+            public void sourceAccessed(StatResult result) {
+                if (result.getLastModified() != null) {
+                    setLastModifiedHeader(result.getLastModified());
+                }
+            }
+
             @Override
             public void knowAvailableOutputFormats(Set<Format> formats) {
                 availableOutputFormats.addAll(formats);
@@ -82,15 +91,29 @@ public class InformationResource extends IIIF3Resource {
                 .withRequestContext(getRequestContext())
                 .withCallback(new CustomCallback())
                 .build()) {
-            Info info = handler.handle();
-            addHeaders();
-            newRepresentation(info, availableOutputFormats)
-                    .write(getResponse().getOutputStream());
+            try {
+                Info info = handler.handle();
+                addHeaders(info);
+                newRepresentation(info, availableOutputFormats)
+                        .write(getResponse().getOutputStream());
+            } catch (ResourceException e) {
+                if (e.getStatus().getCode() < 500) {
+                    newHTTP4xxRepresentation(e.getStatus(), e.getMessage())
+                            .write(getResponse().getOutputStream());
+                } else {
+                    throw e;
+                }
+            }
         }
     }
 
-    private void addHeaders() {
+    private void addHeaders(Info info) {
+        // Content-Type
         getResponse().setHeader("Content-Type", getNegotiatedContentType());
+        // Last-Modified
+        if (info.getSerializationTimestamp() != null) {
+            setLastModifiedHeader(info.getSerializationTimestamp());
+        }
     }
 
     /**
@@ -121,16 +144,16 @@ public class InformationResource extends IIIF3Resource {
 
     private JacksonRepresentation newRepresentation(Info info,
                                                     Set<Format> availableOutputFormats) {
-        final ImageInfoFactory factory = new ImageInfoFactory();
+        final InformationFactory factory = new InformationFactory();
         factory.setDelegateProxy(getDelegateProxy());
 
-        final ImageInfo<String, Object> imageInfo = factory.newImageInfo(
+        final Information<String, Object> iiifInfo = factory.newImageInfo(
                 availableOutputFormats,
                 getImageURI(),
                 info,
                 getPageIndex(),
                 getMetaIdentifier().getScaleConstraint());
-        return new JacksonRepresentation(imageInfo);
+        return new JacksonRepresentation(iiifInfo);
     }
 
 }

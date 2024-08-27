@@ -17,6 +17,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Path;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -205,11 +206,19 @@ public final class Info {
          *
          * <p>Introduced in application version 5.0.</p>
          */
-        VERSION_4(4);
+        VERSION_4(4),
+
+        /**
+         * <p>Added a {@code serializationTimestamp} key containing an ISO 8601
+         * timestamp in UTC.</p>
+         *
+         * <p>Introduced in application version 6.0.</p>
+         */
+        VERSION_5(5);
 
         private final int version;
 
-        static final Serialization CURRENT = VERSION_4;
+        static final Serialization CURRENT = VERSION_5;
 
         Serialization(int version) {
             this.version = version;
@@ -220,11 +229,12 @@ public final class Info {
         }
     }
 
-    private String appVersion           = Application.getVersion();
+    private String appVersion               = Application.getVersion();
     private Identifier identifier;
     private MediaType mediaType;
-    private Metadata metadata           = new Metadata();
-    private Serialization serialization = Serialization.CURRENT;
+    private Metadata metadata               = new Metadata();
+    private Serialization serialization     = Serialization.CURRENT;
+    private Instant serializationTimestamp;
 
     /**
      * Ordered list of subimages. The main image is at index {@code 0}.
@@ -268,19 +278,24 @@ public final class Info {
         images.add(new Image());
     }
 
+    /**
+     * N.B.: the {@link #getSerializationTimestamp() serialization timestamp}
+     * is not considered.
+     */
     @Override
     public boolean equals(Object obj) {
         if (obj == this) {
             return true;
         } else if (obj instanceof Info) {
             Info other = (Info) obj;
-            return Objects.equals(other.getApplicationVersion(), getApplicationVersion()) &&
-                    Objects.equals(other.getSerialization(), getSerialization()) &&
-                    Objects.equals(other.getIdentifier(), getIdentifier()) &&
-                    Objects.equals(other.getMetadata(), getMetadata()) &&
-                    Objects.equals(other.getSourceFormat(), getSourceFormat()) &&
-                    other.getNumResolutions() == getNumResolutions() &&
-                    other.getImages().equals(getImages());
+            boolean a  = Objects.equals(other.getApplicationVersion(), getApplicationVersion());
+            boolean b  = Objects.equals(other.getSerialization(), getSerialization());
+            boolean c  = Objects.equals(other.getIdentifier(), getIdentifier());
+            boolean d  = Objects.equals(other.getMetadata(), getMetadata());
+            boolean e  = Objects.equals(other.getSourceFormat(), getSourceFormat());
+            boolean f  = other.getNumResolutions() == getNumResolutions();
+            boolean g  = other.getImages().equals(getImages());
+            return a && b && c && d && e && f && g;
         }
         return super.equals(obj);
     }
@@ -365,6 +380,20 @@ public final class Info {
      */
     public Serialization getSerialization() {
         return serialization;
+    }
+
+    /**
+     * N.B.: Although it would be possible for most {@link
+     * edu.illinois.library.cantaloupe.cache.DerivativeCache}s to obtain a
+     * serialization timestamp by other means, such as e.g. filesystem
+     * attributes, storing it within the serialized instance makes a separate
+     * I/O call unnecessary.
+     *
+     * @return Timestamp that the instance was serialized.
+     * @since 6.0
+     */
+    public Instant getSerializationTimestamp() {
+        return serializationTimestamp;
     }
 
     /**
@@ -482,6 +511,14 @@ public final class Info {
      */
     public void setPersistable(boolean isComplete) {
         this.isPersistable = isComplete;
+    }
+
+    /**
+     * @param timestamp Time at which the instance is serialized.
+     * @since 6.0
+     */
+    public void setSerializationTimestamp(Instant timestamp) {
+        this.serializationTimestamp = timestamp;
     }
 
     /**

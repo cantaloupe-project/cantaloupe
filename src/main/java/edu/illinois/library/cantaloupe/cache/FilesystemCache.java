@@ -17,7 +17,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.FileVisitOption;
 import java.nio.file.Files;
@@ -126,8 +126,8 @@ class FilesystemCache implements SourceCache, DerivativeCache {
         private boolean isClosed = false;
         private final Object lock;
         private final Path tempFile;
-        private T toRemove;
-        private OutputStream wrappedOutputStream;
+        private final T toRemove;
+        private final OutputStream wrappedOutputStream;
 
         /**
          * @param tempFile Pathname of the temp file to write to.
@@ -180,7 +180,7 @@ class FilesystemCache implements SourceCache, DerivativeCache {
 
                     // If the written file is complete, move it into place.
                     // Otherwise, delete it.
-                    if (isCompletelyWritten()) {
+                    if (isComplete()) {
                         CFOS_LOGGER.debug("close(): moving {} to {}",
                                 tempFile, destinationFile);
                         Files.move(tempFile, destinationFile,
@@ -237,7 +237,7 @@ class FilesystemCache implements SourceCache, DerivativeCache {
     private static final String INFO_FOLDER = "info";
     private static final String SOURCE_IMAGE_FOLDER = "source";
 
-    private static final String INFO_EXTENSION = ".json";
+    static final String INFO_EXTENSION = ".json";
     private static final String TEMP_EXTENSION = ".tmp";
 
     /**
@@ -316,7 +316,7 @@ class FilesystemCache implements SourceCache, DerivativeCache {
         try {
             final MessageDigest digest =
                     MessageDigest.getInstance(HASH_ALGORITHM);
-            digest.update(uniqueString.getBytes(Charset.forName("UTF8")));
+            digest.update(uniqueString.getBytes(StandardCharsets.UTF_8));
             final String sum = Hex.encodeHexString(digest.digest());
 
             final Configuration config = Configuration.getInstance();
@@ -526,7 +526,14 @@ class FilesystemCache implements SourceCache, DerivativeCache {
             final Path cacheFile = infoFile(identifier);
             if (!isExpired(cacheFile)) {
                 LOGGER.debug("getInfo(): hit: {}", cacheFile);
-                return Optional.of(Info.fromJSON(cacheFile));
+                Info info = Info.fromJSON(cacheFile);
+                // Populate the serialization timestamp if it is not
+                // already, as suggested by the method contract.
+                if (info.getSerializationTimestamp() == null) {
+                    info.setSerializationTimestamp(
+                            Files.getLastModifiedTime(cacheFile).toInstant());
+                }
+                return Optional.of(info);
             } else {
                 purgeAsync(cacheFile);
             }
@@ -627,7 +634,7 @@ class FilesystemCache implements SourceCache, DerivativeCache {
         // work with newDerivativeImageOutputStream(). But this method does not
         // need that extra functionality, so setting it as completely written
         // here makes it behave like an ordinary OutputStream.
-        os.setCompletelyWritten(true);
+        os.setComplete(true);
         return os;
     }
 
@@ -837,6 +844,44 @@ class FilesystemCache implements SourceCache, DerivativeCache {
                 LOGGER.warn("purgeAsync(): unable to delete {}", path);
             }
         });
+    }
+
+    @Override
+    public void purgeInfos() throws IOException {
+        if (isGlobalPurgeInProgress.get()) {
+            LOGGER.debug("purgeInfos() called with a purge in progress. Aborting.");
+            return;
+        }
+        synchronized (infoPurgeLock) {
+            while (!infosBeingPurged.isEmpty()) {
+                try {
+                    LOGGER.debug("purgeInfos(): waiting...");
+                    infoPurgeLock.wait();
+                } catch (InterruptedException e) {
+                    break;
+                }
+            }
+        }
+
+        try {
+            isGlobalPurgeInProgress.set(true);
+
+            final InfoFileVisitor visitor = new InfoFileVisitor();
+
+            LOGGER.debug("purgeInfos(): starting...");
+            Files.walkFileTree(rootPath(),
+                    EnumSet.of(FileVisitOption.FOLLOW_LINKS),
+                    Integer.MAX_VALUE,
+                    visitor);
+            LOGGER.debug("purgeInfos(): purged {} info(s) totaling {} bytes",
+                    visitor.getDeletedFileCount(),
+                    visitor.getDeletedFileSize());
+        } finally {
+            isGlobalPurgeInProgress.set(false);
+            synchronized (infoPurgeLock) {
+                infoPurgeLock.notifyAll();
+            }
+        }
     }
 
     /**

@@ -12,6 +12,7 @@ import edu.illinois.library.cantaloupe.resource.JacksonRepresentation;
 import edu.illinois.library.cantaloupe.resource.ResourceException;
 import edu.illinois.library.cantaloupe.resource.Route;
 import edu.illinois.library.cantaloupe.resource.InformationRequestHandler;
+import edu.illinois.library.cantaloupe.source.StatResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -40,7 +41,7 @@ public class InformationResource extends IIIF1Resource {
     }
 
     /**
-     * Writes a JSON-serialized {@link ImageInfo} instance to the response.
+     * Writes a JSON-serialized {@link Information} instance to the response.
      */
     @Override
     public void doGET() throws Exception {
@@ -63,6 +64,14 @@ public class InformationResource extends IIIF1Resource {
                 }
                 return false;
             }
+
+            @Override
+            public void sourceAccessed(StatResult result) {
+                if (result.getLastModified() != null) {
+                    setLastModifiedHeader(result.getLastModified());
+                }
+            }
+
             @Override
             public void knowAvailableOutputFormats(Set<Format> formats) {
                 availableOutputFormats.addAll(formats);
@@ -77,25 +86,38 @@ public class InformationResource extends IIIF1Resource {
                 .withRequestContext(getRequestContext())
                 .withCallback(new CustomCallback())
                 .build()) {
-            Info info = handler.handle();
-
-            ImageInfo iiifInfo = new ImageInfoFactory().newImageInfo(
-                    getImageURI(),
-                    availableOutputFormats,
-                    info,
-                    getPageIndex(),
-                    getMetaIdentifier().getScaleConstraint());
-
-            addHeaders(iiifInfo);
-            new JacksonRepresentation(iiifInfo)
-                    .write(getResponse().getOutputStream());
+            try {
+                Info info = handler.handle();
+                Information iiifInfo = new InformationFactory().newImageInfo(
+                        getImageURI(),
+                        availableOutputFormats,
+                        info,
+                        getPageIndex(),
+                        getMetaIdentifier().getScaleConstraint());
+                addHeaders(info, iiifInfo);
+                new JacksonRepresentation(iiifInfo)
+                        .write(getResponse().getOutputStream());
+            } catch (ResourceException e) {
+                if (e.getStatus().getCode() < 500) {
+                    newHTTP4xxRepresentation(e.getStatus(), e.getMessage())
+                            .write(getResponse().getOutputStream());
+                } else {
+                    throw e;
+                }
+            }
         }
     }
 
-    private void addHeaders(ImageInfo info) {
+    private void addHeaders(Info info, Information iiifInfo) {
+        // Content-Type
         getResponse().setHeader("Content-Type", getNegotiatedMediaType());
+        // Link
         getResponse().setHeader("Link",
-                String.format("<%s>;rel=\"profile\";", info.profile));
+                String.format("<%s>;rel=\"profile\";", iiifInfo.profile));
+        // Last-Modified
+        if (info.getSerializationTimestamp() != null) {
+            setLastModifiedHeader(info.getSerializationTimestamp());
+        }
     }
 
     /**

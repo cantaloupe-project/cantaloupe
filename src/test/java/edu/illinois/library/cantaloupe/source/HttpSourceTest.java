@@ -9,14 +9,16 @@ import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.delegate.DelegateProxy;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import edu.illinois.library.cantaloupe.test.WebServer;
+import edu.illinois.library.cantaloupe.util.SocketUtils;
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.handler.DefaultHandler;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -27,11 +29,35 @@ import java.nio.file.NoSuchFileException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.NoSuchElementException;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 abstract class HttpSourceTest extends AbstractSourceTest {
+
+    private static class RequestCountingHandler extends DefaultHandler {
+
+        private int numHEADRequests, numGETRequests;
+
+        @Override
+        public void handle(String target,
+                Request baseRequest,
+                HttpServletRequest request,
+                HttpServletResponse response) {
+            switch (request.getMethod().toUpperCase()) {
+                case "HEAD":
+                    numHEADRequests++;
+                    break;
+                case "GET":
+                    numGETRequests++;
+                    break;
+                default:
+                    throw new IllegalArgumentException(
+                            "Unexpected method: " + request.getMethod());
+            }
+            baseRequest.setHandled(true);
+        }
+
+    }
 
     private static final Identifier PRESENT_READABLE_IDENTIFIER =
             new Identifier("jpg-rgb-64x56x8-baseline.jpg");
@@ -93,16 +119,16 @@ abstract class HttpSourceTest extends AbstractSourceTest {
                 "ScriptLookupStrategy");
     }
 
-    /* checkAccess() */
+    /* stat() */
 
     @Test
-    void testCheckAccessUsingBasicLookupStrategyWithPresentUnreadableImage()
+    void testStatUsingBasicLookupStrategyWithPresentUnreadableImage()
             throws Exception {
         doTestCheckAccessWithPresentUnreadableImage(new Identifier("gif"));
     }
 
     @Test
-    void testCheckAccessUsingScriptLookupStrategyWithPresentReadableImage()
+    void testStatUsingScriptLookupStrategyWithPresentReadableImage()
             throws Exception {
         useScriptLookupStrategy();
         Identifier identifier = new Identifier(getServerURI() + "/" +
@@ -111,7 +137,7 @@ abstract class HttpSourceTest extends AbstractSourceTest {
     }
 
     @Test
-    void testCheckAccessUsingScriptLookupStrategyWithMissingImage()
+    void testStatUsingScriptLookupStrategyWithMissingImage()
             throws Exception {
         useScriptLookupStrategy();
         Identifier identifier = new Identifier(getServerURI() + "/bogus");
@@ -119,7 +145,7 @@ abstract class HttpSourceTest extends AbstractSourceTest {
     }
 
     @Test
-    void testCheckAccessUsingScriptLookupStrategyWithPresentUnreadableImage()
+    void testStatUsingScriptLookupStrategyWithPresentUnreadableImage()
             throws Exception {
         useScriptLookupStrategy();
         Identifier identifier = new Identifier(getServerURI() + "/gif");
@@ -135,7 +161,7 @@ abstract class HttpSourceTest extends AbstractSourceTest {
         instance.setDelegateProxy(proxy);
         instance.setIdentifier(identifier);
 
-        instance.checkAccess();
+        instance.stat();
     }
 
     private void doTestCheckAccessWithPresentUnreadableImage(Identifier identifier)
@@ -157,7 +183,7 @@ abstract class HttpSourceTest extends AbstractSourceTest {
         instance.setDelegateProxy(proxy);
         instance.setIdentifier(identifier);
         instance.setIdentifier(identifier);
-        assertThrows(AccessDeniedException.class, instance::checkAccess);
+        assertThrows(AccessDeniedException.class, instance::stat);
     }
 
     private void doTestCheckAccessWithMissingImage(Identifier identifier)
@@ -170,7 +196,7 @@ abstract class HttpSourceTest extends AbstractSourceTest {
             instance.setDelegateProxy(proxy);
             instance.setIdentifier(identifier);
 
-            instance.checkAccess();
+            instance.stat();
             fail("Expected exception");
         } catch (NoSuchFileException e) {
             // pass
@@ -178,7 +204,7 @@ abstract class HttpSourceTest extends AbstractSourceTest {
     }
 
     @Test
-    void testCheckAccessUsingScriptLookupStrategyWithValidAuthentication()
+    void testStatUsingScriptLookupStrategyWithValidAuthentication()
             throws Exception {
         useScriptLookupStrategy();
 
@@ -192,11 +218,11 @@ abstract class HttpSourceTest extends AbstractSourceTest {
         instance.setDelegateProxy(proxy);
         instance.setIdentifier(identifier);
 
-        instance.checkAccess();
+        instance.stat();
     }
 
     @Test
-    void testCheckAccessUsingScriptLookupStrategyWithInvalidAuthentication()
+    void testStatUsingScriptLookupStrategyWithInvalidAuthentication()
             throws Exception {
         useScriptLookupStrategy();
 
@@ -210,11 +236,11 @@ abstract class HttpSourceTest extends AbstractSourceTest {
         instance.setDelegateProxy(proxy);
         instance.setIdentifier(identifier);
 
-        assertThrows(AccessDeniedException.class, instance::checkAccess);
+        assertThrows(AccessDeniedException.class, instance::stat);
     }
 
     @Test
-    void testCheckAccessWith403Response() throws Exception {
+    void testStatWith403Response() throws Exception {
         server.setHandler(new DefaultHandler() {
             @Override
             public void handle(String target,
@@ -229,7 +255,7 @@ abstract class HttpSourceTest extends AbstractSourceTest {
 
         try {
             instance.setIdentifier(PRESENT_READABLE_IDENTIFIER);
-            instance.checkAccess();
+            instance.stat();
             fail("Expected exception");
         } catch (AccessDeniedException e) {
             assertTrue(e.getMessage().contains("403"));
@@ -237,7 +263,7 @@ abstract class HttpSourceTest extends AbstractSourceTest {
     }
 
     @Test
-    void testCheckAccessWith500Response() throws Exception {
+    void testStatWith500Response() throws Exception {
         server.setHandler(new DefaultHandler() {
             @Override
             public void handle(String target,
@@ -252,15 +278,34 @@ abstract class HttpSourceTest extends AbstractSourceTest {
 
         try {
             instance.setIdentifier(PRESENT_READABLE_IDENTIFIER);
-            instance.checkAccess();
+            instance.stat();
             fail("Expected exception");
         } catch (IOException e) {
             assertTrue(e.getMessage().contains("500"));
         }
     }
 
+    @Disabled
     @Test
-    void testCheckAccessSendsUserAgentHeader() throws Exception {
+    void testStatUsingProxy() throws Exception {
+        server.start();
+
+        final int proxyPort = SocketUtils.getOpenPort();
+
+        // Set up the proxy
+        // TODO; write this
+
+        // Set up HttpSource
+        final Configuration config = Configuration.getInstance();
+        config.setProperty(Key.HTTPSOURCE_HTTP_PROXY_HOST, "127.0.0.1");
+        config.setProperty(Key.HTTPSOURCE_HTTP_PROXY_PORT, proxyPort);
+
+        // Expect no exception
+        instance.stat();
+    }
+
+    @Test
+    void testStatSendsUserAgentHeader() throws Exception {
         server.setHandler(new DefaultHandler() {
             @Override
             public void handle(String target,
@@ -281,11 +326,11 @@ abstract class HttpSourceTest extends AbstractSourceTest {
         });
         server.start();
 
-        instance.checkAccess();
+        instance.stat();
     }
 
     @Test
-    void testCheckAccessSendsCustomHeaders() throws Exception {
+    void testStatSendsCustomHeaders() throws Exception {
         useScriptLookupStrategy();
 
         server.setHandler(new DefaultHandler() {
@@ -307,26 +352,22 @@ abstract class HttpSourceTest extends AbstractSourceTest {
         instance.setDelegateProxy(proxy);
         instance.setIdentifier(identifier);
 
-        instance.checkAccess();
+        instance.stat();
     }
 
     @Test
-    void testCheckAccessWithMalformedURI() throws Exception {
+    void testStatWithMalformedURI() throws Exception {
         server.start();
 
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.HTTPSOURCE_URL_PREFIX, "");
 
         Identifier identifier = new Identifier(
-                getServerURI().toString().replace("://", "//") + "/" + PRESENT_READABLE_IDENTIFIER);
+                getServerURI().toString().replace("://", "//") + "/" +
+                        PRESENT_READABLE_IDENTIFIER);
         instance.setIdentifier(identifier);
 
-        try {
-            instance.checkAccess();
-            fail("Expected exception");
-        } catch (IllegalArgumentException e) {
-            // pass
-        }
+        assertThrows(IOException.class, () -> instance.stat());
     }
 
     /* getFormatIterator() */
@@ -367,10 +408,10 @@ abstract class HttpSourceTest extends AbstractSourceTest {
         server.start();
 
         HttpSource.FormatIterator<Format> it = instance.getFormatIterator();
-        assertEquals(Format.get("png"), it.next());     // URI path extension
-        assertEquals(Format.get("png"), it.next());     // identifier extension
-        assertEquals(Format.UNKNOWN, it.next()); // Content-Type is null
-        assertEquals(Format.get("jpg"), it.next());     // magic bytes
+        assertEquals(Format.get("png"), it.next()); // URI path extension
+        assertEquals(Format.get("png"), it.next()); // identifier extension
+        assertEquals(Format.UNKNOWN, it.next());    // Content-Type is null
+        assertEquals(Format.get("jpg"), it.next()); // magic bytes
         assertThrows(NoSuchElementException.class, it::next);
     }
 
@@ -478,6 +519,7 @@ abstract class HttpSourceTest extends AbstractSourceTest {
         assertEquals("secret", actual.getSecret());
         Headers headers = actual.getHeaders();
         assertEquals("yes", headers.getFirstValue("X-Custom"));
+        assertTrue(actual.isSendingHeadRequest());
     }
 
     @Test
@@ -558,44 +600,51 @@ abstract class HttpSourceTest extends AbstractSourceTest {
         assertNotNull(instance.newStreamFactory());
     }
 
+    /**
+     * Simulates a full usage cycle, checking that no unnecessary requests are
+     * made.
+     */
     @Test
-    void testNoUnnecessaryRequests() throws Exception {
-        final AtomicInteger numHEADRequests = new AtomicInteger(0);
-        final AtomicInteger numGETRequests  = new AtomicInteger(0);
-
-        server.setHandler(new DefaultHandler() {
-            @Override
-            public void handle(String target,
-                               Request baseRequest,
-                               HttpServletRequest request,
-                               HttpServletResponse response) {
-                switch (request.getMethod().toUpperCase()) {
-                    case "HEAD":
-                        numHEADRequests.incrementAndGet();
-                        break;
-                    case "GET":
-                        numGETRequests.incrementAndGet();
-                        break;
-                    default:
-                        throw new IllegalArgumentException(
-                                "Unexpected method: " + request.getMethod());
-                }
-                baseRequest.setHandled(true);
-            }
-        });
+    void testNoUnnecessaryRequestsWithHEADRequestsEnabled() throws Exception {
+        final RequestCountingHandler handler = new RequestCountingHandler();
+        server.setHandler(handler);
         server.start();
 
-        instance.checkAccess();
+        instance.stat();
         instance.getFormatIterator().next();
 
         StreamFactory source = instance.newStreamFactory();
         try (InputStream is = source.newInputStream()) {
-            //noinspection ResultOfMethodCallIgnored
-            is.read();
+            is.readAllBytes();
         }
 
-        assertEquals(1, numHEADRequests.get());
-        assertEquals(1, numGETRequests.get());
+        assertEquals(1, handler.numHEADRequests);
+        assertEquals(1, handler.numGETRequests);
+    }
+
+    /**
+     * Simulates a full usage cycle, checking that no unnecessary requests are
+     * made.
+     */
+    @Test
+    void testNoUnnecessaryRequestsWithHEADRequestsDisabled() throws Exception {
+        var config = Configuration.getInstance();
+        config.setProperty(Key.HTTPSOURCE_SEND_HEAD_REQUESTS, false);
+
+        final RequestCountingHandler handler = new RequestCountingHandler();
+        server.setHandler(handler);
+        server.start();
+
+        instance.stat();
+        instance.getFormatIterator().next();
+
+        StreamFactory source = instance.newStreamFactory();
+        try (InputStream is = source.newInputStream()) {
+            is.readAllBytes();
+        }
+
+        assertEquals(0, handler.numHEADRequests);
+        assertEquals(2, handler.numGETRequests);
     }
 
 }

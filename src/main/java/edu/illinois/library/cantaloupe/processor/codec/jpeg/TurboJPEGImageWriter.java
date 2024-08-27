@@ -155,7 +155,7 @@ public final class TurboJPEGImageWriter {
         // Also, JPEG doesn't support alpha, so we have to remove that,
         // otherwise readers will interpret as CMYK.
         if (image.getRaster().getSampleModelTranslateX() < 0 ||
-                image.getRaster().getSampleModelTranslateX() < 0) {
+                image.getRaster().getSampleModelTranslateY() < 0) {
             BufferedImage newImage = new BufferedImage(
                     image.getWidth(), image.getHeight(),
                     BufferedImage.TYPE_INT_RGB);
@@ -166,6 +166,11 @@ public final class TurboJPEGImageWriter {
         }
         image = Java2DUtil.removeAlpha(image, bgColor);
         image = Java2DUtil.convertCustomToRGB(image);
+
+        // Gray subsampling required to handle grayscale input
+        if (image.getType() == BufferedImage.TYPE_BYTE_GRAY) {
+            setSubsampling(TJ.SAMP_GRAY);
+        }
 
         try (TJCompressor tjc = new TJCompressor()) {
             tjc.setSubsamp(subsampling);

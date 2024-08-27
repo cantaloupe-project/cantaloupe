@@ -12,7 +12,10 @@ import edu.illinois.library.cantaloupe.resource.iiif.ImageInfoUtil;
 
 import java.util.Set;
 
-final class ImageInfoFactory {
+/**
+ * Builds new {@link Information} instances.
+ */
+final class InformationFactory {
 
     private static final int MIN_SIZE = 64;
 
@@ -21,11 +24,11 @@ final class ImageInfoFactory {
      */
     private static final int DEFAULT_MIN_TILE_SIZE = 512;
 
-    ImageInfo newImageInfo(final String imageURI,
-                           final Set<Format> availableOutputFormats,
-                           final Info info,
-                           final int imageIndex,
-                           ScaleConstraint scaleConstraint) {
+    Information newImageInfo(final String imageURI,
+                             final Set<Format> availableOutputFormats,
+                             final Info info,
+                             final int imageIndex,
+                             ScaleConstraint scaleConstraint) {
         if (scaleConstraint == null) {
             scaleConstraint = new ScaleConstraint(1, 1);
         }
@@ -59,7 +62,7 @@ final class ImageInfoFactory {
 
         // Create an Info instance, which will eventually be serialized
         // to JSON and sent as the response body.
-        final ImageInfo imageInfo = new ImageInfo();
+        final Information imageInfo = new Information();
         imageInfo.id              = imageURI;
         imageInfo.width           = virtualSize.intWidth();
         imageInfo.height          = virtualSize.intHeight();

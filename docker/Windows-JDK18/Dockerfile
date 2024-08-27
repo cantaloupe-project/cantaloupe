@@ -10,7 +10,8 @@ RUN powershell -Command \
 
 # Install various dependencies
 # TODO: openjpeg
-RUN choco install -y adoptopenjdk18 maven ffmpeg
+RUN choco install -y maven ffmpeg
+RUN choco install -y openjdk --version=18.0.2
 
 # Install TurboJpegProcessor dependencies TODO: libjpeg-turbo
 #RUN mkdir -p /opt/libjpeg-turbo/lib

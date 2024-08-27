@@ -3,8 +3,8 @@ package edu.illinois.library.cantaloupe.processor.codec.tiff;
 import edu.illinois.library.cantaloupe.image.exif.Directory;
 import edu.illinois.library.cantaloupe.image.iptc.DataSet;
 import edu.illinois.library.cantaloupe.image.iptc.Reader;
+import edu.illinois.library.cantaloupe.image.xmp.Utils;
 import edu.illinois.library.cantaloupe.processor.codec.IIOMetadata;
-import edu.illinois.library.cantaloupe.util.StringUtils;
 import it.geosolutions.imageio.plugins.tiff.TIFFDirectory;
 import it.geosolutions.imageio.plugins.tiff.TIFFField;
 import org.slf4j.Logger;
@@ -97,7 +97,7 @@ class TIFFMetadata extends IIOMetadata {
                 xmp = new String(
                         (byte[]) xmpField.getData(),
                         StandardCharsets.UTF_8);
-                xmp = StringUtils.trimXMP(xmp);
+                xmp = Utils.trimXMP(xmp);
             }
         }
         return Optional.ofNullable(xmp);

@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+    <rdf:Description xmlns:Iptc4xmpCore="http://iptc.org/std/Iptc4xmpCore/1.0/xmlns/" xmlns:aux="http://ns.adobe.com/exif/1.0/aux/" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:exif="http://ns.adobe.com/exif/1.0/" xmlns:photoshop="http://ns.adobe.com/photoshop/1.0/" xmlns:xmpRights="http://ns.adobe.com/xap/1.0/rights/" rdf:about="" photoshop:DateCreated="2012-10-03T14:25:41-05:00" photoshop:TransmissionReference="Access Jpeg" photoshop:Credit="JP Goguen" exif:ExifVersion="0221" aux:SerialNumber="EG031306" aux:Firmware="P40+-M, Firmware: Main=5.1.8, Boot=2.3, FPGA=1.2.4, CPLD=5.0.1, PAVR=1.0.3, UIFC=1.0.1, TGEN=1.0">
+        <dc:title>
+            <rdf:Alt>
+                <rdf:li xml:lang="x-default">Illini Union Photographs Record Series 3707005</rdf:li>
+            </rdf:Alt>
+        </dc:title>
+        <dc:creator>
+            <rdf:Seq>
+                <rdf:li>University of Illinois Library</rdf:li>
+            </rdf:Seq>
+        </dc:creator>
+        <Iptc4xmpCore:CreatorContactInfo Iptc4xmpCore:CiAdrExtadr="1408 W. Gregory Drive" Iptc4xmpCore:CiAdrCity="Urbana" Iptc4xmpCore:CiAdrRegion="Illinois" Iptc4xmpCore:CiAdrPcode="61801" Iptc4xmpCore:CiAdrCtry="United States" Iptc4xmpCore:CiTelWork="+1+1(217)2442062" Iptc4xmpCore:CiEmailWork="dcc@library.illinois.edu" Iptc4xmpCore:CiUrlWork="http://www.library.illinois.edu/dcc/" />
+        <Iptc4xmpCore:SubjectCode>
+            <rdf:Bag>
+                <rdf:li>Preservation Master creation</rdf:li>
+                <rdf:li>new subject code</rdf:li>
+            </rdf:Bag>
+        </Iptc4xmpCore:SubjectCode>
+        <xmpRights:UsageTerms>
+            <rdf:Alt>
+                <rdf:li xml:lang="x-default">No reproduction without prior permission</rdf:li>
+            </rdf:Alt>
+        </xmpRights:UsageTerms>
+    </rdf:Description>
+</rdf:RDF>

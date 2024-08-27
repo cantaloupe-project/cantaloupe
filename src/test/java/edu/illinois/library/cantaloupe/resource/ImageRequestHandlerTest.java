@@ -1,5 +1,6 @@
 package edu.illinois.library.cantaloupe.resource;
 
+import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.cache.CacheFacade;
 import edu.illinois.library.cantaloupe.cache.CompletableOutputStream;
 import edu.illinois.library.cantaloupe.cache.DerivativeCache;
@@ -11,29 +12,35 @@ import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.operation.ValidationException;
 import edu.illinois.library.cantaloupe.processor.Processor;
 import edu.illinois.library.cantaloupe.delegate.DelegateProxy;
+import edu.illinois.library.cantaloupe.processor.SourceFormatException;
+import edu.illinois.library.cantaloupe.source.StatResult;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;
+import edu.illinois.library.cantaloupe.test.WebServer;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class ImageRequestHandlerTest extends BaseTest {
+class ImageRequestHandlerTest extends BaseTest {
 
     @Nested
-    public class BuilderTest {
+    class BuilderTest {
 
         @Test
-        void testBuildWithNoOperationListSet() {
+        void buildWithNoOperationListSet() {
             assertThrows(NullPointerException.class, () ->
                     ImageRequestHandler.builder().build());
         }
 
         @Test
-        void testOptionallyWithDelegateProxyWithNonNullArguments() {
+        void optionallyWithDelegateProxyWithNonNullArguments() {
             DelegateProxy proxy = TestUtil.newDelegateProxy();
             ImageRequestHandler handler = ImageRequestHandler.builder()
                     .optionallyWithDelegateProxy(proxy, proxy.getRequestContext())
@@ -44,7 +51,7 @@ public class ImageRequestHandlerTest extends BaseTest {
         }
 
         @Test
-        void testOptionallyWithDelegateProxyWithNullDelegateProxy() {
+        void optionallyWithDelegateProxyWithNullDelegateProxy() {
             RequestContext context = new RequestContext();
             ImageRequestHandler handler = ImageRequestHandler.builder()
                     .optionallyWithDelegateProxy(null, context)
@@ -56,7 +63,7 @@ public class ImageRequestHandlerTest extends BaseTest {
         }
 
         @Test
-        void testOptionallyWithDelegateProxyWithNullRequestContext() {
+        void optionallyWithDelegateProxyWithNullRequestContext() {
             DelegateProxy delegateProxy = TestUtil.newDelegateProxy();
             ImageRequestHandler handler = ImageRequestHandler.builder()
                     .withOperationList(new OperationList())
@@ -68,7 +75,7 @@ public class ImageRequestHandlerTest extends BaseTest {
         }
 
         @Test
-        void testOptionallyWithDelegateProxyWithNullArguments() {
+        void optionallyWithDelegateProxyWithNullArguments() {
             ImageRequestHandler handler = ImageRequestHandler.builder()
                     .withOperationList(new OperationList())
                     .optionallyWithDelegateProxy(null, null)
@@ -79,14 +86,14 @@ public class ImageRequestHandlerTest extends BaseTest {
         }
 
         @Test
-        void testWithDelegateProxyWithNullDelegateProxy() {
+        void withDelegateProxyWithNullDelegateProxy() {
             assertThrows(IllegalArgumentException.class, () ->
                     ImageRequestHandler.builder()
                             .withDelegateProxy(null, new RequestContext()));
         }
 
         @Test
-        void testWithDelegateProxyWithNullRequestContext() {
+        void withDelegateProxyWithNullRequestContext() {
             DelegateProxy delegateProxy = TestUtil.newDelegateProxy();
             assertThrows(IllegalArgumentException.class, () ->
                     ImageRequestHandler.builder()
@@ -97,6 +104,7 @@ public class ImageRequestHandlerTest extends BaseTest {
 
     private static class IntrospectiveCallback implements ImageRequestHandler.Callback {
         private boolean isPreAuthorizeCalled, isAuthorizeCalled,
+                isSourceAccessedCalled,
                 isWillStreamImageFromDerivativeCacheCalled,
                 isInfoAvailableCalled, isWillProcessImageCalled;
 
@@ -110,6 +118,11 @@ public class ImageRequestHandlerTest extends BaseTest {
         public boolean authorize() {
             isAuthorizeCalled = true;
             return true;
+        }
+
+        @Override
+        public void sourceAccessed(StatResult result) {
+            isSourceAccessedCalled = true;
         }
 
         @Override
@@ -129,13 +142,13 @@ public class ImageRequestHandlerTest extends BaseTest {
     }
 
     @Test
-    void testHandleCallsPreAuthorizationCallback() throws Exception {
+    void handleCallsPreAuthorizationCallback() throws Exception {
         {   // Configure the application.
             final Configuration config = Configuration.getInstance();
             config.setProperty(Key.CACHE_SERVER_RESOLVE_FIRST, false);
             config.setProperty(Key.SOURCE_STATIC, "FilesystemSource");
             config.setProperty(Key.FILESYSTEMSOURCE_PATH_PREFIX,
-                    TestUtil.getImagesPath().toString() + "/");
+                    TestUtil.getImagesPath() + "/");
         }
 
         // Configure the request.
@@ -155,13 +168,13 @@ public class ImageRequestHandlerTest extends BaseTest {
     }
 
     @Test
-    void testHandleCallsAuthorizationCallback() throws Exception {
+    void handleCallsAuthorizationCallback() throws Exception {
         {   // Configure the application.
             final Configuration config = Configuration.getInstance();
             config.setProperty(Key.CACHE_SERVER_RESOLVE_FIRST, false);
             config.setProperty(Key.SOURCE_STATIC, "FilesystemSource");
             config.setProperty(Key.FILESYSTEMSOURCE_PATH_PREFIX,
-                    TestUtil.getImagesPath().toString() + "/");
+                    TestUtil.getImagesPath() + "/");
         }
 
         // Configure the request.
@@ -181,13 +194,39 @@ public class ImageRequestHandlerTest extends BaseTest {
     }
 
     @Test
-    void testHandleCallsCacheStreamingCallback() throws Exception {
+    void handleCallsSourceAccessedCallback() throws Exception {
+        { // Configure the application.
+            final Configuration config = Configuration.getInstance();
+            config.setProperty(Key.CACHE_SERVER_RESOLVE_FIRST, false);
+            config.setProperty(Key.SOURCE_STATIC, "FilesystemSource");
+            config.setProperty(Key.FILESYSTEMSOURCE_PATH_PREFIX,
+                    TestUtil.getImagesPath() + "/");
+        }
+
+        // Configure the request.
+        final OperationList opList  = new OperationList();
+        opList.setIdentifier(new Identifier("jpg-rgb-64x48x8.jpg"));
+        opList.add(new Encode(Format.get("jpg")));
+
+        final IntrospectiveCallback callback = new IntrospectiveCallback();
+        try (ImageRequestHandler handler = ImageRequestHandler.builder()
+                .withCallback(callback)
+                .withOperationList(opList)
+                .build();
+             OutputStream outputStream = OutputStream.nullOutputStream()) {
+            handler.handle(outputStream);
+            assertTrue(callback.isSourceAccessedCalled);
+        }
+    }
+
+    @Test
+    void handleCallsCacheStreamingCallback() throws Exception {
         {   // Configure the application.
             final Configuration config = Configuration.getInstance();
             config.setProperty(Key.CACHE_SERVER_RESOLVE_FIRST, false);
             config.setProperty(Key.SOURCE_STATIC, "FilesystemSource");
             config.setProperty(Key.FILESYSTEMSOURCE_PATH_PREFIX,
-                    TestUtil.getImagesPath().toString() + "/");
+                    TestUtil.getImagesPath() + "/");
             config.setProperty(Key.DERIVATIVE_CACHE_ENABLED, true);
             config.setProperty(Key.DERIVATIVE_CACHE, "HeapCache");
         }
@@ -218,7 +257,7 @@ public class ImageRequestHandlerTest extends BaseTest {
         try (CompletableOutputStream os =
                      cache.newDerivativeImageOutputStream(opList)) {
             os.write(new byte[] { 0x35, 0x35, 0x35 });
-            os.setCompletelyWritten(true);
+            os.setComplete(true);
         }
 
         final IntrospectiveCallback callback = new IntrospectiveCallback();
@@ -233,13 +272,13 @@ public class ImageRequestHandlerTest extends BaseTest {
     }
 
     @Test
-    void testHandleCallsInfoAvailableCallback() throws Exception {
+    void handleCallsInfoAvailableCallback() throws Exception {
         { // Configure the application.
             final Configuration config = Configuration.getInstance();
             config.setProperty(Key.CACHE_SERVER_RESOLVE_FIRST, false);
             config.setProperty(Key.SOURCE_STATIC, "FilesystemSource");
             config.setProperty(Key.FILESYSTEMSOURCE_PATH_PREFIX,
-                    TestUtil.getImagesPath().toString() + "/");
+                    TestUtil.getImagesPath() + "/");
         }
 
         // Configure the request.
@@ -259,13 +298,13 @@ public class ImageRequestHandlerTest extends BaseTest {
     }
 
     @Test
-    void testHandleCallsProcessingCallback() throws Exception {
+    void handleCallsProcessingCallback() throws Exception {
         { // Configure the application.
             final Configuration config = Configuration.getInstance();
             config.setProperty(Key.CACHE_SERVER_RESOLVE_FIRST, false);
             config.setProperty(Key.SOURCE_STATIC, "FilesystemSource");
             config.setProperty(Key.FILESYSTEMSOURCE_PATH_PREFIX,
-                    TestUtil.getImagesPath().toString() + "/");
+                    TestUtil.getImagesPath() + "/");
         }
 
         // Configure the request.
@@ -285,12 +324,12 @@ public class ImageRequestHandlerTest extends BaseTest {
     }
 
     @Test
-    void testHandleProcessesImage() throws Exception {
+    void handleProcessesImage() throws Exception {
         { // Configure the application.
             final Configuration config = Configuration.getInstance();
             config.setProperty(Key.SOURCE_STATIC, "FilesystemSource");
             config.setProperty(Key.FILESYSTEMSOURCE_PATH_PREFIX,
-                    TestUtil.getImagesPath().toString() + "/");
+                    TestUtil.getImagesPath() + "/");
         }
 
         // Configure the request.
@@ -310,13 +349,13 @@ public class ImageRequestHandlerTest extends BaseTest {
     }
 
     @Test
-    void testHandleStreamsFromDerivativeCache() throws Exception {
+    void handleStreamsFromDerivativeCache() throws Exception {
         {   // Configure the application.
             final Configuration config = Configuration.getInstance();
             config.setProperty(Key.CACHE_SERVER_RESOLVE_FIRST, false);
             config.setProperty(Key.SOURCE_STATIC, "FilesystemSource");
             config.setProperty(Key.FILESYSTEMSOURCE_PATH_PREFIX,
-                    TestUtil.getImagesPath().toString() + "/");
+                    TestUtil.getImagesPath() + "/");
             config.setProperty(Key.DERIVATIVE_CACHE_ENABLED, true);
             config.setProperty(Key.DERIVATIVE_CACHE, "HeapCache");
         }
@@ -348,7 +387,7 @@ public class ImageRequestHandlerTest extends BaseTest {
         try (CompletableOutputStream os =
                      cache.newDerivativeImageOutputStream(opList)) {
             os.write(expected);
-            os.setCompletelyWritten(true);
+            os.setComplete(true);
         }
 
         final IntrospectiveCallback callback = new IntrospectiveCallback();
@@ -363,12 +402,12 @@ public class ImageRequestHandlerTest extends BaseTest {
     }
 
     @Test
-    void testHandleWithFailedPreAuthorization() throws Exception {
+    void handleWithFailedPreAuthorization() throws Exception {
         { // Configure the application.
             final Configuration config = Configuration.getInstance();
             config.setProperty(Key.SOURCE_STATIC, "FilesystemSource");
             config.setProperty(Key.FILESYSTEMSOURCE_PATH_PREFIX,
-                    TestUtil.getImagesPath().toString() + "/");
+                    TestUtil.getImagesPath() + "/");
         }
 
         // Configure the request.
@@ -385,6 +424,9 @@ public class ImageRequestHandlerTest extends BaseTest {
                     @Override
                     public boolean authorize() {
                         return true;
+                    }
+                    @Override
+                    public void sourceAccessed(StatResult result) {
                     }
                     @Override
                     public void willStreamImageFromDerivativeCache() {
@@ -405,12 +447,12 @@ public class ImageRequestHandlerTest extends BaseTest {
     }
 
     @Test
-    void testHandleWithFailedAuthorization() throws Exception {
+    void handleWithFailedAuthorization() throws Exception {
         { // Configure the application.
             final Configuration config = Configuration.getInstance();
             config.setProperty(Key.SOURCE_STATIC, "FilesystemSource");
             config.setProperty(Key.FILESYSTEMSOURCE_PATH_PREFIX,
-                    TestUtil.getImagesPath().toString() + "/");
+                    TestUtil.getImagesPath() + "/");
         }
 
         // Configure the request.
@@ -427,6 +469,9 @@ public class ImageRequestHandlerTest extends BaseTest {
                     @Override
                     public boolean authorize() {
                         return false;
+                    }
+                    @Override
+                    public void sourceAccessed(StatResult result) {
                     }
                     @Override
                     public void willStreamImageFromDerivativeCache() {
@@ -447,12 +492,12 @@ public class ImageRequestHandlerTest extends BaseTest {
     }
 
     @Test
-    void testHandleWithIllegalPageIndex() throws Exception {
+    void handleWithIllegalPageIndex() throws Exception {
         { // Configure the application.
             final Configuration config = Configuration.getInstance();
             config.setProperty(Key.SOURCE_STATIC, "FilesystemSource");
             config.setProperty(Key.FILESYSTEMSOURCE_PATH_PREFIX,
-                    TestUtil.getImagesPath().toString() + "/");
+                    TestUtil.getImagesPath() + "/");
         }
 
         // Configure the request.
@@ -474,12 +519,12 @@ public class ImageRequestHandlerTest extends BaseTest {
     }
 
     @Test
-    void testHandleWithInvalidOperationList() throws Exception {
+    void handleWithInvalidOperationList() throws Exception {
         { // Configure the application.
             final Configuration config = Configuration.getInstance();
             config.setProperty(Key.SOURCE_STATIC, "FilesystemSource");
             config.setProperty(Key.FILESYSTEMSOURCE_PATH_PREFIX,
-                    TestUtil.getImagesPath().toString() + "/");
+                    TestUtil.getImagesPath() + "/");
         }
 
         // Configure the request.
@@ -494,6 +539,134 @@ public class ImageRequestHandlerTest extends BaseTest {
              ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
             assertThrows(ValidationException.class, () ->
                     handler.handle(outputStream));
+        }
+    }
+
+    @Test
+    void handleDeletesIncompatibleSourceCachedImageWhenSoConfigured()
+            throws Exception {
+        final WebServer server = new WebServer();
+        try {
+            server.start();
+
+            {   // Configure the application.
+                final Configuration config = Configuration.getInstance();
+                config.setProperty(Key.SOURCE_STATIC, "HttpSource");
+                config.setProperty(Key.HTTPSOURCE_URL_PREFIX,
+                        server.getHTTPURI().toString() + "/");
+                config.setProperty(Key.PROCESSOR_FALLBACK,
+                        edu.illinois.library.cantaloupe.processor.MockStreamProcessor.class.getName());
+                config.setProperty(Key.PROCESSOR_STREAM_RETRIEVAL_STRATEGY,
+                        "CacheStrategy");
+                config.setProperty(Key.PROCESSOR_PURGE_INCOMPATIBLE_FROM_SOURCE_CACHE,
+                        true); // what this test is testing
+                config.setProperty(Key.SOURCE_CACHE, "FilesystemCache");
+                config.setProperty(Key.SOURCE_CACHE_TTL, 300);
+                config.setProperty(Key.FILESYSTEMCACHE_PATHNAME,
+                        Application.getTempPath().toString());
+            }
+
+            // Configure the request.
+            final OperationList opList = new OperationList();
+            final Identifier identifier = new Identifier("jpg-rgb-64x48x8.jpg");
+            final Metadata metadata = new Metadata();
+            opList.setIdentifier(identifier);
+            Encode encode = new Encode(Format.get("jpg"));
+            encode.setCompression(Compression.JPEG);
+            encode.setQuality(80);
+            encode.setMetadata(metadata);
+            opList.add(encode);
+
+            final CacheFacade cacheFacade = new CacheFacade();
+
+            try (ImageRequestHandler handler = ImageRequestHandler.builder()
+                    .withOperationList(opList)
+                    .build();
+                 OutputStream outputStream = OutputStream.nullOutputStream()) {
+                // The first request should cause the source image to be
+                // source-cached...
+                handler.handle(outputStream);
+                // Overwrite the source-cached image with garbage, destroying
+                // any format-signifying magic bytes.
+                Path file = cacheFacade.getSourceCacheFile(identifier).get();
+                Files.write(file, "This is garbage".getBytes(StandardCharsets.UTF_8));
+                // Send the same request again. The source cache will be
+                // consulted instead of the source.
+                handler.handle(outputStream);
+                fail("Expected a SourceFormatException");
+            } catch (SourceFormatException e) {
+                // The delete happens asynchronously, so give it some time.
+                Thread.sleep(2000);
+                assertFalse(cacheFacade.getSourceCacheFile(identifier).isPresent());
+            }
+        } finally {
+            server.stop();
+        }
+    }
+
+    @Test
+    void handleDoesNotDeleteIncompatibleSourceCachedImageWhenNotConfiguredTo()
+            throws Exception {
+        final WebServer server = new WebServer();
+        try {
+            server.start();
+
+            {   // Configure the application.
+                final Configuration config = Configuration.getInstance();
+                config.setProperty(Key.SOURCE_STATIC, "HttpSource");
+                config.setProperty(Key.HTTPSOURCE_URL_PREFIX,
+                        server.getHTTPURI().toString() + "/");
+                config.setProperty(Key.PROCESSOR_FALLBACK,
+                        edu.illinois.library.cantaloupe.processor.MockStreamProcessor.class.getName());
+                config.setProperty(Key.PROCESSOR_STREAM_RETRIEVAL_STRATEGY,
+                        "CacheStrategy");
+                config.setProperty(Key.PROCESSOR_PURGE_INCOMPATIBLE_FROM_SOURCE_CACHE,
+                        false); // what this test is testing
+                config.setProperty(Key.SOURCE_CACHE, "FilesystemCache");
+                config.setProperty(Key.SOURCE_CACHE_TTL, 300);
+                config.setProperty(Key.FILESYSTEMCACHE_PATHNAME,
+                        Application.getTempPath().toString());
+            }
+
+            // Configure the request.
+            final OperationList opList = new OperationList();
+            final Identifier identifier = new Identifier("jpg-rgb-64x48x8.jpg");
+            final Metadata metadata = new Metadata();
+            opList.setIdentifier(identifier);
+            Encode encode = new Encode(Format.get("jpg"));
+            encode.setCompression(Compression.JPEG);
+            encode.setQuality(80);
+            encode.setMetadata(metadata);
+            opList.add(encode);
+
+            final CacheFacade cacheFacade = new CacheFacade();
+
+            try (ImageRequestHandler handler = ImageRequestHandler.builder()
+                    .withOperationList(opList)
+                    .build();
+                 OutputStream outputStream = OutputStream.nullOutputStream()) {
+                // The first request should cause the source image to be
+                // source-cached...
+                handler.handle(outputStream);
+                // Overwrite the source-cached image with garbage, destroying
+                // any format-signifying magic bytes.
+                Path file = cacheFacade.getSourceCacheFile(identifier).get();
+                Files.write(file, "This is garbage".getBytes(StandardCharsets.UTF_8));
+                // Send the same request again. The source cache will be
+                // consulted instead of the source.
+                handler.handle(outputStream);
+                fail("Expected a SourceFormatException");
+            } catch (SourceFormatException e) {
+                // The source-cached file is not supposed to get deleted, but
+                // it will happen asynchronously if it does, so give it some
+                // time.
+                Thread.sleep(2000);
+                Path file = cacheFacade.getSourceCacheFile(identifier).get();
+                assertTrue(Files.exists(file));
+                Files.delete(file);
+            }
+        } finally {
+            server.stop();
         }
     }
 

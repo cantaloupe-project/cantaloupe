@@ -253,6 +253,16 @@ final class JRubyDelegateProxy implements DelegateProxy {
     }
 
     /**
+     * @return Return value of {@link DelegateMethod#JDBCSOURCE_LAST_MODIFIED}.
+     * @since 6.0
+     */
+    @Override
+    public String getJdbcSourceLastModified() throws ScriptException {
+        Object result = invoke(DelegateMethod.JDBCSOURCE_LAST_MODIFIED);
+        return (String) result;
+    }
+
+    /**
      * @return Return value of {@link DelegateMethod#JDBCSOURCE_MEDIA_TYPE}.
      */
     @Override

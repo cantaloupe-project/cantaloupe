@@ -1,7 +1,7 @@
 package edu.illinois.library.cantaloupe.processor.codec.png;
 
+import edu.illinois.library.cantaloupe.image.xmp.Utils;
 import edu.illinois.library.cantaloupe.processor.codec.IIOMetadata;
-import edu.illinois.library.cantaloupe.util.StringUtils;
 import org.w3c.dom.NodeList;
 
 import javax.imageio.metadata.IIOMetadataNode;
@@ -71,7 +71,7 @@ class PNGMetadata extends IIOMetadata {
                                 .getAttribute("text")
                                 .getBytes(Charset.forName("UTF-8"));
                         xmp = new String(xmpBytes, StandardCharsets.UTF_8);
-                        xmp = StringUtils.trimXMP(xmp);
+                        xmp = Utils.trimXMP(xmp);
                     }
                 }
             }

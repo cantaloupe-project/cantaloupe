@@ -1,4 +1,4 @@
-package edu.illinois.library.cantaloupe.resource.iiif.v2;
+package edu.illinois.library.cantaloupe.resource.iiif.v3;
 
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Info;
@@ -12,26 +12,24 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class ImageInfoFactoryTest extends BaseTest {
+public class InformationFactoryTest extends BaseTest {
 
-    private static final Set<Format> PROCESSOR_FORMATS = Set.of(
-            Format.get("gif"), Format.get("jpg"), Format.get("png"));
+    private static final Set<Format> PROCESSOR_FORMATS =
+            Set.of(Format.get("gif"), Format.get("jpg"), Format.get("png"));
 
-    private ImageInfoFactory instance;
+    private InformationFactory instance;
 
     @BeforeEach
     public void setUp() throws Exception {
         super.setUp();
-
-        instance = new ImageInfoFactory();
+        instance = new InformationFactory();
     }
 
-    private ImageInfo<String,Object> invokeNewImageInfo() {
+    private Information<String,Object> invokeNewImageInfo() {
         final String imageURI = "http://example.org/bla";
         final Info info = Info.builder().withSize(1500, 1200).build();
         return instance.newImageInfo(PROCESSOR_FORMATS, imageURI, info, 0,
@@ -40,26 +38,38 @@ public class ImageInfoFactoryTest extends BaseTest {
 
     @Test
     void testNewImageInfoContext() {
-        ImageInfo<String,Object> info = invokeNewImageInfo();
-        assertEquals("http://iiif.io/api/image/2/context.json",
+        Information<String,Object> info = invokeNewImageInfo();
+        assertEquals("http://iiif.io/api/image/3/context.json",
                 info.get("@context"));
     }
 
     @Test
     void testNewImageInfoID() {
-        ImageInfo<String,Object> info = invokeNewImageInfo();
-        assertEquals("http://example.org/bla", info.get("@id"));
+        Information<String,Object> info = invokeNewImageInfo();
+        assertEquals("http://example.org/bla", info.get("id"));
+    }
+
+    @Test
+    void testNewImageInfoType() {
+        Information<String,Object> info = invokeNewImageInfo();
+        assertEquals("ImageService3", info.get("type"));
     }
 
     @Test
     void testNewImageInfoProtocol() {
-        ImageInfo<String,Object> info = invokeNewImageInfo();
+        Information<String,Object> info = invokeNewImageInfo();
         assertEquals("http://iiif.io/api/image", info.get("protocol"));
     }
 
     @Test
+    void testNewImageInfoProfile() {
+        Information<String,Object> info = invokeNewImageInfo();
+        assertEquals("level2", info.get("profile"));
+    }
+
+    @Test
     void testNewImageInfoWidth() {
-        ImageInfo<String,Object> info = invokeNewImageInfo();
+        Information<String,Object> info = invokeNewImageInfo();
         assertEquals(1500, info.get("width"));
     }
 
@@ -75,10 +85,11 @@ public class ImageInfoFactoryTest extends BaseTest {
                     }
                 })
                 .build();
-        ImageInfo<String, Object> imageInfo = instance.newImageInfo(
-                PROCESSOR_FORMATS, imageURI, info, 0, new ScaleConstraint(1, 1));
+        Information<String, Object> iiifInfo = instance.newImageInfo(
+                PROCESSOR_FORMATS, imageURI, info,
+                0, new ScaleConstraint(1, 1));
 
-        assertEquals(1200, imageInfo.get("width"));
+        assertEquals(1200, iiifInfo.get("width"));
     }
 
     @Test
@@ -87,15 +98,16 @@ public class ImageInfoFactoryTest extends BaseTest {
         final Info info = Info.builder()
                 .withSize(1499, 1199) // test rounding
                 .build();
-        ImageInfo<String, Object> imageInfo = instance.newImageInfo(
-                PROCESSOR_FORMATS, imageURI, info, 0, new ScaleConstraint(1, 2));
+        Information<String, Object> iiifInfo = instance.newImageInfo(
+                PROCESSOR_FORMATS, imageURI, info, 0,
+                new ScaleConstraint(1, 2));
 
-        assertEquals(750, imageInfo.get("width"));
+        assertEquals(750, iiifInfo.get("width"));
     }
 
     @Test
     void testNewImageInfoHeight() {
-        ImageInfo<String,Object> info = invokeNewImageInfo();
+        Information<String,Object> info = invokeNewImageInfo();
         assertEquals(1200, info.get("height"));
     }
 
@@ -111,10 +123,11 @@ public class ImageInfoFactoryTest extends BaseTest {
                     }
                 })
                 .build();
-        ImageInfo<String, Object> imageInfo = instance.newImageInfo(
-                PROCESSOR_FORMATS, imageURI, info, 0, new ScaleConstraint(1, 1));
+        Information<String, Object> iiifInfo = instance.newImageInfo(
+                PROCESSOR_FORMATS, imageURI, info, 0,
+                new ScaleConstraint(1, 1));
 
-        assertEquals(1500, imageInfo.get("height"));
+        assertEquals(1500, iiifInfo.get("height"));
     }
 
     @Test
@@ -123,19 +136,82 @@ public class ImageInfoFactoryTest extends BaseTest {
         final Info info = Info.builder()
                 .withSize(1499, 1199) // test rounding
                 .build();
-        ImageInfo<String, Object> imageInfo = instance.newImageInfo(
-                PROCESSOR_FORMATS, imageURI, info, 0, new ScaleConstraint(1, 2));
+        Information<String, Object> iiifInfo = instance.newImageInfo(
+                PROCESSOR_FORMATS, imageURI, info, 0,
+                new ScaleConstraint(1, 2));
 
-        assertEquals(600, imageInfo.get("height"));
+        assertEquals(600, iiifInfo.get("height"));
+    }
+
+    @Test
+    void testNewImageInfoMaxAreaWithPositiveMaxPixelsGreaterThanAndPositiveMaxScale() {
+        final long maxPixels = 1000;
+        final double maxScale = 1.2;
+        instance.setMaxPixels(maxPixels);
+        instance.setMaxScale(maxScale);
+
+        Information<String, Object> iiifInfo = invokeNewImageInfo();
+        assertEquals(maxPixels, iiifInfo.get("maxArea"));
+    }
+
+    @Test
+    void testNewImageInfoMaxAreaWithPositiveMaxPixelsLessThanPositiveMaxScale() {
+        final long maxPixels = 100;
+        final double maxScale = 50;
+        instance.setMaxPixels(maxPixels);
+        instance.setMaxScale(maxScale);
+
+        Information<String, Object> iiifInfo = invokeNewImageInfo();
+        assertEquals(maxPixels, iiifInfo.get("maxArea")); // TODO: fix
+    }
+
+    @Test
+    void testNewImageInfoMaxAreaWithPositiveMaxPixelsAndZeroMaxScale() {
+        final long maxPixels = 100;
+        instance.setMaxPixels(maxPixels);
+
+        Information<String, Object> iiifInfo = invokeNewImageInfo();
+        assertEquals(maxPixels, iiifInfo.get("maxArea"));
+    }
+
+    @Test
+    void testNewImageInfoMaxAreaWithZeroMaxPixelsAndPositiveMaxScale() {
+        final double maxScale = 2;
+        instance.setMaxPixels(0);
+        instance.setMaxScale(maxScale);
+
+        Information<String, Object> iiifInfo = invokeNewImageInfo();
+        assertEquals(Math.round(1500 * 1200 * maxScale),
+                iiifInfo.get("maxArea"));
+    }
+
+    @Test
+    void testNewImageInfoMaxAreaWithZeroMaxPixelsAndZeroMaxScale() {
+        final int maxPixels = 0;
+        instance.setMaxScale(0);
+        instance.setMaxPixels(maxPixels);
+
+        Information<String, Object> iiifInfo = invokeNewImageInfo();
+        assertFalse(iiifInfo.containsKey("maxArea"));
+    }
+
+    @Test
+    void testNewImageInfoMaxAreaWithAllowUpscalingDisabled() {
+        final int maxPixels = 2000000;
+        instance.setMaxPixels(maxPixels);
+        instance.setMaxScale(1);
+
+        Information<String, Object> iiifInfo = invokeNewImageInfo();
+        assertEquals((long) Math.round(1500 * 1200), iiifInfo.get("maxArea"));
     }
 
     @Test
     void testNewImageInfoSizes() {
-        ImageInfo<String, Object> imageInfo = invokeNewImageInfo();
+        Information<String, Object> iiifInfo = invokeNewImageInfo();
 
         @SuppressWarnings("unchecked")
-        List<ImageInfo.Size> sizes =
-                (List<ImageInfo.Size>) imageInfo.get("sizes");
+        List<Information.Size> sizes =
+                (List<Information.Size>) iiifInfo.get("sizes");
         assertEquals(5, sizes.size());
         assertEquals(94, (int) sizes.get(0).width);
         assertEquals(75, (int) sizes.get(0).height);
@@ -152,11 +228,11 @@ public class ImageInfoFactoryTest extends BaseTest {
     @Test
     void testNewImageInfoSizesMinSize() {
         instance.setMinSize(500);
-        ImageInfo<String, Object> imageInfo = invokeNewImageInfo();
+        Information<String, Object> iiifInfo = invokeNewImageInfo();
 
         @SuppressWarnings("unchecked")
-        List<ImageInfo.Size> sizes =
-                (List<ImageInfo.Size>) imageInfo.get("sizes");
+        List<Information.Size> sizes =
+                (List<Information.Size>) iiifInfo.get("sizes");
         assertEquals(2, sizes.size());
         assertEquals(750, (int) sizes.get(0).width);
         assertEquals(600, (int) sizes.get(0).height);
@@ -167,11 +243,11 @@ public class ImageInfoFactoryTest extends BaseTest {
     @Test
     void testNewImageInfoSizesMaxSize() {
         instance.setMaxPixels(10000);
-        ImageInfo<String, Object> imageInfo = invokeNewImageInfo();
+        Information<String, Object> iiifInfo = invokeNewImageInfo();
 
         @SuppressWarnings("unchecked")
-        List<ImageInfo.Size> sizes =
-                (List<ImageInfo.Size>) imageInfo.get("sizes");
+        List<Information.Size> sizes =
+                (List<Information.Size>) iiifInfo.get("sizes");
         assertEquals(1, sizes.size());
         assertEquals(94, (int) sizes.get(0).width);
         assertEquals(75, (int) sizes.get(0).height);
@@ -189,12 +265,13 @@ public class ImageInfoFactoryTest extends BaseTest {
                     }
                 })
                 .build();
-        ImageInfo<String, Object> imageInfo = instance.newImageInfo(
-                PROCESSOR_FORMATS, imageURI, info, 0, new ScaleConstraint(1, 1));
+        Information<String, Object> iiifInfo = instance.newImageInfo(
+                PROCESSOR_FORMATS, imageURI, info, 0,
+                new ScaleConstraint(1, 1));
 
         @SuppressWarnings("unchecked")
-        List<ImageInfo.Size> sizes =
-                (List<ImageInfo.Size>) imageInfo.get("sizes");
+        List<Information.Size> sizes =
+                (List<Information.Size>) iiifInfo.get("sizes");
         assertEquals(5, sizes.size());
         assertEquals(75, (int) sizes.get(0).width);
         assertEquals(94, (int) sizes.get(0).height);
@@ -214,12 +291,13 @@ public class ImageInfoFactoryTest extends BaseTest {
         final Info info = Info.builder()
                 .withSize(1500, 1200)
                 .build();
-        ImageInfo<String, Object> imageInfo = instance.newImageInfo(
-                PROCESSOR_FORMATS, imageURI, info, 0, new ScaleConstraint(1, 2));
+        Information<String, Object> iiifInfo = instance.newImageInfo(
+                PROCESSOR_FORMATS, imageURI, info, 0,
+                new ScaleConstraint(1, 2));
 
         @SuppressWarnings("unchecked")
-        List<ImageInfo.Size> sizes =
-                (List<ImageInfo.Size>) imageInfo.get("sizes");
+        List<Information.Size> sizes =
+                (List<Information.Size>) iiifInfo.get("sizes");
         assertEquals(4, sizes.size());
         assertEquals(94, (int) sizes.get(0).width);
         assertEquals(75, (int) sizes.get(0).height);
@@ -233,11 +311,11 @@ public class ImageInfoFactoryTest extends BaseTest {
 
     @Test
     void testNewImageInfoTilesWithUntiledMonoResolutionImage() {
-        ImageInfo<String, Object> imageInfo = invokeNewImageInfo();
+        Information<String, Object> iiifInfo = invokeNewImageInfo();
 
         @SuppressWarnings("unchecked")
-        List<ImageInfo.Tile> tiles =
-                (List<ImageInfo.Tile>) imageInfo.get("tiles");
+        List<Information.Tile> tiles =
+                (List<Information.Tile>) iiifInfo.get("tiles");
         assertEquals(1, tiles.size());
         assertEquals(512, (int) tiles.get(0).width);
         assertEquals(512, (int) tiles.get(0).height);
@@ -257,12 +335,13 @@ public class ImageInfoFactoryTest extends BaseTest {
                 .withSize(3000, 2000)
                 .withNumResolutions(3)
                 .build();
-        ImageInfo<String, Object> imageInfo = instance.newImageInfo(
-                PROCESSOR_FORMATS, imageURI, info, 0, new ScaleConstraint(1, 1));
+        Information<String, Object> iiifInfo = instance.newImageInfo(
+                PROCESSOR_FORMATS, imageURI, info, 0,
+                new ScaleConstraint(1, 1));
 
         @SuppressWarnings("unchecked")
-        List<ImageInfo.Tile> tiles =
-                (List<ImageInfo.Tile>) imageInfo.get("tiles");
+        List<Information.Tile> tiles =
+                (List<Information.Tile>) iiifInfo.get("tiles");
         assertEquals(1, tiles.size());
         assertEquals(512, (int) tiles.get(0).width);
         assertEquals(512, (int) tiles.get(0).height);
@@ -284,12 +363,13 @@ public class ImageInfoFactoryTest extends BaseTest {
                 .withTileSize(1000, 1000)
                 .build();
         instance.setMinTileSize(1000);
-        ImageInfo<String, Object> imageInfo = instance.newImageInfo(
-                PROCESSOR_FORMATS, imageURI, info, 0, new ScaleConstraint(1, 1));
+        Information<String, Object> iiifInfo = instance.newImageInfo(
+                PROCESSOR_FORMATS, imageURI, info, 0,
+                new ScaleConstraint(1, 1));
 
         @SuppressWarnings("unchecked")
-        List<ImageInfo.Tile> tiles =
-                (List<ImageInfo.Tile>) imageInfo.get("tiles");
+        List<Information.Tile> tiles =
+                (List<Information.Tile>) iiifInfo.get("tiles");
         assertEquals(1000, (int) tiles.get(0).width);
         assertEquals(1000, (int) tiles.get(0).height);
     }
@@ -307,12 +387,13 @@ public class ImageInfoFactoryTest extends BaseTest {
                 })
                 .withTileSize(64, 56)
                 .build();
-        ImageInfo<String, Object> imageInfo = instance.newImageInfo(
-                PROCESSOR_FORMATS, imageURI, info, 0, new ScaleConstraint(1, 1));
+        Information<String, Object> iiifInfo = instance.newImageInfo(
+                PROCESSOR_FORMATS, imageURI, info, 0,
+                new ScaleConstraint(1, 1));
 
         @SuppressWarnings("unchecked")
-        List<ImageInfo.Tile> tiles =
-                (List<ImageInfo.Tile>) imageInfo.get("tiles");
+        List<Information.Tile> tiles =
+                (List<Information.Tile>) iiifInfo.get("tiles");
         assertEquals(56, (int) tiles.get(0).width);
         assertEquals(64, (int) tiles.get(0).height);
     }
@@ -324,12 +405,13 @@ public class ImageInfoFactoryTest extends BaseTest {
                 .withSize(64, 56)
                 .withTileSize(64, 56)
                 .build();
-        ImageInfo<String, Object> imageInfo = instance.newImageInfo(
-                PROCESSOR_FORMATS, imageURI, info, 0, new ScaleConstraint(1, 2));
+        Information<String, Object> iiifInfo = instance.newImageInfo(
+                PROCESSOR_FORMATS, imageURI, info, 0,
+                new ScaleConstraint(1, 2));
 
         @SuppressWarnings("unchecked")
-        List<ImageInfo.Tile> tiles =
-                (List<ImageInfo.Tile>) imageInfo.get("tiles");
+        List<Information.Tile> tiles =
+                (List<Information.Tile>) iiifInfo.get("tiles");
         assertEquals(32, (int) tiles.get(0).width);
         assertEquals(28, (int) tiles.get(0).height);
     }
@@ -341,12 +423,13 @@ public class ImageInfoFactoryTest extends BaseTest {
                 .withSize(64, 56)
                 .withTileSize(64, 56)
                 .build();
-        ImageInfo<String, Object> imageInfo = instance.newImageInfo(
-                PROCESSOR_FORMATS, imageURI, info, 0, new ScaleConstraint(1, 1));
+        Information<String, Object> iiifInfo = instance.newImageInfo(
+                PROCESSOR_FORMATS, imageURI, info, 0,
+                new ScaleConstraint(1, 1));
 
         @SuppressWarnings("unchecked")
-        List<ImageInfo.Tile> tiles =
-                (List<ImageInfo.Tile>) imageInfo.get("tiles");
+        List<Information.Tile> tiles =
+                (List<Information.Tile>) iiifInfo.get("tiles");
         assertEquals(1, tiles.size());
         assertEquals(64, (int) tiles.get(0).width);
         assertEquals(56, (int) tiles.get(0).height);
@@ -356,106 +439,68 @@ public class ImageInfoFactoryTest extends BaseTest {
     }
 
     @Test
-    void testNewImageInfoProfile() {
-        ImageInfo<String, Object> imageInfo = invokeNewImageInfo();
-        List<?> profile = (List<?>) imageInfo.get("profile");
-        assertEquals("http://iiif.io/api/image/2/level2.json", profile.get(0));
+    void testNewImageInfoExtraQualities() {
+        Information<String, Object> iiifInfo = invokeNewImageInfo();
+        List<?> qualities = (List<?>) iiifInfo.get("extraQualities");
+        assertEquals(3, qualities.size());
+        assertTrue(qualities.contains("color"));
+        assertTrue(qualities.contains("gray"));
+        assertTrue(qualities.contains("bitonal"));
     }
 
     @Test
-    void testNewImageInfoFormats() {
-        ImageInfo<String, Object> imageInfo = invokeNewImageInfo();
-        List<?> profile = (List<?>) imageInfo.get("profile");
-        // If some are present, we will assume the rest are. (The exact
-        // contents of the sets are processor-dependent.)
-        assertTrue(((Set<?>) ((Map<?, ?>) profile.get(1)).get("formats")).contains("gif"));
+    void testNewImageInfoExtraFormats() {
+        Information<String, Object> iiifInfo = invokeNewImageInfo();
+        List<?> formats = (List<?>) iiifInfo.get("extraFormats");
+        assertEquals(1, formats.size());
+        assertTrue(formats.contains("gif"));
     }
 
     @Test
-    void testNewImageInfoQualities() {
-        ImageInfo<String, Object> imageInfo = invokeNewImageInfo();
-        List<?> profile = (List<?>) imageInfo.get("profile");
-        // If some are present, we will assume the rest are. (The exact
-        // contents of the sets are processor-dependent.)
-        assertTrue(((Set<?>) ((Map<?, ?>) profile.get(1)).get("qualities")).contains("color"));
+    void testNewImageInfoExtraFeatures() {
+        Information<String, Object> iiifInfo = invokeNewImageInfo();
+        List<?> features = (List<?>) iiifInfo.get("extraFeatures");
+        assertEquals(17, features.size());
     }
 
     @Test
-    void testNewImageInfoMaxAreaWithPositiveMaxPixels() {
-        final int maxPixels = 100;
-        instance.setMaxPixels(maxPixels);
-
-        ImageInfo<String, Object> imageInfo = invokeNewImageInfo();
-        List<?> profile = (List<?>) imageInfo.get("profile");
-        assertEquals(maxPixels, ((Map<?, ?>) profile.get(1)).get("maxArea"));
-    }
-
-    @Test
-    void testNewImageInfoMaxAreaWithZeroMaxPixels() {
-        final int maxPixels = 0;
-        instance.setMaxPixels(maxPixels);
-
-        ImageInfo<String, Object> imageInfo = invokeNewImageInfo();
-        List<?> profile = (List<?>) imageInfo.get("profile");
-        assertFalse(((Map<?, ?>) profile.get(1)).containsKey("maxArea"));
-    }
-
-    @Test
-    void testNewImageInfoMaxAreaWithAllowUpscalingDisabled() {
-        final int maxPixels = 2000000;
-        instance.setMaxPixels(maxPixels);
+    void testNewImageInfoExtraFeaturesOmitsSizeUpscalingWhenMaxScaleIsLessThanOrEqualTo1() {
         instance.setMaxScale(1.0);
+        Information<String,Object> iiifInfo = invokeNewImageInfo();
 
-        ImageInfo<String, Object> imageInfo = invokeNewImageInfo();
-        List<?> profile = (List<?>) imageInfo.get("profile");
-        assertEquals(1500 * 1200, ((Map<?, ?>) profile.get(1)).get("maxArea"));
+        List<?> features = (List<?>) iiifInfo.get("extraFeatures");
+        assertEquals(16, features.size());
+        assertFalse(features.contains("sizeUpscaling"));
     }
 
     @Test
-    void testNewImageInfoSupports() {
-        ImageInfo<String, Object> imageInfo = invokeNewImageInfo();
-
-        List<?> profile = (List<?>) imageInfo.get("profile");
-        final Set<?> supportsSet = (Set<?>) ((Map<?, ?>) profile.get(1)).get("supports");
-        assertTrue(supportsSet.contains("baseUriRedirect"));
-        assertTrue(supportsSet.contains("canonicalLinkHeader"));
-        assertTrue(supportsSet.contains("cors"));
-        assertTrue(supportsSet.contains("jsonldMediaType"));
-        assertTrue(supportsSet.contains("profileLinkHeader"));
-        assertTrue(supportsSet.contains("sizeByConfinedWh"));
-        assertTrue(supportsSet.contains("sizeByWhListed"));
-    }
-
-    @Test
-    void testNewImageInfoSupportsWhenUpscalingIsAllowed() {
+    void testNewImageInfoExtraFeaturesWhenUpscalingIsAllowed() {
         instance.setMaxScale(9.0);
-        ImageInfo<String, Object> imageInfo = invokeNewImageInfo();
+        Information<String, Object> iiifInfo = invokeNewImageInfo();
 
-        List<?> profile = (List<?>) imageInfo.get("profile");
-        final Set<?> supportsSet = (Set<?>) ((Map<?, ?>) profile.get(1)).get("supports");
-        assertTrue(supportsSet.contains("sizeAboveFull"));
+        List<?> features = (List<?>) iiifInfo.get("extraFeatures");
+        assertTrue(features.contains("sizeUpscaling"));
     }
 
     @Test
-    void testNewImageInfoSupportsWhenUpscalingIsDisallowed() {
+    void testNewImageInfoExtraFeaturesWhenUpscalingIsDisallowed() {
         instance.setMaxScale(1.0);
-        ImageInfo<String, Object> imageInfo = invokeNewImageInfo();
+        Information<String, Object> iiifInfo = invokeNewImageInfo();
 
-        List<?> profile = (List<?>) imageInfo.get("profile");
-        final Set<?> supportsSet = (Set<?>) ((Map<?, ?>) profile.get(1)).get("supports");
-        assertFalse(supportsSet.contains("sizeAboveFull"));
+        List<?> features = (List<?>) iiifInfo.get("extraFeatures");
+        assertFalse(features.contains("sizeUpscaling"));
     }
 
     @Test
-    void testNewImageInfoSupportsWithScaleConstraint() {
+    void testNewImageInfoExtraFeaturesWithScaleConstraint() {
         final String imageURI = "http://example.org/bla";
         final Info info = Info.builder().withSize(1500, 1200).build();
-        ImageInfo<String, Object> imageInfo = instance.newImageInfo(
-                PROCESSOR_FORMATS, imageURI, info, 0, new ScaleConstraint(1, 4));
+        Information<String, Object> iiifInfo = instance.newImageInfo(
+                PROCESSOR_FORMATS, imageURI, info, 0,
+                new ScaleConstraint(1, 4));
 
-        List<?> profile = (List<?>) imageInfo.get("profile");
-        final Set<?> supportsSet = (Set<?>) ((Map<?, ?>) profile.get(1)).get("supports");
-        assertFalse(supportsSet.contains("sizeAboveFull"));
+        List<?> features = (List<?>) iiifInfo.get("extraFeatures");
+        assertFalse(features.contains("sizeUpscaling"));
     }
 
     @Test
@@ -463,12 +508,12 @@ public class ImageInfoFactoryTest extends BaseTest {
         DelegateProxy proxy = TestUtil.newDelegateProxy();
         instance.setDelegateProxy(proxy);
 
-        ImageInfo<String, Object> imageInfo = invokeNewImageInfo();
+        Information<String, Object> iiifInfo = invokeNewImageInfo();
 
         assertEquals("Copyright My Great Organization. All rights reserved.",
-                imageInfo.get("attribution"));
+                iiifInfo.get("attribution"));
         assertEquals("http://example.org/license.html",
-                imageInfo.get("license"));
+                iiifInfo.get("license"));
     }
 
 }

@@ -407,7 +407,7 @@ public class InformationResourceTest extends ResourceTest {
 
         String json = response.getBodyAsString();
         ObjectMapper mapper = new ObjectMapper();
-        ImageInfo<?, ?> info = mapper.readValue(json, ImageInfo.class);
+        Information<?, ?> info = mapper.readValue(json, Information.class);
         assertEquals(32, info.get("width"));
         assertEquals(28, info.get("height"));
     }
@@ -458,7 +458,7 @@ public class InformationResourceTest extends ResourceTest {
 
         String json = response.getBodyAsString();
         ObjectMapper mapper = new ObjectMapper();
-        ImageInfo<?, ?> info = mapper.readValue(json, ImageInfo.class);
+        Information<?, ?> info = mapper.readValue(json, Information.class);
         assertEquals("http://localhost:" + getHTTPPort() +
                 Route.IIIF_2_PATH + "/" + IMAGE, info.get("@id"));
     }
@@ -473,7 +473,7 @@ public class InformationResourceTest extends ResourceTest {
 
         String json = response.getBodyAsString();
         ObjectMapper mapper = new ObjectMapper();
-        ImageInfo<?, ?> info = mapper.readValue(json, ImageInfo.class);
+        Information<?, ?> info = mapper.readValue(json, Information.class);
         assertEquals("http://example.org" +
                 Route.IIIF_2_PATH + "/" + IMAGE, info.get("@id"));
     }
@@ -489,7 +489,7 @@ public class InformationResourceTest extends ResourceTest {
 
         String json = response.getBodyAsString();
         ObjectMapper mapper = new ObjectMapper();
-        ImageInfo<?, ?> info = mapper.readValue(json, ImageInfo.class);
+        Information<?, ?> info = mapper.readValue(json, Information.class);
         assertEquals("http://localhost:" + getHTTPPort() +
                 Route.IIIF_2_PATH + path, info.get("@id"));
     }
@@ -505,7 +505,7 @@ public class InformationResourceTest extends ResourceTest {
 
         String json = response.getBodyAsString();
         ObjectMapper mapper = new ObjectMapper();
-        ImageInfo<?, ?> info = mapper.readValue(json, ImageInfo.class);
+        Information<?, ?> info = mapper.readValue(json, Information.class);
         assertEquals("http://localhost:" + getHTTPPort() +
                 Route.IIIF_2_PATH + path, info.get("@id"));
     }
@@ -523,7 +523,7 @@ public class InformationResourceTest extends ResourceTest {
 
         String json = response.getBodyAsString();
         ObjectMapper mapper = new ObjectMapper();
-        ImageInfo<?, ?> info = mapper.readValue(json, ImageInfo.class);
+        Information<?, ?> info = mapper.readValue(json, Information.class);
         assertEquals("http://example.org:8080/cats" +
                 Route.IIIF_2_PATH + "/originalID", info.get("@id"));
     }
@@ -542,7 +542,7 @@ public class InformationResourceTest extends ResourceTest {
 
         String json = response.getBodyAsString();
         ObjectMapper mapper = new ObjectMapper();
-        ImageInfo<?, ?> info = mapper.readValue(json, ImageInfo.class);
+        Information<?, ?> info = mapper.readValue(json, Information.class);
         assertEquals("https://example.net" +
                 Route.IIIF_2_PATH + "/" + IMAGE, info.get("@id"));
     }
@@ -556,7 +556,7 @@ public class InformationResourceTest extends ResourceTest {
         client = newClient("/" + IMAGE + "/info.json");
         Response response = client.send();
         Headers headers = response.getHeaders();
-        assertEquals(7, headers.size());
+        assertEquals(8, headers.size());
 
         // Access-Control-Allow-Origin
         assertEquals("*", headers.getFirstValue("Access-Control-Allow-Origin"));
@@ -567,6 +567,8 @@ public class InformationResourceTest extends ResourceTest {
                 headers.getFirstValue("Content-Type")));
         // Date
         assertNotNull(headers.getFirstValue("Date"));
+        // Last-Modified
+        assertNotNull(headers.getFirstValue("Last-Modified"));
         // Server
         assertNotNull(headers.getFirstValue("Server"));
         // Vary
@@ -581,6 +583,13 @@ public class InformationResourceTest extends ResourceTest {
         // X-Powered-By
         assertEquals(Application.getName() + "/" + Application.getVersion(),
                 headers.getFirstValue("X-Powered-By"));
+    }
+
+    @Test
+    void testGETLastModifiedResponseHeaderWhenDerivativeCacheIsEnabled()
+            throws Exception {
+        URI uri = getHTTPURI("/" + IMAGE + "/info.json");
+        tester.testLastModifiedHeaderWhenDerivativeCacheIsEnabled(uri);
     }
 
     @Test

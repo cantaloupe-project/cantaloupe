@@ -1,12 +1,12 @@
 package edu.illinois.library.cantaloupe.processor.codec.jpeg;
 
-import edu.illinois.library.cantaloupe.image.Metadata;
+import edu.illinois.library.cantaloupe.image.xmp.Utils;
 import edu.illinois.library.cantaloupe.util.ArrayUtils;
-import edu.illinois.library.cantaloupe.util.StringUtils;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.rdf.model.StmtIterator;
+import org.apache.jena.riot.RiotException;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -28,7 +28,7 @@ final class Util {
         try {
             final ByteArrayOutputStream os = new ByteArrayOutputStream();
             final byte[] headerBytes = Constants.STANDARD_XMP_SEGMENT_HEADER;
-            final byte[] xmpBytes = Metadata.encapsulateXMP(xmp).
+            final byte[] xmpBytes = Utils.encapsulateXMP(xmp).
                     getBytes(StandardCharsets.UTF_8);
             // write segment marker
             os.write(Marker.APP1.marker());
@@ -60,12 +60,12 @@ final class Util {
         final int numChunks = xmpChunks.size();
         if (numChunks > 0) {
             standardXMP = new String(xmpChunks.get(0), StandardCharsets.UTF_8);
-            standardXMP = StringUtils.trimXMP(standardXMP);
+            standardXMP = Utils.trimXMP(standardXMP);
             if (numChunks > 1) {
                 String extendedXMP = new String(
                         mergeChunks(xmpChunks.subList(1, numChunks)),
                         StandardCharsets.UTF_8);
-                extendedXMP = StringUtils.trimXMP(extendedXMP);
+                extendedXMP = Utils.trimXMP(extendedXMP);
                 return mergeXMPModels(standardXMP, extendedXMP);
             }
         }
@@ -120,8 +120,18 @@ final class Util {
 
     private static Model readModel(String rdfXML) {
         Model model = ModelFactory.createDefaultModel();
+        String base = null;
         try (StringReader reader = new StringReader(rdfXML)) {
-            model.read(reader, null, "RDF/XML");
+            model.read(reader, base, "RDF/XML");
+        } catch (RiotException exception) {
+            if (exception.getMessage().indexOf("Base URI is null, but there are relative URIs to resolve") != -1) {
+                // Version 4.8+ of jena requires a rdf:about link to not be empty
+                try (StringReader reader = new StringReader(rdfXML)) {
+                    model.read(reader, "http://example.com", "RDF/XML");
+                }    
+            } else {
+                throw exception;
+            }
         }
         return model;
     }
