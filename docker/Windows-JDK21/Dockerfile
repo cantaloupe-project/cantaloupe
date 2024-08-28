@@ -15,7 +15,7 @@ RUN choco install -y openjdk --version=21.0.2
 
 # Install TurboJpegProcessor dependencies TODO: libjpeg-turbo
 #RUN mkdir -p /opt/libjpeg-turbo/lib
-#COPY docker/Windows10-JDK11/image_files/libjpeg-turbo/lib64 c:\windows\system32
+#COPY docker/image_files/libjpeg-turbo/lib64 c:\windows\system32
 
 # Install KakaduNativeProcessor dependencies
 COPY dist/deps/Windows-x86-64/lib/* c:/Windows/System32/
@@ -25,5 +25,5 @@ COPY pom.xml pom.xml
 RUN mvn dependency:resolve
 
 # Copy the code
-COPY docker/Windows-JDK11/image_files/test.properties test.properties
+COPY docker/image_files/test.properties test.properties
 COPY src src

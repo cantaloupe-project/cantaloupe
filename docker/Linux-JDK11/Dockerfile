@@ -25,7 +25,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 # Install TurboJpegProcessor dependencies
 RUN mkdir -p /opt/libjpeg-turbo/lib
-COPY docker/Linux-JDK11/image_files/libjpeg-turbo/lib64 /opt/libjpeg-turbo/lib
+COPY docker/image_files/libjpeg-turbo/lib64 /opt/libjpeg-turbo/lib
 
 # Install KakaduNativeProcessor dependencies
 COPY dist/deps/Linux-x86-64/lib/* /usr/lib/
@@ -49,7 +49,7 @@ COPY ./pom.xml pom.xml
 RUN mvn --quiet dependency:resolve
 
 # Copy the code
-COPY --chown=cantaloupe docker/Linux-JDK11/image_files/test.properties test.properties
+COPY --chown=cantaloupe docker/image_files/test.properties test.properties
 COPY --chown=cantaloupe ./src src
 
 ENTRYPOINT mvn --batch-mode test -Pfreedeps
