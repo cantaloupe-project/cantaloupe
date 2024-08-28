@@ -1,4 +1,4 @@
-FROM ubuntu:lunar
+FROM ubuntu:noble
 
 ARG DEBIAN_FRONTEND=noninteractive
 

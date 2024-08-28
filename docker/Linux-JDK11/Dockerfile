@@ -1,27 +1,27 @@
-FROM ubuntu:lunar
+FROM ubuntu:noble
 
 ARG DEBIAN_FRONTEND=noninteractive
 
 # Install various dependencies
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
-        openjdk-11-jdk-headless \
-		ffmpeg \
-		maven \
-		wget \
-  		libopenjp2-tools \
-                liblcms2-dev \
-                libpng-dev \
-                libzstd-dev \
-                libtiff-dev \
-                libjpeg-dev \
-                zlib1g-dev \
-                libwebp-dev \
-                libimage-exiftool-perl \
-                libgrokj2k1 \
-                grokj2k-tools \ 
-                adduser \
-    && rm -rf /var/lib/apt/lists/*
+  openjdk-11-jdk-headless \
+  ffmpeg \
+  maven \
+  wget \
+  libopenjp2-tools \
+  liblcms2-dev \
+  libpng-dev \
+  libzstd-dev \
+  libtiff-dev \
+  libjpeg-dev \
+  zlib1g-dev \
+  libwebp-dev \
+  libimage-exiftool-perl \
+  libgrokj2k1 \
+  grokj2k-tools \
+  adduser \
+  && rm -rf /var/lib/apt/lists/*
 
 # Install TurboJpegProcessor dependencies
 RUN mkdir -p /opt/libjpeg-turbo/lib
@@ -40,7 +40,7 @@ COPY dist/deps/Linux-x86-64/lib/* /usr/lib/
 ARG user=cantaloupe
 ARG home=/home/$user
 RUN adduser --home $home $user
-RUN chown -R $user $home 
+RUN chown -R $user $home
 USER $user
 WORKDIR $home
 
