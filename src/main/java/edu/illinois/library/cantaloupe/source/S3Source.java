@@ -326,6 +326,7 @@ final class S3Source extends AbstractSource implements Source {
                         .build());
                 objectAttributes              = new S3ObjectAttributes();
                 objectAttributes.length       = response.contentLength();
+                objectAttributes.contentType  = response.contentType();
                 objectAttributes.lastModified = response.lastModified();
             } catch (NoSuchBucketException | NoSuchKeyException e) {
                 throw new NoSuchFileException(info.toString());
