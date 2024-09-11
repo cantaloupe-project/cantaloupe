@@ -11,14 +11,11 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest]
-        java: [jdk11, jdk17, jdk21, jdk22, graalvm]
+        java: [jdk17, jdk21, jdk22, graalvm]
       fail-fast: false
     steps:
       - name: Check out the repository
         uses: actions/checkout@v4
-      - name: Test in Linux JDK 11
-        if: matrix.os == 'ubuntu-latest' && matrix.java == 'jdk11'
-        run: docker compose -f docker/Linux-JDK11/docker-compose.yml up --build --exit-code-from cantaloupe
       - name: Test in Linux JDK 17 (LTS)
         if: matrix.os == 'ubuntu-latest' && matrix.java == 'jdk17'
         run: docker compose -f docker/Linux-JDK17/compose.yaml up --build --exit-code-from cantaloupe
@@ -31,9 +28,6 @@ jobs:
       - name: Test in Linux GraalVM
         if: matrix.os == 'ubuntu-latest' && matrix.java == 'graalvm'
         run: docker compose -f docker/Linux-GraalVM20/compose.yaml up --build --exit-code-from cantaloupe
-      - name: Test in Windows JDK 11
-        if: matrix.os == 'windows-latest' && matrix.java == 'jdk11'
-        run: docker compose -f docker/Windows-JDK11/docker-compose.yml up --build --exit-code-from cantaloupe
       - name: Test in Windows JDK 17 (LTS)
         if: matrix.os == 'windows-latest' && matrix.java == 'jdk17'
         run: docker compose -f docker/Windows-JDK17/compose.yaml up --build --exit-code-from cantaloupe
