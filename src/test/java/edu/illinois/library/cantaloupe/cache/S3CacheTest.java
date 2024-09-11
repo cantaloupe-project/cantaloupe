@@ -33,10 +33,14 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import static org.junit.jupiter.api.Assertions.*;
 import static org.junit.jupiter.api.Assumptions.*;
 
 public class S3CacheTest extends AbstractCacheTest {
+    private static final Logger LOGGER = LoggerFactory.getLogger(S3CacheTest.class);
 
     private enum Service {
         AWS("aws"), MINIO("minio");
@@ -323,10 +327,14 @@ public class S3CacheTest extends AbstractCacheTest {
         // purge everything
         instance.purge();
 
-        // Allow time for purge but not as long as upload
-        Thread.sleep(ASYNC_WAIT / 2);
-
-        // assert that the info has been purged
+        int tries = 0;
+        while (tries < 5 && instance.getInfo(identifier).isPresent()) {
+            LOGGER.debug("Identifier " + identifier + " is still present. Try: " + tries);
+            // Allow time for purge but not as long as upload
+            Thread.sleep(ASYNC_WAIT / 2);
+            tries++;
+        }
+        // If reached here then identifier is probably not going to be deleted async
         assertFalse(instance.getInfo(identifier).isPresent());
 
         // assert that the image has been purged

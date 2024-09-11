@@ -11,7 +11,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest]
-        java: [jdk11, jdk17, jdk18, jdk21, graalvm]
+        java: [jdk11, jdk17, jdk21, jdk22, graalvm]
       fail-fast: false
     steps:
       - name: Check out the repository
@@ -22,9 +22,9 @@ jobs:
       - name: Test in Linux JDK 17 (LTS)
         if: matrix.os == 'ubuntu-latest' && matrix.java == 'jdk17'
         run: docker compose -f docker/Linux-JDK17/compose.yaml up --build --exit-code-from cantaloupe
-      - name: Test in Linux JDK 18
-        if: matrix.os == 'ubuntu-latest' && matrix.java == 'jdk18'
-        run: docker compose -f docker/Linux-JDK18/docker-compose.yml up --build --exit-code-from cantaloupe
+      - name: Test in Linux JDK 22 (non-LTS)
+        if: matrix.os == 'ubuntu-latest' && matrix.java == 'jdk22'
+        run: docker compose -f docker/Linux-JDK22/compose.yaml up --build --exit-code-from cantaloupe
       - name: Test in Linux JDK 21 (LTS)
         if: matrix.os == 'ubuntu-latest' && matrix.java == 'jdk21'
         run: docker compose -f docker/Linux-JDK21/compose.yaml up --build --exit-code-from cantaloupe
@@ -37,9 +37,9 @@ jobs:
       - name: Test in Windows JDK 17 (LTS)
         if: matrix.os == 'windows-latest' && matrix.java == 'jdk17'
         run: docker compose -f docker/Windows-JDK17/compose.yaml up --build --exit-code-from cantaloupe
-      - name: Test in Windows JDK 18
-        if: matrix.os == 'windows-latest' && matrix.java == 'jdk18'
-        run: docker compose -f docker/Windows-JDK18/docker-compose.yml up --build --exit-code-from cantaloupe
+      - name: Test in Windows JDK 22 (non-LTS)
+        if: matrix.os == 'windows-latest' && matrix.java == 'jdk22'
+        run: docker compose -f docker/Windows-JDK22/compose.yaml up --build --exit-code-from cantaloupe
       - name: Test in Windows JDK 21 (LTS)
         if: matrix.os == 'windows-latest' && matrix.java == 'jdk21'
         run: docker compose -f docker/Windows-JDK21/compose.yaml up --build --exit-code-from cantaloupe

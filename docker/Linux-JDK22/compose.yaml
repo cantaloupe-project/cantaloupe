@@ -1,14 +1,13 @@
 #
-# N.B.: docker-compose must be invoked from the project root directory:
+# N.B.: docker compose must be invoked from the project root directory:
 #
-# docker-compose -f path/to/docker-compose.yml up --exit-code-from cantaloupe
+# docker compose -f path/to/compose.yaml up --exit-code-from cantaloupe
 #
-version: '3'
 services:
   cantaloupe:
     build:
       context: ../../
-      dockerfile: $PWD/docker/Linux-JDK18/Dockerfile
+      dockerfile: $PWD/docker/Linux-JDK22/Dockerfile
   minio:
     image: minio/minio
     environment:
