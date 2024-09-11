@@ -423,9 +423,11 @@ final class S3Source extends AbstractSource implements Source {
 
     @Override
     public StreamFactory newStreamFactory() throws IOException {
-        S3ObjectInfo info = getObjectInfo();
-        info.setLength(getObjectAttributes().length);
-        return new S3StreamFactory(info);
+        return new S3StreamFactory(() -> {
+            S3ObjectInfo info = getObjectInfo();
+            info.setLength(getObjectAttributes().length);
+            return info;
+        });
     }
 
     @Override

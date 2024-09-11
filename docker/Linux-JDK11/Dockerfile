@@ -1,31 +1,31 @@
-FROM ubuntu:lunar
+FROM ubuntu:noble
 
 ARG DEBIAN_FRONTEND=noninteractive
 
 # Install various dependencies
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
-        openjdk-11-jdk-headless \
-		ffmpeg \
-		maven \
-		wget \
-  		libopenjp2-tools \
-                liblcms2-dev \
-                libpng-dev \
-                libzstd-dev \
-                libtiff-dev \
-                libjpeg-dev \
-                zlib1g-dev \
-                libwebp-dev \
-                libimage-exiftool-perl \
-                libgrokj2k1 \
-                grokj2k-tools \ 
-                adduser \
-    && rm -rf /var/lib/apt/lists/*
+  openjdk-11-jdk-headless \
+  ffmpeg \
+  maven \
+  wget \
+  libopenjp2-tools \
+  liblcms2-dev \
+  libpng-dev \
+  libzstd-dev \
+  libtiff-dev \
+  libjpeg-dev \
+  zlib1g-dev \
+  libwebp-dev \
+  libimage-exiftool-perl \
+  libgrokj2k1 \
+  grokj2k-tools \
+  adduser \
+  && rm -rf /var/lib/apt/lists/*
 
 # Install TurboJpegProcessor dependencies
 RUN mkdir -p /opt/libjpeg-turbo/lib
-COPY docker/Linux-JDK11/image_files/libjpeg-turbo/lib64 /opt/libjpeg-turbo/lib
+COPY docker/image_files/libjpeg-turbo/lib64 /opt/libjpeg-turbo/lib
 
 # Install KakaduNativeProcessor dependencies
 COPY dist/deps/Linux-x86-64/lib/* /usr/lib/
@@ -40,7 +40,7 @@ COPY dist/deps/Linux-x86-64/lib/* /usr/lib/
 ARG user=cantaloupe
 ARG home=/home/$user
 RUN adduser --home $home $user
-RUN chown -R $user $home 
+RUN chown -R $user $home
 USER $user
 WORKDIR $home
 
@@ -49,7 +49,7 @@ COPY ./pom.xml pom.xml
 RUN mvn --quiet dependency:resolve
 
 # Copy the code
-COPY --chown=cantaloupe docker/Linux-JDK11/image_files/test.properties test.properties
+COPY --chown=cantaloupe docker/image_files/test.properties test.properties
 COPY --chown=cantaloupe ./src src
 
 ENTRYPOINT mvn --batch-mode test -Pfreedeps

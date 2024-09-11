@@ -11,11 +11,11 @@ RUN powershell -Command \
 # Install various dependencies
 # TODO: openjpeg
 RUN choco install -y maven ffmpeg
-RUN choco install -y openjdk --version=18.0.2
+RUN choco install -y openjdk --version=21.0.2
 
 # Install TurboJpegProcessor dependencies TODO: libjpeg-turbo
 #RUN mkdir -p /opt/libjpeg-turbo/lib
-#COPY docker/Windows10-JDK11/image_files/libjpeg-turbo/lib64 c:\windows\system32
+#COPY docker/image_files/libjpeg-turbo/lib64 c:\windows\system32
 
 # Install KakaduNativeProcessor dependencies
 COPY dist/deps/Windows-x86-64/lib/* c:/Windows/System32/
