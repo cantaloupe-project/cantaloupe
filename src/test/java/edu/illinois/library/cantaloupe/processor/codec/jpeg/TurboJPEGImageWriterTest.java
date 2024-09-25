@@ -1,7 +1,7 @@
 package edu.illinois.library.cantaloupe.processor.codec.jpeg;
 
-import edu.illinois.library.cantaloupe.image.Metadata;
 import edu.illinois.library.cantaloupe.image.Rectangle;
+import edu.illinois.library.cantaloupe.image.xmp.Utils;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import edu.illinois.library.cantaloupe.util.Rational;
@@ -104,7 +104,7 @@ public class TurboJPEGImageWriterTest extends BaseTest {
 
             final ByteArrayOutputStream expectedSegment = new ByteArrayOutputStream();
             final byte[] headerBytes = "http://ns.adobe.com/xap/1.0/\0".getBytes();
-            final byte[] xmpBytes = Metadata.encapsulateXMP(xmp).
+            final byte[] xmpBytes = Utils.encapsulateXMP(xmp).
                     getBytes(StandardCharsets.UTF_8);
             // write segment marker
             expectedSegment.write(new byte[]{(byte) 0xff, (byte) 0xe1});
@@ -157,6 +157,39 @@ public class TurboJPEGImageWriterTest extends BaseTest {
     public void testWriteWithBufferedImage() throws Exception {
         Path path = TestUtil.getImage("jpg");
         BufferedImage image = ImageIO.read(path.toFile());
+
+        try (ByteArrayOutputStream os = new ByteArrayOutputStream()) {
+            instance.write(image, os);
+            assertDimensions(os, image.getWidth(), image.getHeight());
+        }
+    }
+
+    /** 
+     * Note the TurboJPEGImageWriter.write method is used in the PDFbox processor
+     */
+    @Test
+    public void testWriteWithBufferedImageYZero() throws Exception {
+        Path path = TestUtil.getImage("jpg");
+        BufferedImage image = ImageIO.read(path.toFile());
+        
+        image =  image.getSubimage(0, 10, 10,10);
+
+        try (ByteArrayOutputStream os = new ByteArrayOutputStream()) {
+            instance.write(image, os);
+            ImageInputStream is = ImageIO.createImageInputStream(new ByteArrayInputStream(os.toByteArray()));
+            image = ImageIO.read(is); // also closes the stream
+            Color color = new Color(image.getRGB(0,0));
+            assertEquals(116, color.getRed(), "Expected a particular color pixel but it wasn't found. Potentially the TurboJPEGImageWriter is returning the wrong image. Red value");
+            assertEquals(151, color.getGreen(), "Expected a particular color pixel but it wasn't found. Potentially the TurboJPEGImageWriter is returning the wrong image. Green value");
+            assertEquals(97, color.getBlue(), "Expected a particular color pixel but it wasn't found. Potentially the TurboJPEGImageWriter is returning the wrong image. Blue value");
+            // ImageIO.write(image, "jpg", new java.io.File("/tmp/test.jpg"));
+        }
+    }
+
+    @Test
+    public void testWriteWithGrayBufferedImage() throws Exception {
+        BufferedImage image = new BufferedImage(50, 50,
+                BufferedImage.TYPE_BYTE_GRAY);
 
         try (ByteArrayOutputStream os = new ByteArrayOutputStream()) {
             instance.write(image, os);

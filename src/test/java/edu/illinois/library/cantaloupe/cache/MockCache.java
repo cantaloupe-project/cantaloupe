@@ -13,7 +13,7 @@ import java.util.Optional;
 class MockCache implements DerivativeCache, SourceCache {
 
     private boolean isCleanUpCalled, isInitializeCalled, isOnCacheWorkerCalled,
-            isPurgeInvalidCalled, isShutdownCalled;
+            isPurgeInfosCalled, isPurgeInvalidCalled, isShutdownCalled;
 
     @Override
     public void cleanUp() {
@@ -46,6 +46,10 @@ class MockCache implements DerivativeCache, SourceCache {
 
     boolean isOnCacheWorkerCalled() {
         return isOnCacheWorkerCalled;
+    }
+
+    public boolean isPurgeInfosCalled() {
+        return isPurgeInfosCalled;
     }
 
     boolean isPurgeInvalidCalled() {
@@ -88,6 +92,11 @@ class MockCache implements DerivativeCache, SourceCache {
 
     @Override
     public void purge(OperationList opList) {}
+
+    @Override
+    public void purgeInfos() {
+        isPurgeInfosCalled = true;
+    }
 
     @Override
     public void purgeInvalid() {

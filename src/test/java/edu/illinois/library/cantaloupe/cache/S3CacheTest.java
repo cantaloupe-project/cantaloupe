@@ -33,10 +33,14 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import static org.junit.jupiter.api.Assertions.*;
 import static org.junit.jupiter.api.Assumptions.*;
 
 public class S3CacheTest extends AbstractCacheTest {
+    private static final Logger LOGGER = LoggerFactory.getLogger(S3CacheTest.class);
 
     private enum Service {
         AWS("aws"), MINIO("minio");
@@ -129,6 +133,25 @@ public class S3CacheTest extends AbstractCacheTest {
         org.apache.commons.configuration.Configuration testConfig =
                 TestUtil.getTestConfig();
         return Service.forKey(testConfig.getString(ConfigurationConstants.S3_SERVICE.getKey()));
+    }
+
+    private void uploadDerivative(OperationList ops1, Path fixture) throws Exception {
+        CompletableOutputStream outputStream = null;
+        try {
+            outputStream = instance.newDerivativeImageOutputStream(ops1);
+            if (outputStream instanceof S3MultipartAsyncOutputStream) {
+                ((S3MultipartAsyncOutputStream)outputStream).observer = this;
+            }    
+            Files.copy(fixture, outputStream);
+            outputStream.setComplete(true);
+        } finally {
+            outputStream.close();
+        }
+        if (outputStream instanceof S3MultipartAsyncOutputStream) {
+            synchronized (outputStream) {
+                outputStream.wait();
+            }
+        }
     }
 
     @BeforeEach
@@ -249,7 +272,7 @@ public class S3CacheTest extends AbstractCacheTest {
         try (CompletableOutputStream os =
                      instance.newDerivativeImageOutputStream(ops)) {
             Files.copy(fixture, os);
-            os.setCompletelyWritten(true);
+            os.setComplete(true);
         }
 
         // Wait for it to finish, hopefully.
@@ -268,6 +291,55 @@ public class S3CacheTest extends AbstractCacheTest {
     }
 
     /* purge() */
+    @Test
+    @Override
+    void testPurge() throws Exception {
+        DerivativeCache instance = newInstance();
+        Identifier identifier = new Identifier(IMAGE);
+        OperationList opList = OperationList.builder()
+                .withIdentifier(identifier)
+                .withOperations(new Encode(Format.get("jpg")))
+                .build();
+        Info info = new Info();
+
+        // assert that a particular image doesn't exist
+        try (InputStream is = instance.newDerivativeImageInputStream(opList)) {
+            assertNull(is);
+        }
+
+        // assert that a particular info doesn't exist
+        assertFalse(instance.getInfo(identifier).isPresent());
+
+        // add the image
+
+        Path fixture = TestUtil.getImage(IMAGE);
+        uploadDerivative(opList, fixture);
+
+        // add the info
+        instance.put(identifier, info);
+
+        Thread.sleep(ASYNC_WAIT);
+
+        // assert that they've been added
+        assertExists(instance, opList);
+        assertNotNull(instance.getInfo(identifier));
+
+        // purge everything
+        instance.purge();
+
+        int tries = 0;
+        while (tries < 5 && instance.getInfo(identifier).isPresent()) {
+            LOGGER.debug("Identifier " + identifier + " is still present. Try: " + tries);
+            // Allow time for purge but not as long as upload
+            Thread.sleep(ASYNC_WAIT / 2);
+            tries++;
+        }
+        // If reached here then identifier is probably not going to be deleted async
+        assertFalse(instance.getInfo(identifier).isPresent());
+
+        // assert that the image has been purged
+        assertNotExists(instance, opList);
+    }
 
     @Test
     void testPurgeWithKeyPrefix() throws Exception {
@@ -298,12 +370,8 @@ public class S3CacheTest extends AbstractCacheTest {
         }
 
         // Add a cached derivative image
-        try (CompletableOutputStream outputStream =
-                     instance.newDerivativeImageOutputStream(opList)) {
-            Path fixture = TestUtil.getImage(IMAGE);
-            Files.copy(fixture, outputStream);
-            outputStream.setCompletelyWritten(true);
-        }
+        Path fixture = TestUtil.getImage(IMAGE);
+        uploadDerivative(opList, fixture);
 
         // Add a cached info
         instance.put(identifier, info);
@@ -316,6 +384,9 @@ public class S3CacheTest extends AbstractCacheTest {
 
         // purge everything
         instance.purge();
+
+        // Allow some time for the purge to succeed
+        Thread.sleep(ASYNC_WAIT / 2);
 
         // assert that the info has been purged
         assertFalse(instance.getInfo(identifier).isPresent());
@@ -338,8 +409,57 @@ public class S3CacheTest extends AbstractCacheTest {
     @Override
     void testPurgeInvalid() throws Exception {
         assumeFalse(SystemUtils.IS_OS_WINDOWS); // TODO: this fails in Windows sometimes
-        super.testPurgeInvalid();
+
+        DerivativeCache instance = newInstance();
+        Identifier id1           = new Identifier(IMAGE);
+        OperationList ops1       = OperationList.builder()
+                .withIdentifier(id1)
+                .withOperations(new Encode(Format.get("jpg")))
+                .build();
+        Info info1 = new Info();
+        Configuration.getInstance().setProperty(Key.DERIVATIVE_CACHE_TTL, 2);
+
+        // add an image
+        Path fixture = TestUtil.getImage(id1.toString());
+        uploadDerivative(ops1, fixture);
+
+        // add an Info
+        instance.put(id1, info1);
+
+        // assert that they've been added
+        assertNotNull(instance.getInfo(id1));
+        assertExists(instance, ops1);
+
+        // wait for them to invalidate
+        Thread.sleep(2100);
+
+        // add another image
+        Path fixture2 = TestUtil.getImage("gif-rgb-64x56x8.gif");
+        OperationList ops2 = OperationList.builder()
+                .withIdentifier(new Identifier(fixture2.getFileName().toString()))
+                .withOperations(new Encode(Format.get("jpg")))
+                .build();
+
+        uploadDerivative(ops2, fixture2);
+
+        // add another info
+        Identifier id2 = new Identifier("cats");
+        instance.put(id2, new Info());
+
+        // assert that they've been added
+        assertNotNull(instance.getInfo(id2));
+        assertExists(instance, ops2);
+
+        instance.purgeInvalid();
+
+        // assert that one image and one info have been purged
+        assertFalse(instance.getInfo(id1).isPresent());
+        assertTrue(instance.getInfo(id2).isPresent());
+        assertNotExists(instance, ops1);
+        assertExists(instance, ops2);
     }
+
+
 
     @Test
     void testPurgeInvalidWithKeyPrefix() throws Exception {
@@ -373,11 +493,7 @@ public class S3CacheTest extends AbstractCacheTest {
                 .withOperations(new Encode(Format.get("jpg")))
                 .build();
         Path fixture = TestUtil.getImage(id1.toString());
-        try (CompletableOutputStream outputStream =
-                     instance.newDerivativeImageOutputStream(ops1)) {
-            Files.copy(fixture, outputStream);
-            outputStream.setCompletelyWritten(true);
-        }
+        uploadDerivative(ops1, fixture);
 
         // add a cached Info
         Info info1 = new Info();

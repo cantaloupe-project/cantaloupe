@@ -88,6 +88,13 @@ public interface DelegateProxy {
     String getJdbcSourceDatabaseIdentifier() throws ScriptException;
 
     /**
+     * @return Return value of {@link DelegateMethod#JDBCSOURCE_LAST_MODIFIED}.
+     *         May be {@code null}.
+     * @since 6.0
+     */
+    String getJdbcSourceLastModified() throws ScriptException;
+
+    /**
      * @return Return value of {@link DelegateMethod#JDBCSOURCE_MEDIA_TYPE}.
      */
     String getJdbcSourceMediaType() throws ScriptException;

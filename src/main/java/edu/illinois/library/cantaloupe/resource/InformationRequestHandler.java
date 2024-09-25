@@ -14,6 +14,7 @@ import edu.illinois.library.cantaloupe.processor.SourceFormatException;
 import edu.illinois.library.cantaloupe.delegate.DelegateProxy;
 import edu.illinois.library.cantaloupe.source.Source;
 import edu.illinois.library.cantaloupe.source.SourceFactory;
+import edu.illinois.library.cantaloupe.source.StatResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -50,7 +51,7 @@ public class InformationRequestHandler extends AbstractRequestHandler
      */
     public static final class Builder {
 
-        private InformationRequestHandler handler;
+        private final InformationRequestHandler handler;
 
         private Builder(InformationRequestHandler handler) {
             this.handler = handler;
@@ -151,7 +152,14 @@ public class InformationRequestHandler extends AbstractRequestHandler
         boolean authorize() throws Exception;
 
         /**
-         * Called when the list of available output formats have been obtained
+         * Called immediately after a source image has been accessed.
+         *
+         * @param result Information about the source image.
+         */
+        void sourceAccessed(StatResult result);
+
+        /**
+         * Called when a list of available output formats has been obtained
          * from a {@link Processor}.
          */
         void knowAvailableOutputFormats(Set<Format> availableOutputFormats);
@@ -166,6 +174,9 @@ public class InformationRequestHandler extends AbstractRequestHandler
         @Override
         public boolean authorize() {
             return true;
+        }
+        @Override
+        public void sourceAccessed(StatResult sourceAvailable) {
         }
         @Override
         public void knowAvailableOutputFormats(Set<Format> availableOutputFormats) {
@@ -249,7 +260,8 @@ public class InformationRequestHandler extends AbstractRequestHandler
         final Optional<Path> optSrcImage = cacheFacade.getSourceCacheFile(identifier);
         if (optSrcImage.isEmpty() || isResolvingFirst()) {
             try {
-                source.checkAccess();
+                StatResult result = source.stat();
+                callback.sourceAccessed(result);
             } catch (NoSuchFileException e) { // this needs to be rethrown!
                 if (config.getBoolean(Key.CACHE_SERVER_PURGE_MISSING, false)) {
                     // If the image was not found, purge it from the cache.

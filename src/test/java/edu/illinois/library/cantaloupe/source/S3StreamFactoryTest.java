@@ -104,10 +104,12 @@ public class S3StreamFactoryTest extends BaseTest {
         configureS3Source();
         seedFixtures();
 
-        S3ObjectInfo info = new S3ObjectInfo(FIXTURE_KEY, bucket());
+        S3ObjectInfo info = new S3ObjectInfo();
+        info.setBucketName(bucket());
+        info.setKey(FIXTURE_KEY);
         info.setLength(1584);
 
-        instance = new S3StreamFactory(info);
+        instance = new S3StreamFactory(() -> info);
     }
 
     @Test

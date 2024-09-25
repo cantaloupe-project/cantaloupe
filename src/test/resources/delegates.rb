@@ -2,6 +2,7 @@
 
 require 'java'
 require 'uri'
+require 'cgi'
 
 class CustomDelegate
 
@@ -166,11 +167,11 @@ class CustomDelegate
     elsif context['client_ip'] == '1.2.3.4'
       if context['request_headers']['X-Forwarded-Proto'] == 'https'
         return {
-            'uri' => 'https://other-example.org/bleh/' + URI.escape(identifier)
+            'uri' => 'https://other-example.org/bleh/' + CGI.escape(identifier)
         }
       else
         return {
-            'uri' => 'http://other-example.org/bleh/' + URI.escape(identifier)
+            'uri' => 'http://other-example.org/bleh/' + CGI.escape(identifier)
         }
       end
     end
@@ -178,35 +179,39 @@ class CustomDelegate
     case identifier
       when 'http-jpg-rgb-64x56x8-baseline.jpg'
         return {
-            'uri' => 'http://example.org/bla/' + URI.escape(identifier),
+            'uri' => 'http://example.org/bla/' + CGI.escape(identifier),
             'headers' => {
                 'X-Custom' => 'yes'
-            }
+            },
+            'send_head_request' => true
         }
       when 'https-jpg-rgb-64x56x8-baseline.jpg'
         return {
-            'uri' => 'https://example.org/bla/' + URI.escape(identifier),
+            'uri' => 'https://example.org/bla/' + CGI.escape(identifier),
             'headers' => {
                 'X-Custom' => 'yes'
-            }
+            },
+            'send_head_request' => true
         }
       when 'http-jpg-rgb-64x56x8-plane.jpg'
         return {
-            'uri' => 'http://example.org/bla/' + URI.escape(identifier),
+            'uri' => 'http://example.org/bla/' + CGI.escape(identifier),
             'username' => 'username',
             'secret' => 'secret',
             'headers' => {
                 'X-Custom' => 'yes'
-            }
+            },
+            'send_head_request' => true
         }
       when 'https-jpg-rgb-64x56x8-plane.jpg'
         return {
-            'uri' => 'https://example.org/bla/' + URI.escape(identifier),
+            'uri' => 'https://example.org/bla/' + CGI.escape(identifier),
             'username' => 'username',
             'secret' => 'secret',
             'headers' => {
                 'X-Custom' => 'yes'
-            }
+            },
+            'send_head_request' => true
         }
     end
     nil
@@ -214,6 +219,10 @@ class CustomDelegate
 
   def jdbcsource_database_identifier(options = {})
     context['identifier']
+  end
+
+  def jdbcsource_last_modified(options = {})
+    'SELECT last_modified FROM items WHERE filename = ?'
   end
 
   def jdbcsource_media_type(options = {})

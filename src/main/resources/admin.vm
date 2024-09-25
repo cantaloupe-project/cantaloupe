@@ -238,7 +238,9 @@
                                            data-content="Location of the delegate script. This can be an
                                            absolute path, or a filename; if only a filename is specified,
                                            it will be searched for in the same folder as the config file,
-                                           and then the current working directory.">?</a>
+                                           and then the current working directory. The delegate script
+                                           pathname can also be set using the &lt;code&gt;-Dcantaloupe.delegate_script&lt;/code&gt;
+                                           VM argument, which overrides this value.">?</a>
                                     </td>
                                     <td>
                                         <input class="form-control" type="text"
@@ -1124,6 +1126,25 @@
                                         <a tabindex="0" class="btn btn-sm cl-help"
                                            role="button" data-toggle="popover"
                                            data-trigger="focus"
+                                           data-content="Enables the health check endpoint, at /health.">?</a>
+                                    </td>
+                                    <td>
+                                        <div class="checkbox">
+                                            <label>
+                                                <input type="checkbox"
+                                                       name="endpoint.health.enabled"
+                                                       value="false"
+                                                       data-requires-restart="false">
+                                                Enabled
+                                            </label>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <a tabindex="0" class="btn btn-sm cl-help"
+                                           role="button" data-toggle="popover"
+                                           data-trigger="focus"
                                            data-content="If true, sources and caches will be checked,
                                            resulting in a more robust but slower health check. Set this
                                            to false if these services already have their own health checks.">?</a>
@@ -1701,6 +1722,34 @@
                                             </td>
                                         </tr>
                                         <tr>
+                                            <td>
+                                                Proxy Host
+                                                <a tabindex="0" class="btn btn-sm cl-help"
+                                                   role="button" data-toggle="popover"
+                                                   data-trigger="focus"
+                                                   data-content="Host of a client proxy server.">?</a>
+                                            </td>
+                                            <td>
+                                                <input class="form-control" type="text"
+                                                       name="HttpSource.proxy.http.host"
+                                                       data-requires-restart="true">
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                Proxy Port
+                                                <a tabindex="0" class="btn btn-sm cl-help"
+                                                   role="button" data-toggle="popover"
+                                                   data-trigger="focus"
+                                                   data-content="Port of a client proxy server.">?</a>
+                                            </td>
+                                            <td>
+                                                <input class="form-control" type="number" min="0"
+                                                       name="HttpSource.proxy.http.port"
+                                                       data-requires-restart="true">
+                                            </td>
+                                        </tr>
+                                        <tr>
                                             <td>Lookup Strategy
                                                 <a tabindex="0" class="btn btn-sm cl-help"
                                                    role="button" data-toggle="popover"
@@ -1719,7 +1768,7 @@
                                             </td>
                                         </tr>
                                         <tr>
-                                            <td>URL Prefix
+                                            <td>Basic Lookup Strategy: URL Prefix
                                                 <a tabindex="0" class="btn btn-sm cl-help"
                                                    role="button" data-toggle="popover"
                                                    data-trigger="focus"
@@ -1734,7 +1783,7 @@
                                             </td>
                                         </tr>
                                         <tr>
-                                            <td>URL Suffix
+                                            <td>Basic Lookup Strategy: URL Suffix
                                                 <a tabindex="0" class="btn btn-sm cl-help"
                                                    role="button" data-toggle="popover"
                                                    data-trigger="focus"
@@ -1748,7 +1797,7 @@
                                             </td>
                                         </tr>
                                         <tr>
-                                            <td>Basic Auth Username
+                                            <td>Basic Lookup Strategy: Basic Auth Username
                                                 <a tabindex="0" class="btn btn-sm cl-help"
                                                    role="button" data-toggle="popover"
                                                    data-trigger="focus"
@@ -1762,7 +1811,7 @@
                                             </td>
                                         </tr>
                                         <tr>
-                                            <td>Basic Auth Secret
+                                            <td>Basic Lookup Strategy: Basic Auth Secret
                                                 <a tabindex="0" class="btn btn-sm cl-help"
                                                    role="button" data-toggle="popover"
                                                    data-trigger="focus"
@@ -1773,6 +1822,29 @@
                                                 <input class="form-control" type="text"
                                                        name="HttpSource.BasicLookupStrategy.auth.basic.secret"
                                                        data-requires-restart="false">
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                Basic Lookup Strategy: HEAD Requests
+                                                <a tabindex="0" class="btn btn-sm cl-help"
+                                                   role="button" data-toggle="popover"
+                                                   data-trigger="focus"
+                                                   data-content="Before an image is retrieved, a preliminary request is sent to check
+                                                    various characteristics. Typically this is a HEAD request, but some
+                                                    resources, such as those using pre-signed URLs, may not support HEAD
+                                                    requests. This key enables a ranged GET request to be sent instead.">?</a>
+                                            </td>
+                                            <td>
+                                                <div class="checkbox">
+                                                    <label>
+                                                        <input type="checkbox"
+                                                               name="HttpSource.BasicLookupStrategy.send_head_requests"
+                                                               value="true"
+                                                               data-requires-restart="false">
+                                                        Enabled
+                                                    </label>
+                                                </div>
                                             </td>
                                         </tr>
                                         <tr>
@@ -2189,6 +2261,26 @@
                                             <option value="CacheStrategy">Cache in Source Cache (CacheStrategy)</option>
                                             <option value="AbortStrategy">Abort the Retrieval (AbortStrategy)</option>
                                         </select>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <a tabindex="0" class="btn btn-sm cl-help"
+                                           role="button" data-toggle="popover"
+                                           data-trigger="focus"
+                                           data-content="If enabled, images stored in the source cache for which no
+                                           format can be inferred will be purged.">?</a>
+                                    </td>
+                                    <td>
+                                        <div class="checkbox">
+                                            <label>
+                                                <input type="checkbox"
+                                                       name="processor.purge_incompatible_from_source_cache"
+                                                       value="false"
+                                                       data-requires-restart="false">
+                                                Purge Incompatible From Source Cache
+                                            </label>
+                                        </div>
                                     </td>
                                 </tr>
                                 <tr>

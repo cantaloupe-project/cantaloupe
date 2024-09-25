@@ -19,6 +19,8 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.X509TrustManager;
 import javax.script.ScriptException;
 import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.net.Proxy;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.AccessDeniedException;
@@ -28,9 +30,14 @@ import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.security.cert.X509Certificate;
 import java.time.Duration;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.TemporalAccessor;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.concurrent.TimeUnit;
@@ -66,12 +73,16 @@ import java.util.stream.Collectors;
  * issues the following server requests:</p>
  *
  * <ol>
- *     <li>{@literal HEAD}</li>
- *     <li>If server supports ranges:
+ *     <li>If {@link Key#HTTPSOURCE_SEND_HEAD_REQUESTS} is {@code true}, or
+ *     the delegate method returns {@code true} for the equivalent key, a
+ *     {@code HEAD} request. Otherwise, a ranged {@code GET} request specifying
+ *     a small range of the beginning of the resource.</li>
+ *     <li>If a {@code HEAD} request was sent:
  *         <ol>
- *             <li>If {@link FormatIterator#next()} } needs to check magic
+ *             <li>If {@link FormatIterator#next()} needs to check magic bytes,
+ *             and the server supports ranges:
  *                 <ol>
- *                     <li>Ranged {@literal GET}</li>
+ *                     <li>Ranged {@code GET}</li>
  *                 </ol>
  *             </li>
  *             <li>If {@link HTTPStreamFactory#newSeekableStream()} is used:
@@ -83,7 +94,7 @@ import java.util.stream.Collectors;
  *             </li>
  *             <li>Else if {@link HTTPStreamFactory#newInputStream()} is used:
  *                 <ol>
- *                     <li>{@literal GET} to retrieve the full image bytes</li>
+ *                     <li>{@code GET} to retrieve the full image bytes</li>
  *                 </ol>
  *             </li>
  *         </ol>
@@ -112,18 +123,31 @@ import java.util.stream.Collectors;
 class HttpSource extends AbstractSource implements Source {
 
     /**
-     * Encapsulates the status code and headers of a HEAD response.
+     * Encapsulates the status code, headers, and body (if available) of a
+     * {code HEAD} or ranged {@code GET} response. The range specifies a small
+     * part of the beginning of the resource to use for the purpose of
+     * inferring its format.
      */
-    private static class HEADResponseInfo {
+    private static class ResourceInfo {
 
-        int status;
-        Headers headers;
+        private String requestMethod;
+        private int status;
+        private Headers headers;
 
-        static HEADResponseInfo fromResponse(Response response)
-                throws IOException {
-            HEADResponseInfo info = new HEADResponseInfo();
-            info.status           = response.code();
-            info.headers          = response.headers();
+        /**
+         * Response entity with a maximum length of {@link #RANGE_LENGTH}.
+         */
+        private byte[] entity;
+
+        static ResourceInfo fromResponse(Response response) throws IOException {
+            ResourceInfo info = new ResourceInfo();
+            info.requestMethod = response.request().method();
+            info.status        = response.code();
+            info.headers       = response.headers();
+            if ("GET".equals(response.request().method()) &&
+                    response.body() != null) {
+                info.entity = response.body().bytes();
+            }
             return info;
         }
 
@@ -131,37 +155,13 @@ class HttpSource extends AbstractSource implements Source {
             return "bytes".equals(headers.get("Accept-Ranges"));
         }
 
-        long getContentLength() {
+        long contentLength() {
             String value = headers.get("Content-Length");
             return (value != null) ? Long.parseLong(value) : 0;
         }
 
-    }
-
-    /**
-     * Encapsulates the status code, headers, and body of a ranged GET
-     * response. The range specifies a small part of the beginning of the
-     * resource to use for the purpose of inferring its format.
-     */
-    private static class RangedGETResponseInfo extends HEADResponseInfo {
-
-        private static final int RANGE_LENGTH = 32;
-
-        /**
-         * Ranged response entity, with a maximum length of {@link
-         * #RANGE_LENGTH}.
-         */
-        private byte[] entity;
-
-        static RangedGETResponseInfo fromResponse(Response response)
-                throws IOException {
-            RangedGETResponseInfo info = new RangedGETResponseInfo();
-            info.status                = response.code();
-            info.headers               = response.headers();
-            if (response.body() != null) {
-                info.entity = response.body().bytes();
-            }
-            return info;
+        String contentType() {
+            return headers.get("Content-Type");
         }
 
         Format detectFormat() throws IOException {
@@ -175,6 +175,18 @@ class HttpSource extends AbstractSource implements Source {
             return format;
         }
 
+        Instant lastModified() {
+            String str = headers.get("Last-Modified");
+            if (str != null) {
+                TemporalAccessor ta = DateTimeFormatter.RFC_1123_DATE_TIME
+                        .withLocale(Locale.UK)
+                        .withZone(ZoneId.systemDefault())
+                        .parse(str);
+                return Instant.from(ta);
+            }
+            return null;
+        }
+
     }
 
     /**
@@ -183,13 +195,13 @@ class HttpSource extends AbstractSource implements Source {
      *     extension, the format is inferred from that.</li>
      *     <li>Otherwise, if the identifier contains a recognized filename
      *     extension, the format is inferred from that.</li>
-     *     <li>Otherwise, if a {@literal Content-Type} header is present in the
-     *     {@link #fetchHEADResponseInfo() HEAD response}, and its value is
-     *     specific enough (not {@literal application/octet-stream}, for
+     *     <li>Otherwise, if a {@code Content-Type} header is present in the
+     *     {@link #getResourceInfo HEAD response}, and its value is
+     *     specific enough (not {@code application/octet-stream}, for
      *     example), a format is inferred from that.</li>
-     *     <li>Otherwise, if the {@literal HEAD} response contains an {@literal
-     *     Accept-Ranges: bytes} header, a {@literal GET} request is sent with
-     *     a {@literal Range} header specifying a small range of data from the
+     *     <li>Otherwise, if the {@literal HEAD} response contains an {@code
+     *     Accept-Ranges: bytes} header, a {@code GET} request is sent with a
+     *     {@code Range} header specifying a small range of data from the
      *     beginning of the resource, and a format is inferred from the magic
      *     bytes in the response entity.</li>
      *     <li>Otherwise, {@link Format#UNKNOWN} is returned.</li>
@@ -200,36 +212,41 @@ class HttpSource extends AbstractSource implements Source {
     class FormatIterator<T> implements Iterator<T> {
 
         /**
-         * Infers a {@link Format} based on the {@literal Content-Type} header in
-         * the {@link #fetchHEADResponseInfo() HEAD response}.
+         * Infers a {@link Format} based on the {@code Content-Type} header in
+         * the initial response..
          */
         private class ContentTypeHeaderChecker implements FormatChecker {
             /**
-             * @return Format from the {@literal Content-Type} header, or {@link
+             * @return Format from the {@code Content-Type} header, or {@link
              *         Format#UNKNOWN} if that header is missing or invalid.
              */
             @Override
             public Format check() {
                 try {
                     final HTTPRequestInfo requestInfo = getRequestInfo();
-                    final HEADResponseInfo responseInfo = fetchHEADResponseInfo();
+                    final ResourceInfo resourceInfo   = getResourceInfo();
 
-                    if (responseInfo.status >= 200 && responseInfo.status < 300) {
-                        String field = responseInfo.headers.get("Content-Type");
-                        if (field != null) {
-                            Format format = MediaType.fromContentType(field).toFormat();
+                    if (resourceInfo.status >= 200 && resourceInfo.status < 300) {
+                        String value = resourceInfo.contentType();
+                        if (value != null) {
+                            Format format = MediaType.fromContentType(value).toFormat();
                             if (Format.UNKNOWN.equals(format)) {
-                                LOGGER.debug("Unrecognized Content-Type header value for HEAD {}: {}",
-                                        requestInfo.getURI(), field);
+                                LOGGER.debug("Unrecognized Content-Type header value for {} {}: {}",
+                                        resourceInfo.requestMethod,
+                                        requestInfo.getURI(),
+                                        value);
                             }
                             return format;
                         } else {
-                            LOGGER.debug("No Content-Type header for HEAD {}",
+                            LOGGER.debug("No Content-Type header for {} {}",
+                                    resourceInfo.requestMethod,
                                     requestInfo.getURI());
                         }
                     } else {
-                        LOGGER.debug("HEAD {} returned status {}",
-                                requestInfo.getURI(), responseInfo.status);
+                        LOGGER.debug("{} {} returned status {}",
+                                resourceInfo.requestMethod,
+                                requestInfo.getURI(),
+                                resourceInfo.status);
                     }
                 } catch (Exception e) {
                     LOGGER.error(e.getMessage(), e);
@@ -240,10 +257,12 @@ class HttpSource extends AbstractSource implements Source {
 
         private class ByteChecker implements FormatChecker {
             /**
-             * If the {@link #fetchHEADResponseInfo() HEAD response} contains an
-             * {@literal Accept-Ranges: bytes} header, issues an HTTP {@literal GET}
-             * request for a small {@literal Range} of the beginning of the resource
-             * and checks the magic bytes in the response body.
+             * If the {@link #getResourceInfo initial response} is from a
+             * {@code HEAD} request, issues an HTTP {@code GET} request for a
+             * small range of the beginning of the resource. (If it is a {@code
+             * GET} response, that data has already been received.) Then, a
+             * source format is inferred from the magic bytes in the response
+             * entity.
              *
              * @return Inferred source format, or {@link Format#UNKNOWN}.
              */
@@ -251,28 +270,43 @@ class HttpSource extends AbstractSource implements Source {
             public Format check() {
                 try {
                     final HTTPRequestInfo requestInfo = getRequestInfo();
-                    if (fetchHEADResponseInfo().acceptsRanges()) {
-                        final RangedGETResponseInfo responseInfo
-                                = fetchRangedGETResponseInfo();
-                        if (responseInfo.status >= 200 && responseInfo.status < 300) {
-                            Format format = responseInfo.detectFormat();
-                            if (!Format.UNKNOWN.equals(format)) {
-                                LOGGER.debug("Inferred {} format from magic bytes for GET {}",
-                                        format, requestInfo.getURI());
-                                return format;
-                            } else {
-                                LOGGER.debug("Unable to infer a format from magic bytes for GET {}",
-                                        requestInfo.getURI());
-                            }
+                    // If a request hasn't yet been sent, send one. This may be
+                    // a HEAD or a ranged GET. It's not safe to send a ranged
+                    // GET without first checking (via HEAD) whether the
+                    // resource supports ranges--unless we are told via the
+                    // configuration not to send HEADs.
+                    if (resourceInfo == null) {
+                        resourceInfo = getResourceInfo();
+                    }
+                    // If it was a HEAD, we need to know whether the resource
+                    // supports ranged requests. If it does, send one.
+                    if ("HEAD".equals(resourceInfo.requestMethod)) {
+                        if (resourceInfo.acceptsRanges()) {
+                            resourceInfo = fetchResourceInfoViaGET();
                         } else {
-                            LOGGER.debug("GET {} returned status {}",
-                                    requestInfo.getURI(), responseInfo.status);
+                            LOGGER.debug("Server did not supply an " +
+                                            "`Accept-Ranges: bytes` header in response " +
+                                            "to HEAD {}, and all other attempts to "+
+                                            "infer a format failed.",
+                                    requestInfo.getURI());
+                            return Format.UNKNOWN;
+                        }
+                    }
+                    if (resourceInfo.status >= 200 && resourceInfo.status < 300) {
+                        Format format = resourceInfo.detectFormat();
+                        if (!Format.UNKNOWN.equals(format)) {
+                            LOGGER.debug("Inferred {} format from magic bytes for GET {}",
+                                    format, requestInfo.getURI());
+                            return format;
+                        } else {
+                            LOGGER.debug("Unable to infer a format from magic bytes for GET {}",
+                                    requestInfo.getURI());
                         }
                     } else {
-                        LOGGER.info("Server did not supply an " +
-                                        "`Accept-Ranges: bytes` header for HEAD {}, and all " +
-                                        "other attempts to infer a format failed.",
-                                requestInfo.getURI());
+                        LOGGER.debug("{} {} returned status {}",
+                                resourceInfo.requestMethod,
+                                requestInfo.getURI(),
+                                resourceInfo.status);
                     }
                 } catch (Exception e) {
                     LOGGER.error(e.getMessage(), e);
@@ -336,29 +370,38 @@ class HttpSource extends AbstractSource implements Source {
 
     static final Logger LOGGER = LoggerFactory.getLogger(HttpSource.class);
 
+    static final String USER_AGENT = String.format(
+            "%s/%s (%s/%s; java/%s; %s/%s)",
+            HttpSource.class.getSimpleName(),
+            Application.getVersion(),
+            Application.getName(),
+            Application.getVersion(),
+            System.getProperty("java.version"),
+            System.getProperty("os.name"),
+            System.getProperty("os.version"));
+
     private static final int DEFAULT_REQUEST_TIMEOUT = 30;
+    private static final int RANGE_LENGTH            = 32;
 
     private static OkHttpClient httpClient;
-
-    /**
-     * Cached {@link #fetchHEADResponseInfo() HEAD response info}.
-     */
-    private HEADResponseInfo headResponseInfo;
-
-    /**
-     * Cached {@link #fetchRangedGETResponseInfo() ranged GET response info}.
-     */
-    private RangedGETResponseInfo rangedGETResponseInfo;
 
     /**
      * Cached by {@link #getRequestInfo()}.
      */
     private HTTPRequestInfo requestInfo;
 
-    private final FormatIterator<Format> formatIterator = new FormatIterator<>();
+    /**
+     * Cached {@link #getResourceInfo resource info} from the initial request,
+     * which may be either a {@code HEAD} or ranged {@code GET}, depending on
+     * the configuration.
+     */
+    private ResourceInfo resourceInfo;
+
+    private final FormatIterator<Format> formatIterator =
+            new FormatIterator<>();
 
     /**
-     * @return Shared instance.
+     * @return Already-initialized instance shared by all threads.
      */
     static synchronized OkHttpClient getHTTPClient() {
         if (httpClient == null) {
@@ -367,12 +410,24 @@ class HttpSource extends AbstractSource implements Source {
                     .connectTimeout(getRequestTimeout().getSeconds(), TimeUnit.SECONDS)
                     .readTimeout(getRequestTimeout().getSeconds(), TimeUnit.SECONDS)
                     .writeTimeout(getRequestTimeout().getSeconds(), TimeUnit.SECONDS);
-
             final Configuration config = Configuration.getInstance();
-            final boolean allowInsecure = config.getBoolean(
-                    Key.HTTPSOURCE_ALLOW_INSECURE, false);
 
-            if (allowInsecure) {
+            final String proxyHost =
+                    config.getString(Key.HTTPSOURCE_HTTP_PROXY_HOST, "");
+            if (!proxyHost.isBlank()) {
+                final int proxyPort =
+                        config.getInt(Key.HTTPSOURCE_HTTP_PROXY_PORT);
+                if (proxyPort == 0) {
+                    throw new RuntimeException("Proxy port setting " +
+                            Key.HTTPSOURCE_HTTP_PROXY_PORT + " must be set");
+                }
+                LOGGER.debug("Using HTTP proxy: {}:{}", proxyHost, proxyPort);
+                Proxy httpProxy = new Proxy(Proxy.Type.HTTP,
+                        new InetSocketAddress(proxyHost, proxyPort));
+                builder.proxy(httpProxy);
+            }
+
+            if (config.getBoolean(Key.HTTPSOURCE_ALLOW_INSECURE, false)) {
                 try {
                     X509TrustManager[] tm = new X509TrustManager[]{
                             new X509TrustManager() {
@@ -412,17 +467,6 @@ class HttpSource extends AbstractSource implements Source {
         return Duration.ofSeconds(timeout);
     }
 
-    static String getUserAgent() {
-        return String.format("%s/%s (%s/%s; java/%s; %s/%s)",
-                HttpSource.class.getSimpleName(),
-                Application.getVersion(),
-                Application.getName(),
-                Application.getVersion(),
-                System.getProperty("java.version"),
-                System.getProperty("os.name"),
-                System.getProperty("os.version"));
-    }
-
     /**
      * @see #request(HTTPRequestInfo, String, Map)
      */
@@ -447,7 +491,7 @@ class HttpSource extends AbstractSource implements Source {
         Request.Builder builder = new Request.Builder()
                 .method(method, null)
                 .url(requestInfo.getURI())
-                .addHeader("User-Agent", getUserAgent());
+                .addHeader("User-Agent", USER_AGENT);
         // Add credentials.
         if (requestInfo.getUsername() != null &&
                 requestInfo.getSecret() != null) {
@@ -477,10 +521,9 @@ class HttpSource extends AbstractSource implements Source {
     }
 
     @Override
-    public void checkAccess() throws IOException {
-        fetchHEADResponseInfo();
-
-        final int status = headResponseInfo.status;
+    public StatResult stat() throws IOException {
+        ResourceInfo info = getResourceInfo();
+        final int status  = info.status;
         if (status >= 400) {
             final String statusLine = "HTTP " + status;
             if (status == 404 || status == 410) {        // not found or gone
@@ -491,11 +534,119 @@ class HttpSource extends AbstractSource implements Source {
                 throw new IOException(statusLine);
             }
         }
+        StatResult result = new StatResult();
+        result.setLastModified(info.lastModified());
+        return result;
     }
 
     @Override
     public FormatIterator<Format> getFormatIterator() {
         return formatIterator;
+    }
+
+    /**
+     * Issues a {@code HEAD} or ranged {@code GET} request (depending on the
+     * configuration) and caches the result in {@link #resourceInfo}.
+     */
+    private ResourceInfo getResourceInfo() throws IOException {
+        if (resourceInfo == null) {
+            try {
+                requestInfo = getRequestInfo();
+                if (requestInfo.isSendingHeadRequest()) {
+                    fetchResourceInfoViaHEAD();
+                } else {
+                    fetchResourceInfoViaGET();
+                }
+            } catch (Exception e) {
+                LOGGER.error("fetchResourceInfo(): {}", e.getMessage());
+                throw new IOException(e.getMessage(), e);
+            }
+        }
+        return resourceInfo;
+    }
+
+    private ResourceInfo fetchResourceInfoViaHEAD() throws Exception {
+        requestInfo = getRequestInfo();
+        try (Response response = request("HEAD", Collections.emptyMap())) {
+            resourceInfo = ResourceInfo.fromResponse(response);
+        }
+        return resourceInfo;
+    }
+
+    private ResourceInfo fetchResourceInfoViaGET() throws Exception {
+        requestInfo = getRequestInfo();
+        var extraHeaders = Map.of("Range", "bytes=0-" + (RANGE_LENGTH - 1));
+        try (Response response = request("GET", extraHeaders)) {
+            resourceInfo = ResourceInfo.fromResponse(response);
+        }
+        return resourceInfo;
+    }
+
+    private Response request(String method,
+                             Map<String,String> extraHeaders) throws IOException {
+        return request(requestInfo, method, extraHeaders);
+    }
+
+    /**
+     * @return Instance corresponding to {@link #identifier}. The result is
+     *         cached.
+     */
+    HTTPRequestInfo getRequestInfo() throws Exception {
+        if (requestInfo == null) {
+            final LookupStrategy strategy =
+                    LookupStrategy.from(Key.HTTPSOURCE_LOOKUP_STRATEGY);
+            if (LookupStrategy.DELEGATE_SCRIPT.equals(strategy)) {
+                requestInfo = newRequestInfoUsingScriptStrategy();
+            } else {
+                requestInfo = newRequestInfoUsingBasicStrategy();
+            }
+        }
+        return requestInfo;
+    }
+
+    private HTTPRequestInfo newRequestInfoUsingBasicStrategy() {
+        final var config    = Configuration.getInstance();
+        final String prefix = config.getString(Key.HTTPSOURCE_URL_PREFIX, "");
+        final String suffix = config.getString(Key.HTTPSOURCE_URL_SUFFIX, "");
+
+        final HTTPRequestInfo info = new HTTPRequestInfo();
+        info.setURI(prefix + identifier.toString() + suffix);
+        info.setUsername(config.getString(Key.HTTPSOURCE_BASIC_AUTH_USERNAME));
+        info.setSecret(config.getString(Key.HTTPSOURCE_BASIC_AUTH_SECRET));
+        info.setSendingHeadRequest(config.getBoolean(Key.HTTPSOURCE_SEND_HEAD_REQUESTS, true));
+        return info;
+    }
+
+    /**
+     * @throws NoSuchFileException if the remote resource was not found.
+     * @throws ScriptException     if the delegate method throws an exception.
+     */
+    private HTTPRequestInfo newRequestInfoUsingScriptStrategy()
+            throws NoSuchFileException, ScriptException {
+        final DelegateProxy proxy   = getDelegateProxy();
+        final Map<String, ?> result = proxy.getHttpSourceResourceInfo();
+
+        if (result.isEmpty()) {
+            throw new NoSuchFileException(
+                    DelegateMethod.HTTPSOURCE_RESOURCE_INFO +
+                            " returned nil for " + identifier);
+        }
+
+        final String uri                 = (String) result.get("uri");
+        final String username            = (String) result.get("username");
+        final String secret              = (String) result.get("secret");
+        @SuppressWarnings("unchecked")
+        final Map<String,Object> headers = (Map<String,Object>) result.get("headers");
+        final boolean isHeadEnabled      = !result.containsKey("send_head_request") ||
+                (boolean) result.get("send_head_request");
+
+        final HTTPRequestInfo info = new HTTPRequestInfo();
+        info.setURI(uri);
+        info.setUsername(username);
+        info.setSecret(secret);
+        info.setHeaders(headers);
+        info.setSendingHeadRequest(isHeadEnabled);
+        return info;
     }
 
     @Override
@@ -512,113 +663,13 @@ class HttpSource extends AbstractSource implements Source {
 
         if (info != null) {
             LOGGER.debug("Resolved {} to {}", identifier, info.getURI());
-            fetchHEADResponseInfo();
+            getResourceInfo();
             return new HTTPStreamFactory(
                     info,
-                    headResponseInfo.getContentLength(),
-                    headResponseInfo.acceptsRanges());
+                    resourceInfo.contentLength(),
+                    resourceInfo.acceptsRanges());
         }
         return null;
-    }
-
-    /**
-     * <p>Issues a {@literal HEAD} request and caches parts of the response in
-     * {@link #headResponseInfo}.</p>
-     */
-    private HEADResponseInfo fetchHEADResponseInfo() throws IOException {
-        if (headResponseInfo == null) {
-            try (Response response = request("HEAD")) {
-                headResponseInfo = HEADResponseInfo.fromResponse(response);
-            }
-        }
-        return headResponseInfo;
-    }
-
-    /**
-     * <p>Issues a {@literal GET} request specifying a small range of data and
-     * caches parts of the response in {@link #rangedGETResponseInfo}.</p>
-     */
-    private RangedGETResponseInfo fetchRangedGETResponseInfo()
-            throws IOException {
-        if (rangedGETResponseInfo == null) {
-            Map<String,String> extraHeaders = Map.of("Range",
-                    "bytes=0-" + (RangedGETResponseInfo.RANGE_LENGTH - 1));
-            try (Response response = request("GET", extraHeaders)) {
-                rangedGETResponseInfo =
-                        RangedGETResponseInfo.fromResponse(response);
-            }
-        }
-        return rangedGETResponseInfo;
-    }
-
-    private Response request(String method) throws IOException {
-        return request(method, Collections.emptyMap());
-    }
-
-    private Response request(String method,
-                             Map<String,String> extraHeaders) throws IOException {
-        HTTPRequestInfo requestInfo;
-        try {
-            requestInfo = getRequestInfo();
-        } catch (Exception e) {
-            LOGGER.error("request(): {}", e.getMessage());
-            throw new IOException(e.getMessage(), e);
-        }
-        return request(requestInfo, method, extraHeaders);
-    }
-
-    /**
-     * @return Instance corresponding to {@link #identifier}. The result is
-     *         cached.
-     */
-    HTTPRequestInfo getRequestInfo() throws Exception {
-        if (requestInfo == null) {
-            final LookupStrategy strategy =
-                    LookupStrategy.from(Key.HTTPSOURCE_LOOKUP_STRATEGY);
-            switch (strategy) {
-                case DELEGATE_SCRIPT:
-                    requestInfo = getRequestInfoUsingScriptStrategy();
-                    break;
-                default:
-                    requestInfo = getRequestInfoUsingBasicStrategy();
-                    break;
-            }
-        }
-        return requestInfo;
-    }
-
-    private HTTPRequestInfo getRequestInfoUsingBasicStrategy() {
-        final Configuration config = Configuration.getInstance();
-        final String prefix = config.getString(Key.HTTPSOURCE_URL_PREFIX, "");
-        final String suffix = config.getString(Key.HTTPSOURCE_URL_SUFFIX, "");
-        return new HTTPRequestInfo(
-                prefix + identifier.toString() + suffix,
-                config.getString(Key.HTTPSOURCE_BASIC_AUTH_USERNAME),
-                config.getString(Key.HTTPSOURCE_BASIC_AUTH_SECRET));
-    }
-
-    /**
-     * @throws NoSuchFileException if the remote resource was not found.
-     * @throws ScriptException     if the delegate method throws an exception.
-     */
-    private HTTPRequestInfo getRequestInfoUsingScriptStrategy()
-            throws NoSuchFileException, ScriptException {
-        final DelegateProxy proxy   = getDelegateProxy();
-        final Map<String, ?> result = proxy.getHttpSourceResourceInfo();
-
-        if (result.isEmpty()) {
-            throw new NoSuchFileException(
-                    DelegateMethod.HTTPSOURCE_RESOURCE_INFO +
-                            " returned nil for " + identifier);
-        }
-
-        final String uri            = (String) result.get("uri");
-        final String username       = (String) result.get("username");
-        final String secret         = (String) result.get("secret");
-        @SuppressWarnings("unchecked")
-        final Map<String,?> headers = (Map<String,?>) result.get("headers");
-
-        return new HTTPRequestInfo(uri, username, secret, headers);
     }
 
     @Override
@@ -628,9 +679,8 @@ class HttpSource extends AbstractSource implements Source {
     }
 
     private void reset() {
-        requestInfo           = null;
-        headResponseInfo      = null;
-        rangedGETResponseInfo = null;
+        requestInfo  = null;
+        resourceInfo = null;
     }
 
     /**

@@ -26,6 +26,9 @@ public final class DelegateProxyService {
     private static final Logger LOGGER =
             LoggerFactory.getLogger(DelegateProxyService.class);
 
+    static final String DELEGATE_SCRIPT_VM_ARGUMENT =
+            "cantaloupe.delegate_script";
+
     private static DelegateProxyService instance;
 
     private static boolean isScriptCodeLoaded;
@@ -95,23 +98,29 @@ public final class DelegateProxyService {
     }
 
     /**
-     * @return Absolute path representing the delegate script, regardless of
-     *         whether the delegate script system is {@link #isScriptEnabled()
-     *         enabled}; or {@code null} if {@link
-     *         Key#DELEGATE_SCRIPT_PATHNAME} is not set.
+     * <p>Returns the absolute path to the delegate script, regardless of
+     * whether the delegate script system is {@link #isScriptEnabled()
+     * enabled}. The path is obtained from the {@link
+     * #DELEGATE_SCRIPT_VM_ARGUMENT delegate script VM argument}, if set, or
+     * the {@link Key#DELEGATE_SCRIPT_PATHNAME configuration} otherwise. If
+     * neither are set, set, {@code null} is returned.</p>
+     *
+     * <p>The contents of the script are not validated.</p>
+     *
      * @throws NoSuchFileException If the script specified in {@link
      *         Key#DELEGATE_SCRIPT_PATHNAME} does not exist.
      */
     static Path getScriptFile() throws NoSuchFileException {
-        final Configuration config = Configuration.getInstance();
-        // The script name may be an absolute pathname or a filename.
-        final String configValue =
-                config.getString(Key.DELEGATE_SCRIPT_PATHNAME, "");
-        if (!configValue.isEmpty()) {
-            Path script = findScript(configValue);
+        String value = System.getProperty("cantaloupe.delegate_script");
+        if (value == null || value.isBlank()) {
+            final Configuration config = Configuration.getInstance();
+            // The script name may be an absolute pathname or a filename.
+            value = config.getString(Key.DELEGATE_SCRIPT_PATHNAME, "");
+        }
+        if (!value.isBlank()) {
+            Path script = findScript(value);
             if (!Files.exists(script)) {
-                throw new NoSuchFileException(
-                        "File not found: " + script.toString());
+                throw new NoSuchFileException("File not found: " + script);
             }
             return script;
         }

@@ -88,6 +88,8 @@ delegate_script.enabled = false
 # !! This can be an absolute path, or a filename; if only a filename is
 # specified, it will be searched for in the same folder as this file, and
 # then the current working directory.
+# The delegate script pathname can also be set using the
+# -Dcantaloupe.delegate_script VM argument, which overrides this value.
 delegate_script.pathname = delegates.rb
 
 ###########################################################################
@@ -125,6 +127,9 @@ endpoint.api.enabled = false
 # HTTP Basic credentials to access the HTTP API.
 endpoint.api.username =
 endpoint.api.secret =
+
+# Enables the health check endpoint, at /health.
+endpoint.health.enabled = true
 
 # If true, sources and caches will be checked, resulting in a more robust
 # but slower health check. Set this to false if these services already have
@@ -170,6 +175,10 @@ HttpSource.allow_insecure = false
 # Request timeout in seconds.
 HttpSource.request_timeout =
 
+# !! Client HTTP proxy.
+HttpSource.proxy.http.host =
+HttpSource.proxy.http.port =
+
 # Tells HttpSource how to look up resources. Allowed values are
 # `BasicLookupStrategy` and `ScriptLookupStrategy`. ScriptLookupStrategy
 # uses a delegate method for dynamic lookups; see the user manual.
@@ -186,6 +195,12 @@ HttpSource.BasicLookupStrategy.url_suffix =
 # Enables access to resources that require HTTP Basic authentication.
 HttpSource.BasicLookupStrategy.auth.basic.username =
 HttpSource.BasicLookupStrategy.auth.basic.secret =
+
+# Before an image is retrieved, a preliminary request is sent to check
+# various characteristics. Typically this is a HEAD request, but some
+# resources, such as those using pre-signed URLs, may not support HEAD
+# requests. This key enables a ranged GET request to be sent instead.
+HttpSource.BasicLookupStrategy.send_head_requests = true
 
 # Read data in chunks when it may be more efficient. (This also may end up
 # being less efficient, depending on many variables; see the user manual.)
@@ -358,6 +373,10 @@ processor.stream_retrieval_strategy = StreamStrategy
 # * `DownloadStrategy` and `CacheStrategy` work the same as above.
 # * `AbortStrategy` causes the request to fail.
 processor.fallback_retrieval_strategy = DownloadStrategy
+
+# If true, images stored in the source cache for which no format can be
+# inferred will be purged.
+processor.purge_incompatible_from_source_cache = false
 
 # Resolution of vector rasterization (of e.g. PDFs) at a scale of 1.
 processor.dpi = 150

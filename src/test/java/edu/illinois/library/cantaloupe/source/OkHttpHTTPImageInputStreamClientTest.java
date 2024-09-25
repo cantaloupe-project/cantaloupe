@@ -10,8 +10,8 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -48,8 +48,8 @@ public class OkHttpHTTPImageInputStreamClientTest extends BaseTest {
         });
         server.start();
 
-        final HTTPRequestInfo requestInfo =
-                new HTTPRequestInfo(server.getHTTPURI().toString());
+        final HTTPRequestInfo requestInfo = new HTTPRequestInfo();
+        requestInfo.setURI(server.getHTTPURI().toString());
         final OkHttpHTTPImageInputStreamClient instance =
                 new OkHttpHTTPImageInputStreamClient(requestInfo);
 
@@ -71,8 +71,10 @@ public class OkHttpHTTPImageInputStreamClientTest extends BaseTest {
         });
         server.start();
 
-        final HTTPRequestInfo requestInfo = new HTTPRequestInfo(
-                server.getHTTPURI().toString(), "user", "secret");
+        final HTTPRequestInfo requestInfo = new HTTPRequestInfo();
+        requestInfo.setURI(server.getHTTPURI().toString());
+        requestInfo.setUsername("user");
+        requestInfo.setSecret("secret");
         final OkHttpHTTPImageInputStreamClient instance =
                 new OkHttpHTTPImageInputStreamClient(requestInfo);
 
@@ -93,8 +95,8 @@ public class OkHttpHTTPImageInputStreamClientTest extends BaseTest {
         });
         server.start();
 
-        final HTTPRequestInfo requestInfo =
-                new HTTPRequestInfo(server.getHTTPURI().toString());
+        final HTTPRequestInfo requestInfo = new HTTPRequestInfo();
+        requestInfo.setURI(server.getHTTPURI().toString());
         requestInfo.getHeaders().add("X-Cats", "yes");
 
         final OkHttpHTTPImageInputStreamClient instance =
@@ -107,8 +109,8 @@ public class OkHttpHTTPImageInputStreamClientTest extends BaseTest {
     void sendGETRequest() throws Exception {
         server.start();
 
-        final HTTPRequestInfo requestInfo =
-                new HTTPRequestInfo(server.getHTTPURI() + "/jpg");
+        final HTTPRequestInfo requestInfo = new HTTPRequestInfo();
+        requestInfo.setURI(server.getHTTPURI() + "/jpg");
         final OkHttpHTTPImageInputStreamClient instance =
                 new OkHttpHTTPImageInputStreamClient(requestInfo);
 
@@ -134,8 +136,10 @@ public class OkHttpHTTPImageInputStreamClientTest extends BaseTest {
         });
         server.start();
 
-        final HTTPRequestInfo requestInfo = new HTTPRequestInfo(
-                server.getHTTPURI() + "/jpg", "user", "secret");
+        final HTTPRequestInfo requestInfo = new HTTPRequestInfo();
+        requestInfo.setURI(server.getHTTPURI() + "/jpg");
+        requestInfo.setUsername("user");
+        requestInfo.setSecret("secret");
         final OkHttpHTTPImageInputStreamClient instance =
                 new OkHttpHTTPImageInputStreamClient(requestInfo);
 
@@ -156,8 +160,8 @@ public class OkHttpHTTPImageInputStreamClientTest extends BaseTest {
         });
         server.start();
 
-        final HTTPRequestInfo requestInfo =
-                new HTTPRequestInfo(server.getHTTPURI() + "/jpg");
+        final HTTPRequestInfo requestInfo = new HTTPRequestInfo();
+        requestInfo.setURI(server.getHTTPURI() + "/jpg");
         requestInfo.getHeaders().add("X-Cats", "yes");
         final OkHttpHTTPImageInputStreamClient instance =
                 new OkHttpHTTPImageInputStreamClient(requestInfo);

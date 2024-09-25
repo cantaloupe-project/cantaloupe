@@ -1,0 +1,44 @@
+package edu.illinois.library.cantaloupe.resource.iiif.v2;
+
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+
+/**
+ * <p>Class whose instances are intended to be serialized as JSON for use in
+ * information responses.</p>
+ *
+ * <p>Extends {@link LinkedHashMap} in order to support arbitrary keys and
+ * preserve key order.</p>
+ *
+ * @see <a href="http://iiif.io/api/image/2.1/#image-information">IIIF Image
+ * API 2.1: Image Information</a>
+ * @see <a href="https://github.com/FasterXML/jackson-databind">jackson-databind
+ * docs</a>
+ */
+class Information<K,V> extends LinkedHashMap<K,V> {
+
+    @JsonPropertyOrder({ "width", "height" })
+    public static final class Size {
+        public Integer height;
+        public Integer width;
+
+        /** No-op constructor needed by Jackson */
+        public Size() {}
+
+        public Size(Integer width, Integer height) {
+            this.width  = width;
+            this.height = height;
+        }
+    }
+
+    @JsonPropertyOrder({ "width", "height", "scaleFactors" })
+    public static final class Tile {
+        public Integer height;
+        public List<Integer> scaleFactors = new ArrayList<>();
+        public Integer width;
+    }
+
+}

@@ -4,11 +4,11 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.image.exif.Directory;
 import edu.illinois.library.cantaloupe.image.exif.Tag;
 import edu.illinois.library.cantaloupe.image.iptc.DataSet;
-import edu.illinois.library.cantaloupe.util.StringUtils;
+import edu.illinois.library.cantaloupe.image.xmp.MapReader;
+import edu.illinois.library.cantaloupe.image.xmp.Utils;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.NodeIterator;
@@ -17,6 +17,7 @@ import org.apache.jena.riot.RiotException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.io.StringReader;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
@@ -45,9 +46,6 @@ public class Metadata {
     private static final String XMP_ORIENTATION_PREDICATE =
             "http://ns.adobe.com/tiff/1.0/Orientation";
 
-    private static final String XMP_TOOLKIT = Application.getName() + " " +
-            Application.getVersion();
-
     protected Directory exif;
     protected List<DataSet> iptcDataSets;
     protected String xmp;
@@ -62,27 +60,6 @@ public class Metadata {
      * Cached by {@link #getOrientation()}.
      */
     private transient Orientation orientation;
-
-    /**
-     * Returns an XMP string encapsulated in an {@literal x:xmpmeta} element,
-     * which is itself encapsulated in an {@literal xpacket} PI.
-     *
-     * @param xmp XMP string with an {@literal rdf:RDF} root element.
-     * @return    Encapsulated XMP data packet.
-     */
-    public static String encapsulateXMP(String xmp) {
-        final StringBuilder b = new StringBuilder();
-        b.append("<?xpacket begin=\"\uFEFF\" id=\"W5M0MpCehiHzreSzNTczkc9d\"?>");
-        b.append("<x:xmpmeta xmlns:x=\"adobe:ns:meta/\" x:xmptk=\"");
-        b.append(XMP_TOOLKIT);
-        b.append("\">");
-        b.append(xmp);
-        b.append("</x:xmpmeta>");
-        // Append the magic trailer
-        b.append(" ".repeat(2048));
-        b.append("<?xpacket end=\"r\"?>");
-        return b.toString();
-    }
 
     @Override
     public boolean equals(Object obj) {
@@ -146,6 +123,9 @@ public class Metadata {
             } catch (IllegalArgumentException e) {
                 LOGGER.info("readOrientation(): {}", e.getMessage());
                 orientation = Orientation.ROTATE_0;
+            } catch (RiotException e) {    
+                LOGGER.info("readOrientation(): {}", e.getMessage());
+                orientation = Orientation.ROTATE_0;
             }
         }
         return orientation;
@@ -170,14 +150,30 @@ public class Metadata {
     }
 
     /**
-     * Returns an RDF/XML string in UTF-8 encoding. The root element is
-     * {@literal rdf:RDF}, and there is no packet wrapper.
-     *
-     * @return XMP data packet.
+     * @return RDF/XML string in UTF-8 encoding. The root element is {@literal
+     *         rdf:RDF}, and there is no packet wrapper.
      */
     @JsonProperty
     public Optional<String> getXMP() {
         return Optional.ofNullable(xmp);
+    }
+
+    /**
+     * @return Map of elements found in the XMP data. If none are found, the
+     *         map is empty.
+     */
+    @JsonIgnore
+    public Map<String,Object> getXMPElements() {
+        loadXMP();
+        if (xmpModel != null) {
+            try {
+                MapReader reader = new MapReader(xmpModel);
+                return reader.readElements();
+            } catch (IOException e) {
+                LOGGER.warn("getXMPElements(): {}", e.getMessage());
+            }
+        }
+        return Collections.emptyMap();
     }
 
     /**
@@ -216,10 +212,27 @@ public class Metadata {
             RIOT.init();
 
             xmpModel = ModelFactory.createDefaultModel();
+            String base = null;
+            if (xmp.get().indexOf("rdf:about=''") != -1 || xmp.get().indexOf("rdf:about=\"\"") != -1) {
+                // Version 4.8+ of jena requires a rdf:about link to not be empty
+                base = "http://example.com";
+            }
 
             try (StringReader reader = new StringReader(xmp.get())) {
-                xmpModel.read(reader, null, "RDF/XML");
-            } catch (RiotException | NullPointerException e) {
+                xmpModel.read(reader, base, "RDF/XML");
+            } catch (RiotException e) {
+                if (e.getMessage().indexOf("Base URI is null, but there are relative URIs to resolve") != -1) {
+                    // Version 4.8+ of jena requires a rdf:about link to not be empty
+                    try (StringReader reader = new StringReader(xmp.get())) {
+                        xmpModel.read(reader, "http://example.com", "RDF/XML");
+                    } catch (RiotException exception) {
+                        LOGGER.info("loadXMP(): {}", exception.getMessage());
+                    }    
+                } else {
+                    LOGGER.info("loadXMP(): {}", e.getMessage());
+                    throw e;
+                }
+            } catch (NullPointerException e) {
                 // The XMP string may be invalid RDF/XML, or there may be a bug
                 // in Jena (that would be the NPE). Not much we can do.
                 LOGGER.info("loadXMP(): {}", e.getMessage());
@@ -275,7 +288,7 @@ public class Metadata {
      */
     public void setXMP(String xmp) {
         if (xmp != null) {
-            this.xmp = StringUtils.trimXMP(xmp);
+            this.xmp = Utils.trimXMP(xmp);
         } else {
             this.xmp         = null;
             this.xmpModel = null;
@@ -290,7 +303,9 @@ public class Metadata {
      * {
      *     "exif": See {@link Directory#toMap()},
      *     "iptc": See {@link DataSet#toMap()},
-     *     "xmp": "<rdf:RDF>...</rdf:RDF>",
+     *     "xmp_string": "<rdf:RDF>...</rdf:RDF>",
+     *     "xmp_model": [Jena model],
+     *     "xmp_elements": {@link Map}
      *     "native": String
      * }}
      *
@@ -314,6 +329,7 @@ public class Metadata {
         // XMP
         getXMP().ifPresent(xmp -> map.put("xmp_string", xmp));
         getXMPModel().ifPresent(model -> map.put("xmp_model", model));
+        map.put("xmp_elements", getXMPElements());
         // Native metadata
         getNativeMetadata().ifPresent(nm -> map.put("native", nm));
         return Collections.unmodifiableMap(map);

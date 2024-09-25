@@ -15,6 +15,7 @@ import edu.illinois.library.cantaloupe.resource.IllegalClientArgumentException;
 import edu.illinois.library.cantaloupe.resource.Route;
 import edu.illinois.library.cantaloupe.resource.ImageRequestHandler;
 import edu.illinois.library.cantaloupe.resource.iiif.SizeRestrictedException;
+import edu.illinois.library.cantaloupe.source.StatResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -23,7 +24,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Handles IIIF Image API 2.x image requests.
+ * Handles image requests.
  *
  * @see <a href="http://iiif.io/api/image/2.1/#image-request-parameters">Image
  * Request Operations</a>
@@ -82,6 +83,13 @@ public class ImageResource extends IIIF2Resource {
             @Override
             public boolean authorize() throws Exception {
                 return ImageResource.this.authorize();
+            }
+
+            @Override
+            public void sourceAccessed(StatResult result) {
+                if (result.getLastModified() != null) {
+                    setLastModifiedHeader(result.getLastModified());
+                }
             }
 
             @Override
@@ -162,8 +170,8 @@ public class ImageResource extends IIIF2Resource {
                               Dimension virtualSize) throws SizeRestrictedException {
         final var config = Configuration.getInstance();
         if (config.getBoolean(Key.IIIF_RESTRICT_TO_SIZES, false)) {
-            var factory = new ImageInfoFactory();
-            factory.getSizes(virtualSize).stream()
+            new InformationFactory().getSizes(virtualSize)
+                    .stream()
                     .filter(s -> s.width == resultingSize.intWidth() &&
                             s.height == resultingSize.intHeight())
                     .findAny()

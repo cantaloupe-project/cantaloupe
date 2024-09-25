@@ -265,7 +265,7 @@ public class ApplicationServer {
             // HTTP/2.
             if (isHTTPEnabled()) {
                 HttpConfiguration config = new HttpConfiguration();
-                HttpConnectionFactory http1 = new HttpConnectionFactory();
+                HttpConnectionFactory http1 = new HttpConnectionFactory(config);
 
                 HTTP2CServerConnectionFactory http2 =
                         new HTTP2CServerConnectionFactory(config);
@@ -284,7 +284,7 @@ public class ApplicationServer {
                 config.setSecurePort(getHTTPSPort());
                 config.addCustomizer(new SecureRequestCustomizer());
 
-                final SslContextFactory contextFactory = new SslContextFactory.Server();
+                final SslContextFactory.Server contextFactory = new SslContextFactory.Server();
                 contextFactory.setKeyStorePath(getHTTPSKeyStorePath());
                 if (getHTTPSKeyStorePassword() != null) {
                     contextFactory.setKeyStorePassword(getHTTPSKeyStorePassword());
