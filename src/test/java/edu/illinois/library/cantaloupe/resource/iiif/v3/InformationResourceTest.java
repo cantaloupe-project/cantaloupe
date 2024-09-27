@@ -600,6 +600,11 @@ public class InformationResourceTest extends ResourceTest {
         assertEquals(2, methods.size());
         assertTrue(methods.contains("GET"));
         assertTrue(methods.contains("OPTIONS"));
+
+        List<String> allowedHeaders =
+                List.of(StringUtils.split(headers.getFirstValue("Access-Control-Allow-Headers"), ", "));
+        assertEquals(1, allowedHeaders.size());
+        assertTrue(allowedHeaders.contains("Authorization"));
     }
 
     @Test
