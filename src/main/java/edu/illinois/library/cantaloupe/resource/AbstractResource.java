@@ -13,8 +13,6 @@ import edu.illinois.library.cantaloupe.http.Status;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.MetaIdentifier;
-import edu.illinois.library.cantaloupe.image.MetaIdentifierTransformer;
-import edu.illinois.library.cantaloupe.image.MetaIdentifierTransformerFactory;
 import edu.illinois.library.cantaloupe.delegate.DelegateProxy;
 import edu.illinois.library.cantaloupe.delegate.DelegateProxyService;
 import edu.illinois.library.cantaloupe.delegate.UnavailableException;
@@ -597,9 +595,8 @@ public abstract class AbstractResource {
         final int identifierIndex         = pathComponents.indexOf(
                 getIdentifierPathComponent());
 
-        final MetaIdentifierTransformer xformer =
-                new MetaIdentifierTransformerFactory().newInstance(getDelegateProxy());
-        final String newMetaIdentifierString = xformer.serialize(newMetaIdentifier);
+        final String newMetaIdentifierString =
+                newMetaIdentifier.toURIPathComponent(getDelegateProxy());
         publicRef.setPathComponent(identifierIndex, newMetaIdentifierString);
         return publicRef;
     }
