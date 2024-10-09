@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import edu.illinois.library.cantaloupe.image.exif.Directory;
+import edu.illinois.library.cantaloupe.image.exif.Field;
 import edu.illinois.library.cantaloupe.image.exif.Tag;
 import edu.illinois.library.cantaloupe.image.iptc.DataSet;
 import edu.illinois.library.cantaloupe.image.xmp.MapReader;
@@ -120,10 +121,7 @@ public class Metadata {
                 if (orientation == null) {
                     orientation = Orientation.ROTATE_0;
                 }
-            } catch (IllegalArgumentException e) {
-                LOGGER.info("readOrientation(): {}", e.getMessage());
-                orientation = Orientation.ROTATE_0;
-            } catch (RiotException e) {    
+            } catch (IllegalArgumentException | RiotException e) {
                 LOGGER.info("readOrientation(): {}", e.getMessage());
                 orientation = Orientation.ROTATE_0;
             }
@@ -132,9 +130,29 @@ public class Metadata {
     }
 
     private void readOrientationFromEXIF() {
+        Field field = exif.getField(Tag.ORIENTATION);
         Object value = exif.getValue(Tag.ORIENTATION);
-        if (value != null) {
-            orientation = Orientation.forEXIFOrientation((int) value);
+        if (field != null && value != null) {
+            switch (field.getDataType()) {
+                case LONG:
+                case SLONG:
+                case SHORT:
+                case SSHORT:
+                    // According to spec the orientation must be an unsigned short (16 bit)
+                    // However, we have seen exif data in the wild with LONG and SLONG types
+                    // Thus to be lenient we accept either and convert to int (github issue #548)
+                    // It could also happen that 'value' is in fact a Java Integer even if the
+                    // exif data type is LONG or SLONG, so we need to check for that as well.
+                    if (value instanceof Long) {
+                        orientation = Orientation.forEXIFOrientation(Math.toIntExact((long) value));
+                    } else if (value instanceof Integer) {
+                        orientation = Orientation.forEXIFOrientation((int) value);
+                    }
+                    break;
+                default:
+                    LOGGER.warn("readOrientationFromEXIF(): Unsupported Orientation data type: {}",
+                            field.getDataType());
+            }
         }
     }
 
