@@ -20,8 +20,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
   zlib1g-dev \
   libwebp-dev \
   libimage-exiftool-perl \
-  libgrokj2k1 \
-  grokj2k-tools \
   adduser \
   && rm -rf /var/lib/apt/lists/*
 
@@ -31,12 +29,6 @@ COPY docker/image_files/libjpeg-turbo/lib64 /opt/libjpeg-turbo/lib
 
 # Install KakaduNativeProcessor dependencies
 COPY dist/deps/Linux-x86-64/lib/* /usr/lib/
-
-# Install GrokProcessor dependencies
-#RUN wget -q https://github.com/GrokImageCompression/grok/releases/download/v7.6.5/libgrokj2k1_7.6.5-1_amd64.deb \
-#    && wget -q https://github.com/GrokImageCompression/grok/releases/download/v7.6.5/grokj2k-tools_7.6.5-1_amd64.deb \
-#    && dpkg -i --ignore-depends=libjpeg62-turbo ./grokj2k-tools_7.6.5-1_amd64.deb
-#    && dpkg -i ./libgrokj2k1_7.6.5-1_amd64.deb \
 
 # Install GraalVM
 RUN wget -q https://github.com/graalvm/graalvm-ce-builds/releases/download/vm-20.3.0/graalvm-ce-java11-linux-amd64-20.3.0.tar.gz \

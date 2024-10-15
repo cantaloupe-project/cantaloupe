@@ -331,7 +331,7 @@ JdbcSource.connection_timeout = 10
 processor.selection_strategy = AutomaticSelectionStrategy
 
 # Built-in processors are `Java2dProcessor`, TurboJpegProcessor`,
-# `KakaduNativeProcessor`, `OpenJpegProcessor`, `GrokProcessor`,`JaiProcessor`,
+# `KakaduNativeProcessor`, `OpenJpegProcessor`, `JaiProcessor`,
 # `PdfBoxProcessor`, and `FfmpegProcessor`.
 # Some of these have third-party dependencies and won't work out-of-the-box.
 
@@ -442,14 +442,6 @@ FfmpegProcessor.path_to_binaries =
 # Optional absolute path of the directory containing opj_decompress.
 # Overrides the PATH.
 OpenJpegProcessor.path_to_binaries =
-
-#----------------------------------------
-# GrokProcessor
-#----------------------------------------
-
-# Optional absolute path of the directory containing grk_decompress.
-# Overrides the PATH.
-GrokProcessor.path_to_binaries =
 
 #----------------------------------------
 # PdfBoxProcessor
