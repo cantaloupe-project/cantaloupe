@@ -508,8 +508,8 @@ class FilesystemCache implements SourceCache, DerivativeCache {
                 hashedPathFragment(identifier.toString()));
         final String expectedNamePrefix =
                 StringUtils.md5(identifier.toString());
-        try {
-            return Files.list(cachePath)
+        try (final var fileStream = Files.list(cachePath)) {
+            return fileStream
                     .filter(p -> p.getFileName().toString().startsWith(expectedNamePrefix))
                     .collect(Collectors.toUnmodifiableSet());
         } catch (NoSuchFileException e) {
