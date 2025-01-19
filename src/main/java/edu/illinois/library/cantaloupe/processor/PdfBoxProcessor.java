@@ -21,6 +21,9 @@ import edu.illinois.library.cantaloupe.util.Stopwatch;
 import org.apache.commons.io.IOUtils;
 import org.apache.pdfbox.cos.COSObject;
 import org.apache.pdfbox.io.MemoryUsageSetting;
+import org.apache.pdfbox.io.RandomAccessReadBuffer;
+import org.apache.pdfbox.Loader;
+import org.apache.pdfbox.io.RandomAccessReadBufferedFile;
 import org.apache.pdfbox.pdmodel.DefaultResourceCache;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDDocumentInformation;
@@ -144,12 +147,13 @@ class PdfBoxProcessor extends AbstractProcessor
             final Stopwatch watch = new Stopwatch();
             // For PDF Box v3 this would need to change to a loader:
             // https://pdfbox.apache.org/3.0/migration.html#use-loader-to-get-a-pdf-document
+            MemoryUsageSetting limitMainMemory = getMemoryUsageSetting();
             if (sourceFile != null) {
-                doc = PDDocument.load(sourceFile.toFile(),
-                        getMemoryUsageSetting());
+                doc = Loader.loadPDF(sourceFile.toFile(),
+                limitMainMemory.streamCache);
             } else {
                 try (InputStream is = streamFactory.newInputStream()) {
-                    doc = PDDocument.load(is, getMemoryUsageSetting());
+                    doc = Loader.loadPDF(new RandomAccessReadBuffer(is));
                 } catch (IOException e) {
                     throw new SourceFormatException();
                 }
@@ -225,7 +229,6 @@ class PdfBoxProcessor extends AbstractProcessor
     private BufferedImage readImage(int pageIndex,
                                     double dpi) throws IOException {
         LOGGER.debug("DPI: {}", dpi);
-
         readDocument();
         PDFRenderer renderer = new PDFRenderer(doc);
         return renderer.renderImageWithDPI(pageIndex, (float) dpi);
