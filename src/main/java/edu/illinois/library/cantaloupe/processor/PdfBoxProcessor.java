@@ -23,7 +23,6 @@ import org.apache.pdfbox.cos.COSObject;
 import org.apache.pdfbox.io.MemoryUsageSetting;
 import org.apache.pdfbox.io.RandomAccessReadBuffer;
 import org.apache.pdfbox.Loader;
-import org.apache.pdfbox.io.RandomAccessReadBufferedFile;
 import org.apache.pdfbox.pdmodel.DefaultResourceCache;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDDocumentInformation;
@@ -145,15 +144,13 @@ class PdfBoxProcessor extends AbstractProcessor
     private void readDocument() throws IOException {
         if (doc == null) {
             final Stopwatch watch = new Stopwatch();
-            // For PDF Box v3 this would need to change to a loader:
-            // https://pdfbox.apache.org/3.0/migration.html#use-loader-to-get-a-pdf-document
             MemoryUsageSetting limitMainMemory = getMemoryUsageSetting();
             if (sourceFile != null) {
                 doc = Loader.loadPDF(sourceFile.toFile(),
                 limitMainMemory.streamCache);
             } else {
                 try (InputStream is = streamFactory.newInputStream()) {
-                    doc = Loader.loadPDF(new RandomAccessReadBuffer(is));
+                    doc = Loader.loadPDF(new RandomAccessReadBuffer(is), limitMainMemory.streamCache);
                 } catch (IOException e) {
                     throw new SourceFormatException();
                 }
@@ -230,7 +227,11 @@ class PdfBoxProcessor extends AbstractProcessor
                                     double dpi) throws IOException {
         LOGGER.debug("DPI: {}", dpi);
         readDocument();
+        final Configuration config = Configuration.getInstance();
         PDFRenderer renderer = new PDFRenderer(doc);
+        if (config.getBoolean(Key.PROCESSOR_PDF_SUB_SAMPLING_ENABLED, false)) {
+            renderer.setSubsamplingAllowed(true);
+        }
         return renderer.renderImageWithDPI(pageIndex, (float) dpi);
     }
 
