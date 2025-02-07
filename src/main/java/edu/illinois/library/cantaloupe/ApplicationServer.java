@@ -10,17 +10,12 @@ import org.eclipse.jetty.http2.HTTP2Cipher;
 import org.eclipse.jetty.http2.server.HTTP2CServerConnectionFactory;
 import org.eclipse.jetty.http2.server.HTTP2ServerConnectionFactory;
 import org.eclipse.jetty.jmx.MBeanContainer;
-import org.eclipse.jetty.server.CustomRequestLog;
-import org.eclipse.jetty.server.HttpConfiguration;
-import org.eclipse.jetty.server.HttpConnectionFactory;
-import org.eclipse.jetty.server.RequestLog;
-import org.eclipse.jetty.server.SecureRequestCustomizer;
-import org.eclipse.jetty.server.Server;
-import org.eclipse.jetty.server.ServerConnector;
-import org.eclipse.jetty.server.Slf4jRequestLogWriter;
-import org.eclipse.jetty.server.SslConnectionFactory;
-import org.eclipse.jetty.servlet.ListenerHolder;
-import org.eclipse.jetty.servlet.ServletContextHandler;
+import org.eclipse.jetty.server.*;
+import org.eclipse.jetty.server.handler.ContextHandler;
+import org.eclipse.jetty.server.handler.ContextHandlerCollection;
+import org.eclipse.jetty.ee10.servlet.ServletContextHandler;
+import org.eclipse.jetty.ee10.servlet.ServletHolder;
+import org.eclipse.jetty.ee10.servlet.ServletHandler;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.eclipse.jetty.util.thread.QueuedThreadPool;
 
@@ -115,32 +110,30 @@ public class ApplicationServer {
     }
 
     private void createServer() {
-        final ServletContextHandler context = new ServletContextHandler(
-                ServletContextHandler.NO_SESSIONS);
-
-        // Disable directory listing.
-        context.setInitParameter("org.eclipse.jetty.servlet.Default.dirAllowed",
-                "false");
-
-        context.setContextPath("/");
-        context.addServlet(HandlerServlet.class, "/*");
-        context.addServlet(FileServlet.class, "/static/*");
-        context.getServletHandler().addListener(new ListenerHolder(ApplicationContextListener.class));
-        context.getServletHandler().addListener(new ListenerHolder(IIOProviderContextListener.class));
-
-        QueuedThreadPool pool = new QueuedThreadPool(
-                getMaxThreads(), getMinThreads());
-
+        QueuedThreadPool pool = new QueuedThreadPool(getMaxThreads(), getMinThreads());
         server = new Server(pool);
-        context.setServer(server);
-        server.setHandler(context);
 
-        // This is technically "NCSA Combined" format.
-        RequestLog log = new CustomRequestLog(
-                new Slf4jRequestLogWriter(),
-                CustomRequestLog.EXTENDED_NCSA_FORMAT);
+
+        // Context Handlers
+        ContextHandler context = new ContextHandler("/");
+        ServletHandler servletHandler = new ServletHandler();
+        context.setHandler(servletHandler);
+
+        // Servlets
+        servletHandler.addServletWithMapping(new ServletHolder(HandlerServlet.class), "/*");
+        servletHandler.addServletWithMapping(new ServletHolder(FileServlet.class), "/static/*");
+
+        // Listeners (ServletContextHandler required for session management)
+        ServletContextHandler servletContextHandler = new ServletContextHandler(ServletContextHandler.SESSIONS);
+        servletContextHandler.addEventListener(new ApplicationContextListener());
+        servletContextHandler.addEventListener(new IIOProviderContextListener());
+        context.insertHandler(servletContextHandler);
+
+        // Request Log
+        CustomRequestLog log = new CustomRequestLog(new Slf4jRequestLogWriter(), CustomRequestLog.EXTENDED_NCSA_FORMAT);
         server.setRequestLog(log);
     }
+
 
     public int getAcceptQueueLimit() {
         return acceptQueueLimit;

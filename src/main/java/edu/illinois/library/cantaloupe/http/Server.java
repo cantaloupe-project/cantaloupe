@@ -5,19 +5,15 @@ import org.eclipse.jetty.alpn.server.ALPNServerConnectionFactory;
 import org.eclipse.jetty.http2.HTTP2Cipher;
 import org.eclipse.jetty.http2.server.HTTP2CServerConnectionFactory;
 import org.eclipse.jetty.http2.server.HTTP2ServerConnectionFactory;
-import org.eclipse.jetty.security.ConstraintMapping;
-import org.eclipse.jetty.security.ConstraintSecurityHandler;
+import org.eclipse.jetty.ee10.servlet.security.ConstraintMapping;
+import org.eclipse.jetty.ee10.servlet.security.ConstraintSecurityHandler;
+import org.eclipse.jetty.security.Constraint;
 import org.eclipse.jetty.security.HashLoginService;
 import org.eclipse.jetty.security.UserStore;
 import org.eclipse.jetty.security.authentication.BasicAuthenticator;
-import org.eclipse.jetty.server.Handler;
-import org.eclipse.jetty.server.HttpConfiguration;
-import org.eclipse.jetty.server.HttpConnectionFactory;
-import org.eclipse.jetty.server.SecureRequestCustomizer;
-import org.eclipse.jetty.server.ServerConnector;
-import org.eclipse.jetty.server.SslConnectionFactory;
+import org.eclipse.jetty.server.*;
+import org.eclipse.jetty.server.handler.ContextHandler;
 import org.eclipse.jetty.server.handler.ResourceHandler;
-import org.eclipse.jetty.util.security.Constraint;
 import org.eclipse.jetty.util.security.Password;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 
@@ -71,118 +67,102 @@ public final class Server {
     private void initializeServer() {
         server = new org.eclipse.jetty.server.Server();
 
-        ServerConnector connector;
-        HttpConfiguration config = new HttpConfiguration();
-
-        HttpConnectionFactory http1 = new HttpConnectionFactory(config);
-        HTTP2CServerConnectionFactory http2c =
-                new HTTP2CServerConnectionFactory(config);
-
-        // Initialize HTTP/H2C.
+        // HTTP Configuration (if enabled)
         if (isHTTP1Enabled || isHTTP2Enabled) {
+            HttpConfiguration httpConfig = new HttpConfiguration();
+            HttpConnectionFactory http1 = new HttpConnectionFactory(httpConfig);
+            HTTP2CServerConnectionFactory http2c = new HTTP2CServerConnectionFactory(httpConfig);
+
+            ServerConnector httpConnector;
             if (isHTTP1Enabled && isHTTP2Enabled) {
-                connector = new ServerConnector(server, http1, http2c);
+                httpConnector = new ServerConnector(server, http1, http2c);
             } else if (isHTTP1Enabled) {
-                connector = new ServerConnector(server, http1);
+                httpConnector = new ServerConnector(server, http1);
             } else {
-                connector = new ServerConnector(server, http2c);
+                httpConnector = new ServerConnector(server, http2c);
             }
 
-            connector.setPort(httpPort);
-            server.addConnector(connector);
+            httpConnector.setPort(httpPort);
+            server.addConnector(httpConnector);
         }
 
-        // Initialize HTTPS.
+        // HTTPS Configuration (if enabled)
         if (isHTTPS1Enabled || isHTTPS2Enabled) {
-            config = new HttpConfiguration();
-            config.setSecureScheme("https");
-            config.addCustomizer(new SecureRequestCustomizer());
+            HttpConfiguration httpsConfig = new HttpConfiguration();
+            httpsConfig.setSecureScheme("https");
+            httpsConfig.addCustomizer(new SecureRequestCustomizer());
 
-            final SslContextFactory.Server contextFactory =
-                    new SslContextFactory.Server();
-            contextFactory.setKeyStorePath(keyStorePath.toString());
-            contextFactory.setKeyStorePassword(keyStorePassword);
-            contextFactory.setKeyManagerPassword(keyManagerPassword);
+            SslContextFactory.Server sslContextFactory = new SslContextFactory.Server();
+            sslContextFactory.setKeyStorePath(keyStorePath.toString());
+            sslContextFactory.setKeyStorePassword(keyStorePassword);
+            sslContextFactory.setKeyManagerPassword(keyManagerPassword);
 
-            http1 = new HttpConnectionFactory(config);
-            HTTP2ServerConnectionFactory http2 =
-                    new HTTP2ServerConnectionFactory(config);
+            HttpConnectionFactory http1 = new HttpConnectionFactory(httpsConfig);
+            HTTP2ServerConnectionFactory http2 = new HTTP2ServerConnectionFactory(httpsConfig);
+            ALPNServerConnectionFactory alpn = new ALPNServerConnectionFactory();
+            alpn.setDefaultProtocol(http1.getProtocol()); // Set default protocol for ALPN
 
+            sslContextFactory.setCipherComparator(HTTP2Cipher.COMPARATOR);
+            sslContextFactory.setUseCipherSuitesOrder(true);
+
+            SslConnectionFactory sslConnectionFactory = new SslConnectionFactory(sslContextFactory, alpn.getProtocol());
+
+
+            ServerConnector httpsConnector;
             if (isHTTPS1Enabled && isHTTPS2Enabled) {
-                ALPNServerConnectionFactory alpn =
-                        new ALPNServerConnectionFactory();
-                alpn.setDefaultProtocol(http1.getProtocol());
-
-                contextFactory.setCipherComparator(HTTP2Cipher.COMPARATOR);
-                contextFactory.setUseCipherSuitesOrder(true);
-
-                SslConnectionFactory connectionFactory =
-                        new SslConnectionFactory(contextFactory,
-                                alpn.getProtocol());
-
-                connector = new ServerConnector(server, connectionFactory, alpn,
-                        http2, http1);
+                httpsConnector = new ServerConnector(server, sslConnectionFactory, alpn, http2, http1);
             } else if (isHTTPS2Enabled) {
-                ALPNServerConnectionFactory alpn =
-                        new ALPNServerConnectionFactory();
-                alpn.setDefaultProtocol(http1.getProtocol());
-
-                contextFactory.setCipherComparator(HTTP2Cipher.COMPARATOR);
-                contextFactory.setUseCipherSuitesOrder(true);
-
-                SslConnectionFactory connectionFactory =
-                        new SslConnectionFactory(contextFactory,
-                                alpn.getProtocol());
-
-                connector = new ServerConnector(server, connectionFactory, alpn,
-                        http2);
+                httpsConnector = new ServerConnector(server, sslConnectionFactory, alpn, http2);
             } else {
-                connector = new ServerConnector(server,
-                        new SslConnectionFactory(contextFactory, "HTTP/1.1"),
-                        new HttpConnectionFactory(config));
+                httpsConnector = new ServerConnector(server, sslConnectionFactory, http1);
             }
 
-            connector.setPort(httpsPort);
-            server.addConnector(connector);
+            httpsConnector.setPort(httpsPort);
+            server.addConnector(httpsConnector);
         }
 
-        // If a custom handler has not been set, use a static file server.
+
+        // Default Resource Handler (if no custom handler is set)
         if (handler == null) {
-            ResourceHandler handler = new ResourceHandler();
-            handler.setDirectoriesListed(false);
-            handler.setAcceptRanges(isAcceptingRanges);
-            handler.setResourceBase(root.toString());
-            this.handler = handler;
+            ResourceHandler resourceHandler = new ResourceHandler();
+            resourceHandler.setDirAllowed(false);
+            resourceHandler.setAcceptRanges(isAcceptingRanges);
+            resourceHandler.setBaseResourceAsString(root.toString());
+            handler = resourceHandler; // Assign the resource handler
         }
 
-        if (isBasicAuthEnabled) {
-            final String[] roles = new String[] { "user" };
 
+         // Security Handler (if Basic Auth is enabled)
+        if (isBasicAuthEnabled) {
             HashLoginService loginService = new HashLoginService(authRealm);
             UserStore userStore = new UserStore();
-            userStore.addUser(authUser, new Password(authSecret), roles);
+            userStore.addUser(authUser, new Password(authSecret), new String[]{"user"});
             loginService.setUserStore(userStore);
-            server.addBean(loginService);
 
-            Constraint constraint = new Constraint();
-            constraint.setName("auth");
+            Constraint constraint = ConstraintSecurityHandler.createConstraint("auth", "user");
             constraint.setAuthenticate(true);
-            constraint.setRoles(roles);
 
             ConstraintMapping mapping = new ConstraintMapping();
             mapping.setPathSpec("/*");
             mapping.setConstraint(constraint);
 
-            ConstraintSecurityHandler security = new ConstraintSecurityHandler();
-            server.setHandler(security);
+            ConstraintSecurityHandler securityHandler = new ConstraintSecurityHandler();
+            securityHandler.setConstraintMappings(Collections.singletonList(mapping));
+            securityHandler.setAuthenticator(new BasicAuthenticator());
+            securityHandler.setLoginService(loginService);
 
-            security.setConstraintMappings(Collections.singletonList(mapping));
-            security.setAuthenticator(new BasicAuthenticator());
-            security.setLoginService(loginService);
 
-            security.setHandler(handler);
+            ContextHandler contextHandler = new ContextHandler("/");  // Use ContextHandler
+            contextHandler.setHandler(handler); // Set the resource handler or your custom handler
+            securityHandler.setHandler(contextHandler);  // Set the context handler as the handler for security
+            server.setHandler(securityHandler);
+
+
         } else {
-            server.setHandler(handler);
+            // Set the handler directly if no authentication
+            ContextHandler contextHandler = new ContextHandler("/");
+            contextHandler.setHandler(handler);
+            server.setHandler(contextHandler);
         }
     }
 

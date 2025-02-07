@@ -15,7 +15,8 @@
         <maven.compile.target>17</maven.compile.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <jetty.version>11.0.24</jetty.version>
+        <jetty.version>12.0.16</jetty.version>
+        <ee.version>10</ee.version>
         <aws-sdk.version>2.21.4</aws-sdk.version>
         <jackson.version>2.15.2</jackson.version>
         <jruby.version>9.4.9.0</jruby.version>
@@ -234,7 +235,7 @@
         N.B.: ALPN support is in a different module. -->
         <dependency>
             <groupId>org.eclipse.jetty.http2</groupId>
-            <artifactId>http2-server</artifactId>
+            <artifactId>jetty-http2-server</artifactId>
             <version>${jetty.version}</version>
         </dependency>
         <!-- Enables support for ALPN in Jetty server.
@@ -273,8 +274,8 @@
             <version>${jetty.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.eclipse.jetty</groupId>
-            <artifactId>jetty-servlet</artifactId>
+            <groupId>org.eclipse.jetty.ee${ee.version}</groupId>
+            <artifactId>jetty-ee${ee.version}-servlet</artifactId>
             <version>${jetty.version}</version>
         </dependency>
         <dependency>
