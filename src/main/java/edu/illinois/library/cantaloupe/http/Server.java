@@ -5,9 +5,9 @@ import org.eclipse.jetty.alpn.server.ALPNServerConnectionFactory;
 import org.eclipse.jetty.http2.HTTP2Cipher;
 import org.eclipse.jetty.http2.server.HTTP2CServerConnectionFactory;
 import org.eclipse.jetty.http2.server.HTTP2ServerConnectionFactory;
-import org.eclipse.jetty.ee10.servlet.security.ConstraintMapping;
-import org.eclipse.jetty.ee10.servlet.security.ConstraintSecurityHandler;
+import org.eclipse.jetty.security.SecurityHandler;
 import org.eclipse.jetty.security.Constraint;
+import org.eclipse.jetty.security.Constraint.Authorization;
 import org.eclipse.jetty.security.HashLoginService;
 import org.eclipse.jetty.security.UserStore;
 import org.eclipse.jetty.security.authentication.BasicAuthenticator;
@@ -20,7 +20,6 @@ import org.eclipse.jetty.util.ssl.SslContextFactory;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Path;
-import java.util.Collections;
 
 /**
  * <p>Simple HTTP server wrapping a Jetty server. Supports HTTP and HTTPS and
@@ -134,29 +133,20 @@ public final class Server {
 
          // Security Handler (if Basic Auth is enabled)
         if (isBasicAuthEnabled) {
+            final String[] roles = new String[] { "user" };
             HashLoginService loginService = new HashLoginService(authRealm);
             UserStore userStore = new UserStore();
-            userStore.addUser(authUser, new Password(authSecret), new String[]{"user"});
+            userStore.addUser(authUser, new Password(authSecret), roles);
             loginService.setUserStore(userStore);
+            server.addBean(loginService);
 
-            Constraint constraint = ConstraintSecurityHandler.createConstraint("auth", "user");
-            constraint.setAuthenticate(true);
-
-            ConstraintMapping mapping = new ConstraintMapping();
-            mapping.setPathSpec("/*");
-            mapping.setConstraint(constraint);
-
-            ConstraintSecurityHandler securityHandler = new ConstraintSecurityHandler();
-            securityHandler.setConstraintMappings(Collections.singletonList(mapping));
-            securityHandler.setAuthenticator(new BasicAuthenticator());
-            securityHandler.setLoginService(loginService);
-
-
-            ContextHandler contextHandler = new ContextHandler("/");  // Use ContextHandler
-            contextHandler.setHandler(handler); // Set the resource handler or your custom handler
-            securityHandler.setHandler(contextHandler);  // Set the context handler as the handler for security
+            Constraint constraint = Constraint.from("auth", Authorization.KNOWN_ROLE, roles);
+            SecurityHandler.PathMapped securityHandler = new SecurityHandler.PathMapped();
+            securityHandler.put("/*", constraint);
+            securityHandler.setAuthenticator(new BasicAuthenticator());   
+            securityHandler.setLoginService(loginService); 
+            securityHandler.setHandler(handler);
             server.setHandler(securityHandler);
-
 
         } else {
             // Set the handler directly if no authentication
