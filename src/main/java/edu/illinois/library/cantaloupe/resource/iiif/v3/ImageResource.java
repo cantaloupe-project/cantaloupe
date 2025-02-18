@@ -112,7 +112,7 @@ public class ImageResource extends IIIF3Resource {
                         metadata.getOrientation() : Orientation.ROTATE_0;
                 final Scale scale             = (Scale) ops.getFirst(Scale.class);
                 final Dimension virtualSize   = orientation.adjustedSize(info.getSize(pageIndex));
-                final Dimension resultingSize = ops.getResultingSize(info.getSize());
+                final Dimension resultingSize = ops.getResultingSize(info.getSize(pageIndex));
                 validateScale(virtualSize, scale, params.getSize().isUpscalingAllowed());
                 validateScale(virtualSize, scale, Status.BAD_REQUEST);
                 validateSize(virtualSize, resultingSize);
