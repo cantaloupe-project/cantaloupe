@@ -22,6 +22,14 @@ public class Kdu_thread_entity_affinity {
     this(Native_create());
   }
   public native void Reset() throws KduException;
+  public native String Check_numa_support(int _min_processors) throws KduException;
+  public String Check_numa_support() throws KduException
+  {
+    return Check_numa_support((int) 16);
+  }
+  public native int Find_preferred_bundle_count(int _threads_per_bundle) throws KduException;
+  public native boolean Add_preferred_bundle(int _which, int _threads_per_bundle) throws KduException;
+  public native int Add_node_bundle(int _node_idx, int _max_threads) throws KduException;
   public native int Get_total_threads() throws KduException;
   public native int Get_num_bundles() throws KduException;
 }

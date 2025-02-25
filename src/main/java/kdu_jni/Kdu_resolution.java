@@ -26,6 +26,7 @@ public class Kdu_resolution {
     Kdu_thread_env env = null;
     return Open_precinct(_precinct_idx,env);
   }
+  public native Kdu_precinct Access_precinct(Kdu_coords _precinct_idx) throws KduException;
   public native long Get_precinct_id(Kdu_coords _precinct_idx) throws KduException;
   public native double Get_precinct_relevance(Kdu_coords _precinct_idx) throws KduException;
   public native int Get_precinct_packets(Kdu_coords _precinct_idx, Kdu_thread_env _env, boolean _parse_if_necessary) throws KduException;

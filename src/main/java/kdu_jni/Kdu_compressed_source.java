@@ -23,6 +23,7 @@ public class Kdu_compressed_source {
   public native int Read(byte[] _buf, int _num_bytes) throws KduException;
   public native boolean Seek(long _offset) throws KduException;
   public native long Get_pos() throws KduException;
+  public native int Load_memory(long _desired_span, boolean _blocking, Kdu_compressed_source_notifier _notifier) throws KduException;
   public native boolean Set_tileheader_scope(int _tnum, int _num_tiles) throws KduException;
   public native boolean Set_precinct_scope(long _unique_id) throws KduException;
 }

@@ -26,7 +26,11 @@ public class Kdu_platform_file {
   public native boolean Append(String _pathname) throws KduException;
   public native boolean Map(Kdu_platform_file _file) throws KduException;
   public native boolean Map(long _file, boolean _for_writing) throws KduException;
+  public native boolean Set_non_blocking() throws KduException;
+  public native boolean Check_seekable() throws KduException;
   public native void Close() throws KduException;
   public native int Read(byte[] _buf, int _num_bytes) throws KduException;
   public native int Write(byte[] _buf, int _num_bytes) throws KduException;
+  public native int Read_once(byte[] _buf, int _num_bytes, boolean _blocking) throws KduException;
+  public native int Write_once(byte[] _buf, int _num_bytes, boolean _blocking) throws KduException;
 }

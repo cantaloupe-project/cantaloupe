@@ -23,30 +23,34 @@ public class Kdu_params {
   }
   public native Kdu_params Link(Kdu_params _existing, int _tile_idx, int _comp_idx, int _num_tiles, int _num_comps) throws KduException;
   public native Kdu_params New_instance() throws KduException;
-  public native void Copy_from(Kdu_params _source, int _source_tile, int _target_tile, int _instance, int _skip_components, int _discard_levels, boolean _transpose, boolean _vflip, boolean _hflip) throws KduException;
+  public native void Copy_from(Kdu_params _source, int _source_tile, int _target_tile, int _instance, int _skip_components, int _discard_levels, boolean _transpose, boolean _vflip, boolean _hflip, boolean _force_copy) throws KduException;
   public void Copy_from(Kdu_params _source, int _source_tile, int _target_tile) throws KduException
   {
-    Copy_from(_source,_source_tile,_target_tile,(int) -1,(int) 0,(int) 0,(boolean) false,(boolean) false,(boolean) false);
+    Copy_from(_source,_source_tile,_target_tile,(int) -1,(int) 0,(int) 0,(boolean) false,(boolean) false,(boolean) false,(boolean) false);
   }
   public void Copy_from(Kdu_params _source, int _source_tile, int _target_tile, int _instance) throws KduException
   {
-    Copy_from(_source,_source_tile,_target_tile,_instance,(int) 0,(int) 0,(boolean) false,(boolean) false,(boolean) false);
+    Copy_from(_source,_source_tile,_target_tile,_instance,(int) 0,(int) 0,(boolean) false,(boolean) false,(boolean) false,(boolean) false);
   }
   public void Copy_from(Kdu_params _source, int _source_tile, int _target_tile, int _instance, int _skip_components) throws KduException
   {
-    Copy_from(_source,_source_tile,_target_tile,_instance,_skip_components,(int) 0,(boolean) false,(boolean) false,(boolean) false);
+    Copy_from(_source,_source_tile,_target_tile,_instance,_skip_components,(int) 0,(boolean) false,(boolean) false,(boolean) false,(boolean) false);
   }
   public void Copy_from(Kdu_params _source, int _source_tile, int _target_tile, int _instance, int _skip_components, int _discard_levels) throws KduException
   {
-    Copy_from(_source,_source_tile,_target_tile,_instance,_skip_components,_discard_levels,(boolean) false,(boolean) false,(boolean) false);
+    Copy_from(_source,_source_tile,_target_tile,_instance,_skip_components,_discard_levels,(boolean) false,(boolean) false,(boolean) false,(boolean) false);
   }
   public void Copy_from(Kdu_params _source, int _source_tile, int _target_tile, int _instance, int _skip_components, int _discard_levels, boolean _transpose) throws KduException
   {
-    Copy_from(_source,_source_tile,_target_tile,_instance,_skip_components,_discard_levels,_transpose,(boolean) false,(boolean) false);
+    Copy_from(_source,_source_tile,_target_tile,_instance,_skip_components,_discard_levels,_transpose,(boolean) false,(boolean) false,(boolean) false);
   }
   public void Copy_from(Kdu_params _source, int _source_tile, int _target_tile, int _instance, int _skip_components, int _discard_levels, boolean _transpose, boolean _vflip) throws KduException
   {
-    Copy_from(_source,_source_tile,_target_tile,_instance,_skip_components,_discard_levels,_transpose,_vflip,(boolean) false);
+    Copy_from(_source,_source_tile,_target_tile,_instance,_skip_components,_discard_levels,_transpose,_vflip,(boolean) false,(boolean) false);
+  }
+  public void Copy_from(Kdu_params _source, int _source_tile, int _target_tile, int _instance, int _skip_components, int _discard_levels, boolean _transpose, boolean _vflip, boolean _hflip) throws KduException
+  {
+    Copy_from(_source,_source_tile,_target_tile,_instance,_skip_components,_discard_levels,_transpose,_vflip,_hflip,(boolean) false);
   }
   public native void Copy_all(Kdu_params _source, int _skip_components, int _discard_levels, boolean _transpose, boolean _vflip, boolean _hflip) throws KduException;
   public void Copy_all(Kdu_params _source) throws KduException
