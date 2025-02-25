@@ -27,3 +27,5 @@ RUN mvn dependency:resolve
 # Copy the code
 COPY docker/image_files/test.properties test.properties
 COPY src src
+
+ENTRYPOINT mvn --batch-mode test -Pfreedeps
