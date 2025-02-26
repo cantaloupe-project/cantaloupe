@@ -407,7 +407,12 @@ public final class Info {
      * @return Size of the image at the given index.
      */
     public Dimension getSize(int imageIndex) {
-        return images.get(imageIndex).getSize();
+        if (!isVideo()) {
+            return images.get(imageIndex).getSize();
+        }
+        else {
+            return images.get(0).getSize(); 
+        }
     }
 
     /**
@@ -456,6 +461,14 @@ public final class Info {
                 .map(Image::getSize)
                 .collect(Collectors.toUnmodifiableList());
         return Dimension.isPyramid(sizes);
+    }
+
+     /**
+     * @return Whether resource is a Video
+     * @since  5.0
+     */
+    public boolean isVideo() {
+        return getMediaType().toFormat().isVideo();
     }
 
     /**
