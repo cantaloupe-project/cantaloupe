@@ -10,8 +10,11 @@ RUN powershell -Command \
 
 # Install various dependencies
 # TODO: openjpeg
+# Java needs to be first or maven instal complains 
 RUN choco install -y openjdk --version=22.0.2 
-RUN choco install -y maven ffmpeg libjpeg-turbo
+RUN choco install -y maven ffmpeg 
+
+
 
 # Install TurboJpegProcessor dependencies TODO: libjpeg-turbo
 #RUN mkdir -p /opt/libjpeg-turbo/lib
@@ -27,5 +30,3 @@ RUN mvn dependency:resolve
 # Copy the code
 COPY docker/image_files/test.properties test.properties
 COPY src src
-
-ENTRYPOINT mvn --batch-mode test -Pfreedeps
