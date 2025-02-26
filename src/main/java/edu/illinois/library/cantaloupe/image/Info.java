@@ -468,7 +468,12 @@ public final class Info {
      * @since  5.0
      */
     public boolean isVideo() {
-        return getMediaType().toFormat().isVideo();
+        if (getMediaType() != null) {
+            return getMediaType().toFormat().isVideo();
+        }
+        else {
+            return false;
+        }
     }
 
     /**
