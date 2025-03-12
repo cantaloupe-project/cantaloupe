@@ -6,16 +6,14 @@ import edu.illinois.library.cantaloupe.processor.codec.IIOProviderContextListene
 import edu.illinois.library.cantaloupe.resource.FileServlet;
 import edu.illinois.library.cantaloupe.resource.HandlerServlet;
 import org.eclipse.jetty.alpn.server.ALPNServerConnectionFactory;
+import org.eclipse.jetty.ee10.servlet.ServletContextHandler;
+import org.eclipse.jetty.ee10.servlet.ServletHandler;
+import org.eclipse.jetty.ee10.servlet.ServletHolder;
 import org.eclipse.jetty.http2.HTTP2Cipher;
 import org.eclipse.jetty.http2.server.HTTP2CServerConnectionFactory;
 import org.eclipse.jetty.http2.server.HTTP2ServerConnectionFactory;
 import org.eclipse.jetty.jmx.MBeanContainer;
 import org.eclipse.jetty.server.*;
-import org.eclipse.jetty.server.handler.ContextHandler;
-import org.eclipse.jetty.server.handler.ContextHandlerCollection;
-import org.eclipse.jetty.ee10.servlet.ServletContextHandler;
-import org.eclipse.jetty.ee10.servlet.ServletHolder;
-import org.eclipse.jetty.ee10.servlet.ServletHandler;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.eclipse.jetty.util.thread.QueuedThreadPool;
 
@@ -114,20 +112,25 @@ public class ApplicationServer {
         server = new Server(pool);
 
 
-        // Context Handlers
-        ContextHandler context = new ContextHandler("/");
-        ServletHandler servletHandler = new ServletHandler();
-        context.setHandler(servletHandler);
+        // Servlet Context Handlers
+        ServletContextHandler context = new ServletContextHandler("/*");
+
 
         // Servlets
+        ServletHandler servletHandler = new ServletHandler();
         servletHandler.addServletWithMapping(new ServletHolder(HandlerServlet.class), "/*");
         servletHandler.addServletWithMapping(new ServletHolder(FileServlet.class), "/static/*");
+        context.setHandler(servletHandler);
+
 
         // Listeners (ServletContextHandler required for session management)
         ServletContextHandler servletContextHandler = new ServletContextHandler(ServletContextHandler.SESSIONS);
         servletContextHandler.addEventListener(new ApplicationContextListener());
         servletContextHandler.addEventListener(new IIOProviderContextListener());
         context.insertHandler(servletContextHandler);
+
+        // Add handler
+        server.setHandler(context);
 
         // Request Log
         CustomRequestLog log = new CustomRequestLog(new Slf4jRequestLogWriter(), CustomRequestLog.EXTENDED_NCSA_FORMAT);
