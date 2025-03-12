@@ -11,13 +11,8 @@ RUN powershell -Command \
 # Install various dependencies
 # TODO: openjpeg
 RUN choco install -y maven ffmpeg
-<<<<<<<< HEAD:docker/Windows-JDK18/Dockerfile
-RUN choco install -y openjdk --version=18.0.2
- 
-========
 RUN choco install -y openjdk --version=21.0.2
 
->>>>>>>> develop:docker/Windows-JDK21/Dockerfile
 # Install TurboJpegProcessor dependencies TODO: libjpeg-turbo
 #RUN mkdir -p /opt/libjpeg-turbo/lib
 #COPY docker/image_files/libjpeg-turbo/lib64 c:\windows\system32

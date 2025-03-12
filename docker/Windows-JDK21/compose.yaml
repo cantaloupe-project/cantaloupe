@@ -7,19 +7,11 @@ services:
   cantaloupe:
     build:
       context: ../../
-<<<<<<<< HEAD:docker/Windows-JDK18/docker-compose.yml
-      dockerfile: docker/Windows-JDK18/Dockerfile
-  minio:
-    build:
-      context: ../../
-      dockerfile: docker/Windows-JDK18/Dockerfile-minio
-========
       dockerfile: docker/Windows-JDK21/Dockerfile
   minio:
     build:
       context: ../../
       dockerfile: docker/Windows-JDK21/Dockerfile-minio
->>>>>>>> develop:docker/Windows-JDK21/compose.yaml
     environment:
       MINIO_ACCESS_KEY: MinioUser
       MINIO_SECRET_KEY: OpenSesame
