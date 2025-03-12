@@ -33,10 +33,12 @@ public class Kdu_push_pull_params {
   public native void Set_cplex_share(Kdu_cplex_share _ref) throws KduException;
   public native Kdu_cplex_bkgnd Get_cplex_bkgnd() throws KduException;
   public native void Set_cplex_bkgnd(Kdu_cplex_bkgnd _ref) throws KduException;
+  public native void Set_opt_flags(int _opt_flags) throws KduException;
   public native void Set_preferred_job_samples(int _log2_min_samples, int _log2_ideal_samples) throws KduException;
   public native void Set_min_jobs_across(int _min_jobs_across) throws KduException;
   public native void Set_max_block_stripes(int _max_hires_stripes, boolean _extra_lowres_stripe) throws KduException;
   public native void Copy_params(Kdu_push_pull_params _src) throws KduException;
+  public native int Get_opt_flags() throws KduException;
   public native void Get_preferred_job_samples(int[] _log2_min_samples, int[] _log2_ideal_samples) throws KduException;
   public native int Get_min_jobs_across() throws KduException;
   public native int Get_max_block_stripes(int[] _extra_lowres_stripes) throws KduException;

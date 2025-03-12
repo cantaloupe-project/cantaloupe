@@ -44,6 +44,25 @@ public class Kdu_simple_video_source extends Kdu_compressed_video_source {
     Kdu_membroker broker = null;
     return Open(_fname,_flags,_return_if_incompatible,broker);
   }
+  public native boolean Open(Kdu_platform_file _file, long[] _flags, boolean _return_if_incompatible, Kdu_membroker _broker, long[] _fixed_codestream_bytes, boolean _allow_seeking) throws KduException;
+  public boolean Open(Kdu_platform_file _file, long[] _flags) throws KduException
+  {
+    Kdu_membroker broker = null;
+    return Open(_file,_flags,(boolean) false,broker,null,(boolean) true);
+  }
+  public boolean Open(Kdu_platform_file _file, long[] _flags, boolean _return_if_incompatible) throws KduException
+  {
+    Kdu_membroker broker = null;
+    return Open(_file,_flags,_return_if_incompatible,broker,null,(boolean) true);
+  }
+  public boolean Open(Kdu_platform_file _file, long[] _flags, boolean _return_if_incompatible, Kdu_membroker _broker) throws KduException
+  {
+    return Open(_file,_flags,_return_if_incompatible,_broker,null,(boolean) true);
+  }
+  public boolean Open(Kdu_platform_file _file, long[] _flags, boolean _return_if_incompatible, Kdu_membroker _broker, long[] _fixed_codestream_bytes) throws KduException
+  {
+    return Open(_file,_flags,_return_if_incompatible,_broker,_fixed_codestream_bytes,(boolean) true);
+  }
   public native long Get_remaining_bytes() throws KduException;
   public native long Get_image_file_pos() throws KduException;
 }

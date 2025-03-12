@@ -27,6 +27,7 @@ public class Kdu_subband {
   public native int Get_eps_mu() throws KduException;
   public native float Get_msb_wmse() throws KduException;
   public native boolean Get_roi_weight(float[] _energy_weight) throws KduException;
+  public native int Get_per_plane_wmse(float[] _wmse, int _max_entries, boolean _roi_background) throws KduException;
   public native boolean Get_masking_params(float[] _visibility_floor, float[] _masking_exponent, float[] _visual_scale) throws KduException;
   public native void Get_dims(Kdu_dims _dims) throws KduException;
   public native void Get_parent_dims(Kdu_dims _dims, boolean _ignore_region_constraints) throws KduException;
@@ -39,8 +40,10 @@ public class Kdu_subband {
   public native void Get_block_size(Kdu_coords _nominal_size, Kdu_coords _first_size) throws KduException;
   public native int Get_block_geometry(boolean[] _transpose, boolean[] _vflip, boolean[] _hflip) throws KduException;
   public native void Block_row_generated(int _block_height, boolean _subband_finished, Kdu_thread_env _env) throws KduException;
+  public native int Get_content_type() throws KduException;
   public native boolean Attach_block_notifier(Kdu_thread_queue _client_queue, Kdu_thread_env _env) throws KduException;
   public native void Advance_block_rows_needed(Kdu_thread_queue _client_queue, long _delta_Q, Kdu_thread_env _env) throws KduException;
+  public native void Describe_block_notifier_state(Kdu_thread_queue _client_queue, Kdu_message _msg) throws KduException;
   public native boolean Detach_block_notifier(Kdu_thread_queue _client_queue, Kdu_thread_env _env) throws KduException;
   public native Kdu_block Open_block(Kdu_coords _block_idx, int[] _return_tpart, Kdu_thread_env _env, int _hscan_length, boolean _hscan_start) throws KduException;
   public Kdu_block Open_block(Kdu_coords _block_idx) throws KduException
@@ -67,6 +70,8 @@ public class Kdu_subband {
     Kdu_thread_env env = null;
     Close_block(_block,env);
   }
+  public native Kdu_block Fetch_block(Kdu_coords _block_idx, Kdu_thread_env _env) throws KduException;
+  public native void Update_block(Kdu_block _block, Kdu_thread_env _env) throws KduException;
   public native int Get_conservative_slope_threshold() throws KduException;
   public native void Get_global_coding_hints(int[] _conservative_slope_threshold, int[] _max_slope_threshold) throws KduException;
 }
