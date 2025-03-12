@@ -132,6 +132,12 @@ public class Kdu_stripe_compressor {
     Start(_codestream,_num_layer_specs,_layer_sizes,_layer_slopes,_min_slope_threshold,_no_auto_complexity_control,_force_precise,_record_layer_info_in_comment,_size_tolerance,_num_components,_want_fastest,_env,_env_queue,_env_dbuf_height,_env_tile_concurrency,_trim_to_rate,_flush_flags,multi_xform_extra_params);
   }
   public native long Get_set_next_queue_sequence(long _min_val) throws KduException;
+  public native void Finish_background_processing(Kdu_thread_env _alt_env) throws KduException;
+  public void Finish_background_processing() throws KduException
+  {
+    Kdu_thread_env alt_env = null;
+    Finish_background_processing(alt_env);
+  }
   public native boolean Finish(int _num_layer_specs, long[] _layer_sizes, int[] _layer_slopes, Kdu_thread_env _alt_env) throws KduException;
   public boolean Finish() throws KduException
   {

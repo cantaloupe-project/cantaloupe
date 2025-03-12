@@ -3,6 +3,7 @@ package edu.illinois.library.cantaloupe.resource;
 import edu.illinois.library.cantaloupe.resource.admin.AdminResource;
 import edu.illinois.library.cantaloupe.resource.api.TaskResource;
 import edu.illinois.library.cantaloupe.resource.api.TasksResource;
+import edu.illinois.library.cantaloupe.resource.health.HealthResource;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import org.junit.jupiter.api.Test;
 
@@ -43,8 +44,7 @@ class RouteTest extends BaseTest {
     @Test
     void testForPathWithHealthRoute() {
         Route route = Route.forPath(Route.HEALTH_PATH);
-        assertEquals(edu.illinois.library.cantaloupe.resource.api.HealthResource.class,
-                route.getResource());
+        assertEquals(HealthResource.class, route.getResource());
     }
 
     @Test

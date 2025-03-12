@@ -89,7 +89,7 @@ public final class Route {
         MAPPINGS.put(Pattern.compile("^" + CONFIGURATION_PATH + "$"),
                 edu.illinois.library.cantaloupe.resource.api.ConfigurationResource.class);
         MAPPINGS.put(Pattern.compile("^" + HEALTH_PATH + "$"),
-                edu.illinois.library.cantaloupe.resource.api.HealthResource.class);
+                edu.illinois.library.cantaloupe.resource.health.HealthResource.class);
         MAPPINGS.put(Pattern.compile("^" + STATUS_PATH + "$"),
                 edu.illinois.library.cantaloupe.resource.api.StatusResource.class);
         MAPPINGS.put(Pattern.compile("^" + TASKS_PATH + "$"),

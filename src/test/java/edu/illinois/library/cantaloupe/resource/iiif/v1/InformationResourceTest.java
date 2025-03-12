@@ -451,9 +451,9 @@ public class InformationResourceTest extends ResourceTest {
 
         String json = response.getBodyAsString();
         ObjectMapper mapper = new ObjectMapper();
-        ImageInfo info = mapper.readValue(json, ImageInfo.class);
-        assertEquals("http://localhost:" + getHTTPPort() +
-                Route.IIIF_1_PATH + "/" + IMAGE, info.id);
+        Information info = mapper.readValue(json, Information.class);
+        assertEquals("http://localhost:" + getHTTPPort() + Route.IIIF_1_PATH + "/" + IMAGE,
+                info.id);
     }
 
     @Test
@@ -466,7 +466,7 @@ public class InformationResourceTest extends ResourceTest {
 
         String json = response.getBodyAsString();
         ObjectMapper mapper = new ObjectMapper();
-        ImageInfo info = mapper.readValue(json, ImageInfo.class);
+        Information info = mapper.readValue(json, Information.class);
         assertEquals("http://example.org" + Route.IIIF_1_PATH + "/" + IMAGE,
                 info.id);
     }
@@ -482,7 +482,7 @@ public class InformationResourceTest extends ResourceTest {
 
         String json = response.getBodyAsString();
         ObjectMapper mapper = new ObjectMapper();
-        ImageInfo info = mapper.readValue(json, ImageInfo.class);
+        Information info = mapper.readValue(json, Information.class);
         assertEquals("http://localhost:" + getHTTPPort() + Route.IIIF_1_PATH + path,
                 info.id);
     }
@@ -498,9 +498,9 @@ public class InformationResourceTest extends ResourceTest {
 
         String json = response.getBodyAsString();
         ObjectMapper mapper = new ObjectMapper();
-        ImageInfo info = mapper.readValue(json, ImageInfo.class);
-        assertEquals("http://localhost:" + getHTTPPort() +
-                Route.IIIF_1_PATH + path, info.id);
+        Information info = mapper.readValue(json, Information.class);
+        assertEquals("http://localhost:" + getHTTPPort() + Route.IIIF_1_PATH + path,
+                info.id);
     }
 
     @Test
@@ -516,7 +516,7 @@ public class InformationResourceTest extends ResourceTest {
 
         String json = response.getBodyAsString();
         ObjectMapper mapper = new ObjectMapper();
-        ImageInfo info = mapper.readValue(json, ImageInfo.class);
+        Information info = mapper.readValue(json, Information.class);
         assertEquals("http://example.org:8080/cats" +
                 Route.IIIF_1_PATH + "/originalID", info.id);
     }
@@ -535,7 +535,7 @@ public class InformationResourceTest extends ResourceTest {
 
         String json = response.getBodyAsString();
         ObjectMapper mapper = new ObjectMapper();
-        ImageInfo info = mapper.readValue(json, ImageInfo.class);
+        Information info = mapper.readValue(json, Information.class);
         assertEquals("https://example.net" +
                 Route.IIIF_1_PATH + "/" + IMAGE, info.id);
     }
@@ -549,7 +549,7 @@ public class InformationResourceTest extends ResourceTest {
         client = newClient("/" + IMAGE + "/info.json");
         Response response = client.send();
         Headers headers = response.getHeaders();
-        assertEquals(8, headers.size());
+        assertEquals(9, headers.size());
 
         // Access-Control-Allow-Origin
         assertEquals("*", headers.getFirstValue("Access-Control-Allow-Origin"));
@@ -560,6 +560,8 @@ public class InformationResourceTest extends ResourceTest {
                 headers.getFirstValue("Content-Type")));
         // Date
         assertNotNull(headers.getFirstValue("Date"));
+        // Last-Modified
+        assertNotNull(headers.getFirstValue("Last-Modified"));
         // Link
         assertTrue(headers.getFirstValue("Link").contains("://"));
         // Server
@@ -579,6 +581,13 @@ public class InformationResourceTest extends ResourceTest {
     }
 
     @Test
+    void testGETLastModifiedResponseHeaderWhenDerivativeCacheIsEnabled()
+            throws Exception {
+        URI uri = getHTTPURI("/" + IMAGE + "/info.json");
+        tester.testLastModifiedHeaderWhenDerivativeCacheIsEnabled(uri);
+    }
+
+    @Test
     void testOPTIONSWhenEnabled() throws Exception {
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.IIIF_1_ENDPOINT_ENABLED, true);
@@ -594,6 +603,11 @@ public class InformationResourceTest extends ResourceTest {
         assertEquals(2, methods.size());
         assertTrue(methods.contains("GET"));
         assertTrue(methods.contains("OPTIONS"));
+
+        List<String> allowedHeaders =
+                List.of(StringUtils.split(headers.getFirstValue("Access-Control-Allow-Headers"), ", "));
+        assertEquals(1, allowedHeaders.size());
+        assertTrue(allowedHeaders.contains("Authorization"));
     }
 
     @Test

@@ -67,7 +67,7 @@ class AzureStorageCache implements DerivativeCache {
 
         /**
          * Constructor for an instance that writes into the given temporary
-         * blob. Upon closure, if the stream is {@link #isCompletelyWritten()
+         * blob. Upon closure, if the stream is {@link #isComplete()
          * completely written}, the temporary blob is copied into place and
          * deleted. Otherwise, the temporary blob is deleted.
          *
@@ -96,7 +96,7 @@ class AzureStorageCache implements DerivativeCache {
                 blobOutputStream.flush();
                 blobOutputStream.close();
                 if (container != null) {
-                    if (isCompletelyWritten()) {
+                    if (isComplete()) {
                         // Copy the temporary blob into place.
                         CloudBlockBlob destBlob =
                                 container.getBlockBlobReference(blobKey);
@@ -143,6 +143,8 @@ class AzureStorageCache implements DerivativeCache {
 
     private static final Logger LOGGER =
             LoggerFactory.getLogger(AzureStorageCache.class);
+
+    private static final String INFO_EXTENSION = ".json";
 
     private static CloudBlobClient client;
 
@@ -197,7 +199,7 @@ class AzureStorageCache implements DerivativeCache {
 
     @Override
     public Optional<Info> getInfo(Identifier identifier) throws IOException {
-        final String containerName = getContainerName();
+        final String containerName   = getContainerName();
         final CloudBlobClient client = getClientInstance();
 
         try {
@@ -211,6 +213,12 @@ class AzureStorageCache implements DerivativeCache {
                 if (isValid(blob)) {
                     try (InputStream is = blob.openInputStream()) {
                         Info info = Info.fromJSON(is);
+                        // Populate the serialization timestamp if it is not
+                        // already, as suggested by the method contract.
+                        if (info.getSerializationTimestamp() == null) {
+                            info.setSerializationTimestamp(
+                                    blob.getProperties().getLastModified().toInstant());
+                        }
                         LOGGER.debug("getInfo(): read {} from container {} in {}",
                                 objectKey, containerName, watch);
                         return Optional.of(info);
@@ -290,7 +298,7 @@ class AzureStorageCache implements DerivativeCache {
      */
     String getObjectKey(Identifier identifier) {
         return getObjectKeyPrefix() + "info/" +
-                StringUtils.md5(identifier.toString()) + ".json";
+                StringUtils.md5(identifier.toString()) + INFO_EXTENSION;
     }
 
     /**
@@ -388,6 +396,32 @@ class AzureStorageCache implements DerivativeCache {
                         blob, e.getMessage());
             }
         });
+    }
+
+    @Override
+    public void purgeInfos() throws IOException {
+        final String containerName   = getContainerName();
+        final CloudBlobClient client = getClientInstance();
+        try {
+            final CloudBlobContainer container =
+                    client.getContainerReference(containerName);
+            int count = 0, deletedCount = 0;
+            for (ListBlobItem item : container.listBlobs(getObjectKeyPrefix(), true)) {
+                if (item instanceof CloudBlob) {
+                    CloudBlob blob = (CloudBlob) item;
+                    count++;
+                    if (blob.getName().endsWith(INFO_EXTENSION)) {
+                        if (blob.deleteIfExists()) {
+                            deletedCount++;
+                        }
+                    }
+                }
+            }
+            LOGGER.debug("purgeInfos(): deleted {} of {} items",
+                    deletedCount, count);
+        } catch (URISyntaxException | StorageException e) {
+            throw new IOException(e.getMessage(), e);
+        }
     }
 
     @Override

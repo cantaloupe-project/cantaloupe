@@ -1,10 +1,12 @@
 package edu.illinois.library.cantaloupe.resource.iiif.v1;
 
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import edu.illinois.library.cantaloupe.http.Method;
 import edu.illinois.library.cantaloupe.http.Status;
@@ -14,8 +16,11 @@ import edu.illinois.library.cantaloupe.resource.JacksonRepresentation;
 import edu.illinois.library.cantaloupe.resource.ResourceException;
 import edu.illinois.library.cantaloupe.resource.Route;
 import edu.illinois.library.cantaloupe.resource.InformationRequestHandler;
+import edu.illinois.library.cantaloupe.source.StatResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import jakarta.servlet.http.HttpServletResponse;
 
 /**
  * Handles IIIF Image API 1.x information requests.
@@ -41,8 +46,23 @@ public class InformationResource extends IIIF1Resource {
         return SUPPORTED_METHODS;
     }
 
+    @Override
+    protected final void doOPTIONS() {
+        HttpServletResponse response = getResponse();
+        Method[] methods = getSupportedMethods();
+        if (methods.length > 0) {
+            response.setStatus(Status.NO_CONTENT.getCode());
+            response.setHeader("Access-Control-Allow-Headers", "Authorization");
+            response.setHeader("Allow", Arrays.stream(methods)
+                    .map(Method::toString)
+                    .collect(Collectors.joining(",")));
+        } else {
+            response.setStatus(Status.METHOD_NOT_ALLOWED.getCode());
+        }
+    }
+
     /**
-     * Writes a JSON-serialized {@link ImageInfo} instance to the response.
+     * Writes a JSON-serialized {@link Information} instance to the response.
      */
     @Override
     public void doGET() throws Exception {
@@ -56,6 +76,14 @@ public class InformationResource extends IIIF1Resource {
             public boolean authorize() throws Exception {
                 return InformationResource.this.preAuthorize();
             }
+
+            @Override
+            public void sourceAccessed(StatResult result) {
+                if (result.getLastModified() != null) {
+                    setLastModifiedHeader(result.getLastModified());
+                }
+            }
+
             @Override
             public void knowAvailableOutputFormats(Set<Format> formats) {
                 availableOutputFormats.addAll(formats);
@@ -72,13 +100,13 @@ public class InformationResource extends IIIF1Resource {
                 .build()) {
             try {
                 Info info = handler.handle();
-                ImageInfo iiifInfo = new ImageInfoFactory().newImageInfo(
+                Information iiifInfo = new InformationFactory().newImageInfo(
                         getImageURI(),
                         availableOutputFormats,
                         info,
                         getPageIndex(),
                         getMetaIdentifier().getScaleConstraint());
-                addHeaders(iiifInfo);
+                addHeaders(info, iiifInfo);
                 new JacksonRepresentation(iiifInfo)
                         .write(getResponse().getOutputStream());
             } catch (ResourceException e) {
@@ -92,10 +120,16 @@ public class InformationResource extends IIIF1Resource {
         }
     }
 
-    private void addHeaders(ImageInfo info) {
+    private void addHeaders(Info info, Information iiifInfo) {
+        // Content-Type
         getResponse().setHeader("Content-Type", getNegotiatedMediaType());
+        // Link
         getResponse().setHeader("Link",
-                String.format("<%s>;rel=\"profile\";", info.profile));
+                String.format("<%s>;rel=\"profile\";", iiifInfo.profile));
+        // Last-Modified
+        if (info.getSerializationTimestamp() != null) {
+            setLastModifiedHeader(info.getSerializationTimestamp());
+        }
     }
 
     /**

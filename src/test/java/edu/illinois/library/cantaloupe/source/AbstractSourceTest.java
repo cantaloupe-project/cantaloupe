@@ -25,48 +25,6 @@ abstract class AbstractSourceTest extends BaseTest {
         useBasicLookupStrategy();
     }
 
-    /* checkAccess() */
-
-    @Test
-    void testCheckAccessUsingBasicLookupStrategyWithPresentReadableImage()
-            throws Exception {
-        try {
-            initializeEndpoint();
-
-            newInstance().checkAccess();
-        } finally {
-            destroyEndpoint();
-        }
-    }
-
-    @Test
-    void testCheckAccessUsingBasicLookupStrategyWithMissingImage()
-            throws Exception {
-        try {
-            initializeEndpoint();
-
-            Source instance = newInstance();
-            instance.setIdentifier(new Identifier("bogus"));
-            assertThrows(NoSuchFileException.class, instance::checkAccess);
-        } finally {
-            destroyEndpoint();
-        }
-    }
-
-    @Test
-    void testCheckAccessInvokedMultipleTimes() throws Exception {
-        try {
-            initializeEndpoint();
-
-            Source instance = newInstance();
-            instance.checkAccess();
-            instance.checkAccess();
-            instance.checkAccess();
-        } finally {
-            destroyEndpoint();
-        }
-    }
-
     /* getFormatIterator() */
 
     @Test
@@ -108,6 +66,64 @@ abstract class AbstractSourceTest extends BaseTest {
                  OutputStream os = OutputStream.nullOutputStream()) {
                 is.transferTo(os);
             }
+        } finally {
+            destroyEndpoint();
+        }
+    }
+
+    /* stat() */
+
+    @Test
+    void testStatUsingBasicLookupStrategyWithPresentReadableImage()
+            throws Exception {
+        try {
+            initializeEndpoint();
+
+            newInstance().stat();
+        } finally {
+            destroyEndpoint();
+        }
+    }
+
+    @Test
+    void testStatUsingBasicLookupStrategyWithMissingImage()
+            throws Exception {
+        try {
+            initializeEndpoint();
+
+            Source instance = newInstance();
+            instance.setIdentifier(new Identifier("bogus"));
+            assertThrows(NoSuchFileException.class, instance::stat);
+        } finally {
+            destroyEndpoint();
+        }
+    }
+
+    @Test
+    void testStatReturnsCorrectInstance() throws Exception {
+        try {
+            initializeEndpoint();
+
+            StatResult result = newInstance().stat();
+            assertNotNull(result.getLastModified());
+        } finally {
+            destroyEndpoint();
+        }
+    }
+
+    /**
+     * Tests that {@link Source#stat()} can be invoked multiple times without
+     * throwing an exception.
+     */
+    @Test
+    void testStatInvokedMultipleTimes() throws Exception {
+        try {
+            initializeEndpoint();
+
+            Source instance = newInstance();
+            instance.stat();
+            instance.stat();
+            instance.stat();
         } finally {
             destroyEndpoint();
         }

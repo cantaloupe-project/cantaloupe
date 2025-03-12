@@ -21,6 +21,7 @@ import java.nio.file.Path;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assumptions.*;
 
 abstract class AbstractCacheTest extends BaseTest {
 
@@ -89,6 +90,23 @@ abstract class AbstractCacheTest extends BaseTest {
     }
 
     @Test
+    void testGetInfoPopulatesSerializationTimestampWhenNotAlreadySet()
+            throws Exception {
+        // These caches don't support this feature.
+        assumeFalse(this instanceof HeapCacheTest ||
+                this instanceof JdbcCacheTest ||
+                this instanceof RedisCacheTest);
+        final DerivativeCache instance = newInstance();
+
+        Identifier identifier = new Identifier("cats");
+        Info info = new Info();
+        instance.put(identifier, info);
+
+        info = instance.getInfo(identifier).get();
+        assertNotNull(info.getSerializationTimestamp());
+    }
+
+    @Test
     void testGetInfoConcurrently() {
         // This is tested in testPutConcurrently()
     }
@@ -110,7 +128,7 @@ abstract class AbstractCacheTest extends BaseTest {
         try (CompletableOutputStream os =
                      instance.newDerivativeImageOutputStream(opList)) {
             Files.copy(imageFile, os);
-            os.setCompletelyWritten(true);
+            os.setComplete(true);
         }
 
         // Wait for it to upload
@@ -144,7 +162,7 @@ abstract class AbstractCacheTest extends BaseTest {
         try (CompletableOutputStream os =
                      instance.newDerivativeImageOutputStream(ops)) {
             Files.copy(fixture, os);
-            os.setCompletelyWritten(true);
+            os.setComplete(true);
         }
 
         // Wait for it to finish, hopefully.
@@ -182,7 +200,7 @@ abstract class AbstractCacheTest extends BaseTest {
             try (CompletableOutputStream os =
                          instance.newDerivativeImageOutputStream(ops)) {
                 Files.copy(TestUtil.getImage(IMAGE), os);
-                os.setCompletelyWritten(true);
+                os.setComplete(true);
             }
             return null;
         }, () -> {
@@ -216,7 +234,7 @@ abstract class AbstractCacheTest extends BaseTest {
         try (CompletableOutputStream outputStream =
                      instance.newDerivativeImageOutputStream(ops)) {
             Files.copy(fixture, outputStream);
-            outputStream.setCompletelyWritten(true);
+            outputStream.setComplete(true);
         }
 
         // Wait for it to upload
@@ -245,7 +263,7 @@ abstract class AbstractCacheTest extends BaseTest {
         try (CompletableOutputStream outputStream =
                      instance.newDerivativeImageOutputStream(ops)) {
             Files.copy(fixture, outputStream);
-            outputStream.setCompletelyWritten(false); // the whole point of the test
+            outputStream.setComplete(false); // the whole point of the test
         }
 
         // Wait for it to upload
@@ -292,7 +310,7 @@ abstract class AbstractCacheTest extends BaseTest {
                      instance.newDerivativeImageOutputStream(opList)) {
             Path fixture = TestUtil.getImage(IMAGE);
             Files.copy(fixture, outputStream);
-            outputStream.setCompletelyWritten(true);
+            outputStream.setComplete(true);
         }
 
         // add the info
@@ -335,7 +353,7 @@ abstract class AbstractCacheTest extends BaseTest {
         try (CompletableOutputStream os =
                      instance.newDerivativeImageOutputStream(opList1)) {
             Files.copy(fixture, os);
-            os.setCompletelyWritten(true);
+            os.setComplete(true);
         }
         instance.put(id1, new Info());
 
@@ -348,7 +366,7 @@ abstract class AbstractCacheTest extends BaseTest {
         try (CompletableOutputStream os =
                      instance.newDerivativeImageOutputStream(opList2)) {
             Files.copy(fixture, os);
-            os.setCompletelyWritten(true);
+            os.setComplete(true);
         }
         instance.put(id2, new Info());
 
@@ -388,7 +406,7 @@ abstract class AbstractCacheTest extends BaseTest {
         try (CompletableOutputStream os =
                      instance.newDerivativeImageOutputStream(ops1)) {
             Files.copy(TestUtil.getImage(IMAGE), os);
-            os.setCompletelyWritten(true);
+            os.setComplete(true);
         }
 
         // Seed another derivative image
@@ -399,7 +417,7 @@ abstract class AbstractCacheTest extends BaseTest {
         try (CompletableOutputStream os =
                      instance.newDerivativeImageOutputStream(ops2)) {
             Files.copy(TestUtil.getImage(IMAGE), os);
-            os.setCompletelyWritten(true);
+            os.setComplete(true);
         }
 
         Thread.sleep(ASYNC_WAIT);
@@ -414,13 +432,60 @@ abstract class AbstractCacheTest extends BaseTest {
         assertExists(instance, ops2);
     }
 
+    /* purgeInfos() */
+
+    @Test
+    void testPurgeInfos() throws Exception {
+        DerivativeCache instance = newInstance();
+        Identifier identifier    = new Identifier(IMAGE);
+        OperationList opList     = OperationList.builder()
+                .withIdentifier(identifier)
+                .withOperations(new Encode(Format.get("jpg")))
+                .build();
+        Info info = new Info();
+
+        // assert that a particular image doesn't exist
+        try (InputStream is = instance.newDerivativeImageInputStream(opList)) {
+            assertNull(is);
+        }
+
+        // assert that a particular info doesn't exist
+        assertFalse(instance.getInfo(identifier).isPresent());
+
+        // add the image
+        try (CompletableOutputStream outputStream =
+                     instance.newDerivativeImageOutputStream(opList)) {
+            Path fixture = TestUtil.getImage(IMAGE);
+            Files.copy(fixture, outputStream);
+            outputStream.setComplete(true);
+        }
+
+        // add the info
+        instance.put(identifier, info);
+
+        Thread.sleep(ASYNC_WAIT);
+
+        // assert that they've been added
+        assertExists(instance, opList);
+        assertNotNull(instance.getInfo(identifier));
+
+        // purge infos
+        instance.purgeInfos();
+
+        // assert that the info has been purged
+        assertFalse(instance.getInfo(identifier).isPresent());
+
+        // assert that the image has NOT been purged
+        assertExists(instance, opList);
+    }
+
     /* purgeInvalid() */
 
     @Test
     void testPurgeInvalid() throws Exception {
         DerivativeCache instance = newInstance();
-        Identifier id1 = new Identifier(IMAGE);
-        OperationList ops1 = OperationList.builder()
+        Identifier id1           = new Identifier(IMAGE);
+        OperationList ops1       = OperationList.builder()
                 .withIdentifier(id1)
                 .withOperations(new Encode(Format.get("jpg")))
                 .build();
@@ -432,7 +497,7 @@ abstract class AbstractCacheTest extends BaseTest {
         try (CompletableOutputStream outputStream =
                      instance.newDerivativeImageOutputStream(ops1)) {
             Files.copy(fixture, outputStream);
-            outputStream.setCompletelyWritten(true);
+            outputStream.setComplete(true);
         }
 
         // add an Info
@@ -455,7 +520,7 @@ abstract class AbstractCacheTest extends BaseTest {
         try (CompletableOutputStream outputStream =
                      instance.newDerivativeImageOutputStream(ops2)) {
             Files.copy(fixture2, outputStream);
-            outputStream.setCompletelyWritten(true);
+            outputStream.setComplete(true);
         }
 
         // add another info

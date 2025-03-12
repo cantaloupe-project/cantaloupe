@@ -10,14 +10,14 @@ import java.io.OutputStream;
  */
 public abstract class CompletableOutputStream extends OutputStream {
 
-    private boolean isCompletelyWritten;
+    private boolean isComplete;
 
-    public boolean isCompletelyWritten() {
-        return isCompletelyWritten;
+    public boolean isComplete() {
+        return isComplete;
     }
 
-    public void setCompletelyWritten(boolean isCompletelyWritten) {
-        this.isCompletelyWritten = isCompletelyWritten;
+    public void setComplete(boolean isCompletelyWritten) {
+        this.isComplete = isCompletelyWritten;
     }
 
 }

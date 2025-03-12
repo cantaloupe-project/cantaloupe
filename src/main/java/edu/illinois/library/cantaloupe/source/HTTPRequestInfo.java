@@ -10,27 +10,7 @@ class HTTPRequestInfo {
 
     private final Headers headers = new Headers();
     private String uri, username, secret;
-
-    HTTPRequestInfo(String uri) {
-        this.uri = uri;
-    }
-
-    HTTPRequestInfo(String uri, String username, String secret) {
-        this(uri);
-        this.username = username;
-        this.secret = secret;
-    }
-
-    HTTPRequestInfo(String uri,
-                    String username,
-                    String secret,
-                    Map<String,?> headers) {
-        this(uri, username, secret);
-        if (headers != null) {
-            headers.forEach((key, value) ->
-                    this.headers.add(key, value.toString()));
-        }
-    }
+    private boolean isSendingHeadRequest = true;
 
     String getBasicAuthToken() {
         if (getUsername() != null && getSecret() != null) {
@@ -55,6 +35,35 @@ class HTTPRequestInfo {
 
     String getUsername() {
         return username;
+    }
+
+    boolean isSendingHeadRequest() {
+        return isSendingHeadRequest;
+    }
+
+    void setHeaders(Map<String,Object> headers) {
+        if (headers != null) {
+            headers.forEach((key, value) ->
+                    this.headers.add(key, value.toString()));
+        } else {
+            this.headers.clear();
+        }
+    }
+
+    void setSecret(String secret) {
+        this.secret = secret;
+    }
+
+    void setSendingHeadRequest(boolean isUsingHeadRequest) {
+        this.isSendingHeadRequest = isUsingHeadRequest;
+    }
+
+    void setURI(String uri) {
+        this.uri = uri;
+    }
+
+    void setUsername(String username) {
+        this.username = username;
     }
 
     @Override

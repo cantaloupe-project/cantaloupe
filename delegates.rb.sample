@@ -221,10 +221,17 @@ class CustomDelegate
   #
   # 1. String URI
   # 2. Hash with the following keys:
-  #     * `uri`      [String] (required)
-  #     * `username` [String] For HTTP Basic authentication (optional).
-  #     * `secret`   [String] For HTTP Basic authentication (optional).
-  #     * `headers`  [Hash<String,String>] Hash of request headers (optional).
+  #     * `uri`               [String] (required)
+  #     * `username`          [String] For HTTP Basic authentication
+  #                           (optional).
+  #     * `secret`            [String] For HTTP Basic authentication
+  #                           (optional).
+  #     * `headers`           [Hash<String,String>] Hash of request headers
+  #                           (optional).
+  #     * `send_head_request` [Boolean] Optional; defaults to `true`. See the
+  #                           documentation of the
+  #                           `HttpSource.BasicLookupStrategy.send_head_requests`
+  #                           configuration key.
   # 3. nil if not found.
   #
   # N.B.: this method should not try to perform authorization. `authorize()`
@@ -241,18 +248,33 @@ class CustomDelegate
   # should be used instead.
   #
   # @param options [Hash] Empty hash.
-  # @return [String] Identifier of the image corresponding to the given
-  #                  identifier in the database.
+  # @return [String, nil] Database identifier of the image corresponding to the
+  #                       identifier in the context, or nil if not found.
   #
   def jdbcsource_database_identifier(options = {})
   end
 
   ##
+  # Returns either the last-modified timestamp of an image in ISO 8601 format,
+  # or an SQL statement that can be used to retrieve it from a `TIMESTAMP`-type
+  # column in the database. In the latter case, the "SELECT" and "FROM" clauses
+  # should be in uppercase in order to be autodetected.
+  #
+  # Implementing this method is optional, but may be necessary for certain
+  # features (like `Last-Modified` response headers) to work.
+  #
+  # @param options [Hash] Empty hash.
+  # @return [String, nil]
+  #
+  def jdbcsource_last_modified(options = {})
+  end
+
+  ##
   # Returns either the media (MIME) type of an image, or an SQL statement that
-  # can be used to retrieve it, if it is stored in the database. In the latter
-  # case, the "SELECT" and "FROM" clauses should be in uppercase in order to
-  # be autodetected. If nil is returned, the media type will be inferred some
-  # other way, such as by identifier extension or magic bytes.
+  # can be used to retrieve it from a `CHAR`-type column in the database. In
+  # the latter case, the "SELECT" and "FROM" clauses should be in uppercase in
+  # order to be autodetected. If nil is returned, the media type will be
+  # inferred some other way, such as by identifier extension or magic bytes.
   #
   # @param options [Hash] Empty hash.
   # @return [String, nil]
@@ -273,8 +295,11 @@ class CustomDelegate
   # should be used instead.
   #
   # @param options [Hash] Empty hash.
-  # @return [Hash<String,Object>,nil] Hash containing `bucket` and `key` keys;
-  #                                   or nil if not found.
+  # @return [Hash<String,Object>,nil] Hash containing `bucket` and `key` keys.
+  #         It may also contain an `endpoint` key, indicating that the endpoint
+  #         is different from the one set in the configuration. In that case,
+  #         it may also contain `region`, `access_key_id`, and/or
+  #         `secret_access_key` keys.
   #
   def s3source_object_info(options = {})
   end
@@ -356,7 +381,14 @@ class CustomDelegate
   #         "Field2Name": value
   #     ],
   #     "xmp_string": "<rdf:RDF>...</rdf:RDF>",
-  #     "xmp_model": https://jena.apache.org/documentation/javadoc/jena/org/apache/jena/rdf/model/Model.html
+  #     "xmp_model": See https://jena.apache.org/documentation/javadoc/jena/org/apache/jena/rdf/model/Model.html,
+  #     "xmp_elements": {
+  #         "Field1Name": "value",
+  #         "Field2Name": [
+  #             "value1",
+  #             "value2"
+  #         ]
+  #     },
   #     "native": {
   #         # structure varies
   #     }
@@ -366,10 +398,13 @@ class CustomDelegate
   # * The `exif` key refers to embedded EXIF data. This also includes IFD0
   #   metadata from source TIFFs, whether or not an EXIF IFD is present.
   # * The `iptc` key refers to embedded IPTC IIM data.
-  # * The `xmp_string` key refers to raw embedded XMP data, which may or may
-  #   not contain EXIF and/or IPTC information.
+  # * The `xmp_string` key refers to raw embedded XMP data.
   # * The `xmp_model` key contains a Jena Model object pre-loaded with the
   #   contents of `xmp_string`.
+  # * The `xmp_elements` key contains a view of the embedded XMP data as key-
+  #   value pairs. This is convenient to use, but may not work correctly with
+  #   all XMP fields--in particular, those that cannot be expressed as
+  #   key-value pairs.
   # * The `native` key refers to format-specific metadata.
   #
   # Any combination of the above keys may be present or missing depending on

@@ -340,11 +340,7 @@ final class GIFMetadataReader implements AutoCloseable {
 
     private byte[] read(int length) throws IOException {
         byte[] data = new byte[length];
-        int n, offset = 0;
-        while ((n = inputStream.read(
-                data, offset, data.length - offset)) < offset) {
-            offset += n;
-        }
+        inputStream.readFully(data);
         return data;
     }
 

@@ -6,6 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.script.Invocable;
+import javax.script.ScriptContext;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
@@ -71,6 +72,14 @@ final class JRubyDelegateProxy implements DelegateProxy {
         System.setProperty("org.jruby.embed.localvariable.behavior", "transient");
 
         scriptEngine = new ScriptEngineManager().getEngineByName("jruby");
+
+        // Workaround for a memory leak in JRuby's BiVariableMap: By default, all
+        // instance variables are stored into BiVariableMap so they are accessible
+        // from Java. However, there is currently no mechanism for ever removing
+        // them, forming a memory leak.
+        // That feature isn't used by Cantaloupe, so we can just disable it.
+        scriptEngine.getContext().setAttribute("org.jruby.embed.sharing.variables",
+                false, ScriptContext.ENGINE_SCOPE);
     }
 
     /**
@@ -249,6 +258,16 @@ final class JRubyDelegateProxy implements DelegateProxy {
     @Override
     public String getJdbcSourceDatabaseIdentifier() throws ScriptException {
         Object result = invoke(DelegateMethod.JDBCSOURCE_DATABASE_IDENTIFIER);
+        return (String) result;
+    }
+
+    /**
+     * @return Return value of {@link DelegateMethod#JDBCSOURCE_LAST_MODIFIED}.
+     * @since 6.0
+     */
+    @Override
+    public String getJdbcSourceLastModified() throws ScriptException {
+        Object result = invoke(DelegateMethod.JDBCSOURCE_LAST_MODIFIED);
         return (String) result;
     }
 

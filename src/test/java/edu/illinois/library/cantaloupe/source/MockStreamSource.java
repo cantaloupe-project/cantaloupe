@@ -9,7 +9,8 @@ import java.util.Iterator;
 public class MockStreamSource extends AbstractSource implements Source {
 
     @Override
-    public void checkAccess() {
+    public StatResult stat() {
+        return null;
     }
 
     @Override

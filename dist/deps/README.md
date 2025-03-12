@@ -6,11 +6,60 @@ Processors section -> KakaduNativeProcessor section for setup steps.
 
 # License
 
-All of the software in this directory tree is distributed under a Kakadu Public
-Service License, which means that it may only be used for non-commercial
-purposes that are solely for the public good. See the
-[Kakadu License Terms](http://kakadusoftware.com/wp-content/uploads/2014/06/Kakadu-Licence-Terms-Feb-2018.pdf)
-document for detailed terms of use.
+All of the software in this directory tree is distributed under a Kakadu Evaluation License which is intended for an individual or organisation wishing to evaluate the Software with a view of procuring a longer term License Type. Please see the
+[Kakadu License Terms](https://kakadusoftware.com/wp-content/uploads/3451-3100-0598_1_Kakadu-Software-Licence-Terms-and-Conditions-FINAL-1-Sept-2021.pdf)
+for the terms of use which are outlined below. 
+
+## Evaluation License
+### 3.1 Applicability
+
+(a) The Evaluation License is the new name for the following previously named licenses:
+
+(i) “SDK Evaluation License”; and
+
+(ii) “HT Evaluation License” (previously named “HTJ2K Evaluation License”).
+
+(b) The Evaluation License is intended for an individual or organisation wishing to evaluate
+the Software with a view of procuring a longer term License Type.
+
+### 3.2 Grant of License
+
+(a) Kakadu Company grants you during the License Term a non-exclusive, non-
+transferable, worldwide and revocable license to install and use the Software and to
+use the Software to develop Applications, for evaluation purposes only, provided that:
+
+(i) any use of the Software is confined to your internal use and non-commercial
+purposes (which, without limitation, must not include the commercial exploitation
+of the Software or any Applications);
+
+(ii) any copying, altering, modifying, adapting, translating and creating of derivative
+works of the Software must be limited to the purpose of creating Applications
+only;
+
+(iii) any Applications developed by you or otherwise enabled by your use of the
+Software may not be used to conduct business or distributed to any third party.
+Any such distribution may require the purchase of an alternative license as
+separately agreed between the parties; and
+
+(iv) you comply with any special conditions as specified in the Order Form.
+
+(b) Unless the parties agree otherwise, you will not be entitled to any updates or upgrades
+to the Software.
+
+### 3.3 License Term
+The License Term will commence on the Commencement Date, and the Evaluation License
+will terminate on the earlier of:
+
+(a) 6 months from the Commencement Date; or
+
+(b) the date this Agreement is terminated under clause 12.
+
+### 3.4 Consequences of termination or expiry
+Unless you have entered into a longer term License Type during the License Term, upon
+termination or expiry of the Agreement or the License Term, you must cease all use of the Software and Applications for any purpose, destroy any copies and components of the Software, Applications and derivative works of the Software and provide written certification to Kakadu Company that you have complied with your obligations under this clause 3.4.
+
+### 3.5 Fees
+Unless otherwise specified in the Order Form, the License Fee is the single payment as specified in the Order Form, due on or before the Commencement Date.
 
 # Build Info
 

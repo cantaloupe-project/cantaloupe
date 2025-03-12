@@ -2,6 +2,7 @@ package edu.illinois.library.cantaloupe.processor.codec.gif;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.image.Metadata;
+import edu.illinois.library.cantaloupe.image.xmp.Utils;
 import edu.illinois.library.cantaloupe.processor.codec.AbstractIIOImageWriter;
 import edu.illinois.library.cantaloupe.processor.codec.BufferedImageSequence;
 import edu.illinois.library.cantaloupe.processor.codec.ImageWriter;
@@ -62,7 +63,7 @@ public final class GIFImageWriter extends AbstractIIOImageWriter
         final Metadata metadata = encode.getMetadata();
         if (metadata != null) {
             metadata.getXMP().ifPresent(xmp -> {
-                xmp = Metadata.encapsulateXMP(xmp);
+                xmp = Utils.encapsulateXMP(xmp);
 
                 // Get the /ApplicationExtensions node, creating it if necessary.
                 final NodeList appExtensionsList =

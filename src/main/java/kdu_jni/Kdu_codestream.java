@@ -81,6 +81,7 @@ public class Kdu_codestream {
   public native void Configure_simultaneous_processing_fragments(int _ideal_frag_width, int _max_frag_depth, int _max_fragments) throws KduException;
   public native void Configure_simultaneous_processing_fragments(Kdu_codestream _src) throws KduException;
   public native void Set_persistent() throws KduException;
+  public native boolean Install_input_monitor(Kdu_input_codestream_monitor _monitor, Kdu_thread_env _env) throws KduException;
   public native long Augment_cache_threshold(int _extra_bytes) throws KduException;
   public native int Set_tile_unloading_threshold(int _max_tiles_on_list, Kdu_thread_env _env) throws KduException;
   public int Set_tile_unloading_threshold(int _max_tiles_on_list) throws KduException
@@ -118,6 +119,11 @@ public class Kdu_codestream {
   {
     Get_subsampling(_comp_idx,_subs,(boolean) false);
   }
+  public native void Get_min_subsampling(int _comp_idx, Kdu_coords _subs, boolean _want_output_comps) throws KduException;
+  public void Get_min_subsampling(int _comp_idx, Kdu_coords _subs) throws KduException
+  {
+    Get_min_subsampling(_comp_idx,_subs,(boolean) false);
+  }
   public native void Get_registration(int _comp_idx, Kdu_coords _scale, Kdu_coords _crg, boolean _want_output_comps) throws KduException;
   public void Get_registration(int _comp_idx, Kdu_coords _scale, Kdu_coords _crg) throws KduException
   {
@@ -132,6 +138,15 @@ public class Kdu_codestream {
   public void Get_dims(int _comp_idx, Kdu_dims _dims) throws KduException
   {
     Get_dims(_comp_idx,_dims,(boolean) false);
+  }
+  public native void Get_full_dims(int _comp_idx, Kdu_dims _dims, boolean _want_output_comps, boolean _respect_discarded_levels) throws KduException;
+  public void Get_full_dims(int _comp_idx, Kdu_dims _dims) throws KduException
+  {
+    Get_full_dims(_comp_idx,_dims,(boolean) false,(boolean) false);
+  }
+  public void Get_full_dims(int _comp_idx, Kdu_dims _dims, boolean _want_output_comps) throws KduException
+  {
+    Get_full_dims(_comp_idx,_dims,_want_output_comps,(boolean) false);
   }
   public native void Get_tile_partition(Kdu_dims _partition) throws KduException;
   public native void Get_valid_tiles(Kdu_dims _indices) throws KduException;
@@ -155,16 +170,20 @@ public class Kdu_codestream {
   {
     Map_region(_comp_idx,_comp_region,_hires_region,(boolean) false);
   }
-  public native void Set_textualization(Kdu_message _output) throws KduException;
+  public native void Set_textualization(Kdu_message _output, boolean _skip_derived) throws KduException;
+  public void Set_textualization(Kdu_message _output) throws KduException
+  {
+    Set_textualization(_output,(boolean) false);
+  }
   public native void Set_slope_hint_policy(int _flags) throws KduException;
-  public native void Set_max_bytes(long _max_bytes, boolean _simulate_parsing, boolean _allow_periodic_trimming) throws KduException;
+  public native void Set_max_bytes(long _max_bytes, boolean _unsupported, boolean _allow_periodic_trimming) throws KduException;
   public void Set_max_bytes(long _max_bytes) throws KduException
   {
     Set_max_bytes(_max_bytes,(boolean) false,(boolean) true);
   }
-  public void Set_max_bytes(long _max_bytes, boolean _simulate_parsing) throws KduException
+  public void Set_max_bytes(long _max_bytes, boolean _unsupported) throws KduException
   {
-    Set_max_bytes(_max_bytes,_simulate_parsing,(boolean) true);
+    Set_max_bytes(_max_bytes,_unsupported,(boolean) true);
   }
   public native void Set_min_slope_threshold(int _min_slope) throws KduException;
   public native void Set_max_slope_threshold(int _max_slope) throws KduException;
@@ -175,6 +194,7 @@ public class Kdu_codestream {
   }
   public native void Set_fussy() throws KduException;
   public native void Set_fast() throws KduException;
+  public native void Set_allow_parsing_errors(boolean _allow) throws KduException;
   public native void Apply_input_restrictions(int _first_component, int _max_components, int _discard_levels, int _max_layers, Kdu_dims _region_of_interest, int _access_mode, Kdu_thread_env _env, Kdu_quality_limiter _limiter) throws KduException;
   public void Apply_input_restrictions(int _first_component, int _max_components, int _discard_levels, int _max_layers, Kdu_dims _region_of_interest, int _access_mode) throws KduException
   {
@@ -199,12 +219,14 @@ public class Kdu_codestream {
     Kdu_quality_limiter limiter = null;
     Apply_input_restrictions(_num_indices,_component_indices,_discard_levels,_max_layers,_region_of_interest,_access_mode,_env,limiter);
   }
+  public native int Get_input_restrictions(int[] _discard_levels, int[] _max_layers, int[] _access_mode) throws KduException;
   public native void Change_appearance(boolean _transpose, boolean _vflip, boolean _hflip, Kdu_thread_env _env) throws KduException;
   public void Change_appearance(boolean _transpose, boolean _vflip, boolean _hflip) throws KduException
   {
     Kdu_thread_env env = null;
     Change_appearance(_transpose,_vflip,_hflip,env);
   }
+  public native void Get_appearance(boolean[] _transpose, boolean[] _vflip, boolean[] _hflip) throws KduException;
   public native void Set_block_truncation(int _factor) throws KduException;
   public native Kdu_tile Open_tile(Kdu_coords _tile_idx, Kdu_thread_env _env) throws KduException;
   public Kdu_tile Open_tile(Kdu_coords _tile_idx) throws KduException
@@ -212,6 +234,7 @@ public class Kdu_codestream {
     Kdu_thread_env env = null;
     return Open_tile(_tile_idx,env);
   }
+  public native Kdu_tile Review_closed_tile(Kdu_coords _tile_idx) throws KduException;
   public native void Create_tile(Kdu_coords _tile_idx, Kdu_thread_env _env) throws KduException;
   public void Create_tile(Kdu_coords _tile_idx) throws KduException
   {
@@ -328,6 +351,18 @@ public class Kdu_codestream {
     Auto_trans_out(_first_tile_comp_trigger_point,_tile_comp_trigger_interval,_first_incr_trigger_point,_incr_trigger_interval,_max_bytes,_record_in_comseg,env);
   }
   public native Kdu_flush_stats Add_flush_stats(int _initial_frame_idx, int _max_passes, int _nominal_start_plane, int _extra_start_passes) throws KduException;
+  public Kdu_flush_stats Add_flush_stats(int _initial_frame_idx) throws KduException
+  {
+    return Add_flush_stats(_initial_frame_idx,(int) 0,(int) 0,(int) 0);
+  }
+  public Kdu_flush_stats Add_flush_stats(int _initial_frame_idx, int _max_passes) throws KduException
+  {
+    return Add_flush_stats(_initial_frame_idx,_max_passes,(int) 0,(int) 0);
+  }
+  public Kdu_flush_stats Add_flush_stats(int _initial_frame_idx, int _max_passes, int _nominal_start_plane) throws KduException
+  {
+    return Add_flush_stats(_initial_frame_idx,_max_passes,_nominal_start_plane,(int) 0);
+  }
   public native void Attach_flush_stats(Kdu_flush_stats _flush_stats) throws KduException;
   public native long Get_total_bytes(boolean _exclude_main_header) throws KduException;
   public long Get_total_bytes() throws KduException
@@ -337,6 +372,8 @@ public class Kdu_codestream {
   public native long Get_packet_bytes() throws KduException;
   public native long Get_packet_header_bytes() throws KduException;
   public native int Get_num_tparts() throws KduException;
+  public native long Get_corrupted_source_pos() throws KduException;
+  public native boolean Get_decoding_errors_detected() throws KduException;
   public native void Collect_timing_stats(int _num_coder_iterations) throws KduException;
   public native double Get_timing_stats(long[] _num_samples, boolean _coder_only) throws KduException;
   public double Get_timing_stats(long[] _num_samples) throws KduException
@@ -358,5 +395,7 @@ public class Kdu_codestream {
   {
     return Get_params_memory((boolean) true);
   }
+  public native float Set_cbr_start_delay(float _delay_lines) throws KduException;
+  public native boolean Get_cbr_model(float[] _start_delay_lines, long[] _flush_set_lines, float[] _max_bucket_lines, long[] _analysis_delay_lines, long[] _synthesis_delay_lines) throws KduException;
   public native int Get_cbr_flush_stats(float[] _bucket_max_bytes, float[] _bucket_mean_bytes, float[] _inter_flush_bytes, int[] _min_slope_threshold, int[] _max_slope_threshold, float[] _mean_slope_threshold, float[] _mean_square_slope_threshold, long[] _num_fill_bytes) throws KduException;
 }

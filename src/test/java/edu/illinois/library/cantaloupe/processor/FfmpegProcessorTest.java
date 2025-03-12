@@ -123,6 +123,12 @@ public class FfmpegProcessorTest extends AbstractProcessorTest {
     }
 
     @Test
+    void testProcessWithPageIndexInfoIsVideo() throws Exception {
+        final Info imageInfo = instance.readInfo();
+        assertTrue(imageInfo.isVideo());
+    }
+
+    @Test
     void testSupportsSourceFormatWithSupportedFormat() {
         try (Processor instance = newInstance()) {
             assertTrue(instance.supportsSourceFormat(Format.get("mp4")));

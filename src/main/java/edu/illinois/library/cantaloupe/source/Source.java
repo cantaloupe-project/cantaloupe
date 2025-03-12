@@ -20,7 +20,7 @@ import java.util.Iterator;
  * <ol>
  *     <li>{@link #setIdentifier(Identifier)} and
  *     {@link #setDelegateProxy(DelegateProxy)} (in either order)</li>
- *     <li>{@link #checkAccess()}</li>
+ *     <li>{@link #stat()}</li>
  *     <li>Any other methods</li>
  *     <li>{@link #shutdown()}</li>
  * </ol>
@@ -39,17 +39,19 @@ public interface Source {
     void setIdentifier(Identifier identifier);
 
     /**
-     * <p>Checks the accessibility of the source image.</p>
+     * <p>Checks the accessibility of the source image and returns some limited
+     * metadata.</p>
      *
      * <p>Will be called only once.</p>
      *
+     * @return Instance with as many of its properties set as possible.
      * @throws NoSuchFileException if an image corresponding to the set
      *         identifier does not exist.
      * @throws AccessDeniedException if an image corresponding to the set
      *         identifier is not readable.
      * @throws IOException if there is some other issue accessing the image.
      */
-    void checkAccess() throws IOException;
+    StatResult stat() throws IOException;
 
     /**
      * N.B.: This default implementation throws an {@link
@@ -104,10 +106,11 @@ public interface Source {
     default void shutdown() {}
 
     /**
-     * N.B. 1: This method's return value affects the behavior of {@link
-     * #getFile()}. See the documentation of that method for more information.
+     * <p>N.B. 1: This method's return value affects the behavior of {@link
+     * #getFile()}. See the documentation of that method for more
+     * information.</p>
      *
-     * N.B. 2: The default implementation returns {@code false}.
+     * <p>N.B. 2: The default implementation returns {@code false}.</p>
      *
      * @return Whether the source image can be accessed via a {@link
      *         java.nio.file.Path}.

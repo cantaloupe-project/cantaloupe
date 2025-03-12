@@ -9,7 +9,7 @@ import java.util.Iterator;
 public class AccessDeniedSource extends AbstractSource implements Source {
 
     @Override
-    public void checkAccess() throws IOException {
+    public StatResult stat() throws IOException {
         throw new AccessDeniedException("");
     }
 

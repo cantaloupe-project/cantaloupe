@@ -13,15 +13,13 @@ import edu.illinois.library.cantaloupe.http.Status;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.MetaIdentifier;
-import edu.illinois.library.cantaloupe.image.MetaIdentifierTransformer;
-import edu.illinois.library.cantaloupe.image.MetaIdentifierTransformerFactory;
 import edu.illinois.library.cantaloupe.delegate.DelegateProxy;
 import edu.illinois.library.cantaloupe.delegate.DelegateProxyService;
 import edu.illinois.library.cantaloupe.delegate.UnavailableException;
 import edu.illinois.library.cantaloupe.util.StringUtils;
 import org.slf4j.Logger;
 
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
@@ -41,7 +39,7 @@ import java.util.stream.Collectors;
  * more of the HTTP-method-specific methods {@link #doGET()} etc., and may
  * optionally use {@link #doInit()} and {@link #destroy()}.</p>
  *
- * <p>Unlike {@link javax.servlet.http.HttpServlet}s, instances are only used
+ * <p>Unlike {@link jakarta.servlet.http.HttpServlet}s, instances are only used
  * once and not shared across threads.</p>
  */
 public abstract class AbstractResource {
@@ -198,7 +196,10 @@ public abstract class AbstractResource {
         doGET();
     }
 
-    final void doOPTIONS() {
+    /**
+     * May be overridden by implementations that support {@literal OPTIONS}.
+     */
+    protected void doOPTIONS() {
         Method[] methods = getSupportedMethods();
         if (methods.length > 0) {
             response.setStatus(Status.NO_CONTENT.getCode());
@@ -594,9 +595,8 @@ public abstract class AbstractResource {
         final int identifierIndex         = pathComponents.indexOf(
                 getIdentifierPathComponent());
 
-        final MetaIdentifierTransformer xformer =
-                new MetaIdentifierTransformerFactory().newInstance(getDelegateProxy());
-        final String newMetaIdentifierString = xformer.serialize(newMetaIdentifier);
+        final String newMetaIdentifierString =
+                newMetaIdentifier.toURIPathComponent(getDelegateProxy());
         publicRef.setPathComponent(identifierIndex, newMetaIdentifierString);
         return publicRef;
     }
