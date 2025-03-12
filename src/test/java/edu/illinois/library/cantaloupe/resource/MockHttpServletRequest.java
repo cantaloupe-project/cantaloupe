@@ -3,6 +3,7 @@ package edu.illinois.library.cantaloupe.resource;
 import jakarta.servlet.AsyncContext;
 import jakarta.servlet.DispatcherType;
 import jakarta.servlet.RequestDispatcher;
+import jakarta.servlet.ServletConnection;
 import jakarta.servlet.ServletContext;
 import jakarta.servlet.ServletInputStream;
 import jakarta.servlet.ServletRequest;
@@ -249,10 +250,6 @@ public class MockHttpServletRequest implements HttpServletRequest {
         return null;
     }
 
-    @Override
-    public String getRealPath(String s) {
-        return null;
-    }
 
     @Override
     public String getRemoteAddr() {
@@ -315,6 +312,11 @@ public class MockHttpServletRequest implements HttpServletRequest {
     }
 
     @Override
+    public ServletConnection getServletConnection() {
+        return null;
+    }
+
+    @Override
     public String getServletPath() {
         return "/";
     }
@@ -346,11 +348,6 @@ public class MockHttpServletRequest implements HttpServletRequest {
 
     @Override
     public boolean isRequestedSessionIdFromCookie() {
-        return false;
-    }
-
-    @Override
-    public boolean isRequestedSessionIdFromUrl() {
         return false;
     }
 
@@ -424,6 +421,16 @@ public class MockHttpServletRequest implements HttpServletRequest {
     @Override
     public <T extends HttpUpgradeHandler> T upgrade(Class<T> aClass) {
         return null;
+    }
+
+    @Override
+   public String getProtocolRequestId() {
+        return "";
+    }
+
+    @Override
+    public String getRequestId() {
+        return "FakeID";
     }
 
 }
