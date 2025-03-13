@@ -526,7 +526,7 @@ public class Version1_1ConformanceTest extends ResourceTest {
      */
     @Test
     void testInformationRequestJSON() {
-        // this will be tested in ImageInfoFactoryTest
+        // this will be tested in InformationFactoryTest
     }
 
     /**

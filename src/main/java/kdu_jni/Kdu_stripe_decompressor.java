@@ -22,6 +22,7 @@ public class Kdu_stripe_decompressor {
     this(Native_create());
   }
   public native void Mem_configure(Kdu_membroker _membroker, int _frag_bits) throws KduException;
+  public native boolean Is_active() throws KduException;
   public native void Start(Kdu_codestream _codestream, boolean _force_precise, boolean _want_fastest, Kdu_thread_env _env, Kdu_thread_queue _env_queue, int _env_dbuf_height, int _env_tile_concurrency, Kdu_push_pull_params _multi_xform_extra_params) throws KduException;
   public void Start(Kdu_codestream _codestream) throws KduException
   {
@@ -65,13 +66,20 @@ public class Kdu_stripe_decompressor {
     Kdu_push_pull_params multi_xform_extra_params = null;
     Start(_codestream,_force_precise,_want_fastest,_env,_env_queue,_env_dbuf_height,_env_tile_concurrency,multi_xform_extra_params);
   }
-  public native boolean Finish() throws KduException;
+  public native boolean Set_thread_env(Kdu_thread_env _new_env) throws KduException;
+  public native boolean Finish(Kdu_thread_env _alt_env) throws KduException;
+  public boolean Finish() throws KduException
+  {
+    Kdu_thread_env alt_env = null;
+    return Finish(alt_env);
+  }
   public native void Reset(boolean _free_memory) throws KduException;
   public void Reset() throws KduException
   {
     Reset((boolean) true);
   }
   public native boolean Get_recommended_stripe_heights(int _preferred_min_height, int _absolute_max_height, int[] _stripe_heights, int[] _max_stripe_heights) throws KduException;
+  public native boolean Prestage(int[] _stripe_heights, long _queue_sequence_idx, Kdu_stripe_decompressor_notifier _last_tile_notifier, Kdu_thread_env _caller) throws KduException;
   public native boolean Pull_stripe(byte[] _buffer, int[] _stripe_heights, int[] _sample_offsets, int[] _sample_gaps, int[] _row_gaps, int[] _precisions, int[] _pad_flags, int _vectorized_store_prefs) throws KduException;
   public boolean Pull_stripe(byte[] _buffer, int[] _stripe_heights) throws KduException
   {
@@ -183,5 +191,14 @@ public class Kdu_stripe_decompressor {
   public boolean Pull_stripe(float[] _buffer, int[] _stripe_heights, int[] _sample_offsets, int[] _sample_gaps, int[] _row_gaps, int[] _precisions, boolean[] _is_signed, int[] _pad_flags) throws KduException
   {
     return Pull_stripe(_buffer,_stripe_heights,_sample_offsets,_sample_gaps,_row_gaps,_precisions,_is_signed,_pad_flags,(int) 0);
+  }
+  public native boolean Pull_stripe_pck32(int[] _stripe_buf, int _stripe_height, int[] _sample_offsets, int[] _sample_gaps, int _period_words, int _fld_bits, int _row_gap_words, int[] _skipped_samples, int[] _precisions) throws KduException;
+  public boolean Pull_stripe_pck32(int[] _stripe_buf, int _stripe_height, int[] _sample_offsets, int[] _sample_gaps, int _period_words, int _fld_bits, int _row_gap_words) throws KduException
+  {
+    return Pull_stripe_pck32(_stripe_buf,_stripe_height,_sample_offsets,_sample_gaps,_period_words,_fld_bits,_row_gap_words,null,null);
+  }
+  public boolean Pull_stripe_pck32(int[] _stripe_buf, int _stripe_height, int[] _sample_offsets, int[] _sample_gaps, int _period_words, int _fld_bits, int _row_gap_words, int[] _skipped_samples) throws KduException
+  {
+    return Pull_stripe_pck32(_stripe_buf,_stripe_height,_sample_offsets,_sample_gaps,_period_words,_fld_bits,_row_gap_words,_skipped_samples,null);
   }
 }

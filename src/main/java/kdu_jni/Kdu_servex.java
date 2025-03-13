@@ -20,6 +20,6 @@ public class Kdu_servex extends Kdu_serve_target {
   public Kdu_servex() {
     this(Native_create());
   }
-  public native void Open(String _filename, int _phld_threshold, int _per_client_cache, long _cache_fp, boolean _cache_exists, long _sub_start, long _sub_lim) throws KduException;
+  public native void Open(String _filename, String _permissions, int _phld_threshold, int _per_client_cache, long _cache_fp, boolean _cache_exists, long _sub_start, long _sub_lim) throws KduException;
   public native void Close() throws KduException;
 }

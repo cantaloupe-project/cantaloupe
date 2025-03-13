@@ -118,7 +118,7 @@ class FilesystemSource extends AbstractSource implements Source {
     private Path path;
 
     @Override
-    public void checkAccess() throws IOException {
+    public StatResult stat() throws IOException {
         final Path file = getFile();
         if (!Files.exists(file)) {
             throw new NoSuchFileException("Failed to resolve " +
@@ -126,6 +126,9 @@ class FilesystemSource extends AbstractSource implements Source {
         } else if (!Files.isReadable(file)) {
             throw new AccessDeniedException("File is not readable: " + file);
         }
+        StatResult result = new StatResult();
+        result.setLastModified(Files.getLastModifiedTime(file).toInstant());
+        return result;
     }
 
     /**
@@ -139,6 +142,7 @@ class FilesystemSource extends AbstractSource implements Source {
         if (path == null) {
             final LookupStrategy strategy =
                     LookupStrategy.from(Key.FILESYSTEMSOURCE_LOOKUP_STRATEGY);
+            //noinspection SwitchStatementWithTooFewBranches
             switch (strategy) {
                 case DELEGATE_SCRIPT:
                     try {
@@ -169,7 +173,7 @@ class FilesystemSource extends AbstractSource implements Source {
         final String suffix =
                 config.getString(Key.FILESYSTEMSOURCE_PATH_SUFFIX, "");
         final Identifier sanitizedId = sanitizedIdentifier();
-        return Paths.get(prefix + sanitizedId.toString() + suffix);
+        return Paths.get(prefix + sanitizedId + suffix);
     }
 
     /**

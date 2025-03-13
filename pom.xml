@@ -5,20 +5,20 @@
     <groupId>edu.illinois.library.cantaloupe</groupId>
     <artifactId>cantaloupe</artifactId>
     <packaging>jar</packaging>
-    <version>5.0.6</version>
+    <version>5.0.7</version>
     <name>Cantaloupe</name>
     <url>https://cantaloupe-project.github.io/</url>
     <inceptionYear>2015</inceptionYear>
 
     <properties>
-        <maven.compile.source>11</maven.compile.source>
-        <maven.compile.target>11</maven.compile.target>
+        <maven.compile.source>17</maven.compile.source>
+        <maven.compile.target>17</maven.compile.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+        <jetty.version>11.0.24</jetty.version>
         <aws-sdk.version>2.21.4</aws-sdk.version>
         <jackson.version>2.15.2</jackson.version>
-        <jetty.version>9.4.53.v20231009</jetty.version>
-        <jruby.version>9.4.3.0</jruby.version>
+        <jruby.version>9.4.9.0</jruby.version>
         <surefire.version>3.0.0-M5</surefire.version>
         <seleniumhq.version>2.53.1</seleniumhq.version><!-- There are many new versions for this library 4.10.0 latest-->
         <logback.version>1.2.13</logback.version> <!-- The next two need to be updated in lockstep latest version 1.4 -->
@@ -84,7 +84,7 @@
         <dependency>
             <groupId>com.google.protobuf</groupId>
             <artifactId>protobuf-java</artifactId>
-            <version>4.0.0-rc-2</version>
+            <version>4.29.3</version>
         </dependency>
         <!-- Used by JdbcSourceTest and JdbcCacheTest -->
         <dependency>
@@ -128,7 +128,7 @@
         <dependency>
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
-            <version>2.13.0</version>
+            <version>2.18.0</version>
         </dependency>
         <dependency>
             <groupId>edu.illinois.library</groupId>
@@ -222,7 +222,7 @@
         <dependency>
             <groupId>org.bouncycastle</groupId>
             <artifactId>bcprov-jdk18on</artifactId>
-            <version>1.76</version>
+            <version>1.78</version>
         </dependency>
         <!-- Supports <if> expressions in logback.xml -->
         <dependency>
@@ -371,7 +371,7 @@
         <dependency>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-assembly-plugin</artifactId>
-            <version>3.6.0</version>
+            <version>3.7.1</version>
             <type>maven-plugin</type>
         </dependency>
         <!-- Used by S3Source & S3Cache -->
@@ -423,8 +423,9 @@
                 <configuration>
                     <runOrder>random</runOrder>
                     <reuseForks>false</reuseForks>
+                    <!-- JAI requires this in JDK >= 16. -->
                     <!-- JAI requires this in JDK 16+. It should be removed when JAI is. -->
-                    <argLine>--add-opens java.desktop/sun.awt.image=ALL-UNNAMED</argLine>
+                    <argLine>--illegal-access=permit --add-opens java.desktop/sun.awt.image=ALL-UNNAMED</argLine>
                 </configuration>
             </plugin>
 
@@ -502,7 +503,7 @@
             <!-- Assemble the JAR into a release package. -->
             <plugin>
                 <artifactId>maven-assembly-plugin</artifactId>
-                <version>3.6.0</version>
+                <version>3.7.1</version>
                 <executions>
                     <execution>
                         <phase>package</phase>

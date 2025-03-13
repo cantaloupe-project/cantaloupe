@@ -26,6 +26,13 @@ class StringUtilsTest extends BaseTest {
     }
 
     @Test
+    void testEncodeSlashes() {
+        Configuration.getInstance().setProperty(Key.SLASH_SUBSTITUTE, "$$");
+        assertEquals("cats", StringUtils.encodeSlashes("cats"));
+        assertEquals("ca$$ts", StringUtils.encodeSlashes("ca/ts"));
+    }
+
+    @Test
     void testEscapeHTML() {
         String html = "the quick brown <script type=\"text/javascript\">alert('hi');</script> fox";
         String expected = "the quick brown &#60;script type=&#34;text/javascript&#34;&#62;alert('hi');&#60;/script&#62; fox";
@@ -216,32 +223,6 @@ class StringUtilsTest extends BaseTest {
         assertEquals(expected, StringUtils.toByteSize("25 PB"));
         assertEquals(expected, StringUtils.toByteSize("25 p"));
         assertEquals(expected, StringUtils.toByteSize("25 pb"));
-    }
-
-    @Test
-    void testTrimXMPWithTrimmableXMP() {
-        String xmp = "<?xpacket id=\"cats\"?>" +
-                "<x:xmpmeta bla=\"dogs\">" +
-                "<rdf:RDF foxes=\"bugs\">" +
-                "</rdf:RDF>" +
-                "</x:xmpmeta>";
-        String result = StringUtils.trimXMP(xmp);
-        assertTrue(result.startsWith("<rdf:RDF"));
-        assertTrue(result.endsWith("</rdf:RDF>"));
-    }
-
-    @Test
-    void testTrimXMPWithNonTrimmableXMP() {
-        String xmp = "<rdf:RDF foxes=\"bugs\">" +
-                "</rdf:RDF>";
-        String result = StringUtils.trimXMP(xmp);
-        assertSame(xmp, result);
-    }
-
-    @Test
-    void testTrimXMPWithNullArgument() {
-        assertThrows(NullPointerException.class,
-                () -> StringUtils.trimXMP(null));
     }
 
     @Test

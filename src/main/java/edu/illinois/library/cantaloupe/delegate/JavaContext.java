@@ -67,7 +67,14 @@ public interface JavaContext {
      *         "Field2Name": value
      *     ],
      *     "xmp_string": "<rdf:RDF>...</rdf:RDF>",
-     *     "xmp_model": https://jena.apache.org/documentation/javadoc/jena/org/apache/jena/rdf/model/Model.html
+     *     "xmp_model": See https://jena.apache.org/documentation/javadoc/jena/org/apache/jena/rdf/model/Model.html,
+     *     "xmp_elements": {
+     *         "Field1Name": "value",
+     *         "Field2Name": [
+     *             "value1",
+     *             "value2"
+     *         ]
+     *     },
      *     "native": {
      *         # structure varies
      *     }
@@ -83,6 +90,10 @@ public interface JavaContext {
      *     <li>The {@code xmp_model} key contains a {@link
      *     org.apache.jena.rdf.model.Model} object pre-loaded with the
      *     contents of {@code xmp_string}.</li>
+     *     <li>The {@code xmp_elements} key contains a view of the embedded XMP
+     *     data as key-value pairs. This is convenient to use, but may not work
+     *     correctly with all XMP fields&mdash;in particular, those that cannot
+     *     be expressed as key-value pairs.
      *     <li>The {@code native} key refers to format-specific metadata.</li>
      * </ul>
      *

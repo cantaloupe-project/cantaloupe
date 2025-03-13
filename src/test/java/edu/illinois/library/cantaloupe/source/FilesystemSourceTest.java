@@ -77,7 +77,7 @@ public class FilesystemSourceTest extends AbstractSourceTest {
         Path path = instance.getFile();
         try {
             assumeTrue(path.toFile().setReadable(false));
-            assertThrows(AccessDeniedException.class, instance::checkAccess);
+            assertThrows(AccessDeniedException.class, instance::stat);
         } finally {
             path.toFile().setReadable(true);
         }
@@ -95,7 +95,7 @@ public class FilesystemSourceTest extends AbstractSourceTest {
         instance.setDelegateProxy(proxy);
 
         instance.setIdentifier(identifier);
-        instance.checkAccess();
+        instance.stat();
     }
 
     @Test
@@ -114,7 +114,7 @@ public class FilesystemSourceTest extends AbstractSourceTest {
         try {
             assumeTrue(path.toFile().setReadable(false));
             Files.setPosixFilePermissions(path, Collections.emptySet());
-            assertThrows(AccessDeniedException.class, instance::checkAccess);
+            assertThrows(AccessDeniedException.class, instance::stat);
         } finally {
             path.toFile().setReadable(true);
         }
@@ -129,7 +129,7 @@ public class FilesystemSourceTest extends AbstractSourceTest {
         proxy.getRequestContext().setIdentifier(identifier);
         instance.setDelegateProxy(proxy);
         instance.setIdentifier(identifier);
-        assertThrows(NoSuchFileException.class, instance::checkAccess);
+        assertThrows(NoSuchFileException.class, instance::stat);
     }
 
     /* getFormatIterator() */

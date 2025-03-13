@@ -558,7 +558,7 @@ public class Version2_0ConformanceTest extends ResourceTest {
      */
     @Test
     void testInformationRequestJSON() {
-        // this will be tested in ImageInfoFactoryTest
+        // this will be tested in InformationFactoryTest
     }
 
     /**
@@ -585,7 +585,7 @@ public class Version2_0ConformanceTest extends ResourceTest {
         String json = response.getBodyAsString();
 
         ObjectMapper mapper = new ObjectMapper();
-        ImageInfo<?, ?> info = mapper.readValue(json, ImageInfo.class);
+        Information<?, ?> info = mapper.readValue(json, Information.class);
         List<?> profile = (List<?>) info.get("profile");
         assertEquals("http://iiif.io/api/image/2/level2.json",
                 profile.get(0));

@@ -10,11 +10,13 @@ import edu.illinois.library.cantaloupe.image.Metadata;
 import edu.illinois.library.cantaloupe.image.Orientation;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.operation.Scale;
+import edu.illinois.library.cantaloupe.operation.ValidationException;
 import edu.illinois.library.cantaloupe.processor.Processor;
 import edu.illinois.library.cantaloupe.resource.IllegalClientArgumentException;
 import edu.illinois.library.cantaloupe.resource.Route;
 import edu.illinois.library.cantaloupe.resource.ImageRequestHandler;
 import edu.illinois.library.cantaloupe.resource.iiif.SizeRestrictedException;
+import edu.illinois.library.cantaloupe.source.StatResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -23,7 +25,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Handles IIIF Image API 2.x image requests.
+ * Handles image requests.
  *
  * @see <a href="http://iiif.io/api/image/2.1/#image-request-parameters">Image
  * Request Operations</a>
@@ -85,14 +87,25 @@ public class ImageResource extends IIIF2Resource {
             }
 
             @Override
+            public void sourceAccessed(StatResult result) {
+                if (result.getLastModified() != null) {
+                    setLastModifiedHeader(result.getLastModified());
+                }
+            }
+
+            @Override
             public void infoAvailable(Info info) {
                 if (Size.ScaleMode.MAX.equals(params.getSize().getScaleMode())) {
-                    constrainSizeToMaxPixels(info.getSize(), ops);
+                    try {
+                        constrainSizeToMaxPixels(info.getSize(), ops);
+                    } catch (ValidationException e) {
+                        throw new IllegalClientArgumentException(e.getMessage(), e);
+                    }
                 }
                 try {
                     enqueueHeaders(params, info.getSize(pageIndex), disposition);
                 } catch (IndexOutOfBoundsException e) {
-                    throw new IllegalClientArgumentException(e);
+                    throw new IllegalClientArgumentException(e.getMessage(), e);
                 }
             }
 
@@ -162,8 +175,8 @@ public class ImageResource extends IIIF2Resource {
                               Dimension virtualSize) throws SizeRestrictedException {
         final var config = Configuration.getInstance();
         if (config.getBoolean(Key.IIIF_RESTRICT_TO_SIZES, false)) {
-            var factory = new ImageInfoFactory();
-            factory.getSizes(virtualSize).stream()
+            new InformationFactory().getSizes(virtualSize)
+                    .stream()
                     .filter(s -> s.width == resultingSize.intWidth() &&
                             s.height == resultingSize.intHeight())
                     .findAny()

@@ -21,4 +21,5 @@ public class Jpx_fragment_list {
   public native boolean Get_fragment(int _frag_idx, int[] _url_idx, long[] _offset, long[] _length) throws KduException;
   public native int Locate_fragment(long _pos, long[] _bytes_into_fragment) throws KduException;
   public native boolean Any_local_fragments() throws KduException;
+  public native boolean Need_data_references() throws KduException;
 }

@@ -12,6 +12,7 @@ import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.operation.Scale;
 import edu.illinois.library.cantaloupe.processor.Processor;
 import edu.illinois.library.cantaloupe.resource.ImageRequestHandler;
+import edu.illinois.library.cantaloupe.source.StatResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -74,6 +75,13 @@ public class ImageResource extends IIIF1Resource {
             @Override
             public boolean authorize() throws Exception {
                 return ImageResource.this.authorize();
+            }
+
+            @Override
+            public void sourceAccessed(StatResult result) {
+                if (result.getLastModified() != null) {
+                    setLastModifiedHeader(result.getLastModified());
+                }
             }
 
             @Override

@@ -169,7 +169,7 @@ public class AzureStorageSourceTest extends AbstractSourceTest {
     void testCheckAccessUsingScriptLookupStrategyWithPresentReadableImage()
             throws Exception {
         useScriptLookupStrategy();
-        instance.checkAccess();
+        instance.stat();
     }
 
     @Test
@@ -188,14 +188,14 @@ public class AzureStorageSourceTest extends AbstractSourceTest {
         instance.setDelegateProxy(delegateProxy);
         instance.setIdentifier(identifier);
 
-        assertThrows(NoSuchFileException.class, instance::checkAccess);
+        assertThrows(NoSuchFileException.class, instance::stat);
     }
 
     @Test
     void testCheckAccessWithSAS() throws Exception {
         instance.setIdentifier(new Identifier(getSASURI()));
         clearConfig();
-        instance.checkAccess();
+        instance.stat();
     }
 
     /* getFormatIterator() */

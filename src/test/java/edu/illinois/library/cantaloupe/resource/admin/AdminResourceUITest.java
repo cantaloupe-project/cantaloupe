@@ -291,6 +291,8 @@ public class AdminResourceUITest extends AbstractAdminResourceTest {
         inputNamed(Key.API_ENABLED).click();
         inputNamed(Key.API_USERNAME).sendKeys("cats");
         inputNamed(Key.API_SECRET).sendKeys("dogs");
+        inputNamed(Key.HEALTH_ENDPOINT_ENABLED).click();
+        inputNamed(Key.HEALTH_DEPENDENCY_CHECK).click();
         inputNamed(Key.META_IDENTIFIER_TRANSFORMER).sendKeys("Bla");
         css("#cl-endpoints li > a[href=\"#StandardMetaIdentifierTransformer\"]").click();
         inputNamed(Key.STANDARD_META_IDENTIFIER_TRANSFORMER_DELIMITER).sendKeys("---");
@@ -313,6 +315,8 @@ public class AdminResourceUITest extends AbstractAdminResourceTest {
         assertTrue(config.getBoolean(Key.API_ENABLED));
         assertEquals("cats", config.getString(Key.API_USERNAME));
         assertEquals("dogs", config.getString(Key.API_SECRET));
+        assertTrue(config.getBoolean(Key.HEALTH_ENDPOINT_ENABLED));
+        assertTrue(config.getBoolean(Key.HEALTH_DEPENDENCY_CHECK));
         assertEquals("StandardMetaIdentifierTransformer",
                 config.getString(Key.META_IDENTIFIER_TRANSFORMER));
         assertEquals("---",
@@ -367,6 +371,8 @@ public class AdminResourceUITest extends AbstractAdminResourceTest {
         inputNamed(Key.HTTPSOURCE_CHUNK_SIZE).sendKeys("412");
         inputNamed(Key.HTTPSOURCE_CHUNK_CACHE_ENABLED).click();
         inputNamed(Key.HTTPSOURCE_CHUNK_CACHE_MAX_SIZE).sendKeys("333");
+        inputNamed(Key.HTTPSOURCE_HTTP_PROXY_HOST).sendKeys("example.org");
+        inputNamed(Key.HTTPSOURCE_HTTP_PROXY_PORT).sendKeys("12345");
         inputNamed(Key.HTTPSOURCE_REQUEST_TIMEOUT).sendKeys("13");
         selectNamed(Key.HTTPSOURCE_LOOKUP_STRATEGY).
                 selectByValue("BasicLookupStrategy");
@@ -374,6 +380,7 @@ public class AdminResourceUITest extends AbstractAdminResourceTest {
         inputNamed(Key.HTTPSOURCE_URL_SUFFIX).sendKeys("/suffix");
         inputNamed(Key.HTTPSOURCE_BASIC_AUTH_USERNAME).sendKeys("username");
         inputNamed(Key.HTTPSOURCE_BASIC_AUTH_SECRET).sendKeys("password");
+        inputNamed(Key.HTTPSOURCE_SEND_HEAD_REQUESTS).click();
         // JdbcSource
         css("#cl-source li > a[href=\"#JdbcSource\"]").click();
         inputNamed(Key.JDBCSOURCE_JDBC_URL).sendKeys("cats://dogs");
@@ -451,6 +458,10 @@ public class AdminResourceUITest extends AbstractAdminResourceTest {
                 config.getBoolean(Key.HTTPSOURCE_CHUNK_CACHE_ENABLED));
         assertEquals("333",
                 config.getString(Key.HTTPSOURCE_CHUNK_CACHE_MAX_SIZE));
+        assertEquals("example.org",
+                config.getString(Key.HTTPSOURCE_HTTP_PROXY_HOST));
+        assertEquals("12345",
+                config.getString(Key.HTTPSOURCE_HTTP_PROXY_PORT));
         assertEquals("13",
                 config.getString(Key.HTTPSOURCE_REQUEST_TIMEOUT));
         assertEquals("BasicLookupStrategy",
@@ -463,6 +474,8 @@ public class AdminResourceUITest extends AbstractAdminResourceTest {
                 config.getString(Key.HTTPSOURCE_BASIC_AUTH_USERNAME));
         assertEquals("password",
                 config.getString(Key.HTTPSOURCE_BASIC_AUTH_SECRET));
+        assertTrue(
+                config.getBoolean(Key.HTTPSOURCE_SEND_HEAD_REQUESTS));
         // JdbcSource
         assertEquals("cats://dogs",
                 config.getString(Key.JDBCSOURCE_JDBC_URL));
@@ -490,6 +503,7 @@ public class AdminResourceUITest extends AbstractAdminResourceTest {
                 selectByValue("StreamStrategy");
         selectNamed(Key.PROCESSOR_FALLBACK_RETRIEVAL_STRATEGY).
                 selectByValue("CacheStrategy");
+        inputNamed(Key.PROCESSOR_PURGE_INCOMPATIBLE_FROM_SOURCE_CACHE).click();
         inputNamed(Key.PROCESSOR_DPI).sendKeys("300");
         selectNamed(Key.PROCESSOR_BACKGROUND_COLOR).selectByValue("white");
         selectNamed(Key.PROCESSOR_UPSCALE_FILTER).
@@ -535,6 +549,7 @@ public class AdminResourceUITest extends AbstractAdminResourceTest {
                 config.getString(Key.PROCESSOR_STREAM_RETRIEVAL_STRATEGY));
         assertEquals("CacheStrategy",
                 config.getString(Key.PROCESSOR_FALLBACK_RETRIEVAL_STRATEGY));
+        assertTrue(config.getBoolean(Key.PROCESSOR_PURGE_INCOMPATIBLE_FROM_SOURCE_CACHE));
         assertEquals(300, config.getInt(Key.PROCESSOR_DPI));
         assertEquals("white", config.getString(Key.PROCESSOR_BACKGROUND_COLOR));
         assertEquals("triangle",

@@ -30,10 +30,8 @@ import software.amazon.awssdk.services.s3.model.S3Exception;
 import software.amazon.awssdk.services.s3.model.S3Object;
 
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
@@ -64,158 +62,12 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 class S3Cache implements DerivativeCache {
 
-    /**
-     * <p>Wraps a {@link ByteArrayOutputStream} for upload to S3.</p>
-     *
-     * <p>N.B.: S3 does not allow uploads without a {@code Content-Length}
-     * header, which cannot be provided when streaming an unknown amount of
-     * data (which this class is going to be doing all the time). From the
-     * documentation of {@link PutObjectRequest}:</p>
-     *
-     * <blockquote>"When uploading directly from an input stream, content
-     * length must be specified before data can be uploaded to Amazon S3. If
-     * not provided, the library will have to buffer the contents of the input
-     * stream in order to calculate it. Amazon S3 explicitly requires that the
-     * content length be sent in the request headers before any of the data is
-     * sent."</blockquote>
-     *
-     * <p>Since it's not possible to write an {@link OutputStream} of unknown
-     * length to the S3 client as the {@link Cache} interface requires, this
-     * class buffers written data in a byte array before uploading it to S3
-     * upon closure. (The upload is submitted to the
-     * {@link ThreadPool#getInstance() application thread pool} in order for
-     * {@link #close()} to be able to return immediately.)</p>
-     */
-    private static class S3OutputStream extends CompletableOutputStream {
-
-        private final ByteArrayOutputStream bufferStream =
-                new ByteArrayOutputStream();
-        private final S3Client client;
-        private final String bucketName;
-        private final String objectKey;
-        private final String contentType;
-
-        /**
-         * @param client      S3 client.
-         * @param bucketName  S3 bucket name.
-         * @param objectKey   S3 object key.
-         * @param contentType Media type.
-         */
-        S3OutputStream(final S3Client client,
-                       final String bucketName,
-                       final String objectKey,
-                       final String contentType) {
-            this.client      = client;
-            this.bucketName  = bucketName;
-            this.objectKey   = objectKey;
-            this.contentType = contentType;
-        }
-
-        @Override
-        public void close() throws IOException {
-            try {
-                bufferStream.close();
-                byte[] data = bufferStream.toByteArray();
-                if (isCompletelyWritten()) {
-                    // At this point, the client has received all image data,
-                    // but it is still waiting for the connection to close.
-                    // Uploading in a separate thread will allow this to happen
-                    // immediately.
-                    ThreadPool.getInstance().submit(new S3Upload(
-                            client, data, bucketName, objectKey,
-                            contentType, null));
-                }
-            } finally {
-                super.close();
-            }
-        }
-
-        @Override
-        public void flush() throws IOException {
-            bufferStream.flush();
-        }
-
-        @Override
-        public void write(int b) {
-            bufferStream.write(b);
-        }
-
-        @Override
-        public void write(byte[] b) throws IOException {
-            bufferStream.write(b);
-        }
-
-        @Override
-        public void write(byte[] b, int off, int len) {
-            bufferStream.write(b, off, len);
-        }
-
-    }
-
-    private static class S3Upload implements Runnable {
-
-        private static final Logger UPLOAD_LOGGER =
-                LoggerFactory.getLogger(S3Upload.class);
-
-        private final String bucketName, contentEncoding, contentType, objectKey;
-        private final byte[] data;
-        private final S3Client client;
-
-        /**
-         * @param client          S3 client.
-         * @param data            Data to upload.
-         * @param bucketName      S3 bucket name.
-         * @param objectKey       S3 object key.
-         * @param contentType     Media type.
-         * @param contentEncoding Content encoding. May be {@code null}.
-         */
-        S3Upload(S3Client client,
-                 byte[] data,
-                 String bucketName,
-                 String objectKey,
-                 String contentType,
-                 String contentEncoding) {
-            this.client          = client;
-            this.bucketName      = bucketName;
-            this.data            = data;
-            this.contentType     = contentType;
-            this.contentEncoding = contentEncoding;
-            this.objectKey       = objectKey;
-        }
-
-        @Override
-        public void run() {
-            if (data.length > 0) {
-                PutObjectRequest request = PutObjectRequest.builder()
-                        .bucket(bucketName)
-                        .key(objectKey)
-                        .contentType(contentType)
-                        .contentEncoding(contentEncoding)
-                        .build();
-                final Stopwatch watch = new Stopwatch();
-
-                UPLOAD_LOGGER.debug("Uploading {} bytes to {} in bucket {}",
-                        data.length, request.key(), request.bucket());
-
-                try (ByteArrayInputStream is = new ByteArrayInputStream(data)) {
-                    client.putObject(request,
-                            RequestBody.fromInputStream(is, data.length));
-                } catch (IOException e) {
-                    UPLOAD_LOGGER.warn(e.getMessage(), e);
-                }
-
-                UPLOAD_LOGGER.trace("Wrote {} bytes to {} in bucket {} in {}",
-                        data.length, request.key(), request.bucket(),
-                        watch);
-            } else {
-                UPLOAD_LOGGER.trace("No data to upload; returning");
-            }
-        }
-
-    }
-
     private static final Logger LOGGER =
             LoggerFactory.getLogger(S3Cache.class);
+
+    private static final String IMAGE_KEY_PREFIX = "image/";
+    private static final String INFO_EXTENSION   = ".json";
+    private static final String INFO_KEY_PREFIX  = "info/";
 
     /**
      * Lazy-initialized by {@link #getClientInstance}.
@@ -283,6 +135,11 @@ class S3Cache implements DerivativeCache {
             // This extra validity check may be needed with minio server
             if (is != null && is.response().lastModified().isAfter(earliestValidInstant())) {
                 final Info info = Info.fromJSON(is);
+                // Populate the serialization timestamp if it is not already,
+                // as suggested by the method contract.
+                if (info.getSerializationTimestamp() == null) {
+                    info.setSerializationTimestamp(is.response().lastModified());
+                }
                 LOGGER.debug("getInfo(): read {} from bucket {} in {}",
                         objectKey, bucketName, watch);
                 touchAsync(objectKey);
@@ -341,10 +198,10 @@ class S3Cache implements DerivativeCache {
     @Override
     public CompletableOutputStream
     newDerivativeImageOutputStream(OperationList opList) {
-        final String objectKey            = getObjectKey(opList);
-        final String bucketName           = getBucketName();
-        final S3Client client             = getClientInstance();
-        return new S3OutputStream(client, bucketName, objectKey,
+        final String objectKey  = getObjectKey(opList);
+        final String bucketName = getBucketName();
+        final S3Client client   = getClientInstance();
+        return new S3MultipartAsyncOutputStream(client, bucketName, objectKey,
                 opList.getOutputFormat().getPreferredMediaType().toString());
     }
 
@@ -353,8 +210,8 @@ class S3Cache implements DerivativeCache {
      *         given identifier.
      */
     String getObjectKey(Identifier identifier) {
-        return getObjectKeyPrefix() + "info/" +
-                StringUtils.md5(identifier.toString()) + ".json";
+        return getObjectKeyPrefix() + INFO_KEY_PREFIX +
+                StringUtils.md5(identifier.toString()) + INFO_EXTENSION;
     }
 
     /**
@@ -370,8 +227,8 @@ class S3Cache implements DerivativeCache {
         if (encode != null) {
             extension = "." + encode.getFormat().getPreferredExtension();
         }
-        return String.format("%simage/%s/%s%s",
-                getObjectKeyPrefix(), idHash, opsHash, extension);
+        return getObjectKeyPrefix() + IMAGE_KEY_PREFIX + idHash + "/" +
+                opsHash + extension;
     }
 
     /**
@@ -415,7 +272,7 @@ class S3Cache implements DerivativeCache {
         // purge images
         final S3Client client       = getClientInstance();
         final String bucketName     = getBucketName();
-        final String prefix         = getObjectKeyPrefix() + "image/" +
+        final String prefix         = getObjectKeyPrefix() + IMAGE_KEY_PREFIX +
                 StringUtils.md5(identifier.toString());
         final AtomicInteger counter = new AtomicInteger();
 
@@ -454,6 +311,24 @@ class S3Cache implements DerivativeCache {
                     .build());
             return null;
         });
+    }
+
+    @Override
+    public void purgeInfos() {
+        final S3Client client       = getClientInstance();
+        final String bucketName     = getBucketName();
+        final String prefix         = getObjectKeyPrefix() + INFO_KEY_PREFIX;
+        final AtomicInteger counter = new AtomicInteger();
+
+        S3Utils.walkObjects(client, bucketName, prefix, (object) -> {
+            LOGGER.trace("purgeInfos(): deleting {}", object.key());
+            client.deleteObject(DeleteObjectRequest.builder()
+                    .bucket(bucketName)
+                    .key(object.key())
+                    .build());
+            counter.incrementAndGet();
+        });
+        LOGGER.debug("purgeInfos(): deleted {} items", counter.get());
     }
 
     @Override
@@ -506,13 +381,28 @@ class S3Cache implements DerivativeCache {
     @Override
     public void put(Identifier identifier, String info) throws IOException {
         LOGGER.debug("put(): caching info for {}", identifier);
-        final S3Client client   = getClientInstance();
-        final String objectKey  = getObjectKey(identifier);
-        final String bucketName = getBucketName();
+        final Stopwatch watch = new Stopwatch();
 
-        new S3Upload(client, info.getBytes(StandardCharsets.UTF_8),
-                bucketName, objectKey, MediaType.APPLICATION_JSON.toString(),
-                "UTF-8").run();
+        PutObjectRequest request = PutObjectRequest.builder()
+                .bucket(getBucketName())
+                .key(getObjectKey(identifier))
+                .contentType(MediaType.APPLICATION_JSON.toString())
+                .contentEncoding("UTF-8")
+                .build();
+        byte[] data = info.getBytes(StandardCharsets.UTF_8);
+        LOGGER.trace("put(): uploading {} bytes to {} in bucket {}",
+                data.length, request.key(), request.bucket());
+
+        try (ByteArrayInputStream is = new ByteArrayInputStream(data)) {
+            getClientInstance().putObject(request,
+                    RequestBody.fromInputStream(is, data.length));
+        } catch (IOException e) {
+            LOGGER.warn(e.getMessage(), e);
+        }
+
+        LOGGER.trace("put(): wrote {} bytes to {} in bucket {} in {}",
+                data.length, request.key(), request.bucket(),
+                watch);
     }
 
     /**

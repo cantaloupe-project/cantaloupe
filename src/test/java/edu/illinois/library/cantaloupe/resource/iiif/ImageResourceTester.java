@@ -472,6 +472,49 @@ public class ImageResourceTester extends ImageAPIResourceTester {
         }
     }
 
+    /**
+     * When an image is requested with crop area of {@code regionWidth * regionHeight} with {@code max}
+     * and the source image is larger than {@link Key#MAX_PIXELS}, it should be downscaled to {@link
+     * Key#MAX_PIXELS} only if the crop size exceeded that limit.
+     *
+     * @param originalWidth  Source (or post-crop if cropped) image width.
+     * @param originalHeight Source (or post-crop if cropped) image height.
+     * @param regionWidth    post-crop image width.
+     * @param regionHeight   post-crop image height.
+     * @param maxPixels      Value to set to {@link Key#MAX_PIXELS}, which must
+     *                       be less than
+     *                       {@code originalWidth * originalHeight}.
+     */
+    public void testRegionToMaxPixels(URI uri,
+                                           int originalWidth,
+                                           int originalHeight,
+                                           int regionWidth,
+                                           int regionHeight,
+                                           int maxPixels) throws Exception {
+        Configuration config = Configuration.getInstance();
+        config.setProperty(Key.MAX_PIXELS, maxPixels);
+
+        Client client = newClient(uri);
+        try {
+            Response response = client.send();
+            assertEquals(200, response.getStatus());
+            byte[] body = response.getBody();
+            try (InputStream is = new ByteArrayInputStream(body)) {
+                BufferedImage image = ImageIO.read(is);
+                Dimension expectedSize = new Dimension(regionWidth, regionHeight);
+                if (config.getInt(Key.MAX_PIXELS) < (int) (regionWidth * regionHeight)) {
+                    expectedSize = Dimension.ofScaledArea(
+                            new Dimension(regionWidth, regionHeight),
+                            config.getInt(Key.MAX_PIXELS));
+                }
+                assertEquals(Math.floor(expectedSize.width()), image.getWidth());
+                assertEquals(Math.floor(expectedSize.height()), image.getHeight());
+            }
+        } finally {
+            client.stop();
+        }
+    }
+
     public void testProcessorValidationFailure(URI uri) {
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.PROCESSOR_SELECTION_STRATEGY, "ManualSelectionStrategy");
