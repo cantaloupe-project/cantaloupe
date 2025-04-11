@@ -331,7 +331,7 @@ JdbcSource.connection_timeout = 10
 processor.selection_strategy = AutomaticSelectionStrategy
 
 # Built-in processors are `Java2dProcessor`, TurboJpegProcessor`,
-# `KakaduNativeProcessor`, `OpenJpegProcessor`, `GrokProcessor`,`JaiProcessor`,
+# `KakaduNativeProcessor`, `OpenJpegProcessor`, `GrokProcessor`,
 # `PdfBoxProcessor`, and `FfmpegProcessor`.
 # Some of these have third-party dependencies and won't work out-of-the-box.
 
@@ -387,8 +387,7 @@ processor.dpi = 150
 processor.background_color = white
 
 # Available values are `bell`, `bspline`, `bicubic`, `box`, `hermite`,
-# `lanczos3`, `mitchell`, `triangle`. (JaiProcessor & KakaduNativeProcessor
-# ignore these.)
+# `lanczos3`, `mitchell`, `triangle`. (KakaduNativeProcessor ignores these.)
 processor.downscale_filter = bicubic
 processor.upscale_filter = bicubic
 
