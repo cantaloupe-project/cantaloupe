@@ -84,7 +84,7 @@
         <dependency>
             <groupId>com.google.protobuf</groupId>
             <artifactId>protobuf-java</artifactId>
-            <version>4.0.0-rc-2</version>
+            <version>4.29.3</version>
         </dependency>
         <!-- Used by JdbcSourceTest and JdbcCacheTest -->
         <dependency>
@@ -128,7 +128,7 @@
         <dependency>
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
-            <version>2.13.0</version>
+            <version>2.18.0</version>
         </dependency>
         <dependency>
             <groupId>edu.illinois.library</groupId>

@@ -25,7 +25,9 @@ public class Kdu_thread_entity {
   public native boolean Exists() throws KduException;
   public native boolean Is_group_owner() throws KduException;
   public native int Get_thread_id() throws KduException;
+  public native Kdu_thread_entity Get_self_identity() throws KduException;
   public native boolean Check_current_thread() throws KduException;
+  public native boolean Check_group_member(Kdu_thread_entity _ref) throws KduException;
   public native boolean Change_group_owner_thread() throws KduException;
   public native void Create() throws KduException;
   public native boolean Destroy() throws KduException;
@@ -59,16 +61,23 @@ public class Kdu_thread_entity {
   }
   public native void Advance_work_domains() throws KduException;
   public native Kdu_thread_entity_condition Get_condition() throws KduException;
-  public native void Wait_for_condition(String _debug_text) throws KduException;
+  public native void Wait_for_condition(String _debug_text, boolean _expect_foreign_wakeup) throws KduException;
   public void Wait_for_condition() throws KduException
   {
-    Wait_for_condition(null);
+    Wait_for_condition(null,(boolean) false);
   }
-  public native void Signal_condition(Kdu_thread_entity_condition _cond, boolean _foreign_caller) throws KduException;
+  public void Wait_for_condition(String _debug_text) throws KduException
+  {
+    Wait_for_condition(_debug_text,(boolean) false);
+  }
+  public native void Signal_condition(Kdu_thread_entity_condition _cond, int _foreign_caller_flags) throws KduException;
   public void Signal_condition(Kdu_thread_entity_condition _cond) throws KduException
   {
-    Signal_condition(_cond,(boolean) false);
+    Signal_condition(_cond,(int) 0);
   }
+  public native boolean Register_event(Kdu_thread_entity_event _event) throws KduException;
+  public native void Activate_event(Kdu_thread_entity_event _event) throws KduException;
+  public native void Deactivate_event(Kdu_thread_entity_event _event) throws KduException;
   public native boolean Join(Kdu_thread_queue _root_queue, boolean _descendants_only, int[] _exc_code) throws KduException;
   public boolean Join(Kdu_thread_queue _root_queue) throws KduException
   {
@@ -87,5 +96,11 @@ public class Kdu_thread_entity {
   {
     return Terminate(_root_queue,_descendants_only,null);
   }
+  public native boolean Suspend(boolean _allow_exceptions) throws KduException;
+  public boolean Suspend() throws KduException
+  {
+    return Suspend((boolean) true);
+  }
+  public native void Unsuspend_thread(Kdu_thread_entity _thread) throws KduException;
   public native void Handle_exception(int _exc_code) throws KduException;
 }

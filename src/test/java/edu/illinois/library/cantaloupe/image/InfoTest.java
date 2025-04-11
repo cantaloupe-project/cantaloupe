@@ -966,6 +966,26 @@ class InfoTest extends BaseTest {
         assertEquals(format, instance.getSourceFormat());
     }
 
+
+     /* isVideo() */
+
+     @Test
+     void testIsVideo() {
+         Format format = Format.get("mov");
+         instance.setSourceFormat(format);
+         assertTrue(instance.isVideo());
+     }
+
+     /* isVideo() */
+
+     @Test
+     void testIsNotVideo() {
+         Format format = Format.get("png");
+         instance.setSourceFormat(format);
+         assertFalse(instance.isVideo());
+     }
+
+
     /* toJSON() */
 
     @Test

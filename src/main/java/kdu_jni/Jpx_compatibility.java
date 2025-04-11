@@ -19,6 +19,7 @@ public class Jpx_compatibility {
   public native boolean Is_jp2_compatible() throws KduException;
   public native boolean Is_jph_compatible() throws KduException;
   public native boolean Is_jpxb_compatible() throws KduException;
+  public native boolean Is_jhxb_compatible() throws KduException;
   public native boolean Has_reader_requirements_box() throws KduException;
   public native boolean Check_standard_feature(int _feature_id) throws KduException;
   public native boolean Check_vendor_feature(byte[] _uuid) throws KduException;

@@ -1,12 +1,12 @@
 package kdu_jni;
 
-public class Kdu_servex extends Kdu_serve_target {
+public class Kdu_mjc_stream_decompressor extends Kdu_ovlp_stream_decompressor {
   static {
     System.loadLibrary("kdu_jni");
     Native_init_class();
   }
   private static native void Native_init_class();
-  protected Kdu_servex(long ptr) {
+  protected Kdu_mjc_stream_decompressor(long ptr) {
     super(ptr);
   }
   public native void Native_destroy();
@@ -17,9 +17,8 @@ public class Kdu_servex extends Kdu_serve_target {
       }
   }
   private static native long Native_create();
-  public Kdu_servex() {
+  public Kdu_mjc_stream_decompressor() {
     this(Native_create());
   }
-  public native void Open(String _filename, String _permissions, int _phld_threshold, int _per_client_cache, long _cache_fp, boolean _cache_exists, long _sub_start, long _sub_lim) throws KduException;
-  public native void Close() throws KduException;
+  public native void Configure(Kdu_mjc_stream_fetch_state _common_fetch_state) throws KduException;
 }

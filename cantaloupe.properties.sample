@@ -30,7 +30,7 @@ https.key_store_path = /path/to/keystore.jks
 https.key_password = myPassword
 
 # !! Constrains the size of the web server's thread pool. Leave blank to
-# use the defaults.
+# use the defaults (min_threads: 8, max_threads: 150).
 http.min_threads =
 http.max_threads =
 

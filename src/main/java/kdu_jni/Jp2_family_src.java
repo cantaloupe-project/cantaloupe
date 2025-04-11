@@ -50,12 +50,12 @@ public class Jp2_family_src {
   {
     Close((boolean) false);
   }
+  public native void Set_access_permissions(String _permissions) throws KduException;
   public native Kdu_membroker Get_membroker() throws KduException;
   public native boolean Uses_cache() throws KduException;
   public native boolean Is_top_level_complete() throws KduException;
   public native boolean Is_codestream_main_header_complete(long _logical_codestream_idx) throws KduException;
   public native int Get_id() throws KduException;
-  public native String Get_filename() throws KduException;
   public native void Acquire_lock() throws KduException;
   public native void Release_lock() throws KduException;
   public native void Synch_with_cache() throws KduException;
