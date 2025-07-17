@@ -18,7 +18,7 @@
         <jetty.version>11.0.24</jetty.version>
         <aws-sdk.version>2.21.4</aws-sdk.version>
         <jackson.version>2.15.2</jackson.version>
-        <jruby.version>9.4.13.0</jruby.version>
+        <jruby.version>10.0.0.1</jruby.version>
         <surefire.version>3.5.3</surefire.version>
         <seleniumhq.version>2.53.1</seleniumhq.version><!-- There are many new versions for this library 4.10.0 latest-->
         <logback.version>1.2.13</logback.version> <!-- The next two need to be updated in lockstep latest version 1.4 -->
