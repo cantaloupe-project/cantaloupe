@@ -31,9 +31,9 @@ jobs:
       - name: Test in Windows JDK 17 (LTS)
         if: matrix.os == 'windows-latest' && matrix.java == 'jdk17'
         run: docker compose -f docker/Windows-JDK17/compose.yaml up --build --exit-code-from cantaloupe
-      - name: Test in Windows JDK 22 (non-LTS)
+      - name: Test in Windows JDK 24 (non-LTS)
         if: matrix.os == 'windows-latest' && matrix.java == 'jdk22'
-        run: docker compose -f docker/Windows-JDK22/compose.yaml up --build --exit-code-from cantaloupe
+        run: docker compose -f docker/Windows-JDK24/compose.yaml up --build --exit-code-from cantaloupe
       - name: Test in Windows JDK 21 (LTS)
         if: matrix.os == 'windows-latest' && matrix.java == 'jdk21'
         run: docker compose -f docker/Windows-JDK21/compose.yaml up --build --exit-code-from cantaloupe
