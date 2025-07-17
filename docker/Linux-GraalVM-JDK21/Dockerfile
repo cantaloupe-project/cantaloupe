@@ -46,7 +46,7 @@ RUN wget -q https://github.com/graalvm/graalvm-ce-builds/releases/download/jdk-2
 # A non-root user is needed for some FilesystemSourceTest tests to work.
 ARG user=cantaloupe
 ARG home=/home/$user
-RUN adduser --home $home $user
+RUN adduser $user --home $home
 RUN chown -R $user $home
 USER $user
 WORKDIR $home

@@ -38,7 +38,7 @@ COPY dist/deps/Linux-x86-64/lib/* /usr/lib/
 # A non-root user is needed for some FilesystemSourceTest tests to work.
 ARG user=cantaloupe
 ARG home=/home/$user
-RUN adduser --home $home $user
+RUN adduser $user --home $home
 RUN chown -R $user $home
 USER $user
 WORKDIR $home

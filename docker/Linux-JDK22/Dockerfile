@@ -49,7 +49,7 @@ RUN wget -q https://download.java.net/java/GA/jdk22.0.2/c9ecb94cd31b495da20a27d4
 # A non-root user is needed for some FilesystemSourceTest tests to work.
 ARG user=cantaloupe
 ARG home=/home/$user
-RUN adduser --home $home $user
+RUN adduser $user --home $home
 RUN chown -R $user $home
 USER $user
 WORKDIR $home
