@@ -6,6 +6,8 @@ import edu.illinois.library.cantaloupe.processor.codec.IIOProviderContextListene
 import edu.illinois.library.cantaloupe.resource.FileServlet;
 import edu.illinois.library.cantaloupe.resource.HandlerServlet;
 import org.eclipse.jetty.alpn.server.ALPNServerConnectionFactory;
+import org.eclipse.jetty.http.HttpCompliance;
+import org.eclipse.jetty.http.UriCompliance;
 import org.eclipse.jetty.http2.HTTP2Cipher;
 import org.eclipse.jetty.http2.server.HTTP2CServerConnectionFactory;
 import org.eclipse.jetty.http2.server.HTTP2ServerConnectionFactory;
@@ -19,8 +21,8 @@ import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.server.Slf4jRequestLogWriter;
 import org.eclipse.jetty.server.SslConnectionFactory;
-import org.eclipse.jetty.servlet.ListenerHolder;
-import org.eclipse.jetty.servlet.ServletContextHandler;
+import org.eclipse.jetty.ee10.servlet.ListenerHolder;
+import org.eclipse.jetty.ee10.servlet.ServletContextHandler;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.eclipse.jetty.util.thread.QueuedThreadPool;
 
@@ -121,6 +123,8 @@ public class ApplicationServer {
         // Disable directory listing.
         context.setInitParameter("org.eclipse.jetty.servlet.Default.dirAllowed",
                 "false");
+
+
 
         context.setContextPath("/");
         context.addServlet(HandlerServlet.class, "/*");
@@ -265,6 +269,8 @@ public class ApplicationServer {
             // HTTP/2.
             if (isHTTPEnabled()) {
                 HttpConfiguration config = new HttpConfiguration();
+                config.setUriCompliance(UriCompliance.UNSAFE);
+                config.setHttpCompliance(HttpCompliance.LEGACY);
                 HttpConnectionFactory http1 = new HttpConnectionFactory(config);
 
                 HTTP2CServerConnectionFactory http2 =
@@ -282,6 +288,8 @@ public class ApplicationServer {
                 HttpConfiguration config = new HttpConfiguration();
                 config.setSecureScheme("https");
                 config.setSecurePort(getHTTPSPort());
+                config.setUriCompliance(UriCompliance.UNSAFE);
+                config.setHttpCompliance(HttpCompliance.LEGACY);
                 config.addCustomizer(new SecureRequestCustomizer());
 
                 final SslContextFactory.Server contextFactory = new SslContextFactory.Server();

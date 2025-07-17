@@ -10,8 +10,10 @@ import edu.illinois.library.cantaloupe.delegate.DelegateProxy;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import edu.illinois.library.cantaloupe.test.WebServer;
 import edu.illinois.library.cantaloupe.util.SocketUtils;
+import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.Request;
-import org.eclipse.jetty.server.handler.DefaultHandler;
+import org.eclipse.jetty.server.Response;
+import org.eclipse.jetty.util.Callback;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
@@ -34,15 +36,12 @@ import static org.junit.jupiter.api.Assertions.*;
 
 abstract class HttpSourceTest extends AbstractSourceTest {
 
-    private static class RequestCountingHandler extends DefaultHandler {
+    private static class RequestCountingHandler extends Handler.Abstract {
 
         private int numHEADRequests, numGETRequests;
 
         @Override
-        public void handle(String target,
-                Request baseRequest,
-                HttpServletRequest request,
-                HttpServletResponse response) {
+        public boolean handle(Request request, Response response, Callback callback) {
             switch (request.getMethod().toUpperCase()) {
                 case "HEAD":
                     numHEADRequests++;
@@ -54,7 +53,8 @@ abstract class HttpSourceTest extends AbstractSourceTest {
                     throw new IllegalArgumentException(
                             "Unexpected method: " + request.getMethod());
             }
-            baseRequest.setHandled(true);
+            callback.succeeded();
+            return true;
         }
 
     }
@@ -166,14 +166,12 @@ abstract class HttpSourceTest extends AbstractSourceTest {
 
     private void doTestCheckAccessWithPresentUnreadableImage(Identifier identifier)
             throws Exception {
-        server.setHandler(new DefaultHandler() {
+        server.setHandler(new Handler.Abstract() {
             @Override
-            public void handle(String target,
-                               Request baseRequest,
-                               HttpServletRequest request,
-                               HttpServletResponse response) {
+            public boolean handle(Request request, org.eclipse.jetty.server.Response response, Callback callback) {
                 response.setStatus(403);
-                baseRequest.setHandled(true);
+                callback.succeeded();
+                return true;
             }
         });
         server.start();
@@ -241,14 +239,12 @@ abstract class HttpSourceTest extends AbstractSourceTest {
 
     @Test
     void testStatWith403Response() throws Exception {
-        server.setHandler(new DefaultHandler() {
+        server.setHandler(new Handler.Abstract() {
             @Override
-            public void handle(String target,
-                               Request baseRequest,
-                               HttpServletRequest request,
-                               HttpServletResponse response) {
+            public boolean handle(Request request, org.eclipse.jetty.server.Response response, Callback callback) {
                 response.setStatus(403);
-                baseRequest.setHandled(true);
+                callback.succeeded();
+                return true;
             }
         });
         server.start();
@@ -264,14 +260,12 @@ abstract class HttpSourceTest extends AbstractSourceTest {
 
     @Test
     void testStatWith500Response() throws Exception {
-        server.setHandler(new DefaultHandler() {
+        server.setHandler(new Handler.Abstract() {
             @Override
-            public void handle(String target,
-                               Request baseRequest,
-                               HttpServletRequest request,
-                               HttpServletResponse response) {
+            public boolean handle(Request request, org.eclipse.jetty.server.Response response, Callback callback) {
                 response.setStatus(500);
-                baseRequest.setHandled(true);
+                callback.succeeded();
+                return true;
             }
         });
         server.start();
@@ -306,12 +300,9 @@ abstract class HttpSourceTest extends AbstractSourceTest {
 
     @Test
     void testStatSendsUserAgentHeader() throws Exception {
-        server.setHandler(new DefaultHandler() {
+        server.setHandler(new Handler.Abstract() {
             @Override
-            public void handle(String target,
-                               Request baseRequest,
-                               HttpServletRequest request,
-                               HttpServletResponse response) {
+            public boolean handle(Request request, org.eclipse.jetty.server.Response response, Callback callback) {
                 String expected = String.format("%s/%s (%s/%s; java/%s; %s/%s)",
                         HttpSource.class.getSimpleName(),
                         Application.getVersion(),
@@ -320,8 +311,9 @@ abstract class HttpSourceTest extends AbstractSourceTest {
                         System.getProperty("java.version"),
                         System.getProperty("os.name"),
                         System.getProperty("os.version"));
-                assertEquals(expected, baseRequest.getHeader("User-Agent"));
-                baseRequest.setHandled(true);
+                assertEquals(expected, request.getHeaders().get("User-Agent"));
+                callback.succeeded();
+                return true;
             }
         });
         server.start();
@@ -333,14 +325,12 @@ abstract class HttpSourceTest extends AbstractSourceTest {
     void testStatSendsCustomHeaders() throws Exception {
         useScriptLookupStrategy();
 
-        server.setHandler(new DefaultHandler() {
+        server.setHandler(new Handler.Abstract() {
             @Override
-            public void handle(String target,
-                               Request baseRequest,
-                               HttpServletRequest request,
-                               HttpServletResponse response) {
-                assertEquals("yes", request.getHeader("X-Custom"));
-                baseRequest.setHandled(true);
+            public boolean handle(Request request, org.eclipse.jetty.server.Response response, Callback callback) {
+                assertEquals("yes", request.getHeaders().get("X-Custom"));
+                callback.succeeded();
+                return true;
             }
         });
         server.start();
@@ -393,15 +383,19 @@ abstract class HttpSourceTest extends AbstractSourceTest {
     void testGetFormatIteratorNext() throws Exception {
         final String fixture = "jpg-incorrect-extension.png";
         instance.setIdentifier(new Identifier(fixture));
-        server.setHandler(new DefaultHandler() {
+        server.setHandler(new Handler.Abstract() {
             @Override
-            public void handle(String target,
-                               Request baseRequest,
-                               HttpServletRequest request,
-                               HttpServletResponse response) throws IOException {
-                response.setHeader("Accept-Ranges", "bytes");
-                try (OutputStream os = response.getOutputStream()) {
-                    Files.copy(TestUtil.getImage(fixture), os);
+            public boolean handle(Request request, org.eclipse.jetty.server.Response response, Callback callback) {
+                try {
+                    response.getHeaders().put("Accept-Ranges", "bytes");
+                    try (OutputStream os = org.eclipse.jetty.server.Response.asBufferedOutputStream(request, response)) {
+                        Files.copy(TestUtil.getImage(fixture), os);
+                    }
+                    callback.succeeded();
+                    return true;
+                } catch (IOException e) {
+                    callback.failed(e);
+                    return true;
                 }
             }
         });

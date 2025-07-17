@@ -41,7 +41,6 @@ public class MockHttpServletResponse implements HttpServletResponse {
         return headers.toMap().containsKey(s);
     }
 
-    @Override
     public String encodeRedirectUrl(String s) {
         return null;
     }
@@ -51,7 +50,6 @@ public class MockHttpServletResponse implements HttpServletResponse {
         return null;
     }
 
-    @Override
     public String encodeUrl(String s) {
         return null;
     }
@@ -109,7 +107,6 @@ public class MockHttpServletResponse implements HttpServletResponse {
         return outputStream;
     }
 
-    @Override
     public int getStatus() {
         return status;
     }
@@ -187,7 +184,6 @@ public class MockHttpServletResponse implements HttpServletResponse {
         this.status = status;
     }
 
-    @Override
     public void setStatus(int status, String description) {
         setStatus(status);
         this.description = description;

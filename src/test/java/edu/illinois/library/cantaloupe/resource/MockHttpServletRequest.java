@@ -63,6 +63,16 @@ public class MockHttpServletRequest implements HttpServletRequest {
     }
 
     @Override
+    public jakarta.servlet.ServletConnection getServletConnection() {
+        return null;
+    }
+
+    @Override
+    public String getProtocolRequestId() {
+        return null;
+    }
+
+    @Override
     public String getCharacterEncoding() {
         return "UTF-8";
     }
@@ -240,6 +250,11 @@ public class MockHttpServletRequest implements HttpServletRequest {
     }
 
     @Override
+    public String getRequestId() {
+        return null;
+    }
+
+    @Override
     public String getProtocol() {
         return null;
     }
@@ -249,7 +264,6 @@ public class MockHttpServletRequest implements HttpServletRequest {
         return null;
     }
 
-    @Override
     public String getRealPath(String s) {
         return null;
     }
@@ -349,7 +363,6 @@ public class MockHttpServletRequest implements HttpServletRequest {
         return false;
     }
 
-    @Override
     public boolean isRequestedSessionIdFromUrl() {
         return false;
     }
