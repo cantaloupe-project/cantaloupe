@@ -10,6 +10,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import static org.hamcrest.Matchers.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.head;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -177,8 +178,7 @@ class StaticFileControllerTest {
                     // The controller should map /static/styles/base.css to /webapp/styles/base.css
                     // This is verified by the fact that we can access the file at all
                     int status = result.getResponse().getStatus();
-                    assertTrue(status == 200 || status == 404,
-                             "Should return either 200 (file found) or 404 (file not found), got: " + status);
+                    assertTrue(status == 200);
                 });
     }
 
@@ -187,15 +187,13 @@ class StaticFileControllerTest {
         mockMvc.perform(head("/static/styles/base.css"))
                 .andExpect(result -> {
                     int status = result.getResponse().getStatus();
-                    assertTrue(status == 200 || status == 404 || status == 405);
-                    if (status == 200) {
-                        // HEAD should return same headers as GET but no body
-                        String contentType = result.getResponse().getHeader("Content-Type");
-                        String cacheControl = result.getResponse().getHeader("Cache-Control");
+                    assertTrue(status == 200);
+                    // HEAD should return same headers as GET but no body
+                    String contentType = result.getResponse().getHeader("Content-Type");
+                    String cacheControl = result.getResponse().getHeader("Cache-Control");
 
-                        assertNotNull(contentType);
-                        assertNotNull(cacheControl);
-                    }
+                    assertNotNull(contentType);
+                    assertNotNull(cacheControl);
                 });
     }
 
@@ -211,9 +209,9 @@ class StaticFileControllerTest {
         }
     }
 
-    private static void assertEquals(int expected, int actual) {
-        if (expected != actual) {
-            throw new AssertionError("Expected: " + expected + ", but was: " + actual);
+    private static void assertEquals(String string, String contentType) {
+        if (string != contentType) {
+            throw new AssertionError("Expected: " + string + ", but was: " + contentType);
         }
     }
 }
