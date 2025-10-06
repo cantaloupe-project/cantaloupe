@@ -10,7 +10,6 @@ import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.resource.RequestContext;
 import edu.illinois.library.cantaloupe.util.Rational;
 
-import java.net.URI;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
