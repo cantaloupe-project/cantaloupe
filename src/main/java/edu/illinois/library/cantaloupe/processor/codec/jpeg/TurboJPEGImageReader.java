@@ -449,19 +449,6 @@ public final class TurboJPEGImageReader implements AutoCloseable {
         return flags;
     }
 
-    private boolean isRegionMCUSafe() throws IOException {
-        if (region != null) {
-            final int blockWidth = getBlockWidth();
-            final int blockHeight = getBlockHeight();
-            return region.intX() % blockWidth == 0 &&
-                    region.intY() % blockHeight == 0 &&
-                    region.intWidth() % blockWidth == 0 &&
-                    region.intHeight() % blockHeight == 0;
-        }
-        return getWidth() % blockWidth == 0 &&
-                getHeight() % blockHeight == 0;
-    }
-
     private boolean isTransforming(TJTransform xform) {
         return (xform.op != TJTransform.OP_NONE ||
                 xform.options != 0 ||
