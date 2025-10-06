@@ -151,7 +151,6 @@ class StaticFileControllerTest {
     @Test
     void shouldHandleFontFiles() throws Exception {
         String[] fontExtensions = {"woff", "woff2", "ttf", "eot"};
-        String[] expectedTypes = {"font/woff", "font/woff2", "font/ttf", "application/vnd.ms-fontobject"};
 
         for (int i = 0; i < fontExtensions.length; i++) {
             mockMvc.perform(get("/static/fonts/test." + fontExtensions[i]))
