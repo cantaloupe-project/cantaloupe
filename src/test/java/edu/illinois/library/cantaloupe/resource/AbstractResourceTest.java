@@ -1,29 +1,49 @@
 package edu.illinois.library.cantaloupe.resource;
 
+import edu.illinois.library.cantaloupe.CantalouperApplication;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.http.Headers;
 import edu.illinois.library.cantaloupe.http.Reference;
 import edu.illinois.library.cantaloupe.image.Format;
-import edu.illinois.library.cantaloupe.test.BaseTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.mock.web.MockHttpServletResponse;
+import org.springframework.test.context.TestPropertySource;
 
 import java.util.List;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class AbstractResourceTest extends BaseTest {
+/**
+ * Spring Boot-enabled test for the AbstractResource class.
+ *
+ * This test demonstrates the conversion from traditional JUnit tests to
+ * Spring Boot testing framework, using Spring's mock objects and proper
+ * configuration management.
+ */
+@SpringBootTest(classes = CantalouperApplication.class, webEnvironment = SpringBootTest.WebEnvironment.NONE)
+@TestPropertySource(properties = {
+    "spring.main.banner-mode=off",
+    "logging.level.root=WARN",
+    "logging.level.edu.illinois.library.cantaloupe=INFO",
+    "http.enabled=true",
+    "http.port=0",
+    "endpoint.iiif.1.enabled=true",
+    "endpoint.iiif.2.enabled=true",
+    "endpoint.iiif.3.enabled=true"
+})
+public class AbstractResourceTest {
 
     private AbstractResource instance;
 
     @BeforeEach
     public void setUp() throws Exception {
-        super.setUp();
-
         instance = new AbstractResource() {
             @Override
             protected Logger getLogger() {
@@ -31,9 +51,18 @@ public class AbstractResourceTest extends BaseTest {
             }
         };
 
-        Request mockRequest = new Request(new MockHttpServletRequest());
+        MockHttpServletRequest mockServletRequest = new MockHttpServletRequest();
+        mockServletRequest.setMethod("GET");
+        mockServletRequest.setRequestURI("/");
+        mockServletRequest.setServerName("localhost");
+        mockServletRequest.setScheme("http");
+        mockServletRequest.setServerPort(8182);
+
+        Request mockRequest = new Request(mockServletRequest);
         instance.setRequest(mockRequest);
-        instance.setResponse(new MockHttpServletResponse());
+
+        MockHttpServletResponse mockServletResponse = new MockHttpServletResponse();
+        instance.setResponse(mockServletResponse);
     }
 
     @Test
@@ -81,8 +110,10 @@ public class AbstractResourceTest extends BaseTest {
 
     @Test
     void testGetPreferredMediaTypesWithAcceptHeaderSet() {
-        instance.getRequest().getHeaders().set("Accept",
-                "text/html;q=0.9, application/xhtml+xml, */*;q=0.2, text/plain;q=0.5");
+        MockHttpServletRequest servletRequest =
+            (MockHttpServletRequest) instance.getRequest().getServletRequest();
+        servletRequest.addHeader("Accept",
+            "text/html;q=0.9, application/xhtml+xml, */*;q=0.2, text/plain;q=0.5");
 
         List<String> types = instance.getPreferredMediaTypes();
         assertEquals(3, types.size());
@@ -93,8 +124,7 @@ public class AbstractResourceTest extends BaseTest {
 
     @Test
     void testGetPreferredMediaTypesWithAcceptHeaderNotSet() {
-        instance.getRequest().getHeaders().removeAll("Accept");
-
+        // Spring's MockHttpServletRequest doesn't have an Accept header by default
         List<String> types = instance.getPreferredMediaTypes();
         assertTrue(types.isEmpty());
     }
@@ -111,7 +141,9 @@ public class AbstractResourceTest extends BaseTest {
         MockHttpServletRequest servletRequest =
                 (MockHttpServletRequest) instance.getRequest().getServletRequest();
         servletRequest.setContextPath("/base");
-        servletRequest.setRequestURL("http://example.org/base/llamas");
+        servletRequest.setRequestURI("/base/llamas");
+        servletRequest.setServerName("example.org");
+        servletRequest.setScheme("http");
 
         Reference ref = instance.getPublicReference();
         assertEquals(baseURI + "/llamas", ref.toString());
@@ -129,13 +161,15 @@ public class AbstractResourceTest extends BaseTest {
         MockHttpServletRequest servletRequest =
                 (MockHttpServletRequest) instance.getRequest().getServletRequest();
         servletRequest.setContextPath("");
-        servletRequest.setRequestURL("http://bogus/cats");
+        servletRequest.setRequestURI("/cats");
+        servletRequest.setServerName("bogus");
+        servletRequest.setScheme("http");
 
-        Headers headers = instance.getRequest().getHeaders();
-        headers.set("X-Forwarded-Proto", "HTTP");
-        headers.set("X-Forwarded-Host", "example.org");
-        headers.set("X-Forwarded-Port", "80");
-        headers.set("X-Forwarded-Path", "/");
+        servletRequest.addHeader("X-Forwarded-Proto", "HTTP");
+        servletRequest.addHeader("X-Forwarded-Host", "example.org");
+        servletRequest.addHeader("X-Forwarded-Port", "80");
+        servletRequest.addHeader("X-Forwarded-Path", "/");
+
         Reference ref = instance.getPublicReference();
         assertEquals("http://example.org/cats", ref.toString());
     }
@@ -146,14 +180,16 @@ public class AbstractResourceTest extends BaseTest {
      */
     @Test
     void testGetPublicReferenceFallsBackToHTTPRequest() {
-        String resourceURI = "http://example.net/cats/dogs";
-
         MockHttpServletRequest servletRequest =
                 (MockHttpServletRequest) instance.getRequest().getServletRequest();
         servletRequest.setContextPath("/cats");
-        servletRequest.setRequestURL(resourceURI);
+        servletRequest.setRequestURI("/cats/dogs");
+        servletRequest.setServerName("example.net");
+        servletRequest.setScheme("http");
+        servletRequest.setServerPort(80);
+
         Reference ref = instance.getPublicReference();
-        assertEquals(resourceURI, ref.toString());
+        assertEquals("http://example.net/cats/dogs", ref.toString());
     }
 
     /**
@@ -162,27 +198,33 @@ public class AbstractResourceTest extends BaseTest {
      */
     @Test
     void testGetPublicReferenceFallsBackToHTTPSRequest() {
-        String resourceURI = "https://example.net/cats/dogs";
-
         MockHttpServletRequest servletRequest =
                 (MockHttpServletRequest) instance.getRequest().getServletRequest();
         servletRequest.setContextPath("/cats");
-        servletRequest.setRequestURL(resourceURI);
+        servletRequest.setRequestURI("/cats/dogs");
+        servletRequest.setServerName("example.net");
+        servletRequest.setScheme("https");
+        servletRequest.setServerPort(443);
+        servletRequest.setSecure(true);
+
         Reference ref = instance.getPublicReference();
-        assertEquals(resourceURI, ref.toString());
+        assertEquals("https://example.net/cats/dogs", ref.toString());
     }
 
     @Test
     void testGetPublicReferenceOmitsQuery() {
-        String resourceURI = "https://example.net/cats/dogs?arg=value";
-        String expected = "https://example.net/cats/dogs";
-
         MockHttpServletRequest servletRequest =
                 (MockHttpServletRequest) instance.getRequest().getServletRequest();
         servletRequest.setContextPath("/cats");
-        servletRequest.setRequestURL(resourceURI);
+        servletRequest.setRequestURI("/cats/dogs");
+        servletRequest.setQueryString("arg=value");
+        servletRequest.setServerName("example.net");
+        servletRequest.setScheme("https");
+        servletRequest.setServerPort(443);
+        servletRequest.setSecure(true);
+
         Reference ref = instance.getPublicReference();
-        assertEquals(expected, ref.toString());
+        assertEquals("https://example.net/cats/dogs", ref.toString());
     }
 
     /* getRepresentationDisposition() */
@@ -297,4 +339,30 @@ public class AbstractResourceTest extends BaseTest {
         assertNull(disposition);
     }
 
+    @Test
+    void testGetPreferredMediaTypesWithComplexAcceptHeader() {
+        MockHttpServletRequest servletRequest =
+            (MockHttpServletRequest) instance.getRequest().getServletRequest();
+        servletRequest.addHeader("Accept",
+            "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8");
+
+        List<String> types = instance.getPreferredMediaTypes();
+        assertTrue(types.size() >= 3);
+        assertTrue(types.contains("text/html"));
+        assertTrue(types.contains("application/xhtml+xml"));
+    }
+
+    @Test
+    void testGetPublicReferenceWithCustomPort() {
+        MockHttpServletRequest servletRequest =
+                (MockHttpServletRequest) instance.getRequest().getServletRequest();
+        servletRequest.setContextPath("");
+        servletRequest.setRequestURI("/api/test");
+        servletRequest.setServerName("localhost");
+        servletRequest.setScheme("http");
+        servletRequest.setServerPort(8080);
+
+        Reference ref = instance.getPublicReference();
+        assertEquals("http://localhost:8080/api/test", ref.toString());
+    }
 }
