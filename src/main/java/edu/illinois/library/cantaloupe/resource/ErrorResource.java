@@ -37,6 +37,7 @@ class ErrorResource extends AbstractResource {
     private final Throwable error;
 
     private static Status toStatus(Throwable t) {
+     System.out.println("Hello World err!");
         Status status;
         if (t instanceof ResourceException) {
             status = ((ResourceException) t).getStatus();

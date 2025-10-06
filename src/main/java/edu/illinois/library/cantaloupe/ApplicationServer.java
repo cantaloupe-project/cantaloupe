@@ -25,6 +25,7 @@ import org.eclipse.jetty.ee10.servlet.ListenerHolder;
 import org.eclipse.jetty.ee10.servlet.ServletContextHandler;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.eclipse.jetty.util.thread.QueuedThreadPool;
+import java.util.Set;
 
 import java.lang.management.ManagementFactory;
 
@@ -125,7 +126,7 @@ public class ApplicationServer {
                 "false");
 
 
-
+System.out.println("Hello World!");
         context.setContextPath("/");
         context.addServlet(HandlerServlet.class, "/*");
         context.addServlet(FileServlet.class, "/static/*");
@@ -265,12 +266,20 @@ public class ApplicationServer {
         if (!isStarted) {
             createServer();
 
+            HttpConfiguration config = new HttpConfiguration();
+
+            // This allows encoded slashes in URIs
+            //config.setUriCompliance(UriCompliance.UNSAFE);
+            config.setUriCompliance(UriCompliance.from(Set.of(
+                                UriCompliance.Violation.AMBIGUOUS_PATH_SEPARATOR,
+                                UriCompliance.Violation.AMBIGUOUS_PATH_ENCODING)));
+            //config.setUriCompliance(UriCompliance.RFC3986);
+           // config.getUriCompliance().addViolation(UriCompliance.Violation.AMBIGUOUS_PATH_ENCODING);
+            config.setHttpCompliance(HttpCompliance.LEGACY);
+
             // Initialize the HTTP server, handling both HTTP/1.1 and plaintext
             // HTTP/2.
             if (isHTTPEnabled()) {
-                HttpConfiguration config = new HttpConfiguration();
-                config.setUriCompliance(UriCompliance.UNSAFE);
-                config.setHttpCompliance(HttpCompliance.LEGACY);
                 HttpConnectionFactory http1 = new HttpConnectionFactory(config);
 
                 HTTP2CServerConnectionFactory http2 =
@@ -285,11 +294,8 @@ public class ApplicationServer {
 
             // Initialize the HTTPS server.
             if (isHTTPSEnabled()) {
-                HttpConfiguration config = new HttpConfiguration();
                 config.setSecureScheme("https");
                 config.setSecurePort(getHTTPSPort());
-                config.setUriCompliance(UriCompliance.UNSAFE);
-                config.setHttpCompliance(HttpCompliance.LEGACY);
                 config.addCustomizer(new SecureRequestCustomizer());
 
                 final SslContextFactory.Server contextFactory = new SslContextFactory.Server();

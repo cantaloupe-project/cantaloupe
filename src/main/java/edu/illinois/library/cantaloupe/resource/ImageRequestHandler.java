@@ -293,11 +293,14 @@ public class ImageRequestHandler extends AbstractRequestHandler
      *                     closed.
      */
     public void handle(OutputStream outputStream) throws Exception {
+
+
         if (!callback.preAuthorize()) {
             return;
         }
 
         final Identifier identifier   = operationList.getIdentifier();
+          System.out.println("Hello World 15! " + identifier);
         final Configuration config    = Configuration.getInstance();
         final CacheFacade cacheFacade = new CacheFacade();
 
@@ -338,6 +341,7 @@ public class ImageRequestHandler extends AbstractRequestHandler
                 }
             }
         }
+          System.out.println("Hello World 16! ");
 
         final Source source = new SourceFactory().newSource(
                 identifier, delegateProxy);
@@ -358,6 +362,7 @@ public class ImageRequestHandler extends AbstractRequestHandler
                 throw e;
             }
         }
+          System.out.println("Hello World 17! ");
 
         if (!isFormatKnownYet) {
             // If we are not resolving first, and there is a hit in the source
@@ -378,11 +383,17 @@ public class ImageRequestHandler extends AbstractRequestHandler
             }
         }
 
+          System.out.println("Hello World 18! ");
+
         while (formatIterator.hasNext()) {
+                  System.out.println("Hello World 19.2! ");
+
             final Format format = formatIterator.next();
             // Obtain an instance of the processor assigned to this format.
             String processorName = "unknown processor";
             try (Processor processor = new ProcessorFactory().newProcessor(format)) {
+                              System.out.println("Hello World 19.3! ");
+
                 processorName = processor.getClass().getSimpleName();
 
                 // Connect it to the source.
@@ -405,10 +416,15 @@ public class ImageRequestHandler extends AbstractRequestHandler
                     operationList.applyNonEndpointMutations(info, delegateProxy);
                     operationList.freeze();
                 } catch (IllegalArgumentException | IndexOutOfBoundsException e) {
+                                  System.out.println("Hello World oops! ");
+
                     throw new IllegalClientArgumentException(e);
                 }
+                              System.out.println("Hello World 19.4! ");
 
                 if (!callback.authorize()) {
+                                                  System.out.println("Hello World oops 2! ");
+
                     return;
                 }
 
@@ -422,14 +438,20 @@ public class ImageRequestHandler extends AbstractRequestHandler
 
                 // Notify the health checker of a successful response.
                 HealthChecker.addSourceUsage(source);
+                                              System.out.println("Hello World 19.5! ");
+
                 return;
             } catch (SourceFormatException e) {
+                  System.out.println("Hello World oops 3! ");
+
                 LOGGER.debug("Format inferred by {} disagrees with the one " +
                                 "supplied by {} ({}) for {}; trying again",
                         processorName, source.getClass().getSimpleName(),
                         format, identifier);
             }
         }
+                  System.out.println("DIDN'T GET HERE ");
+
         if (config.getBoolean(Key.PROCESSOR_PURGE_INCOMPATIBLE_FROM_SOURCE_CACHE, false)) {
             TaskQueue.getInstance().submit(() -> {
                 try {
@@ -447,6 +469,7 @@ public class ImageRequestHandler extends AbstractRequestHandler
                 }
             });
         }
+
         throw new SourceFormatException();
     }
 

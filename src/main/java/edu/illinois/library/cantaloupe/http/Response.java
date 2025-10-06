@@ -24,8 +24,12 @@ public final class Response {
                 break;
         }
 
+        System.out.println("resp body request to " + jresponse.uri() + " " + jresponse.statusCode());
+
         jresponse.headers().map().forEach((name, list) ->
+
                 list.forEach(h ->
+
                         response.getHeaders().add(name, h)));
 
         return response;

@@ -69,11 +69,15 @@ public class HandlerServlet extends HttpServlet {
         AbstractResource resource = null;
 
         try {
+
             Route route = Route.forPath(path);
+
             if (route == null) {
                 throw new ResourceException(Status.NOT_FOUND,
                         "No route for path: " + path);
             }
+
+            System.out.println("Hello World 20!");
 
             resource = route.getResource().getDeclaredConstructor().newInstance();
             resource.setPathArguments(route.getPathArguments());
@@ -81,6 +85,7 @@ public class HandlerServlet extends HttpServlet {
             resource.setResponse(response);
             resource.doInit();
 
+            System.out.println("Hello World 21!");
             final List<Method> supportedMethods =
                     List.of(resource.getSupportedMethods());
             // If the request method is HEAD and GET is supported
@@ -94,7 +99,11 @@ public class HandlerServlet extends HttpServlet {
                         resource.doDELETE();
                         break;
                     case "GET":
+                                System.out.println("Hello World 22!");
+
                         resource.doGET();
+                                                        System.out.println("Hello World 23!");
+
                         break;
                     case "HEAD":
                         resource.doHEAD();
@@ -114,13 +123,18 @@ public class HandlerServlet extends HttpServlet {
             } else {
                 throw new ResourceException(Status.METHOD_NOT_ALLOWED);
             }
+                        System.out.println("Hello World 24!");
         } catch (Throwable t) {
+                                 System.out.println("Hello World 13!");
+
             handleError(request, response, t);
         } finally {
+                                         System.out.println("Hello World 14!" + response.getStatus());
+
             if (resource != null) {
                 resource.destroy();
             }
-            LOGGER.debug("Responded to {} {} with HTTP {} in {}",
+            LOGGER.warn("Responded to {} {} with HTTP {} in {}",
                     request.getMethod(), request.getPathInfo(),
                     response.getStatus(), requestClock);
         }

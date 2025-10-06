@@ -108,8 +108,11 @@ public final class HTTPAssert {
             Response response = client.send();
             assertEquals(expectedCode, response.getStatus());
         } catch (ResourceException e) {
+        System.out.println("ResourceException occurred "+ e.getMessage());
             assertEquals(expectedCode, e.getStatusCode());
         } catch (Exception e) {
+                System.out.println("other exception occurred");
+
             fail(e.getMessage());
         } finally {
             stopQuietly(client);
