@@ -18,7 +18,7 @@ import java.util.List;
  * @see <a href="https://github.com/FasterXML/jackson-databind">jackson-databind
  * docs</a>
  */
-class Information<K,V> extends LinkedHashMap<K,V> {
+public class Information<K,V> extends LinkedHashMap<K,V> {
 
     @JsonPropertyOrder({ "width", "height" })
     public static final class Size {

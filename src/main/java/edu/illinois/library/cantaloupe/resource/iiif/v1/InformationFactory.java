@@ -15,7 +15,7 @@ import java.util.Set;
 /**
  * Builds new {@link Information} instances.
  */
-final class InformationFactory {
+public final class InformationFactory {
 
     private static final int MIN_SIZE = 64;
 
@@ -24,7 +24,7 @@ final class InformationFactory {
      */
     private static final int DEFAULT_MIN_TILE_SIZE = 512;
 
-    Information newImageInfo(final String imageURI,
+    public Information newImageInfo(final String imageURI,
                              final Set<Format> availableOutputFormats,
                              final Info info,
                              final int imageIndex,

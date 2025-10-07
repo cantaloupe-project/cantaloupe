@@ -2,9 +2,10 @@ package edu.illinois.library.cantaloupe;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
+import edu.illinois.library.cantaloupe.controller.FileServlet;
+import edu.illinois.library.cantaloupe.controller.RouterServlet;
 import edu.illinois.library.cantaloupe.processor.codec.IIOProviderContextListener;
-import edu.illinois.library.cantaloupe.resource.FileServlet;
-import edu.illinois.library.cantaloupe.resource.HandlerServlet;
+
 import org.eclipse.jetty.alpn.server.ALPNServerConnectionFactory;
 import org.eclipse.jetty.http2.HTTP2Cipher;
 import org.eclipse.jetty.http2.server.HTTP2CServerConnectionFactory;
@@ -123,8 +124,7 @@ public class ApplicationServer {
                 "false");
 
         context.setContextPath("/");
-        context.addServlet(HandlerServlet.class, "/*");
-        context.addServlet(FileServlet.class, "/static/*");
+        context.addServlet(RouterServlet.class, "/*");
         context.getServletHandler().addListener(new ListenerHolder(ApplicationContextListener.class));
         context.getServletHandler().addListener(new ListenerHolder(IIOProviderContextListener.class));
 
