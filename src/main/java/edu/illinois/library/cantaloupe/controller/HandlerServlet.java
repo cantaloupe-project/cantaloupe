@@ -6,7 +6,6 @@ import edu.illinois.library.cantaloupe.http.Method;
 import edu.illinois.library.cantaloupe.http.Status;
 import edu.illinois.library.cantaloupe.resource.IllegalClientArgumentException;
 import edu.illinois.library.cantaloupe.resource.ResourceException;
-import edu.illinois.library.cantaloupe.controller.Route;
 import edu.illinois.library.cantaloupe.util.Stopwatch;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,13 +13,15 @@ import org.slf4j.LoggerFactory;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.annotation.WebServlet;
+
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.List;
-
 /**
  * Front-controller Servlet that handles all requests.
  */
+@WebServlet("handler")
 public class HandlerServlet extends HttpServlet {
 
     private static final Logger LOGGER =

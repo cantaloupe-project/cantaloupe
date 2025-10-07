@@ -19,9 +19,9 @@ import static edu.illinois.library.cantaloupe.test.Assert.HTTPAssert.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * Functional test of LandingResource.
+ * Functional test of LandingController.
  */
-public class LandingResourceTest extends ResourceTest {
+public class LandingControllerTest extends ResourceTest {
 
     @Override
     protected String getEndpointPath() {

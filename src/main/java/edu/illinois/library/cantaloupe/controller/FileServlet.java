@@ -1,5 +1,6 @@
 package edu.illinois.library.cantaloupe.controller;
 
+import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -11,6 +12,7 @@ import java.net.URL;
 /**
  * Handles requests for static files.
  */
+@WebServlet("staticFiles")
 public class FileServlet extends HttpServlet {
 
     @Override
