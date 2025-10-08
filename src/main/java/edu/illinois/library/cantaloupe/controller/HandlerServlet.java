@@ -21,7 +21,7 @@ import java.util.List;
 /**
  * Front-controller Servlet that handles all requests.
  */
-@WebServlet("handler")
+@WebServlet("/handler")
 public class HandlerServlet extends HttpServlet {
 
     private static final Logger LOGGER =

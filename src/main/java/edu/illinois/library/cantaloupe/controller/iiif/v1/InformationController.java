@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import edu.illinois.library.cantaloupe.controller.Controller;
 import edu.illinois.library.cantaloupe.controller.Route;
 import edu.illinois.library.cantaloupe.http.Method;
 import edu.illinois.library.cantaloupe.http.Status;
@@ -30,10 +31,10 @@ import jakarta.servlet.http.HttpServletResponse;
  * @see <a href="http://iiif.io/api/image/1.1/#image-info-request">Information
  * Requests</a>
  */
-public class InformationResource extends IIIF1Resource {
+public class InformationController extends Controller {
 
     private static final Logger LOGGER =
-            LoggerFactory.getLogger(InformationResource.class);
+            LoggerFactory.getLogger(InformationController.class);
 
     private static final Method[] SUPPORTED_METHODS =
             new Method[] { Method.GET, Method.OPTIONS };
@@ -76,7 +77,7 @@ public class InformationResource extends IIIF1Resource {
         class CustomCallback implements InformationRequestHandler.Callback {
             @Override
             public boolean authorize() throws Exception {
-                return InformationResource.this.preAuthorize();
+                return InformationController.this.preAuthorize();
             }
 
             @Override

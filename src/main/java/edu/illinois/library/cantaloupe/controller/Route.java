@@ -46,8 +46,6 @@ public final class Route {
                 TrailingSlashRemovingResource.class);
 
         // IIIF Image API v3 routes
-        MAPPINGS.put(Pattern.compile("^" + IIIF_3_PATH + "$"),
-                edu.illinois.library.cantaloupe.controller.iiif.v3.LandingResource.class);
         MAPPINGS.put(Pattern.compile("^" + IIIF_3_PATH + "/([^/]+)/info\\.json$"),
                 edu.illinois.library.cantaloupe.controller.iiif.v3.InformationResource.class);
         MAPPINGS.put(Pattern.compile("^" + IIIF_3_PATH + "/([^/]+)$"),
@@ -56,8 +54,6 @@ public final class Route {
                 edu.illinois.library.cantaloupe.controller.iiif.v3.ImageResource.class);
 
         // IIIF Image API v2 routes
-        MAPPINGS.put(Pattern.compile("^" + IIIF_2_PATH + "$"),
-                edu.illinois.library.cantaloupe.controller.iiif.v2.LandingResource.class);
         MAPPINGS.put(Pattern.compile("^" + IIIF_2_PATH + "/([^/]+)/info\\.json$"),
                 edu.illinois.library.cantaloupe.controller.iiif.v2.InformationResource.class);
         MAPPINGS.put(Pattern.compile("^" + IIIF_2_PATH + "/([^/]+)$"),

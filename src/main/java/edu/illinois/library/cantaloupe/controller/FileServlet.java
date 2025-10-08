@@ -12,7 +12,7 @@ import java.net.URL;
 /**
  * Handles requests for static files.
  */
-@WebServlet("staticFiles")
+@WebServlet(name="staticFiles")
 public class FileServlet extends HttpServlet {
 
     @Override
