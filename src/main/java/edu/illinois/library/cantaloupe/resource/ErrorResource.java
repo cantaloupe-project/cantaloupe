@@ -10,6 +10,8 @@ import edu.illinois.library.cantaloupe.operation.ValidationException;
 import edu.illinois.library.cantaloupe.processor.OutputFormatException;
 import edu.illinois.library.cantaloupe.processor.SourceFormatException;
 import edu.illinois.library.cantaloupe.resource.iiif.FormatException;
+import edu.illinois.library.cantaloupe.http.ContentTypeNegotiator;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -94,7 +96,8 @@ class ErrorResource extends AbstractResource {
         // Web browsers will usually request `text/html` and
         // `application/xhtml+xml` in order of priority. In the absence
         // of either of those, we will prefer to return `text/plain`.
-        String requestedType = negotiateContentType(SUPPORTED_MEDIA_TYPES);
+        ContentTypeNegotiator negotiator = new ContentTypeNegotiator(getRequest().getHeaders());
+        String requestedType = negotiator.negotiateContentType(SUPPORTED_MEDIA_TYPES);
         if (requestedType == null) {
             requestedType = "text/plain";
         }
