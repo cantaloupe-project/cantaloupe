@@ -1,6 +1,5 @@
 package edu.illinois.library.cantaloupe.processor.codec.jpeg2000;
 
-import edu.illinois.library.cantaloupe.image.iptc.Reader;
 import edu.illinois.library.cantaloupe.processor.SourceFormatException;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;
