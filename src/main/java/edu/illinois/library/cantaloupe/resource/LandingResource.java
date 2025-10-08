@@ -25,7 +25,7 @@ public class LandingResource extends AbstractResource {
     @Override
     public void doGET() throws Exception {
         addHeaders();
-        new VelocityRepresentation("/landing.vm", getCommonTemplateVars())
+        new ThymeleafRepresentation("/landing.html", getCommonTemplateVars())
                 .write(getResponse().getOutputStream());
     }
 
