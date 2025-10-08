@@ -498,7 +498,7 @@ public class AdminResourceUITest extends AbstractAdminResourceTest {
         css("#cl-processors li > a[href=\"#cl-image-assignments\"]").click();
         selectNamed("processor.ManualSelectionStrategy.gif").
                 selectByVisibleText("Java2dProcessor");
-        selectNamed(Key.PROCESSOR_FALLBACK).selectByVisibleText("JaiProcessor");
+        selectNamed(Key.PROCESSOR_FALLBACK).selectByVisibleText("Java2dProcessor");
         selectNamed(Key.PROCESSOR_STREAM_RETRIEVAL_STRATEGY).
                 selectByValue("StreamStrategy");
         selectNamed(Key.PROCESSOR_FALLBACK_RETRIEVAL_STRATEGY).
@@ -518,8 +518,6 @@ public class AdminResourceUITest extends AbstractAdminResourceTest {
         // FfmpegProcessor
         css("#cl-processors li > a[href=\"#FfmpegProcessor\"]").click();
         inputNamed(Key.FFMPEGPROCESSOR_PATH_TO_BINARIES).sendKeys("/ffpath");
-        // JaiProcessor
-        css("#cl-processors li > a[href=\"#JaiProcessor\"]").click();
         // Java2dProcessor
         css("#cl-processors li > a[href=\"#Java2dProcessor\"]").click();
         // OpenJpegProcessor
@@ -544,7 +542,7 @@ public class AdminResourceUITest extends AbstractAdminResourceTest {
                 config.getString(Key.PROCESSOR_SELECTION_STRATEGY));
         assertEquals("Java2dProcessor",
                 config.getString("processor.ManualSelectionStrategy.gif"));
-        assertEquals("JaiProcessor", config.getString(Key.PROCESSOR_FALLBACK));
+        assertEquals("Java2dProcessor", config.getString(Key.PROCESSOR_FALLBACK));
         assertEquals("StreamStrategy",
                 config.getString(Key.PROCESSOR_STREAM_RETRIEVAL_STRATEGY));
         assertEquals("CacheStrategy",
@@ -564,7 +562,6 @@ public class AdminResourceUITest extends AbstractAdminResourceTest {
         // FfmpegProcessor
         assertEquals("/ffpath",
                 config.getString(Key.FFMPEGPROCESSOR_PATH_TO_BINARIES));
-        // JaiProcessor
         // Java2dProcessor
         // OpenJpegProcessor
         assertEquals("/ojpath",

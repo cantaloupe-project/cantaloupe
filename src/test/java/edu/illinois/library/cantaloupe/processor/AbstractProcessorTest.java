@@ -511,19 +511,6 @@ abstract class AbstractProcessorTest extends BaseTest {
                 .build();
 
         forEachFixture(ops, new ProcessorAssertion() {
-            {
-                if (newInstance() instanceof JaiProcessor) {
-                    // These may be JAI bugs, don't know and don't care
-                    this.skippedFixtures.addAll(List.of(
-                            "bmp-rgba-64x56x8.bmp",
-                            "gif",
-                            "gif-animated-looping.gif",
-                            "gif-animated-non-looping.gif",
-                            "gif-rgb-64x56x8.gif",
-                            "gif-xmp.gif",
-                            "gif-xmp-orientation-90.gif"));
-                }
-            }
             @Override
             public void run() {
                 assertBitonal(this.resultingImage);
@@ -540,20 +527,6 @@ abstract class AbstractProcessorTest extends BaseTest {
                 .build();
 
         forEachFixture(ops, new ProcessorAssertion() {
-            {
-                if (newInstance() instanceof JaiProcessor) {
-                    // These may be JAI bugs, don't know and don't care
-                    this.skippedFixtures.addAll(List.of(
-                            "bmp-rgba-64x56x8.bmp",
-                            "gif",
-                            "gif-animated-looping.gif",
-                            "gif-animated-non-looping.gif",
-                            "gif-rgb-64x56x8.gif",
-                            "gif-xmp.gif",
-                            "gif-xmp-orientation-90.gif",
-                            "xpm"));
-                }
-            }
             @Override
             public void run() {
                 assertGray(this.resultingImage);
@@ -568,7 +541,7 @@ abstract class AbstractProcessorTest extends BaseTest {
         try (Processor proc = newInstance()) {
             proc.setSourceFormat(getAnySupportedSourceFormat(proc));
             outputFormats = proc.getAvailableOutputFormats();
-            if (proc instanceof Java2dProcessor || proc instanceof JaiProcessor) {
+            if (proc instanceof Java2dProcessor) {
                 tmpFlag = true;
             }
         }
@@ -908,7 +881,7 @@ abstract class AbstractProcessorTest extends BaseTest {
         }
 
         Processor proc = newInstance();
-        if (proc instanceof Java2dProcessor || proc instanceof JaiProcessor) {
+        if (proc instanceof Java2dProcessor) {
             if (fixtureName.equals("tif-rgba-1res-64x56x8-tiled-jpeg.tif") ||
                     fixtureName.equals("tif-rgba-1res-64x56x8-striped-jpeg.tif")) {
                 return false;

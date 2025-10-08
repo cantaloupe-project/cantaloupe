@@ -22,7 +22,6 @@ public final class ProcessorFactory {
 
     private static final Set<Class<? extends Processor>> ALL_PROCESSOR_IMPLS = Set.of(
             FfmpegProcessor.class,
-            JaiProcessor.class,
             Java2dProcessor.class,
             KakaduNativeProcessor.class,
             OpenJpegProcessor.class,

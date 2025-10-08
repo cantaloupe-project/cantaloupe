@@ -2322,7 +2322,7 @@
                                            role="button" data-toggle="popover"
                                            data-trigger="focus"
                                            data-content="Selectable downscale filters are supported
-                                           by all processors except JaiProcessor and
+                                           by all processors except
                                            KakaduNativeProcessor.">?</a>
                                     </td>
                                     <td>
@@ -2341,7 +2341,7 @@
                                            role="button" data-toggle="popover"
                                            data-trigger="focus"
                                            data-content="Selectable upscale filters are supported
-                                           by all processors except JaiProcessor and
+                                           by all processors except
                                            KakaduNativeProcessor.">?</a>
                                     </td>
                                     <td>
@@ -2483,10 +2483,6 @@
                                     </table>
                                 </div>
 
-                                <div role="tabpanel" class="tab-pane" id="JaiProcessor">
-                                    <p>This processor is not configurable.</p>
-                                </div>
-
                                 <div role="tabpanel" class="tab-pane" id="Java2dProcessor">
                                     <p>This processor is not configurable.</p>
                                 </div>
@@ -2513,7 +2509,7 @@
                                         </tr>
                                     </table>
                                 </div>
-                                
+
                                 <div role="tabpanel" class="tab-pane" id="GrokProcessor">
                                     <table class="table table-striped">
                                         <tr>
@@ -2532,7 +2528,7 @@
                                         </tr>
                                     </table>
                                 </div>
-                                
+
                                 <div role="tabpanel" class="tab-pane" id="PdfBoxProcessor">
                                     <table class="table table-striped">
                                         <tr>
