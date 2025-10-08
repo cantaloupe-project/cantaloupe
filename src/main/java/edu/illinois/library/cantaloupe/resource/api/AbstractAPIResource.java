@@ -3,7 +3,7 @@ package edu.illinois.library.cantaloupe.resource.api;
 import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
-import edu.illinois.library.cantaloupe.resource.AbstractResource;
+import edu.illinois.library.cantaloupe.controller.AbstractResource;
 import edu.illinois.library.cantaloupe.resource.EndpointDisabledException;
 
 abstract class AbstractAPIResource extends AbstractResource {

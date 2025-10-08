@@ -20,7 +20,7 @@ import java.util.stream.Collectors;
  * @see <a href="https://iiif.io/api/image/3.0/#21-image-request-uri-syntax">
  *     IIIF Image API 3.0: Image Request URI Syntax</a>
  */
-class Parameters {
+public class Parameters {
 
     private String identifier;
     private Region region;
@@ -64,7 +64,7 @@ class Parameters {
     /**
      * Copy constructor.
      */
-    Parameters(Parameters params) {
+    public Parameters(Parameters params) {
         setIdentifier(params.getIdentifier());
         setRegion(params.getRegion());
         setSize(params.getSize());
@@ -85,7 +85,7 @@ class Parameters {
      * @throws IllegalClientArgumentException if any of the other arguments are
      *         invalid.
      */
-    Parameters(String identifier,
+    public Parameters(String identifier,
                String region,
                String size,
                String rotation,
@@ -127,7 +127,7 @@ class Parameters {
         return identifier;
     }
 
-    OutputFormat getOutputFormat() {
+    public OutputFormat getOutputFormat() {
         return outputFormat;
     }
 
@@ -152,7 +152,7 @@ class Parameters {
         return rotation;
     }
 
-    Size getSize() {
+    public Size getSize() {
         return size;
     }
 
@@ -161,7 +161,7 @@ class Parameters {
         return toString().hashCode();
     }
 
-    void setIdentifier(String identifier) {
+    public void setIdentifier(String identifier) {
         this.identifier = identifier;
     }
 
@@ -195,7 +195,7 @@ class Parameters {
      *                 excluding any additional server-side operations that may
      *                 need to be performed, such as overlays, etc.
      */
-    OperationList toOperationList(DelegateProxy delegateProxy, double maxScale) {
+    public OperationList toOperationList(DelegateProxy delegateProxy, double maxScale) {
         final OperationList ops = new OperationList(
                 MetaIdentifier.fromString(getIdentifier(), delegateProxy));
         if (!Region.Type.FULL.equals(getRegion().getType())) {
@@ -248,7 +248,7 @@ class Parameters {
      * @see            <a href="https://iiif.io/api/image/3.0/#47-canonical-uri-syntax">
      *                 Canonical URI Syntax</a>
      */
-    String toCanonicalString(Dimension fullSize) {
+    public String toCanonicalString(Dimension fullSize) {
         final StringBuilder b = new StringBuilder();
         b.append(getIdentifier());
         b.append("/");
