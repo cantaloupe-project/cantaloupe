@@ -614,8 +614,14 @@ public abstract class AbstractResource {
      */
     protected String getRepresentationDisposition(String identifierStr,
                                                   Format outputFormat) {
-        var queryArg = getRequest().getReference().getQuery()
+        String queryArg = getRequest().getReference().getQuery()
                 .getFirstValue(RESPONSE_CONTENT_DISPOSITION_QUERY_ARG);
+        if (queryArg != null) {
+            getLogger().warn("Passing the {} query argument is deprecated and support for it will be " +
+                             "removed in the next major release. Consider the `download' attribute on the anchor tag " +
+                             "instead. See https://developer.mozilla.org/en-US/docs/Web/API/HTMLAnchorElement/download", RESPONSE_CONTENT_DISPOSITION_QUERY_ARG);
+        }
+
         return getSafeContentDisposition(queryArg, identifierStr, outputFormat);
     }
 
