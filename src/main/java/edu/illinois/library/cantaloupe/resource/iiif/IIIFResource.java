@@ -28,16 +28,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
-import java.util.Set;
 
 public abstract class IIIFResource extends AbstractResource {
 
-    /**
-     * URL argument values that can be used with the {@code cache} query key to
-     * bypass all caching.
-     */
-    private static final Set<String> CACHE_BYPASS_ARGUMENTS =
-            Set.of("false", "nocache");
     private static final String PAGE_NUMBER_QUERY_ARG = "page";
     private static final String TIME_QUERY_ARG        = "time";
 
@@ -71,7 +64,7 @@ public abstract class IIIFResource extends AbstractResource {
         getResponse().setHeader("Access-Control-Allow-Origin", "*");
         getResponse().setHeader("Vary",
                 "Accept, Accept-Charset, Accept-Encoding, Accept-Language, Origin");
-        if (!isBypassingCache()) {
+        if (!getRequest().isBypassingCache()) {
             final Configuration config = Configuration.getInstance();
             if (config.getBoolean(Key.CLIENT_CACHE_ENABLED, false)) {
                 final List<String> directives = new ArrayList<>();
@@ -170,26 +163,6 @@ public abstract class IIIFResource extends AbstractResource {
             }
         }
         return index;
-    }
-
-    /**
-     * @return Whether there is a {@code cache} argument set to {@code false}
-     *         or {@code nocache} in the URI query string indicating that cache
-     *         reads and writes are both bypassed.
-     */
-    protected final boolean isBypassingCache() {
-        String value = getRequest().getReference().getQuery().getFirstValue("cache");
-        return (value != null) && CACHE_BYPASS_ARGUMENTS.contains(value);
-    }
-
-    /**
-     * @return Whether there is a {@code cache} argument set to {@code recache}
-     *         in the URI query string indicating that cache reads are
-     *         bypassed.
-     */
-    protected final boolean isBypassingCacheRead() {
-        String value = getRequest().getReference().getQuery().getFirstValue("cache");
-        return "recache".equals(value);
     }
 
     /**

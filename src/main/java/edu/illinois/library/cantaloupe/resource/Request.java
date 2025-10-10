@@ -10,6 +10,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Enumeration;
+import java.util.Set;
 
 /**
  * Wraps an {@link HttpServletRequest}, adding some convenience methods.
@@ -21,6 +22,13 @@ public final class Request {
     private Cookies cookies;
     private Headers headers;
     private Reference reference;
+
+    /**
+     * URL argument values that can be used with the {@code cache} query key to
+     * bypass all caching.
+     */
+    private static final Set<String> CACHE_BYPASS_ARGUMENTS =
+            Set.of("false", "nocache");
 
     /**
      * @param request Request that the new instance will wrap.
@@ -72,6 +80,29 @@ public final class Request {
 
     public Method getMethod() {
         return Method.valueOf(wrappedRequest.getMethod());
+    }
+
+
+    /**
+     * @return Whether there is a {@code cache} argument set to {@code false}
+     *         or {@code nocache} in the URI query string indicating that cache
+     *         reads and writes are both bypassed.
+     */
+    public final boolean isBypassingCache() {
+        String value = getReference().getQuery().getFirstValue("cache");
+        return (value != null) && CACHE_BYPASS_ARGUMENTS.contains(value);
+    }
+
+    /**
+     * If true, then the requestor wishes us to reprocesses and recache the derivative
+     * image before delivering it
+     * @return Whether there is a {@code cache} argument set to {@code recache}
+     *         in the URI query string indicating that cache reads are
+     *         bypassed.
+     */
+    public final boolean isBypassingCacheRead() {
+        String value = getReference().getQuery().getFirstValue("cache");
+        return "recache".equals(value);
     }
 
     /**
