@@ -95,8 +95,8 @@ public class InformationResource extends IIIF1Resource {
                 getDelegateProxy(),
                 getRequestContext(),
                 new CustomCallback(),
-                isBypassingCache(),
-                isBypassingCacheRead())) {
+                getRequest().isBypassingCache(),
+                getRequest().isBypassingCacheRead())) {
             try {
                 Info info = handler.handle();
                 Information iiifInfo = new InformationFactory().newImageInfo(
