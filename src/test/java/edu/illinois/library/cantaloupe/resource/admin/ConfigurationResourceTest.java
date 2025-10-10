@@ -9,7 +9,7 @@ import edu.illinois.library.cantaloupe.http.Method;
 import edu.illinois.library.cantaloupe.http.ResourceException;
 import edu.illinois.library.cantaloupe.http.Response;
 import edu.illinois.library.cantaloupe.image.MediaType;
-import edu.illinois.library.cantaloupe.resource.Route;
+import edu.illinois.library.cantaloupe.resource.LegacyRoute;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.Test;
 
@@ -23,7 +23,7 @@ public class ConfigurationResourceTest extends AbstractAdminResourceTest {
 
     @Override
     protected String getEndpointPath() {
-        return Route.ADMIN_CONFIG_PATH;
+        return LegacyRoute.ADMIN_CONFIG_PATH;
     }
 
     @Test

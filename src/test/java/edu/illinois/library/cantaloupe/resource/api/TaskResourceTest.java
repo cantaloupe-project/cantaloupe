@@ -7,7 +7,7 @@ import edu.illinois.library.cantaloupe.http.Method;
 import edu.illinois.library.cantaloupe.http.ResourceException;
 import edu.illinois.library.cantaloupe.http.Response;
 import edu.illinois.library.cantaloupe.image.MediaType;
-import edu.illinois.library.cantaloupe.resource.Route;
+import edu.illinois.library.cantaloupe.resource.LegacyRoute;
 import org.junit.jupiter.api.Test;
 
 import java.net.URI;
@@ -21,7 +21,7 @@ public class TaskResourceTest extends AbstractAPIResourceTest {
 
     @Override
     protected String getEndpointPath() {
-        return Route.TASKS_PATH + "/some-uuid";
+        return LegacyRoute.TASKS_PATH + "/some-uuid";
     }
 
     @Test
@@ -78,7 +78,7 @@ public class TaskResourceTest extends AbstractAPIResourceTest {
         // Submit it to TasksResource
         client.setMethod(Method.POST);
         client.setURI(new URI("http://localhost:" + appServer.getHTTPPort() +
-                Route.TASKS_PATH));
+                LegacyRoute.TASKS_PATH));
         client.setEntity(entityStr);
         client.setContentType(new MediaType("application/json"));
         Response response = client.send();

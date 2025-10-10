@@ -14,7 +14,7 @@ import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.resource.JacksonRepresentation;
 import edu.illinois.library.cantaloupe.resource.ResourceException;
-import edu.illinois.library.cantaloupe.resource.Route;
+import edu.illinois.library.cantaloupe.resource.LegacyRoute;
 import edu.illinois.library.cantaloupe.resource.InformationRequestHandler;
 import edu.illinois.library.cantaloupe.source.StatResult;
 import org.slf4j.Logger;
@@ -138,7 +138,7 @@ public class InformationResource extends IIIF1Resource {
      *         reverse proxy headers.
      */
     private String getImageURI() {
-        return getRequest().getPublicRootReference() + Route.IIIF_1_PATH + "/" +
+        return getRequest().getPublicRootReference() + LegacyRoute.IIIF_1_PATH + "/" +
                 getPublicIdentifier();
     }
 

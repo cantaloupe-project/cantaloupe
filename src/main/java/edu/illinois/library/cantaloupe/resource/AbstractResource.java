@@ -377,27 +377,6 @@ public abstract class AbstractResource {
     }
 
     /**
-     * @return Template variables common to most or all templates, such as
-     *         variables that appear in a common header.
-     */
-    protected final Map<String, Object> getCommonTemplateVars() {
-        final Map<String,Object> vars = new HashMap<>();
-        vars.put("version", Application.getVersion());
-        try {
-            String baseURI = getRequest().getPublicRootReference().toString();
-            // Normalize the base URI. Note that the <base> tag will need it to
-            // have a trailing slash.
-            if (baseURI.endsWith("/")) {
-                baseURI = baseURI.substring(0, baseURI.length() - 2);
-            }
-            vars.put("baseUri", baseURI);
-        } catch (IllegalArgumentException e) {
-            throw new IllegalClientArgumentException(e);
-        }
-        return vars;
-    }
-
-    /**
      * @return Instance for the current request. The result is cached. May be
      *         {@code null}.
      */
@@ -483,7 +462,7 @@ public abstract class AbstractResource {
 
     /**
      * Returns the segments of the URI path that are considered arguments.
-     * (These may correspond to regex match groups in {@link Route}.)
+     * (These may correspond to regex match groups in {@link LegacyRoute}.)
      *
      * @return Path arguments, or an empty list if there are none.
      */

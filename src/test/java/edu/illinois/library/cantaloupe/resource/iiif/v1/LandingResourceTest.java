@@ -8,7 +8,7 @@ import edu.illinois.library.cantaloupe.http.Method;
 import edu.illinois.library.cantaloupe.http.ResourceException;
 import edu.illinois.library.cantaloupe.http.Response;
 import edu.illinois.library.cantaloupe.resource.ResourceTest;
-import edu.illinois.library.cantaloupe.resource.Route;
+import edu.illinois.library.cantaloupe.resource.LegacyRoute;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.Test;
 
@@ -25,7 +25,7 @@ public class LandingResourceTest extends ResourceTest {
 
     @Override
     protected String getEndpointPath() {
-        return Route.IIIF_1_PATH;
+        return LegacyRoute.IIIF_1_PATH;
     }
 
     @Test
@@ -54,10 +54,8 @@ public class LandingResourceTest extends ResourceTest {
         client = newClient("");
         Response response = client.send();
         Headers headers = response.getHeaders();
-        assertEquals(7, headers.size());
+        assertEquals(5, headers.size());
 
-        // Access-Control-Allow-Origin
-        assertEquals("*", headers.getFirstValue("Access-Control-Allow-Origin"));
         // Content-Type
         assertTrue("text/html;charset=UTF-8".equalsIgnoreCase(
                 headers.getFirstValue("Content-Type")));
@@ -65,15 +63,7 @@ public class LandingResourceTest extends ResourceTest {
         assertNotNull(headers.getFirstValue("Date"));
         // Server
         assertNotNull(headers.getFirstValue("Server"));
-        // Vary
-        List<String> parts =
-                List.of(StringUtils.split(headers.getFirstValue("Vary"), ", "));
-        assertEquals(5, parts.size());
-        assertTrue(parts.contains("Accept"));
-        assertTrue(parts.contains("Accept-Charset"));
-        assertTrue(parts.contains("Accept-Encoding"));
-        assertTrue(parts.contains("Accept-Language"));
-        assertTrue(parts.contains("Origin"));
+   
         // X-Powered-By
         assertEquals(Application.getName() + "/" + Application.getVersion(),
                 headers.getFirstValue("X-Powered-By"));

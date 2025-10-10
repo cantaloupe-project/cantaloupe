@@ -10,7 +10,7 @@ import edu.illinois.library.cantaloupe.processor.Processor;
 import edu.illinois.library.cantaloupe.processor.ProcessorFactory;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.resource.ResourceTest;
-import edu.illinois.library.cantaloupe.resource.Route;
+import edu.illinois.library.cantaloupe.resource.LegacyRoute;
 import org.junit.jupiter.api.Test;
 
 import javax.imageio.ImageIO;
@@ -41,7 +41,7 @@ public class Version2_0ConformanceTest extends ResourceTest {
 
     @Override
     protected String getEndpointPath() {
-        return Route.IIIF_2_PATH;
+        return LegacyRoute.IIIF_2_PATH;
     }
 
     /**

@@ -1,39 +1,24 @@
 package edu.illinois.library.cantaloupe.resource;
 
-import edu.illinois.library.cantaloupe.http.Method;
-import edu.illinois.library.cantaloupe.http.Reference;
 import edu.illinois.library.cantaloupe.http.Status;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 /**
  * Permanently redirects (via HTTP 301) {@literal /some/path/} to {@literal
- * /some/path}, respecting the Servlet context root, {@literal
- * X-Forwarded-Path} header, and other factors.
+ * /some/path}, respecting the Servlet context root
  */
-public class TrailingSlashRemovingResource extends AbstractResource {
-
-    private static final Logger LOGGER =
-            LoggerFactory.getLogger(TrailingSlashRemovingResource.class);
-
-    @Override
-    protected Logger getLogger() {
-        return LOGGER;
+public class TrailingSlashRemovingResource extends Controller {
+    TrailingSlashRemovingResource(HttpServletRequest request, HttpServletResponse response) {
+        super(request, response);
     }
 
     @Override
-    public Method[] getSupportedMethods() {
-        return Method.values();
-    }
-
-    @Override
-    public void doGET() {
-        final Reference newRef = new Reference(getRequest().getPublicReference());
-        final String path = newRef.getPath();
-        newRef.setPath(path.substring(0, path.length() - 1));
-
-        getResponse().setStatus(Status.MOVED_PERMANENTLY.getCode());
-        getResponse().setHeader("Location", newRef.toString());
+    public void doGet(Request request) {
+        final String uri = request.getPublicReference().getPath();
+        int index = uri.lastIndexOf('/');
+        response.setHeader("Location", uri.substring(0, index));
+        response.setStatus(Status.MOVED_PERMANENTLY.getCode());
     }
 
 }

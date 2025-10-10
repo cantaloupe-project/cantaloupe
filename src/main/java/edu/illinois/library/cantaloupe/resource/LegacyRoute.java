@@ -13,7 +13,7 @@ import java.util.regex.Pattern;
  *
  * @since 4.1
  */
-public final class Route {
+public final class LegacyRoute {
 
     public static final String ADMIN_PATH         = "/admin";
     public static final String ADMIN_CONFIG_PATH  = "/admin/configuration";
@@ -38,16 +38,8 @@ public final class Route {
 
     static {
         // N.B.: Regex groups are used to extract the URI path arguments.
-        MAPPINGS.put(Pattern.compile("\\A\\z"),
-                LandingResource.class);
-        MAPPINGS.put(Pattern.compile("^/$"),
-                LandingResource.class);
-        MAPPINGS.put(Pattern.compile("/$"),
-                TrailingSlashRemovingResource.class);
 
         // IIIF Image API v3 routes
-        MAPPINGS.put(Pattern.compile("^" + IIIF_3_PATH + "$"),
-                edu.illinois.library.cantaloupe.resource.iiif.v3.LandingResource.class);
         MAPPINGS.put(Pattern.compile("^" + IIIF_3_PATH + "/([^/]+)/info\\.json$"),
                 edu.illinois.library.cantaloupe.resource.iiif.v3.InformationResource.class);
         MAPPINGS.put(Pattern.compile("^" + IIIF_3_PATH + "/([^/]+)$"),
@@ -56,8 +48,6 @@ public final class Route {
                 edu.illinois.library.cantaloupe.resource.iiif.v3.ImageResource.class);
 
         // IIIF Image API v2 routes
-        MAPPINGS.put(Pattern.compile("^" + IIIF_2_PATH + "$"),
-                edu.illinois.library.cantaloupe.resource.iiif.v2.LandingResource.class);
         MAPPINGS.put(Pattern.compile("^" + IIIF_2_PATH + "/([^/]+)/info\\.json$"),
                 edu.illinois.library.cantaloupe.resource.iiif.v2.InformationResource.class);
         MAPPINGS.put(Pattern.compile("^" + IIIF_2_PATH + "/([^/]+)$"),
@@ -66,8 +56,6 @@ public final class Route {
                 edu.illinois.library.cantaloupe.resource.iiif.v2.ImageResource.class);
 
         // IIIF Image API v1 routes
-        MAPPINGS.put(Pattern.compile("^" + IIIF_1_PATH + "$"),
-                edu.illinois.library.cantaloupe.resource.iiif.v1.LandingResource.class);
         MAPPINGS.put(Pattern.compile("^" + IIIF_1_PATH + "/([^/]+)/info\\.json$"),
                 edu.illinois.library.cantaloupe.resource.iiif.v1.InformationResource.class);
         MAPPINGS.put(Pattern.compile("^" + IIIF_1_PATH + "/([^/]+)$"),
@@ -88,8 +76,7 @@ public final class Route {
         // API routes
         MAPPINGS.put(Pattern.compile("^" + CONFIGURATION_PATH + "$"),
                 edu.illinois.library.cantaloupe.resource.api.ConfigurationResource.class);
-        MAPPINGS.put(Pattern.compile("^" + HEALTH_PATH + "$"),
-                edu.illinois.library.cantaloupe.resource.health.HealthResource.class);
+
         MAPPINGS.put(Pattern.compile("^" + STATUS_PATH + "$"),
                 edu.illinois.library.cantaloupe.resource.api.StatusResource.class);
         MAPPINGS.put(Pattern.compile("^" + TASKS_PATH + "$"),
@@ -103,12 +90,12 @@ public final class Route {
      * @return     Route corresponding to the given path, or {@code null} if
      *             there is no match.
      */
-    static Route forPath(String path) {
+    static LegacyRoute forPath(String path) {
         for (var entry : MAPPINGS.entrySet()) {
             final Pattern pattern = entry.getKey();
             final Matcher matcher = pattern.matcher(path);
             if (matcher.find()) {
-                final Route route = new Route();
+                final LegacyRoute route = new LegacyRoute();
                 route.setResource(entry.getValue());
                 for (int i = 1; i <= matcher.groupCount(); i++) {
                     route.getPathArguments().add(matcher.group(i));

@@ -12,7 +12,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
-import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -70,13 +69,6 @@ public class AbstractResourceTest extends BaseTest {
     void testDoPUT() throws Exception {
         instance.doPUT();
         assertEquals(405, instance.getResponse().getStatus());
-    }
-
-    @Test
-    void testGetCommonTemplateVars() {
-        Map<String,Object> vars = instance.getCommonTemplateVars();
-        assertFalse(((String) vars.get("baseUri")).endsWith("/"));
-        assertNotNull(vars.get("version"));
     }
 
     @Test

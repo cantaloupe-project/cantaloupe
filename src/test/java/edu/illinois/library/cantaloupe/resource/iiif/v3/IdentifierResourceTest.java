@@ -3,7 +3,7 @@ package edu.illinois.library.cantaloupe.resource.iiif.v3;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.resource.ResourceTest;
-import edu.illinois.library.cantaloupe.resource.Route;
+import edu.illinois.library.cantaloupe.resource.LegacyRoute;
 import edu.illinois.library.cantaloupe.resource.iiif.InformationResourceTester;
 import org.junit.jupiter.api.Test;
 
@@ -17,7 +17,7 @@ class IdentifierResourceTest extends ResourceTest {
 
     @Override
     protected String getEndpointPath() {
-        return Route.IIIF_3_PATH;
+        return LegacyRoute.IIIF_3_PATH;
     }
 
     @Test

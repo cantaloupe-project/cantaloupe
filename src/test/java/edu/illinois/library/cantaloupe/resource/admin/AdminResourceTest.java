@@ -6,7 +6,7 @@ import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.http.Headers;
 import edu.illinois.library.cantaloupe.http.ResourceException;
 import edu.illinois.library.cantaloupe.http.Response;
-import edu.illinois.library.cantaloupe.resource.Route;
+import edu.illinois.library.cantaloupe.resource.LegacyRoute;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -18,7 +18,7 @@ public class AdminResourceTest extends AbstractAdminResourceTest {
 
     @Override
     protected String getEndpointPath() {
-        return Route.ADMIN_PATH;
+        return LegacyRoute.ADMIN_PATH;
     }
 
     @Test

@@ -5,6 +5,7 @@ import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.http.Method;
 import edu.illinois.library.cantaloupe.http.Status;
 import edu.illinois.library.cantaloupe.util.Stopwatch;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -65,16 +66,32 @@ public class HandlerServlet extends HttpServlet {
 
         final String path = getContextRelativePath(
                 request.getRequestURI(), request.getContextPath());
-
-        AbstractResource resource = null;
+                
 
         try {
-            Route route = Route.forPath(path);
-            if (route == null) {
-                throw new ResourceException(Status.NOT_FOUND,
-                        "No route for path: " + path);
+            if (!Router.execute(request.getMethod(), path, request, response)) {
+                legacyRouting(path, request, response);
             }
+        } catch (Throwable t) {
+            handleError(request, response, t);
+        } finally {
+            LOGGER.debug("Responded to {} {} with HTTP {} in {}",
+                    request.getMethod(), request.getPathInfo(),
+                    response.getStatus(), requestClock);
+        }
+    }
 
+
+    private void legacyRouting(String path, HttpServletRequest request,
+                               HttpServletResponse response) throws Exception {
+        LegacyRoute route = LegacyRoute.forPath(path);
+        if (route == null) {
+            throw new ResourceException(Status.NOT_FOUND,
+                    "No route for path: " + path);
+        }
+
+        AbstractResource resource = null;
+        try {
             resource = route.getResource().getDeclaredConstructor().newInstance();
             resource.setPathArguments(route.getPathArguments());
             resource.setRequest(new Request(request));
@@ -114,15 +131,12 @@ public class HandlerServlet extends HttpServlet {
             } else {
                 throw new ResourceException(Status.METHOD_NOT_ALLOWED);
             }
-        } catch (Throwable t) {
-            handleError(request, response, t);
+        } catch (Exception e) {
+            throw e;
         } finally {
             if (resource != null) {
                 resource.destroy();
             }
-            LOGGER.debug("Responded to {} {} with HTTP {} in {}",
-                    request.getMethod(), request.getPathInfo(),
-                    response.getStatus(), requestClock);
         }
     }
 
@@ -141,18 +155,17 @@ public class HandlerServlet extends HttpServlet {
     private void handleError(HttpServletRequest request,
                              HttpServletResponse response,
                              Throwable t) {
-        // Try to use an ErrorResource, which will render an HTML template.
-        ErrorResource resource = new ErrorResource(t, request, response);
         try {
-            resource.doGET();
+            // Try to use an ErrorResource, which will render an HTML template.
+            new ErrorResource(t, request, response).doGET();
         } catch (IllegalClientArgumentException e) {
-            handleError(response, e, 400);
+            fallbackErrorHandler(response, e, 400);
         } catch (Throwable t2) {
-            handleError(response, t2, 500);
+            fallbackErrorHandler(response, t2, 500);
         }
     }
 
-    private void handleError(HttpServletResponse response,
+    private void fallbackErrorHandler(HttpServletResponse response,
                              Throwable t,
                              int status) {
         response.setStatus(status);

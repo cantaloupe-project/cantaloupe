@@ -13,7 +13,7 @@ import edu.illinois.library.cantaloupe.image.MetaIdentifier;
 import edu.illinois.library.cantaloupe.image.StandardMetaIdentifierTransformer;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.resource.ResourceTest;
-import edu.illinois.library.cantaloupe.resource.Route;
+import edu.illinois.library.cantaloupe.resource.LegacyRoute;
 import edu.illinois.library.cantaloupe.resource.iiif.ImageResourceTester;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.apache.commons.lang3.StringUtils;
@@ -33,7 +33,7 @@ public class ImageResourceTest extends ResourceTest {
 
     @Override
     protected String getEndpointPath() {
-        return Route.IIIF_3_PATH;
+        return LegacyRoute.IIIF_3_PATH;
     }
 
     @Test
