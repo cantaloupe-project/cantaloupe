@@ -9,7 +9,6 @@ import edu.illinois.library.cantaloupe.delegate.DelegateProxy;
 import edu.illinois.library.cantaloupe.source.StatResult;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;
-import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import java.util.Set;
@@ -17,28 +16,6 @@ import java.util.Set;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class InformationRequestHandlerTest extends BaseTest {
-
-    @Nested
-    public class BuilderTest {
-
-        @Test
-        void testBuildWithNoIdentifierSet() {
-            assertThrows(IllegalArgumentException.class, () ->
-                    InformationRequestHandler.builder().build());
-        }
-
-        @Test
-        void testBuildWithDelegateProxyButNoRequestContextSet() {
-            DelegateProxy delegateProxy = TestUtil.newDelegateProxy();
-            assertThrows(IllegalArgumentException.class, () ->
-                    InformationRequestHandler.builder()
-                            .withIdentifier(new Identifier("cats"))
-                            .withDelegateProxy(delegateProxy)
-                            .build());
-        }
-
-    }
-
     private static class IntrospectiveCallback implements InformationRequestHandler.Callback {
         private boolean isAuthorizeCalled,
                 isSourceAccessedCalled,
@@ -72,10 +49,13 @@ public class InformationRequestHandlerTest extends BaseTest {
         }
 
         final IntrospectiveCallback callback = new IntrospectiveCallback();
-        try (InformationRequestHandler handler = InformationRequestHandler.builder()
-                .withCallback(callback)
-                .withIdentifier(new Identifier("jpg-rgb-64x48x8.jpg"))
-                .build()) {
+        try (InformationRequestHandler handler = new InformationRequestHandler(
+                new Identifier("jpg-rgb-64x48x8.jpg"),
+                null,
+                new RequestContext(),
+                callback,
+                false,
+                false)) {
             handler.handle();
             assertTrue(callback.isAuthorizeCalled);
         }
@@ -91,10 +71,13 @@ public class InformationRequestHandlerTest extends BaseTest {
         }
 
         final IntrospectiveCallback callback = new IntrospectiveCallback();
-        try (InformationRequestHandler handler = InformationRequestHandler.builder()
-                .withCallback(callback)
-                .withIdentifier(new Identifier("jpg-rgb-64x48x8.jpg"))
-                .build()) {
+        try (InformationRequestHandler handler = new InformationRequestHandler(
+                new Identifier("jpg-rgb-64x48x8.jpg"),
+                null,
+                new RequestContext(),
+                callback,
+                false,
+                false)) {
             handler.handle();
             assertTrue(callback.isSourceAccessedCalled);
         }
@@ -110,10 +93,13 @@ public class InformationRequestHandlerTest extends BaseTest {
         }
 
         final IntrospectiveCallback callback = new IntrospectiveCallback();
-        try (InformationRequestHandler handler = InformationRequestHandler.builder()
-                .withCallback(callback)
-                .withIdentifier(new Identifier("jpg-rgb-64x48x8.jpg"))
-                .build()) {
+        try (InformationRequestHandler handler = new InformationRequestHandler(
+                new Identifier("jpg-rgb-64x48x8.jpg"),
+                null,
+                new RequestContext(),
+                callback,
+                false,
+                false)) {
             handler.handle();
             assertTrue(callback.isKnowAvailableOutputFormatsCalled);
         }
@@ -147,10 +133,13 @@ public class InformationRequestHandlerTest extends BaseTest {
         cache.put(identifier, info);
 
         final IntrospectiveCallback callback = new IntrospectiveCallback();
-        try (InformationRequestHandler handler = InformationRequestHandler.builder()
-                .withCallback(callback)
-                .withIdentifier(identifier)
-                .build()) {
+        try (InformationRequestHandler handler = new InformationRequestHandler(
+                identifier,
+                null,
+                new RequestContext(),
+                callback,
+                false,
+                false)) {
             Info cachedInfo = handler.handle();
             assertEquals(info, cachedInfo);
         }
@@ -188,16 +177,17 @@ public class InformationRequestHandlerTest extends BaseTest {
         cache.put(identifier, info);
 
         final IntrospectiveCallback callback = new IntrospectiveCallback();
-        final RequestContext context = new RequestContext();
-        try (InformationRequestHandler handler = InformationRequestHandler.builder()
-                .withCallback(callback)
-                .withIdentifier(identifier)
-                .withRequestContext(context)
-                .build()) {
-            handler.handle();
-            assertEquals(1, context.getPageCount());
-            assertEquals(new Dimension(64, 48), context.getFullSize());
-            assertNotNull(context.getMetadata());
+        try (InformationRequestHandler handler = new InformationRequestHandler(
+                identifier,
+                null,
+                new RequestContext(),
+                callback,
+                false,
+                false)) {
+            Info handledInfo = handler.handle();
+            assertNotNull(handledInfo);
+            assertEquals(1, handledInfo.getNumPages());
+            assertEquals(new Dimension(64, 48), handledInfo.getSize());
         }
     }
 
@@ -211,10 +201,13 @@ public class InformationRequestHandlerTest extends BaseTest {
         }
 
         final IntrospectiveCallback callback = new IntrospectiveCallback();
-        try (InformationRequestHandler handler = InformationRequestHandler.builder()
-                .withCallback(callback)
-                .withIdentifier(new Identifier("jpg-rgb-64x48x8.jpg"))
-                .build()) {
+        try (InformationRequestHandler handler = new InformationRequestHandler(
+                new Identifier("jpg-rgb-64x48x8.jpg"),
+                null,
+                new RequestContext(),
+                callback,
+                false,
+                false)) {
             Info info = handler.handle();
             assertNotNull(info);
         }
@@ -231,34 +224,38 @@ public class InformationRequestHandlerTest extends BaseTest {
         }
 
         final IntrospectiveCallback callback = new IntrospectiveCallback();
-        final RequestContext context = new RequestContext();
-        try (InformationRequestHandler handler = InformationRequestHandler.builder()
-                .withCallback(callback)
-                .withIdentifier(new Identifier("jpg-rgb-64x48x8.jpg"))
-                .withRequestContext(context)
-                .build()) {
-            handler.handle();
-            assertEquals(1, context.getPageCount());
+        try (InformationRequestHandler handler = new InformationRequestHandler(
+                new Identifier("jpg-rgb-64x48x8.jpg"),
+                null,
+                new RequestContext(),
+                callback,
+                false,
+                false)) {
+            Info info = handler.handle();
+            assertEquals(1, info.getNumPages());
         }
     }
 
     @Test
     void testHandleReturnsNullWhenAuthorizationFails() throws Exception {
-        try (InformationRequestHandler handler = InformationRequestHandler.builder()
-                .withCallback(new InformationRequestHandler.Callback() {
+        try (InformationRequestHandler handler = new InformationRequestHandler(
+                new Identifier("jpg-rgb-64x48x8.jpg"),
+                null,
+                new RequestContext(),
+                new InformationRequestHandler.Callback() {
                     @Override
                     public boolean authorize() {
                         return false;
                     }
                     @Override
-                    public void sourceAccessed(StatResult result) {
+                    public void sourceAccessed(StatResult sourceAvailable) {
                     }
                     @Override
                     public void knowAvailableOutputFormats(Set<Format> availableOutputFormats) {
                     }
-                })
-                .withIdentifier(new Identifier("jpg-rgb-64x48x8.jpg"))
-                .build()) {
+                },
+                false,
+                false)) {
             Info info = handler.handle();
             assertNull(info);
         }
