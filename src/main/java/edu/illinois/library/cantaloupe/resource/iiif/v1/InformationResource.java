@@ -134,12 +134,12 @@ public class InformationResource extends IIIF1Resource {
 
     /**
      * @return Image URI corresponding to the given identifier, respecting the
-     *         {@code X-Forwarded-*} and {@link #PUBLIC_IDENTIFIER_HEADER}
+     *         {@code X-Forwarded-*} and {@link Request#PUBLIC_IDENTIFIER_HEADER}
      *         reverse proxy headers.
      */
     private String getImageURI() {
         return getRequest().getPublicRootReference() + Route.IIIF_1_PATH + "/" +
-                getPublicIdentifier();
+                getRequest().getPublicIdentifier();
     }
 
     private String getNegotiatedMediaType() {

@@ -1,11 +1,11 @@
 package edu.illinois.library.cantaloupe.resource;
+import edu.illinois.library.cantaloupe.http.Cookies;
 import org.junit.jupiter.api.Test;
 
-import edu.illinois.library.cantaloupe.http.Cookies;
-
-import static org.junit.jupiter.api.Assertions.*;
-
+import java.util.Collections;
 import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class RequestContextDecoratorTest {
     @Test
@@ -13,7 +13,7 @@ public class RequestContextDecoratorTest {
         MockHttpServletRequest sr = new MockHttpServletRequest();
         sr.getHeaders().put("Cookie", List.of("fruit=apples; animal=cats",
                 "shape=cube; car=ford"));
-        Request instance = new Request(sr);
+        Request instance = new Request(sr, Collections.emptyList());
 
         Cookies cookies = RequestContextDecorator.getCookies(instance);
         assertEquals(4, cookies.size());

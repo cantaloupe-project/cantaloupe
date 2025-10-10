@@ -152,7 +152,7 @@ public abstract class IIIFResource extends AbstractResource {
         if (newMetaId == null) {
             return false;
         }
-        Reference newRef = getRequest().getPublicReference(newMetaId, getIdentifierPathComponent(), getDelegateProxy());
+        Reference newRef = getRequest().getPublicReference(newMetaId, getRequest().getIdentifierPathComponent(), getDelegateProxy());
         getResponse().setStatus(301);
         getResponse().setHeader("Location", newRef.toString());
         new StringRepresentation("Redirect: " + newRef + "\n")
@@ -256,7 +256,7 @@ public abstract class IIIFResource extends AbstractResource {
                     .write(getResponse().getOutputStream());
             return false;
         } else if (metaIdentifier.getScaleConstraint() != null) {
-            Reference publicRef = getRequest().getPublicReference(metaIdentifier, getIdentifierPathComponent(), getDelegateProxy());
+            Reference publicRef = getRequest().getPublicReference(metaIdentifier, getRequest().getIdentifierPathComponent(), getDelegateProxy());
             getResponse().setStatus(code);
             getResponse().setHeader("Cache-Control", "no-cache");
             getResponse().setHeader("Location", publicRef.toString());

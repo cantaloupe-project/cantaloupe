@@ -40,7 +40,7 @@ import java.util.Objects;
  *
  * <p>The input steps must be reversed for output. Note that requests can
  * supply a {@link
- * edu.illinois.library.cantaloupe.resource.AbstractResource#PUBLIC_IDENTIFIER_HEADER}
+ * edu.illinois.library.cantaloupe.resource.Request#PUBLIC_IDENTIFIER_HEADER}
  * to suggest that the meta-identifier supplied in a URI is different from the
  * one the user agent is seeing and supplying to a reverse proxy.</p>
  *
@@ -48,7 +48,7 @@ import java.util.Objects;
  *
  * <ol>
  *     <li>Replace the URI meta-identifier with the one from {@link
- *     edu.illinois.library.cantaloupe.resource.AbstractResource#PUBLIC_IDENTIFIER_HEADER},
+ *     edu.illinois.library.cantaloupe.resource.Request#PUBLIC_IDENTIFIER_HEADER},
  *     if present</li>
  *     <li>Encode slashes</li>
  *     <li>URI encoding</li>

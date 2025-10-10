@@ -76,8 +76,7 @@ public class HandlerServlet extends HttpServlet {
             }
 
             resource = route.getResource().getDeclaredConstructor().newInstance();
-            resource.setPathArguments(route.getPathArguments());
-            resource.setRequest(new Request(request));
+            resource.setRequest(new Request(request, route.getPathArguments()));
             resource.setResponse(response);
             resource.doInit();
 
