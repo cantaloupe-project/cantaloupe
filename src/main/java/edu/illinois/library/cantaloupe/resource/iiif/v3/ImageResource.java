@@ -164,7 +164,7 @@ public class ImageResource extends IIIF3Resource {
         String paramsStr = paramsCopy.toCanonicalString(fullSize);
         queuedHeaders.put("Link",
                 String.format("<%s%s/%s>;rel=\"canonical\"",
-                        getPublicRootReference(),
+                        getRequest().getPublicRootReference(),
                         Route.IIIF_3_PATH,
                         paramsStr));
     }
