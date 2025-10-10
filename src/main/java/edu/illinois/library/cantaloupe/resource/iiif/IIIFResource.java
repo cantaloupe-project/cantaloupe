@@ -47,7 +47,7 @@ public abstract class IIIFResource extends AbstractResource {
         if (DelegateProxyService.isDelegateAvailable()) {
             RequestContext context = getRequestContext();
             context.setLocalURI(getRequest().getReference());
-            context.setRequestURI(getPublicReference());
+            context.setRequestURI(getRequest().getPublicReference());
             context.setRequestHeaders(getRequest().getHeaders().toMap());
             context.setClientIP(getCanonicalClientIPAddress());
             context.setCookies(getRequest().getCookies().toMap());
@@ -226,7 +226,7 @@ public abstract class IIIFResource extends AbstractResource {
                 if (!scaleConstraint.hasEffect()) {
                     metaIdentifier = new MetaIdentifier(metaIdentifier);
                     metaIdentifier.setScaleConstraint(null);
-                    newRef = getPublicReference(metaIdentifier);
+                    newRef = getRequest().getPublicReference(metaIdentifier, getIdentifierPathComponent(), getDelegateProxy());
                 } else {
                     ScaleConstraint reducedConstraint =
                             scaleConstraint.getReduced();
@@ -235,7 +235,7 @@ public abstract class IIIFResource extends AbstractResource {
                     if (!reducedConstraint.equals(scaleConstraint)) {
                         metaIdentifier = new MetaIdentifier(metaIdentifier);
                         metaIdentifier.setScaleConstraint(reducedConstraint);
-                        newRef = getPublicReference(metaIdentifier);
+                        newRef = getRequest().getPublicReference(metaIdentifier, getIdentifierPathComponent(), getDelegateProxy());
                     }
                 }
                 if (newRef != null) {

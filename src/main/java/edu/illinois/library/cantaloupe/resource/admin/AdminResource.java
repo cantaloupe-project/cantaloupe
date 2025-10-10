@@ -1,5 +1,6 @@
 package edu.illinois.library.cantaloupe.resource.admin;
 
+import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.cache.CacheFactory;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
@@ -13,7 +14,7 @@ import edu.illinois.library.cantaloupe.processor.InitializationException;
 import edu.illinois.library.cantaloupe.processor.Processor;
 import edu.illinois.library.cantaloupe.processor.ProcessorFactory;
 import edu.illinois.library.cantaloupe.processor.SourceFormatException;
-import edu.illinois.library.cantaloupe.resource.Route;
+import edu.illinois.library.cantaloupe.resource.LegacyRoute;
 import edu.illinois.library.cantaloupe.resource.VelocityRepresentation;
 import edu.illinois.library.cantaloupe.source.Source;
 import edu.illinois.library.cantaloupe.source.SourceFactory;
@@ -25,6 +26,7 @@ import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -153,8 +155,10 @@ public class AdminResource extends AbstractAdminResource {
      *         interface's HTML template.
      */
     private Map<String,Object> getTemplateVars() {
-        final Map<String, Object> vars = getCommonTemplateVars();
-        vars.put("adminUri", vars.get("baseUri") + Route.ADMIN_PATH);
+        final Map<String,Object> vars = new HashMap<>();
+        vars.put("baseUri", getRequest().getContextPath());
+        vars.put("version", Application.getVersion());
+        vars.put("adminUri", vars.get("baseUri") + LegacyRoute.ADMIN_PATH);
 
         ////////////////////////////////////////////////////////////////////
         //////////////////////// status section ////////////////////////////

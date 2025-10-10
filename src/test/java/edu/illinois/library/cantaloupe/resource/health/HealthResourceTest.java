@@ -8,7 +8,7 @@ import edu.illinois.library.cantaloupe.http.Headers;
 import edu.illinois.library.cantaloupe.http.ResourceException;
 import edu.illinois.library.cantaloupe.http.Response;
 import edu.illinois.library.cantaloupe.resource.ResourceTest;
-import edu.illinois.library.cantaloupe.resource.Route;
+import edu.illinois.library.cantaloupe.resource.LegacyRoute;
 import edu.illinois.library.cantaloupe.status.Health;
 import edu.illinois.library.cantaloupe.status.HealthChecker;
 import org.junit.jupiter.api.BeforeEach;
@@ -33,7 +33,7 @@ public class HealthResourceTest extends ResourceTest {
 
     @Override
     protected String getEndpointPath() {
-        return Route.HEALTH_PATH;
+        return LegacyRoute.HEALTH_PATH;
     }
 
     @Test
@@ -70,7 +70,7 @@ public class HealthResourceTest extends ResourceTest {
         Client imageClient = null;
         try {
             URI uri = new URI("http://localhost:" + appServer.getHTTPPort() +
-                    Route.IIIF_2_PATH +
+                    LegacyRoute.IIIF_2_PATH +
                     "/jpg-rgb-64x56x8-baseline.jpg/full/max/5/default.jpg");
             imageClient = new Client().builder().uri(uri).build();
             imageClient.send();

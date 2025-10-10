@@ -11,7 +11,7 @@ public class TrailingSlashRemovingResourceTest extends ResourceTest {
 
     @Override
     protected String getEndpointPath() {
-        return Route.IIIF_2_PATH;
+        return LegacyRoute.IIIF_2_PATH;
     }
 
     @Test
@@ -33,6 +33,8 @@ public class TrailingSlashRemovingResourceTest extends ResourceTest {
         Response response = client.send();
 
         assertEquals(301, response.getStatus());
+        System.out.println("Location: " +
+                response.getHeaders().getFirstValue("Location"));
         assertTrue(response.getHeaders().getFirstValue("Location").
                 endsWith("/cats" + getEndpointPath()));
         assertTrue(response.getBodyAsString().isEmpty());

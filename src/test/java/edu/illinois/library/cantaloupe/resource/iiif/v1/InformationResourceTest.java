@@ -13,7 +13,7 @@ import edu.illinois.library.cantaloupe.image.MetaIdentifier;
 import edu.illinois.library.cantaloupe.image.StandardMetaIdentifierTransformer;
 import edu.illinois.library.cantaloupe.resource.AbstractResource;
 import edu.illinois.library.cantaloupe.resource.ResourceTest;
-import edu.illinois.library.cantaloupe.resource.Route;
+import edu.illinois.library.cantaloupe.resource.LegacyRoute;
 import edu.illinois.library.cantaloupe.resource.iiif.InformationResourceTester;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.apache.commons.lang3.StringUtils;
@@ -39,7 +39,7 @@ public class InformationResourceTest extends ResourceTest {
 
     @Override
     protected String getEndpointPath() {
-        return Route.IIIF_1_PATH;
+        return LegacyRoute.IIIF_1_PATH;
     }
 
     @Test
@@ -452,7 +452,7 @@ public class InformationResourceTest extends ResourceTest {
         String json = response.getBodyAsString();
         ObjectMapper mapper = new ObjectMapper();
         Information info = mapper.readValue(json, Information.class);
-        assertEquals("http://localhost:" + getHTTPPort() + Route.IIIF_1_PATH + "/" + IMAGE,
+        assertEquals("http://localhost:" + getHTTPPort() + LegacyRoute.IIIF_1_PATH + "/" + IMAGE,
                 info.id);
     }
 
@@ -467,7 +467,7 @@ public class InformationResourceTest extends ResourceTest {
         String json = response.getBodyAsString();
         ObjectMapper mapper = new ObjectMapper();
         Information info = mapper.readValue(json, Information.class);
-        assertEquals("http://example.org" + Route.IIIF_1_PATH + "/" + IMAGE,
+        assertEquals("http://example.org" + LegacyRoute.IIIF_1_PATH + "/" + IMAGE,
                 info.id);
     }
 
@@ -483,7 +483,7 @@ public class InformationResourceTest extends ResourceTest {
         String json = response.getBodyAsString();
         ObjectMapper mapper = new ObjectMapper();
         Information info = mapper.readValue(json, Information.class);
-        assertEquals("http://localhost:" + getHTTPPort() + Route.IIIF_1_PATH + path,
+        assertEquals("http://localhost:" + getHTTPPort() + LegacyRoute.IIIF_1_PATH + path,
                 info.id);
     }
 
@@ -499,7 +499,7 @@ public class InformationResourceTest extends ResourceTest {
         String json = response.getBodyAsString();
         ObjectMapper mapper = new ObjectMapper();
         Information info = mapper.readValue(json, Information.class);
-        assertEquals("http://localhost:" + getHTTPPort() + Route.IIIF_1_PATH + path,
+        assertEquals("http://localhost:" + getHTTPPort() + LegacyRoute.IIIF_1_PATH + path,
                 info.id);
     }
 
@@ -518,7 +518,7 @@ public class InformationResourceTest extends ResourceTest {
         ObjectMapper mapper = new ObjectMapper();
         Information info = mapper.readValue(json, Information.class);
         assertEquals("http://example.org:8080/cats" +
-                Route.IIIF_1_PATH + "/originalID", info.id);
+                LegacyRoute.IIIF_1_PATH + "/originalID", info.id);
     }
 
     @Test
@@ -537,7 +537,7 @@ public class InformationResourceTest extends ResourceTest {
         ObjectMapper mapper = new ObjectMapper();
         Information info = mapper.readValue(json, Information.class);
         assertEquals("https://example.net" +
-                Route.IIIF_1_PATH + "/" + IMAGE, info.id);
+                LegacyRoute.IIIF_1_PATH + "/" + IMAGE, info.id);
     }
 
     /**

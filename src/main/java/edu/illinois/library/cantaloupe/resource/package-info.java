@@ -21,7 +21,7 @@
  *     edu.illinois.library.cantaloupe.resource.AbstractResource#getResponse()
  *     response}</li>
  *     <li>Connect it to a URI path pattern in the static initializer of {@link
- *     edu.illinois.library.cantaloupe.resource.Route}</li>
+ *     edu.illinois.library.cantaloupe.resource.LegacyRoute}</li>
  * </ol>
  */
 package edu.illinois.library.cantaloupe.resource;

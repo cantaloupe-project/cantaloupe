@@ -13,7 +13,7 @@ import edu.illinois.library.cantaloupe.image.MetaIdentifier;
 import edu.illinois.library.cantaloupe.image.StandardMetaIdentifierTransformer;
 import edu.illinois.library.cantaloupe.resource.AbstractResource;
 import edu.illinois.library.cantaloupe.resource.ResourceTest;
-import edu.illinois.library.cantaloupe.resource.Route;
+import edu.illinois.library.cantaloupe.resource.LegacyRoute;
 import edu.illinois.library.cantaloupe.resource.iiif.InformationResourceTester;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.apache.commons.lang3.StringUtils;
@@ -39,7 +39,7 @@ public class InformationResourceTest extends ResourceTest {
 
     @Override
     protected String getEndpointPath() {
-        return Route.IIIF_2_PATH;
+        return LegacyRoute.IIIF_2_PATH;
     }
 
     @Test
@@ -475,7 +475,7 @@ public class InformationResourceTest extends ResourceTest {
         ObjectMapper mapper = new ObjectMapper();
         Information<?, ?> info = mapper.readValue(json, Information.class);
         assertEquals("http://localhost:" + getHTTPPort() +
-                Route.IIIF_2_PATH + "/" + IMAGE, info.get("@id"));
+                LegacyRoute.IIIF_2_PATH + "/" + IMAGE, info.get("@id"));
     }
 
     @Test
@@ -490,7 +490,7 @@ public class InformationResourceTest extends ResourceTest {
         ObjectMapper mapper = new ObjectMapper();
         Information<?, ?> info = mapper.readValue(json, Information.class);
         assertEquals("http://example.org" +
-                Route.IIIF_2_PATH + "/" + IMAGE, info.get("@id"));
+                LegacyRoute.IIIF_2_PATH + "/" + IMAGE, info.get("@id"));
     }
 
     @Test
@@ -506,7 +506,7 @@ public class InformationResourceTest extends ResourceTest {
         ObjectMapper mapper = new ObjectMapper();
         Information<?, ?> info = mapper.readValue(json, Information.class);
         assertEquals("http://localhost:" + getHTTPPort() +
-                Route.IIIF_2_PATH + path, info.get("@id"));
+                LegacyRoute.IIIF_2_PATH + path, info.get("@id"));
     }
 
     @Test
@@ -522,7 +522,7 @@ public class InformationResourceTest extends ResourceTest {
         ObjectMapper mapper = new ObjectMapper();
         Information<?, ?> info = mapper.readValue(json, Information.class);
         assertEquals("http://localhost:" + getHTTPPort() +
-                Route.IIIF_2_PATH + path, info.get("@id"));
+                LegacyRoute.IIIF_2_PATH + path, info.get("@id"));
     }
 
     @Test
@@ -540,7 +540,7 @@ public class InformationResourceTest extends ResourceTest {
         ObjectMapper mapper = new ObjectMapper();
         Information<?, ?> info = mapper.readValue(json, Information.class);
         assertEquals("http://example.org:8080/cats" +
-                Route.IIIF_2_PATH + "/originalID", info.get("@id"));
+                LegacyRoute.IIIF_2_PATH + "/originalID", info.get("@id"));
     }
 
     @Test
@@ -559,7 +559,7 @@ public class InformationResourceTest extends ResourceTest {
         ObjectMapper mapper = new ObjectMapper();
         Information<?, ?> info = mapper.readValue(json, Information.class);
         assertEquals("https://example.net" +
-                Route.IIIF_2_PATH + "/" + IMAGE, info.get("@id"));
+                LegacyRoute.IIIF_2_PATH + "/" + IMAGE, info.get("@id"));
     }
 
     /**

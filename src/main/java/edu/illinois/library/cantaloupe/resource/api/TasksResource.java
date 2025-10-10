@@ -7,7 +7,7 @@ import edu.illinois.library.cantaloupe.async.TaskQueue;
 import edu.illinois.library.cantaloupe.http.Method;
 import edu.illinois.library.cantaloupe.http.Status;
 import edu.illinois.library.cantaloupe.resource.IllegalClientArgumentException;
-import edu.illinois.library.cantaloupe.resource.Route;
+import edu.illinois.library.cantaloupe.resource.LegacyRoute;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -66,8 +66,8 @@ public class TasksResource extends AbstractAPIResource {
             // URI.
             getResponse().setStatus(Status.ACCEPTED.getCode());
 
-            final String taskURI = getPublicRootReference() +
-                    Route.TASKS_PATH + "/" + task.getUUID().toString();
+            final String taskURI = getRequest().getPublicRootReference() +
+                    LegacyRoute.TASKS_PATH + "/" + task.getUUID().toString();
             getResponse().setHeader("Location", taskURI);
         } catch (NullPointerException | JsonProcessingException e) {
             throw new IllegalClientArgumentException(e.getMessage(), e);
