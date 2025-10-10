@@ -10,6 +10,7 @@ import edu.illinois.library.cantaloupe.http.Reference;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.MetaIdentifier;
 import edu.illinois.library.cantaloupe.util.StringUtils;
+import edu.illinois.library.cantaloupe.image.Identifier;
 import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,7 +24,7 @@ import java.util.Set;
 /**
  * Wraps an {@link HttpServletRequest}, adding some convenience methods.
  */
-public final class Request {
+public class Request {
 
     private HttpServletRequest wrappedRequest;
     private Headers headers;
