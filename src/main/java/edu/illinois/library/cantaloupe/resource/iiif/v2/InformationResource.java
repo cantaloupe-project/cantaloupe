@@ -134,7 +134,7 @@ public class InformationResource extends IIIF2Resource {
      *         reverse proxy headers.
      */
     private String getImageURI() {
-        return getPublicRootReference() + Route.IIIF_2_PATH + "/" +
+        return getRequest().getPublicRootReference() + Route.IIIF_2_PATH + "/" +
                 getPublicIdentifier();
     }
 

@@ -39,7 +39,7 @@ public abstract class IIIFResource extends AbstractResource {
         RequestContextDecorator.decorateRequestContext(
                             getRequestContext(),
                             getMetaIdentifier(),
-                            getPublicReference(),
+                            getRequest().getPublicReference(),
                             getRequest());
         addHeaders();
     }
@@ -158,7 +158,7 @@ public abstract class IIIFResource extends AbstractResource {
         if (newMetaId == null) {
             return false;
         }
-        Reference newRef = getPublicReference(newMetaId);
+        Reference newRef = getRequest().getPublicReference(newMetaId, getIdentifierPathComponent(), getDelegateProxy());
         getResponse().setStatus(301);
         getResponse().setHeader("Location", newRef.toString());
         new StringRepresentation("Redirect: " + newRef + "\n")

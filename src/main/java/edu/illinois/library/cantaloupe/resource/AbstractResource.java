@@ -323,7 +323,7 @@ public abstract class AbstractResource {
                     .write(getResponse().getOutputStream());
             return false;
         } else if (metaIdentifier.getScaleConstraint() != null) {
-            Reference publicRef = getPublicReference(metaIdentifier);
+            Reference publicRef = getRequest().getPublicReference(metaIdentifier, getIdentifierPathComponent(), getDelegateProxy());
             getResponse().setStatus(code);
             getResponse().setHeader("Cache-Control", "no-cache");
             getResponse().setHeader("Location", publicRef.toString());
@@ -350,7 +350,7 @@ public abstract class AbstractResource {
         final Map<String,Object> vars = new HashMap<>();
         vars.put("version", Application.getVersion());
         try {
-            String baseURI = getPublicRootReference().toString();
+            String baseURI = getRequest().getPublicRootReference().toString();
             // Normalize the base URI. Note that the <base> tag will need it to
             // have a trailing slash.
             if (baseURI.endsWith("/")) {
@@ -484,87 +484,7 @@ public abstract class AbstractResource {
                 getIdentifierPathComponent());
     }
 
-    /**
-     * <p>Returns the current public reference.</p>
-     *
-     * <p>{@link Key#BASE_URI} is respected, if set. Otherwise, the {@code
-     * X-Forwarded-*} request headers are respected, if available. Finally,
-     * Servlet-supplied information is used otherwise.</p>
-     *
-     * <p>Note that the return value may not be something the client is
-     * expecting to see&mdash;for example, any {@link #getIdentifier()
-     * identifier} present in the URI path is not {@link #getPublicIdentifier()
-     * translated}.</p>
-     *
-     * @see #getPublicRootReference()
-     */
-    protected Reference getPublicReference() {
-        final Reference ref        = getPublicRootReference();
-        final Reference requestRef = new Reference(getRequest().getReference());
-        final Reference appRootRef = new Reference(requestRef);
-        appRootRef.setPath(getRequest().getContextPath());
-        final String appRootRelativePath =
-                requestRef.getRelativePath(appRootRef.getPath());
-        if (!appRootRelativePath.isEmpty()) {
-            String path = StringUtils.stripEnd(ref.getPath(), "/") + "/" +
-                    StringUtils.stripStart(appRootRelativePath, "/");
-            ref.setPath(path);
-        }
-        return ref;
-    }
 
-    /**
-     * Variant of {@link #getPublicReference()} that replaces the identifier
-     * path component's meta-identifier if an identifier path component is
-     * available.
-     *
-     * @param newMetaIdentifier Meta-identifier.
-     */
-    protected Reference getPublicReference(MetaIdentifier newMetaIdentifier) {
-        final Reference publicRef         = new Reference(getPublicReference());
-        final List<String> pathComponents = publicRef.getPathComponents();
-        final int identifierIndex         = pathComponents.indexOf(
-                getIdentifierPathComponent());
-
-        final String newMetaIdentifierString =
-                newMetaIdentifier.toURIPathComponent(getDelegateProxy());
-        publicRef.setPathComponent(identifierIndex, newMetaIdentifierString);
-        return publicRef;
-    }
-
-    /**
-     * <p>Returns a reference to the base URI path of the application.</p>
-     *
-     * <p>{@link Key#BASE_URI} is respected, if set. Otherwise, the {@code
-     * X-Forwarded-*} request headers are respected, if available. Finally,
-     * Servlet-supplied information is used otherwise.</p>
-     *
-     * @see #getPublicReference()
-     */
-    protected Reference getPublicRootReference() {
-        Reference ref = new Reference(getRequest().getReference());
-        ref.getQuery().clear();
-        ref.setPath(getRequest().getContextPath());
-
-        // If base_uri is set in the configuration, build a URI based on that.
-        final String baseUri = Configuration.getInstance()
-                .getString(Key.BASE_URI, "");
-        if (!baseUri.isEmpty()) {
-            final Reference baseRef = new Reference(baseUri);
-            ref.setScheme(baseRef.getScheme());
-            ref.setHost(baseRef.getHost());
-            ref.setPort(baseRef.getPort());
-            ref.setPath(StringUtils.stripEnd(baseRef.getPath(), "/"));
-            getLogger().debug("Base URI from assembled from {} key: {}",
-                    Key.BASE_URI, ref);
-        } else {
-            // Try to use X-Forwarded-* headers.
-            ref.applyProxyHeaders(getRequest().getHeaders());
-            getLogger().debug("Base URI assembled from X-Forwarded headers: {}",
-                    ref);
-        }
-        return ref;
-    }
 
     /**
      * <p>Returns a sanitized value for a {@code Content-Disposition} header
