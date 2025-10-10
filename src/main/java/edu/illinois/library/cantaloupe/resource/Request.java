@@ -9,6 +9,7 @@ import edu.illinois.library.cantaloupe.http.Reference;
 import edu.illinois.library.cantaloupe.delegate.DelegateProxy;
 import edu.illinois.library.cantaloupe.image.MetaIdentifier;
 import edu.illinois.library.cantaloupe.util.StringUtils;
+import edu.illinois.library.cantaloupe.image.Identifier;
 import jakarta.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.io.InputStream;
@@ -22,11 +23,17 @@ import org.slf4j.LoggerFactory;
 /**
  * Wraps an {@link HttpServletRequest}, adding some convenience methods.
  */
-public final class Request {
+public class Request {
 
     private HttpServletRequest wrappedRequest;
     private Headers headers;
     private Reference reference;
+    private List<String> pathArguments;
+
+    /**
+     * Cached by {@link #getIdentifier()}.
+     */
+    private Identifier identifier;
 
     private static final Logger LOGGER =
             LoggerFactory.getLogger(Request.class);
@@ -41,12 +48,85 @@ public final class Request {
     /**
      * @param request Request that the new instance will wrap.
      */
-    Request(HttpServletRequest request) {
+    Request(HttpServletRequest request, List<String> pathArguments) {
         this.wrappedRequest = request;
+        this.pathArguments = pathArguments;
     }
 
     public String getContextPath() {
         return wrappedRequest.getContextPath();
+    }
+
+    /**
+     * Returns the segments of the URI path that are considered arguments.
+     * (These may correspond to regex match groups in {@link Route}.)
+     *
+     * @return Path arguments, or an empty list if there are none.
+     */
+    public final List<String> getPathArguments() {
+        return pathArguments;
+    }
+
+    /**
+     * <p>Returns the decoded identifier path component of the URI. (This may
+     * not be the identifier that the client supplies or sees; for that, use
+     * {@link #getPublicIdentifier()}.)</p>
+     *
+     * <p>N.B.: Depending on the image request endpoint API, The return value
+     * may include "meta-information" that is not part of the identifier but is
+     * encoded along with it. In that case, it is not safe to consume via this
+     * method, and {@link #getMetaIdentifier()} should be used instead.</p>
+     *
+     * @return Identifier, or {@code null} if the URI does not have an
+     *         identifier path component.
+     * @see #getMetaIdentifier()
+     * @see #getPublicIdentifier()
+     */
+    public Identifier getIdentifier() {
+        if (identifier == null) {
+            String pathComponent = getIdentifierPathComponent();
+            if (pathComponent != null) {
+                identifier = Identifier.fromURIPathComponent(pathComponent);
+            }
+        }
+        return identifier;
+    }
+
+    public static final String PUBLIC_IDENTIFIER_HEADER = "X-Forwarded-ID";
+
+
+    /**
+     * <p>Returns the identifier that the client sees. This will be the value
+     * of the {@link #PUBLIC_IDENTIFIER_HEADER} header, if available, or else
+     * the {@code identifier} URI path component.</p>
+     *
+     * <p>The result is not decoded, as the encoding may be influenced by
+     * {@link Key#SLASH_SUBSTITUTE}, for example.</p>
+     *
+     * @see #getIdentifier()
+     */
+    public String getPublicIdentifier() {
+        return getHeaders().getFirstValue(
+                PUBLIC_IDENTIFIER_HEADER,
+                getIdentifierPathComponent());
+    }
+
+
+    /**
+     * <p>Returns the first {@link #getPathArguments() path argument}. (Most
+     * resources have an identifier as the first path argument, so this will
+     * work for them, but if not, an override will be necessary.)</p>
+     *
+     * <p>The result is not decoded and may be a {@link MetaIdentifier
+     * meta-identifier}. As such, it is not usable without additional
+     * processing.</p>
+     *
+     * @return Identifier, or {@code null} if no path arguments are
+     *         available.
+     */
+    public String getIdentifierPathComponent() {
+        List<String> args = getPathArguments();
+        return (!args.isEmpty()) ? args.get(0) : null;
     }
 
     public Headers getHeaders() {

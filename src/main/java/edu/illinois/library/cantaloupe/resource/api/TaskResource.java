@@ -33,7 +33,7 @@ public class TaskResource extends AbstractAPIResource {
      * Writes a JSON task representation to the response output stream.
      */
     public void doGET() throws Exception {
-        final String uuidStr = getPathArguments().get(0);
+        final String uuidStr = getRequest().getPathArguments().get(0);
         try {
             final UUID uuid = UUID.fromString(uuidStr);
             APITask<?> task = TaskMonitor.getInstance().get(uuid);
