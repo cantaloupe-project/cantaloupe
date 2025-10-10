@@ -9,10 +9,10 @@ import edu.illinois.library.cantaloupe.image.MetaIdentifier;
 import edu.illinois.library.cantaloupe.image.ScaleConstraint;
 import edu.illinois.library.cantaloupe.operation.Crop;
 import edu.illinois.library.cantaloupe.operation.Operation;
-import edu.illinois.library.cantaloupe.operation.ValidationException;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.operation.Scale;
 import edu.illinois.library.cantaloupe.operation.ScaleByPixels;
+import edu.illinois.library.cantaloupe.operation.ValidationException;
 import edu.illinois.library.cantaloupe.resource.AbstractResource;
 import edu.illinois.library.cantaloupe.resource.RequestContextDecorator;
 import edu.illinois.library.cantaloupe.resource.ScaleRestrictedException;
@@ -39,7 +39,7 @@ public abstract class IIIFResource extends AbstractResource {
         RequestContextDecorator.decorateRequestContext(
                             getRequestContext(),
                             getMetaIdentifier(),
-                            getPublicReference(),
+                            getRequest().getPublicReference(),
                             getRequest());
         addHeaders();
     }
@@ -158,7 +158,7 @@ public abstract class IIIFResource extends AbstractResource {
         if (newMetaId == null) {
             return false;
         }
-        Reference newRef = getPublicReference(newMetaId);
+        Reference newRef = getRequest().getPublicReference(newMetaId, getIdentifierPathComponent(), getDelegateProxy());
         getResponse().setStatus(301);
         getResponse().setHeader("Location", newRef.toString());
         new StringRepresentation("Redirect: " + newRef + "\n")
