@@ -13,6 +13,7 @@ import edu.illinois.library.cantaloupe.resource.RequestContextDecorator;
 import edu.illinois.library.cantaloupe.resource.StringRepresentation;
 import edu.illinois.library.cantaloupe.util.TimeUtils;
 import edu.illinois.library.cantaloupe.resource.ResourceException;
+import edu.illinois.library.cantaloupe.resource.IIIFRequest;
 
 import java.io.IOException;
 import java.time.Instant;
@@ -36,6 +37,11 @@ public abstract class IIIFResource extends AbstractResource {
                             getRequest().getPublicReference(),
                             getRequest());
         addHeaders();
+    }
+
+    @Override
+    protected IIIFRequest getRequest() {
+        return (IIIFRequest) super.getRequest();
     }
 
     private void addHeaders() {

@@ -9,7 +9,6 @@ import edu.illinois.library.cantaloupe.http.Method;
 import edu.illinois.library.cantaloupe.http.Reference;
 import edu.illinois.library.cantaloupe.http.Status;
 import edu.illinois.library.cantaloupe.image.Format;
-import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.MetaIdentifier;
 import edu.illinois.library.cantaloupe.delegate.DelegateProxy;
 import edu.illinois.library.cantaloupe.delegate.DelegateProxyService;
@@ -22,7 +21,6 @@ import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -279,7 +277,7 @@ public abstract class AbstractResource {
      */
     protected MetaIdentifier getMetaIdentifier() {
         if (metaIdentifier == null) {
-            String pathComponent = getRequest().getIdentifierPathComponent();
+            String pathComponent = ((IIIFRequest) getRequest()).getIdentifierPathComponent();
             if (pathComponent != null) {
                 metaIdentifier = MetaIdentifier.fromURIPathComponent(
                         pathComponent, getDelegateProxy());
@@ -323,7 +321,7 @@ public abstract class AbstractResource {
     /**
      * @return Request being handled.
      */
-    protected final Request getRequest() {
+    protected Request getRequest() {
         return request;
     }
 

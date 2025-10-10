@@ -134,13 +134,8 @@ public class InformationResource extends IIIF3Resource {
      *         {@link #PUBLIC_IDENTIFIER_HEADER} reverse proxy headers.
      */
     private String getImageURI() {
-<<<<<<< HEAD
         return getRequest().getPublicRootReference() + Route.IIIF_3_PATH + "/" +
-                getPublicIdentifier();
-=======
-        return getPublicRootReference() + Route.IIIF_3_PATH + "/" +
                 getRequest().getPublicIdentifier();
->>>>>>> ce14b249b (Move the identifier methods into the Request object)
     }
 
     private String getNegotiatedContentType() {
