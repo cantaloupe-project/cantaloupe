@@ -43,6 +43,13 @@ class RequestTest extends BaseTest {
     }
 
     @Test
+    void testGetMethod() {
+        sr.setMethod("PUT");
+
+        assertEquals(Method.PUT, instance.getMethod());
+    }
+
+    @Test
     void testGetReference() {
         String url = "http://example.org/cats?query=yes";
         sr.setRequestURL(url);
