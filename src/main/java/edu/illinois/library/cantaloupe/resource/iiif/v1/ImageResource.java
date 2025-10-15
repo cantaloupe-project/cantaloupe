@@ -113,13 +113,13 @@ public class ImageResource extends IIIF1Resource {
             }
         }
 
-        try (ImageRequestHandler handler = ImageRequestHandler.builder()
-                .withOperationList(opList)
-                .withBypassingCache(isBypassingCache())
-                .withBypassingCacheRead(isBypassingCacheRead())
-                .optionallyWithDelegateProxy(getDelegateProxy(), getRequestContext())
-                .withCallback(new CustomCallback())
-                .build()) {
+        try (ImageRequestHandler handler = new ImageRequestHandler(
+                opList,
+                getDelegateProxy(),
+                getRequestContext(),
+                new CustomCallback(),
+                isBypassingCache(),
+                isBypassingCacheRead())) {
             handler.handle(getResponse().getOutputStream());
         }
     }
