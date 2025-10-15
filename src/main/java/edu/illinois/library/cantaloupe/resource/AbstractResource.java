@@ -1,9 +1,7 @@
 package edu.illinois.library.cantaloupe.resource;
 
 import edu.illinois.library.cantaloupe.Application;
-import edu.illinois.library.cantaloupe.auth.AuthInfo;
-import edu.illinois.library.cantaloupe.auth.Authorizer;
-import edu.illinois.library.cantaloupe.auth.AuthorizerFactory;
+
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.http.ContentTypeNegotiator;
@@ -20,7 +18,6 @@ import edu.illinois.library.cantaloupe.util.StringUtils;
 import org.slf4j.Logger;
 
 import jakarta.servlet.http.HttpServletResponse;
-import java.io.IOException;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -231,115 +228,6 @@ public abstract class AbstractResource {
      */
     public void doPUT() throws Exception {
         response.setStatus(Status.METHOD_NOT_ALLOWED.getCode());
-    }
-
-
-
-    /**
-     * <p>Uses an {@link Authorizer} to determine how to respond to the
-     * request. The response is modified if necessary.</p>
-     *
-     * <p>The authorization system (rooted in the {@link
-     * edu.illinois.library.cantaloupe.delegate.DelegateMethod#AUTHORIZE
-     * authorization delegate method} supports simple boolean authorization
-     * which maps to the HTTP 200 and 403 statuses.</p>
-     *
-     * <p>Authorization can simultaneously be used in the context of the
-     * <a href="https://iiif.io/api/auth/1.0/">IIIF Authentication API, where
-     * it works a little differently. Here, HTTP 401 is returned instead of
-     * 403, and the response body <strong>does</strong> include image
-     * information. (See
-     * <a href="https://iiif.io/api/auth/1.0/#interaction-with-access-controlled-resources">
-     * Interaction with Access-Controlled Resources</a>. This means that IIIF
-     * information endpoints should swallow any {@link ResourceException}s with
-     * HTTP 401 status.</p>
-     *
-     * @return Whether authorization was successful. {@code false} indicates a
-     *         redirect, and client code should abort.
-     * @throws IOException if there was an I/O error while checking
-     *         authorization.
-     * @throws ResourceException if authorization resulted in an HTTP 400-level
-     *         response.
-     */
-    protected final boolean authorize() throws IOException, ResourceException {
-        final Authorizer authorizer =
-                new AuthorizerFactory().newAuthorizer(getDelegateProxy());
-        final AuthInfo info = authorizer.authorize();
-        if (info != null) {
-            return processAuthInfo(info);
-        }
-        return true;
-    }
-
-    /**
-     * <p>Uses an {@link Authorizer} to determine how to respond to the
-     * request. The response is modified if necessary.</p>
-     *
-     * <p>The authorization system (rooted in the {@link
-     * edu.illinois.library.cantaloupe.delegate.DelegateMethod#AUTHORIZE
-     * authorization delegate method} supports simple boolean authorization
-     * which maps to the HTTP 200 and 403 statuses. In the event of a 403,
-     * IIIF image information should not be included in the response body.</p>
-     *
-     * <p>Authorization can simultaneously be used in the context of the
-     * <a href="https://iiif.io/api/auth/1.0/">IIIF Authentication API, where
-     * it works a little differently. Here, HTTP 401 is returned instead of
-     * 403, and the response body <strong>does</strong> include image
-     * information. (See
-     * <a href="https://iiif.io/api/auth/1.0/#interaction-with-access-controlled-resources">
-     * Interaction with Access-Controlled Resources</a>. This means that IIIF
-     * information endpoints should swallow any {@link ResourceException}s with
-     * HTTP 401 status.</p>
-     *
-     * @return Whether authorization was successful. {@code false} indicates a
-     *         redirect, and client code should abort.
-     * @throws IOException if there was an I/O error while checking
-     *         authorization.
-     * @throws ResourceException if authorization resulted in an HTTP 400-level
-     *         response.
-     */
-    protected final boolean preAuthorize() throws IOException, ResourceException {
-        final Authorizer authorizer =
-                new AuthorizerFactory().newAuthorizer(getDelegateProxy());
-        final AuthInfo info = authorizer.preAuthorize();
-        if (info != null) {
-            return processAuthInfo(info);
-        }
-        return true;
-    }
-
-    private boolean processAuthInfo(AuthInfo info)
-            throws IOException, ResourceException {
-        final int code                      = info.getResponseStatus();
-        final String location               = info.getRedirectURI();
-        final MetaIdentifier metaIdentifier = new MetaIdentifier(getMetaIdentifier());
-        metaIdentifier.setScaleConstraint(info.getScaleConstraint());
-
-        if (location != null) {
-            getResponse().setStatus(code);
-            getResponse().setHeader("Cache-Control", "no-cache");
-            getResponse().setHeader("Location", location);
-            new StringRepresentation("Redirect: " + location)
-                    .write(getResponse().getOutputStream());
-            return false;
-        } else if (metaIdentifier.getScaleConstraint() != null) {
-            Reference publicRef = getRequest().getPublicReference(metaIdentifier, getIdentifierPathComponent(), getDelegateProxy());
-            getResponse().setStatus(code);
-            getResponse().setHeader("Cache-Control", "no-cache");
-            getResponse().setHeader("Location", publicRef.toString());
-            new StringRepresentation("Redirect: " + publicRef)
-                    .write(getResponse().getOutputStream());
-            return false;
-        } else if (code >= 400) {
-            getResponse().setStatus(code);
-            getResponse().setHeader("Cache-Control", "no-cache");
-            if (code == 401) {
-                getResponse().setHeader("WWW-Authenticate",
-                        info.getChallengeValue());
-            }
-            throw new ResourceException(new Status(code));
-        }
-        return true;
     }
 
     /**
