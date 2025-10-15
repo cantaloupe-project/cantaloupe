@@ -33,18 +33,7 @@ public final class Request {
         return wrappedRequest.getContextPath();
     }
 
-    public Cookies getCookies() {
-        if (cookies == null) {
-            cookies = new Cookies();
-            final Enumeration<String> headers = wrappedRequest.getHeaders("Cookie");
-            while (headers.hasMoreElements()) {
-                String value = headers.nextElement();
-                Cookies batch = Cookies.fromHeaderValue(value);
-                cookies.addAll(batch);
-            }
-        }
-        return cookies;
-    }
+
 
     public Headers getHeaders() {
         if (headers == null) {
@@ -95,7 +84,7 @@ public final class Request {
      * @return Client IP address. Note that this may not be the user agent IP
      *         address, as in the case of e.g. running behind a reverse proxy
      *         server.
-     * @see AbstractResource#getCanonicalClientIPAddress()
+     * @see RequestContextDecorator#getCanonicalClientIPAddress()
      */
     public String getRemoteAddr() {
         return wrappedRequest.getRemoteAddr();
