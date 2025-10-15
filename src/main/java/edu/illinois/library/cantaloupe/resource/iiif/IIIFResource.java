@@ -1,30 +1,24 @@
 package edu.illinois.library.cantaloupe.resource.iiif;
 
+import edu.illinois.library.cantaloupe.auth.AuthInfo;
+import edu.illinois.library.cantaloupe.auth.Authorizer;
+import edu.illinois.library.cantaloupe.auth.AuthorizerFactory;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.http.Reference;
 import edu.illinois.library.cantaloupe.http.Status;
-import edu.illinois.library.cantaloupe.image.Dimension;
 import edu.illinois.library.cantaloupe.image.MetaIdentifier;
-import edu.illinois.library.cantaloupe.image.ScaleConstraint;
-import edu.illinois.library.cantaloupe.operation.Crop;
-import edu.illinois.library.cantaloupe.operation.Operation;
-import edu.illinois.library.cantaloupe.operation.ValidationException;
-import edu.illinois.library.cantaloupe.operation.OperationList;
-import edu.illinois.library.cantaloupe.operation.Scale;
-import edu.illinois.library.cantaloupe.operation.ScaleByPixels;
 import edu.illinois.library.cantaloupe.resource.AbstractResource;
 import edu.illinois.library.cantaloupe.resource.RequestContextDecorator;
-import edu.illinois.library.cantaloupe.resource.ScaleRestrictedException;
 import edu.illinois.library.cantaloupe.resource.StringRepresentation;
 import edu.illinois.library.cantaloupe.util.TimeUtils;
+import edu.illinois.library.cantaloupe.resource.ResourceException;
 
 import java.io.IOException;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 
@@ -174,5 +168,110 @@ public abstract class IIIFResource extends AbstractResource {
                         .format(lastModified));
     }
 
+    /**
+     * <p>Uses an {@link Authorizer} to determine how to respond to the
+     * request. The response is modified if necessary.</p>
+     *
+     * <p>The authorization system (rooted in the {@link
+     * edu.illinois.library.cantaloupe.delegate.DelegateMethod#AUTHORIZE
+     * authorization delegate method} supports simple boolean authorization
+     * which maps to the HTTP 200 and 403 statuses.</p>
+     *
+     * <p>Authorization can simultaneously be used in the context of the
+     * <a href="https://iiif.io/api/auth/1.0/">IIIF Authentication API, where
+     * it works a little differently. Here, HTTP 401 is returned instead of
+     * 403, and the response body <strong>does</strong> include image
+     * information. (See
+     * <a href="https://iiif.io/api/auth/1.0/#interaction-with-access-controlled-resources">
+     * Interaction with Access-Controlled Resources</a>. This means that IIIF
+     * information endpoints should swallow any {@link ResourceException}s with
+     * HTTP 401 status.</p>
+     *
+     * @return Whether authorization was successful. {@code false} indicates a
+     *         redirect, and client code should abort.
+     * @throws IOException if there was an I/O error while checking
+     *         authorization.
+     * @throws ResourceException if authorization resulted in an HTTP 400-level
+     *         response.
+     */
+    protected final boolean authorize() throws IOException, ResourceException {
+        final Authorizer authorizer =
+                new AuthorizerFactory().newAuthorizer(getDelegateProxy());
+        final AuthInfo info = authorizer.authorize();
+        if (info != null) {
+            return processAuthInfo(info);
+        }
+        return true;
+    }
 
+    /**
+     * <p>Uses an {@link Authorizer} to determine how to respond to the
+     * request. The response is modified if necessary.</p>
+     *
+     * <p>The authorization system (rooted in the {@link
+     * edu.illinois.library.cantaloupe.delegate.DelegateMethod#AUTHORIZE
+     * authorization delegate method} supports simple boolean authorization
+     * which maps to the HTTP 200 and 403 statuses. In the event of a 403,
+     * IIIF image information should not be included in the response body.</p>
+     *
+     * <p>Authorization can simultaneously be used in the context of the
+     * <a href="https://iiif.io/api/auth/1.0/">IIIF Authentication API, where
+     * it works a little differently. Here, HTTP 401 is returned instead of
+     * 403, and the response body <strong>does</strong> include image
+     * information. (See
+     * <a href="https://iiif.io/api/auth/1.0/#interaction-with-access-controlled-resources">
+     * Interaction with Access-Controlled Resources</a>. This means that IIIF
+     * information endpoints should swallow any {@link ResourceException}s with
+     * HTTP 401 status.</p>
+     *
+     * @return Whether authorization was successful. {@code false} indicates a
+     *         redirect, and client code should abort.
+     * @throws IOException if there was an I/O error while checking
+     *         authorization.
+     * @throws ResourceException if authorization resulted in an HTTP 400-level
+     *         response.
+     */
+    protected final boolean preAuthorize() throws IOException, ResourceException {
+        final Authorizer authorizer =
+                new AuthorizerFactory().newAuthorizer(getDelegateProxy());
+        final AuthInfo info = authorizer.preAuthorize();
+        if (info != null) {
+            return processAuthInfo(info);
+        }
+        return true;
+    }
+
+    private boolean processAuthInfo(AuthInfo info)
+            throws IOException, ResourceException {
+        final int code                      = info.getResponseStatus();
+        final String location               = info.getRedirectURI();
+        final MetaIdentifier metaIdentifier = new MetaIdentifier(getMetaIdentifier());
+        metaIdentifier.setScaleConstraint(info.getScaleConstraint());
+
+        if (location != null) {
+            getResponse().setStatus(code);
+            getResponse().setHeader("Cache-Control", "no-cache");
+            getResponse().setHeader("Location", location);
+            new StringRepresentation("Redirect: " + location)
+                    .write(getResponse().getOutputStream());
+            return false;
+        } else if (metaIdentifier.getScaleConstraint() != null) {
+            Reference publicRef = getRequest().getPublicReference(metaIdentifier, getIdentifierPathComponent(), getDelegateProxy());
+            getResponse().setStatus(code);
+            getResponse().setHeader("Cache-Control", "no-cache");
+            getResponse().setHeader("Location", publicRef.toString());
+            new StringRepresentation("Redirect: " + publicRef)
+                    .write(getResponse().getOutputStream());
+            return false;
+        } else if (code >= 400) {
+            getResponse().setStatus(code);
+            getResponse().setHeader("Cache-Control", "no-cache");
+            if (code == 401) {
+                getResponse().setHeader("WWW-Authenticate",
+                        info.getChallengeValue());
+            }
+            throw new ResourceException(new Status(code));
+        }
+        return true;
+    }
 }
