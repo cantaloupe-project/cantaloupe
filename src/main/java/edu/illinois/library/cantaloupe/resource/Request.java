@@ -29,7 +29,7 @@ public class Request {
     private Headers headers;
     private Reference reference;
     private List<String> pathArguments;
-
+    private final RequestContext requestContext = new RequestContext();
 
     private static final Logger LOGGER =
             LoggerFactory.getLogger(Request.class);
@@ -61,6 +61,13 @@ public class Request {
      */
     public final List<String> getPathArguments() {
         return pathArguments;
+    }
+
+    /**
+     * @return Instance with basic info already set.
+     */
+    public final RequestContext getRequestContext() {
+        return requestContext;
     }
 
     public Headers getHeaders() {

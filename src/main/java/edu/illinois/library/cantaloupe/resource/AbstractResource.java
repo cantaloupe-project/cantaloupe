@@ -38,13 +38,10 @@ public abstract class AbstractResource {
      * Set by {@link #getDelegateProxy()}.
      */
     private DelegateProxy delegateProxy;
-
-    private final RequestContext requestContext = new RequestContext();
     private Request request;
     private HttpServletResponse response;
 
-
-
+    
     /**
      * Cached by {@link #getMetaIdentifier()}.
      */
@@ -202,7 +199,7 @@ public abstract class AbstractResource {
         if (delegateProxy == null && DelegateProxyService.isDelegateAvailable()) {
             DelegateProxyService service = DelegateProxyService.getInstance();
             try {
-                delegateProxy = service.newDelegateProxy(getRequestContext());
+                delegateProxy = service.newDelegateProxy(getRequest().getRequestContext());
             } catch (UnavailableException e) {
                 getLogger().debug("newDelegateProxy(): {}", e.getMessage());
             }
@@ -280,13 +277,6 @@ public abstract class AbstractResource {
      */
     protected Request getRequest() {
         return request;
-    }
-
-    /**
-     * @return Instance with basic info already set.
-     */
-    protected final RequestContext getRequestContext() {
-        return requestContext;
     }
 
     /**
