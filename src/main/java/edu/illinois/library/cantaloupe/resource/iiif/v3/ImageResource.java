@@ -139,7 +139,7 @@ public class ImageResource extends IIIF3Resource {
         try (ImageRequestHandler handler = new ImageRequestHandler(
                 ops,
                 getDelegateProxy(),
-                getRequestContext(),
+                getRequest().getRequestContext(),
                 new CustomCallback(),
                 getRequest().isBypassingCache(),
                 getRequest().isBypassingCacheRead())) {

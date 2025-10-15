@@ -1,6 +1,5 @@
 package edu.illinois.library.cantaloupe.resource;
 
-import edu.illinois.library.cantaloupe.http.Cookies;
 import edu.illinois.library.cantaloupe.http.Headers;
 import edu.illinois.library.cantaloupe.http.Method;
 import edu.illinois.library.cantaloupe.http.Query;
@@ -19,9 +18,9 @@ public final class Request {
 
     private HttpServletRequest wrappedRequest;
 
-    private Cookies cookies;
     private Headers headers;
     private Reference reference;
+    private final RequestContext requestContext = new RequestContext();
 
     /**
      * URL argument values that can be used with the {@code cache} query key to
@@ -41,7 +40,12 @@ public final class Request {
         return wrappedRequest.getContextPath();
     }
 
-
+    /**
+     * @return Instance with basic info already set.
+     */
+    public final RequestContext getRequestContext() {
+        return requestContext;
+    }
 
     public Headers getHeaders() {
         if (headers == null) {

@@ -3,19 +3,9 @@ package edu.illinois.library.cantaloupe.resource.iiif;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.http.Reference;
-import edu.illinois.library.cantaloupe.http.Status;
-import edu.illinois.library.cantaloupe.image.Dimension;
 import edu.illinois.library.cantaloupe.image.MetaIdentifier;
-import edu.illinois.library.cantaloupe.image.ScaleConstraint;
-import edu.illinois.library.cantaloupe.operation.Crop;
-import edu.illinois.library.cantaloupe.operation.Operation;
-import edu.illinois.library.cantaloupe.operation.ValidationException;
-import edu.illinois.library.cantaloupe.operation.OperationList;
-import edu.illinois.library.cantaloupe.operation.Scale;
-import edu.illinois.library.cantaloupe.operation.ScaleByPixels;
 import edu.illinois.library.cantaloupe.resource.AbstractResource;
 import edu.illinois.library.cantaloupe.resource.RequestContextDecorator;
-import edu.illinois.library.cantaloupe.resource.ScaleRestrictedException;
 import edu.illinois.library.cantaloupe.resource.StringRepresentation;
 import edu.illinois.library.cantaloupe.util.TimeUtils;
 
@@ -24,7 +14,6 @@ import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 
@@ -37,7 +26,7 @@ public abstract class IIIFResource extends AbstractResource {
     public void doInit() throws Exception {
         super.doInit();
         RequestContextDecorator.decorateRequestContext(
-                            getRequestContext(),
+                            getRequest().getRequestContext(),
                             getMetaIdentifier(),
                             getPublicReference(),
                             getRequest());

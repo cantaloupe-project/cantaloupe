@@ -54,7 +54,6 @@ public abstract class AbstractResource {
     private DelegateProxy delegateProxy;
 
     private List<String> pathArguments          = Collections.emptyList();
-    private final RequestContext requestContext = new RequestContext();
     private Request request;
     private HttpServletResponse response;
 
@@ -371,7 +370,7 @@ public abstract class AbstractResource {
         if (delegateProxy == null && DelegateProxyService.isDelegateAvailable()) {
             DelegateProxyService service = DelegateProxyService.getInstance();
             try {
-                delegateProxy = service.newDelegateProxy(getRequestContext());
+                delegateProxy = service.newDelegateProxy(getRequest().getRequestContext());
             } catch (UnavailableException e) {
                 getLogger().debug("newDelegateProxy(): {}", e.getMessage());
             }
@@ -590,13 +589,6 @@ public abstract class AbstractResource {
      */
     protected final Request getRequest() {
         return request;
-    }
-
-    /**
-     * @return Instance with basic info already set.
-     */
-    protected final RequestContext getRequestContext() {
-        return requestContext;
     }
 
     /**
