@@ -101,8 +101,8 @@ public class InformationResource extends IIIF2Resource {
                 getDelegateProxy(),
                 getRequestContext(),
                 new CustomCallback(),
-                isBypassingCache(),
-                isBypassingCacheRead())) {
+                getRequest().isBypassingCache(),
+                getRequest().isBypassingCacheRead())) {
             try {
                 Info info = handler.handle();
                 addHeaders(info);

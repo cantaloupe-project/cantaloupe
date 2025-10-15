@@ -140,8 +140,8 @@ public class ImageResource extends IIIF2Resource {
                 getDelegateProxy(),
                 getRequestContext(),
                 new CustomCallback(),
-                isBypassingCache(),
-                isBypassingCacheRead())) {
+                getRequest().isBypassingCache(),
+                getRequest().isBypassingCacheRead())) {
             handler.handle(getResponse().getOutputStream());
         }
     }
