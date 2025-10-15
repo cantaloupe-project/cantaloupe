@@ -1,5 +1,7 @@
 package edu.illinois.library.cantaloupe.resource;
 
+import edu.illinois.library.cantaloupe.config.Configuration;
+import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.http.Cookies;
 import edu.illinois.library.cantaloupe.http.Headers;
 import edu.illinois.library.cantaloupe.http.Method;
@@ -80,4 +82,94 @@ class RequestTest extends BaseTest {
         assertSame(sr, instance.getServletRequest());
     }
 
+
+    /**
+     * Tests behavior of {@link AbstractResource#getPublicReference()} when
+     * using {@link Key#BASE_URI}.
+     */
+    @Test
+    void testGetPublicReferenceUsingConfiguration() {
+        final String baseURI = "http://example.net/base";
+        Configuration.getInstance().setProperty(Key.BASE_URI, baseURI);
+
+        MockHttpServletRequest servletRequest = new MockHttpServletRequest();
+        servletRequest.setContextPath("/base");
+        servletRequest.setRequestURL("http://example.org/base/llamas");
+
+        instance = new Request(servletRequest);
+        Reference ref = instance.getPublicReference();
+        assertEquals(baseURI + "/llamas", ref.toString());
+    }
+
+    /**
+     * Tests behavior of {@link AbstractResource#getPublicReference()} when
+     * using {@literal X-Forwarded} headers.
+     *
+     * This isn't a thorough test of every possible header/URI combination.
+     * See {@link Reference#applyProxyHeaders(Headers)} for those.
+     */
+    @Test
+    void testGetPublicReferenceUsingXForwardedHeaders() {
+        MockHttpServletRequest servletRequest = new MockHttpServletRequest();
+
+        servletRequest.setContextPath("");
+        servletRequest.setRequestURL("http://bogus/cats");
+
+        instance = new Request(servletRequest);
+        Headers headers = instance.getHeaders();
+        headers.set("X-Forwarded-Proto", "HTTP");
+        headers.set("X-Forwarded-Host", "example.org");
+        headers.set("X-Forwarded-Port", "80");
+        headers.set("X-Forwarded-Path", "/");
+
+        Reference ref = instance.getPublicReference();
+        assertEquals("http://example.org/cats", ref.toString());
+    }
+
+    /**
+     * Tests behavior of {@link AbstractResource#getPublicReference()} when
+     * using neither {@link Key#BASE_URI} nor {@literal X-Forwarded} headers.
+     */
+    @Test
+    void testGetPublicReferenceFallsBackToHTTPRequest() {
+        String resourceURI = "http://example.net/cats/dogs";
+        MockHttpServletRequest servletRequest = new MockHttpServletRequest();
+        servletRequest.setContextPath("/cats");
+        servletRequest.setRequestURL(resourceURI);
+
+        instance = new Request(servletRequest);
+        Reference ref = instance.getPublicReference();
+        assertEquals(resourceURI, ref.toString());
+    }
+
+    /**
+     * Tests behavior of {@link AbstractResource#getPublicReference()} when
+     * using neither {@link Key#BASE_URI} nor {@literal X-Forwarded} headers.
+     */
+    @Test
+    void testGetPublicReferenceFallsBackToHTTPSRequest() {
+        String resourceURI = "https://example.net/cats/dogs";
+        MockHttpServletRequest servletRequest = new MockHttpServletRequest();
+
+        servletRequest.setContextPath("/cats");
+        servletRequest.setRequestURL(resourceURI);
+
+        instance = new Request(servletRequest);
+        Reference ref = instance.getPublicReference();
+        assertEquals(resourceURI, ref.toString());
+    }
+
+    @Test
+    void testGetPublicReferenceOmitsQuery() {
+        String resourceURI = "https://example.net/cats/dogs?arg=value";
+        String expected = "https://example.net/cats/dogs";
+
+        MockHttpServletRequest servletRequest = new MockHttpServletRequest();
+        servletRequest.setContextPath("/cats");
+        servletRequest.setRequestURL(resourceURI);
+
+        instance = new Request(servletRequest);
+        Reference ref = instance.getPublicReference();
+        assertEquals(expected, ref.toString());
+    }
 }
