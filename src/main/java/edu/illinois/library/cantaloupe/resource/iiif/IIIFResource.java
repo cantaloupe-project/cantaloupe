@@ -181,41 +181,16 @@ public abstract class IIIFResource extends AbstractResource {
      */
     protected final boolean redirectToNormalizedScaleConstraint()
             throws IOException {
-        MetaIdentifier metaIdentifier = getMetaIdentifier();
-        // If a meta-identifier is present in the URI...
-        if (metaIdentifier != null) {
-            final ScaleConstraint scaleConstraint =
-                    metaIdentifier.getScaleConstraint();
-            // and it contains a scale constraint...
-            if (scaleConstraint != null) {
-                Reference newRef = null;
-                // ...and the numerator and denominator are equal, redirect to
-                // the non-suffixed identifier.
-                if (!scaleConstraint.hasEffect()) {
-                    metaIdentifier = new MetaIdentifier(metaIdentifier);
-                    metaIdentifier.setScaleConstraint(null);
-                    newRef = getPublicReference(metaIdentifier);
-                } else {
-                    ScaleConstraint reducedConstraint =
-                            scaleConstraint.getReduced();
-                    // ...and the fraction is not reduced, redirect to the
-                    // reduced version.
-                    if (!reducedConstraint.equals(scaleConstraint)) {
-                        metaIdentifier = new MetaIdentifier(metaIdentifier);
-                        metaIdentifier.setScaleConstraint(reducedConstraint);
-                        newRef = getPublicReference(metaIdentifier);
-                    }
-                }
-                if (newRef != null) {
-                    getResponse().setStatus(301);
-                    getResponse().setHeader("Location", newRef.toString());
-                    new StringRepresentation("Redirect: " + newRef + "\n")
-                            .write(getResponse().getOutputStream());
-                    return true;
-                }
-            }
+        MetaIdentifier newMetaId = getMetaIdentifier().getNormalizedScaleConstraintMetaIdentifier();
+        if (newMetaId == null) {
+            return false;
         }
-        return false;
+        Reference newRef = getPublicReference(newMetaId);
+        getResponse().setStatus(301);
+        getResponse().setHeader("Location", newRef.toString());
+        new StringRepresentation("Redirect: " + newRef + "\n")
+                .write(getResponse().getOutputStream());
+        return true;
     }
 
     protected void setLastModifiedHeader(Instant lastModified) {

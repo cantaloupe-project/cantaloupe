@@ -114,6 +114,34 @@ public final class MetaIdentifier {
         return new Builder();
     }
 
+
+    public MetaIdentifier getNormalizedScaleConstraintMetaIdentifier() {
+        final ScaleConstraint scaleConstraint = getScaleConstraint();
+        if (scaleConstraint == null) {
+            return null;
+        }
+        // and it contains a scale constraint...
+        // ...and the numerator and denominator are equal, redirect to
+        // the non-suffixed identifier.
+        if (!scaleConstraint.hasEffect()) {
+            MetaIdentifier metaIdentifier = new MetaIdentifier(this);
+            metaIdentifier.setScaleConstraint(null);
+            return metaIdentifier;
+        } else {
+            ScaleConstraint reducedConstraint =
+                    scaleConstraint.getReduced();
+            // ...and the fraction is not reduced, redirect to the
+            // reduced version.
+            if (!reducedConstraint.equals(scaleConstraint)) {
+                MetaIdentifier metaIdentifier = new MetaIdentifier(this);
+                metaIdentifier.setScaleConstraint(reducedConstraint);
+                return metaIdentifier;
+            }
+            return null;
+        }
+    }
+    
+
     /**
      * <p>Deserializes the given meta-identifier string using the {@link
      * MetaIdentifierTransformer} specified in the application
