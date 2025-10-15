@@ -218,31 +218,6 @@ public abstract class IIIFResource extends AbstractResource {
         return false;
     }
 
-    /**
-     * @param virtualSize   Orientation-aware full source image size.
-     * @param scale         May be {@code null}.
-     * @param invalidStatus Status code to return when the given scale fails
-     *                      validation.
-     */
-    protected void validateScale(Dimension virtualSize,
-                                 Scale scale,
-                                 Status invalidStatus) throws ScaleRestrictedException {
-        final ScaleConstraint scaleConstraint =
-                (getMetaIdentifier().getScaleConstraint() != null) ?
-                getMetaIdentifier().getScaleConstraint() : new ScaleConstraint(1, 1);
-        double scalePct = scaleConstraint.getRational().doubleValue();
-        if (scale != null) {
-            scalePct = Arrays.stream(
-                    scale.getResultingScales(virtualSize, scaleConstraint))
-                    .max().orElse(1);
-        }
-        final Configuration config = Configuration.getInstance();
-        final double maxScale      = config.getDouble(Key.MAX_SCALE, 1.0);
-        if (maxScale > 0.0001 && scalePct > maxScale) {
-            throw new ScaleRestrictedException(invalidStatus, maxScale);
-        }
-    }
-    
     protected void setLastModifiedHeader(Instant lastModified) {
         getResponse().setHeader("Last-Modified",
                 DateTimeFormatter.RFC_1123_DATE_TIME

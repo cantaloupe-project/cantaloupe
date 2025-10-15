@@ -17,6 +17,7 @@ import edu.illinois.library.cantaloupe.resource.Route;
 import edu.illinois.library.cantaloupe.resource.ImageRequestHandler;
 import edu.illinois.library.cantaloupe.resource.iiif.SizeRestrictedException;
 import edu.illinois.library.cantaloupe.source.StatResult;
+import edu.illinois.library.cantaloupe.resource.iiif.ScaleValidator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -122,10 +123,12 @@ public class ImageResource extends IIIF2Resource {
                         metadata.getOrientation() : Orientation.ROTATE_0;
                 final Dimension virtualSize   = orientation.adjustedSize(info.getSize(pageIndex));
                 final Dimension resultingSize = ops.getResultingSize(info.getSize());
-                validateScale(
+                ScaleValidator.validateScale(
                         virtualSize,
                         (Scale) ops.getFirst(Scale.class),
-                        Status.FORBIDDEN);
+                        Status.FORBIDDEN,
+                        getMetaIdentifier());
+                
                 validateSize(resultingSize, virtualSize);
                 sendHeaders();
             }
