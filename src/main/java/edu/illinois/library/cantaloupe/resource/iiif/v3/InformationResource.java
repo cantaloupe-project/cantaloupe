@@ -99,7 +99,7 @@ public class InformationResource extends IIIF3Resource {
         try (InformationRequestHandler handler = new InformationRequestHandler(
                 getMetaIdentifier().getIdentifier(),
                 getDelegateProxy(),
-                getRequestContext(),
+                getRequest().getRequestContext(),
                 new CustomCallback(),
                 getRequest().isBypassingCache(),
                 getRequest().isBypassingCacheRead())) {
