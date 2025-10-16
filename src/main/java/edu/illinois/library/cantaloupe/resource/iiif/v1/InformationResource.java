@@ -90,12 +90,8 @@ public class InformationResource extends IIIF1Resource {
         }
 
         try (InformationRequestHandler handler = new InformationRequestHandler(
-                getMetaIdentifier().getIdentifier(),
-                getDelegateProxy(),
-                getRequest().getRequestContext(),
-                new CustomCallback(),
-                getRequest().isBypassingCache(),
-                getRequest().isBypassingCacheRead())) {
+                getRequest(),
+                new CustomCallback())) {
             try {
                 Info info = handler.handle();
                 Information iiifInfo = new InformationFactory().newImageInfo(
@@ -103,7 +99,7 @@ public class InformationResource extends IIIF1Resource {
                         availableOutputFormats,
                         info,
                         getPageIndex(),
-                        getMetaIdentifier().getScaleConstraint());
+                        getRequest().getMetaIdentifier().getScaleConstraint());
                 addHeaders(info, iiifInfo);
                 new JacksonRepresentation(iiifInfo)
                         .write(getResponse().getOutputStream());
