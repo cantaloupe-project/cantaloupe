@@ -33,7 +33,7 @@ public class IdentifierResource extends IIIF2Resource {
         final Reference newRef = new Reference(
                 getRequest().getPublicRootReference() +
                 Route.IIIF_2_PATH +
-                "/" + getPublicIdentifier() +
+                "/" + getRequest().getPublicIdentifier() +
                 "/info.json");
         getResponse().setStatus(Status.SEE_OTHER.getCode());
         getResponse().setHeader("Location", newRef.toString(false));

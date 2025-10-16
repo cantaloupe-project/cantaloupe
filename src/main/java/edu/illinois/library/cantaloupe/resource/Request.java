@@ -22,11 +22,13 @@ import org.slf4j.LoggerFactory;
 /**
  * Wraps an {@link HttpServletRequest}, adding some convenience methods.
  */
-public final class Request {
+public class Request {
 
     private HttpServletRequest wrappedRequest;
     private Headers headers;
     private Reference reference;
+    private List<String> pathArguments;
+
 
     private static final Logger LOGGER =
             LoggerFactory.getLogger(Request.class);
@@ -41,12 +43,23 @@ public final class Request {
     /**
      * @param request Request that the new instance will wrap.
      */
-    Request(HttpServletRequest request) {
+    Request(HttpServletRequest request, List<String> pathArguments) {
         this.wrappedRequest = request;
+        this.pathArguments = pathArguments;
     }
 
     public String getContextPath() {
         return wrappedRequest.getContextPath();
+    }
+
+    /**
+     * Returns the segments of the URI path that are considered arguments.
+     * (These may correspond to regex match groups in {@link Route}.)
+     *
+     * @return Path arguments, or an empty list if there are none.
+     */
+    public final List<String> getPathArguments() {
+        return pathArguments;
     }
 
     public Headers getHeaders() {

@@ -65,9 +65,9 @@ public class ImageResource extends IIIF2Resource {
         }
 
         // Assemble the URI path segments into a Parameters object.
-        final List<String> args = getPathArguments();
+        final List<String> args = getRequest().getPathArguments();
         final Parameters params = new Parameters(
-                getIdentifier().toString(), args.get(1), args.get(2),
+                getRequest().getIdentifier().toString(), args.get(1), args.get(2),
                 args.get(3), args.get(4), args.get(5));
         // Convert it into an OperationList.
         final OperationList ops = params.toOperationList(getDelegateProxy());
@@ -162,7 +162,7 @@ public class ImageResource extends IIIF2Resource {
                 params.getOutputFormat().toFormat().getPreferredMediaType().toString());
         // Link
         Parameters paramsCopy = new Parameters(params);
-        paramsCopy.setIdentifier(getPublicIdentifier());
+        paramsCopy.setIdentifier(getRequest().getPublicIdentifier());
         String paramsStr = paramsCopy.toCanonicalString(fullSize);
         queuedHeaders.put("Link",
                 String.format("<%s%s/%s>;rel=\"canonical\"",

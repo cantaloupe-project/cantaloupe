@@ -140,7 +140,7 @@ public class ImageResource extends IIIF1Resource {
     }
 
     private OperationList getOperationList() {
-        final List<String> args = getPathArguments();
+        final List<String> args = getRequest().getPathArguments();
 
         // If the URI path contains a format extension, try to use that.
         // Otherwise, negotiate it based on the Accept header per Image API 1.1

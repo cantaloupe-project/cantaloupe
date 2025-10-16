@@ -7,6 +7,8 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.checkerframework.checker.units.qual.g;
+
 /**
  * Associates a URI path pattern with an {@link AbstractResource}
  * implementation.
@@ -30,72 +32,92 @@ public final class Route {
      * N.B.: the {@link LinkedHashMap} preserves order as each mapping will be
      * checked sequentially and the first match used.
      */
-    private static final Map<Pattern,Class<? extends AbstractResource>> MAPPINGS =
+    private static final Map<Pattern,RouteEntry> MAPPINGS =
             new LinkedHashMap<>();
 
+    private static class RouteEntry {
+        Class<? extends AbstractResource> resource;
+        Class<? extends Request> request;
+
+        RouteEntry(Class<? extends AbstractResource> resource, Class<? extends Request> request) {
+            this.request = request;
+            this.resource = resource;
+        }
+
+        public Class<? extends AbstractResource> getResourceClass() {
+            return resource;
+        }
+
+        public Class<? extends Request> getRequestClass() {
+            return request;
+        }       
+    }
     private Class<? extends AbstractResource> resource;
+    private Class<? extends Request> request;
+
     private final List<String> pathArguments = new ArrayList<>();
 
     static {
+
         // N.B.: Regex groups are used to extract the URI path arguments.
         MAPPINGS.put(Pattern.compile("\\A\\z"),
-                LandingResource.class);
+                new RouteEntry(LandingResource.class, Request.class));
         MAPPINGS.put(Pattern.compile("^/$"),
-                LandingResource.class);
+                new RouteEntry(LandingResource.class, Request.class));
         MAPPINGS.put(Pattern.compile("/$"),
-                TrailingSlashRemovingResource.class);
+                new RouteEntry(TrailingSlashRemovingResource.class, Request.class));
 
         // IIIF Image API v3 routes
         MAPPINGS.put(Pattern.compile("^" + IIIF_3_PATH + "$"),
-                edu.illinois.library.cantaloupe.resource.iiif.v3.LandingResource.class);
+                new RouteEntry(edu.illinois.library.cantaloupe.resource.iiif.v3.LandingResource.class, IIIFRequest.class));
         MAPPINGS.put(Pattern.compile("^" + IIIF_3_PATH + "/([^/]+)/info\\.json$"),
-                edu.illinois.library.cantaloupe.resource.iiif.v3.InformationResource.class);
+                new RouteEntry(edu.illinois.library.cantaloupe.resource.iiif.v3.InformationResource.class, IIIFRequest.class));
         MAPPINGS.put(Pattern.compile("^" + IIIF_3_PATH + "/([^/]+)$"),
-                edu.illinois.library.cantaloupe.resource.iiif.v3.IdentifierResource.class);
+                new RouteEntry(edu.illinois.library.cantaloupe.resource.iiif.v3.IdentifierResource.class, IIIFRequest.class));
         MAPPINGS.put(Pattern.compile("^" + IIIF_3_PATH + "/([^/]+)/([^/]+)/([^/]+)/([^/]+)/([^/]+)\\.([^/]+)$"),
-                edu.illinois.library.cantaloupe.resource.iiif.v3.ImageResource.class);
+                new RouteEntry(edu.illinois.library.cantaloupe.resource.iiif.v3.ImageResource.class, IIIFRequest.class));
 
         // IIIF Image API v2 routes
         MAPPINGS.put(Pattern.compile("^" + IIIF_2_PATH + "$"),
-                edu.illinois.library.cantaloupe.resource.iiif.v2.LandingResource.class);
+                new RouteEntry(edu.illinois.library.cantaloupe.resource.iiif.v2.LandingResource.class, IIIFRequest.class));
         MAPPINGS.put(Pattern.compile("^" + IIIF_2_PATH + "/([^/]+)/info\\.json$"),
-                edu.illinois.library.cantaloupe.resource.iiif.v2.InformationResource.class);
+                new RouteEntry(edu.illinois.library.cantaloupe.resource.iiif.v2.InformationResource.class, IIIFRequest.class));
         MAPPINGS.put(Pattern.compile("^" + IIIF_2_PATH + "/([^/]+)$"),
-                edu.illinois.library.cantaloupe.resource.iiif.v2.IdentifierResource.class);
+                new RouteEntry(edu.illinois.library.cantaloupe.resource.iiif.v2.IdentifierResource.class, IIIFRequest.class));
         MAPPINGS.put(Pattern.compile("^" + IIIF_2_PATH + "/([^/]+)/([^/]+)/([^/]+)/([^/]+)/([^/]+)\\.([^/]+)$"),
-                edu.illinois.library.cantaloupe.resource.iiif.v2.ImageResource.class);
+                new RouteEntry(edu.illinois.library.cantaloupe.resource.iiif.v2.ImageResource.class, IIIFRequest.class));
 
         // IIIF Image API v1 routes
         MAPPINGS.put(Pattern.compile("^" + IIIF_1_PATH + "$"),
-                edu.illinois.library.cantaloupe.resource.iiif.v1.LandingResource.class);
+                new RouteEntry(edu.illinois.library.cantaloupe.resource.iiif.v1.LandingResource.class, IIIFRequest.class));
         MAPPINGS.put(Pattern.compile("^" + IIIF_1_PATH + "/([^/]+)/info\\.json$"),
-                edu.illinois.library.cantaloupe.resource.iiif.v1.InformationResource.class);
+                new RouteEntry(edu.illinois.library.cantaloupe.resource.iiif.v1.InformationResource.class, IIIFRequest.class));
         MAPPINGS.put(Pattern.compile("^" + IIIF_1_PATH + "/([^/]+)$"),
-                edu.illinois.library.cantaloupe.resource.iiif.v1.IdentifierResource.class);
+                new RouteEntry(edu.illinois.library.cantaloupe.resource.iiif.v1.IdentifierResource.class, IIIFRequest.class));
         MAPPINGS.put(Pattern.compile("^" + IIIF_1_PATH + "/([^/]+)/([^/]+)/([^/]+)/([^/]+)/([^/.]+)$"),
-                edu.illinois.library.cantaloupe.resource.iiif.v1.ImageResource.class);
+                new RouteEntry(edu.illinois.library.cantaloupe.resource.iiif.v1.ImageResource.class, IIIFRequest.class));
         MAPPINGS.put(Pattern.compile("^" + IIIF_1_PATH + "/([^/]+)/([^/]+)/([^/]+)/([^/]+)/([^/.]+)\\.([^/]+)$"),
-                edu.illinois.library.cantaloupe.resource.iiif.v1.ImageResource.class);
+                new RouteEntry(edu.illinois.library.cantaloupe.resource.iiif.v1.ImageResource.class, IIIFRequest.class));
 
         // Control Panel routes
         MAPPINGS.put(Pattern.compile("^" + ADMIN_CONFIG_PATH + "$"),
-                edu.illinois.library.cantaloupe.resource.admin.ConfigurationResource.class);
+                new RouteEntry(edu.illinois.library.cantaloupe.resource.admin.ConfigurationResource.class, Request.class));
         MAPPINGS.put(Pattern.compile("^" + ADMIN_PATH + "$"),
-                edu.illinois.library.cantaloupe.resource.admin.AdminResource.class);
+                new RouteEntry(edu.illinois.library.cantaloupe.resource.admin.AdminResource.class, Request.class));
         MAPPINGS.put(Pattern.compile("^" + ADMIN_STATUS_PATH + "$"),
-                edu.illinois.library.cantaloupe.resource.admin.StatusResource.class);
+                new RouteEntry(edu.illinois.library.cantaloupe.resource.admin.StatusResource.class, Request.class));
 
         // API routes
         MAPPINGS.put(Pattern.compile("^" + CONFIGURATION_PATH + "$"),
-                edu.illinois.library.cantaloupe.resource.api.ConfigurationResource.class);
+                new RouteEntry(edu.illinois.library.cantaloupe.resource.api.ConfigurationResource.class, Request.class));
         MAPPINGS.put(Pattern.compile("^" + HEALTH_PATH + "$"),
-                edu.illinois.library.cantaloupe.resource.health.HealthResource.class);
+                new RouteEntry(edu.illinois.library.cantaloupe.resource.health.HealthResource.class, Request.class));
         MAPPINGS.put(Pattern.compile("^" + STATUS_PATH + "$"),
-                edu.illinois.library.cantaloupe.resource.api.StatusResource.class);
+                new RouteEntry(edu.illinois.library.cantaloupe.resource.api.StatusResource.class, Request.class));
         MAPPINGS.put(Pattern.compile("^" + TASKS_PATH + "$"),
-                edu.illinois.library.cantaloupe.resource.api.TasksResource.class);
+                new RouteEntry(edu.illinois.library.cantaloupe.resource.api.TasksResource.class, Request.class));
         MAPPINGS.put(Pattern.compile("^" + TASKS_PATH + "/([^/]+)$"),
-                edu.illinois.library.cantaloupe.resource.api.TaskResource.class);
+                new RouteEntry(edu.illinois.library.cantaloupe.resource.api.TaskResource.class, Request.class));
     }
 
     /**
@@ -108,8 +130,8 @@ public final class Route {
             final Pattern pattern = entry.getKey();
             final Matcher matcher = pattern.matcher(path);
             if (matcher.find()) {
-                final Route route = new Route();
-                route.setResource(entry.getValue());
+                RouteEntry routeEntry = entry.getValue();
+                final Route route = new Route(routeEntry.getResourceClass(), routeEntry.getRequestClass());
                 for (int i = 1; i <= matcher.groupCount(); i++) {
                     route.getPathArguments().add(matcher.group(i));
                 }
@@ -130,6 +152,11 @@ public final class Route {
         return pathArguments;
     }
 
+    Route(Class<? extends AbstractResource> resource, Class<? extends Request> request) {
+        this.resource = resource;
+        this.request = request;
+    }
+
     /**
      * @return Resource the instance "connects" to.
      */
@@ -137,8 +164,10 @@ public final class Route {
         return resource;
     }
 
-    void setResource(Class<? extends AbstractResource> resource) {
-        this.resource = resource;
+    /**
+     * @return Request the users intent
+     */
+    Class<? extends Request> getRequest() {
+        return request;
     }
-
 }

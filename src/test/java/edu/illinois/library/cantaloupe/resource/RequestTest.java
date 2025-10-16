@@ -10,29 +10,27 @@ import edu.illinois.library.cantaloupe.test.BaseTest;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
+import java.util.Collections;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 class RequestTest extends BaseTest {
 
-    private Request instance;
+    private MockHttpServletRequest sr = new MockHttpServletRequest();
+    private Request instance = new Request(sr, Collections.emptyList());
 
     @Test
     void testGetContextPath() {
         final String path = "/the-new-path";
-        MockHttpServletRequest sr = new MockHttpServletRequest();
         sr.setContextPath(path);
-        instance = new Request(sr);
         assertEquals(path, instance.getContextPath());
     }
 
     @Test
     void testGetHeaders() {
-        MockHttpServletRequest sr = new MockHttpServletRequest();
         sr.getHeaders().put("Cookie", List.of("cats=yes"));
         sr.getHeaders().put("Accept", List.of("text/plain"));
-        instance = new Request(sr);
 
         Headers headers = instance.getHeaders();
         assertEquals(2, headers.size());
@@ -47,9 +45,7 @@ class RequestTest extends BaseTest {
 
     @Test
     void testGetMethod() {
-        MockHttpServletRequest sr = new MockHttpServletRequest();
         sr.setMethod("PUT");
-        instance = new Request(sr);
 
         assertEquals(Method.PUT, instance.getMethod());
     }
@@ -57,9 +53,7 @@ class RequestTest extends BaseTest {
     @Test
     void testGetReference() {
         String url = "http://example.org/cats?query=yes";
-        MockHttpServletRequest sr = new MockHttpServletRequest();
         sr.setRequestURL(url);
-        instance = new Request(sr);
 
         assertEquals(new Reference(url), instance.getReference());
     }
@@ -67,18 +61,13 @@ class RequestTest extends BaseTest {
     @Test
     void testGetRemoteAddr() {
         String addr = "10.2.5.3";
-        MockHttpServletRequest sr = new MockHttpServletRequest();
         sr.setRemoteAddr(addr);
-        instance = new Request(sr);
 
         assertEquals(addr, instance.getRemoteAddr());
     }
 
     @Test
     void testGetServletRequest() {
-        MockHttpServletRequest sr = new MockHttpServletRequest();
-        instance = new Request(sr);
-
         assertSame(sr, instance.getServletRequest());
     }
 
@@ -92,11 +81,9 @@ class RequestTest extends BaseTest {
         final String baseURI = "http://example.net/base";
         Configuration.getInstance().setProperty(Key.BASE_URI, baseURI);
 
-        MockHttpServletRequest servletRequest = new MockHttpServletRequest();
-        servletRequest.setContextPath("/base");
-        servletRequest.setRequestURL("http://example.org/base/llamas");
+        sr.setContextPath("/base");
+        sr.setRequestURL("http://example.org/base/llamas");
 
-        instance = new Request(servletRequest);
         Reference ref = instance.getPublicReference();
         assertEquals(baseURI + "/llamas", ref.toString());
     }
@@ -110,12 +97,9 @@ class RequestTest extends BaseTest {
      */
     @Test
     void testGetPublicReferenceUsingXForwardedHeaders() {
-        MockHttpServletRequest servletRequest = new MockHttpServletRequest();
+        sr.setContextPath("");
+        sr.setRequestURL("http://bogus/cats");
 
-        servletRequest.setContextPath("");
-        servletRequest.setRequestURL("http://bogus/cats");
-
-        instance = new Request(servletRequest);
         Headers headers = instance.getHeaders();
         headers.set("X-Forwarded-Proto", "HTTP");
         headers.set("X-Forwarded-Host", "example.org");
@@ -133,11 +117,9 @@ class RequestTest extends BaseTest {
     @Test
     void testGetPublicReferenceFallsBackToHTTPRequest() {
         String resourceURI = "http://example.net/cats/dogs";
-        MockHttpServletRequest servletRequest = new MockHttpServletRequest();
-        servletRequest.setContextPath("/cats");
-        servletRequest.setRequestURL(resourceURI);
+        sr.setContextPath("/cats");
+        sr.setRequestURL(resourceURI);
 
-        instance = new Request(servletRequest);
         Reference ref = instance.getPublicReference();
         assertEquals(resourceURI, ref.toString());
     }
@@ -149,12 +131,10 @@ class RequestTest extends BaseTest {
     @Test
     void testGetPublicReferenceFallsBackToHTTPSRequest() {
         String resourceURI = "https://example.net/cats/dogs";
-        MockHttpServletRequest servletRequest = new MockHttpServletRequest();
 
-        servletRequest.setContextPath("/cats");
-        servletRequest.setRequestURL(resourceURI);
+        sr.setContextPath("/cats");
+        sr.setRequestURL(resourceURI);
 
-        instance = new Request(servletRequest);
         Reference ref = instance.getPublicReference();
         assertEquals(resourceURI, ref.toString());
     }
@@ -164,11 +144,9 @@ class RequestTest extends BaseTest {
         String resourceURI = "https://example.net/cats/dogs?arg=value";
         String expected = "https://example.net/cats/dogs";
 
-        MockHttpServletRequest servletRequest = new MockHttpServletRequest();
-        servletRequest.setContextPath("/cats");
-        servletRequest.setRequestURL(resourceURI);
+        sr.setContextPath("/cats");
+        sr.setRequestURL(resourceURI);
 
-        instance = new Request(servletRequest);
         Reference ref = instance.getPublicReference();
         assertEquals(expected, ref.toString());
     }
