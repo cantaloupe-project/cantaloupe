@@ -14,7 +14,6 @@ import edu.illinois.library.cantaloupe.processor.Processor;
 import edu.illinois.library.cantaloupe.processor.ProcessorConnector;
 import edu.illinois.library.cantaloupe.processor.ProcessorFactory;
 import edu.illinois.library.cantaloupe.processor.SourceFormatException;
-import edu.illinois.library.cantaloupe.delegate.DelegateProxy;
 import edu.illinois.library.cantaloupe.source.StatResult;
 import edu.illinois.library.cantaloupe.status.HealthChecker;
 import edu.illinois.library.cantaloupe.source.Source;
@@ -134,24 +133,16 @@ public class ImageRequestHandler extends AbstractRequestHandler
      * Creates a new ImageRequestHandler with full configuration options.
      *
      * @param operationList        Operation list to process.
-     * @param delegateProxy        Delegate proxy.
-     * @param requestContext       Request context.
+     * @param request              The IIIF request.
      * @param callback             Callback to receive events during request handling.
-     * @param isBypassingCache     True to bypass cache reads and writes.
-     * @param isBypassingCacheRead True to bypass cache reads only.
      */
-    public ImageRequestHandler(OperationList operationList,
-                               DelegateProxy delegateProxy,
-                               RequestContext requestContext,
-                               Callback callback,
-                               boolean isBypassingCache,
-                               boolean isBypassingCacheRead) {
+    public ImageRequestHandler(OperationList operationList, IIIFRequest request, Callback callback) {
         this.operationList = operationList;
-        this.delegateProxy = delegateProxy;
-        this.requestContext = requestContext;
+        this.delegateProxy = request.getDelegateProxy();
+        this.requestContext = request.getRequestContext();
         this.callback = callback;
-        this.isBypassingCache = isBypassingCache;
-        this.isBypassingCacheRead = isBypassingCacheRead;
+        this.isBypassingCache = request.isBypassingCache();
+        this.isBypassingCacheRead = request.isBypassingCacheRead();
     }
 
     /**

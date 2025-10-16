@@ -103,10 +103,10 @@ public class ImageResource extends IIIF1Resource {
                 ScaleValidator.validateScale(info.getMetadata().getOrientation().adjustedSize(fullSize),
                         (Scale) opList.getFirst(Scale.class),
                         Status.FORBIDDEN,
-                        getMetaIdentifier());
+                        getRequest().getMetaIdentifier());
 
                 final String disposition = getRepresentationDisposition(
-                        getMetaIdentifier().toString(),
+                        getRequest().getMetaIdentifier().toString(),
                         opList.getOutputFormat());
                 addHeaders(processor.getAvailableOutputFormats(),
                         opList.getOutputFormat(), disposition);
@@ -115,11 +115,8 @@ public class ImageResource extends IIIF1Resource {
 
         try (ImageRequestHandler handler = new ImageRequestHandler(
                 opList,
-                getDelegateProxy(),
-                getRequest().getRequestContext(),
-                new CustomCallback(),
-                getRequest().isBypassingCache(),
-                getRequest().isBypassingCacheRead())) {
+                getRequest(),
+                new CustomCallback())) {
             handler.handle(getResponse().getOutputStream());
         }
     }
@@ -152,12 +149,12 @@ public class ImageResource extends IIIF1Resource {
             outputFormat = getEffectiveOutputFormat().getPreferredExtension();
         }
 
-        final Identifier identifier = getMetaIdentifier().getIdentifier();
+        final Identifier identifier = getRequest().getMetaIdentifier().getIdentifier();
         final Parameters params = new Parameters(
                 identifier.toString(), args.get(1), args.get(2),
                 args.get(3), args.get(4), outputFormat);
 
-        final OperationList ops = params.toOperationList(getDelegateProxy());
+        final OperationList ops = params.toOperationList(getRequest().getDelegateProxy());
         ops.setPageIndex(getPageIndex());
         ops.getOptions().putAll(getRequest().getReference().getQuery().toMap());
         return ops;
