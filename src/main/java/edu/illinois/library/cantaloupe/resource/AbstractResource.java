@@ -9,10 +9,6 @@ import edu.illinois.library.cantaloupe.http.Method;
 import edu.illinois.library.cantaloupe.http.Reference;
 import edu.illinois.library.cantaloupe.http.Status;
 import edu.illinois.library.cantaloupe.image.Format;
-import edu.illinois.library.cantaloupe.image.MetaIdentifier;
-import edu.illinois.library.cantaloupe.delegate.DelegateProxy;
-import edu.illinois.library.cantaloupe.delegate.DelegateProxyService;
-import edu.illinois.library.cantaloupe.delegate.UnavailableException;
 import edu.illinois.library.cantaloupe.util.StringUtils;
 import org.slf4j.Logger;
 
@@ -41,18 +37,10 @@ public abstract class AbstractResource {
     static final String RESPONSE_CONTENT_DISPOSITION_QUERY_ARG =
             "response-content-disposition";
 
-    /**
-     * Set by {@link #getDelegateProxy()}.
-     */
-    private DelegateProxy delegateProxy;
+
     private Request request;
     private HttpServletResponse response;
 
-    
-    /**
-     * Cached by {@link #getMetaIdentifier()}.
-     */
-    private MetaIdentifier metaIdentifier;
 
     /**
      * <p>Returns a sanitized value for a {@code Content-Disposition} header
@@ -240,49 +228,7 @@ public abstract class AbstractResource {
         return vars;
     }
 
-    /**
-     * @return Instance for the current request. The result is cached. May be
-     *         {@code null}.
-     */
-    protected final DelegateProxy getDelegateProxy() {
-        if (delegateProxy == null && DelegateProxyService.isDelegateAvailable()) {
-            DelegateProxyService service = DelegateProxyService.getInstance();
-            try {
-                delegateProxy = service.newDelegateProxy(getRequest().getRequestContext());
-            } catch (UnavailableException e) {
-                getLogger().debug("newDelegateProxy(): {}", e.getMessage());
-            }
-        }
-        return delegateProxy;
-    }
-
-
-
     abstract protected Logger getLogger();
-
-    /**
-     * Returns the decoded identifier path component of the URI, which may
-     * include page number or other information. (This may not be the path
-     * component that the client supplies or sees; for that, use {@link
-     * #getPublicIdentifier()}.)
-     *
-     * @return Instance corresponding to the first {@link Request#getPathArguments()
-     *         path argument}, or {@code null} if no path arguments are
-     *         available.
-     * @see Request#getIdentifier()
-     * @see Request#getPublicIdentifier()
-     */
-    protected MetaIdentifier getMetaIdentifier() {
-        if (metaIdentifier == null) {
-            String pathComponent = ((IIIFRequest) getRequest()).getIdentifierPathComponent();
-            if (pathComponent != null) {
-                metaIdentifier = MetaIdentifier.fromURIPathComponent(
-                        pathComponent, getDelegateProxy());
-                metaIdentifier.freeze();
-            }
-        }
-        return metaIdentifier;
-    }
 
 
     /**
