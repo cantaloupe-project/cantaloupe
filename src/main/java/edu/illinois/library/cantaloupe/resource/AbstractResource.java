@@ -138,16 +138,6 @@ public abstract class AbstractResource {
     }
 
     /**
-     * <p>Must be overridden by implementations that support {@literal
-     * DELETE}.</p>
-     *
-     * <p>Overrides must not call {@code super}.</p>
-     */
-    public void doDELETE() throws Exception {
-        response.setStatus(Status.METHOD_NOT_ALLOWED.getCode());
-    }
-
-    /**
      * <p>Must be overridden by implementations that support {@literal GET}.</p>
      *
      * <p>Overrides must not call {@code super}.</p>
@@ -277,7 +267,6 @@ public abstract class AbstractResource {
      *     implicitly supported when this is supported)</li>
      *     <li>{@link #doPOST() POST}</li>
      *     <li>{@link #doPUT() PUT}</li>
-     *     <li>{@link #doDELETE() DELETE}</li>
      * </ul>
      *
      * <p>Overrides should include {@link Method#OPTIONS}.</p>
