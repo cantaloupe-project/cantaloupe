@@ -5,6 +5,12 @@
     <groupId>edu.illinois.library.cantaloupe</groupId>
     <artifactId>cantaloupe</artifactId>
     <packaging>jar</packaging>
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>3.1.12</version>
+        <relativePath/>
+    </parent>
     <version>6.0-SNAPSHOT</version>
     <name>Cantaloupe</name>
     <url>https://cantaloupe-project.github.io/</url>
@@ -21,8 +27,6 @@
         <jruby.version>10.0.0.1</jruby.version>
         <surefire.version>3.5.3</surefire.version>
         <seleniumhq.version>2.53.1</seleniumhq.version><!-- There are many new versions for this library 4.10.0 latest-->
-        <logback.version>1.2.13</logback.version> <!-- The next two need to be updated in lockstep latest version 1.4 -->
-        <slf4j.version>1.7.36</slf4j.version> <!-- Latest version 2.0.7 -->
     </properties>
 
     <developers>
@@ -57,17 +61,43 @@
     </issueManagement>
 
     <dependencies>
-        <!-- The application logger. -->
+        <!-- Spring Boot Starter Web with embedded Jetty server -->
         <dependency>
-            <groupId>ch.qos.logback</groupId>
-            <artifactId>logback-classic</artifactId>
-            <version>${logback.version}</version>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.springframework.boot</groupId>
+                    <artifactId>spring-boot-starter-tomcat</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
+
+        <!-- Use Jetty instead of Tomcat -->
         <dependency>
-            <groupId>ch.qos.logback</groupId>
-            <artifactId>logback-core</artifactId>
-            <version>${logback.version}</version>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-jetty</artifactId>
         </dependency>
+
+        <!-- Spring Boot Starter for configuration properties -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-configuration-processor</artifactId>
+            <optional>true</optional>
+        </dependency>
+
+        <!-- Spring Boot Actuator for health checks and monitoring -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
+
+        <!-- Jakarta Annotations for @PreDestroy and other annotations -->
+        <dependency>
+            <groupId>jakarta.annotation</groupId>
+            <artifactId>jakarta.annotation-api</artifactId>
+        </dependency>
+
         <!-- Allow the use of Logstash encoders with logback -->
         <dependency>
             <groupId>net.logstash.logback</groupId>
@@ -156,9 +186,8 @@
             <version>1.4.14</version>
         </dependency>
         <dependency>
-            <groupId>javax.servlet</groupId>
-            <artifactId>javax.servlet-api</artifactId>
-            <version>4.0.1</version>
+            <groupId>jakarta.servlet</groupId>
+            <artifactId>jakarta.servlet-api</artifactId>
         </dependency>
         <dependency>
             <groupId>org.apache.commons</groupId>
@@ -236,49 +265,10 @@
             <artifactId>http2-server</artifactId>
             <version>${jetty.version}</version>
         </dependency>
-        <!-- Enables support for ALPN in Jetty server.
-        N.B.: in Java 8, this requires an alpn-boot JAR on the boot classpath. -->
+        <!-- Enables support for ALPN in Jetty server. -->
         <dependency>
             <groupId>org.eclipse.jetty</groupId>
             <artifactId>jetty-alpn-server</artifactId>
-            <version>${jetty.version}</version>
-        </dependency>
-        <!-- Enables Jetty server to support the ALPN built into Java 9 -->
-        <dependency>
-            <groupId>org.eclipse.jetty</groupId>
-            <artifactId>jetty-alpn-java-server</artifactId>
-            <version>${jetty.version}</version>
-        </dependency>
-        <!-- Used by HttpSource -->
-        <dependency>
-            <groupId>org.eclipse.jetty</groupId>
-            <artifactId>jetty-http</artifactId>
-            <version>${jetty.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.eclipse.jetty</groupId>
-            <artifactId>jetty-io</artifactId>
-            <version>${jetty.version}</version>
-        </dependency>
-        <!-- Provides the standalone servlet container -->
-        <dependency>
-            <groupId>org.eclipse.jetty</groupId>
-            <artifactId>jetty-util</artifactId>
-            <version>${jetty.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.eclipse.jetty</groupId>
-            <artifactId>jetty-server</artifactId>
-            <version>${jetty.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.eclipse.jetty</groupId>
-            <artifactId>jetty-servlet</artifactId>
-            <version>${jetty.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.eclipse.jetty</groupId>
-            <artifactId>jetty-jmx</artifactId>
             <version>${jetty.version}</version>
         </dependency>
         <!-- JRuby is used to execute delegate script methods. -->
