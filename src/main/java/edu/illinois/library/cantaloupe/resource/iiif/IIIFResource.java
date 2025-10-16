@@ -31,11 +31,7 @@ public abstract class IIIFResource extends AbstractResource {
     @Override
     public void doInit() throws Exception {
         super.doInit();
-        RequestContextDecorator.decorateRequestContext(
-                            getRequest().getRequestContext(),
-                            getMetaIdentifier(),
-                            getRequest().getPublicReference(),
-                            getRequest());
+        RequestContextDecorator.decorateRequestContext(getRequest());
         addHeaders();
     }
 
@@ -104,8 +100,8 @@ public abstract class IIIFResource extends AbstractResource {
     protected int getPageIndex() {
         // Check the meta-identifier.
         int index = 0;
-        if (getMetaIdentifier().getPageNumber() != null) {
-            index = getMetaIdentifier().getPageNumber() - 1;
+        if (getRequest().getMetaIdentifier().getPageNumber() != null) {
+            index = getRequest().getMetaIdentifier().getPageNumber() - 1;
         }
         if (index == 0) {
             // Check the `page` query argument (deprecated in 5.0).
@@ -154,11 +150,11 @@ public abstract class IIIFResource extends AbstractResource {
      */
     protected final boolean redirectToNormalizedScaleConstraint()
             throws IOException {
-        MetaIdentifier newMetaId = getMetaIdentifier().getNormalizedScaleConstraintMetaIdentifier();
+        MetaIdentifier newMetaId = getRequest().getMetaIdentifier().getNormalizedScaleConstraintMetaIdentifier();
         if (newMetaId == null) {
             return false;
         }
-        Reference newRef = getRequest().getPublicReference(newMetaId, getRequest().getIdentifierPathComponent(), getDelegateProxy());
+        Reference newRef = getRequest().getPublicReference(newMetaId, getRequest().getIdentifierPathComponent(), getRequest().getDelegateProxy());
         getResponse().setStatus(301);
         getResponse().setHeader("Location", newRef.toString());
         new StringRepresentation("Redirect: " + newRef + "\n")
@@ -202,7 +198,7 @@ public abstract class IIIFResource extends AbstractResource {
      */
     protected final boolean authorize() throws IOException, ResourceException {
         final Authorizer authorizer =
-                new AuthorizerFactory().newAuthorizer(getDelegateProxy());
+                new AuthorizerFactory().newAuthorizer(getRequest().getDelegateProxy());
         final AuthInfo info = authorizer.authorize();
         if (info != null) {
             return processAuthInfo(info);
@@ -239,7 +235,7 @@ public abstract class IIIFResource extends AbstractResource {
      */
     protected final boolean preAuthorize() throws IOException, ResourceException {
         final Authorizer authorizer =
-                new AuthorizerFactory().newAuthorizer(getDelegateProxy());
+                new AuthorizerFactory().newAuthorizer(getRequest().getDelegateProxy());
         final AuthInfo info = authorizer.preAuthorize();
         if (info != null) {
             return processAuthInfo(info);
@@ -251,7 +247,7 @@ public abstract class IIIFResource extends AbstractResource {
             throws IOException, ResourceException {
         final int code                      = info.getResponseStatus();
         final String location               = info.getRedirectURI();
-        final MetaIdentifier metaIdentifier = new MetaIdentifier(getMetaIdentifier());
+        final MetaIdentifier metaIdentifier = new MetaIdentifier(getRequest().getMetaIdentifier());
         metaIdentifier.setScaleConstraint(info.getScaleConstraint());
 
         if (location != null) {
@@ -262,7 +258,7 @@ public abstract class IIIFResource extends AbstractResource {
                     .write(getResponse().getOutputStream());
             return false;
         } else if (metaIdentifier.getScaleConstraint() != null) {
-            Reference publicRef = getRequest().getPublicReference(metaIdentifier, getRequest().getIdentifierPathComponent(), getDelegateProxy());
+            Reference publicRef = getRequest().getPublicReference(metaIdentifier, getRequest().getIdentifierPathComponent(), getRequest().getDelegateProxy());
             getResponse().setStatus(code);
             getResponse().setHeader("Cache-Control", "no-cache");
             getResponse().setHeader("Location", publicRef.toString());

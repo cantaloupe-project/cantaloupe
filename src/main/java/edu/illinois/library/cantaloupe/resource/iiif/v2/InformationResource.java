@@ -97,12 +97,8 @@ public class InformationResource extends IIIF2Resource {
         }
 
         try (InformationRequestHandler handler = new InformationRequestHandler(
-                getMetaIdentifier().getIdentifier(),
-                getDelegateProxy(),
-                getRequest().getRequestContext(),
-                new CustomCallback(),
-                getRequest().isBypassingCache(),
-                getRequest().isBypassingCacheRead())) {
+                getRequest(),
+                new CustomCallback())) {
             try {
                 Info info = handler.handle();
                 addHeaders(info);
@@ -155,14 +151,14 @@ public class InformationResource extends IIIF2Resource {
     private JacksonRepresentation newRepresentation(Info info,
                                                     Set<Format> availableOutputFormats) {
         final InformationFactory factory = new InformationFactory();
-        factory.setDelegateProxy(getDelegateProxy());
+        factory.setDelegateProxy(getRequest().getDelegateProxy());
 
         final Information<String, Object> iiifInfo = factory.newImageInfo(
                 availableOutputFormats,
                 getImageURI(),
                 info,
                 getPageIndex(),
-                getMetaIdentifier().getScaleConstraint());
+                getRequest().getMetaIdentifier().getScaleConstraint());
         return new JacksonRepresentation(iiifInfo);
     }
 
@@ -175,7 +171,7 @@ public class InformationResource extends IIIF2Resource {
         map.put("protocol", "http://iiif.io/api/image");
         map.put("status", status.getCode());
         map.put("message", message);
-        map.putAll(getDelegateProxy().getExtraIIIF2InformationResponseKeys());
+        map.putAll(getRequest().getDelegateProxy().getExtraIIIF2InformationResponseKeys());
         return new JacksonRepresentation(map);
     }
 

@@ -73,7 +73,7 @@ public class ImageResource extends IIIF3Resource {
                 args.get(3), args.get(4), args.get(5));
         // Convert it into an OperationList.
         final OperationList ops = params.toOperationList(
-                getDelegateProxy(), getMaxScale());
+                getRequest().getDelegateProxy(), getMaxScale());
         ops.setPageIndex(getPageIndex());
         ops.getOptions().putAll(getRequest().getReference().getQuery().toMap());
         final int pageIndex = getPageIndex();
@@ -129,7 +129,7 @@ public class ImageResource extends IIIF3Resource {
                 final Dimension virtualSize   = orientation.adjustedSize(info.getSize(pageIndex));
                 final Dimension resultingSize = ops.getResultingSize(info.getSize(pageIndex));
                 validateScale(virtualSize, scale, params.getSize().isUpscalingAllowed());
-                ScaleValidator.validateScale(virtualSize, scale, Status.BAD_REQUEST, getMetaIdentifier());
+                ScaleValidator.validateScale(virtualSize, scale, Status.BAD_REQUEST, getRequest().getMetaIdentifier());
                 validateSize(virtualSize, resultingSize);
                 sendHeaders();
             }
@@ -137,11 +137,8 @@ public class ImageResource extends IIIF3Resource {
 
         try (ImageRequestHandler handler = new ImageRequestHandler(
                 ops,
-                getDelegateProxy(),
-                getRequest().getRequestContext(),
-                new CustomCallback(),
-                getRequest().isBypassingCache(),
-                getRequest().isBypassingCacheRead())) {
+                getRequest(),
+                new CustomCallback())) {
             handler.handle(getResponse().getOutputStream());
         }
     }
@@ -194,8 +191,8 @@ public class ImageResource extends IIIF3Resource {
                                boolean isUpscalingAllowed) throws ScaleRestrictedException {
         if (!isUpscalingAllowed && scale != null) {
             final ScaleConstraint constraint =
-                    (getMetaIdentifier().getScaleConstraint() != null) ?
-                            getMetaIdentifier().getScaleConstraint() :
+                    (getRequest().getMetaIdentifier().getScaleConstraint() != null) ?
+                            getRequest().getMetaIdentifier().getScaleConstraint() :
                             new ScaleConstraint(1, 1);
             if (scale.isWidthUp(virtualSize, constraint) ||
                     scale.isHeightUp(virtualSize, constraint)) {

@@ -188,9 +188,10 @@ public class AdminResource extends AbstractAdminResource {
         /////////////////////// endpoints section //////////////////////////
         ////////////////////////////////////////////////////////////////////
         {
+            
             vars.put("currentMetaIdentifierTransformer",
                     new MetaIdentifierTransformerFactory()
-                            .newInstance(getDelegateProxy())
+                            .newInstance(null)
                             .getClass().getSimpleName());
             List<String> impls = MetaIdentifierTransformerFactory.allImplementations()
                     .stream()
@@ -211,7 +212,7 @@ public class AdminResource extends AbstractAdminResource {
             try {
                 Source source = new SourceFactory().newSource(
                         new Identifier("irrelevant"),
-                        getDelegateProxy());
+                        null);
                 vars.put("currentSource", new ObjectProxy(source));
             } catch (Exception e) {
                 // nothing we can do

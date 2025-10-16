@@ -70,7 +70,7 @@ public class ImageResource extends IIIF2Resource {
                 getRequest().getIdentifier().toString(), args.get(1), args.get(2),
                 args.get(3), args.get(4), args.get(5));
         // Convert it into an OperationList.
-        final OperationList ops = params.toOperationList(getDelegateProxy());
+        final OperationList ops = params.toOperationList(getRequest().getDelegateProxy());
         ops.setPageIndex(getPageIndex());
         ops.getOptions().putAll(getRequest().getReference().getQuery().toMap());
         final int pageIndex = getPageIndex();
@@ -128,7 +128,7 @@ public class ImageResource extends IIIF2Resource {
                         virtualSize,
                         (Scale) ops.getFirst(Scale.class),
                         Status.FORBIDDEN,
-                        getMetaIdentifier());
+                        getRequest().getMetaIdentifier());
                 
                 validateSize(resultingSize, virtualSize);
                 sendHeaders();
@@ -137,11 +137,8 @@ public class ImageResource extends IIIF2Resource {
 
         try (ImageRequestHandler handler = new ImageRequestHandler(
                 ops,
-                getDelegateProxy(),
-                getRequest().getRequestContext(),
-                new CustomCallback(),
-                getRequest().isBypassingCache(),
-                getRequest().isBypassingCacheRead())) {
+                getRequest(),
+                new CustomCallback())) {
             handler.handle(getResponse().getOutputStream());
         }
     }
