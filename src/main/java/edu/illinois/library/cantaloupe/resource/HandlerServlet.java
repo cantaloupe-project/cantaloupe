@@ -74,46 +74,66 @@ public class HandlerServlet extends HttpServlet {
                 throw new ResourceException(Status.NOT_FOUND,
                         "No route for path: " + path);
             }
-
-            resource = route.getResource().getDeclaredConstructor().newInstance();
             Request iiifrequest = route.getRequest().getDeclaredConstructor(HttpServletRequest.class, List.class).newInstance(request, route.getPathArguments());
-            resource.setRequest(iiifrequest);
-            resource.setResponse(response);
-            resource.doInit();
+            Class<? extends Handler> handlerClass = route.getResource();
+            if (AbstractResource.class.isAssignableFrom(handlerClass)) {
+                resource = (AbstractResource) handlerClass.getDeclaredConstructor().newInstance();
+                resource.setRequest(iiifrequest);
+                resource.setResponse(response);
+                resource.doInit();
 
-            final List<Method> supportedMethods =
-                    List.of(resource.getSupportedMethods());
-            // If the request method is HEAD and GET is supported
-            if (("HEAD".equals(request.getMethod()) && supportedMethods.contains(Method.GET)) ||
-                    // or if the request method is OPTIONS
-                    "OPTIONS".equals(request.getMethod()) ||
-                    // or if the request method is supported
-                    supportedMethods.contains(Method.valueOf(request.getMethod()))) {
+                final List<Method> supportedMethods =
+                        List.of(resource.getSupportedMethods());
+                // If the request method is HEAD and GET is supported
+                if (("HEAD".equals(request.getMethod()) && supportedMethods.contains(Method.GET)) ||
+                        // or if the request method is OPTIONS
+                        "OPTIONS".equals(request.getMethod()) ||
+                        // or if the request method is supported
+                        supportedMethods.contains(Method.valueOf(request.getMethod()))) {
+                    switch (request.getMethod()) {
+                        case "DELETE":
+                            resource.doDELETE();
+                            break;
+                        case "GET":
+                            resource.doGET();
+                            break;
+                        case "HEAD":
+                            resource.doHEAD();
+                            break;
+                        case "OPTIONS":
+                            resource.doOPTIONS();
+                            break;
+                        case "POST":
+                            resource.doPOST();
+                            break;
+                        case "PUT":
+                            resource.doPUT();
+                            break;
+                        default:
+                            throw new ResourceException(Status.METHOD_NOT_ALLOWED);
+                    }
+                } else {
+                    throw new ResourceException(Status.METHOD_NOT_ALLOWED);
+                }
+            } else if (Controller.class.isAssignableFrom(handlerClass)) {
+                Controller controller = (Controller) handlerClass.getDeclaredConstructor(HttpServletRequest.class, HttpServletResponse.class).newInstance(request, response);
                 switch (request.getMethod()) {
-                    case "DELETE":
-                        resource.doDELETE();
-                        break;
                     case "GET":
-                        resource.doGET();
-                        break;
-                    case "HEAD":
-                        resource.doHEAD();
+                        controller.doGet(iiifrequest);
                         break;
                     case "OPTIONS":
-                        resource.doOPTIONS();
-                        break;
-                    case "POST":
-                        resource.doPOST();
-                        break;
-                    case "PUT":
-                        resource.doPUT();
+                        response.setStatus(204);
+                        response.setHeader("Allow", "OPTIONS, GET");
                         break;
                     default:
                         throw new ResourceException(Status.METHOD_NOT_ALLOWED);
                 }
             } else {
-                throw new ResourceException(Status.METHOD_NOT_ALLOWED);
+                throw new ResourceException(Status.INTERNAL_SERVER_ERROR,
+                        "Handler is not an AbstractResource: " +
+                                handlerClass);
             }
+ 
         } catch (Throwable t) {
             handleError(request, response, t);
         } finally {

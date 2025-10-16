@@ -61,7 +61,7 @@ public class LandingResourceTest extends ResourceTest {
         assertEquals(204, response.getStatus());
 
         Headers headers = response.getHeaders();
-        List<String> methods = List.of(headers.getFirstValue("Allow").split(","));
+        List<String> methods = List.of(headers.getFirstValue("Allow").split(", "));
         assertEquals(2, methods.size());
         assertTrue(methods.contains("GET"));
         assertTrue(methods.contains("OPTIONS"));

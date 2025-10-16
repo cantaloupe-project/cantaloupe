@@ -1,38 +1,21 @@
 package edu.illinois.library.cantaloupe.resource;
 
-import edu.illinois.library.cantaloupe.http.Method;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import edu.illinois.library.cantaloupe.Application;
+import java.util.HashMap;
+import java.util.Map;
 
-public class LandingResource extends AbstractResource {
-
-    private static final Logger LOGGER =
-            LoggerFactory.getLogger(LandingResource.class);
-
-    private static final Method[] SUPPORTED_METHODS =
-            new Method[] { Method.GET, Method.OPTIONS };
-
-    @Override
-    protected Logger getLogger() {
-        return LOGGER;
+public class LandingResource extends Controller {
+    public LandingResource(HttpServletRequest request, HttpServletResponse response) {
+        super(request, response);
     }
 
-    @Override
-    public Method[] getSupportedMethods() {
-        return SUPPORTED_METHODS;
+    public void doGet(Request request) throws Exception {
+        response.setHeader("Cache-Control", "public, max-age=" + Integer.MAX_VALUE);
+        final Map<String,Object> templateVars = new HashMap<>();
+        templateVars.put("baseUri", request.getContextPath());
+        templateVars.put("version", Application.getVersion());
+        renderHtml("/landing.html", templateVars);
     }
-
-    @Override
-    public void doGET() throws Exception {
-        addHeaders();
-        new ThymeleafRepresentation("/landing.html", getCommonTemplateVars())
-                .write(getResponse().getOutputStream());
-    }
-
-    private void addHeaders() {
-        getResponse().setHeader("Content-Type", "text/html;charset=UTF-8");
-        getResponse().setHeader("Cache-Control",
-                "public, max-age=" + Integer.MAX_VALUE);
-    }
-
 }

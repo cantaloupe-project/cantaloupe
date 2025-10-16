@@ -32,7 +32,7 @@ import java.util.stream.Collectors;
  * <p>Unlike {@link jakarta.servlet.http.HttpServlet}s, instances are only used
  * once and not shared across threads.</p>
  */
-public abstract class AbstractResource {
+public abstract class AbstractResource implements Handler {
 
     static final String RESPONSE_CONTENT_DISPOSITION_QUERY_ARG =
             "response-content-disposition";

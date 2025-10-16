@@ -7,8 +7,6 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.checkerframework.checker.units.qual.g;
-
 /**
  * Associates a URI path pattern with an {@link AbstractResource}
  * implementation.
@@ -32,19 +30,19 @@ public final class Route {
      * N.B.: the {@link LinkedHashMap} preserves order as each mapping will be
      * checked sequentially and the first match used.
      */
-    private static final Map<Pattern,RouteEntry> MAPPINGS =
+    private static final Map<Pattern, RouteEntry> MAPPINGS =
             new LinkedHashMap<>();
 
     private static class RouteEntry {
-        Class<? extends AbstractResource> resource;
+        Class<? extends Handler> resource;
         Class<? extends Request> request;
 
-        RouteEntry(Class<? extends AbstractResource> resource, Class<? extends Request> request) {
+        RouteEntry(Class<? extends Handler> resource, Class<? extends Request> request) {
             this.request = request;
             this.resource = resource;
         }
 
-        public Class<? extends AbstractResource> getResourceClass() {
+        public Class<? extends Handler> getResourceClass() {
             return resource;
         }
 
@@ -52,7 +50,7 @@ public final class Route {
             return request;
         }       
     }
-    private Class<? extends AbstractResource> resource;
+    private Class<? extends Handler> resource;
     private Class<? extends Request> request;
 
     private final List<String> pathArguments = new ArrayList<>();
@@ -152,7 +150,7 @@ public final class Route {
         return pathArguments;
     }
 
-    Route(Class<? extends AbstractResource> resource, Class<? extends Request> request) {
+    Route(Class<? extends Handler> resource, Class<? extends Request> request) {
         this.resource = resource;
         this.request = request;
     }
@@ -160,7 +158,7 @@ public final class Route {
     /**
      * @return Resource the instance "connects" to.
      */
-    Class<? extends AbstractResource> getResource() {
+    Class<? extends Handler> getResource() {
         return resource;
     }
 
