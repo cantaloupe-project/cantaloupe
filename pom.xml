@@ -2,6 +2,13 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>3.1.5</version>
+        <relativePath/>
+    </parent>
     <groupId>edu.illinois.library.cantaloupe</groupId>
     <artifactId>cantaloupe</artifactId>
     <packaging>jar</packaging>
@@ -11,18 +18,15 @@
     <inceptionYear>2015</inceptionYear>
 
     <properties>
+        <java.version>17</java.version>
         <maven.compile.source>17</maven.compile.source>
         <maven.compile.target>17</maven.compile.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <jetty.version>11.0.24</jetty.version>
         <aws-sdk.version>2.21.4</aws-sdk.version>
-        <jackson.version>2.15.2</jackson.version>
         <jruby.version>10.0.0.1</jruby.version>
         <surefire.version>3.5.3</surefire.version>
         <seleniumhq.version>2.53.1</seleniumhq.version><!-- There are many new versions for this library 4.10.0 latest-->
-        <logback.version>1.2.13</logback.version> <!-- The next two need to be updated in lockstep latest version 1.4 -->
-        <slf4j.version>1.7.36</slf4j.version> <!-- Latest version 2.0.7 -->
     </properties>
 
     <developers>
@@ -57,17 +61,18 @@
     </issueManagement>
 
     <dependencies>
-        <!-- The application logger. -->
+        <!-- Spring Boot Web Starter (includes embedded Tomcat, Spring MVC, Jackson, etc.) -->
         <dependency>
-            <groupId>ch.qos.logback</groupId>
-            <artifactId>logback-classic</artifactId>
-            <version>${logback.version}</version>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
+
+        <!-- Spring Boot Actuator for health endpoints -->
         <dependency>
-            <groupId>ch.qos.logback</groupId>
-            <artifactId>logback-core</artifactId>
-            <version>${logback.version}</version>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
         </dependency>
+
         <!-- Allow the use of Logstash encoders with logback -->
         <dependency>
             <groupId>net.logstash.logback</groupId>
@@ -155,11 +160,7 @@
             <artifactId>imageio-ext-tiff</artifactId>
             <version>1.4.14</version>
         </dependency>
-        <dependency>
-            <groupId>javax.servlet</groupId>
-            <artifactId>javax.servlet-api</artifactId>
-            <version>4.0.1</version>
-        </dependency>
+        <!-- Spring Boot provides Jakarta Servlet API -->
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
@@ -229,57 +230,58 @@
             <artifactId>janino</artifactId>
             <version>3.1.10</version>
         </dependency>
-        <!-- Provides HTTP/2 support in the Jetty server.
-        N.B.: ALPN support is in a different module. -->
-        <dependency>
-            <groupId>org.eclipse.jetty.http2</groupId>
-            <artifactId>http2-server</artifactId>
-            <version>${jetty.version}</version>
-        </dependency>
-        <!-- Enables support for ALPN in Jetty server.
-        N.B.: in Java 8, this requires an alpn-boot JAR on the boot classpath. -->
-        <dependency>
-            <groupId>org.eclipse.jetty</groupId>
-            <artifactId>jetty-alpn-server</artifactId>
-            <version>${jetty.version}</version>
-        </dependency>
-        <!-- Enables Jetty server to support the ALPN built into Java 9 -->
-        <dependency>
-            <groupId>org.eclipse.jetty</groupId>
-            <artifactId>jetty-alpn-java-server</artifactId>
-            <version>${jetty.version}</version>
-        </dependency>
-        <!-- Used by HttpSource -->
-        <dependency>
-            <groupId>org.eclipse.jetty</groupId>
-            <artifactId>jetty-http</artifactId>
-            <version>${jetty.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.eclipse.jetty</groupId>
-            <artifactId>jetty-io</artifactId>
-            <version>${jetty.version}</version>
-        </dependency>
-        <!-- Provides the standalone servlet container -->
-        <dependency>
-            <groupId>org.eclipse.jetty</groupId>
-            <artifactId>jetty-util</artifactId>
-            <version>${jetty.version}</version>
-        </dependency>
+        <!-- Spring Boot provides embedded server (Tomcat by default) with HTTP/2 support -->
+
+        <!-- Jetty dependencies needed by existing server components -->
         <dependency>
             <groupId>org.eclipse.jetty</groupId>
             <artifactId>jetty-server</artifactId>
-            <version>${jetty.version}</version>
+            <version>11.0.24</version>
         </dependency>
         <dependency>
             <groupId>org.eclipse.jetty</groupId>
             <artifactId>jetty-servlet</artifactId>
-            <version>${jetty.version}</version>
+            <version>11.0.24</version>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>jetty-http</artifactId>
+            <version>11.0.24</version>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>jetty-io</artifactId>
+            <version>11.0.24</version>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>jetty-util</artifactId>
+            <version>11.0.24</version>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>jetty-security</artifactId>
+            <version>11.0.24</version>
         </dependency>
         <dependency>
             <groupId>org.eclipse.jetty</groupId>
             <artifactId>jetty-jmx</artifactId>
-            <version>${jetty.version}</version>
+            <version>11.0.24</version>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.jetty.http2</groupId>
+            <artifactId>http2-server</artifactId>
+            <version>11.0.24</version>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>jetty-alpn-server</artifactId>
+            <version>11.0.24</version>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>jetty-alpn-java-server</artifactId>
+            <version>11.0.24</version>
         </dependency>
         <!-- JRuby is used to execute delegate script methods. -->
         <dependency>
@@ -298,35 +300,29 @@
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-core</artifactId>
-            <version>${jackson.version}</version>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-annotations</artifactId>
-            <version>${jackson.version}</version>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
-            <version>${jackson.version}</version>
         </dependency>
         <!-- Enables reading the formats.yml file -->
         <dependency>
             <groupId>com.fasterxml.jackson.dataformat</groupId>
             <artifactId>jackson-dataformat-yaml</artifactId>
-            <version>${jackson.version}</version>
         </dependency>
         <!-- Makes Jackson aware of JDK8 date/time objects -->
         <dependency>
             <groupId>com.fasterxml.jackson.datatype</groupId>
             <artifactId>jackson-datatype-jsr310</artifactId>
-            <version>${jackson.version}</version>
         </dependency>
         <!-- Enables Jackson to handle Optionals -->
         <dependency>
             <groupId>com.fasterxml.jackson.datatype</groupId>
             <artifactId>jackson-datatype-jdk8</artifactId>
-            <version>${jackson.version}</version>
         </dependency>
         <!-- Provides Thymeleaf for the landing and error page templates -->
         <dependency>
@@ -415,6 +411,16 @@
 
     <build>
         <plugins>
+            <!-- Spring Boot Maven Plugin -->
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <mainClass>edu.illinois.library.cantaloupe.CantaloupeApplication</mainClass>
+                    <executable>true</executable>
+                </configuration>
+            </plugin>
+
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>

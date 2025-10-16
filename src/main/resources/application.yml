@@ -1,0 +1,76 @@
+# Spring Boot Configuration for Cantaloupe Image Server
+spring:
+  application:
+    name: cantaloupe
+
+  # Web server configuration
+  web:
+    resources:
+      static-locations: classpath:/static/
+      cache:
+        cachecontrol:
+          max-age: 3600
+
+  # Jackson JSON configuration
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+    deserialization:
+      fail-on-unknown-properties: false
+
+# Server configuration (will be overridden by Cantaloupe config)
+server:
+  port: 8182
+  address: 0.0.0.0
+  servlet:
+    context-path: /
+
+  # HTTP/2 support
+  http2:
+    enabled: true
+
+  # Compression
+  compression:
+    enabled: true
+    mime-types: text/html,text/xml,text/plain,text/css,text/javascript,application/javascript,application/json,application/xml,image/svg+xml
+    min-response-size: 1024
+
+  # Error handling
+  error:
+    include-message: always
+    include-binding-errors: always
+    include-stacktrace: on_param
+    include-exception: false
+
+# Actuator endpoints for monitoring
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+      base-path: /actuator
+  endpoint:
+    health:
+      show-details: when-authorized
+
+  # Custom health endpoint path to match Cantaloupe's /health
+  server:
+    port: ${server.port}
+
+# Logging configuration
+logging:
+  level:
+    root: INFO
+    edu.illinois.library.cantaloupe: INFO
+    org.springframework: WARN
+    org.apache: WARN
+
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+
+# Custom Cantaloupe properties (these will be read by Cantaloupe's existing config system)
+cantaloupe:
+  config:
+    # This will be overridden by -Dcantaloupe.config system property
+    file: cantaloupe.properties
