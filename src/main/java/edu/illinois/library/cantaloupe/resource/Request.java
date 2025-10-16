@@ -30,7 +30,7 @@ public class Request {
     private List<String> pathArguments;
     private final RequestContext requestContext = new RequestContext();
 
-    private static final Logger LOGGER =
+    protected static final Logger LOGGER =
             LoggerFactory.getLogger(Request.class);
 
     /**

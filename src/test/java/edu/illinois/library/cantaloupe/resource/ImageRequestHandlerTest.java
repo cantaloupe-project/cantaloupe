@@ -11,13 +11,12 @@ import edu.illinois.library.cantaloupe.operation.Encode;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.operation.ValidationException;
 import edu.illinois.library.cantaloupe.processor.Processor;
-import edu.illinois.library.cantaloupe.delegate.DelegateProxy;
 import edu.illinois.library.cantaloupe.processor.SourceFormatException;
 import edu.illinois.library.cantaloupe.source.StatResult;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import edu.illinois.library.cantaloupe.test.WebServer;
-import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayOutputStream;
@@ -25,6 +24,7 @@ import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Collections;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -68,6 +68,18 @@ class ImageRequestHandlerTest extends BaseTest {
         }
     }
 
+    private MockHttpServletRequest servletRequest;
+    private IIIFRequest request;
+
+    @BeforeEach
+    public void setUp() throws Exception {
+        super.setUp();
+        servletRequest = new MockHttpServletRequest();
+        servletRequest.setRequestURL("http://example.org/iiif/2/foo");
+        request = new IIIFRequest(servletRequest, Collections.emptyList());
+    }
+
+
     @Test
     void handleCallsPreAuthorizationCallback() throws Exception {
         {   // Configure the application.
@@ -86,11 +98,8 @@ class ImageRequestHandlerTest extends BaseTest {
         final IntrospectiveCallback callback = new IntrospectiveCallback();
         try (ImageRequestHandler handler = new ImageRequestHandler(
                 opList,
-                null,
-                new RequestContext(),
-                callback,
-                false,
-                false);
+                request,
+                callback);
              OutputStream outputStream = OutputStream.nullOutputStream()) {
             handler.handle(outputStream);
             assertTrue(callback.isPreAuthorizeCalled);
@@ -115,11 +124,8 @@ class ImageRequestHandlerTest extends BaseTest {
         final IntrospectiveCallback callback = new IntrospectiveCallback();
         try (ImageRequestHandler handler = new ImageRequestHandler(
                 opList,
-                null,
-                new RequestContext(),
-                callback,
-                false,
-                false);
+                request,
+                callback);
              OutputStream outputStream = OutputStream.nullOutputStream()) {
             handler.handle(outputStream);
             assertTrue(callback.isAuthorizeCalled);
@@ -144,11 +150,8 @@ class ImageRequestHandlerTest extends BaseTest {
         final IntrospectiveCallback callback = new IntrospectiveCallback();
         try (ImageRequestHandler handler = new ImageRequestHandler(
                 opList,
-                null,
-                new RequestContext(),
-                callback,
-                false,
-                false);
+                request,
+                callback);
              OutputStream outputStream = OutputStream.nullOutputStream()) {
             handler.handle(outputStream);
             assertTrue(callback.isSourceAccessedCalled);
@@ -199,11 +202,8 @@ class ImageRequestHandlerTest extends BaseTest {
         final IntrospectiveCallback callback = new IntrospectiveCallback();
         try (ImageRequestHandler handler = new ImageRequestHandler(
                 opList,
-                null,
-                new RequestContext(),
-                callback,
-                false,
-                false);
+                request,
+                callback);
              OutputStream outputStream = OutputStream.nullOutputStream()) {
             handler.handle(outputStream);
             assertTrue(callback.isWillStreamImageFromDerivativeCacheCalled);
@@ -228,11 +228,8 @@ class ImageRequestHandlerTest extends BaseTest {
         final IntrospectiveCallback callback = new IntrospectiveCallback();
         try (ImageRequestHandler handler = new ImageRequestHandler(
                 opList,
-                null,
-                new RequestContext(),
-                callback,
-                false,
-                false);
+                request,
+                callback);
              OutputStream outputStream = OutputStream.nullOutputStream()) {
             handler.handle(outputStream);
             assertTrue(callback.isInfoAvailableCalled);
@@ -257,11 +254,8 @@ class ImageRequestHandlerTest extends BaseTest {
         final IntrospectiveCallback callback = new IntrospectiveCallback();
         try (ImageRequestHandler handler = new ImageRequestHandler(
                 opList,
-                null,
-                new RequestContext(),
-                callback,
-                false,
-                false);
+                request,
+                callback);
              OutputStream outputStream = OutputStream.nullOutputStream()) {
             handler.handle(outputStream);
             assertTrue(callback.isWillProcessImageCalled);
@@ -285,11 +279,8 @@ class ImageRequestHandlerTest extends BaseTest {
         final IntrospectiveCallback callback = new IntrospectiveCallback();
         try (ImageRequestHandler handler = new ImageRequestHandler(
                 opList,
-                null,
-                new RequestContext(),
-                callback,
-                false,
-                false);
+                request,
+                callback);
              ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
             handler.handle(outputStream);
             assertTrue(outputStream.toByteArray().length > 5000);
@@ -341,11 +332,8 @@ class ImageRequestHandlerTest extends BaseTest {
         final IntrospectiveCallback callback = new IntrospectiveCallback();
         try (ImageRequestHandler handler = new ImageRequestHandler(
                 opList,
-                null,
-                new RequestContext(),
-                callback,
-                false,
-                false);
+                request,
+                callback);
              ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
             handler.handle(outputStream);
             assertArrayEquals(expected, outputStream.toByteArray());
@@ -368,8 +356,7 @@ class ImageRequestHandlerTest extends BaseTest {
 
         try (ImageRequestHandler handler = new ImageRequestHandler(
                 opList,
-                null,
-                new RequestContext(),
+                request,
                 new ImageRequestHandler.Callback() {
                     @Override
                     public boolean preAuthorize() {
@@ -391,9 +378,7 @@ class ImageRequestHandlerTest extends BaseTest {
                     @Override
                     public void willProcessImage(Processor processor, Info info) {
                     }
-                },
-                false,
-                false);
+                });
              ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
             handler.handle(outputStream);
             assertEquals(0, outputStream.toByteArray().length);
@@ -416,8 +401,7 @@ class ImageRequestHandlerTest extends BaseTest {
 
         try (ImageRequestHandler handler = new ImageRequestHandler(
                 opList,
-                null,
-                new RequestContext(),
+                request,
                 new ImageRequestHandler.Callback() {
                     @Override
                     public boolean preAuthorize() {
@@ -439,9 +423,7 @@ class ImageRequestHandlerTest extends BaseTest {
                     @Override
                     public void willProcessImage(Processor processor, Info info) {
                     }
-                },
-                false,
-                false);
+                });
              ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
             handler.handle(outputStream);
             assertEquals(0, outputStream.toByteArray().length);
@@ -467,11 +449,8 @@ class ImageRequestHandlerTest extends BaseTest {
         final IntrospectiveCallback callback = new IntrospectiveCallback();
         try (ImageRequestHandler handler = new ImageRequestHandler(
                 opList,
-                null,
-                null,
-                callback,
-                false,
-                false);
+                request,
+                callback);
              ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
             assertThrows(IllegalClientArgumentException.class, () ->
                     handler.handle(outputStream));
@@ -494,11 +473,8 @@ class ImageRequestHandlerTest extends BaseTest {
         final IntrospectiveCallback callback = new IntrospectiveCallback();
         try (ImageRequestHandler handler = new ImageRequestHandler(
                 opList,
-                null,
-                new RequestContext(),
-                callback,
-                false,
-                false);
+                request,
+                callback);
              ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
             assertThrows(ValidationException.class, () ->
                     handler.handle(outputStream));
@@ -563,7 +539,8 @@ class ImageRequestHandlerTest extends BaseTest {
                 public void willProcessImage(Processor processor, Info info) {
                 }
             };
-            try (ImageRequestHandler handler = new ImageRequestHandler(opList, null, new RequestContext(), callback, false, false);
+
+            try (ImageRequestHandler handler = new ImageRequestHandler(opList, request, callback);
                  OutputStream outputStream = OutputStream.nullOutputStream()) {
                 // The first request should cause the source image to be
                 // source-cached...
@@ -645,7 +622,8 @@ class ImageRequestHandlerTest extends BaseTest {
                 public void willProcessImage(Processor processor, Info info) {
                 }
             };
-            try (ImageRequestHandler handler = new ImageRequestHandler(opList, null, new RequestContext(), callback, false, false);
+
+            try (ImageRequestHandler handler = new ImageRequestHandler(opList, request, callback);
                  OutputStream outputStream = OutputStream.nullOutputStream()) {
                 // The first request should cause the source image to be
                 // source-cached...
