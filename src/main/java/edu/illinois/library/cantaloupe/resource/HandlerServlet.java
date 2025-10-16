@@ -117,9 +117,6 @@ public class HandlerServlet extends HttpServlet {
         } catch (Throwable t) {
             handleError(request, response, t);
         } finally {
-            if (resource != null) {
-                resource.destroy();
-            }
             LOGGER.debug("Responded to {} {} with HTTP {} in {}",
                     request.getMethod(), request.getPathInfo(),
                     response.getStatus(), requestClock);
