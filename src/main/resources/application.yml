@@ -48,7 +48,7 @@ management:
     web:
       exposure:
         include: health,info,metrics
-      base-path: /actuator
+      base-path: /management
   endpoint:
     health:
       show-details: when-authorized
