@@ -8,9 +8,13 @@ import edu.illinois.library.cantaloupe.image.*;
 import edu.illinois.library.cantaloupe.source.StatResult;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;
+
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.util.Collections;
 import java.util.Set;
+import java.util.ArrayList;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -38,6 +42,18 @@ public class InformationRequestHandlerTest extends BaseTest {
 
     }
 
+    private MockHttpServletRequest servletRequest;
+    private IIIFRequest request;
+
+    @BeforeEach
+    public void setUp() throws Exception {
+        super.setUp();
+        servletRequest = new MockHttpServletRequest();
+        servletRequest.setRequestURL("http://example.org/iiif/2/foo");
+        request = new IIIFRequest(servletRequest, new ArrayList<String>() { { add("jpg-rgb-64x48x8.jpg"); }});
+    }
+
+
     @Test
     void testHandleCallsAuthorizationCallback() throws Exception {
         {   // Configure the application.
@@ -48,13 +64,10 @@ public class InformationRequestHandlerTest extends BaseTest {
         }
 
         final IntrospectiveCallback callback = new IntrospectiveCallback();
+
         try (InformationRequestHandler handler = new InformationRequestHandler(
-                new Identifier("jpg-rgb-64x48x8.jpg"),
-                null,
-                new RequestContext(),
-                callback,
-                false,
-                false)) {
+                request,
+                callback)) {
             handler.handle();
             assertTrue(callback.isAuthorizeCalled);
         }
@@ -71,12 +84,8 @@ public class InformationRequestHandlerTest extends BaseTest {
 
         final IntrospectiveCallback callback = new IntrospectiveCallback();
         try (InformationRequestHandler handler = new InformationRequestHandler(
-                new Identifier("jpg-rgb-64x48x8.jpg"),
-                null,
-                new RequestContext(),
-                callback,
-                false,
-                false)) {
+                request,
+                callback)) {
             handler.handle();
             assertTrue(callback.isSourceAccessedCalled);
         }
@@ -93,12 +102,8 @@ public class InformationRequestHandlerTest extends BaseTest {
 
         final IntrospectiveCallback callback = new IntrospectiveCallback();
         try (InformationRequestHandler handler = new InformationRequestHandler(
-                new Identifier("jpg-rgb-64x48x8.jpg"),
-                null,
-                new RequestContext(),
-                callback,
-                false,
-                false)) {
+                request,
+                callback)) {
             handler.handle();
             assertTrue(callback.isKnowAvailableOutputFormatsCalled);
         }
@@ -133,12 +138,8 @@ public class InformationRequestHandlerTest extends BaseTest {
 
         final IntrospectiveCallback callback = new IntrospectiveCallback();
         try (InformationRequestHandler handler = new InformationRequestHandler(
-                identifier,
-                null,
-                new RequestContext(),
-                callback,
-                false,
-                false)) {
+                request,
+                callback)) {
             Info cachedInfo = handler.handle();
             assertEquals(info, cachedInfo);
         }
@@ -176,13 +177,8 @@ public class InformationRequestHandlerTest extends BaseTest {
         cache.put(identifier, info);
 
         final IntrospectiveCallback callback = new IntrospectiveCallback();
-        try (InformationRequestHandler handler = new InformationRequestHandler(
-                identifier,
-                null,
-                new RequestContext(),
-                callback,
-                false,
-                false)) {
+        try (InformationRequestHandler handler = new InformationRequestHandler(request,
+                callback)) {
             Info handledInfo = handler.handle();
             assertNotNull(handledInfo);
             assertEquals(1, handledInfo.getNumPages());
@@ -201,12 +197,8 @@ public class InformationRequestHandlerTest extends BaseTest {
 
         final IntrospectiveCallback callback = new IntrospectiveCallback();
         try (InformationRequestHandler handler = new InformationRequestHandler(
-                new Identifier("jpg-rgb-64x48x8.jpg"),
-                null,
-                new RequestContext(),
-                callback,
-                false,
-                false)) {
+                request,
+                callback)) {
             Info info = handler.handle();
             assertNotNull(info);
         }
@@ -224,12 +216,8 @@ public class InformationRequestHandlerTest extends BaseTest {
 
         final IntrospectiveCallback callback = new IntrospectiveCallback();
         try (InformationRequestHandler handler = new InformationRequestHandler(
-                new Identifier("jpg-rgb-64x48x8.jpg"),
-                null,
-                new RequestContext(),
-                callback,
-                false,
-                false)) {
+                request,
+                callback)) {
             Info info = handler.handle();
             assertEquals(1, info.getNumPages());
         }
@@ -238,9 +226,7 @@ public class InformationRequestHandlerTest extends BaseTest {
     @Test
     void testHandleReturnsNullWhenAuthorizationFails() throws Exception {
         try (InformationRequestHandler handler = new InformationRequestHandler(
-                new Identifier("jpg-rgb-64x48x8.jpg"),
-                null,
-                new RequestContext(),
+                request,
                 new InformationRequestHandler.Callback() {
                     @Override
                     public boolean authorize() {
@@ -252,9 +238,7 @@ public class InformationRequestHandlerTest extends BaseTest {
                     @Override
                     public void knowAvailableOutputFormats(Set<Format> availableOutputFormats) {
                     }
-                },
-                false,
-                false)) {
+                })) {
             Info info = handler.handle();
             assertNull(info);
         }

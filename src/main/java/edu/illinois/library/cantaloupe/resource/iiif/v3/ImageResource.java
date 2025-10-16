@@ -73,7 +73,7 @@ public class ImageResource extends IIIF3Resource {
                 args.get(3), args.get(4), args.get(5));
         // Convert it into an OperationList.
         final OperationList ops = params.toOperationList(
-                getDelegateProxy(), getMaxScale());
+                getRequest().getDelegateProxy(), getMaxScale());
         ops.setPageIndex(getPageIndex());
         ops.getOptions().putAll(getRequest().getReference().getQuery().toMap());
         final int pageIndex = getPageIndex();
@@ -132,7 +132,7 @@ public class ImageResource extends IIIF3Resource {
                 ScaleValidator.validateScale(virtualSize, scale,
                         upscaleRejectionStatus(virtualSize, scale,
                                 params.getSize().isUpscalingAllowed()),
-                        getMetaIdentifier());
+                        getRequest().getMetaIdentifier());
                 validateSize(virtualSize, resultingSize);
                 sendHeaders();
             }
@@ -140,11 +140,8 @@ public class ImageResource extends IIIF3Resource {
 
         try (ImageRequestHandler handler = new ImageRequestHandler(
                 ops,
-                getDelegateProxy(),
-                getRequest().getRequestContext(),
-                new CustomCallback(),
-                getRequest().isBypassingCache(),
-                getRequest().isBypassingCacheRead())) {
+                getRequest(),
+                new CustomCallback())) {
             handler.handle(getResponse().getOutputStream());
         }
     }
@@ -223,8 +220,8 @@ public class ImageResource extends IIIF3Resource {
     }
 
     private ScaleConstraint getEffectiveScaleConstraint() {
-        return (getMetaIdentifier().getScaleConstraint() != null) ?
-                getMetaIdentifier().getScaleConstraint() :
+        return (getRequest().getMetaIdentifier().getScaleConstraint() != null) ?
+                getRequest().getMetaIdentifier().getScaleConstraint() :
                 new ScaleConstraint(1, 1);
     }
 

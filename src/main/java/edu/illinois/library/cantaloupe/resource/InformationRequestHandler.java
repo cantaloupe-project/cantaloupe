@@ -105,26 +105,16 @@ public class InformationRequestHandler extends AbstractRequestHandler
     /**
      * Creates a new InformationRequestHandler with full configuration options.
      *
-     * @param identifier           Identifier of the image.
-     * @param delegateProxy        Delegate proxy. If null, requestContext must also be null.
-     * @param requestContext       Request context. If null, delegateProxy must also be null.
+     * @param request.             The IIIF request.
      * @param callback             Callback to receive events during request handling.
-     * @param isBypassingCache     True to bypass cache reads and writes.
-     * @param isBypassingCacheRead True to bypass cache reads only.
      */
-    public InformationRequestHandler(Identifier identifier,
-                                     DelegateProxy delegateProxy,
-                                     RequestContext requestContext,
-                                     Callback callback,
-                                     boolean isBypassingCache,
-                                     boolean isBypassingCacheRead) {
-
-        this.identifier = identifier;
-        this.delegateProxy = delegateProxy;
-        this.requestContext = requestContext;
+    public InformationRequestHandler(IIIFRequest request, Callback callback) {
+        this.identifier = request.getMetaIdentifier().getIdentifier();
+        this.delegateProxy = request.getDelegateProxy();
+        this.requestContext = request.getRequestContext();
         this.callback = callback;
-        this.isBypassingCache = isBypassingCache;
-        this.isBypassingCacheRead = isBypassingCacheRead;
+        this.isBypassingCache = request.isBypassingCache();
+        this.isBypassingCacheRead = request.isBypassingCacheRead();
     }
 
     /**
