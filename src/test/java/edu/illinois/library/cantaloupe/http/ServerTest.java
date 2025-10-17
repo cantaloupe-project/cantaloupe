@@ -2,8 +2,10 @@ package edu.illinois.library.cantaloupe.http;
 
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;
+import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.handler.DefaultHandler;
+import org.eclipse.jetty.util.Callback;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
@@ -106,16 +108,16 @@ public class ServerTest extends BaseTest {
     void testHandler() throws Exception {
         final String path = "/unauthorized";
 
-        server.setHandler(new DefaultHandler() {
+        server.setHandler(new Handler.Abstract() {
             @Override
-            public void handle(String target,
-                               Request baseRequest,
-                               HttpServletRequest request,
-                               HttpServletResponse response) {
-                if (baseRequest.getPathInfo().startsWith(path)) {
+            public boolean handle(Request request,
+                org.eclipse.jetty.server.Response response,
+                Callback callback) {
+                if (Request.getPathInContext(request).startsWith(path)) {
                     response.setStatus(500);
                 }
-                baseRequest.setHandled(true);
+                callback.succeeded();
+                return true;
             }
         });
         server.start();
