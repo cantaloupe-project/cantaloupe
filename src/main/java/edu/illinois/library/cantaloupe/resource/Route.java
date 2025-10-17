@@ -7,8 +7,6 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.checkerframework.checker.units.qual.g;
-
 /**
  * Associates a URI path pattern with an {@link AbstractResource}
  * implementation.
