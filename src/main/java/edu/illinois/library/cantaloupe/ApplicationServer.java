@@ -5,24 +5,18 @@ import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.processor.codec.IIOProviderContextListener;
 import edu.illinois.library.cantaloupe.resource.FileServlet;
 import edu.illinois.library.cantaloupe.resource.HandlerServlet;
-import org.eclipse.jetty.alpn.server.ALPNServerConnectionFactory;
-import org.eclipse.jetty.http2.HTTP2Cipher;
 import org.eclipse.jetty.http2.server.HTTP2CServerConnectionFactory;
-import org.eclipse.jetty.http2.server.HTTP2ServerConnectionFactory;
 import org.eclipse.jetty.jmx.MBeanContainer;
 import org.eclipse.jetty.server.CustomRequestLog;
 import org.eclipse.jetty.server.HttpConfiguration;
 import org.eclipse.jetty.server.HttpConnectionFactory;
 import org.eclipse.jetty.server.RequestLog;
-import org.eclipse.jetty.server.SecureRequestCustomizer;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.server.Slf4jRequestLogWriter;
-import org.eclipse.jetty.server.SslConnectionFactory;
 import org.eclipse.jetty.ee10.servlet.ListenerHolder;
 import org.eclipse.jetty.ee10.servlet.ServletContextHandler;
 import org.eclipse.jetty.http.UriCompliance;
-import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.eclipse.jetty.util.thread.QueuedThreadPool;
 import org.eclipse.jetty.ee10.servlet.ServletHandler;
 
@@ -49,9 +43,6 @@ public class ApplicationServer {
 
     static final int DEFAULT_HTTP_PORT = 8182;
 
-    static final String DEFAULT_HTTPS_HOST = "0.0.0.0";
-
-    static final int DEFAULT_HTTPS_PORT = 8183;
 
     /**
      * Minimum number of threads in the pool. {@literal 8} is the default in
@@ -70,22 +61,19 @@ public class ApplicationServer {
     private boolean isHTTPEnabled;
     private String httpHost                 = DEFAULT_HTTP_HOST;
     private int httpPort                    = DEFAULT_HTTP_PORT;
-    private boolean isHTTPSEnabled;
-    private String httpsHost                = DEFAULT_HTTPS_HOST;
-    private String httpsKeyPassword;
-    private String httpsKeyStorePassword;
-    private String httpsKeyStorePath;
-    private String httpsKeyStoreType;
-    private int httpsPort                   = DEFAULT_HTTPS_PORT;
+
     private boolean isStarted;
     private int minThreads                  = DEFAULT_MIN_THREADS;
     private int maxThreads                  = DEFAULT_MAX_THREADS;
     private Server server;
 
+    private Ssl ssl;
+
     /**
      * Initializes the instance with arbitrary defaults.
      */
     public ApplicationServer() {
+        setSsl(new Ssl());
     }
 
     /**
@@ -98,21 +86,11 @@ public class ApplicationServer {
         setHTTPEnabled(config.getBoolean(Key.HTTP_ENABLED, false));
         setHTTPHost(config.getString(Key.HTTP_HOST, DEFAULT_HTTP_HOST));
         setHTTPPort(config.getInt(Key.HTTP_PORT, DEFAULT_HTTP_PORT));
-
-        setHTTPSEnabled(config.getBoolean(Key.HTTPS_ENABLED, false));
-        setHTTPSHost(config.getString(Key.HTTPS_HOST, DEFAULT_HTTPS_HOST));
-        setHTTPSKeyPassword(config.getString(Key.HTTPS_KEY_PASSWORD));
-        setHTTPSKeyStorePassword(
-                config.getString(Key.HTTPS_KEY_STORE_PASSWORD));
-        setHTTPSKeyStorePath(
-                config.getString(Key.HTTPS_KEY_STORE_PATH));
-        setHTTPSKeyStoreType(
-                config.getString(Key.HTTPS_KEY_STORE_TYPE));
-        setHTTPSPort(config.getInt(Key.HTTPS_PORT, DEFAULT_HTTPS_PORT));
         setMaxThreads(config.getInt(Key.HTTP_MAX_THREADS, DEFAULT_MAX_THREADS));
         setMinThreads(config.getInt(Key.HTTP_MIN_THREADS, DEFAULT_MIN_THREADS));
         setAcceptQueueLimit(config.getInt(Key.HTTP_ACCEPT_QUEUE_LIMIT,
                 DEFAULT_ACCEPT_QUEUE_LIMIT));
+        setSsl(Ssl.fromConfig(config));
     }
 
     private void createServer() {
@@ -155,29 +133,6 @@ public class ApplicationServer {
         return httpPort;
     }
 
-    public String getHTTPSHost() {
-        return httpsHost;
-    }
-
-    public String getHTTPSKeyPassword() {
-        return httpsKeyPassword;
-    }
-
-    public String getHTTPSKeyStorePassword() {
-        return httpsKeyStorePassword;
-    }
-
-    public String getHTTPSKeyStorePath() {
-        return httpsKeyStorePath;
-    }
-
-    public String getHTTPSKeyStoreType() {
-        return httpsKeyStoreType;
-    }
-
-    public int getHTTPSPort() {
-        return httpsPort;
-    }
 
     public int getMaxThreads() {
         return maxThreads;
@@ -189,10 +144,6 @@ public class ApplicationServer {
 
     public boolean isHTTPEnabled() {
         return isHTTPEnabled;
-    }
-
-    public boolean isHTTPSEnabled() {
-        return isHTTPSEnabled;
     }
 
     public boolean isStarted() {
@@ -207,6 +158,14 @@ public class ApplicationServer {
         this.acceptQueueLimit = size;
     }
 
+    public void setSsl(Ssl ssl) {
+        this.ssl = ssl;
+    }
+
+    public Ssl getSsl() {
+        return ssl;
+    }
+
     public void setHTTPEnabled(boolean enabled) {
         this.isHTTPEnabled = enabled;
     }
@@ -217,34 +176,6 @@ public class ApplicationServer {
 
     public void setHTTPPort(int port) {
         this.httpPort = port;
-    }
-
-    public void setHTTPSEnabled(boolean enabled) {
-        this.isHTTPSEnabled = enabled;
-    }
-
-    public void setHTTPSHost(String host) {
-        this.httpsHost = host;
-    }
-
-    public void setHTTPSKeyPassword(String password) {
-        this.httpsKeyPassword = password;
-    }
-
-    public void setHTTPSKeyStorePassword(String password) {
-        this.httpsKeyStorePassword = password;
-    }
-
-    public void setHTTPSKeyStorePath(String path) {
-        this.httpsKeyStorePath = path;
-    }
-
-    public void setHTTPSKeyStoreType(String type) {
-        this.httpsKeyStoreType = type;
-    }
-
-    public void setHTTPSPort(int port) {
-        this.httpsPort = port;
     }
 
     public void setMaxThreads(int maxThreads) {
@@ -283,50 +214,8 @@ public class ApplicationServer {
             }
 
             // Initialize the HTTPS server.
-            if (isHTTPSEnabled()) {
-                HttpConfiguration config = new HttpConfiguration();
-                config.setUriCompliance(
-                        UriCompliance.from("DEFAULT,SUSPICIOUS_PATH_CHARACTERS,AMBIGUOUS_PATH_SEPARATOR"));
-
-                config.setSecureScheme("https");
-                config.setSecurePort(getHTTPSPort());
-                config.addCustomizer(new SecureRequestCustomizer());
-
-                final SslContextFactory.Server contextFactory = new SslContextFactory.Server();
-                contextFactory.setKeyStorePath(getHTTPSKeyStorePath());
-                if (getHTTPSKeyStorePassword() != null) {
-                    contextFactory.setKeyStorePassword(getHTTPSKeyStorePassword());
-                }
-                if (getHTTPSKeyPassword() != null) {
-                    contextFactory.setKeyManagerPassword(getHTTPSKeyPassword());
-                }
-
-                HttpConnectionFactory http1 =
-                        new HttpConnectionFactory(config);
-                HTTP2ServerConnectionFactory http2 =
-                        new HTTP2ServerConnectionFactory(config);
-
-                ALPNServerConnectionFactory alpn =
-                        new ALPNServerConnectionFactory();
-                alpn.setDefaultProtocol(http1.getProtocol());
-
-                contextFactory.setCipherComparator(HTTP2Cipher.COMPARATOR);
-                contextFactory.setUseCipherSuitesOrder(true);
-
-                SslConnectionFactory connectionFactory =
-                        new SslConnectionFactory(contextFactory,
-                                alpn.getProtocol());
-
-                ServerConnector connector = new ServerConnector(server,
-                        connectionFactory, alpn, http2, http1);
-
-                connector.setHost(getHTTPSHost());
-                connector.setPort(getHTTPSPort());
-                connector.setIdleTimeout(IDLE_TIMEOUT);
-                connector.setAcceptQueueSize(getAcceptQueueLimit());
-                server.addConnector(connector);
-                server.getContainedBeans(ServletHandler.class)
-                    .forEach(handler -> handler.setDecodeAmbiguousURIs(true));
+            if (ssl.isHTTPSEnabled()) {
+                new SslServerCustomizer(ssl, IDLE_TIMEOUT, getAcceptQueueLimit()).customize(server);
             }
 
             // If the Cantaloupe server is started with jmxremote, add the Jetty
