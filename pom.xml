@@ -11,8 +11,8 @@
     <inceptionYear>2015</inceptionYear>
 
     <properties>
-        <maven.compile.source>17</maven.compile.source>
-        <maven.compile.target>17</maven.compile.target>
+        <maven.compile.source>21</maven.compile.source>
+        <maven.compile.target>21</maven.compile.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <jetty.version>11.0.24</jetty.version>
