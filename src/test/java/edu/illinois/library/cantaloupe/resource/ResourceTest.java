@@ -2,6 +2,7 @@ package edu.illinois.library.cantaloupe.resource;
 
 import edu.illinois.library.cantaloupe.StandaloneEntry;
 import edu.illinois.library.cantaloupe.ApplicationServer;
+import edu.illinois.library.cantaloupe.Ssl;
 import edu.illinois.library.cantaloupe.cache.CacheFacade;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
@@ -60,14 +61,14 @@ public abstract class ResourceTest extends BaseTest {
         appServer.setHTTPEnabled(true);
         appServer.setHTTPPort(httpPort);
 
-        appServer.setHTTPSEnabled(true);
-        appServer.setHTTPSPort(httpsPort);
-        appServer.setHTTPSKeyStoreType("JKS");
-        appServer.setHTTPSKeyStorePath(
-                TestUtil.getFixture("keystore-password.jks").toString());
-        appServer.setHTTPSKeyStorePassword("password");
-        appServer.setHTTPSKeyPassword("password");
-
+        Ssl ssl = new Ssl();
+        ssl.setHTTPSEnabled(true);
+        ssl.setHTTPSPort(httpsPort);
+        ssl.setHTTPSKeyStorePath(TestUtil.getFixture("keystore-password.jks").toString());
+        ssl.setHTTPSKeyStorePassword("password");
+        ssl.setHTTPSKeyStoreType("JKS");
+        ssl.setHTTPSKeyPassword("password");
+        appServer.setSsl(ssl);
         appServer.start();
     }
 
@@ -120,7 +121,7 @@ public abstract class ResourceTest extends BaseTest {
         try {
             URI uri = getHTTPURI(path);
             return new URI("https", uri.getUserInfo(), uri.getHost(),
-                    appServer.getHTTPSPort(), uri.getPath(), uri.getQuery(),
+                    appServer.getSsl().getHTTPSPort(), uri.getPath(), uri.getQuery(),
                     uri.getFragment());
         } catch (URISyntaxException e) {
             fail(e.getMessage());
