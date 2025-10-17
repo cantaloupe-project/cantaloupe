@@ -67,62 +67,6 @@ public class ApplicationServerTest extends BaseTest {
     }
 
     @Test
-    void getHTTPSHost() {
-        // default
-        assertEquals(ApplicationServer.DEFAULT_HTTPS_HOST,
-                instance.getHTTPSHost());
-        // explicitly set
-        instance.setHTTPSHost("127.0.0.1");
-        assertEquals("127.0.0.1", instance.getHTTPSHost());
-    }
-
-    @Test
-    void getHTTPSKeyPassword() {
-        // default
-        assertNull(instance.getHTTPSKeyPassword());
-        // explicitly set
-        instance.setHTTPSKeyPassword("cats");
-        assertEquals("cats", instance.getHTTPSKeyPassword());
-    }
-
-    @Test
-    void getHTTPSKeyStorePassword() {
-        // default
-        assertNull(instance.getHTTPSKeyStorePassword());
-        // explicitly set
-        instance.setHTTPSKeyStorePassword("cats");
-        assertEquals("cats", instance.getHTTPSKeyStorePassword());
-    }
-
-    @Test
-    void getHTTPSKeyStorePath() {
-        // default
-        assertNull(instance.getHTTPSKeyStorePath());
-        // explicitly set
-        instance.setHTTPSKeyStorePath("/cats");
-        assertEquals("/cats", instance.getHTTPSKeyStorePath());
-    }
-
-    @Test
-    void getHTTPSKeyStoreType() {
-        // default
-        assertNull(instance.getHTTPSKeyStoreType());
-        // explicitly set
-        instance.setHTTPSKeyStoreType("cats");
-        assertEquals("cats", instance.getHTTPSKeyStoreType());
-    }
-
-    @Test
-    void getHTTPSPort() {
-        // default
-        assertEquals(ApplicationServer.DEFAULT_HTTPS_PORT,
-                instance.getHTTPSPort());
-        // explicitly set
-        instance.setHTTPSPort(5000);
-        assertEquals(5000, instance.getHTTPSPort());
-    }
-
-    @Test
     void getMaxThreads() {
         // default
         assertEquals(ApplicationServer.DEFAULT_MAX_THREADS,
@@ -149,15 +93,6 @@ public class ApplicationServerTest extends BaseTest {
         // explicitly set
         instance.setHTTPEnabled(true);
         assertTrue(instance.isHTTPEnabled());
-    }
-
-    @Test
-    void isHTTPSEnabled() {
-        // default
-        assertFalse(instance.isHTTPSEnabled());
-        // explicitly set
-        instance.setHTTPSEnabled(true);
-        assertTrue(instance.isHTTPSEnabled());
     }
 
     @Test
@@ -271,28 +206,34 @@ public class ApplicationServerTest extends BaseTest {
     }
 
     private void initializeHTTPSWithJKSKeyStoreWithPassword() {
-        instance.setHTTPSEnabled(true);
-        instance.setHTTPSPort(HTTPS_PORT);
-        instance.setHTTPSKeyStorePath(TestUtil.getFixture("keystore-password.jks").toString());
-        instance.setHTTPSKeyStorePassword("password");
-        instance.setHTTPSKeyStoreType("JKS");
-        instance.setHTTPSKeyPassword("password");
+        Ssl ssl = new Ssl();
+        ssl.setHTTPSEnabled(true);
+        ssl.setHTTPSPort(HTTPS_PORT);
+        ssl.setHTTPSKeyStorePath(TestUtil.getFixture("keystore-password.jks").toString());
+        ssl.setHTTPSKeyStorePassword("password");
+        ssl.setHTTPSKeyStoreType("JKS");
+        ssl.setHTTPSKeyPassword("password");
+        instance.setSsl(ssl);
     }
 
     private void initializeHTTPSWithPKCS12KeyStoreWithPassword() {
-        instance.setHTTPSEnabled(true);
-        instance.setHTTPSPort(HTTPS_PORT);
-        instance.setHTTPSKeyStorePath(TestUtil.getFixture("keystore-password.p12").toString());
-        instance.setHTTPSKeyStorePassword("password");
-        instance.setHTTPSKeyStoreType("PKCS12");
-        instance.setHTTPSKeyPassword("password");
+        Ssl ssl = new Ssl();
+        ssl.setHTTPSEnabled(true);
+        ssl.setHTTPSPort(HTTPS_PORT);
+        ssl.setHTTPSKeyStorePath(TestUtil.getFixture("keystore-password.p12").toString());
+        ssl.setHTTPSKeyStorePassword("password");
+        ssl.setHTTPSKeyStoreType("PKCS12");
+        ssl.setHTTPSKeyPassword("password");
+        instance.setSsl(ssl);
     }
 
     private void initializeHTTPSWithPKCS12KeyStoreWithoutPassword() {
-        instance.setHTTPSEnabled(true);
-        instance.setHTTPSPort(HTTPS_PORT);
-        instance.setHTTPSKeyStorePath(TestUtil.getFixture("keystore-nopass.p12").toString());
-        instance.setHTTPSKeyStoreType("PKCS12");
+        Ssl ssl = new Ssl();
+        ssl.setHTTPSEnabled(true);
+        ssl.setHTTPSPort(HTTPS_PORT);
+        ssl.setHTTPSKeyStorePath(TestUtil.getFixture("keystore-nopass.p12").toString());
+        ssl.setHTTPSKeyStoreType("PKCS12");
+        instance.setSsl(ssl);
     }
 
 }
