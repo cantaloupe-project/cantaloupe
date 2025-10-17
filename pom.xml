@@ -17,7 +17,8 @@
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <jetty.version>12.1.2</jetty.version>
         <aws-sdk.version>2.21.4</aws-sdk.version>
-        <jackson.version>2.15.2</jackson.version>
+        <jackson.version>2.20.0</jackson.version>
+        <jackson-annotations.version>2.20</jackson-annotations.version>
         <jruby.version>10.0.0.1</jruby.version>
         <surefire.version>3.5.3</surefire.version>
         <seleniumhq.version>2.53.1</seleniumhq.version><!-- There are many new versions for this library 4.10.0 latest-->
@@ -296,7 +297,7 @@
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-annotations</artifactId>
-            <version>${jackson.version}</version>
+            <version>${jackson-annotations.version}</version>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
