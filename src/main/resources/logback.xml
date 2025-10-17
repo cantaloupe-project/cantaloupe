@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <configuration>
+    <!-- Disable all Logback status output -->
+    <statusListener class="ch.qos.logback.core.status.NopStatusListener"/>
 
     <!-- Console Appenders for Application Logs -->
     <appender name="AppStdoutLog" class="ch.qos.logback.core.ConsoleAppender">
