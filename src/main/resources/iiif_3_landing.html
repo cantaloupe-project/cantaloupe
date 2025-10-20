@@ -1,13 +1,12 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
     <head>
-        <base th:if="${baseUri}" th:href="${baseUri + '/'}">
         <meta charset="utf-8">
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
         <meta name="viewport" content="width=device-width, initial-scale=1">
 
-        <link rel="stylesheet" href="static/styles/base.css">
+        <link rel="stylesheet" th:href="${basePath + 'static/styles/base.css'}">
 
         <title>Cantaloupe Image Server</title>
     </head>
@@ -24,14 +23,14 @@
                 </li>
                 <li>Sample Requests
                     <ul>
-                        <li th:text="${baseUri + '/iiif/3/{identifier}/info.json'}"></li>
-                        <li th:text="${baseUri + '/iiif/3/{identifier}/full/max/0/default.jpg'}"></li>
+                        <li th:text="${basePath + 'iiif/3/{identifier}/info.json'}"></li>
+                        <li th:text="${basePath + 'iiif/3/{identifier}/full/max/0/default.jpg'}"></li>
                     </ul>
                 </li>
                 <li>Also Available:
                     <ul>
-                        <li><a th:href="${baseUri + '/iiif/1'}">IIIF Image API 1.x endpoint</a></li>
-                        <li><a th:href="${baseUri + '/iiif/2'}">IIIF Image API 2.x endpoint</a></li>
+                        <li><a th:href="${basePath + 'iiif/1'}">IIIF Image API 1.x endpoint</a></li>
+                        <li><a th:href="${basePath + 'iiif/2'}">IIIF Image API 2.x endpoint</a></li>
                     </ul>
                 </li>
             </ul>

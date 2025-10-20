@@ -17,6 +17,7 @@ import edu.illinois.library.cantaloupe.resource.Route;
 import edu.illinois.library.cantaloupe.resource.ThymeleafRepresentation;
 import edu.illinois.library.cantaloupe.source.Source;
 import edu.illinois.library.cantaloupe.source.SourceFactory;
+import edu.illinois.library.cantaloupe.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -154,7 +155,7 @@ public class AdminResource extends AbstractAdminResource {
      */
     private Map<String,Object> getTemplateVars() {
         final Map<String, Object> vars = getCommonTemplateVars();
-        vars.put("adminUri", vars.get("baseUri") + Route.ADMIN_PATH);
+        vars.put("adminUri", StringUtils.stripEnd((String) vars.get("basePath"), "/") + Route.ADMIN_PATH);
 
         ////////////////////////////////////////////////////////////////////
         //////////////////////// status section ////////////////////////////
