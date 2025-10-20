@@ -5,7 +5,6 @@ import edu.illinois.library.cantaloupe.cache.DerivativeCache;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.*;
-import edu.illinois.library.cantaloupe.delegate.DelegateProxy;
 import edu.illinois.library.cantaloupe.source.StatResult;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;
@@ -13,7 +12,6 @@ import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.util.Collections;
 import java.util.Set;
 import java.util.ArrayList;
 
