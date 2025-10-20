@@ -1,20 +1,19 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <base th:if="${baseUri}" th:href="${baseUri + '/'}">
     <meta charset="utf-8">
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <link rel="stylesheet" href="static/styles/landing.css">
+    <link rel="stylesheet" th:href="${basePath + 'static/styles/landing.css'}">
 
     <title>Cantaloupe Image Server</title>
 </head>
 
 <body>
     <div id="container">
-        <img src="static/images/cantaloupe-320.png" width="320" alt="Logo">
+        <img th:src="${basePath + 'static/images/cantaloupe-320.png'}" width="320" alt="Logo">
         <h1>Cantaloupe Image Server <small th:text="${version}"></small></h1>
     </div>
 </body>
