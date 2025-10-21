@@ -9,6 +9,7 @@ import edu.illinois.library.cantaloupe.resource.InformationRequestHandler;
 import edu.illinois.library.cantaloupe.resource.JacksonRepresentation;
 import edu.illinois.library.cantaloupe.resource.ResourceException;
 import edu.illinois.library.cantaloupe.resource.Route;
+import edu.illinois.library.cantaloupe.resource.iiif.IIIFAuth;
 import edu.illinois.library.cantaloupe.source.StatResult;
 import jakarta.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
@@ -80,7 +81,8 @@ public class InformationResource extends IIIF3Resource {
         class CustomCallback implements InformationRequestHandler.Callback {
             @Override
             public boolean authorize() throws Exception {
-                return InformationResource.this.preAuthorize();
+                return IIIFAuth.preAuthorize(InformationResource.this.getRequest(),
+                                             InformationResource.this.getResponse());
             }
 
             @Override
