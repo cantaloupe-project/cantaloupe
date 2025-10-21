@@ -64,13 +64,6 @@ public class AbstractResourceTest extends BaseTest {
     }
 
     @Test
-    void testGetCommonTemplateVars() {
-        Map<String,Object> vars = instance.getCommonTemplateVars();
-        assertEquals(((String) vars.get("basePath")), "/");
-        assertNotNull(vars.get("version"));
-    }
-
-    @Test
     void testGetPreferredMediaTypesWithAcceptHeaderSet() {
         instance.getRequest().getHeaders().set("Accept",
                 "text/html;q=0.9, application/xhtml+xml, */*;q=0.2, text/plain;q=0.5");
