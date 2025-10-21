@@ -94,7 +94,7 @@ class ErrorResource {
         final Status status = toStatus(error);
         log(status.getCode());
 
-        final Map<String,Object> templateVars = new HashMap<>();
+        final TemplateVariables templateVars = new TemplateVariables();
         templateVars.put("baseUri", request.getContextPath());
         templateVars.put("pageTitle", status.toString());
         templateVars.put("message", error.getMessage());
@@ -124,13 +124,8 @@ class ErrorResource {
         }
     }
 
-    private void renderTextTemplate(Map<String, Object> templateVars) throws IOException {
-        Context context = new Context();
-        if (templateVars != null) {
-            for (Map.Entry<String, Object> entry : templateVars.entrySet()) {
-                context.setVariable(entry.getKey(), entry.getValue());
-            }
-        }
+    private void renderTextTemplate(TemplateVariables templateVars) throws IOException {
+        Context context = new Context(java.util.Locale.getDefault(), templateVars.getVars());
 
         try (java.io.OutputStreamWriter writer = new java.io.OutputStreamWriter(response.getOutputStream(), "UTF-8")) {
             textTemplateEngine.process("error", context, writer);
