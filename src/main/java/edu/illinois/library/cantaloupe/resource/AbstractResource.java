@@ -119,12 +119,8 @@ public abstract class AbstractResource {
      * <p>Overrides must call {@code super}.</p>
      */
     public void doInit() throws Exception {
-        final Configuration config = Configuration.getInstance();
-        // Only show the x-powered-by header if configured to do so.
-        if (config.getBoolean(Key.HEADERS_POWERED_BY_DISPLAY, true)) {
-          response.setHeader("X-Powered-By",
-                  Application.getName() + "/" + Application.getVersion());
-        }
+        PoweredByHeader.addToResponse(response);
+        
         // Log request info.
         getLogger().info("Handling {} {}",
                 request.getMethod(), request.getReference().getPath());
