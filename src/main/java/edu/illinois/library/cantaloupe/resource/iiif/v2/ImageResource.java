@@ -15,6 +15,7 @@ import edu.illinois.library.cantaloupe.processor.Processor;
 import edu.illinois.library.cantaloupe.resource.IllegalClientArgumentException;
 import edu.illinois.library.cantaloupe.resource.ImageRequestHandler;
 import edu.illinois.library.cantaloupe.resource.Route;
+import edu.illinois.library.cantaloupe.resource.iiif.ImageDisposition;
 import edu.illinois.library.cantaloupe.resource.iiif.ScaleValidator;
 import edu.illinois.library.cantaloupe.resource.iiif.SizeConstrainer;
 import edu.illinois.library.cantaloupe.resource.iiif.SizeRestrictedException;
@@ -74,8 +75,9 @@ public class ImageResource extends IIIF2Resource {
         ops.setPageIndex(getPageIndex());
         ops.getOptions().putAll(getRequest().getReference().getQuery().toMap());
         final int pageIndex = getPageIndex();
-        final String disposition = getRepresentationDisposition(
-                ops.getMetaIdentifier().toString(), ops.getOutputFormat());
+
+        final String disposition = ImageDisposition.getRepresentationDisposition(
+                getRequest(), ops.getMetaIdentifier().toString(), ops.getOutputFormat());
 
         class CustomCallback implements ImageRequestHandler.Callback {
             @Override
