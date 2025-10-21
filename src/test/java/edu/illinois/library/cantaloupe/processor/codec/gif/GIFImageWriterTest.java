@@ -13,7 +13,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.w3c.dom.NamedNodeMap;
-import org.w3c.dom.Node;
 
 import javax.imageio.ImageIO;
 import javax.imageio.metadata.IIOMetadata;
@@ -179,26 +178,6 @@ public class GIFImageWriterTest extends AbstractImageWriterTest {
             if (reader != null) {
                 reader.dispose();
             }
-        }
-    }
-
-    private void checkForICCProfile() throws Exception {
-        // Read it back in
-        final Iterator<javax.imageio.ImageReader> readers =
-                ImageIO.getImageReadersByFormatName("GIF");
-        final javax.imageio.ImageReader reader = readers.next();
-        try (ImageInputStream iis = ImageIO.createImageInputStream(tempFile)) {
-            reader.setInput(iis);
-            // Check for the profile in its metadata
-            final IIOMetadata metadata = reader.getImageMetadata(0);
-            final Node tree = metadata.getAsTree(metadata.getNativeMetadataFormatName());
-
-            final NamedNodeMap attrs = tree.getChildNodes().item(3).
-                    getChildNodes().item(0).getAttributes();
-            assertEquals("ICCRGBG1", attrs.getNamedItem("applicationID").getNodeValue());
-            assertEquals("012", attrs.getNamedItem("authenticationCode").getNodeValue());
-        } finally {
-            reader.dispose();
         }
     }
 

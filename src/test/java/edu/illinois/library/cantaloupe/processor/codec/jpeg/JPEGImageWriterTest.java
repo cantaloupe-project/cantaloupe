@@ -7,7 +7,6 @@ import edu.illinois.library.cantaloupe.operation.Encode;
 import edu.illinois.library.cantaloupe.processor.codec.AbstractImageWriterTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.junit.jupiter.api.Test;
-import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import javax.imageio.ImageIO;
@@ -156,21 +155,6 @@ public class JPEGImageWriterTest extends AbstractImageWriterTest {
             instance.write(image, os);
             os.close();
             checkForXMPMetadata(os.toByteArray());
-        } finally {
-            reader.dispose();
-        }
-    }
-
-    private void checkForIccProfile(byte[] imageData) throws Exception {
-        final ImageReader reader = getIIOReader();
-        try (ImageInputStream iis = ImageIO.createImageInputStream(new ByteArrayInputStream(imageData))) {
-            reader.setInput(iis);
-            // Check for the profile in its metadata
-            final IIOMetadata metadata = reader.getImageMetadata(0);
-            final Node tree = metadata.getAsTree(metadata.getNativeMetadataFormatName());
-            final Node iccNode = tree.getChildNodes().item(0).getChildNodes().
-                    item(0).getChildNodes().item(0);
-            assertEquals("app2ICC", iccNode.getNodeName());
         } finally {
             reader.dispose();
         }
