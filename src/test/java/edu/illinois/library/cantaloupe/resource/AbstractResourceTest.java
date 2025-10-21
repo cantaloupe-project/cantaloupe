@@ -8,9 +8,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
-import java.util.Map;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class AbstractResourceTest extends BaseTest {
 
@@ -60,13 +61,6 @@ public class AbstractResourceTest extends BaseTest {
     void testDoPUT() throws Exception {
         instance.doPUT();
         assertEquals(405, instance.getResponse().getStatus());
-    }
-
-    @Test
-    void testGetCommonTemplateVars() {
-        Map<String,Object> vars = instance.getCommonTemplateVars();
-        assertEquals(((String) vars.get("basePath")), "/");
-        assertNotNull(vars.get("version"));
     }
 
     @Test

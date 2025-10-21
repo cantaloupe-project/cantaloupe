@@ -17,7 +17,7 @@ public class ThymeleafRepresentation implements Representation {
 
     private static final TemplateEngine templateEngine;
     private String templateName;
-    private Map<String, Object> templateVars;
+    private TemplateVariables templateVars;
 
     static {
         // HTML template resolver
@@ -44,7 +44,7 @@ public class ThymeleafRepresentation implements Representation {
      * @param templateVars Template variables.
      */
     public ThymeleafRepresentation(String templateName,
-                                   Map<String, Object> templateVars) {
+                                   TemplateVariables templateVars) {
         this(templateName);
         this.templateVars = templateVars;
     }
@@ -53,7 +53,7 @@ public class ThymeleafRepresentation implements Representation {
     public void write(OutputStream outputStream) throws IOException {
         Context context = new Context();
         if (templateVars != null) {
-            for (Map.Entry<String, Object> entry : templateVars.entrySet()) {
+            for (Map.Entry<String, Object> entry : templateVars.getVars().entrySet()) {
                 context.setVariable(entry.getKey(), entry.getValue());
             }
         }
