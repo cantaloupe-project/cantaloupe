@@ -27,8 +27,6 @@ import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.nio.file.AccessDeniedException;
 import java.nio.file.NoSuchFileException;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * Translates a {@link Throwable} to an HTTP 4xx or 5xx-level response.
