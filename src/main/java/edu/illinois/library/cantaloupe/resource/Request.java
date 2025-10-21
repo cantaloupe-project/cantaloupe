@@ -43,7 +43,7 @@ public class Request {
     /**
      * @param request Request that the new instance will wrap.
      */
-    Request(HttpServletRequest request, List<String> pathArguments) {
+    public Request(HttpServletRequest request, List<String> pathArguments) {
         this.wrappedRequest = request;
         this.pathArguments = pathArguments;
     }
