@@ -8,7 +8,6 @@ import edu.illinois.library.cantaloupe.resource.AbstractResource;
 import edu.illinois.library.cantaloupe.resource.IIIFRequest;
 import edu.illinois.library.cantaloupe.resource.RequestContextDecorator;
 import edu.illinois.library.cantaloupe.resource.StringRepresentation;
-import edu.illinois.library.cantaloupe.util.TimeUtils;
 
 import java.io.IOException;
 import java.time.Instant;
@@ -20,8 +19,6 @@ import java.util.Locale;
 
 public abstract class IIIFResource extends AbstractResource {
 
-    private static final String PAGE_NUMBER_QUERY_ARG = "page";
-    private static final String TIME_QUERY_ARG        = "time";
 
     @Override
     public void doInit() throws Exception {
@@ -77,52 +74,6 @@ public abstract class IIIFResource extends AbstractResource {
         }
     }
 
-    /**
-     * <p>Returns the page index (i.e. {@literal page number - 1}), which may
-     * come from one of two sources, in order of preference:</p>
-     *
-     * <ol>
-     *     <li>The {@link AbstractResource#getMetaIdentifier()
-     *     meta-identifier}</li>
-     *     <li>The {@link #PAGE_NUMBER_QUERY_ARG page number query argument
-     *     (deprecated in 5.0)</li>
-     * </ol>
-     *
-     * <p>If neither of those contain a page number, {@code 0} is returned.</p>
-     *
-     * @return Page index.
-     */
-    protected int getPageIndex() {
-        // Check the meta-identifier.
-        int index = 0;
-        if (getRequest().getMetaIdentifier().getPageNumber() != null) {
-            index = getRequest().getMetaIdentifier().getPageNumber() - 1;
-        }
-        if (index == 0) {
-            // Check the `page` query argument (deprecated in 5.0).
-            String arg = getRequest().getReference().getQuery()
-                    .getFirstValue(PAGE_NUMBER_QUERY_ARG, "1");
-            try {
-                index = Integer.parseInt(arg) - 1;
-                if (index < 0) {
-                    index = 0;
-                }
-            } catch (NumberFormatException ignore) {
-                // Client supplied a bogus page number, so use 0.
-            }
-            if (index == 0) {
-                // Check the `time` query argument (deprecated in 5.0).
-                arg = getRequest().getReference().getQuery()
-                        .getFirstValue(TIME_QUERY_ARG, "00:00:00");
-                try {
-                    index = TimeUtils.toSeconds(arg);
-                } catch (IllegalArgumentException ignore) {
-                    // Client supplied a bogus time, so use 0.
-                }
-            }
-        }
-        return index;
-    }
 
     /**
      * <p>If an identifier is present in the URI, and it contains a scale

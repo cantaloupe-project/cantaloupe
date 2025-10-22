@@ -75,9 +75,9 @@ public class ImageResource extends IIIF2Resource {
                 args.get(3), args.get(4), args.get(5));
         // Convert it into an OperationList.
         final OperationList ops = params.toOperationList(getRequest().getDelegateProxy());
-        ops.setPageIndex(getPageIndex());
+        final int pageIndex = getRequest().getPageIndex();
+        ops.setPageIndex(pageIndex);
         ops.getOptions().putAll(getRequest().getReference().getQuery().toMap());
-        final int pageIndex = getPageIndex();
 
         final String disposition = ImageDisposition.getRepresentationDisposition(
                 getRequest(), ops.getMetaIdentifier().toString(), ops.getOutputFormat());
