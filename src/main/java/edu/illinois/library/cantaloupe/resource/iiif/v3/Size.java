@@ -15,7 +15,7 @@ import edu.illinois.library.cantaloupe.util.StringUtils;
  * @see <a href="https://iiif.io/api/image/3.0/#42-size">IIIF Image API 3.0:
  * Size</a>
  */
-final class Size {
+public final class Size {
 
     /**
      * <p>Type of size specification, corresponding to the options available
@@ -26,7 +26,7 @@ final class Size {
      * "upscaling allowed;" that is handled by {@link #isUpscalingAllowed()}
      * which can work in conjunction with any of these.</p>
      */
-    enum Type {
+    public enum Type {
 
         /**
          * Represents a {@code max} size argument.
@@ -141,7 +141,7 @@ final class Size {
         return percent;
     }
 
-    Type getType() {
+    public Type getType() {
         return type;
     }
 
@@ -154,7 +154,7 @@ final class Size {
         return toString().hashCode();
     }
 
-    boolean isUpscalingAllowed() {
+    public boolean isUpscalingAllowed() {
         return isUpscalingAllowed;
     }
 

@@ -20,7 +20,7 @@ import java.util.stream.Collectors;
  * @see <a href="https://iiif.io/api/image/3.0/#21-image-request-uri-syntax">
  *     IIIF Image API 3.0: Image Request URI Syntax</a>
  */
-class Parameters {
+public class Parameters {
 
     private String identifier;
     private Region region;
@@ -127,7 +127,7 @@ class Parameters {
         return identifier;
     }
 
-    OutputFormat getOutputFormat() {
+    public OutputFormat getOutputFormat() {
         return outputFormat;
     }
 
@@ -152,7 +152,7 @@ class Parameters {
         return rotation;
     }
 
-    Size getSize() {
+    public Size getSize() {
         return size;
     }
 
