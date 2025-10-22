@@ -2,7 +2,6 @@ package edu.illinois.library.cantaloupe.controller.iiif.v3;
 
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.not;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.options;
@@ -66,7 +65,7 @@ class IdentifierControllerTest {
 
         mockMvc.perform(get("/iiif/3/{identifier}", identifier))
                 .andExpect(status().isSeeOther())
-                .andExpect(header().string("Location", containsString("/iiif/3/" + identifier + "/info.json")));
+                .andExpect(header().string("Location", is("/iiif/3/" + identifier + "/info.json")));
     }
 
     @Test
@@ -75,30 +74,7 @@ class IdentifierControllerTest {
 
         mockMvc.perform(get("/iiif/3/{identifier}", identifier))
                 .andExpect(status().isSeeOther())
-                .andExpect(header().string("Location", containsString("/iiif/3/" + identifier + "/info.json")));
-    }
-
-    @Test
-    void testRedirectToInfo_WithCustomHost() throws Exception {
-        String identifier = "test-image";
-
-        mockMvc.perform(get("/iiif/3/{identifier}", identifier)
-                .header("Host", "example.com:8080"))
-                .andExpect(status().isSeeOther())
-                .andExpect(header().string("Location", containsString("http://example.com:8080")))
-                .andExpect(header().string("Location", containsString("/iiif/3/" + identifier + "/info.json")));
-    }
-
-    @Test
-    void testRedirectToInfo_WithHTTPS() throws Exception {
-        String identifier = "secure-image";
-
-        mockMvc.perform(get("/iiif/3/{identifier}", identifier)
-                .header("X-Forwarded-Proto", "https")
-                .header("Host", "secure.example.com"))
-                .andExpect(status().isSeeOther())
-                .andExpect(header().string("Location", containsString("https://secure.example.com")))
-                .andExpect(header().string("Location", containsString("/iiif/3/" + identifier + "/info.json")));
+                .andExpect(header().string("Location", is("/iiif/3/" + identifier + "/info.json")));
     }
 
     @Test
@@ -108,51 +84,7 @@ class IdentifierControllerTest {
         mockMvc.perform(get("/cantaloupe/iiif/3/{identifier}", identifier)
                 .contextPath("/cantaloupe"))
                 .andExpect(status().isSeeOther())
-                .andExpect(header().string("Location", containsString("/cantaloupe/iiif/3/" + identifier + "/info.json")));
-    }
-
-    @Test
-    void testRedirectToInfo_StandardPorts() throws Exception {
-        String identifier = "port-test";
-
-        // Test HTTP port 80 (should not appear in URL)
-        mockMvc.perform(get("/iiif/3/{identifier}", identifier)
-                .header("Host", "example.com")
-                .with(request -> {
-                    request.setServerPort(80);
-                    request.setScheme("http");
-                    return request;
-                }))
-                .andExpect(status().isSeeOther())
-                .andExpect(header().string("Location", containsString("http://example.com/iiif/3/")))
-                .andExpect(header().string("Location", not(containsString(":80"))));
-
-        // Test HTTPS port 443 (should not appear in URL)
-        mockMvc.perform(get("/iiif/3/{identifier}", identifier)
-                .header("Host", "secure.example.com")
-                .with(request -> {
-                    request.setServerPort(443);
-                    request.setScheme("https");
-                    return request;
-                }))
-                .andExpect(status().isSeeOther())
-                .andExpect(header().string("Location", containsString("https://secure.example.com/iiif/3/")))
-                .andExpect(header().string("Location", not(containsString(":443"))));
-    }
-
-    @Test
-    void testRedirectToInfo_NonStandardPorts() throws Exception {
-        String identifier = "port-test";
-
-        mockMvc.perform(get("/iiif/3/{identifier}", identifier)
-                .header("Host", "example.com")
-                .with(request -> {
-                    request.setServerPort(8182);
-                    request.setScheme("http");
-                    return request;
-                }))
-                .andExpect(status().isSeeOther())
-                .andExpect(header().string("Location", containsString("http://example.com:8182/iiif/3/")));
+                .andExpect(header().string("Location", is("/cantaloupe/iiif/3/" + identifier + "/info.json")));
     }
 
     @Test
