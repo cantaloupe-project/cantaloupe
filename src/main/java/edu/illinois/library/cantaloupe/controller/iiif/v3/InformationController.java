@@ -1,5 +1,12 @@
 package edu.illinois.library.cantaloupe.controller.iiif.v3;
 
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -10,17 +17,24 @@ import org.springframework.web.bind.annotation.RestController;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
+import edu.illinois.library.cantaloupe.image.Format;
+import edu.illinois.library.cantaloupe.image.Info;
+import edu.illinois.library.cantaloupe.processor.codec.ImageWriterFactory;
 import edu.illinois.library.cantaloupe.resource.EndpointDisabledException;
+import edu.illinois.library.cantaloupe.resource.IIIFRequest;
+import edu.illinois.library.cantaloupe.resource.InformationRequestHandler;
+import edu.illinois.library.cantaloupe.resource.ResourceException;
+import edu.illinois.library.cantaloupe.resource.iiif.IIIFAuth;
 import edu.illinois.library.cantaloupe.resource.iiif.v3.Information;
+import edu.illinois.library.cantaloupe.resource.iiif.v3.InformationFactory;
+import edu.illinois.library.cantaloupe.source.StatResult;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 /**
  * Spring Boot controller for IIIF Image API 3.x information requests.
- * Placeholder implementation - replaces the previous iiif.v3.InformationResource class.
- *
- * Note: This is a working implementation using real IIIF classes but with placeholder data.
- * Full functionality would require integration with the complete image processing pipeline.
+ * This implementation uses real IIIF classes and integrates with the complete
+ * image processing pipeline, similar to InformationResource.
  *
  * @see <a href="https://iiif.io/api/image/3.0/#51-image-information-request">
  *     Image Information Requests</a>
@@ -43,14 +57,57 @@ public class InformationController {
         checkEndpointEnabled();
         addCorsHeaders(response);
 
-        // Set up content type negotiation
-        String contentType = getNegotiatedContentType(request);
-        response.setHeader("Content-Type", contentType);
+        // Create an IIIFRequest from the HttpServletRequest
+        List<String> pathArguments = Arrays.asList(identifier);
+        IIIFRequest iiifrequest = new IIIFRequest(request, pathArguments);
 
-        // Create a real IIIF Information object with placeholder data
-        Information<String, Object> iiifInfo = createPlaceholderInformation(identifier, request);
+        // Get the available output formats from the processor
+        final Set<Format> availableOutputFormats =
+                new HashSet<>(ImageWriterFactory.supportedFormats());
 
-        return ResponseEntity.ok(iiifInfo);
+        class CustomCallback implements InformationRequestHandler.Callback {
+            @Override
+            public boolean authorize() throws Exception {
+                return IIIFAuth.preAuthorize(iiifrequest, response);
+            }
+
+            @Override
+            public void sourceAccessed(StatResult result) {
+                if (result.getLastModified() != null) {
+                    setLastModifiedHeader(response, result.getLastModified());
+                }
+            }
+
+            @Override
+            public void knowAvailableOutputFormats(Set<Format> formats) {
+                availableOutputFormats.addAll(formats);
+            }
+        }
+
+
+
+        try (InformationRequestHandler handler = new InformationRequestHandler(
+                iiifrequest,
+                new CustomCallback())) {
+            try {
+                Info info = handler.handle();
+                addHeaders(response, info);
+
+                // Create the IIIF Information response
+                Information<String, Object> iiifInfo = createInformation(
+                        info, availableOutputFormats, identifier, request, iiifrequest);
+
+                return ResponseEntity.ok(iiifInfo);
+            } catch (ResourceException e) {
+                if (e.getStatus().getCode() < 500) {
+                    Information<String, Object> errorInfo = createErrorInformation(
+                            e, identifier, request, iiifrequest);
+                    return ResponseEntity.status(e.getStatus().getCode()).body(errorInfo);
+                } else {
+                    throw e;
+                }
+            }
+        }
     }
 
     @RequestMapping(value = "/{identifier}/info.json", method = RequestMethod.OPTIONS)
@@ -70,63 +127,76 @@ public class InformationController {
         }
     }
 
-    private String getNegotiatedContentType(HttpServletRequest request) {
-        String contentType;
-
-        // Check Accept header for JSON preference
-        String acceptHeader = request.getHeader("Accept");
-        if (acceptHeader != null && acceptHeader.contains("application/json")) {
-            contentType = "application/json";
-        } else {
-            contentType = "application/ld+json";
+    private void addHeaders(HttpServletResponse response, Info info) {
+        // Content-Type
+        response.setHeader("Content-Type", getNegotiatedContentType());
+        // Last-Modified
+        if (info.getSerializationTimestamp() != null) {
+            setLastModifiedHeader(response, info.getSerializationTimestamp());
         }
+    }
 
+    private String getNegotiatedContentType() {
+        String contentType = "application/ld+json"; // Default to JSON-LD
         contentType += ";charset=UTF-8";
         contentType += ";profile=\"http://iiif.io/api/image/3/context.json\"";
         return contentType;
     }
 
     /**
-     * Creates a placeholder IIIF Information object with real structure.
+     * Creates a real IIIF Information object using the InformationFactory.
      */
-    private Information<String, Object> createPlaceholderInformation(String identifier, HttpServletRequest request) {
-        Information<String, Object> info = new Information<>();
+    private Information<String, Object> createInformation(Info info,
+                                                          Set<Format> availableOutputFormats,
+                                                          String identifier,
+                                                          HttpServletRequest request,
+                                                          IIIFRequest iiifrequest) throws Exception {
+        final InformationFactory factory = new InformationFactory();
+        factory.setDelegateProxy(iiifrequest.getDelegateProxy());
 
-        // Build the image URI
-        String imageURI = buildImageURI(identifier, request);
+        final String imageURI = getImageURI(identifier, request);
+        final int pageIndex = getPageIndex(iiifrequest);
 
-        // Standard IIIF v3 properties
-        info.put("@context", "http://iiif.io/api/image/3/context.json");
-        info.put("id", imageURI);
-        info.put("type", "ImageService3");
-        info.put("protocol", "http://iiif.io/api/image");
-        info.put("profile", "level2");
+        return factory.newImageInfo(
+                availableOutputFormats,
+                imageURI,
+                info,
+                pageIndex,
+                iiifrequest.getMetaIdentifier().getScaleConstraint());
+    }
 
-        // Placeholder image dimensions
-        info.put("width", 1000);
-        info.put("height", 1000);
-        info.put("maxWidth", 1000);
-        info.put("maxHeight", 1000);
+    /**
+     * Creates an error Information object for 4xx responses.
+     */
+    private Information<String, Object> createErrorInformation(ResourceException exception,
+                                                               String identifier,
+                                                               HttpServletRequest request,
+                                                               IIIFRequest iiifrequest) throws Exception {
+        final Map<String,Object> map = new LinkedHashMap<>(); // preserves key order
+        map.put("@context", "http://iiif.io/api/image/3/context.json");
+        map.put("id", getImageURI(identifier, request));
+        map.put("type", "ImageService3");
+        map.put("protocol", "http://iiif.io/api/image");
+        map.put("profile", "level2");
+        map.put("status", exception.getStatus().getCode());
+        map.put("message", exception.getMessage());
 
-        // Supported formats
-        info.put("format", java.util.Arrays.asList("jpg", "png", "gif", "webp"));
+        // Add any extra keys from delegate
+        try {
+            map.putAll(iiifrequest.getDelegateProxy().getExtraIIIF3InformationResponseKeys());
+        } catch (Exception e) {
+            // Log but don't fail the request
+        }
 
-        // Supported qualities
-        info.put("quality", java.util.Arrays.asList("default", "color", "gray", "bitonal"));
-
-        // Rights information
-        info.put("rights", "http://creativecommons.org/licenses/by/3.0/");
-
-        // Note about placeholder status
-        info.put("_note", "This is a placeholder response. Full implementation requires image source integration.");
-
-        return info;
+        Information<String, Object> errorInfo = new Information<>();
+        errorInfo.putAll(map);
+        return errorInfo;
     }
 
     /**
      * Builds the image URI from the request.
      */
-    private String buildImageURI(String identifier, HttpServletRequest request) {
+    private String getImageURI(String identifier, HttpServletRequest request) {
         String scheme = request.getScheme();
         String serverName = request.getServerName();
         int serverPort = request.getServerPort();
@@ -139,6 +209,21 @@ public class InformationController {
         }
         uri.append(contextPath).append("/iiif/3/").append(identifier);
         return uri.toString();
+    }
+
+    /**
+     * Gets the page index from the IIIF request, defaulting to 0.
+     */
+    private int getPageIndex(IIIFRequest iiifrequest) {
+        try {
+            return iiifrequest.getPageIndex();
+        } catch (Exception e) {
+            return 0; // Default to first page
+        }
+    }
+
+    private void setLastModifiedHeader(HttpServletResponse response, java.time.Instant timestamp) {
+        response.setDateHeader("Last-Modified", timestamp.toEpochMilli());
     }
 
     private void addCorsHeaders(HttpServletResponse response) {
