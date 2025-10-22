@@ -5,6 +5,7 @@ import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.options;
@@ -30,8 +31,12 @@ import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.config.Key;
+import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.FormatRegistry;
 import edu.illinois.library.cantaloupe.image.FormatRegistryAccessor;
+import edu.illinois.library.cantaloupe.image.Info;
+import edu.illinois.library.cantaloupe.resource.IIIFRequest;
+import edu.illinois.library.cantaloupe.resource.InformationRequestHandler;
 import edu.illinois.library.cantaloupe.resource.InformationRequestHandlerFactory;
 
 /**
@@ -40,7 +45,7 @@ import edu.illinois.library.cantaloupe.resource.InformationRequestHandlerFactory
  * Note: These tests may fail if image sources are not properly configured.
  */
 @WebMvcTest(InformationController.class)
-@Import({FormatRegistry.class, FormatRegistryAccessor.class, InformationRequestHandlerFactory.class})
+@Import({FormatRegistry.class, FormatRegistryAccessor.class})
 @TestPropertySource(properties = {
     "cantaloupe.config=test.properties"
 })
@@ -52,10 +57,13 @@ class InformationControllerTest {
     @MockitoBean
     private Configuration configuration;
 
+    @MockitoBean
+    private InformationRequestHandlerFactory handlerFactory;
+
     private ObjectMapper objectMapper;
 
     @BeforeEach
-    void setUp() {
+    void setUp() throws Exception {
         objectMapper = new ObjectMapper();
 
         // Set up configuration system properties
@@ -66,10 +74,21 @@ class InformationControllerTest {
         // Default: endpoint is enabled
         when(configuration.getBoolean(Key.IIIF_3_ENDPOINT_ENABLED, true)).thenReturn(true);
 
-        // Mock source configuration to prevent ConfigurationException
-        when(configuration.getString(Key.SOURCE_STATIC)).thenReturn("FilesystemSource");
-        when(configuration.getString(Key.FILESYSTEMSOURCE_PATH_PREFIX)).thenReturn("/tmp");
-        when(configuration.getBoolean(Key.DELEGATE_SCRIPT_ENABLED, false)).thenReturn(false);
+        // Mock the factory to return a mock handler
+        InformationRequestHandler mockHandler = org.mockito.Mockito.mock(InformationRequestHandler.class);
+        when(handlerFactory.create(any(IIIFRequest.class), any(InformationRequestHandler.Callback.class)))
+            .thenReturn(mockHandler);
+
+        // Mock the handler's handle() method to return a basic Info
+        Info mockInfo = createMockInfo();
+        when(mockHandler.handle()).thenReturn(mockInfo);
+    }
+
+    private Info createMockInfo() {
+        return Info.builder()
+            .withSize(800, 600)
+            .withFormat(Format.get("jpg"))
+            .build();
     }
 
     @Test
@@ -84,33 +103,25 @@ class InformationControllerTest {
                 .andReturn();
 
         // The response may be successful (200) with real image info or error (4xx/5xx) if no image source
-        int status = result.getResponse().getStatus();
         String responseBody = result.getResponse().getContentAsString();
         JsonNode json = objectMapper.readTree(responseBody);
 
-        if (status == 200) {
-            // Success case - verify IIIF v3 structure
-            assertEquals("http://iiif.io/api/image/3/context.json", json.get("@context").asText());
-            assertEquals("ImageService3", json.get("type").asText());
-            assertEquals("http://iiif.io/api/image", json.get("protocol").asText());
-            assertEquals("level2", json.get("profile").asText());
+        // Success case - verify IIIF v3 structure
+        assertEquals("http://iiif.io/api/image/3/context.json", json.get("@context").asText());
+        assertEquals("ImageService3", json.get("type").asText());
+        assertEquals("http://iiif.io/api/image", json.get("protocol").asText());
+        assertEquals("level2", json.get("profile").asText());
 
-            // Verify required properties exist
-            assertNotNull(json.get("width"), "width should be present");
-            assertNotNull(json.get("height"), "height should be present");
-            assertTrue(json.get("width").isInt(), "width should be integer");
-            assertTrue(json.get("height").isInt(), "height should be integer");
+        // Verify required properties exist
+        assertNotNull(json.get("width"), "width should be present");
+        assertNotNull(json.get("height"), "height should be present");
+        assertTrue(json.get("width").isInt(), "width should be integer");
+        assertTrue(json.get("height").isInt(), "height should be integer");
 
-            // Verify ID contains the identifier
-            String id = json.get("id").asText();
-            assertTrue(id.contains(identifier));
-            assertTrue(id.contains("/iiif/3/"));
-        } else {
-            // Error case - verify error structure
-            assertNotNull(json.get("@context"), "@context should be present in error");
-            assertNotNull(json.get("status"), "status should be present in error");
-            assertNotNull(json.get("message"), "message should be present in error");
-        }
+        // Verify ID contains the identifier
+        String id = json.get("id").asText();
+        assertTrue(id.contains(identifier));
+        assertTrue(id.contains("/iiif/3/"));
     }
 
     @Test
@@ -219,13 +230,11 @@ class InformationControllerTest {
         assertEquals("ImageService3", json.get("type").asText());
         assertEquals("http://iiif.io/api/image", json.get("protocol").asText());
 
-        // For successful responses, verify dimension properties
-        if (result.getResponse().getStatus() == 200) {
-            assertNotNull(json.get("width"), "width is required");
-            assertNotNull(json.get("height"), "height is required");
-            assertTrue(json.get("width").isInt(), "width should be integer");
-            assertTrue(json.get("height").isInt(), "height should be integer");
-        }
+        // verify dimension properties
+        assertNotNull(json.get("width"), "width is required");
+        assertNotNull(json.get("height"), "height is required");
+        assertTrue(json.get("width").isInt(), "width should be integer");
+        assertTrue(json.get("height").isInt(), "height should be integer");
     }
 
     @Test
