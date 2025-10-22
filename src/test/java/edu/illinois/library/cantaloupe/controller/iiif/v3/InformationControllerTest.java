@@ -61,7 +61,7 @@ class InformationControllerTest {
         MvcResult result = mockMvc.perform(get("/iiif/3/{identifier}/info.json", identifier)
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(content().contentTypeCompatibleWith("application/ld+json"))
+                .andExpect(content().contentTypeCompatibleWith("application/json"))
                 .andExpect(header().string("Access-Control-Allow-Origin", "*"))
                 .andExpect(header().string("Access-Control-Allow-Headers", "Authorization, Content-Type"))
                 .andExpect(header().string("Access-Control-Allow-Methods", "GET, OPTIONS"))
