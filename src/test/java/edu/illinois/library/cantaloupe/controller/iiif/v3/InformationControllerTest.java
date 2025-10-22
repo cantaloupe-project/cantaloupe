@@ -8,7 +8,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.options;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -17,6 +16,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -26,8 +26,12 @@ import org.springframework.test.web.servlet.MvcResult;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.config.Configuration;
+import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.config.Key;
+import edu.illinois.library.cantaloupe.image.FormatRegistry;
+import edu.illinois.library.cantaloupe.image.FormatRegistryAccessor;
 
 /**
  * Spring Boot test for IIIF v3 Information Controller.
@@ -35,6 +39,7 @@ import edu.illinois.library.cantaloupe.config.Key;
  * Note: These tests may fail if image sources are not properly configured.
  */
 @WebMvcTest(InformationController.class)
+@Import({FormatRegistry.class, FormatRegistryAccessor.class})
 @TestPropertySource(properties = {
     "cantaloupe.config=test.properties"
 })
@@ -51,8 +56,19 @@ class InformationControllerTest {
     @BeforeEach
     void setUp() {
         objectMapper = new ObjectMapper();
+
+        // Set up configuration system properties
+        ConfigurationFactory.clearInstance();
+        System.setProperty(ConfigurationFactory.CONFIG_VM_ARGUMENT, "memory");
+        System.setProperty(Application.TEST_VM_ARGUMENT, "true");
+
         // Default: endpoint is enabled
         when(configuration.getBoolean(Key.IIIF_3_ENDPOINT_ENABLED, true)).thenReturn(true);
+
+        // Mock source configuration to prevent ConfigurationException
+        when(configuration.getString(Key.SOURCE_STATIC)).thenReturn("FilesystemSource");
+        when(configuration.getString(Key.FILESYSTEMSOURCE_PATH_PREFIX)).thenReturn("/tmp");
+        when(configuration.getBoolean(Key.DELEGATE_SCRIPT_ENABLED, false)).thenReturn(false);
     }
 
     @Test
