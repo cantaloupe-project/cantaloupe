@@ -28,6 +28,7 @@ import edu.illinois.library.cantaloupe.processor.codec.ImageWriterFactory;
 import edu.illinois.library.cantaloupe.resource.EndpointDisabledException;
 import edu.illinois.library.cantaloupe.resource.IIIFRequest;
 import edu.illinois.library.cantaloupe.resource.InformationRequestHandler;
+import edu.illinois.library.cantaloupe.resource.InformationRequestHandlerFactory;
 import edu.illinois.library.cantaloupe.resource.ResourceException;
 import edu.illinois.library.cantaloupe.resource.iiif.IIIFAuth;
 import edu.illinois.library.cantaloupe.resource.iiif.v3.Information;
@@ -48,10 +49,13 @@ import jakarta.servlet.http.HttpServletResponse;
 @RequestMapping("/iiif/3")
 public class InformationController {
     private final Configuration configuration;
+    private final InformationRequestHandlerFactory handlerFactory;
 
     @Autowired
-    public InformationController(Configuration configuration) {
+    public InformationController(Configuration configuration,
+                                InformationRequestHandlerFactory handlerFactory) {
         this.configuration = configuration;
+        this.handlerFactory = handlerFactory;
     }
 
     @GetMapping("/{identifier}/info.json")
@@ -93,7 +97,7 @@ public class InformationController {
 
 
 
-        try (InformationRequestHandler handler = new InformationRequestHandler(
+        try (InformationRequestHandler handler = handlerFactory.create(
                 iiifrequest,
                 new CustomCallback())) {
             try {
