@@ -104,7 +104,7 @@ public class ImageResource extends IIIF1Resource {
             @Override
             public void willProcessImage(Processor processor,
                                          Info info) throws Exception {
-                final Dimension fullSize = info.getSize(getPageIndex());
+                final Dimension fullSize = info.getSize(getRequest().getPageIndex());
                 ScaleValidator.validateScale(info.getMetadata().getOrientation().adjustedSize(fullSize),
                         (Scale) opList.getFirst(Scale.class),
                         Status.FORBIDDEN,
@@ -161,7 +161,7 @@ public class ImageResource extends IIIF1Resource {
                 args.get(3), args.get(4), outputFormat);
 
         final OperationList ops = params.toOperationList(getRequest().getDelegateProxy());
-        ops.setPageIndex(getPageIndex());
+        ops.setPageIndex(getRequest().getPageIndex());
         ops.getOptions().putAll(getRequest().getReference().getQuery().toMap());
         return ops;
     }
