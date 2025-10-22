@@ -1,5 +1,6 @@
 package edu.illinois.library.cantaloupe.config;
 
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
@@ -10,6 +11,11 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
  */
 @Configuration
 public class WebConfig implements WebMvcConfigurer {
+
+    @Bean
+    public edu.illinois.library.cantaloupe.config.Configuration configuration() {
+        return edu.illinois.library.cantaloupe.config.Configuration.getInstance();
+    }
 
     /**
      * Configure static resource handlers.
