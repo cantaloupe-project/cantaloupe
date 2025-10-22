@@ -48,7 +48,7 @@ public final class Format implements Comparable<Format> {
      * @return All known formats.
      */
     public static Set<Format> all() {
-        return FormatRegistry.allFormats();
+        return FormatRegistryAccessor.getAllFormats();
     }
 
     /**
@@ -57,7 +57,7 @@ public final class Format implements Comparable<Format> {
      *            if no such format exists.
      */
     public static Format get(String key) {
-        return FormatRegistry.formatWithKey(key);
+        return FormatRegistryAccessor.getFormatWithKey(key);
     }
 
     /**

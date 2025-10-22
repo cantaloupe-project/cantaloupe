@@ -1,15 +1,44 @@
 package edu.illinois.library.cantaloupe.image;
 
-import edu.illinois.library.cantaloupe.test.BaseTest;
+import edu.illinois.library.cantaloupe.Application;
+import edu.illinois.library.cantaloupe.config.Configuration;
+import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.when;
 
-class FormatTest extends BaseTest {
+/**
+ * Spring Boot test for Format class.
+ * Tests format functionality with dependency injection support.
+ */
+@SpringBootTest(classes = {FormatRegistry.class, FormatRegistryAccessor.class})
+@TestPropertySource(properties = {
+    "logging.level.root=WARN"
+})
+class FormatTest {
+
+    @MockitoBean
+    private Configuration configuration;
+
+    @BeforeEach
+    void setUp() {
+        ConfigurationFactory.clearInstance();
+        System.setProperty(ConfigurationFactory.CONFIG_VM_ARGUMENT, "memory");
+        System.setProperty(Application.TEST_VM_ARGUMENT, "true");
+
+        // Mock the configuration to return the current working directory
+        when(configuration.getFile()).thenReturn(Optional.empty());
+    }
 
     @Test
     void testAll() {
@@ -25,7 +54,7 @@ class FormatTest extends BaseTest {
 
     @Test
     void testGetWithValidKey() {
-        assertEquals(FormatRegistry.formatWithKey("jpg"), Format.get("jpg"));
+        assertEquals(FormatRegistryAccessor.getFormatWithKey("jpg"), Format.get("jpg"));
     }
 
     @Test
