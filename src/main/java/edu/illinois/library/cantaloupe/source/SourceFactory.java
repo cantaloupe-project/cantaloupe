@@ -1,25 +1,30 @@
 package edu.illinois.library.cantaloupe.source;
 
-import edu.illinois.library.cantaloupe.config.Configuration;
-import edu.illinois.library.cantaloupe.config.ConfigurationException;
-import edu.illinois.library.cantaloupe.config.Key;
-import edu.illinois.library.cantaloupe.image.Identifier;
-import edu.illinois.library.cantaloupe.delegate.DelegateMethod;
-import edu.illinois.library.cantaloupe.delegate.DelegateProxy;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import static edu.illinois.library.cantaloupe.source.SourceFactory.SelectionStrategy.DELEGATE_SCRIPT;
 
-import javax.script.ScriptException;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Set;
 
-import static edu.illinois.library.cantaloupe.source.SourceFactory.SelectionStrategy.DELEGATE_SCRIPT;
+import javax.script.ScriptException;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
+import edu.illinois.library.cantaloupe.config.Configuration;
+import edu.illinois.library.cantaloupe.config.ConfigurationException;
+import edu.illinois.library.cantaloupe.config.Key;
+import edu.illinois.library.cantaloupe.delegate.DelegateMethod;
+import edu.illinois.library.cantaloupe.delegate.DelegateProxy;
+import edu.illinois.library.cantaloupe.image.Identifier;
 
 /**
  * Used to obtain an instance of a {@link Source} defined in the
  * configuration, or returned by a delegate method.
  */
+@Component
 public final class SourceFactory {
 
     /**
@@ -50,6 +55,12 @@ public final class SourceFactory {
             new HttpSource(),
             new JdbcSource(),
             new S3Source());
+
+    private Configuration configuration;
+    @Autowired
+    public SourceFactory(Configuration config) {
+        this.configuration = config;
+    }
 
     /**
      * @return Set of instances of each unique source.
@@ -124,13 +135,12 @@ public final class SourceFactory {
                         identifier);
                 return source;
             default:
-                final Configuration config = Configuration.getInstance();
-                final String sourceName = config.getString(Key.SOURCE_STATIC);
+                final String sourceName = configuration.getString(Key.SOURCE_STATIC);
                 if (sourceName != null) {
                     return newSource(sourceName, identifier, proxy);
                 } else {
                     throw new ConfigurationException(Key.SOURCE_STATIC +
-                            " is not set to a valid source.");
+                            " is not set to a valid source. '" + sourceName + "' ");
                 }
         }
     }
@@ -139,8 +149,7 @@ public final class SourceFactory {
      * @return How sources are chosen by {@link #newSource}.
      */
     public SelectionStrategy getSelectionStrategy() {
-        final Configuration config = Configuration.getInstance();
-        return config.getBoolean(Key.SOURCE_DELEGATE, false) ?
+        return configuration.getBoolean(Key.SOURCE_DELEGATE, false) ?
                 DELEGATE_SCRIPT : SelectionStrategy.STATIC;
     }
 

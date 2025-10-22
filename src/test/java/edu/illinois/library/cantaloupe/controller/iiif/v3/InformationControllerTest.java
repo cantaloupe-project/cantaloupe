@@ -32,6 +32,7 @@ import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.FormatRegistry;
 import edu.illinois.library.cantaloupe.image.FormatRegistryAccessor;
+import edu.illinois.library.cantaloupe.resource.InformationRequestHandlerFactory;
 
 /**
  * Spring Boot test for IIIF v3 Information Controller.
@@ -39,7 +40,7 @@ import edu.illinois.library.cantaloupe.image.FormatRegistryAccessor;
  * Note: These tests may fail if image sources are not properly configured.
  */
 @WebMvcTest(InformationController.class)
-@Import({FormatRegistry.class, FormatRegistryAccessor.class})
+@Import({FormatRegistry.class, FormatRegistryAccessor.class, InformationRequestHandlerFactory.class})
 @TestPropertySource(properties = {
     "cantaloupe.config=test.properties"
 })
