@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
  * @see <a href="http://iiif.io/api/request/2.1/#request-request-parameters">IIIF
  *      Image API 2.1</a>
  */
-class Parameters {
+public class Parameters {
 
     private String identifier;
     private Region region;

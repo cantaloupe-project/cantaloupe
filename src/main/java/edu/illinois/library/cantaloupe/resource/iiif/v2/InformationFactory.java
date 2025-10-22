@@ -27,7 +27,7 @@ import java.util.Set;
 /**
  * Builds new {@link Information} instances.
  */
-final class InformationFactory {
+public final class InformationFactory {
 
     private static final Logger LOGGER =
             LoggerFactory.getLogger(InformationFactory.class);

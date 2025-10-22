@@ -16,7 +16,7 @@ import org.apache.commons.lang3.StringUtils;
  * @see <a href="http://iiif.io/api/image/1.1/#parameters">IIIF Image API
  * 1.1</a>
  */
-final class Parameters {
+public final class Parameters {
 
     private String identifier;
     private Format outputFormat;
