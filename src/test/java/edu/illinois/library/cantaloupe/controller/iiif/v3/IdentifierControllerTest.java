@@ -105,7 +105,7 @@ class IdentifierControllerTest {
     void testRedirectToInfo_WithContextPath() throws Exception {
         String identifier = "context-image";
 
-        mockMvc.perform(get("/iiif/3/{identifier}", identifier)
+        mockMvc.perform(get("/cantaloupe/iiif/3/{identifier}", identifier)
                 .contextPath("/cantaloupe"))
                 .andExpect(status().isSeeOther())
                 .andExpect(header().string("Location", containsString("/cantaloupe/iiif/3/" + identifier + "/info.json")));
