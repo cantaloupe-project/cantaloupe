@@ -16,7 +16,7 @@ import java.util.List;
  * @see <a href="https://iiif.io/api/image/3.0/#52-technical-properties">IIIF
  * Image API 3.0: Technical Properties</a>
  */
-class Information<K,V> extends LinkedHashMap<K,V> {
+public class Information<K,V> extends LinkedHashMap<K,V> {
 
     @JsonPropertyOrder({ "width", "height" })
     public static final class Size {

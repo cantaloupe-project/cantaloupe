@@ -15,7 +15,7 @@ import java.util.Set;
 /**
  * Builds new {@link Information} instances.
  */
-final class InformationFactory {
+public final class InformationFactory {
 
     private static final int MIN_SIZE = 64;
 

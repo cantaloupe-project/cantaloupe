@@ -12,7 +12,7 @@ import edu.illinois.library.cantaloupe.util.StringUtils;
  * @see <a href="http://iiif.io/api/image/1.1/#parameters-size">IIIF Image API
  * 1.1</a>
  */
-class Size {
+public class Size {
 
     public enum ScaleMode {
 
