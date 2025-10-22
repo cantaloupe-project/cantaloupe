@@ -1,13 +1,18 @@
 package edu.illinois.library.cantaloupe.controller.iiif.v3;
 
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -54,6 +59,8 @@ public class InformationController {
                                                                      HttpServletRequest request,
                                                                      HttpServletResponse response) throws Exception {
 
+        HttpHeaders headers = new HttpHeaders();
+
         checkEndpointEnabled();
         addCorsHeaders(response);
 
@@ -74,7 +81,7 @@ public class InformationController {
             @Override
             public void sourceAccessed(StatResult result) {
                 if (result.getLastModified() != null) {
-                    setLastModifiedHeader(response, result.getLastModified());
+                    setLastModifiedHeader(headers, result.getLastModified());
                 }
             }
 
@@ -91,13 +98,13 @@ public class InformationController {
                 new CustomCallback())) {
             try {
                 Info info = handler.handle();
-                addHeaders(response, info);
+                setContentTypeAndLastModified(headers, info);
 
                 // Create the IIIF Information response
                 Information<String, Object> iiifInfo = createInformation(
                         info, availableOutputFormats, identifier, request, iiifrequest);
 
-                return ResponseEntity.ok(iiifInfo);
+                return new ResponseEntity<Information<String, Object>>(iiifInfo, headers, HttpStatus.OK);
             } catch (ResourceException e) {
                 if (e.getStatus().getCode() < 500) {
                     Information<String, Object> errorInfo = createErrorInformation(
@@ -127,19 +134,11 @@ public class InformationController {
         }
     }
 
-    private void addHeaders(HttpServletResponse response, Info info) {
-        // Content-Type
-        response.setHeader("Content-Type", getNegotiatedContentType());
-        // Last-Modified
-        if (info.getSerializationTimestamp() != null) {
-            setLastModifiedHeader(response, info.getSerializationTimestamp());
-        }
-    }
-
     private String getNegotiatedContentType() {
         String contentType = "application/ld+json"; // Default to JSON-LD
         contentType += ";charset=UTF-8";
         contentType += ";profile=\"http://iiif.io/api/image/3/context.json\"";
+        System.out.println("Congentiated content type: " + contentType);
         return contentType;
     }
 
@@ -222,8 +221,24 @@ public class InformationController {
         }
     }
 
-    private void setLastModifiedHeader(HttpServletResponse response, java.time.Instant timestamp) {
-        response.setDateHeader("Last-Modified", timestamp.toEpochMilli());
+    private void setLastModifiedHeader(HttpHeaders headers, java.time.Instant timestamp) {
+                // Format the instant to RFC 1123 date-time format
+        DateTimeFormatter formatter = DateTimeFormatter
+                .ofPattern("EEE, dd MMM yyyy HH:mm:ss 'GMT'")
+                .withLocale(Locale.UK)
+                .withZone(ZoneOffset.UTC);
+
+        String formattedDate = formatter.format(timestamp);
+        headers.add("Last-Modified", formattedDate);
+    }
+
+    private void setContentTypeAndLastModified(HttpHeaders headers, Info info) {
+        // Content-Type
+        headers.add("Content-Type", getNegotiatedContentType());
+        // Last-Modified
+        if (info.getSerializationTimestamp() != null) {
+            setLastModifiedHeader(headers, info.getSerializationTimestamp());
+        }
     }
 
     private void addCorsHeaders(HttpServletResponse response) {
