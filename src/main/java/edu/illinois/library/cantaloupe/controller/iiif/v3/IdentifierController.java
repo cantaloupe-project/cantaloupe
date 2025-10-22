@@ -41,7 +41,7 @@ public class IdentifierController {
         checkEndpointEnabled();
 
         // Build the redirect URL to info.json
-        String redirectUrl = buildBaseUrl(request) + "/iiif/3/" + identifier + "/info.json";
+        String redirectUrl = request.getContextPath() + "/iiif/3/" + identifier + "/info.json";
 
         // Add CORS headers
         addCorsHeaders(response);
@@ -66,21 +66,6 @@ public class IdentifierController {
         if (!configuration.getBoolean(Key.IIIF_3_ENDPOINT_ENABLED, true)) {
             throw new EndpointDisabledException();
         }
-    }
-
-    private String buildBaseUrl(HttpServletRequest request) {
-        String scheme = request.getScheme();
-        String serverName = request.getServerName();
-        int serverPort = request.getServerPort();
-        String contextPath = request.getContextPath();
-
-        StringBuilder url = new StringBuilder();
-        url.append(scheme).append("://").append(serverName);
-        if (serverPort != 80 && serverPort != 443) {
-            url.append(":").append(serverPort);
-        }
-        url.append(contextPath);
-        return url.toString();
     }
 
     private void addCorsHeaders(HttpServletResponse response) {
