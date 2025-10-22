@@ -159,7 +159,7 @@ public class InformationResource extends IIIF2Resource {
                 availableOutputFormats,
                 getImageURI(),
                 info,
-                getPageIndex(),
+                getRequest().getPageIndex(),
                 getRequest().getMetaIdentifier().getScaleConstraint());
         return new JacksonRepresentation(iiifInfo);
     }

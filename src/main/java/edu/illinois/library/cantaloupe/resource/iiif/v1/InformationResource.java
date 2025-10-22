@@ -100,7 +100,7 @@ public class InformationResource extends IIIF1Resource {
                         getImageURI(),
                         availableOutputFormats,
                         info,
-                        getPageIndex(),
+                        getRequest().getPageIndex(),
                         getRequest().getMetaIdentifier().getScaleConstraint());
                 addHeaders(info, iiifInfo);
                 new JacksonRepresentation(iiifInfo)
