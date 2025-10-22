@@ -41,6 +41,7 @@ public class InformationController {
                                                                      HttpServletResponse response) throws Exception {
 
         checkEndpointEnabled();
+        addCorsHeaders(response);
 
         // Set up content type negotiation
         String contentType = getNegotiatedContentType(request);
