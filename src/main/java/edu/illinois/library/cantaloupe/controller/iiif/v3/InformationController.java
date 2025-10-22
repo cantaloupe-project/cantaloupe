@@ -142,7 +142,6 @@ public class InformationController {
         String contentType = "application/ld+json"; // Default to JSON-LD
         contentType += ";charset=UTF-8";
         contentType += ";profile=\"http://iiif.io/api/image/3/context.json\"";
-        System.out.println("Congentiated content type: " + contentType);
         return contentType;
     }
 
