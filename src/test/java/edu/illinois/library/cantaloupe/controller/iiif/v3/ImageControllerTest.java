@@ -16,6 +16,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
@@ -26,6 +27,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
+import edu.illinois.library.cantaloupe.delegate.DelegateProxyService;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.resource.IIIFRequest;
 import edu.illinois.library.cantaloupe.resource.ImageRequestHandler;
@@ -37,6 +39,7 @@ import edu.illinois.library.cantaloupe.resource.ImageRequestHandlerFactory;
  * Note: These tests may fail if image sources are not properly configured.
  */
 @WebMvcTest(ImageController.class)
+@Import({DelegateProxyService.class})
 @TestPropertySource(properties = {
     "cantaloupe.config=test.properties"
 })
