@@ -1,5 +1,6 @@
 package edu.illinois.library.cantaloupe.resource;
 
+import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.delegate.DelegateProxy;
 import edu.illinois.library.cantaloupe.delegate.DelegateProxyService;
@@ -28,8 +29,8 @@ public class IIIFRequest extends Request {
      */
     private DelegateProxy delegateProxy;
 
-    public IIIFRequest(HttpServletRequest request, List<String> pathArguments) {
-        super(request, pathArguments);
+    public IIIFRequest(HttpServletRequest request, List<String> pathArguments, Configuration configuration) {
+        super(request, pathArguments, configuration);
     }
 
         /**

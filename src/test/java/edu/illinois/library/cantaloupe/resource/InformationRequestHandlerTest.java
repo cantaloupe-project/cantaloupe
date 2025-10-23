@@ -1,21 +1,28 @@
 package edu.illinois.library.cantaloupe.resource;
 
-import edu.illinois.library.cantaloupe.cache.CacheFacade;
-import edu.illinois.library.cantaloupe.cache.DerivativeCache;
-import edu.illinois.library.cantaloupe.config.Configuration;
-import edu.illinois.library.cantaloupe.config.Key;
-import edu.illinois.library.cantaloupe.image.*;
-import edu.illinois.library.cantaloupe.source.StatResult;
-import edu.illinois.library.cantaloupe.test.BaseTest;
-import edu.illinois.library.cantaloupe.test.TestUtil;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.util.ArrayList;
+import java.util.Set;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.util.Set;
-import java.util.ArrayList;
-
-import static org.junit.jupiter.api.Assertions.*;
+import edu.illinois.library.cantaloupe.cache.CacheFacade;
+import edu.illinois.library.cantaloupe.cache.DerivativeCache;
+import edu.illinois.library.cantaloupe.config.Configuration;
+import edu.illinois.library.cantaloupe.config.Key;
+import edu.illinois.library.cantaloupe.image.Dimension;
+import edu.illinois.library.cantaloupe.image.Format;
+import edu.illinois.library.cantaloupe.image.Identifier;
+import edu.illinois.library.cantaloupe.image.Info;
+import edu.illinois.library.cantaloupe.image.Metadata;
+import edu.illinois.library.cantaloupe.source.StatResult;
+import edu.illinois.library.cantaloupe.test.BaseTest;
+import edu.illinois.library.cantaloupe.test.TestUtil;
 
 public class InformationRequestHandlerTest extends BaseTest {
     private static class IntrospectiveCallback implements InformationRequestHandler.Callback {
@@ -43,22 +50,24 @@ public class InformationRequestHandlerTest extends BaseTest {
 
     private MockHttpServletRequest servletRequest;
     private IIIFRequest request;
+    private Configuration configuration = Configuration.getInstance();
 
     @BeforeEach
     public void setUp() throws Exception {
         super.setUp();
         servletRequest = new MockHttpServletRequest();
         servletRequest.setRequestURL("http://example.org/iiif/2/foo");
-        request = new IIIFRequest(servletRequest, new ArrayList<String>() { { add("jpg-rgb-64x48x8.jpg"); }});
+        request = new IIIFRequest(servletRequest,
+                                  new ArrayList<String>() { { add("jpg-rgb-64x48x8.jpg"); }},
+                                  configuration);
     }
 
 
     @Test
     void testHandleCallsAuthorizationCallback() throws Exception {
         {   // Configure the application.
-            final Configuration config = Configuration.getInstance();
-            config.setProperty(Key.SOURCE_STATIC, "FilesystemSource");
-            config.setProperty(Key.FILESYSTEMSOURCE_PATH_PREFIX,
+            configuration.setProperty(Key.SOURCE_STATIC, "FilesystemSource");
+            configuration.setProperty(Key.FILESYSTEMSOURCE_PATH_PREFIX,
                     TestUtil.getImagesPath() + "/");
         }
 
@@ -75,9 +84,8 @@ public class InformationRequestHandlerTest extends BaseTest {
     @Test
     void testHandleCallsSourceAccessedCallback() throws Exception {
         {   // Configure the application.
-            final Configuration config = Configuration.getInstance();
-            config.setProperty(Key.SOURCE_STATIC, "FilesystemSource");
-            config.setProperty(Key.FILESYSTEMSOURCE_PATH_PREFIX,
+            configuration.setProperty(Key.SOURCE_STATIC, "FilesystemSource");
+            configuration.setProperty(Key.FILESYSTEMSOURCE_PATH_PREFIX,
                     TestUtil.getImagesPath() + "/");
         }
 
@@ -93,9 +101,8 @@ public class InformationRequestHandlerTest extends BaseTest {
     @Test
     void testHandleCallsAvailableOutputFormatsCallback() throws Exception {
         {   // Configure the application.
-            final Configuration config = Configuration.getInstance();
-            config.setProperty(Key.SOURCE_STATIC, "FilesystemSource");
-            config.setProperty(Key.FILESYSTEMSOURCE_PATH_PREFIX,
+            configuration.setProperty(Key.SOURCE_STATIC, "FilesystemSource");
+            configuration.setProperty(Key.FILESYSTEMSOURCE_PATH_PREFIX,
                     TestUtil.getImagesPath() + "/");
         }
 
@@ -111,13 +118,12 @@ public class InformationRequestHandlerTest extends BaseTest {
     @Test
     void testHandleReturnsInstanceFromDerivativeCache() throws Exception {
         {   // Configure the application.
-            final Configuration config = Configuration.getInstance();
-            config.setProperty(Key.CACHE_SERVER_RESOLVE_FIRST, false);
-            config.setProperty(Key.SOURCE_STATIC, "FilesystemSource");
-            config.setProperty(Key.FILESYSTEMSOURCE_PATH_PREFIX,
+            configuration.setProperty(Key.CACHE_SERVER_RESOLVE_FIRST, false);
+            configuration.setProperty(Key.SOURCE_STATIC, "FilesystemSource");
+            configuration.setProperty(Key.FILESYSTEMSOURCE_PATH_PREFIX,
                     TestUtil.getImagesPath() + "/");
-            config.setProperty(Key.DERIVATIVE_CACHE_ENABLED, true);
-            config.setProperty(Key.DERIVATIVE_CACHE, "HeapCache");
+            configuration.setProperty(Key.DERIVATIVE_CACHE_ENABLED, true);
+            configuration.setProperty(Key.DERIVATIVE_CACHE, "HeapCache");
         }
 
         // Configure the request.
@@ -148,15 +154,14 @@ public class InformationRequestHandlerTest extends BaseTest {
     void testHandleSetsRequestContextKeysBeforeReturningInstanceFromDerivativeCache()
             throws Exception {
         {   // Configure the application.
-            final Configuration config = Configuration.getInstance();
-            config.setProperty(Key.CACHE_SERVER_RESOLVE_FIRST, false);
-            config.setProperty(Key.SOURCE_STATIC, "FilesystemSource");
-            config.setProperty(Key.FILESYSTEMSOURCE_PATH_PREFIX,
+            configuration.setProperty(Key.CACHE_SERVER_RESOLVE_FIRST, false);
+            configuration.setProperty(Key.SOURCE_STATIC, "FilesystemSource");
+            configuration.setProperty(Key.FILESYSTEMSOURCE_PATH_PREFIX,
                     TestUtil.getImagesPath() + "/");
-            config.setProperty(Key.DERIVATIVE_CACHE_ENABLED, true);
-            config.setProperty(Key.DERIVATIVE_CACHE, "HeapCache");
-            config.setProperty(Key.DELEGATE_SCRIPT_ENABLED, true);
-            config.setProperty(Key.DELEGATE_SCRIPT_PATHNAME,
+            configuration.setProperty(Key.DERIVATIVE_CACHE_ENABLED, true);
+            configuration.setProperty(Key.DERIVATIVE_CACHE, "HeapCache");
+            configuration.setProperty(Key.DELEGATE_SCRIPT_ENABLED, true);
+            configuration.setProperty(Key.DELEGATE_SCRIPT_PATHNAME,
                     TestUtil.getFixture("delegates.rb").toString());
         }
 
@@ -188,9 +193,8 @@ public class InformationRequestHandlerTest extends BaseTest {
     @Test
     void testHandleReturnsInstanceFromProcessor() throws Exception {
         {   // Configure the application.
-            final Configuration config = Configuration.getInstance();
-            config.setProperty(Key.SOURCE_STATIC, "FilesystemSource");
-            config.setProperty(Key.FILESYSTEMSOURCE_PATH_PREFIX,
+            configuration.setProperty(Key.SOURCE_STATIC, "FilesystemSource");
+            configuration.setProperty(Key.FILESYSTEMSOURCE_PATH_PREFIX,
                     TestUtil.getImagesPath() + "/");
         }
 
@@ -207,9 +211,8 @@ public class InformationRequestHandlerTest extends BaseTest {
     void testHandleSetsRequestContextPageCountBeforeReturningInstanceFromProcessor()
             throws Exception {
         {   // Configure the application.
-            final Configuration config = Configuration.getInstance();
-            config.setProperty(Key.SOURCE_STATIC, "FilesystemSource");
-            config.setProperty(Key.FILESYSTEMSOURCE_PATH_PREFIX,
+            configuration.setProperty(Key.SOURCE_STATIC, "FilesystemSource");
+            configuration.setProperty(Key.FILESYSTEMSOURCE_PATH_PREFIX,
                     TestUtil.getImagesPath() + "/");
         }
 

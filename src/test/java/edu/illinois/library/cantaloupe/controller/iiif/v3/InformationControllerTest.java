@@ -82,6 +82,7 @@ class InformationControllerTest {
         when(configuration.getString(Key.FILESYSTEMSOURCE_LOOKUP_STRATEGY, "")).thenReturn("BasicLookupStrategy");
         when(configuration.getString(Key.FILESYSTEMSOURCE_PATH_PREFIX, "")).thenReturn(TestUtil.getFixturePath() + "/images/");
         when(configuration.getString(Key.FILESYSTEMSOURCE_PATH_SUFFIX, "")).thenReturn("");
+        when(configuration.getString(Key.BASE_URI, "")).thenReturn("");
 
     }
 
@@ -163,7 +164,7 @@ class InformationControllerTest {
         JsonNode json = objectMapper.readTree(responseBody);
 
         String id = json.get("id").asText();
-        assertEquals("http://example.com:8080/iiif/3/jpg-rgb-64x56x8-baseline.jpg", id);
+        assertEquals("https://cdn.example.com/iiif/3/jpg-rgb-64x56x8-baseline.jpg", id);
     }
 
     @Test
@@ -665,24 +666,6 @@ class InformationControllerTest {
     //             Route.IIIF_3_PATH + path, info.get("id"));
     // }
 
-    // @Test
-    // void testGETURIsInJSONWithProxyHeaders() throws Exception {
-    //     client = newClient("/" + IMAGE + "/info.json");
-    //     client.getHeaders().set("X-Forwarded-Proto", "HTTP");
-    //     client.getHeaders().set("X-Forwarded-Host", "example.org");
-    //     client.getHeaders().set("X-Forwarded-Port", "8080");
-    //     client.getHeaders().set("X-Forwarded-Path", "/cats");
-    //     client.getHeaders().set(
-    //             IIIFRequest.PUBLIC_IDENTIFIER_HEADER, "originalID");
-    //     Response response = client.send();
-
-    //     String json = response.getBodyAsString();
-    //     ObjectMapper mapper = new ObjectMapper();
-    //     Information<?, ?> info = mapper.readValue(json, Information.class);
-    //     assertEquals("http://example.org:8080/cats" +
-    //             Route.IIIF_3_PATH + "/originalID", info.get("id"));
-    // }
-
 
     @Test
     void testGetInformation_URIsInJSONWithBaseURIOverride() throws Exception {
@@ -708,9 +691,9 @@ class InformationControllerTest {
         MvcResult result = mockMvc.perform(
             get("/iiif/3/{identifier}/info.json", IMAGE)
                 .header("X-Forwarded-Proto", "HTTP")
-                .header("X-Forwarded-Proto", "example.org")
-                .header("X-Forwarded-Proto", "8080")
-                .header("X-Forwarded-Proto", "/cats"))
+                .header("X-Forwarded-Host", "example.org")
+                .header("X-Forwarded-Port", "8080")
+                .header("X-Forwarded-Path", "/cats"))
             .andReturn();
 
         // The response may be successful (200) with real image info or error (4xx/5xx) if no image source

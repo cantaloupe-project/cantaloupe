@@ -39,7 +39,7 @@ public class LandingController extends AbstractIIIFController {
         response.setHeader("Content-Type", "text/html;charset=UTF-8");
 
         // Create a minimal request wrapper for template variables
-        Request requestWrapper = new Request(request, Collections.emptyList());
+        Request requestWrapper = new Request(request, Collections.emptyList(), configuration);
         model.addAllAttributes(TemplateVariables.getDefault(requestWrapper).getVars());
 
         return "iiif_3_landing";

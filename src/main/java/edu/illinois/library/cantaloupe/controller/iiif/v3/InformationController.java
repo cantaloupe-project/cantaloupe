@@ -30,6 +30,7 @@ import edu.illinois.library.cantaloupe.resource.InformationRequestHandler;
 import edu.illinois.library.cantaloupe.resource.InformationRequestHandlerFactory;
 import edu.illinois.library.cantaloupe.resource.RequestContextDecorator;
 import edu.illinois.library.cantaloupe.resource.ResourceException;
+import edu.illinois.library.cantaloupe.resource.Route;
 import edu.illinois.library.cantaloupe.resource.iiif.IIIFAuth;
 import edu.illinois.library.cantaloupe.resource.iiif.v3.Information;
 import edu.illinois.library.cantaloupe.resource.iiif.v3.InformationFactory;
@@ -70,7 +71,7 @@ public class InformationController extends AbstractIIIFController {
 
         // Create an IIIFRequest from the HttpServletRequest
         List<String> pathArguments = Arrays.asList(identifier);
-        IIIFRequest iiifrequest = new IIIFRequest(request, pathArguments);
+        IIIFRequest iiifrequest = new IIIFRequest(request, pathArguments, configuration);
         RequestContextDecorator.decorateRequestContext(iiifrequest);
 
         // Get the available output formats from the processor
@@ -152,7 +153,7 @@ public class InformationController extends AbstractIIIFController {
         final InformationFactory factory = new InformationFactory();
         factory.setDelegateProxy(iiifrequest.getDelegateProxy());
 
-        final String imageURI = getImageURI(identifier, request);
+        final String imageURI = getImageURI(identifier, request, iiifrequest);
         final int pageIndex = getPageIndex(iiifrequest);
 
         return factory.newImageInfo(
@@ -163,6 +164,7 @@ public class InformationController extends AbstractIIIFController {
                 iiifrequest.getMetaIdentifier().getScaleConstraint());
     }
 
+
     /**
      * Creates an error Information object for 4xx responses.
      */
@@ -172,7 +174,7 @@ public class InformationController extends AbstractIIIFController {
                                                                IIIFRequest iiifrequest) throws Exception {
         final Map<String,Object> map = new LinkedHashMap<>(); // preserves key order
         map.put("@context", "http://iiif.io/api/image/3/context.json");
-        map.put("id", getImageURI(identifier, request));
+        map.put("id", getImageURI(identifier, request, iiifrequest));
         map.put("type", "ImageService3");
         map.put("protocol", "http://iiif.io/api/image");
         map.put("profile", "level2");
@@ -194,19 +196,22 @@ public class InformationController extends AbstractIIIFController {
     /**
      * Builds the image URI from the request.
      */
-    private String getImageURI(String identifier, HttpServletRequest request) {
-        String scheme = request.getScheme();
-        String serverName = request.getServerName();
-        int serverPort = request.getServerPort();
-        String contextPath = request.getContextPath();
+    private String getImageURI(String identifier, HttpServletRequest request, IIIFRequest iiifRequest) {
+        return iiifRequest.getPublicRootReference() + Route.IIIF_3_PATH + "/" +
+                iiifRequest.getPublicIdentifier();
 
-        StringBuilder uri = new StringBuilder();
-        uri.append(scheme).append("://").append(serverName);
-        if (serverPort != 80 && serverPort != 443) {
-            uri.append(":").append(serverPort);
-        }
-        uri.append(contextPath).append("/iiif/3/").append(identifier);
-        return uri.toString();
+        // String scheme = request.getScheme();
+        // String serverName = request.getServerName();
+        // int serverPort = request.getServerPort();
+        // String contextPath = request.getContextPath();
+
+        // StringBuilder uri = new StringBuilder();
+        // uri.append(scheme).append("://").append(serverName);
+        // if (serverPort != 80 && serverPort != 443) {
+        //     uri.append(":").append(serverPort);
+        // }
+        // uri.append(contextPath).append("/iiif/3/").append(identifier);
+        // return uri.toString();
     }
 
     /**
