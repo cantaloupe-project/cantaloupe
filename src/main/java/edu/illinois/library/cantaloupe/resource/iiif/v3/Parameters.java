@@ -35,7 +35,7 @@ public class Parameters {
      * @throws IllegalClientArgumentException if the argument is not in the
      *         correct format.
      */
-    static Parameters fromURI(String paramsStr) {
+    public static Parameters fromURI(String paramsStr) {
         Parameters params = new Parameters();
         String[] parts = StringUtils.split(paramsStr, "/");
         if (parts.length == 5) {
@@ -64,7 +64,7 @@ public class Parameters {
     /**
      * Copy constructor.
      */
-    Parameters(Parameters params) {
+    public Parameters(Parameters params) {
         setIdentifier(params.getIdentifier());
         setRegion(params.getRegion());
         setSize(params.getSize());
@@ -161,7 +161,7 @@ public class Parameters {
         return toString().hashCode();
     }
 
-    void setIdentifier(String identifier) {
+    public void setIdentifier(String identifier) {
         this.identifier = identifier;
     }
 
@@ -195,7 +195,7 @@ public class Parameters {
      *                 excluding any additional server-side operations that may
      *                 need to be performed, such as overlays, etc.
      */
-    OperationList toOperationList(DelegateProxy delegateProxy, double maxScale) {
+    public OperationList toOperationList(DelegateProxy delegateProxy, double maxScale) {
         final OperationList ops = new OperationList(
                 MetaIdentifier.fromString(getIdentifier(), delegateProxy));
         if (!Region.Type.FULL.equals(getRegion().getType())) {
@@ -248,7 +248,7 @@ public class Parameters {
      * @see            <a href="https://iiif.io/api/image/3.0/#47-canonical-uri-syntax">
      *                 Canonical URI Syntax</a>
      */
-    String toCanonicalString(Dimension fullSize) {
+    public String toCanonicalString(Dimension fullSize) {
         final StringBuilder b = new StringBuilder();
         b.append(getIdentifier());
         b.append("/");
