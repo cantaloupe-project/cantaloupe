@@ -1,7 +1,5 @@
 package edu.illinois.library.cantaloupe.config;
 
-import edu.illinois.library.cantaloupe.util.StringUtils;
-
 import java.nio.file.Path;
 import java.util.Iterator;
 import java.util.Map;
@@ -9,6 +7,8 @@ import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+
+import edu.illinois.library.cantaloupe.util.StringUtils;
 
 /**
  * In-memory configuration that cannot be persisted.
@@ -155,7 +155,7 @@ public class MapConfiguration implements Configuration {
         }
         return defaultValue;
     }
-
+    
     /**
      * No-op.
      */
