@@ -419,21 +419,6 @@ class InformationControllerTest {
     //             uri, TestUtil.getImage(IMAGE));
     // }
 
-    // @Test
-    // void testGETEndpointEnabled() {
-    //     Configuration config = Configuration.getInstance();
-    //     config.setProperty(Key.IIIF_3_ENDPOINT_ENABLED, true);
-
-    //     assertStatus(200, getHTTPURI("/" + IMAGE + "/info.json"));
-    // }
-
-    // @Test
-    // void testGETEndpointDisabled() {
-    //     Configuration config = Configuration.getInstance();
-    //     config.setProperty(Key.IIIF_3_ENDPOINT_ENABLED, false);
-
-    //     assertStatus(403, getHTTPURI("/" + IMAGE + "/info.json"));
-    // }
 
     // @Test
     // void testGETWithForwardSlashInIdentifier() {
@@ -646,20 +631,7 @@ class InformationControllerTest {
     //             Route.IIIF_3_PATH + "/" + IMAGE, info.get("id"));
     // }
 
-    // @Test
-    // void testGETURIsInJSONWithBaseURIOverride() throws Exception {
-    //     Configuration config = Configuration.getInstance();
-    //     config.setProperty(Key.BASE_URI, "http://example.org/");
 
-    //     client = newClient("/" + IMAGE + "/info.json");
-    //     Response response = client.send();
-
-    //     String json = response.getBodyAsString();
-    //     ObjectMapper mapper = new ObjectMapper();
-    //     Information<?, ?> info = mapper.readValue(json, Information.class);
-    //     assertEquals("http://example.org" +
-    //             Route.IIIF_3_PATH + "/" + IMAGE, info.get("id"));
-    // }
 
     // @Test
     // void testGETURIsInJSONWithSlashSubstitution() throws Exception {
@@ -711,62 +683,44 @@ class InformationControllerTest {
     //             Route.IIIF_3_PATH + "/originalID", info.get("id"));
     // }
 
-    // @Test
-    // void testGETBaseURIOverridesProxyHeaders() throws Exception {
-    //     Configuration config = Configuration.getInstance();
-    //     config.setProperty(Key.BASE_URI, "https://example.net/");
 
-    //     client = newClient("/" + IMAGE + "/info.json");
-    //     client.getHeaders().set("X-Forwarded-Proto", "HTTP");
-    //     client.getHeaders().set("X-Forwarded-Host", "example.org");
-    //     client.getHeaders().set("X-Forwarded-Port", "8080");
-    //     client.getHeaders().set("X-Forwarded-Path", "/cats");
-    //     Response response = client.send();
+    @Test
+    void testGetInformation_URIsInJSONWithBaseURIOverride() throws Exception {
+        when(configuration.getString(Key.BASE_URI, "")).thenReturn("http://example.org/");
 
-    //     String json = response.getBodyAsString();
-    //     ObjectMapper mapper = new ObjectMapper();
-    //     Information<?, ?> info = mapper.readValue(json, Information.class);
-    //     assertEquals("https://example.net" +
-    //             Route.IIIF_3_PATH + "/" + IMAGE, info.get("id"));
-    // }
 
-    // /**
-    //  * Tests the default response headers. Individual headers may be tested
-    //  * more thoroughly elsewhere.
-    //  */
-    // @Test
-    // void testGETResponseHeaders() throws Exception {
-    //     client = newClient("/" + IMAGE + "/info.json");
-    //     Response response = client.send();
-    //     Headers headers = response.getHeaders();
-    //     assertEquals(8, headers.size());
+        MvcResult result = mockMvc.perform(get("/iiif/3/{identifier}/info.json", IMAGE))
+            .andReturn();
 
-    //     // Access-Control-Allow-Origin
-    //     assertEquals("*", headers.getFirstValue("Access-Control-Allow-Origin"));
-    //     // Content-Length
-    //     assertNotNull(headers.getFirstValue("Content-Length"));
-    //     // Content-Type
-    //     assertTrue("application/ld+json;charset=UTF-8;profile=\"http://iiif.io/api/image/3/context.json\"".equalsIgnoreCase(
-    //             headers.getFirstValue("Content-Type")));
-    //     // Date
-    //     assertNotNull(headers.getFirstValue("Date"));
-    //     // Last-Modified
-    //     assertNotNull(headers.getFirstValue("Last-Modified"));
-    //     // Server
-    //     assertNotNull(headers.getFirstValue("Server"));
-    //     // Vary
-    //     List<String> parts =
-    //             List.of(StringUtils.split(headers.getFirstValue("Vary"), ", "));
-    //     assertEquals(5, parts.size());
-    //     assertTrue(parts.contains("Accept"));
-    //     assertTrue(parts.contains("Accept-Charset"));
-    //     assertTrue(parts.contains("Accept-Encoding"));
-    //     assertTrue(parts.contains("Accept-Language"));
-    //     assertTrue(parts.contains("Origin"));
-    //     // X-Powered-By
-    //     assertEquals(Application.getName() + "/" + Application.getVersion(),
-    //             headers.getFirstValue("X-Powered-By"));
-    // }
+        // The response may be successful (200) with real image info or error (4xx/5xx) if no image source
+        String responseBody = result.getResponse().getContentAsString();
+        JsonNode json = objectMapper.readTree(responseBody);
+
+        // Verify ID contains the identifier
+        String id = json.get("id").asText();
+        assertEquals("http://example.org/iiif/3/" + IMAGE, id);
+    }
+
+    @Test
+    void testGetInformation_BaseURIOverridesProxyHeaders() throws Exception {
+        when(configuration.getString(Key.BASE_URI, "")).thenReturn("http://example.net/");
+
+        MvcResult result = mockMvc.perform(
+            get("/iiif/3/{identifier}/info.json", IMAGE)
+                .header("X-Forwarded-Proto", "HTTP")
+                .header("X-Forwarded-Proto", "example.org")
+                .header("X-Forwarded-Proto", "8080")
+                .header("X-Forwarded-Proto", "/cats"))
+            .andReturn();
+
+        // The response may be successful (200) with real image info or error (4xx/5xx) if no image source
+        String responseBody = result.getResponse().getContentAsString();
+        JsonNode json = objectMapper.readTree(responseBody);
+
+        // Verify ID contains the identifier
+        String id = json.get("id").asText();
+        assertEquals("http://example.net/iiif/3/" + IMAGE, id);
+    }
 
     // @Test
     // void testGETLastModifiedResponseHeaderWhenDerivativeCacheIsEnabled()
@@ -774,42 +728,4 @@ class InformationControllerTest {
     //     URI uri = getHTTPURI("/" + IMAGE + "/info.json");
     //     tester.testLastModifiedHeaderWhenDerivativeCacheIsEnabled(uri);
     // }
-
-    // @Test
-    // void testOPTIONSWhenEnabled() throws Exception {
-    //     Configuration config = Configuration.getInstance();
-    //     config.setProperty(Key.IIIF_3_ENDPOINT_ENABLED, true);
-
-    //     client = newClient("/" + IMAGE + "/info.json");
-    //     client.setMethod(Method.OPTIONS);
-    //     Response response = client.send();
-    //     assertEquals(204, response.getStatus());
-
-    //     Headers headers = response.getHeaders();
-    //     List<String> methods =
-    //             List.of(StringUtils.split(headers.getFirstValue("Allow"), ", "));
-    //     assertEquals(2, methods.size());
-    //     assertTrue(methods.contains("GET"));
-    //     assertTrue(methods.contains("OPTIONS"));
-
-    //     List<String> allowedHeaders =
-    //             List.of(StringUtils.split(headers.getFirstValue("Access-Control-Allow-Headers"), ", "));
-    //     assertEquals(1, allowedHeaders.size());
-    //     assertTrue(allowedHeaders.contains("Authorization"));
-    // }
-
-    // @Test
-    // void testOPTIONSWhenDisabled() throws Exception {
-    //     Configuration config = Configuration.getInstance();
-    //     config.setProperty(Key.IIIF_3_ENDPOINT_ENABLED, false);
-    //     try {
-    //         client = newClient("/" + IMAGE + "/info.json");
-    //         client.setMethod(Method.OPTIONS);
-    //         client.send();
-    //         fail("Expected exception");
-    //     } catch (ResourceException e) {
-    //         assertEquals(403, e.getStatusCode());
-    //     }
-    // }
-
 }
