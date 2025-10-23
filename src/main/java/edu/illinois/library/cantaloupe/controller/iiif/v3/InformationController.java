@@ -21,7 +21,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
-import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.processor.codec.ImageWriterFactory;
@@ -48,14 +47,13 @@ import jakarta.servlet.http.HttpServletResponse;
  */
 @RestController
 @RequestMapping("/iiif/3")
-public class InformationController {
-    private final Configuration configuration;
+public class InformationController extends AbstractIIIFController {
     private final InformationRequestHandlerFactory handlerFactory;
 
     @Autowired
     public InformationController(Configuration configuration,
                                 InformationRequestHandlerFactory handlerFactory) {
-        this.configuration = configuration;
+        super(configuration);
         this.handlerFactory = handlerFactory;
     }
 
@@ -104,6 +102,8 @@ public class InformationController {
                 new CustomCallback())) {
             try {
                 Info info = handler.handle();
+                addHeaders(response, iiifrequest);
+ 
                 setContentTypeAndLastModified(headers, info);
 
                 // Create the IIIF Information response
@@ -132,12 +132,6 @@ public class InformationController {
         return ResponseEntity.noContent()
                 .header("Allow", "GET,OPTIONS")
                 .build();
-    }
-
-    private void checkEndpointEnabled() throws EndpointDisabledException {
-        if (!configuration.getBoolean(Key.IIIF_3_ENDPOINT_ENABLED, true)) {
-            throw new EndpointDisabledException();
-        }
     }
 
     private String getNegotiatedContentType() {
@@ -244,11 +238,5 @@ public class InformationController {
         if (info.getSerializationTimestamp() != null) {
             setLastModifiedHeader(headers, info.getSerializationTimestamp());
         }
-    }
-
-    private void addCorsHeaders(HttpServletResponse response) {
-        response.setHeader("Access-Control-Allow-Origin", "*");
-        response.setHeader("Access-Control-Allow-Headers", "Authorization, Content-Type");
-        response.setHeader("Access-Control-Allow-Methods", "GET, OPTIONS");
     }
 }
