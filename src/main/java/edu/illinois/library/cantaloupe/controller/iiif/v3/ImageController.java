@@ -123,7 +123,7 @@ public class ImageController {
             public void infoAvailable(Info info) throws Exception {
                 if (Size.Type.MAX.equals(params.getSize().getType())) {
                     try {
-                        SizeConstrainer.constrainSizeToMaxPixels(info.getSize(), ops);
+                        SizeConstrainer.constrainSizeToMaxPixels(info.getSize(), ops, configuration);
                     } catch (ValidationException e) {
                         throw new IllegalClientArgumentException(e.getMessage(), e);
                     }
@@ -137,7 +137,6 @@ public class ImageController {
 
             @Override
             public void willStreamImageFromDerivativeCache() throws Exception {
-                System.out.println("Streaming image from derivative cache");
                 sendHeaders(response);
             }
 
