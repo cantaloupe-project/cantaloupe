@@ -270,7 +270,7 @@ class InformationControllerTest {
 
         mockMvc.perform(get("/iiif/3/{identifier}/info.json", identifier))
                 .andExpect(status().isForbidden())
-                .andExpect(content().string(containsString("403 Forbidden")));
+                .andExpect(content().string(containsString("\"status\":403")));
     }
 
     @Test
