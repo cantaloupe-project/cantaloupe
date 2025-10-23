@@ -93,7 +93,7 @@ public class ImageController {
 
         // Convert parameters into an OperationList
         final OperationList ops = params.toOperationList(
-                iiifrequest.getDelegateProxy(), getMaxScale());
+                iiifrequest.getDelegateProxy(), getMaxScale(), configuration);
         final int pageIndex = getPageIndex(iiifrequest);
         ops.setPageIndex(pageIndex);
         ops.getOptions().putAll(getQueryParams(request));

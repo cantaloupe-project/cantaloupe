@@ -1,5 +1,11 @@
 package edu.illinois.library.cantaloupe.resource.iiif.v3;
 
+import java.util.Arrays;
+import java.util.stream.Collectors;
+
+import org.apache.commons.lang3.StringUtils;
+
+import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.delegate.DelegateProxy;
 import edu.illinois.library.cantaloupe.http.Query;
 import edu.illinois.library.cantaloupe.http.Reference;
@@ -9,10 +15,6 @@ import edu.illinois.library.cantaloupe.operation.Encode;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.resource.IllegalClientArgumentException;
 import edu.illinois.library.cantaloupe.resource.iiif.FormatException;
-import org.apache.commons.lang3.StringUtils;
-
-import java.util.Arrays;
-import java.util.stream.Collectors;
 
 /**
  * Encapsulates the parameters of a request.
@@ -191,11 +193,12 @@ public class Parameters {
 
     /**
      * @param maxScale Maximum scale allowed by the application configuration.
+     * @param configuration Configuration instance for accessing application settings.
      * @return         Analog of the request parameters for processing,
      *                 excluding any additional server-side operations that may
      *                 need to be performed, such as overlays, etc.
      */
-    public OperationList toOperationList(DelegateProxy delegateProxy, double maxScale) {
+    public OperationList toOperationList(DelegateProxy delegateProxy, double maxScale, Configuration configuration) {
         final OperationList ops = new OperationList(
                 MetaIdentifier.fromString(getIdentifier(), delegateProxy));
         if (!Region.Type.FULL.equals(getRegion().getType())) {
@@ -203,7 +206,7 @@ public class Parameters {
         }
         if (!(Size.Type.MAX.equals(getSize().getType()) &&
                 !getSize().isUpscalingAllowed())) {
-            ops.add(getSize().toScale(maxScale));
+            ops.add(getSize().toScale(maxScale, configuration));
         }
         ops.add(getRotation().toTranspose());
         if (!getRotation().isZero()) {
@@ -212,6 +215,17 @@ public class Parameters {
         ops.add(getQuality().toColorTransform());
         ops.add(new Encode(getOutputFormat().toFormat()));
         return ops;
+    }
+
+    /**
+     * @param maxScale Maximum scale allowed by the application configuration.
+     * @return         Analog of the request parameters for processing,
+     *                 excluding any additional server-side operations that may
+     *                 need to be performed, such as overlays, etc.
+     * @deprecated Use {@link #toOperationList(DelegateProxy, double, Configuration)} instead for dependency injection.
+     */
+    public OperationList toOperationList(DelegateProxy delegateProxy, double maxScale) {
+        return toOperationList(delegateProxy, maxScale, Configuration.getInstance());
     }
 
     /**
