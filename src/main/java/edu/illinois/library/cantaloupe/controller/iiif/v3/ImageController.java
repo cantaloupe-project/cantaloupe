@@ -29,6 +29,7 @@ import edu.illinois.library.cantaloupe.resource.IIIFRequest;
 import edu.illinois.library.cantaloupe.resource.IllegalClientArgumentException;
 import edu.illinois.library.cantaloupe.resource.ImageRequestHandler;
 import edu.illinois.library.cantaloupe.resource.ImageRequestHandlerFactory;
+import edu.illinois.library.cantaloupe.resource.RequestContextDecorator;
 import edu.illinois.library.cantaloupe.resource.ResourceException;
 import edu.illinois.library.cantaloupe.resource.Route;
 import edu.illinois.library.cantaloupe.resource.ScaleRestrictedException;
@@ -89,6 +90,7 @@ public class ImageController extends AbstractIIIFController {
         // Create an IIIFRequest from the HttpServletRequest
         List<String> pathArguments = Arrays.asList(identifier, region, size, rotation, quality + "." + format);
         IIIFRequest iiifrequest = new IIIFRequest(request, pathArguments);
+        RequestContextDecorator.decorateRequestContext(iiifrequest);
 
         // Convert parameters into an OperationList
         final OperationList ops = params.toOperationList(

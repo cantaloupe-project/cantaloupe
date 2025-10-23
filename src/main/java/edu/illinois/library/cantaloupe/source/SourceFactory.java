@@ -11,6 +11,7 @@ import javax.script.ScriptException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+
 import org.springframework.stereotype.Component;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
@@ -164,9 +165,32 @@ public final class SourceFactory {
         Class<?> class_ = Class.forName(fullName);
 
         Source source = (Source) class_.getDeclaredConstructor().newInstance();
+
+        // Inject Configuration if the source supports it
+        injectConfigurationIfSupported(source);
+
         source.setIdentifier(identifier);
         source.setDelegateProxy(proxy);
         return source;
+    }
+
+    /**
+     * Injects Configuration into sources that support dependency injection.
+     * This allows sources to use injected Configuration instead of Configuration.getInstance().
+     *
+     * @param source The source instance to inject Configuration into
+     */
+    private void injectConfigurationIfSupported(Source source) {
+        // Check if the source has a setConfiguration method (duck typing approach)
+        try {
+            java.lang.reflect.Method setConfigMethod = source.getClass().getMethod("setConfiguration", Configuration.class);
+            setConfigMethod.invoke(source, configuration);
+            LOGGER.debug("Injected Configuration into {}", source.getClass().getSimpleName());
+        } catch (Exception e) {
+            // Source doesn't support Configuration injection, that's fine
+            LOGGER.trace("Source {} does not support Configuration injection: {}",
+                        source.getClass().getSimpleName(), e.getMessage());
+        }
     }
 
     /**
