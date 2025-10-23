@@ -113,6 +113,9 @@ public class InformationController extends AbstractIIIFController {
                 new CustomCallback())) {
             try {
                 Info info = handler.handle();
+                if (info == null) {
+                    return null; // Auth failure.
+                }
                 addHeaders(response, iiifrequest);
  
                 setContentTypeAndLastModified(headers, info);
