@@ -349,17 +349,6 @@ class ImageControllerTest {
     }
 
     @Test
-    void testGetImage_SpecialCharactersInIdentifier() throws Exception {
-        String identifier = "test%20image%2Bspecial%26chars";
-
-        MvcResult result = mockMvc.perform(get("/iiif/3/{identifier}/full/max/0/default.jpg", identifier))
-                .andReturn();
-
-        // The implementation now processes real IIIF parameters, status may vary based on image availability
-        assertTrue(result.getResponse().getStatus() >= 200, "Should return valid HTTP status");
-    }
-
-    @Test
     void testGetImage_IIIFv3CompliantParameters() throws Exception {
         // Test various IIIF v3 compliant parameter combinations
         String[][] parameterSets = {
