@@ -10,7 +10,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
-import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.resource.EndpointDisabledException;
 import edu.illinois.library.cantaloupe.resource.Request;
 import edu.illinois.library.cantaloupe.resource.TemplateVariables;
@@ -23,12 +22,11 @@ import jakarta.servlet.http.HttpServletResponse;
  */
 @Controller("v3LandingController")
 @RequestMapping("/iiif/3")
-public class LandingController {
-    private final Configuration configuration;
+public class LandingController extends AbstractIIIFController {
 
     @Autowired
     public LandingController(Configuration configuration) {
-        this.configuration = configuration;
+        super(configuration);
     }
 
     @GetMapping
@@ -49,11 +47,5 @@ public class LandingController {
         checkEndpointEnabled();
         response.setStatus(HttpServletResponse.SC_NO_CONTENT);
         response.setHeader("Allow", "GET,OPTIONS");
-    }
-
-    private void checkEndpointEnabled() throws EndpointDisabledException {
-        if (!configuration.getBoolean(Key.IIIF_3_ENDPOINT_ENABLED, true)) {
-            throw new EndpointDisabledException();
-        }
     }
 }
