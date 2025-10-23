@@ -1,5 +1,23 @@
 package edu.illinois.library.cantaloupe.controller.admin;
 
+import java.awt.GraphicsEnvironment;
+import java.lang.management.ManagementFactory;
+import java.lang.management.RuntimeMXBean;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
+import java.util.stream.Collectors;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+
 import edu.illinois.library.cantaloupe.cache.CacheFactory;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
@@ -17,24 +35,8 @@ import edu.illinois.library.cantaloupe.resource.TemplateVariables;
 import edu.illinois.library.cantaloupe.source.Source;
 import edu.illinois.library.cantaloupe.source.SourceFactory;
 import edu.illinois.library.cantaloupe.util.StringUtils;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import java.awt.GraphicsEnvironment;
-import java.lang.management.ManagementFactory;
-import java.lang.management.RuntimeMXBean;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
-import java.util.stream.Collectors;
 
 /**
  * Spring Boot controller for admin interface.
@@ -43,6 +45,12 @@ import java.util.stream.Collectors;
 @Controller
 @RequestMapping("/admin")
 public class AdminController {
+    private final Configuration configuration;
+
+    @Autowired
+    public AdminController(Configuration configuration) {
+        this.configuration = configuration;
+    }
 
     /**
      * Sources, caches, etc. can't be accessed from the templates, so
@@ -201,12 +209,12 @@ public class AdminController {
         ////////////////////////////////////////////////////////////////////
 
         SourceFactory.SelectionStrategy selectionStrategy =
-                new SourceFactory().getSelectionStrategy();
+                new SourceFactory(configuration).getSelectionStrategy();
         vars.put("sourceSelectionStrategy", selectionStrategy);
 
         if (selectionStrategy.equals(SourceFactory.SelectionStrategy.STATIC)) {
             try {
-                Source source = new SourceFactory().newSource(
+                Source source = new SourceFactory(configuration).newSource(
                         new Identifier("irrelevant"),
                         null);
                 vars.put("currentSource", new ObjectProxy(source));
@@ -324,7 +332,7 @@ public class AdminController {
         {
             vars.put("fonts", GraphicsEnvironment.getLocalGraphicsEnvironment().
                     getAvailableFontFamilyNames());
-            vars.put("currentOverlayFont", Configuration.getInstance().
+            vars.put("currentOverlayFont", configuration.
                     getString(Key.OVERLAY_STRING_FONT, ""));
         }
         return vars;
