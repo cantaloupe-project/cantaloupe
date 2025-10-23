@@ -28,6 +28,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.delegate.DelegateProxyService;
+import edu.illinois.library.cantaloupe.image.FormatRegistry;
+import edu.illinois.library.cantaloupe.image.FormatRegistryAccessor;
+import edu.illinois.library.cantaloupe.image.MetaIdentifierTransformerFactory;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.resource.IIIFRequest;
 import edu.illinois.library.cantaloupe.resource.ImageRequestHandler;
@@ -39,7 +42,7 @@ import edu.illinois.library.cantaloupe.resource.ImageRequestHandlerFactory;
  * Note: These tests may fail if image sources are not properly configured.
  */
 @WebMvcTest(ImageController.class)
-@Import({DelegateProxyService.class})
+@Import({DelegateProxyService.class, MetaIdentifierTransformerFactory.class, FormatRegistry.class, FormatRegistryAccessor.class})
 @TestPropertySource(properties = {
     "cantaloupe.config=test.properties"
 })
@@ -80,6 +83,12 @@ class ImageControllerTest {
             return null; // handle() method returns void
         }).when(mockHandler).handle(any(OutputStream.class));
 
+        // Mock configuration for MetaIdentifierTransformerFactory and DelegateProxyService
+        when(configuration.getString(Key.META_IDENTIFIER_TRANSFORMER,
+                "StandardMetaIdentifierTransformer")).thenReturn("StandardMetaIdentifierTransformer");
+        when(configuration.getString(Key.DELEGATE_SCRIPT_PATHNAME, "")).thenReturn("");
+        when(configuration.getBoolean(Key.DELEGATE_SCRIPT_ENABLED, false)).thenReturn(false);
+        when(configuration.getFile()).thenReturn(java.util.Optional.empty());
     }
 
     @Test
