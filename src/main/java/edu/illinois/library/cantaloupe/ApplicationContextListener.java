@@ -1,25 +1,24 @@
 package edu.illinois.library.cantaloupe;
 
+import java.util.stream.Collectors;
+
+import javax.script.ScriptEngineManager;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import edu.illinois.library.cantaloupe.async.ThreadPool;
 import edu.illinois.library.cantaloupe.cache.CacheFactory;
 import edu.illinois.library.cantaloupe.cache.CacheWorkerRunner;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationFileWatcher;
 import edu.illinois.library.cantaloupe.config.Key;
+import edu.illinois.library.cantaloupe.delegate.DelegateProxyService;
 import edu.illinois.library.cantaloupe.logging.LoggerUtil;
-import edu.illinois.library.cantaloupe.resource.PoweredByHeader;
 import edu.illinois.library.cantaloupe.source.Source;
 import edu.illinois.library.cantaloupe.source.SourceFactory;
-import edu.illinois.library.cantaloupe.delegate.DelegateProxyService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import jakarta.servlet.FilterRegistration;
-import jakarta.servlet.ServletContext;
 import jakarta.servlet.ServletContextEvent;
 import jakarta.servlet.ServletContextListener;
-import javax.script.ScriptEngineManager;
-import java.util.stream.Collectors;
 
 /**
  * <p>Performs various application initialization.</p>
@@ -55,13 +54,6 @@ public class ApplicationContextListener implements ServletContextListener {
         if (config.getBoolean(Key.CACHE_WORKER_ENABLED, false)) {
             CacheWorkerRunner.getInstance().start();
         }
-
-        ServletContext servletContext = sce.getServletContext();
-
-        FilterRegistration.Dynamic filterRegistration = 
-            servletContext.addFilter("poweredByHeader", PoweredByHeader.class);
-
-        filterRegistration.addMappingForUrlPatterns(null, true, "/*"); 
     }
 
     @Override
