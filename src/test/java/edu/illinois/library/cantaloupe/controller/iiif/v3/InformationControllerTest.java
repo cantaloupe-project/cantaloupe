@@ -3,6 +3,7 @@ package edu.illinois.library.cantaloupe.controller.iiif.v3;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
@@ -38,6 +39,7 @@ import edu.illinois.library.cantaloupe.image.FormatRegistry;
 import edu.illinois.library.cantaloupe.image.FormatRegistryAccessor;
 import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.resource.InformationRequestHandlerFactory;
+import edu.illinois.library.cantaloupe.source.AccessDeniedSource;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 
 /**
@@ -279,7 +281,7 @@ class InformationControllerTest {
     }
 
     @Test
-    void testGETCacheHeadersWhenClientCachingIsEnabledAndResponseIsCacheable()
+    void testGetInformation_CacheHeadersWhenClientCachingIsEnabledAndResponseIsCacheable()
             throws Exception {
         when(configuration.getBoolean(Key.CLIENT_CACHE_ENABLED, false)).thenReturn(true);
         when(configuration.getBoolean(Key.CLIENT_CACHE_PUBLIC, true)).thenReturn(true);
@@ -451,46 +453,35 @@ class InformationControllerTest {
     //     tester.testIllegalCharactersInIdentifier(uri);
     // }
 
-    // @Test
-    // void testGETHTTP2() throws Exception {
-    //     URI uri = getHTTPURI("/" + IMAGE + "/info.json");
-    //     tester.testHTTP2(uri);
-    // }
+    @Test
+    void testGetInformation_AccessDeniedSource() throws Exception {
+        when(configuration.getString(Key.SOURCE_STATIC)).thenReturn(AccessDeniedSource.class.getName());
+
+        mockMvc.perform(get("/iiif/3/forbidden/info.json"))
+                .andExpect(status().isForbidden())
+                .andExpect(content().string(containsString("Forbidden")));
+    }
+
+    @Test
+    void testGetInformation_NotFound() throws Exception {
+        mockMvc.perform(get("/iiif/3/invalid/info.json"))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void testGetInformation_WithPageNumberInMetaIdentifier() throws Exception {
+        final String image = "pdf-multipage.pdf";
+        MvcResult result1 = mockMvc.perform(get("/iiif/3/{identifier}/info.json", image))
+                .andReturn();
+        MvcResult result2 = mockMvc.perform(get("/iiif/3/{identifier}/info.json", image + ";2"))
+                .andReturn();
+
+        assertNotEquals(result1.getResponse().getContentAsString(),
+                     result2.getResponse().getContentAsString());
+    }
 
     // @Test
-    // void testGETHTTPS1_1() throws Exception {
-    //     URI uri = getHTTPSURI("/" + IMAGE + "/info.json");
-    //     tester.testHTTPS1_1(uri);
-    // }
-
-    // @Test
-    // void testGETHTTPS2() throws Exception {
-    //     URI uri = getHTTPSURI("/" + IMAGE + "/info.json");
-    //     tester.testHTTPS2(uri);
-    // }
-
-    // @Test
-    // void testGETForbidden() {
-    //     URI uri = getHTTPURI("/forbidden/info.json");
-    //     tester.testForbidden(uri);
-    // }
-
-    // @Test
-    // void testGETNotFound() {
-    //     URI uri = getHTTPURI("/invalid/info.json");
-    //     tester.testNotFound(uri);
-    // }
-
-    // @Test
-    // void testGETWithPageNumberInMetaIdentifier() {
-    //     final String image = "pdf-multipage.pdf";
-    //     URI uri1 = getHTTPURI("/" + image + "/info.json");
-    //     URI uri2 = getHTTPURI("/" + image + ";2/info.json");
-    //     assertRepresentationsNotSame(uri1, uri2);
-    // }
-
-    // @Test
-    // void testGETWithPageNumberInQuery() {
+    // void testGetInformation_WithPageNumberInQuery() {
     //     final String image = "pdf-multipage.pdf";
     //     URI uri1 = getHTTPURI("/" + image + "/info.json");
     //     URI uri2 = getHTTPURI("/" + image + "/info.json?page=2");
