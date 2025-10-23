@@ -12,7 +12,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
-import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.resource.EndpointDisabledException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -24,14 +23,12 @@ import jakarta.servlet.http.HttpServletResponse;
  */
 @RestController
 @RequestMapping("/iiif/3")
-public class IdentifierController {
-    private final Configuration configuration;
+public class IdentifierController extends AbstractIIIFController {
 
     @Autowired
     public IdentifierController(Configuration configuration) {
-        this.configuration = configuration;
+        super(configuration);
     }
-
 
     @GetMapping("/{identifier}")
     public ResponseEntity<Void> redirectToInfo(@PathVariable String identifier,
@@ -62,15 +59,5 @@ public class IdentifierController {
                 .build();
     }
 
-    private void checkEndpointEnabled() throws EndpointDisabledException {
-        if (!configuration.getBoolean(Key.IIIF_3_ENDPOINT_ENABLED, true)) {
-            throw new EndpointDisabledException();
-        }
-    }
 
-    private void addCorsHeaders(HttpServletResponse response) {
-        response.setHeader("Access-Control-Allow-Origin", "*");
-        response.setHeader("Access-Control-Allow-Headers", "Authorization, Content-Type");
-        response.setHeader("Access-Control-Allow-Methods", "GET, OPTIONS");
-    }
 }
