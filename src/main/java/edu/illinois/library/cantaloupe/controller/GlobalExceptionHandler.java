@@ -1,5 +1,7 @@
 package edu.illinois.library.cantaloupe.controller;
 
+import java.nio.file.AccessDeniedException;
+import java.nio.file.NoSuchFileException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -33,6 +35,20 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body(errorResponse);
     }
 
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<Map<String, Object>> handleAccessDeniedException(
+            AccessDeniedException ex, WebRequest request) {
+
+        Map<String, Object> errorResponse = new HashMap<>();
+        errorResponse.put("status", 403);
+        errorResponse.put("error", "Forbidden");
+        errorResponse.put("message", ex.getMessage());
+        errorResponse.put("path", request.getDescription(false));
+
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(errorResponse);
+    }
+
+
     @ExceptionHandler(ResourceException.class)
     public ResponseEntity<Map<String, Object>> handleResourceException(
             ResourceException ex, WebRequest request) {
@@ -62,6 +78,17 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(NoResourceFoundException.class)
     public  ResponseEntity<Map<String, Object>> handleNoResourceFoundException(NoResourceFoundException ex, WebRequest request) {
+        Map<String, Object> errorResponse = new HashMap<>();
+        errorResponse.put("status", 404);
+        errorResponse.put("error", "Not Found");
+        errorResponse.put("message", "The requested resource was not found");
+        errorResponse.put("path", request.getDescription(false));
+
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
+    }
+
+    @ExceptionHandler(NoSuchFileException.class)
+    public  ResponseEntity<Map<String, Object>> handleNoResourceFoundException(NoSuchFileException ex, WebRequest request) {
         Map<String, Object> errorResponse = new HashMap<>();
         errorResponse.put("status", 404);
         errorResponse.put("error", "Not Found");
