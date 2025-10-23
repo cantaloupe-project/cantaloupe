@@ -75,7 +75,6 @@ class ImageControllerTest {
         when(handlerFactory.create(any(OperationList.class), any(IIIFRequest.class), any(ImageRequestHandler.Callback.class)))
             .thenReturn(mockHandler);
 
-        // Alternative approach: Use doAnswer to access the callback directly when factory is called
         doAnswer(invocation -> {
             // OperationList operationList = invocation.getArgument(0);
             // IIIFRequest iiifRequest = invocation.getArgument(1);
