@@ -2,12 +2,16 @@ package edu.illinois.library.cantaloupe.controller.iiif.v3;
 
 import java.util.Collections;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
+import edu.illinois.library.cantaloupe.config.Configuration;
+import edu.illinois.library.cantaloupe.config.Key;
+import edu.illinois.library.cantaloupe.resource.EndpointDisabledException;
 import edu.illinois.library.cantaloupe.resource.Request;
 import edu.illinois.library.cantaloupe.resource.TemplateVariables;
 import jakarta.servlet.http.HttpServletRequest;
@@ -20,9 +24,17 @@ import jakarta.servlet.http.HttpServletResponse;
 @Controller("v3LandingController")
 @RequestMapping("/iiif/3")
 public class LandingController {
+    private final Configuration configuration;
+
+    @Autowired
+    public LandingController(Configuration configuration) {
+        this.configuration = configuration;
+    }
 
     @GetMapping
-    public String iiif3Landing(Model model, HttpServletRequest request, HttpServletResponse response) {
+    public String iiif3Landing(Model model, HttpServletRequest request, HttpServletResponse response) throws EndpointDisabledException {
+        checkEndpointEnabled();
+
         response.setHeader("Content-Type", "text/html;charset=UTF-8");
 
         // Create a minimal request wrapper for template variables
@@ -33,8 +45,15 @@ public class LandingController {
     }
 
     @RequestMapping(value = "", method = RequestMethod.OPTIONS)
-    public void options(HttpServletResponse response) {
+    public void options(HttpServletResponse response) throws EndpointDisabledException {
+        checkEndpointEnabled();
         response.setStatus(HttpServletResponse.SC_NO_CONTENT);
         response.setHeader("Allow", "GET,OPTIONS");
+    }
+
+    private void checkEndpointEnabled() throws EndpointDisabledException {
+        if (!configuration.getBoolean(Key.IIIF_3_ENDPOINT_ENABLED, true)) {
+            throw new EndpointDisabledException();
+        }
     }
 }
