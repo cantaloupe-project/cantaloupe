@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.options;
@@ -14,6 +15,7 @@ import java.io.OutputStream;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.context.annotation.Import;
@@ -30,6 +32,7 @@ import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.delegate.DelegateProxyService;
 import edu.illinois.library.cantaloupe.image.FormatRegistry;
 import edu.illinois.library.cantaloupe.image.FormatRegistryAccessor;
+import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.image.MetaIdentifierTransformerFactory;
 import edu.illinois.library.cantaloupe.image.StandardMetaIdentifierTransformer;
 import edu.illinois.library.cantaloupe.operation.OperationList;
@@ -59,6 +62,7 @@ class ImageControllerTest {
     private ImageRequestHandlerFactory handlerFactory;
 
     private ObjectMapper objectMapper;
+    private ArgumentCaptor<ImageRequestHandler.Callback> callbackCaptor;
 
     @BeforeEach
     void setUp() throws Exception {
@@ -71,6 +75,21 @@ class ImageControllerTest {
         when(handlerFactory.create(any(OperationList.class), any(IIIFRequest.class), any(ImageRequestHandler.Callback.class)))
             .thenReturn(mockHandler);
 
+        // Alternative approach: Use doAnswer to access the callback directly when factory is called
+        doAnswer(invocation -> {
+            // OperationList operationList = invocation.getArgument(0);
+            // IIIFRequest iiifRequest = invocation.getArgument(1);
+            ImageRequestHandler.Callback callback = invocation.getArgument(2);
+
+            // boolean authorized = callback.authorize();
+            callback.infoAvailable(new Info());
+            callback.willStreamImageFromDerivativeCache();
+            // callback.sourceAccessed(someStatResult);
+            // callback.knowAvailableOutputFormats(someFormatsSet);
+
+            return mockHandler;
+        }).when(handlerFactory).create(any(OperationList.class), any(IIIFRequest.class), any(ImageRequestHandler.Callback.class));
+
         // Stub the handle method to simulate writing image data to OutputStream
         doAnswer(invocation -> {
             OutputStream outputStream = invocation.getArgument(0);
@@ -80,8 +99,7 @@ class ImageControllerTest {
                 0x00, 0x10, 0x4A, 0x46, 0x49, 0x46, 0x00, 0x01    // JFIF marker
             };
             outputStream.write(dummyImageData);
-            outputStream.flush();
-            return null; // handle() method returns void
+            return null;
         }).when(mockHandler).handle(any(OutputStream.class));
 
         // Mock configuration for MetaIdentifierTransformerFactory and DelegateProxyService
@@ -288,6 +306,31 @@ class ImageControllerTest {
     void testGetImage_ResponseStructure() throws Exception {
         MvcResult result = mockMvc.perform(get("/iiif/3/structure-test/100,100,200,200/500,400/90/gray.png"))
                 .andReturn();
+
+        // Verify the factory was called and capture the callback
+        verify(handlerFactory).create(any(OperationList.class), any(IIIFRequest.class), any(ImageRequestHandler.Callback.class));
+
+        // Get the captured callback and invoke methods on it
+        ImageRequestHandler.Callback capturedCallback = callbackCaptor.getValue();
+
+        // Example: Invoke callback methods
+        try {
+            // Pre-authorization (called first)
+            boolean preAuthorized = capturedCallback.preAuthorize();
+            assertTrue(preAuthorized, "Callback should pre-authorize the request");
+
+            // Authorization (called after pre-auth)
+            boolean authorized = capturedCallback.authorize();
+            assertTrue(authorized, "Callback should authorize the request");
+
+            // You can also invoke other callback methods like:
+            // capturedCallback.sourceAccessed(someStatResult);
+            // capturedCallback.infoAvailable(someInfoInstance);
+            // capturedCallback.willStreamImageFromDerivativeCache();
+            // capturedCallback.willProcessImage(someProcessor, someInfo);
+        } catch (Exception e) {
+            // Handle exceptions from callback methods
+        }
 
         // The implementation now processes real IIIF parameters, status may vary based on image availability
         int status = result.getResponse().getStatus();
