@@ -126,47 +126,35 @@ class ImageControllerTest {
 
     @Test
     void testGetImage_SpecificRegion() throws Exception {
-        MvcResult result = mockMvc.perform(get("/iiif/3/test-image/100,100,200,200/max/0/default.jpg"))
-                .andReturn();
-
-        // The implementation now processes real IIIF parameters, status may vary based on image availability
-        assertTrue(result.getResponse().getStatus() >= 200, "Should return valid HTTP status");
+        mockMvc.perform(get("/iiif/3/test-image/100,100,200,200/max/0/default.jpg"))
+                .andExpect(status().isOk());
     }
 
     @Test
     void testGetImage_PercentageRegion() throws Exception {
-        MvcResult result = mockMvc.perform(get("/iiif/3/test-image/pct:10,10,80,80/max/0/default.jpg"))
-                .andReturn();
+        mockMvc.perform(get("/iiif/3/test-image/pct:10,10,80,80/max/0/default.jpg"))
+                .andExpect(status().isOk());
 
-        // The implementation now processes real IIIF parameters, status may vary based on image availability
-        assertTrue(result.getResponse().getStatus() >= 200, "Should return valid HTTP status");
     }
 
     @Test
     void testGetImage_SpecificSize() throws Exception {
-        MvcResult result = mockMvc.perform(get("/iiif/3/test-image/full/500,400/0/default.jpg"))
-                .andReturn();
-
-        // The implementation now processes real IIIF parameters, status may vary based on image availability
-        assertTrue(result.getResponse().getStatus() >= 200, "Should return valid HTTP status");
+        mockMvc.perform(get("/iiif/3/test-image/full/500,400/0/default.jpg"))
+                .andExpect(status().isOk());
     }
 
     @Test
     void testGetImage_PercentageSize() throws Exception {
-        MvcResult result = mockMvc.perform(get("/iiif/3/test-image/full/pct:50/0/default.jpg"))
-                .andReturn();
+        mockMvc.perform(get("/iiif/3/test-image/full/pct:50/0/default.jpg"))
+                .andExpect(status().isOk());
 
-        // The implementation now processes real IIIF parameters, status may vary based on image availability
-        assertTrue(result.getResponse().getStatus() >= 200, "Should return valid HTTP status");
     }
 
     @Test
     void testGetImage_MaxSize() throws Exception {
-        MvcResult result = mockMvc.perform(get("/iiif/3/test-image/full/max/0/default.jpg"))
-                .andReturn();
+        mockMvc.perform(get("/iiif/3/test-image/full/max/0/default.jpg"))
+                .andExpect(status().isOk());
 
-        // The implementation now processes real IIIF parameters, status may vary based on image availability
-        assertTrue(result.getResponse().getStatus() >= 200, "Should return valid HTTP status");
     }
 
     @Test
