@@ -38,6 +38,7 @@ import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.resource.IIIFRequest;
 import edu.illinois.library.cantaloupe.resource.InformationRequestHandler;
 import edu.illinois.library.cantaloupe.resource.InformationRequestHandlerFactory;
+import edu.illinois.library.cantaloupe.delegate.DelegateProxyService;
 
 /**
  * Spring Boot test for IIIF v3 Information Controller.
@@ -45,7 +46,7 @@ import edu.illinois.library.cantaloupe.resource.InformationRequestHandlerFactory
  * Note: These tests may fail if image sources are not properly configured.
  */
 @WebMvcTest(InformationController.class)
-@Import({FormatRegistry.class, FormatRegistryAccessor.class})
+@Import({FormatRegistry.class, FormatRegistryAccessor.class, DelegateProxyService.class})
 @TestPropertySource(properties = {
     "cantaloupe.config=test.properties"
 })
