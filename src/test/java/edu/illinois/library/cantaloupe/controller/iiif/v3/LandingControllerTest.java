@@ -3,7 +3,10 @@ package edu.illinois.library.cantaloupe.controller.iiif.v3;
 import static org.hamcrest.Matchers.containsString;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.options;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -51,41 +54,25 @@ public class LandingControllerTest {
                 .andExpect(content().string(containsString("This endpoint is disabled")));
     }
 
-    // @Test
-    // void testGETWithTrailingSlashRedirectsToWithout() throws Exception {
-    //     final URI uri = getHTTPURI("");
-    //     assertRedirect(new URI(uri + "/"), uri, 301);
-    // }
+    @Test
+    void testRedirectToBase() throws Exception {
+        mockMvc.perform(get("/iiif/3/"))
+           .andExpect(redirectedUrl("/iiif/3"));
+    }
 
-    // @Test
-    // void testOPTIONSWhenEnabled() throws Exception {
-    //     Configuration config = Configuration.getInstance();
-    //     config.setProperty(Key.IIIF_3_ENDPOINT_ENABLED, true);
+    @Test
+    void testOPTIONSWhenEnabled() throws Exception {
+        mockMvc.perform(options("/iiif/3"))
+            .andExpect(status().isNoContent())
+            .andExpect(header().string("Allow", "GET,OPTIONS"));
+    }
 
-    //     client = newClient("");
-    //     client.setMethod(Method.OPTIONS);
-    //     Response response = client.send();
-    //     assertEquals(204, response.getStatus());
+    @Test
+    void testOPTIONSWhenDisabled() throws Exception {
+        when(configuration.getBoolean(Key.IIIF_3_ENDPOINT_ENABLED, true)).thenReturn(false);
 
-    //     Headers headers = response.getHeaders();
-    //     List<String> methods =
-    //             List.of(StringUtils.split(headers.getFirstValue("Allow"), ", "));
-    //     assertEquals(2, methods.size());
-    //     assertTrue(methods.contains("GET"));
-    //     assertTrue(methods.contains("OPTIONS"));
-    // }
-
-    // @Test
-    // void testOPTIONSWhenDisabled() {
-    //     Configuration config = Configuration.getInstance();
-    //     config.setProperty(Key.IIIF_3_ENDPOINT_ENABLED, false);
-
-    //     ResourceException e = assertThrows(ResourceException.class, () -> {
-    //         client = newClient("");
-    //         client.setMethod(Method.OPTIONS);
-    //         client.send();
-    //     });
-    //     assertEquals(403, e.getStatusCode());
-    // }
-
+        mockMvc.perform(options("/iiif/3"))
+            .andExpect(status().isForbidden())
+            .andExpect(content().string(containsString("This endpoint is disabled")));
+    }
 }
