@@ -162,6 +162,8 @@ public class InformationRequestHandler extends AbstractRequestHandler
 
     /**
      * Handles an information request.
+     * If the return value is null, you should immediately return.
+     * In this case the headers and response codes should already be set.
      */
     public Info handle() throws Exception {
         if (!callback.authorize()) {
