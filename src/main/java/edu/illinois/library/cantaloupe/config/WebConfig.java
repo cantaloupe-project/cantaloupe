@@ -1,15 +1,8 @@
 package edu.illinois.library.cantaloupe.config;
 
-import java.util.Optional;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
-
-import edu.illinois.library.cantaloupe.delegate.DelegateProxyService;
-import jakarta.annotation.PostConstruct;
 
 /**
  * Spring Boot web configuration for Cantaloupe.
@@ -18,22 +11,6 @@ import jakarta.annotation.PostConstruct;
 @Configuration
 public class WebConfig implements WebMvcConfigurer {
 
-    @Autowired(required = false)
-    private Optional<DelegateProxyService> delegateProxyService;
-
-    @Bean
-    public edu.illinois.library.cantaloupe.config.Configuration configuration() {
-        return edu.illinois.library.cantaloupe.config.Configuration.getInstance();
-    }
-
-    /**
-     * Initialize DelegateProxyService after Spring context is ready.
-     * This ensures the service starts watching for script changes if needed.
-     */
-    @PostConstruct
-    public void initializeDelegateProxyService() {
-        delegateProxyService.ifPresent(DelegateProxyService::startWatching);
-    }
 
     /**
      * Configure static resource handlers.
