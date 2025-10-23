@@ -226,7 +226,7 @@ public class ImageRequestHandler extends AbstractRequestHandler
             }
         }
 
-        final Source source = new SourceFactory().newSource(
+        final Source source = new SourceFactory(config).newSource(
                 identifier, delegateProxy);
 
         // If we are resolving first, or if the source image is not present in
