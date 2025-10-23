@@ -1,8 +1,9 @@
 package edu.illinois.library.cantaloupe.controller.iiif.v3;
 
-import edu.illinois.library.cantaloupe.config.Configuration;
-import edu.illinois.library.cantaloupe.config.Key;
-import edu.illinois.library.cantaloupe.resource.EndpointDisabledException;
+import java.util.HashMap;
+import java.util.Map;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -10,10 +11,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
+import edu.illinois.library.cantaloupe.config.Configuration;
+import edu.illinois.library.cantaloupe.config.Key;
+import edu.illinois.library.cantaloupe.resource.EndpointDisabledException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * Spring Boot controller for IIIF Image API 3.x image requests.
@@ -27,6 +29,12 @@ import java.util.Map;
 @RestController
 @RequestMapping("/iiif/3")
 public class ImageController {
+    private final Configuration configuration;
+
+    @Autowired
+    public ImageController(Configuration configuration) {
+        this.configuration = configuration;
+    }
 
     @GetMapping("/{identifier}/{region}/{size}/{rotation}/{quality}.{format}")
     public ResponseEntity<Map<String, String>> getImage(
@@ -86,7 +94,7 @@ public class ImageController {
     }
 
     private void checkEndpointEnabled() throws EndpointDisabledException {
-        if (!Configuration.getInstance().getBoolean(Key.IIIF_3_ENDPOINT_ENABLED, true)) {
+        if (!configuration.getBoolean(Key.IIIF_3_ENDPOINT_ENABLED, true)) {
             throw new EndpointDisabledException();
         }
     }
