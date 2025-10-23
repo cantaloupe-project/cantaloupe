@@ -15,7 +15,7 @@ Cantaloupe is tested to work on the two most recent LTS versions of Java (curren
 ### Command line
 
 * `cp cantaloupe.properties.sample cantaloupe.properties` then edit cantaloupe.properties per your needs.
-* `mvn clean compile exec:java -Dcantaloupe.config=cantaloupe.properties` will build and run the
+* `mvn spring-boot:run -Dspring-boot.run.jvmArguments="-Dcantaloupe.config=cantaloupe.properties"` will build and run the
   project using the embedded web server listening on the port(s) specified in
   `cantaloupe.properties`.
 * `mvn clean package -DskipTests` will build a release JAR in the `target`
