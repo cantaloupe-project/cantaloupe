@@ -8,6 +8,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
+
 import java.lang.reflect.InvocationTargetException;
 import java.util.Set;
 
@@ -31,10 +33,13 @@ public class MetaIdentifierTransformerFactory {
     private static MetaIdentifierTransformerFactory staticInstance;
 
     private final Configuration configuration;
+    private final StandardMetaIdentifierTransformer standardTransformer;
 
     @Autowired
-    public MetaIdentifierTransformerFactory(Configuration configuration) {
+    public MetaIdentifierTransformerFactory(Configuration configuration,
+                                           Optional<StandardMetaIdentifierTransformer> standardTransformer) {
         this.configuration = configuration;
+        this.standardTransformer = standardTransformer.orElse(null);
         // Set the static instance for backward compatibility
         staticInstance = this;
     }
@@ -79,13 +84,28 @@ public class MetaIdentifierTransformerFactory {
     public MetaIdentifierTransformer newInstance(DelegateProxy delegateProxy) {
         String xformerName = configuration.getString(Key.META_IDENTIFIER_TRANSFORMER,
                 StandardMetaIdentifierTransformer.class.getSimpleName());
+
+        // Use Spring-managed instance for StandardMetaIdentifierTransformer if available
+        if ((StandardMetaIdentifierTransformer.class.getSimpleName().equals(xformerName) ||
+            StandardMetaIdentifierTransformer.class.getName().equals(xformerName)) &&
+            standardTransformer != null) {
+            return standardTransformer;
+        }
+
         try {
             return newInstance(xformerName, delegateProxy);
         } catch (Exception e) {
-            MetaIdentifierTransformer xformer = new StandardMetaIdentifierTransformer();
-            LOGGER.error("newInstance(): {} (falling back to returning a {})",
-                    e.getMessage(), xformer.getClass().getSimpleName());
-            return xformer;
+            // Fallback to Spring-managed instance if available, otherwise create new instance
+            if (standardTransformer != null) {
+                LOGGER.error("newInstance(): {} (falling back to returning a {})",
+                        e.getMessage(), standardTransformer.getClass().getSimpleName());
+                return standardTransformer;
+            } else {
+                StandardMetaIdentifierTransformer fallback = new StandardMetaIdentifierTransformer();
+                LOGGER.error("newInstance(): {} (falling back to returning a {})",
+                        e.getMessage(), fallback.getClass().getSimpleName());
+                return fallback;
+            }
         }
     }
 
@@ -115,8 +135,15 @@ public class MetaIdentifierTransformerFactory {
             InvocationTargetException {
         String qualifiedName = getQualifiedName(name);
         Class<?> implClass = Class.forName(qualifiedName);
-        MetaIdentifierTransformer xformer =
-                (MetaIdentifierTransformer) implClass.getDeclaredConstructor().newInstance();
+
+        // For StandardMetaIdentifierTransformer, use default constructor as fallback
+        MetaIdentifierTransformer xformer;
+        if (StandardMetaIdentifierTransformer.class.getName().equals(qualifiedName)) {
+            xformer = new StandardMetaIdentifierTransformer();
+        } else {
+            xformer = (MetaIdentifierTransformer) implClass.getDeclaredConstructor().newInstance();
+        }
+
         if (xformer instanceof DelegateMetaIdentifierTransformer) {
             DelegateMetaIdentifierTransformer delegateXformer =
                     (DelegateMetaIdentifierTransformer) xformer;

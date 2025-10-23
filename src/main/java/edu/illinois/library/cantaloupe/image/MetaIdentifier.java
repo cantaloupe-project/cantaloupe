@@ -318,7 +318,15 @@ public final class MetaIdentifier {
 
     @Override
     public String toString() {
-        return new StandardMetaIdentifierTransformer().serialize(this);
+        // Use factory to get properly configured transformer instance
+        try {
+            MetaIdentifierTransformer transformer =
+                MetaIdentifierTransformerFactory.newInstanceStatic(null);
+            return transformer.serialize(this);
+        } catch (Exception e) {
+            // Fallback to direct instantiation if factory fails
+            return new StandardMetaIdentifierTransformer().serialize(this);
+        }
     }
 
 }
