@@ -1,8 +1,10 @@
 package edu.illinois.library.cantaloupe.config;
 
 import org.springframework.context.annotation.Configuration;
+import org.springframework.web.servlet.config.annotation.PathMatchConfigurer;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+import org.springframework.web.util.UrlPathHelper;
 
 /**
  * Spring Boot web configuration for Cantaloupe.
@@ -11,6 +13,16 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 @Configuration
 public class WebConfig implements WebMvcConfigurer {
 
+    /**
+     * This is necessary for putting page numbers in the identifier. Otherwise Spring Boot
+     * tries to parse this as a Matrix Variable.
+     */
+    @Override
+	public void configurePathMatch(PathMatchConfigurer configurer) {
+            UrlPathHelper urlPathHelper = new UrlPathHelper();
+            urlPathHelper.setRemoveSemicolonContent(false);
+            configurer.setUrlPathHelper(urlPathHelper);
+    }
 
     /**
      * Configure static resource handlers.

@@ -463,7 +463,7 @@ class InformationControllerTest {
                 .andReturn();
 
         assertNotEquals(result1.getResponse().getContentAsString(),
-                     result2.getResponse().getContentAsString());
+                        result2.getResponse().getContentAsString());
     }
 
     // @Test
