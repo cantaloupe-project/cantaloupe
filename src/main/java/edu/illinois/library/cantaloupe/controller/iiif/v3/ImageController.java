@@ -137,6 +137,7 @@ public class ImageController {
 
             @Override
             public void willStreamImageFromDerivativeCache() throws Exception {
+                System.out.println("Streaming image from derivative cache");
                 sendHeaders(response);
             }
 
@@ -151,6 +152,8 @@ public class ImageController {
                 validateScale(virtualSize, scale, params.getSize().isUpscalingAllowed(), iiifrequest);
                 ScaleValidator.validateScale(virtualSize, scale, Status.BAD_REQUEST, iiifrequest.getMetaIdentifier());
                 validateSize(virtualSize, resultingSize);
+                                System.out.println("processed image");
+
                 sendHeaders(response);
             }
         }
