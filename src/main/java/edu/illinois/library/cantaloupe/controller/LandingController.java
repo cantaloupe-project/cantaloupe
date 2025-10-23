@@ -1,12 +1,15 @@
 package edu.illinois.library.cantaloupe.controller;
 
-import edu.illinois.library.cantaloupe.resource.TemplateVariables;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
+import edu.illinois.library.cantaloupe.config.Configuration;
+import edu.illinois.library.cantaloupe.resource.Request;
+import edu.illinois.library.cantaloupe.resource.TemplateVariables;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
@@ -16,6 +19,12 @@ import jakarta.servlet.http.HttpServletResponse;
  */
 @Controller
 public class LandingController {
+    private Configuration configuration;
+
+    @Autowired
+    public LandingController(Configuration configuration) {
+        this.configuration = configuration;
+    }
 
     @GetMapping("/")
     public String landing(Model model, HttpServletRequest request, HttpServletResponse response) {
@@ -42,7 +51,7 @@ public class LandingController {
      * Creates a request wrapper that's compatible with the existing TemplateVariables system.
      * This is a temporary bridge until we fully migrate the template system.
      */
-    private edu.illinois.library.cantaloupe.resource.Request createRequestWrapper(HttpServletRequest request) {
-        return new edu.illinois.library.cantaloupe.resource.Request(request, java.util.Collections.emptyList());
+    private Request createRequestWrapper(HttpServletRequest request) {
+        return new Request(request, java.util.Collections.emptyList(), configuration);
     }
 }

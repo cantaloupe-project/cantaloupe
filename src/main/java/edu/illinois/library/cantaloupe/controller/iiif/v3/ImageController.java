@@ -89,7 +89,7 @@ public class ImageController extends AbstractIIIFController {
 
         // Create an IIIFRequest from the HttpServletRequest
         List<String> pathArguments = Arrays.asList(identifier, region, size, rotation, quality + "." + format);
-        IIIFRequest iiifrequest = new IIIFRequest(request, pathArguments);
+        IIIFRequest iiifrequest = new IIIFRequest(request, pathArguments, configuration);
         RequestContextDecorator.decorateRequestContext(iiifrequest);
 
         // Convert parameters into an OperationList
