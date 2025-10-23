@@ -21,8 +21,10 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
+import edu.illinois.library.cantaloupe.http.Reference;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Info;
+import edu.illinois.library.cantaloupe.image.MetaIdentifier;
 import edu.illinois.library.cantaloupe.processor.codec.ImageWriterFactory;
 import edu.illinois.library.cantaloupe.resource.EndpointDisabledException;
 import edu.illinois.library.cantaloupe.resource.IIIFRequest;
@@ -63,15 +65,23 @@ public class InformationController extends AbstractIIIFController {
                                                                      HttpServletRequest request,
                                                                      HttpServletResponse response) throws Exception {
 
-        HttpHeaders headers = new HttpHeaders();
-
         checkEndpointEnabled();
-        addCorsHeaders(response);
-
-
-        // Create an IIIFRequest from the HttpServletRequest
         List<String> pathArguments = Arrays.asList(identifier);
         IIIFRequest iiifrequest = new IIIFRequest(request, pathArguments, configuration);
+
+        MetaIdentifier newMetaId = iiifrequest.getMetaIdentifier().getNormalizedScaleConstraintMetaIdentifier();
+        if (newMetaId != null) { // We need to redirect to the normalized scale constraint
+            Reference newRef = iiifrequest.getPublicReference(newMetaId,
+                                                              iiifrequest.getIdentifierPathComponent(),
+                                                              iiifrequest.getDelegateProxy());
+            response.sendRedirect(newRef.toString());
+            return null;
+        }
+
+        HttpHeaders headers = new HttpHeaders();
+
+        addCorsHeaders(response);
+
         RequestContextDecorator.decorateRequestContext(iiifrequest);
 
         // Get the available output formats from the processor
