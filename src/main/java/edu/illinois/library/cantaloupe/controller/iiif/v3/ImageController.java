@@ -150,7 +150,6 @@ public class ImageController extends AbstractIIIFController {
                 validateScale(virtualSize, scale, params.getSize().isUpscalingAllowed(), iiifrequest);
                 ScaleValidator.validateScale(virtualSize, scale, Status.BAD_REQUEST, iiifrequest.getMetaIdentifier());
                 validateSize(virtualSize, resultingSize);
-                                System.out.println("processed image");
 
                 sendHeaders(response);
             }
