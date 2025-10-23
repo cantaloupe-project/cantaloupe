@@ -10,6 +10,8 @@ import edu.illinois.library.cantaloupe.util.StringUtils;
 import org.apache.commons.lang3.SystemUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import javax.script.ScriptException;
 import java.io.IOException;
@@ -38,6 +40,7 @@ import java.util.NoSuchElementException;
  * ScriptLookupStrategy invokes a delegate method to retrieve a pathname
  * dynamically.</p>
  */
+@Component
 class FilesystemSource extends AbstractSource implements Source {
 
     /**
@@ -117,6 +120,37 @@ class FilesystemSource extends AbstractSource implements Source {
      */
     private Path path;
 
+    private Configuration configuration;
+
+    /**
+     * Default constructor for non-Spring contexts (backward compatibility).
+     * Uses Configuration.getInstance() as fallback.
+     */
+    public FilesystemSource() {
+        this.configuration = Configuration.getInstance();
+    }
+
+    /**
+     * Constructor for Spring dependency injection.
+     *
+     * @param configuration Injected configuration instance
+     */
+    @Autowired
+    public FilesystemSource(Configuration configuration) {
+        this.configuration = configuration;
+    }
+
+    /**
+     * Sets the Configuration instance for dependency injection.
+     * This method is called by SourceFactory to inject Configuration
+     * into sources created via reflection.
+     *
+     * @param configuration Configuration instance to inject
+     */
+    public void setConfiguration(Configuration configuration) {
+        this.configuration = configuration;
+    }
+
     @Override
     public StatResult stat() throws IOException {
         final Path file = getFile();
@@ -167,11 +201,10 @@ class FilesystemSource extends AbstractSource implements Source {
     }
 
     private Path getPathWithBasicStrategy() {
-        final Configuration config = Configuration.getInstance();
         final String prefix =
-                config.getString(Key.FILESYSTEMSOURCE_PATH_PREFIX, "");
+                configuration.getString(Key.FILESYSTEMSOURCE_PATH_PREFIX, "");
         final String suffix =
-                config.getString(Key.FILESYSTEMSOURCE_PATH_SUFFIX, "");
+                configuration.getString(Key.FILESYSTEMSOURCE_PATH_SUFFIX, "");
         final Identifier sanitizedId = sanitizedIdentifier();
         return Paths.get(prefix + sanitizedId + suffix);
     }

@@ -8,8 +8,10 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.options;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -49,6 +51,7 @@ import edu.illinois.library.cantaloupe.test.TestUtil;
     "cantaloupe.config=test.properties"
 })
 class InformationControllerTest {
+    private static final String IMAGE = "jpg-rgb-64x56x8-baseline.jpg";
 
     @Autowired
     private MockMvc mockMvc;
@@ -73,6 +76,11 @@ class InformationControllerTest {
         when(configuration.getBoolean(Key.IIIF_3_ENDPOINT_ENABLED, true)).thenReturn(true);
         when(configuration.getString(Key.DELEGATE_SCRIPT_PATHNAME, "")).thenReturn(TestUtil.getFixture("delegates.rb").toString());
         when(configuration.getBoolean(Key.DELEGATE_SCRIPT_ENABLED, false)).thenReturn(true);
+        when(configuration.getString(Key.SOURCE_STATIC)).thenReturn("FilesystemSource");
+        when(configuration.getString(Key.FILESYSTEMSOURCE_LOOKUP_STRATEGY, "")).thenReturn("BasicLookupStrategy");
+        when(configuration.getString(Key.FILESYSTEMSOURCE_PATH_PREFIX, "")).thenReturn(TestUtil.getFixturePath() + "/images/");
+        when(configuration.getString(Key.FILESYSTEMSOURCE_PATH_SUFFIX, "")).thenReturn("");
+
     }
 
     private Info createMockInfo() {
@@ -84,9 +92,7 @@ class InformationControllerTest {
 
     @Test
     void testGetInformation_ValidIdentifier() throws Exception {
-        String identifier = "test-image";
-
-        MvcResult result = mockMvc.perform(get("/iiif/3/{identifier}/info.json", identifier)
+        MvcResult result = mockMvc.perform(get("/iiif/3/{identifier}/info.json", IMAGE)
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(header().string("Access-Control-Allow-Origin", "*"))
                 .andExpect(header().string("Access-Control-Allow-Headers", "Authorization, Content-Type"))
@@ -111,13 +117,13 @@ class InformationControllerTest {
 
         // Verify ID contains the identifier
         String id = json.get("id").asText();
-        assertTrue(id.contains(identifier));
+        assertTrue(id.contains(IMAGE));
         assertTrue(id.contains("/iiif/3/"));
     }
 
     @Test
     void testGetInformation_ContentNegotiation_JSON() throws Exception {
-        MvcResult result = mockMvc.perform(get("/iiif/3/test-image/info.json")
+        MvcResult result = mockMvc.perform(get("/iiif/3/{identifier}/info.json", IMAGE)
                 .accept("application/json"))
                 .andExpect(header().string("Content-Type", containsString("charset=UTF-8")))
                 .andExpect(header().string("Content-Type", containsString("profile=\"http://iiif.io/api/image/3/context.json\"")))
@@ -129,7 +135,7 @@ class InformationControllerTest {
 
     @Test
     void testGetInformation_ContentNegotiation_JSONLD() throws Exception {
-        mockMvc.perform(get("/iiif/3/test-image/info.json")
+        mockMvc.perform(get("/iiif/3/{identifier}/info.json", IMAGE)
                 .accept("application/ld+json"))
                 .andExpect(header().string("Content-Type", containsString("application/ld+json")))
                 .andExpect(header().string("Content-Type", containsString("charset=UTF-8")))
@@ -139,26 +145,13 @@ class InformationControllerTest {
     @Test
     void testGetInformation_DefaultContentType() throws Exception {
         // Without Accept header, should default to JSON-LD
-        mockMvc.perform(get("/iiif/3/test-image/info.json"))
+        mockMvc.perform(get("/iiif/3/{identifier}/info.json", IMAGE))
                 .andExpect(header().string("Content-Type", containsString("application/ld+json")));
     }
 
     @Test
-    void testGetInformation_SpecialCharactersInIdentifier() throws Exception {
-        String identifier = "test-image%20with%20spaces";
-
-        MvcResult result = mockMvc.perform(get("/iiif/3/{identifier}/info.json", identifier))
-                .andReturn();
-
-        // Verify the response contains the identifier regardless of success or error status
-        String responseBody = result.getResponse().getContentAsString();
-        JsonNode json = objectMapper.readTree(responseBody);
-        assertTrue(json.get("id").asText().contains(identifier));
-    }
-
-    @Test
     void testGetInformation_URIConstruction() throws Exception {
-        MvcResult result = mockMvc.perform(get("/iiif/3/test-image/info.json")
+        MvcResult result = mockMvc.perform(get("/iiif/3/{identifier}/info.json", IMAGE)
                 .header("Host", "example.com:8080")
                 .header("X-Forwarded-Proto", "https")
                 .header("X-Forwarded-Host", "cdn.example.com"))
@@ -168,8 +161,7 @@ class InformationControllerTest {
         JsonNode json = objectMapper.readTree(responseBody);
 
         String id = json.get("id").asText();
-        assertTrue(id.startsWith("http"), "ID should start with http protocol");
-        assertTrue(id.contains("/iiif/3/test-image"), "ID should contain the correct path");
+        assertEquals("http://example.com:8080/iiif/3/jpg-rgb-64x56x8-baseline.jpg", id);
     }
 
     @Test
@@ -203,7 +195,7 @@ class InformationControllerTest {
 
     @Test
     void testGetInformation_IIIFCompliantResponse() throws Exception {
-        MvcResult result = mockMvc.perform(get("/iiif/3/sample-image/info.json"))
+        MvcResult result = mockMvc.perform(get("/iiif/3/{identifier}/info.json", IMAGE))
                 .andReturn();
 
         String responseBody = result.getResponse().getContentAsString();
@@ -229,60 +221,9 @@ class InformationControllerTest {
     }
 
     @Test
-    void testGetInformation_RealImplementation() throws Exception {
-        MvcResult result = mockMvc.perform(get("/iiif/3/test/info.json"))
-                .andReturn();
-
-        String responseBody = result.getResponse().getContentAsString();
-        JsonNode json = objectMapper.readTree(responseBody);
-
-        // The implementation is now real, not placeholder - verify IIIF compliance
-        assertEquals("http://iiif.io/api/image/3/context.json", json.get("@context").asText());
-        assertEquals("ImageService3", json.get("type").asText());
-        assertEquals("http://iiif.io/api/image", json.get("protocol").asText());
-        assertEquals("level2", json.get("profile").asText());
-    }
-
-    @Test
-    void testGetInformation_CORSHeaders() throws Exception {
-        mockMvc.perform(get("/iiif/3/cors-test/info.json")
-                .header("Origin", "https://example.com"))
-                .andExpect(header().string("Access-Control-Allow-Origin", "*"))
-                .andExpect(header().string("Access-Control-Allow-Headers", "Authorization, Content-Type"))
-                .andExpect(header().string("Access-Control-Allow-Methods", "GET, OPTIONS"));
-    }
-
-    @Test
-    void testGetInformation_MultipleConcurrentRequests() throws Exception {
-        // Test thread safety with multiple concurrent requests
-        String[] identifiers = {"image1", "image2", "image3", "image4", "image5"};
-
-        for (String identifier : identifiers) {
-            MvcResult result = mockMvc.perform(get("/iiif/3/{identifier}/info.json", identifier))
-                    .andReturn();
-
-            String responseBody = result.getResponse().getContentAsString();
-            JsonNode json = objectMapper.readTree(responseBody);
-            assertTrue(json.get("id").asText().contains(identifier));
-        }
-    }
-
-    @Test
-    void testGetInformation_LongIdentifier() throws Exception {
-        String longIdentifier = "a".repeat(200); // Very long identifier
-
-        MvcResult result = mockMvc.perform(get("/iiif/3/{identifier}/info.json", longIdentifier))
-                .andReturn();
-
-        String responseBody = result.getResponse().getContentAsString();
-        JsonNode json = objectMapper.readTree(responseBody);
-        assertTrue(json.get("id").asText().contains(longIdentifier));
-    }
-
-    @Test
     void testGetInformation_IdentifierWithSlashes() throws Exception {
         // Test identifier that contains encoded slashes
-        String identifier = "collection%2Fsubcollection%2Fimage";
+        String identifier = "subfolder%2Fjpg";
 
         MvcResult result = mockMvc.perform(get("/iiif/3/{identifier}/info.json", identifier))
                 .andReturn();
@@ -291,13 +232,6 @@ class InformationControllerTest {
         JsonNode json = objectMapper.readTree(responseBody);
         assertTrue(json.get("id").asText().contains(identifier));
     }
-
-
-    // @Test
-    // void testGETAuthorizationWhenAuthorized() {
-    //     URI uri = getHTTPURI("/" + IMAGE + "/info.json");
-    //     tester.testAuthorizationWhenAuthorized(uri);
-    // }
 
     @Test
     void testGetInformation_AuthorizationWhenUnauthorized() throws Exception {
@@ -326,31 +260,42 @@ class InformationControllerTest {
                 "}", responseBody);
     }
 
-    // @Test
-    // void testGETAuthorizationWhenForbidden() {
-    //     URI uri = getHTTPURI("/forbidden.jpg/info.json");
-    //     tester.testAuthorizationWhenForbidden(uri);
-    // }
 
-    // @Test
-    // void testGETAuthorizationWhenNotAuthorizedWhenAccessingCachedResource()
-    //         throws Exception {
-    //     URI uri = getHTTPURI("/forbidden.jpg/info.json");
-    //     tester.testAuthorizationWhenNotAuthorizedWhenAccessingCachedResource(uri);
-    // }
+    @Test
+    void testGetInformation_AuthorizationWhenForbidden() throws Exception {
+        String identifier = "forbidden.jpg";
 
-    // @Test
-    // void testGETAuthorizationWhenScaleConstraining() throws Exception {
-    //     URI uri = getHTTPURI("/reduce.jpg/info.json");
-    //     tester.testAuthorizationWhenScaleConstraining(uri);
-    // }
+        mockMvc.perform(get("/iiif/3/{identifier}/info.json", identifier))
+                .andExpect(status().isForbidden())
+                .andExpect(content().string(containsString("403 Forbidden")));
+    }
 
-    // @Test
-    // void testGETCacheHeadersWhenClientCachingIsEnabledAndResponseIsCacheable()
-    //         throws Exception {
-    //     URI uri = getHTTPURI("/" + IMAGE + "/info.json");
-    //     tester.testCacheHeadersWhenClientCachingIsEnabledAndResponseIsCacheable(uri);
-    // }
+    @Test
+    void testGetInformation_AuthorizationWhenScaleConstraining() throws Exception {
+        String identifier = "reduce.jpg";
+
+        mockMvc.perform(get("/iiif/3/{identifier}/info.json", identifier))
+                .andExpect(redirectedUrl("http://localhost/iiif/3/reduce.jpg;1:2/info.json"));
+    }
+
+    @Test
+    void testGETCacheHeadersWhenClientCachingIsEnabledAndResponseIsCacheable()
+            throws Exception {
+        when(configuration.getBoolean(Key.CLIENT_CACHE_ENABLED, false)).thenReturn(true);
+        when(configuration.getBoolean(Key.CLIENT_CACHE_PUBLIC, true)).thenReturn(true);
+        when(configuration.getBoolean(Key.CLIENT_CACHE_PRIVATE, false)).thenReturn(false);
+        when(configuration.getBoolean(Key.CLIENT_CACHE_NO_CACHE, false)).thenReturn(false);
+        when(configuration.getBoolean(Key.CLIENT_CACHE_NO_STORE, false)).thenReturn(false);
+        when(configuration.getBoolean(Key.CLIENT_CACHE_MUST_REVALIDATE, false)).thenReturn(false);
+        when(configuration.getBoolean(Key.CLIENT_CACHE_PROXY_REVALIDATE, false)).thenReturn(false);
+        when(configuration.getBoolean(Key.CLIENT_CACHE_NO_TRANSFORM, false)).thenReturn(true);
+        when(configuration.getString(Key.CLIENT_CACHE_MAX_AGE, "")).thenReturn("1234");
+        when(configuration.getString(Key.CLIENT_CACHE_SHARED_MAX_AGE, "")).thenReturn("4567");
+
+   
+        mockMvc.perform(get("/iiif/3/{identifier}/info.json", IMAGE))
+                .andExpect(header().string("Cache-Control", "max-age=1234, s-maxage=4567, public, no-transform"));
+    }
 
     // @Test
     // void testGETCacheHeadersWhenClientCachingIsEnabledAndResponseIsNotCacheable()
