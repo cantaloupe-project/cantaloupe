@@ -1,8 +1,11 @@
 package edu.illinois.library.cantaloupe.controller.iiif.v3;
 
+import java.net.URI;
 import java.util.Collections;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -40,6 +43,15 @@ public class LandingController extends AbstractIIIFController {
         model.addAllAttributes(TemplateVariables.getDefault(requestWrapper).getVars());
 
         return "iiif_3_landing";
+    }
+
+    @GetMapping("/")
+    public ResponseEntity<Void> redirectToBase(HttpServletRequest request,
+                                               HttpServletResponse response) throws EndpointDisabledException {
+        checkEndpointEnabled();
+        return ResponseEntity.status(HttpStatus.SEE_OTHER)
+                .location(URI.create(request.getContextPath() + "/iiif/3"))
+                .build();
     }
 
     @RequestMapping(value = "", method = RequestMethod.OPTIONS)
