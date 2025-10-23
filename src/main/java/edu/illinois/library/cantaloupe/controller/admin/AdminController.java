@@ -47,9 +47,13 @@ import jakarta.servlet.http.HttpServletResponse;
 public class AdminController {
     private final Configuration configuration;
 
+    private final MetaIdentifierTransformerFactory metaIdentifierTransformerFactory;
+
     @Autowired
-    public AdminController(Configuration configuration) {
+    public AdminController(Configuration configuration,
+                          MetaIdentifierTransformerFactory metaIdentifierTransformerFactory) {
         this.configuration = configuration;
+        this.metaIdentifierTransformerFactory = metaIdentifierTransformerFactory;
     }
 
     /**
@@ -194,7 +198,7 @@ public class AdminController {
         ////////////////////////////////////////////////////////////////////
         {
             vars.put("currentMetaIdentifierTransformer",
-                    new MetaIdentifierTransformerFactory()
+                    metaIdentifierTransformerFactory
                             .newInstance(null)
                             .getClass().getSimpleName());
             List<String> impls = MetaIdentifierTransformerFactory.allImplementations()
