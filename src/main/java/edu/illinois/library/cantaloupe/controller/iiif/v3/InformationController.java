@@ -29,6 +29,7 @@ import edu.illinois.library.cantaloupe.resource.EndpointDisabledException;
 import edu.illinois.library.cantaloupe.resource.IIIFRequest;
 import edu.illinois.library.cantaloupe.resource.InformationRequestHandler;
 import edu.illinois.library.cantaloupe.resource.InformationRequestHandlerFactory;
+import edu.illinois.library.cantaloupe.resource.RequestContextDecorator;
 import edu.illinois.library.cantaloupe.resource.ResourceException;
 import edu.illinois.library.cantaloupe.resource.iiif.IIIFAuth;
 import edu.illinois.library.cantaloupe.resource.iiif.v3.Information;
@@ -68,9 +69,11 @@ public class InformationController {
         checkEndpointEnabled();
         addCorsHeaders(response);
 
+
         // Create an IIIFRequest from the HttpServletRequest
         List<String> pathArguments = Arrays.asList(identifier);
         IIIFRequest iiifrequest = new IIIFRequest(request, pathArguments);
+        RequestContextDecorator.decorateRequestContext(iiifrequest);
 
         // Get the available output formats from the processor
         final Set<Format> availableOutputFormats =
@@ -94,7 +97,6 @@ public class InformationController {
                 availableOutputFormats.addAll(formats);
             }
         }
-
 
 
         try (InformationRequestHandler handler = handlerFactory.create(
