@@ -1,5 +1,18 @@
 package edu.illinois.library.cantaloupe.resource.admin;
 
+import java.awt.GraphicsEnvironment;
+import java.lang.management.ManagementFactory;
+import java.lang.management.RuntimeMXBean;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
+import java.util.stream.Collectors;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import edu.illinois.library.cantaloupe.cache.CacheFactory;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
@@ -19,18 +32,6 @@ import edu.illinois.library.cantaloupe.resource.ThymeleafRepresentation;
 import edu.illinois.library.cantaloupe.source.Source;
 import edu.illinois.library.cantaloupe.source.SourceFactory;
 import edu.illinois.library.cantaloupe.util.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.awt.GraphicsEnvironment;
-import java.lang.management.ManagementFactory;
-import java.lang.management.RuntimeMXBean;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
-import java.util.stream.Collectors;
 
 /**
  * Handles the web-based Control Panel.
@@ -203,14 +204,14 @@ public class AdminResource extends AbstractAdminResource {
         ////////////////////////////////////////////////////////////////////
         //////////////////////// sources section ///////////////////////////
         ////////////////////////////////////////////////////////////////////
-
+        Configuration config = Configuration.getInstance();
         SourceFactory.SelectionStrategy selectionStrategy =
-                new SourceFactory().getSelectionStrategy();
+                new SourceFactory(config).getSelectionStrategy();
         vars.put("sourceSelectionStrategy", selectionStrategy);
 
         if (selectionStrategy.equals(SourceFactory.SelectionStrategy.STATIC)) {
             try {
-                Source source = new SourceFactory().newSource(
+                Source source = new SourceFactory(config).newSource(
                         new Identifier("irrelevant"),
                         null);
                 vars.put("currentSource", new ObjectProxy(source));
