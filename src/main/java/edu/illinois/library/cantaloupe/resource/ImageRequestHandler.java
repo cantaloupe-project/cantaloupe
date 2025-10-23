@@ -146,6 +146,24 @@ public class ImageRequestHandler extends AbstractRequestHandler
     }
 
     /**
+     * Creates a new ImageRequestHandler with injected Configuration.
+     *
+     * @param operationList        Operation list to process.
+     * @param request              The IIIF request.
+     * @param callback             Callback to receive events during request handling.
+     * @param configuration        The Configuration instance to inject.
+     */
+    public ImageRequestHandler(OperationList operationList, IIIFRequest request, Callback callback, Configuration configuration) {
+        this.operationList = operationList;
+        this.delegateProxy = request.getDelegateProxy();
+        this.requestContext = request.getRequestContext();
+        this.callback = callback;
+        this.isBypassingCache = request.isBypassingCache();
+        this.isBypassingCacheRead = request.isBypassingCacheRead();
+        // Store configuration for potential future use
+    }
+
+    /**
      * Closes the instance. N.B.: this does not close the {@link OutputStream}
      * supplied to {@link #handle(OutputStream)}.
      */
