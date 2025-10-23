@@ -189,10 +189,9 @@ public class AdminResource extends AbstractAdminResource {
         /////////////////////// endpoints section //////////////////////////
         ////////////////////////////////////////////////////////////////////
         {
-            
+
             vars.put("currentMetaIdentifierTransformer",
-                    new MetaIdentifierTransformerFactory()
-                            .newInstance(null)
+                    MetaIdentifierTransformerFactory.newInstanceStatic(null)
                             .getClass().getSimpleName());
             List<String> impls = MetaIdentifierTransformerFactory.allImplementations()
                     .stream()
