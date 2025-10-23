@@ -106,7 +106,7 @@ public class ImageResource extends IIIF2Resource {
             public void infoAvailable(Info info) {
                 if (Size.ScaleMode.MAX.equals(params.getSize().getScaleMode())) {
                     try {
-                        SizeConstrainer.constrainSizeToMaxPixels(info.getSize(), ops);
+                        SizeConstrainer.constrainSizeToMaxPixels(info.getSize(), ops, Configuration.getInstance());
                     } catch (ValidationException e) {
                         throw new IllegalClientArgumentException(e.getMessage(), e);
                     }

@@ -22,8 +22,8 @@ public class SizeConstrainer {
      * @throws ValidationException if a cropping Operation is invalid.
      */
     public static void constrainSizeToMaxPixels(Dimension requestedSize,
-                                            OperationList opList) throws ValidationException {
-        final var config    = Configuration.getInstance();
+                                            OperationList opList,
+                                            Configuration config) throws ValidationException {
         final int maxPixels = config.getInt(Key.MAX_PIXELS, 0);
         // This ensures we compare maxPixels against the Resulting size 
         // after operations like cropping/region are applied.
