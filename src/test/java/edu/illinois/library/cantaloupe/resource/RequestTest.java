@@ -17,7 +17,7 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 class RequestTest extends BaseTest {
 
     private MockHttpServletRequest sr = new MockHttpServletRequest();
-    private Request instance = new Request(sr, Collections.emptyList());
+    private Request instance = new Request(sr, Collections.emptyList(), Configuration.getInstance());
 
     @Test
     void testGetContextPath() {

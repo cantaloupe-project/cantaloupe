@@ -41,12 +41,14 @@ public class Request {
     private static final Set<String> CACHE_BYPASS_ARGUMENTS =
             Set.of("false", "nocache");
 
+    private Configuration configuration;
     /**
      * @param request Request that the new instance will wrap.
      */
-    public Request(HttpServletRequest request, List<String> pathArguments) {
+    public Request(HttpServletRequest request, List<String> pathArguments, Configuration configuration) {
         this.wrappedRequest = request;
         this.pathArguments = pathArguments;
+        this.configuration = configuration;
     }
 
     public String getContextPath() {
@@ -152,8 +154,7 @@ public class Request {
         ref.setPath(getContextPath());
 
         // If base_uri is set in the configuration, build a URI based on that.
-        final String baseUri = Configuration.getInstance()
-                .getString(Key.BASE_URI, "");
+        final String baseUri = configuration.getString(Key.BASE_URI, "");
         if (!baseUri.isEmpty()) {
             final Reference baseRef = new Reference(baseUri);
             ref.setScheme(baseRef.getScheme());

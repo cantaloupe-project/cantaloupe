@@ -1,4 +1,5 @@
 package edu.illinois.library.cantaloupe.resource;
+import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.http.Cookies;
 import org.junit.jupiter.api.Test;
 
@@ -13,7 +14,7 @@ public class RequestContextDecoratorTest {
         MockHttpServletRequest sr = new MockHttpServletRequest();
         sr.getHeaders().put("Cookie", List.of("fruit=apples; animal=cats",
                 "shape=cube; car=ford"));
-        Request instance = new Request(sr, Collections.emptyList());
+        Request instance = new Request(sr, Collections.emptyList(), Configuration.getInstance());
 
         Cookies cookies = RequestContextDecorator.getCookies(instance);
         assertEquals(4, cookies.size());
