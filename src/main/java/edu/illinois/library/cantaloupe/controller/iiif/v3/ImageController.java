@@ -53,9 +53,8 @@ import jakarta.servlet.http.HttpServletResponse;
  */
 @RestController
 @RequestMapping("/iiif/3")
-public class ImageController {
+public class ImageController extends AbstractIIIFController {
 
-    private final Configuration configuration;
     private final ImageRequestHandlerFactory handlerFactory;
 
     /**
@@ -65,7 +64,7 @@ public class ImageController {
 
     @Autowired
     public ImageController(Configuration configuration, ImageRequestHandlerFactory handlerFactory) {
-        this.configuration = configuration;
+        super(configuration);
         this.handlerFactory = handlerFactory;
     }
 
@@ -187,14 +186,6 @@ public class ImageController {
                 .header("Allow", "GET,OPTIONS")
                 .build();
     }
-
-    private void checkEndpointEnabled() throws EndpointDisabledException {
-        if (!configuration.getBoolean(Key.IIIF_3_ENDPOINT_ENABLED, true)) {
-            throw new EndpointDisabledException();
-        }
-    }
-
-
 
     /**
      * Adds Content-Disposition, Content-Type, and Link response headers to a queue
@@ -394,11 +385,5 @@ public class ImageController {
 
     private void setLastModifiedHeader(HttpServletResponse response, java.time.Instant timestamp) {
         response.setDateHeader("Last-Modified", timestamp.toEpochMilli());
-    }
-
-    private void addCorsHeaders(HttpServletResponse response) {
-        response.setHeader("Access-Control-Allow-Origin", "*");
-        response.setHeader("Access-Control-Allow-Headers", "Authorization, Content-Type");
-        response.setHeader("Access-Control-Allow-Methods", "GET, OPTIONS");
     }
 }
