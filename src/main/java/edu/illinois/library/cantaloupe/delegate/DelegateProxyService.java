@@ -168,7 +168,8 @@ public class DelegateProxyService {
             // The script name may be an absolute pathname or a filename.
             value = config.getString(Key.DELEGATE_SCRIPT_PATHNAME, "");
         }
-        if (!value.isBlank()) {
+        // Handle null values that might come from mocked configurations
+        if (value != null && !value.isBlank()) {
             Path script = findScript(value, config);
             if (!Files.exists(script)) {
                 throw new NoSuchFileException("File not found: " + script);
