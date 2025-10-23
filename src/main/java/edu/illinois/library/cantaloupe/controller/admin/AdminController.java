@@ -145,7 +145,7 @@ public class AdminController {
         response.setHeader("Content-Type", "text/html;charset=UTF-8");
 
         // Create request wrapper and get template variables
-        Request requestWrapper = new Request(request, Collections.emptyList());
+        Request requestWrapper = new Request(request, Collections.emptyList(), configuration);
         TemplateVariables vars = getTemplateVars(requestWrapper);
 
         model.addAllAttributes(vars.getVars());
