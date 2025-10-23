@@ -25,6 +25,7 @@ import static org.mockito.Mockito.when;
  */
 @SpringBootTest(classes = {
     MetaIdentifierTransformerFactory.class,
+    StandardMetaIdentifierTransformer.class,
     FormatRegistry.class,
     FormatRegistryAccessor.class
 })
@@ -35,6 +36,9 @@ class MetaIdentifierTransformerFactoryTest {
 
     @Autowired
     private MetaIdentifierTransformerFactory factory;
+
+    @Autowired
+    private StandardMetaIdentifierTransformer standardTransformer;
 
     @MockitoBean
     private Configuration configuration;
@@ -151,5 +155,18 @@ class MetaIdentifierTransformerFactoryTest {
         assertDoesNotThrow(() -> {
             MetaIdentifierTransformerFactory.allImplementations();
         }, "Static methods should work for backward compatibility");
+    }
+
+    @Test
+    void testSpringManagedStandardTransformerIsUsed() {
+        // Test that the factory uses the Spring-managed StandardMetaIdentifierTransformer
+        when(configuration.getString(Key.META_IDENTIFIER_TRANSFORMER,
+                StandardMetaIdentifierTransformer.class.getSimpleName()))
+                .thenReturn("StandardMetaIdentifierTransformer");
+
+        MetaIdentifierTransformer xformer = factory.newInstance(null);
+        assertNotNull(xformer, "Factory should return Spring-managed transformer");
+        assertTrue(xformer instanceof StandardMetaIdentifierTransformer);
+        assertSame(standardTransformer, xformer, "Factory should return the same Spring-managed instance");
     }
 }

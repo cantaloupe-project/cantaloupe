@@ -7,6 +7,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
+
+import org.mockito.Mockito;
 
 class StandardMetaIdentifierTransformerTest extends BaseTest {
 
@@ -149,6 +152,30 @@ class StandardMetaIdentifierTransformerTest extends BaseTest {
                 .withScaleConstraint(2, 2)
                 .build();
         assertEquals("cats;cats;2:2", instance.serialize(meta, false));
+    }
+
+    @Test
+    void testNullSafetyWithMockedConfiguration() {
+        // Test that the transformer handles null configuration values gracefully
+        Configuration mockConfig = mock(Configuration.class);
+        when(mockConfig.getString(Key.STANDARD_META_IDENTIFIER_TRANSFORMER_DELIMITER, ";"))
+                .thenReturn(null);
+
+        StandardMetaIdentifierTransformer transformer = new StandardMetaIdentifierTransformer(mockConfig);
+
+        // This should not throw NPE and should use the default delimiter
+        MetaIdentifier meta = MetaIdentifier.builder()
+                .withIdentifier("test")
+                .withPageNumber(2)
+                .build();
+
+        String result = transformer.serialize(meta);
+        assertEquals("test;2", result, "Should use default delimiter when configuration returns null");
+
+        // Test deserialization also works
+        MetaIdentifier deserialized = transformer.deserialize("test;2");
+        assertEquals(new Identifier("test"), deserialized.getIdentifier());
+        assertEquals(2, deserialized.getPageNumber());
     }
 
 }
