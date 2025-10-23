@@ -83,6 +83,10 @@ class InformationControllerTest {
         // Mock the handler's handle() method to return a basic Info
         Info mockInfo = createMockInfo();
         when(mockHandler.handle()).thenReturn(mockInfo);
+
+        // Mock delegate script configuration to prevent NullPointerException
+        when(configuration.getString(Key.DELEGATE_SCRIPT_PATHNAME, "")).thenReturn("");
+        when(configuration.getBoolean(Key.DELEGATE_SCRIPT_ENABLED, false)).thenReturn(false);
     }
 
     private Info createMockInfo() {
