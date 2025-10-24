@@ -189,7 +189,7 @@ class ImageRequestHandlerTest extends BaseTest {
         opList.add(encode);
 
         // Add an info to the derivative cache.
-        CacheFacade facade = new CacheFacade();
+        CacheFacade facade = new CacheFacade(configuration);
         DerivativeCache cache = facade.getDerivativeCache().orElseThrow();
         Info info = Info.builder()
                 .withSize(64, 48)
@@ -314,7 +314,7 @@ class ImageRequestHandlerTest extends BaseTest {
         opList.add(encode);
 
         // Add an info to the derivative cache.
-        CacheFacade facade = new CacheFacade();
+        CacheFacade facade = new CacheFacade(configuration);
         DerivativeCache cache = facade.getDerivativeCache().orElseThrow();
         Info info = Info.builder()
                 .withSize(64, 48)
@@ -514,7 +514,7 @@ class ImageRequestHandlerTest extends BaseTest {
             encode.setMetadata(metadata);
             opList.add(encode);
 
-            final CacheFacade cacheFacade = new CacheFacade();
+            final CacheFacade cacheFacade = new CacheFacade(configuration);
             ImageRequestHandler.Callback callback =new ImageRequestHandler.Callback() {
                 @Override
                 public boolean preAuthorize() {
@@ -595,7 +595,7 @@ class ImageRequestHandlerTest extends BaseTest {
             encode.setMetadata(metadata);
             opList.add(encode);
 
-            final CacheFacade cacheFacade = new CacheFacade();
+            final CacheFacade cacheFacade = new CacheFacade(configuration);
 
             ImageRequestHandler.Callback callback =new ImageRequestHandler.Callback() {
             @Override
