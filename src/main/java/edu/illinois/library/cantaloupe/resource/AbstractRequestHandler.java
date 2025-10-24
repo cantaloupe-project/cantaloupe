@@ -20,6 +20,7 @@ abstract class AbstractRequestHandler {
     boolean isBypassingCache;
     boolean isBypassingCacheRead;
     RequestContext requestContext;
+    protected Configuration configuration;
 
     abstract Logger getLogger();
 
@@ -37,10 +38,10 @@ abstract class AbstractRequestHandler {
         Info info;
         if (!isBypassingCache) {
             if (!isBypassingCacheRead) {
-                info = new CacheFacade(Configuration.getInstance()).getOrReadInfo(identifier, proc).orElseThrow();
+                info = new CacheFacade(configuration).getOrReadInfo(identifier, proc).orElseThrow();
             } else {
                 info = proc.readInfo();
-                DerivativeCache cache = new CacheFactory(Configuration.getInstance()).getDerivativeCache().orElse(null);
+                DerivativeCache cache = new CacheFactory(configuration).getDerivativeCache().orElse(null);
                 if (cache != null) {
                     cache.put(identifier, info);
                 }
@@ -60,8 +61,7 @@ abstract class AbstractRequestHandler {
      * Resolving first is safer but slower.
      */
     boolean verifyExistenceBeforeReturningCachedValue() {
-        return Configuration.getInstance().
-                getBoolean(Key.CACHE_SERVER_RESOLVE_FIRST, true);
+        return configuration.getBoolean(Key.CACHE_SERVER_RESOLVE_FIRST, true);
     }
 
 }
