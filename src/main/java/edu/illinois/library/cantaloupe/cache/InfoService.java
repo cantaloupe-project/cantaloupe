@@ -32,9 +32,12 @@ public final class InfoService {
 
     private final InfoCache infoCache = new InfoCache();
     private CacheFactory cacheFactory;
+    private boolean objectCacheEnabled;
 
     InfoService(Configuration configuration) {
         this.cacheFactory = new CacheFactory(configuration);
+        this.objectCacheEnabled = configuration.
+                getBoolean(Key.INFO_CACHE_ENABLED, false);
     }
 
     /**
@@ -170,8 +173,7 @@ public final class InfoService {
     }
 
     boolean isObjectCacheEnabled() {
-        return Configuration.getInstance().
-                getBoolean(Key.INFO_CACHE_ENABLED, false);
+        return objectCacheEnabled;
     }
 
     public void purgeObjectCache() {

@@ -41,10 +41,7 @@ import edu.illinois.library.cantaloupe.cache.SourceCache;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.config.Key;
-import edu.illinois.library.cantaloupe.delegate.DelegateProxyService;
 import edu.illinois.library.cantaloupe.image.Format;
-import edu.illinois.library.cantaloupe.image.FormatRegistry;
-import edu.illinois.library.cantaloupe.image.FormatRegistryAccessor;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.image.MetaIdentifier;
@@ -54,7 +51,6 @@ import edu.illinois.library.cantaloupe.resource.iiif.ImageAPIResourceTester.NotC
 import edu.illinois.library.cantaloupe.resource.iiif.ImageAPIResourceTester.NotReadingSourceFormatSource;
 import edu.illinois.library.cantaloupe.source.AccessDeniedSource;
 import edu.illinois.library.cantaloupe.test.TestUtil;
-import edu.illinois.library.cantaloupe.util.StringUtils;
 
 /**
  * Spring Boot test for IIIF v3 Information Controller.
@@ -62,7 +58,7 @@ import edu.illinois.library.cantaloupe.util.StringUtils;
  * Note: These tests may fail if image sources are not properly configured.
  */
 @WebMvcTest(InformationController.class)
-@Import({FormatRegistry.class, FormatRegistryAccessor.class, DelegateProxyService.class, InformationRequestHandlerFactory.class, StringUtils.class})
+@Import({InformationRequestHandlerFactory.class})
 @TestPropertySource(properties = {
     "cantaloupe.config=test.properties"
 })
@@ -75,8 +71,6 @@ class InformationControllerTest {
     @MockitoBean
     private Configuration configuration;
 
-    // @Autowired
-    // private InformationRequestHandlerFactory handlerFactory;
 
     private ObjectMapper objectMapper;
 

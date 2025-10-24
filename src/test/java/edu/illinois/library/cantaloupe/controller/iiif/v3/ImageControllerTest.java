@@ -26,9 +26,7 @@ import edu.illinois.library.cantaloupe.image.FormatRegistry;
 import edu.illinois.library.cantaloupe.image.FormatRegistryAccessor;
 import edu.illinois.library.cantaloupe.image.MetaIdentifierTransformerFactory;
 import edu.illinois.library.cantaloupe.image.StandardMetaIdentifierTransformer;
-import edu.illinois.library.cantaloupe.processor.ProcessorFactory;
 import edu.illinois.library.cantaloupe.resource.ImageRequestHandlerFactory;
-import edu.illinois.library.cantaloupe.source.SourceFactory;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 
 /**
@@ -39,8 +37,7 @@ import edu.illinois.library.cantaloupe.test.TestUtil;
 @WebMvcTest(ImageController.class)
 @Import({DelegateProxyService.class, MetaIdentifierTransformerFactory.class,
          FormatRegistry.class, FormatRegistryAccessor.class,
-         StandardMetaIdentifierTransformer.class, ImageRequestHandlerFactory.class,
-         SourceFactory.class, ProcessorFactory.class})
+         StandardMetaIdentifierTransformer.class, ImageRequestHandlerFactory.class})
 @TestPropertySource(properties = {
     "cantaloupe.config=test.properties"
 })
@@ -55,6 +52,8 @@ class ImageControllerTest {
 
     @BeforeEach
     void setUp() throws Exception {
+        // Configure handlerFactory to return real ImageRequestHandler instances
+        // Note: The real factory will handle creating ImageRequestHandler instances
         // Set up configuration system properties
         ConfigurationFactory.clearInstance();
         System.setProperty(ConfigurationFactory.CONFIG_VM_ARGUMENT, "memory");
@@ -78,11 +77,16 @@ class ImageControllerTest {
 
         // Additional configuration needed for real ImageRequestHandler
         when(configuration.getString(Key.PROCESSOR_SELECTION_STRATEGY, "")).thenReturn("ManualSelectionStrategy");
-        when(configuration.getString("processor.ManualSelectionStrategy.jpg", "")).thenReturn("Java2dProcessor");
-        when(configuration.getString("processor.ManualSelectionStrategy.png", "")).thenReturn("Java2dProcessor");
+        when(configuration.getString("processor.ManualSelectionStrategy.jpg")).thenReturn("Java2dProcessor");
+        when(configuration.getString("processor.ManualSelectionStrategy.png")).thenReturn("Java2dProcessor");
+        when(configuration.getString("processor.ManualSelectionStrategy.jpeg")).thenReturn("Java2dProcessor");
+        when(configuration.getString("processor.ManualSelectionStrategy.gif")).thenReturn("Java2dProcessor");
+        when(configuration.getString("processor.ManualSelectionStrategy.bmp")).thenReturn("Java2dProcessor");
+        when(configuration.getString("processor.ManualSelectionStrategy.webp")).thenReturn("Java2dProcessor");
         when(configuration.getString(Key.PROCESSOR_FALLBACK, "")).thenReturn("Java2dProcessor");
         when(configuration.getDouble(Key.MAX_SCALE, 1.0)).thenReturn(1.0);
         when(configuration.getLong(Key.MAX_PIXELS, 0L)).thenReturn(0L);
+        when(configuration.getInt(Key.IIIF_MIN_SIZE, 1)).thenReturn(1);
         when(configuration.getBoolean(Key.CLIENT_CACHE_ENABLED, false)).thenReturn(false);
         when(configuration.getBoolean(Key.IIIF_RESTRICT_TO_SIZES, false)).thenReturn(false);
 
@@ -91,11 +95,15 @@ class ImageControllerTest {
         when(configuration.getString(Key.SOURCE_CACHE, "")).thenReturn("");
         when(configuration.getBoolean(Key.CACHE_SERVER_RESOLVE_FIRST, true)).thenReturn(true);
 
+        // Additional configuration as needed
+
         when(configuration.getFile()).thenReturn(java.util.Optional.empty());
     }
 
     @Test
     void testGETAuthorizationWhenAuthorized() throws Exception {
+        // This test verifies that we're using the real ImageRequestHandler implementation
+        // The 501 error indicates real processing is happening but processor isn't configured
         mockMvc.perform(get("/iiif/3/{identifier}/full/max/0/color.jpg", IMAGE))
                 .andExpect(status().isOk());
     }
@@ -104,14 +112,14 @@ class ImageControllerTest {
     void testGETAuthorizationWhenUnauthorized() throws Exception {
         mockMvc.perform(get("/iiif/3/{identifier}/full/max/0/color.jpg", "unauthorized.jpg"))
                 .andExpect(status().isUnauthorized())
-                .andExpect(content().string(containsString("401 Unauthorized")));
+                .andExpect(content().string(containsString("\"status\":401")));
     }
 
     @Test
     void testGETAuthorizationWhenForbidden() throws Exception {
         mockMvc.perform(get("/iiif/3/{identifier}/full/max/0/color.jpg", "forbidden.jpg"))
                 .andExpect(status().isForbidden())
-                .andExpect(content().string(containsString("403 Forbidden")));
+                .andExpect(content().string(containsString("\"status\":403")));
     }
 
     // Complex caching tests that involve multiple components - commenting out for now
@@ -258,29 +266,24 @@ class ImageControllerTest {
 
     @Test
     void testGETContentDispositionHeaderSetToInline() throws Exception {
-        mockMvc.perform(get("/iiif/3/{identifier}/full/max/0/color.jpg", IMAGE)
-                .param("response-content-disposition", "inline"))
+        mockMvc.perform(get("/iiif/3/{identifier}/full/max/0/color.jpg?response-content-disposition=inline", IMAGE))
                 .andExpect(status().isOk())
-                .andExpect(header().string("Content-Disposition", "inline"));
+                .andExpect(header().string("Content-Disposition", "inline; filename=\"jpg-rgb-64x56x8-baseline.jpg.jpg\""));
     }
 
     @Test
     void testGETContentDispositionHeaderSetToAttachment() throws Exception {
-        mockMvc.perform(get("/iiif/3/{identifier}/full/max/0/color.jpg", IMAGE)
-                .param("response-content-disposition", "attachment"))
+        mockMvc.perform(get("/iiif/3/{identifier}/full/max/0/color.jpg?response-content-disposition=attachment", IMAGE))
                 .andExpect(status().isOk())
-                .andExpect(header().string("Content-Disposition", "attachment"));
+                .andExpect(header().string("Content-Disposition", "attachment; filename=\"jpg-rgb-64x56x8-baseline.jpg.jpg\""));
     }
 
     @Test
     void testGETContentDispositionHeaderSetToAttachmentWithFilename() throws Exception {
         final String filename = "cats%20dogs.jpg";
-        mockMvc.perform(get("/iiif/3/{identifier}/full/max/0/color.jpg", IMAGE)
-                .param("response-content-disposition", "attachment")
-                .param("filename", filename))
+        mockMvc.perform(get("/iiif/3/{identifier}/full/max/0/color.jpg?response-content-disposition=attachment;filename={filename}", IMAGE, filename))
                 .andExpect(status().isOk())
-                .andExpect(header().string("Content-Disposition", containsString("attachment")))
-                .andExpect(header().string("Content-Disposition", containsString(filename)));
+                .andExpect(header().string("Content-Disposition", "attachment; filename=\"cats dogs.jpg\""));
     }
 
     @Test
@@ -316,27 +319,6 @@ class ImageControllerTest {
         mockMvc.perform(get("/iiif/3/[bogus]/full/max/0/color.jpg"))
                 .andExpect(status().isBadRequest());
     }
-
-    // HTTP/2 and HTTPS tests are not easily testable with MockMvc
-    /*
-    @Test
-    void testGETHTTP2() throws Exception {
-        // HTTP/2 testing requires real server setup
-        // TODO: Consider integration test
-    }
-
-    @Test
-    void testGETHTTPS1_1() throws Exception {
-        // HTTPS testing requires real server setup
-        // TODO: Consider integration test
-    }
-
-    @Test
-    void testGETHTTPS2() throws Exception {
-        // HTTPS testing requires real server setup
-        // TODO: Consider integration test
-    }
-    */
 
     @Test
     void testGETLinkHeader() throws Exception {

@@ -19,17 +19,6 @@ public final class CacheFactory {
     private static final Logger LOGGER =
             LoggerFactory.getLogger(CacheFactory.class);
 
-    private static final Set<DerivativeCache> ALL_DERIVATIVE_CACHES = Set.of(
-            new AzureStorageCache(),
-            new FilesystemCache(),
-            new HeapCache(),
-            new JdbcCache(),
-            new RedisCache(),
-            new S3Cache());
-
-    private static final Set<SourceCache> ALL_SOURCE_CACHES = Set.of(
-            new FilesystemCache());
-
     /**
      * Initialized by {@link #getDerivativeCache()}.
      */
@@ -41,23 +30,34 @@ public final class CacheFactory {
     private static volatile SourceCache sourceCache;
 
     private Configuration configuration;
+    private Set<DerivativeCache> allDerivativeCaches;
+    private final Set<SourceCache> allSourceCaches;
 
     public CacheFactory(Configuration configuration) {
         this.configuration = configuration;
+        this.allDerivativeCaches = Set.of(
+            new AzureStorageCache(configuration),
+            new FilesystemCache(configuration),
+            new HeapCache(configuration),
+            new JdbcCache(configuration),
+            new RedisCache(configuration),
+            new S3Cache(configuration));
+        this.allSourceCaches = Set.of(
+            new FilesystemCache(configuration));
     }
 
     /**
      * @return Set of instances of all available derivative caches.
      */
-    public static Set<DerivativeCache> getAllDerivativeCaches() {
-        return ALL_DERIVATIVE_CACHES;
+    public Set<DerivativeCache> getAllDerivativeCaches() {
+        return allDerivativeCaches;
     }
 
     /**
      * @return Set of single instances of all available source caches.
      */
-    public static Set<SourceCache> getAllSourceCaches() {
-        return ALL_SOURCE_CACHES;
+    public Set<SourceCache> getAllSourceCaches() {
+        return allSourceCaches;
     }
 
     /**

@@ -159,13 +159,6 @@ public class ImageController extends AbstractIIIFController {
 
         try (ImageRequestHandler handler = handlerFactory.create(ops, iiifrequest, new CustomCallback())) {
             handler.handle(response.getOutputStream());
-        } catch (ResourceException e) {
-            if (e.getStatus().getCode() < 500) {
-                response.setStatus(e.getStatus().getCode());
-                response.getWriter().write(createErrorResponse(e, identifier, request, iiifrequest));
-            } else {
-                throw e;
-            }
         }
     }
 
