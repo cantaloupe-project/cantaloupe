@@ -86,6 +86,7 @@ class InformationControllerTest {
         when(configuration.getString(Key.FILESYSTEMSOURCE_PATH_PREFIX, "")).thenReturn(TestUtil.getFixturePath() + "/images/");
         when(configuration.getString(Key.FILESYSTEMSOURCE_PATH_SUFFIX, "")).thenReturn("");
         when(configuration.getString(Key.BASE_URI, "")).thenReturn("");
+        when(configuration.getString(Key.SLASH_SUBSTITUTE, "")).thenReturn("");
 
     }
 
@@ -123,8 +124,7 @@ class InformationControllerTest {
 
         // Verify ID contains the identifier
         String id = json.get("id").asText();
-        assertTrue(id.contains(IMAGE));
-        assertTrue(id.contains("/iiif/3/"));
+        assertEquals("http://localhost/iiif/3/"+IMAGE, id);
     }
 
     @Test
@@ -611,49 +611,27 @@ class InformationControllerTest {
     //             appServer.getHTTPPort());
     // }
 
-    @Test
-    void testGetInformation_SlashSubstitution() throws Exception {
-        when(configuration.getString(Key.SLASH_SUBSTITUTE, "")).thenReturn("CATS");
-
-        mockMvc.perform(get("/iiif/3/{identifier}/info.json",  "subfolderCATSjpg"))
-                .andExpect(status().isOk());
-    }
-
     // @Test
     // void testGetInformation_UnavailableSourceFormat() {
     //     URI uri = getHTTPURI("/text.txt/info.json");
     //     tester.testUnavailableSourceFormat(uri);
     // }
 
-    // @Test
-    // void testGetInformation_URIsInJSON() throws Exception {
-    //     client = newClient("/" + IMAGE + "/info.json");
-    //     Response response = client.send();
+    @Test
+    void testGetInformation_SlashSubstitution() throws Exception {
+        when(configuration.getString(Key.SLASH_SUBSTITUTE, "")).thenReturn("CATS");
 
-    //     String json = response.getBodyAsString();
-    //     ObjectMapper mapper = new ObjectMapper();
-    //     Information<?, ?> info = mapper.readValue(json, Information.class);
-    //     assertEquals("http://localhost:" + getHTTPPort() +
-    //             Route.IIIF_3_PATH + "/" + IMAGE, info.get("id"));
-    // }
+        MvcResult result = mockMvc.perform(get("/iiif/3/{identifier}/info.json",  "subfolderCATSjpg"))
+                .andExpect(status().isOk())
+                .andReturn();
 
+        String responseBody = result.getResponse().getContentAsString();
+        JsonNode json = objectMapper.readTree(responseBody);
 
-
-    // @Test
-    // void testGetInformation_URIsInJSONWithSlashSubstitution() throws Exception {
-    //     Configuration config = Configuration.getInstance();
-    //     config.setProperty(Key.SLASH_SUBSTITUTE, "CATS");
-
-    //     final String path = "/subfolderCATSjpg";
-    //     client = newClient(path + "/info.json");
-    //     Response response = client.send();
-
-    //     String json = response.getBodyAsString();
-    //     ObjectMapper mapper = new ObjectMapper();
-    //     Information<?, ?> info = mapper.readValue(json, Information.class);
-    //     assertEquals("http://localhost:" + getHTTPPort() +
-    //             Route.IIIF_3_PATH + path, info.get("id"));
-    // }
+        // Verify ID contains the decoded identifier
+        String id = json.get("id").asText();
+        assertEquals("http://localhost/iiif/3/subfolder/jpg", id);
+    }
 
     // @Test
     // void testGetInformation_URIsInJSONWithEncodedCharacters() throws Exception {
