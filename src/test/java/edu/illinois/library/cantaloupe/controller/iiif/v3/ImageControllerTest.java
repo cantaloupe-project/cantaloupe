@@ -51,6 +51,7 @@ import edu.illinois.library.cantaloupe.resource.ImageRequestHandlerFactory;
     "cantaloupe.config=test.properties"
 })
 class ImageControllerTest {
+    private static final String IMAGE = "jpg-rgb-64x56x8-baseline.jpg";
 
     @Autowired
     private MockMvc mockMvc;
@@ -143,40 +144,40 @@ class ImageControllerTest {
 
     @Test
     void testGetImage_SpecificRegion() throws Exception {
-        mockMvc.perform(get("/iiif/3/test-image/100,100,200,200/max/0/default.jpg"))
+        mockMvc.perform(get("/iiif/3/{identifier}/100,100,200,200/max/0/default.jpg", IMAGE))
                 .andExpect(status().isOk());
     }
 
     @Test
     void testGetImage_PercentageRegion() throws Exception {
-        mockMvc.perform(get("/iiif/3/test-image/pct:10,10,80,80/max/0/default.jpg"))
+        mockMvc.perform(get("/iiif/3/{identifier}/pct:10,10,80,80/max/0/default.jpg", IMAGE))
                 .andExpect(status().isOk());
 
     }
 
     @Test
     void testGetImage_SpecificSize() throws Exception {
-        mockMvc.perform(get("/iiif/3/test-image/full/500,400/0/default.jpg"))
+        mockMvc.perform(get("/iiif/3/{identifier}/full/500,400/0/default.jpg", IMAGE))
                 .andExpect(status().isOk());
     }
 
     @Test
     void testGetImage_PercentageSize() throws Exception {
-        mockMvc.perform(get("/iiif/3/test-image/full/pct:50/0/default.jpg"))
+        mockMvc.perform(get("/iiif/3/{identifier}/full/pct:50/0/default.jpg", IMAGE))
                 .andExpect(status().isOk());
 
     }
 
     @Test
     void testGetImage_MaxSize() throws Exception {
-        mockMvc.perform(get("/iiif/3/test-image/full/max/0/default.jpg"))
+        mockMvc.perform(get("/iiif/3/{identifier}/full/max/0/default.jpg", IMAGE))
                 .andExpect(status().isOk());
 
     }
 
     @Test
     void testGetImage_UpscalingAllowed() throws Exception {
-        MvcResult result = mockMvc.perform(get("/iiif/3/test-image/full/^max/0/default.jpg"))
+        MvcResult result = mockMvc.perform(get("/iiif/3/{identifier}/full/^max/0/default.jpg", IMAGE))
                 .andReturn();
 
         // The implementation now processes real IIIF parameters, status may vary based on image availability
@@ -188,7 +189,7 @@ class ImageControllerTest {
         String[] rotations = {"0", "90", "180", "270", "22.5", "!90"};
 
         for (String rotation : rotations) {
-            MvcResult result = mockMvc.perform(get("/iiif/3/test-image/full/max/{rotation}/default.jpg", rotation))
+            MvcResult result = mockMvc.perform(get("/iiif/3/{identifier}/full/max/{rotation}/default.jpg", IMAGE, rotation))
                     .andReturn();
 
             // The implementation now processes real IIIF parameters, status may vary based on image availability
@@ -201,7 +202,7 @@ class ImageControllerTest {
         String[] qualities = {"default", "color", "gray", "bitonal"};
 
         for (String quality : qualities) {
-            MvcResult result = mockMvc.perform(get("/iiif/3/test-image/full/max/0/{quality}.jpg", quality))
+            MvcResult result = mockMvc.perform(get("/iiif/3/{identifier}/full/max/0/{quality}.jpg", IMAGE, quality))
                     .andReturn();
 
             // The implementation now processes real IIIF parameters, status may vary based on image availability
@@ -214,7 +215,7 @@ class ImageControllerTest {
         String[] formats = {"jpg", "png", "gif", "webp"};
 
         for (String format : formats) {
-            MvcResult result = mockMvc.perform(get("/iiif/3/test-image/full/max/0/default.{format}", format))
+            MvcResult result = mockMvc.perform(get("/iiif/3/{identifier}/full/max/0/default.{format}", IMAGE, format))
                     .andReturn();
 
             // The implementation now processes real IIIF parameters, status may vary based on image availability
@@ -224,7 +225,7 @@ class ImageControllerTest {
 
     @Test
     void testGetImage_RealImplementation() throws Exception {
-        MvcResult result = mockMvc.perform(get("/iiif/3/test/full/max/0/default.jpg"))
+        MvcResult result = mockMvc.perform(get("/iiif/3/{identifier}/full/max/0/default.jpg", IMAGE))
                 .andReturn();
 
         // The implementation is now real, not placeholder - verify proper processing
@@ -245,13 +246,13 @@ class ImageControllerTest {
     void testGetImage_EndpointDisabled() throws Exception {
         when(configuration.getBoolean(Key.IIIF_3_ENDPOINT_ENABLED, true)).thenReturn(false);
 
-        mockMvc.perform(get("/iiif/3/test-image/full/max/0/default.jpg"))
+        mockMvc.perform(get("/iiif/3/{identifier}/full/max/0/default.jpg", IMAGE))
                 .andExpect(status().isForbidden());
     }
 
     @Test
     void testGetImage_CORSHeaders() throws Exception {
-        MvcResult result = mockMvc.perform(get("/iiif/3/cors-test/full/max/0/default.jpg")
+        MvcResult result = mockMvc.perform(get("/iiif/3/{identifier}/full/max/0/default.jpg", IMAGE)
                 .header("Origin", "https://example.com"))
                 .andExpect(header().string("Access-Control-Allow-Origin", "*"))
                 .andExpect(header().string("Access-Control-Allow-Headers", "Authorization, Content-Type"))
@@ -276,7 +277,7 @@ class ImageControllerTest {
     void testGetImage_LongIdentifier() throws Exception {
         String longIdentifier = "a".repeat(200);
 
-        MvcResult result = mockMvc.perform(get("/iiif/3/{identifier}/full/max/0/default.jpg", longIdentifier))
+        MvcResult result = mockMvc.perform(get("/iiif/3/{identifier}/full/max/0/default.jpg", IMAGE, longIdentifier))
                 .andReturn();
 
         // The implementation now processes real IIIF parameters, status may vary based on image availability
@@ -285,7 +286,7 @@ class ImageControllerTest {
 
     @Test
     void testOptionsImage() throws Exception {
-        mockMvc.perform(options("/iiif/3/test-image/full/max/0/default.jpg"))
+        mockMvc.perform(options("/iiif/3/{identifier}/full/max/0/default.jpg", IMAGE))
                 .andExpect(status().isNoContent())
                 .andExpect(header().string("Allow", "GET,OPTIONS"))
                 .andExpect(header().string("Access-Control-Allow-Origin", "*"))
@@ -297,13 +298,13 @@ class ImageControllerTest {
     void testOptionsImage_EndpointDisabled() throws Exception {
         when(configuration.getBoolean(Key.IIIF_3_ENDPOINT_ENABLED, true)).thenReturn(false);
 
-        mockMvc.perform(options("/iiif/3/test-image/full/max/0/default.jpg"))
+        mockMvc.perform(options("/iiif/3/{identifier}/full/max/0/default.jpg", IMAGE))
                 .andExpect(status().isForbidden());
     }
 
     @Test
     void testGetImage_ResponseStructure() throws Exception {
-        MvcResult result = mockMvc.perform(get("/iiif/3/structure-test/100,100,200,200/500,400/90/gray.png"))
+        MvcResult result = mockMvc.perform(get("/iiif/3/{identifier}/100,100,200,200/500,400/90/gray.png", IMAGE))
                 .andReturn();
 
         // Verify the factory was called and capture the callback
@@ -359,8 +360,8 @@ class ImageControllerTest {
         };
 
         for (String[] params : parameterSets) {
-            MvcResult result = mockMvc.perform(get("/iiif/3/test/{region}/{size}/{rotation}/{quality}.{format}",
-                    params[0], params[1], params[2], params[3], params[4]))
+            MvcResult result = mockMvc.perform(get("/iiif/3/{identifier}/{region}/{size}/{rotation}/{quality}.{format}",
+                    IMAGE, params[0], params[1], params[2], params[3], params[4]))
                     .andReturn();
 
             // The implementation now processes real IIIF parameters, status may vary based on image availability
@@ -386,7 +387,7 @@ class ImageControllerTest {
     @Test
     void testGetImage_ContentTypeHandling() throws Exception {
         // The implementation now processes real images, content type depends on success or error
-        MvcResult result = mockMvc.perform(get("/iiif/3/content-test/full/max/0/default.jpg"))
+        MvcResult result = mockMvc.perform(get("/iiif/3/{identifier}/full/max/0/default.jpg", IMAGE))
                 .andReturn();
 
         assertTrue(result.getResponse().getStatus() >= 200, "Should return valid HTTP status");
