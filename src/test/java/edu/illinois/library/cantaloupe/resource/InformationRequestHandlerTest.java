@@ -131,7 +131,7 @@ public class InformationRequestHandlerTest extends BaseTest {
         final Metadata metadata     = new Metadata();
 
         // Add an info to the derivative cache.
-        CacheFacade facade = new CacheFacade();
+        CacheFacade facade = new CacheFacade(configuration);
         DerivativeCache cache = facade.getDerivativeCache().orElseThrow();
         Info info = Info.builder()
                 .withSize(64, 48)
@@ -170,7 +170,7 @@ public class InformationRequestHandlerTest extends BaseTest {
         final Metadata metadata     = new Metadata();
 
         // Add an info to the derivative cache.
-        CacheFacade facade = new CacheFacade();
+        CacheFacade facade = new CacheFacade(configuration);
         DerivativeCache cache = facade.getDerivativeCache().orElseThrow();
         Info info = Info.builder()
                 .withSize(64, 48)

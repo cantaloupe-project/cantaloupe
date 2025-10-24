@@ -1,16 +1,18 @@
 package edu.illinois.library.cantaloupe.resource.admin;
 
-import edu.illinois.library.cantaloupe.status.ApplicationStatus;
-import edu.illinois.library.cantaloupe.http.Method;
-import edu.illinois.library.cantaloupe.resource.JacksonRepresentation;
-import edu.illinois.library.cantaloupe.resource.api.TaskMonitor;
-import edu.illinois.library.cantaloupe.util.TimeUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import edu.illinois.library.cantaloupe.config.Configuration;
+import edu.illinois.library.cantaloupe.http.Method;
+import edu.illinois.library.cantaloupe.resource.JacksonRepresentation;
+import edu.illinois.library.cantaloupe.resource.api.TaskMonitor;
+import edu.illinois.library.cantaloupe.status.ApplicationStatus;
+import edu.illinois.library.cantaloupe.util.TimeUtils;
 
 /**
  * Provides live status updates to the Control Panel via XHR.
@@ -45,7 +47,7 @@ public class StatusResource extends AbstractAdminResource {
 
     @SuppressWarnings("unchecked")
     private Map<String,Object> getStatus() {
-        final ApplicationStatus status = new ApplicationStatus();
+        final ApplicationStatus status = new ApplicationStatus(Configuration.getInstance());
         final Map<String,Object> map = new HashMap<>(status.toMap());
 
         // Reformat various values for human consumption

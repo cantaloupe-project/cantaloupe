@@ -170,7 +170,7 @@ public class InformationRequestHandler extends AbstractRequestHandler
             return null;
         }
 
-        final CacheFacade cacheFacade = new CacheFacade();
+        final CacheFacade cacheFacade = new CacheFacade(config);
 
         // If we are using a cache, and don't need to resolve first, and the
         // cache contains an info matching the request, skip all the setup and
