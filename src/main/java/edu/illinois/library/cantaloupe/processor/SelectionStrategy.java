@@ -1,18 +1,17 @@
 package edu.illinois.library.cantaloupe.processor;
 
+import java.util.List;
+
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Format;
-
-import java.util.List;
 
 interface SelectionStrategy {
 
     /**
      * @return Strategy from the application configuration.
      */
-    static SelectionStrategy fromConfiguration() {
-        final Configuration config = Configuration.getInstance();
+    static SelectionStrategy fromConfiguration(Configuration config) {
         switch (config.getString(Key.PROCESSOR_SELECTION_STRATEGY, "")) {
             case "ManualSelectionStrategy":
                 return new ManualSelectionStrategy();

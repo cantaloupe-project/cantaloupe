@@ -1,5 +1,11 @@
 package edu.illinois.library.cantaloupe.resource.iiif.v1;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Format;
@@ -10,27 +16,23 @@ import edu.illinois.library.cantaloupe.processor.Processor;
 import edu.illinois.library.cantaloupe.processor.ProcessorFactory;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 public class InformationFactoryTest extends BaseTest {
 
     private String imageUri;
     private Information imageInfo;
     private Processor processor;
+    Configuration config = Configuration.getInstance();
 
     @BeforeEach
     public void setUp() throws Exception {
         super.setUp();
 
-        Configuration config = Configuration.getInstance();
         config.setProperty(Key.PROCESSOR_SELECTION_STRATEGY, "ManualSelectionStrategy");
         config.setProperty(Key.PROCESSOR_FALLBACK, "Java2dProcessor");
 
         imageUri = "http://example.org/bla";
-        processor = new ProcessorFactory().newProcessor(Format.get("jpg"));
+        processor = new ProcessorFactory(config).newProcessor(Format.get("jpg"));
         ((FileProcessor) processor).setSourceFile(
                 TestUtil.getImage("jpg-rgb-594x522x8-baseline.jpg"));
 
@@ -54,7 +56,7 @@ public class InformationFactoryTest extends BaseTest {
 
     private void setUpForRotatedImage() throws Exception {
         processor.close();
-        processor = new ProcessorFactory().newProcessor(Format.get("jpg"));
+        processor = new ProcessorFactory(config).newProcessor(Format.get("jpg"));
         ((FileProcessor) processor).setSourceFile(
                 TestUtil.getImage("jpg-xmp-orientation-90.jpg"));
 
@@ -66,7 +68,7 @@ public class InformationFactoryTest extends BaseTest {
 
     private void setUpForScaleConstrainedImage() throws Exception {
         processor.close();
-        processor = new ProcessorFactory().newProcessor(Format.get("jpg"));
+        processor = new ProcessorFactory(config).newProcessor(Format.get("jpg"));
         ((FileProcessor) processor).setSourceFile(
                 TestUtil.getImage("jpg-rgb-594x522x8-baseline.jpg"));
 

@@ -1,19 +1,11 @@
 package edu.illinois.library.cantaloupe.resource.iiif.v2;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import edu.illinois.library.cantaloupe.config.Configuration;
-import edu.illinois.library.cantaloupe.config.Key;
-import edu.illinois.library.cantaloupe.http.ResourceException;
-import edu.illinois.library.cantaloupe.http.Response;
-import edu.illinois.library.cantaloupe.image.Format;
-import edu.illinois.library.cantaloupe.processor.Processor;
-import edu.illinois.library.cantaloupe.processor.ProcessorFactory;
-import edu.illinois.library.cantaloupe.image.Identifier;
-import edu.illinois.library.cantaloupe.resource.ResourceTest;
-import edu.illinois.library.cantaloupe.resource.Route;
-import org.junit.jupiter.api.Test;
+import static edu.illinois.library.cantaloupe.test.Assert.HTTPAssert.assertStatus;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
-import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -24,8 +16,22 @@ import java.nio.file.Paths;
 import java.util.List;
 import java.util.Set;
 
-import static edu.illinois.library.cantaloupe.test.Assert.HTTPAssert.*;
-import static org.junit.jupiter.api.Assertions.*;
+import javax.imageio.ImageIO;
+
+import org.junit.jupiter.api.Test;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import edu.illinois.library.cantaloupe.config.Configuration;
+import edu.illinois.library.cantaloupe.config.Key;
+import edu.illinois.library.cantaloupe.http.ResourceException;
+import edu.illinois.library.cantaloupe.http.Response;
+import edu.illinois.library.cantaloupe.image.Format;
+import edu.illinois.library.cantaloupe.image.Identifier;
+import edu.illinois.library.cantaloupe.processor.Processor;
+import edu.illinois.library.cantaloupe.processor.ProcessorFactory;
+import edu.illinois.library.cantaloupe.resource.ResourceTest;
+import edu.illinois.library.cantaloupe.resource.Route;
 
 /**
  * <p>Functional test of conformance to the IIIF Image API 2.0 spec. Methods
@@ -38,6 +44,7 @@ public class Version2_0ConformanceTest extends ResourceTest {
 
     static final Identifier IMAGE =
             new Identifier("jpg-rgb-64x56x8-baseline.jpg");
+    Configuration config = Configuration.getInstance();
 
     @Override
     protected String getEndpointPath() {
@@ -72,7 +79,6 @@ public class Version2_0ConformanceTest extends ResourceTest {
         File directory = new File(".");
         String cwd = directory.getCanonicalPath();
         Path path = Paths.get(cwd, "src", "test", "resources");
-        Configuration config = Configuration.getInstance();
         config.setProperty(Key.FILESYSTEMSOURCE_PATH_PREFIX,
                 path + File.separator);
 
@@ -443,7 +449,7 @@ public class Version2_0ConformanceTest extends ResourceTest {
                 outputFormat.getPreferredExtension());
 
         final Format sourceFormat = Format.inferFormat(IMAGE);
-        final Processor processor = new ProcessorFactory().newProcessor(sourceFormat);
+        final Processor processor = new ProcessorFactory(config).newProcessor(sourceFormat);
         final Set<Format> outputFormats = processor.getAvailableOutputFormats();
 
         // If the processor supports this SOURCE format

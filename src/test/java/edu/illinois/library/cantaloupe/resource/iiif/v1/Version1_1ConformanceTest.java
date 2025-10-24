@@ -1,19 +1,10 @@
 package edu.illinois.library.cantaloupe.resource.iiif.v1;
 
-import edu.illinois.library.cantaloupe.config.Configuration;
-import edu.illinois.library.cantaloupe.config.Key;
-import edu.illinois.library.cantaloupe.http.ResourceException;
-import edu.illinois.library.cantaloupe.http.Response;
-import edu.illinois.library.cantaloupe.image.Format;
-import edu.illinois.library.cantaloupe.processor.Processor;
-import edu.illinois.library.cantaloupe.processor.ProcessorFactory;
-import edu.illinois.library.cantaloupe.image.Identifier;
-import edu.illinois.library.cantaloupe.resource.ResourceTest;
-import edu.illinois.library.cantaloupe.resource.Route;
-import org.apache.commons.lang3.StringUtils;
-import org.junit.jupiter.api.Test;
+import static edu.illinois.library.cantaloupe.test.Assert.HTTPAssert.assertStatus;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
-import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -22,8 +13,21 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Set;
 
-import static edu.illinois.library.cantaloupe.test.Assert.HTTPAssert.*;
-import static org.junit.jupiter.api.Assertions.*;
+import javax.imageio.ImageIO;
+
+import org.apache.commons.lang3.StringUtils;
+import org.junit.jupiter.api.Test;
+
+import edu.illinois.library.cantaloupe.config.Configuration;
+import edu.illinois.library.cantaloupe.config.Key;
+import edu.illinois.library.cantaloupe.http.ResourceException;
+import edu.illinois.library.cantaloupe.http.Response;
+import edu.illinois.library.cantaloupe.image.Format;
+import edu.illinois.library.cantaloupe.image.Identifier;
+import edu.illinois.library.cantaloupe.processor.Processor;
+import edu.illinois.library.cantaloupe.processor.ProcessorFactory;
+import edu.illinois.library.cantaloupe.resource.ResourceTest;
+import edu.illinois.library.cantaloupe.resource.Route;
 
 /**
  * <p>Functional test of conformance to the IIIF Image API 1.1 spec. Methods
@@ -427,7 +431,7 @@ public class Version1_1ConformanceTest extends ResourceTest {
                 outputFormat.getPreferredExtension());
 
         final Format sourceFormat = Format.inferFormat(IMAGE);
-        try (Processor processor = new ProcessorFactory().newProcessor(sourceFormat)) {
+        try (Processor processor = new ProcessorFactory(Configuration.getInstance()).newProcessor(sourceFormat)) {
             final Set<Format> outputFormats = processor.getAvailableOutputFormats();
 
             // If the processor supports this SOURCE format
