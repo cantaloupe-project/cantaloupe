@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
+import edu.illinois.library.cantaloupe.processor.SourceFormatException;
 import edu.illinois.library.cantaloupe.resource.EndpointDisabledException;
 import edu.illinois.library.cantaloupe.resource.ResourceException;
 
@@ -98,6 +99,18 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
     }
 
+    @ExceptionHandler(SourceFormatException.class)
+    public  ResponseEntity<Map<String, Object>> handleSourceFormatException(SourceFormatException ex, WebRequest request) {
+        Map<String, Object> errorResponse = new HashMap<>();
+        errorResponse.put("status", 501);
+        errorResponse.put("error", "Not Implemented");
+        errorResponse.put("message", "Unable to use the requested source format");
+        errorResponse.put("path", request.getDescription(false));
+
+        return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).body(errorResponse);
+    }
+
+    // This is a catch all, for any exception not more closely handled.
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Map<String, Object>> handleGenericException(
             Exception ex, WebRequest request) {
