@@ -1,22 +1,24 @@
 package edu.illinois.library.cantaloupe.processor;
 
+import java.io.IOException;
+import java.nio.file.Path;
+import java.util.UUID;
+import java.util.concurrent.Future;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import edu.illinois.library.cantaloupe.Application;
+import edu.illinois.library.cantaloupe.cache.CacheDisabledException;
 import edu.illinois.library.cantaloupe.cache.CacheFactory;
 import edu.illinois.library.cantaloupe.cache.SourceCache;
-import edu.illinois.library.cantaloupe.cache.CacheDisabledException;
+import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.source.PathStreamFactory;
 import edu.illinois.library.cantaloupe.source.Source;
 import edu.illinois.library.cantaloupe.source.StreamFactory;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.io.IOException;
-import java.nio.file.Path;
-import java.util.UUID;
-import java.util.concurrent.Future;
 
 /**
  * Establishes an optimal connection between a {@link Source} and a
@@ -26,6 +28,12 @@ public final class ProcessorConnector {
 
     private static final Logger LOGGER =
             LoggerFactory.getLogger(ProcessorConnector.class);
+
+    private Configuration configuration;
+
+    public ProcessorConnector(Configuration configuration) {
+        this.configuration = configuration;
+    }
 
     /**
      * @return Strategy from the application configuration, or a default.
@@ -183,7 +191,7 @@ public final class ProcessorConnector {
                         }
                         return dl;
                     case CACHE:
-                        SourceCache sourceCache = CacheFactory.getSourceCache()
+                        SourceCache sourceCache = new CacheFactory(configuration).getSourceCache()
                                 .orElseThrow(() -> new CacheDisabledException(
                                         "The source cache is not available."));
                         LOGGER.debug("Using {} to work around the " +
@@ -229,7 +237,7 @@ public final class ProcessorConnector {
                             RetrievalStrategy.CACHE,
                             processorName,
                             StreamProcessor.class.getSimpleName());
-                    SourceCache sourceCache = CacheFactory.getSourceCache()
+                    SourceCache sourceCache = new CacheFactory(configuration).getSourceCache()
                             .orElseThrow(() -> new CacheDisabledException(
                                     "Source cache is disabled."));
                     Path file = downloadToSourceCache(

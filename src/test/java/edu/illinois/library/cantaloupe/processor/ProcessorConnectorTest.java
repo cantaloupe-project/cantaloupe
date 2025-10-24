@@ -42,6 +42,7 @@ public class ProcessorConnectorTest extends BaseTest {
     private static final Identifier IDENTIFIER = new Identifier("jpg");
 
     private ProcessorConnector instance;
+    private CacheFactory cacheFactory;
 
     private static void recursiveDeleteOnExit(Path dir) throws IOException {
         Files.walkFileTree(dir, new SimpleFileVisitor<>() {
@@ -64,7 +65,6 @@ public class ProcessorConnectorTest extends BaseTest {
     public void setUp() throws Exception {
         super.setUp();
 
-        instance = new ProcessorConnector();
 
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.SOURCE_STATIC, "FilesystemSource");
@@ -75,6 +75,9 @@ public class ProcessorConnectorTest extends BaseTest {
         config.setProperty(Key.PROCESSOR_SELECTION_STRATEGY,
                 ManualSelectionStrategy.CONFIGURATION_VALUE);
         config.setProperty(Key.PROCESSOR_FALLBACK, "Java2dProcessor");
+
+        instance = new ProcessorConnector(config);
+        cacheFactory = new CacheFactory(config);
     }
 
     @Test
@@ -220,7 +223,7 @@ public class ProcessorConnectorTest extends BaseTest {
             assertNull(instance.connect(source, processor, identifier, Format.get("jpg")));
 
             assertEquals(
-                    CacheFactory.getSourceCache().get().getSourceImageFile(identifier).orElseThrow(),
+                    cacheFactory.getSourceCache().get().getSourceImageFile(identifier).orElseThrow(),
                     ((FileProcessor) processor).getSourceFile());
         } finally {
             server.stop();
@@ -368,7 +371,7 @@ public class ProcessorConnectorTest extends BaseTest {
             assertNull(instance.connect(source, processor, IDENTIFIER, Format.get("jpg")));
 
             assertEqualSources(
-                    CacheFactory.getSourceCache().get().getSourceImageFile(IDENTIFIER).orElseThrow(),
+                    cacheFactory.getSourceCache().get().getSourceImageFile(IDENTIFIER).orElseThrow(),
                     processor.getStreamFactory());
         } finally {
             server.stop();
@@ -441,7 +444,7 @@ public class ProcessorConnectorTest extends BaseTest {
             assertNull(instance.connect(source, processor, IDENTIFIER, Format.get("jpg")));
 
             assertEqualSources(
-                    CacheFactory.getSourceCache().get().getSourceImageFile(IDENTIFIER).orElseThrow(),
+                    cacheFactory.getSourceCache().get().getSourceImageFile(IDENTIFIER).orElseThrow(),
                     processor.getStreamFactory());
         } finally {
             server.stop();
@@ -544,7 +547,7 @@ public class ProcessorConnectorTest extends BaseTest {
             assertNull(instance.connect(source, processor, IDENTIFIER, Format.get("jpg")));
 
             assertEqualSources(
-                    CacheFactory.getSourceCache().get().getSourceImageFile(IDENTIFIER).orElseThrow(),
+                    cacheFactory.getSourceCache().get().getSourceImageFile(IDENTIFIER).orElseThrow(),
                     processor.getStreamFactory());
         } finally {
             server.stop();
@@ -582,7 +585,7 @@ public class ProcessorConnectorTest extends BaseTest {
             assertNull(instance.connect(source, processor, IDENTIFIER, Format.get("jpg")));
 
             assertEqualSources(
-                    CacheFactory.getSourceCache().get().getSourceImageFile(IDENTIFIER).orElseThrow(),
+                    cacheFactory.getSourceCache().get().getSourceImageFile(IDENTIFIER).orElseThrow(),
                     processor.getStreamFactory());
         } finally {
             server.stop();
