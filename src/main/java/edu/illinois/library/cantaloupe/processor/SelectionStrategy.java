@@ -14,7 +14,7 @@ interface SelectionStrategy {
     static SelectionStrategy fromConfiguration(Configuration config) {
         switch (config.getString(Key.PROCESSOR_SELECTION_STRATEGY, "")) {
             case "ManualSelectionStrategy":
-                return new ManualSelectionStrategy();
+                return new ManualSelectionStrategy(config);
             default:
                 return new AutomaticSelectionStrategy();
         }

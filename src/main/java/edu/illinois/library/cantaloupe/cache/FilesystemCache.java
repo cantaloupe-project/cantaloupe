@@ -1,17 +1,5 @@
 package edu.illinois.library.cantaloupe.cache;
 
-import edu.illinois.library.cantaloupe.async.TaskQueue;
-import edu.illinois.library.cantaloupe.config.Configuration;
-import edu.illinois.library.cantaloupe.config.Key;
-import edu.illinois.library.cantaloupe.image.Identifier;
-import edu.illinois.library.cantaloupe.image.Info;
-import edu.illinois.library.cantaloupe.operation.OperationList;
-import edu.illinois.library.cantaloupe.util.DeletingFileVisitor;
-import edu.illinois.library.cantaloupe.util.StringUtils;
-import org.apache.commons.codec.binary.Hex;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -40,6 +28,19 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.stream.Collectors;
+
+import org.apache.commons.codec.binary.Hex;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import edu.illinois.library.cantaloupe.async.TaskQueue;
+import edu.illinois.library.cantaloupe.config.Configuration;
+import edu.illinois.library.cantaloupe.config.Key;
+import edu.illinois.library.cantaloupe.image.Identifier;
+import edu.illinois.library.cantaloupe.image.Info;
+import edu.illinois.library.cantaloupe.operation.OperationList;
+import edu.illinois.library.cantaloupe.util.DeletingFileVisitor;
+import edu.illinois.library.cantaloupe.util.StringUtils;
 
 /**
  * <p>Cache using a filesystem, storing source images, derivative images,
@@ -286,6 +287,11 @@ class FilesystemCache implements SourceCache, DerivativeCache {
     private final Map<Identifier,ReadWriteLock> infoLocks =
             new ConcurrentHashMap<>();
 
+    private Configuration configuration;
+
+    FilesystemCache(Configuration configuration) { 
+        this.configuration = configuration;
+    }
     /**
      * Returns the last-accessed time of the given file. On some filesystems,
      * particularly those mounted with a {@code noatime} option, this may be
@@ -311,7 +317,7 @@ class FilesystemCache implements SourceCache, DerivativeCache {
      * @return Directory path composed of fragments of a hash of the given
      *         string.
      */
-    static String hashedPathFragment(String uniqueString) {
+    String hashedPathFragment(String uniqueString) {
         final List<String> components = new ArrayList<>();
         try {
             final MessageDigest digest =
@@ -319,10 +325,9 @@ class FilesystemCache implements SourceCache, DerivativeCache {
             digest.update(uniqueString.getBytes(StandardCharsets.UTF_8));
             final String sum = Hex.encodeHexString(digest.digest());
 
-            final Configuration config = Configuration.getInstance();
-            final int depth = config.getInt(Key.FILESYSTEMCACHE_DIRECTORY_DEPTH, 3);
+            final int depth = configuration.getInt(Key.FILESYSTEMCACHE_DIRECTORY_DEPTH, 3);
             final int nameLength =
-                    config.getInt(Key.FILESYSTEMCACHE_DIRECTORY_NAME_LENGTH, 2);
+                    configuration.getInt(Key.FILESYSTEMCACHE_DIRECTORY_NAME_LENGTH, 2);
 
             for (int i = 0; i < depth; i++) {
                 final int offset = i * nameLength;
@@ -344,12 +349,11 @@ class FilesystemCache implements SourceCache, DerivativeCache {
      * @param file Path to check.
      * @return Whether the given file is expired.
      */
-    static boolean isExpired(Path file) throws IOException {
-        final Configuration config = Configuration.getInstance();
+    boolean isExpired(Path file) throws IOException {
 
         final long ttlSec = file.startsWith(rootSourceImagePath()) ?
-                config.getLong(Key.SOURCE_CACHE_TTL, 0) :
-                config.getLong(Key.DERIVATIVE_CACHE_TTL, 0);
+                configuration.getLong(Key.SOURCE_CACHE_TTL, 0) :
+                configuration.getLong(Key.DERIVATIVE_CACHE_TTL, 0);
         final long ttlMsec = 1000 * ttlSec;
         final long fileAge = System.currentTimeMillis()
                 - getLastAccessedTime(file).toMillis();
@@ -363,9 +367,8 @@ class FilesystemCache implements SourceCache, DerivativeCache {
     /**
      * @return Path of the root cache directory.
      */
-    private static Path rootPath() {
-        final String pathname = Configuration.getInstance().
-                getString(Key.FILESYSTEMCACHE_PATHNAME, "");
+    private Path rootPath() {
+        final String pathname = configuration.getString(Key.FILESYSTEMCACHE_PATHNAME, "");
         if (pathname.isEmpty()) {
             LOGGER.error("{} is not set.", Key.FILESYSTEMCACHE_PATHNAME);
         }
@@ -377,7 +380,7 @@ class FilesystemCache implements SourceCache, DerivativeCache {
      *         <code>null</code> if {@link Key#FILESYSTEMCACHE_PATHNAME} is
      *         not set.
      */
-    static Path rootDerivativeImagePath() {
+    Path rootDerivativeImagePath() {
         return rootPath().resolve(DERIVATIVE_IMAGE_FOLDER);
     }
 
@@ -385,7 +388,7 @@ class FilesystemCache implements SourceCache, DerivativeCache {
      * @return Path of the image info cache folder, or <code>null</code> if
      *         {@link Key#FILESYSTEMCACHE_PATHNAME} is not set.
      */
-    static Path rootInfoPath() {
+    Path rootInfoPath() {
         return rootPath().resolve(INFO_FOLDER);
     }
 
@@ -393,7 +396,7 @@ class FilesystemCache implements SourceCache, DerivativeCache {
      * @return Path of the source image cache folder, or <code>null</code> if
      *         {@link Key#FILESYSTEMCACHE_PATHNAME} is not set.
      */
-    static Path rootSourceImagePath() {
+    Path rootSourceImagePath() {
         return rootPath().resolve(SOURCE_IMAGE_FOLDER);
     }
 
@@ -401,7 +404,7 @@ class FilesystemCache implements SourceCache, DerivativeCache {
      * @param ops Operation list identifying the file.
      * @return Path corresponding to the given operation list.
      */
-    static Path derivativeImageFile(OperationList ops) {
+    Path derivativeImageFile(OperationList ops) {
         return rootDerivativeImagePath()
                 .resolve(hashedPathFragment(ops.getIdentifier().toString()))
                 .resolve(ops.toFilename());
@@ -412,7 +415,7 @@ class FilesystemCache implements SourceCache, DerivativeCache {
      * @return Temp file corresponding to the given operation list. Clients
      *         should delete it when they are done with it.
      */
-    static Path derivativeImageTempFile(OperationList ops) {
+    Path derivativeImageTempFile(OperationList ops) {
         return rootDerivativeImagePath()
                 .resolve(hashedPathFragment(ops.getIdentifier().toString()))
                 .resolve(ops.toFilename() + tempFileSuffix());
@@ -422,7 +425,7 @@ class FilesystemCache implements SourceCache, DerivativeCache {
      * @return Path of an info file corresponding to the image with the given
      *         identifier.
      */
-    static Path infoFile(final Identifier identifier) {
+    Path infoFile(final Identifier identifier) {
         return rootInfoPath()
                 .resolve(hashedPathFragment(identifier.toString()))
                 .resolve(StringUtils.md5(identifier.toString())
@@ -433,7 +436,7 @@ class FilesystemCache implements SourceCache, DerivativeCache {
      * @return Temporary info file corresponding to the image with the given
      *         identifier.
      */
-    static Path infoTempFile(final Identifier identifier) {
+    Path infoTempFile(final Identifier identifier) {
         return rootInfoPath()
                 .resolve(hashedPathFragment(identifier.toString()))
                 .resolve(StringUtils.md5(identifier.toString())
@@ -444,7 +447,7 @@ class FilesystemCache implements SourceCache, DerivativeCache {
      * @param identifier Identifier identifying the file.
      * @return Path corresponding to the given identifier.
      */
-    static Path sourceImageFile(Identifier identifier) {
+    Path sourceImageFile(Identifier identifier) {
         return rootSourceImagePath()
                 .resolve(hashedPathFragment(identifier.toString()))
                 .resolve(StringUtils.md5(identifier.toString()));
@@ -455,7 +458,7 @@ class FilesystemCache implements SourceCache, DerivativeCache {
      * @return Temp file corresponding to a source image with the given
      *         identifier. Clients should delete it when they are done with it.
      */
-    static Path sourceImageTempFile(Identifier identifier) {
+    Path sourceImageTempFile(Identifier identifier) {
         return rootSourceImagePath()
                 .resolve(hashedPathFragment(identifier.toString()))
                 .resolve(StringUtils.md5(identifier.toString())

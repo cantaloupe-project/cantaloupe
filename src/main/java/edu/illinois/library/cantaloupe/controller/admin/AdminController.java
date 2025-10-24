@@ -311,7 +311,7 @@ public class AdminController {
                 // noop
             }
 
-            sortedProxies = CacheFactory.getAllSourceCaches()
+            sortedProxies = cacheFactory.getAllSourceCaches()
                     .stream()
                     .map(ObjectProxy::new)
                     .sorted(Comparator.comparing(ObjectProxy::getName))
@@ -326,7 +326,7 @@ public class AdminController {
                 // noop
             }
 
-            sortedProxies = CacheFactory.getAllDerivativeCaches()
+            sortedProxies = cacheFactory.getAllDerivativeCaches()
                     .stream()
                     .map(ObjectProxy::new)
                     .sorted(Comparator.comparing(ObjectProxy::getName))
