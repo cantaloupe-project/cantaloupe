@@ -243,12 +243,12 @@ public class AdminController {
 
         // selection strategy
         vars.put("processorSelectionStrategy",
-                new ProcessorFactory().getSelectionStrategy());
+                new ProcessorFactory(configuration).getSelectionStrategy());
 
         // source format assignments
         Map<FormatProxy, ProcessorProxy> assignments = new TreeMap<>();
         for (Format format : Format.all()) {
-            try (Processor proc = new ProcessorFactory().newProcessor(format)) {
+            try (Processor proc = new ProcessorFactory(configuration).newProcessor(format)) {
                 assignments.put(new FormatProxy(format), new ProcessorProxy(proc));
             } catch (SourceFormatException |
                     InitializationException |

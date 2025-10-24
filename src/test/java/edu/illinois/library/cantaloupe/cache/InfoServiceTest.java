@@ -45,7 +45,7 @@ public class InfoServiceTest extends BaseTest {
         config.setProperty(Key.PROCESSOR_SELECTION_STRATEGY,
                 "ManualSelectionStrategy");
         config.setProperty(Key.PROCESSOR_FALLBACK, "Java2dProcessor");
-        try (FileProcessor proc = (FileProcessor) new ProcessorFactory().
+        try (FileProcessor proc = (FileProcessor) new ProcessorFactory(Configuration.getInstance()).
                 newProcessor(Format.get("jpg"))) {
             proc.setSourceFormat(Format.get("jpg"));
             proc.setSourceFile(TestUtil.getImage("jpg"));
