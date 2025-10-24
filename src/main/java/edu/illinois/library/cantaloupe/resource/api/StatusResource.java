@@ -1,15 +1,18 @@
 package edu.illinois.library.cantaloupe.resource.api;
 
-import com.fasterxml.jackson.databind.SerializationFeature;
-import edu.illinois.library.cantaloupe.status.ApplicationStatus;
-import edu.illinois.library.cantaloupe.http.Method;
-import edu.illinois.library.cantaloupe.resource.JacksonRepresentation;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.fasterxml.jackson.databind.SerializationFeature;
+
+import edu.illinois.library.cantaloupe.config.Configuration;
+import edu.illinois.library.cantaloupe.http.Method;
+import edu.illinois.library.cantaloupe.resource.JacksonRepresentation;
+import edu.illinois.library.cantaloupe.status.ApplicationStatus;
 
 /**
  * Provides live status updates via the HTTP API.
@@ -39,7 +42,7 @@ public class StatusResource extends AbstractAPIResource {
 
         getResponse().setHeader("Content-Type",
                 "application/json;charset=UTF-8");
-        new JacksonRepresentation(new ApplicationStatus().toMap())
+        new JacksonRepresentation(new ApplicationStatus(Configuration.getInstance()).toMap())
                 .write(getResponse().getOutputStream(), features);
     }
 

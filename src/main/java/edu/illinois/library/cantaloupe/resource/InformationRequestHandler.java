@@ -241,7 +241,7 @@ public class InformationRequestHandler extends AbstractRequestHandler
             try (Processor processor = new ProcessorFactory().newProcessor(format)) {
                 processorName = processor.getClass().getSimpleName();
                 // Connect it to the source.
-                tempFileFuture = new ProcessorConnector().connect(
+                tempFileFuture = new ProcessorConnector(config).connect(
                         source, processor, identifier, format);
                 callback.knowAvailableOutputFormats(
                         processor.getAvailableOutputFormats());

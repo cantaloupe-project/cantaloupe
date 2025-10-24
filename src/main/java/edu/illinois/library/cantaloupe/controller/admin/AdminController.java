@@ -34,7 +34,6 @@ import edu.illinois.library.cantaloupe.resource.Request;
 import edu.illinois.library.cantaloupe.resource.TemplateVariables;
 import edu.illinois.library.cantaloupe.source.Source;
 import edu.illinois.library.cantaloupe.source.SourceFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import edu.illinois.library.cantaloupe.util.StringUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -302,10 +301,11 @@ public class AdminController {
         ////////////////////////////////////////////////////////////////////
         //////////////////////// caches section ////////////////////////////
         ////////////////////////////////////////////////////////////////////
+        CacheFactory cacheFactory = new CacheFactory(configuration);
         {
             // source caches
             try {
-                CacheFactory.getSourceCache().ifPresent(sc ->
+                cacheFactory.getSourceCache().ifPresent(sc ->
                         vars.put("currentSourceCache", sc));
             } catch (Exception e) {
                 // noop
@@ -321,7 +321,7 @@ public class AdminController {
             // derivative caches
             try {
                 vars.put("currentDerivativeCache",
-                        CacheFactory.getDerivativeCache());
+                        cacheFactory.getDerivativeCache());
             } catch (Exception e) {
                 // noop
             }
