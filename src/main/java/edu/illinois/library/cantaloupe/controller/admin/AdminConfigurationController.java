@@ -1,9 +1,11 @@
 package edu.illinois.library.cantaloupe.controller.admin;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import edu.illinois.library.cantaloupe.config.Configuration;
-import edu.illinois.library.cantaloupe.config.ConfigurationProvider;
-import edu.illinois.library.cantaloupe.config.FileConfiguration;
+import java.io.IOException;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -12,12 +14,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
+import edu.illinois.library.cantaloupe.config.Configuration;
+import edu.illinois.library.cantaloupe.config.ConfigurationProvider;
+import edu.illinois.library.cantaloupe.config.FileConfiguration;
 import jakarta.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 /**
  * Spring Boot controller for admin configuration endpoints.
@@ -26,6 +26,12 @@ import java.util.Map;
 @RestController
 @RequestMapping("/admin/configuration")
 public class AdminConfigurationController {
+    private final Configuration configuration;
+
+    @Autowired
+    public AdminConfigurationController(Configuration configuration ) {
+        this.configuration = configuration;
+    }
 
     /**
      * Returns JSON application configuration for the admin interface.
@@ -36,7 +42,7 @@ public class AdminConfigurationController {
         response.setHeader("Content-Type", "application/json;charset=UTF-8");
 
         Map<String, Object> map = Collections.emptyMap();
-        final ConfigurationProvider provider = (ConfigurationProvider) Configuration.getInstance();
+        final ConfigurationProvider provider = (ConfigurationProvider) configuration;
         final List<Configuration> wrappedConfigs = provider.getWrappedConfigurations();
 
         for (Configuration config : wrappedConfigs) {

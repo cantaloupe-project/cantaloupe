@@ -286,7 +286,8 @@ public class ImageRequestHandler extends AbstractRequestHandler
             final Format format = formatIterator.next();
             // Obtain an instance of the processor assigned to this format.
             String processorName = "unknown processor";
-            try (Processor processor = new ProcessorFactory(configuration).newProcessor(format)) {
+            ProcessorFactory processorFactory = new ProcessorFactory(configuration);
+            try (Processor processor = processorFactory.newProcessor(format)) {
                 processorName = processor.getClass().getSimpleName();
 
                 // Connect it to the source.

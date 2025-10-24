@@ -9,8 +9,6 @@ import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.image.Format;
@@ -19,7 +17,6 @@ import edu.illinois.library.cantaloupe.image.Format;
  * Used to obtain an instance of a {@link Processor} for a given source format,
  * as defined in the configuration.
  */
-@Component
 public final class ProcessorFactory {
 
     private static final Logger LOGGER =
@@ -39,7 +36,6 @@ public final class ProcessorFactory {
 
     private SelectionStrategy selectionStrategy;
     
-    @Autowired
     public ProcessorFactory(Configuration configuration) {
         selectionStrategy = SelectionStrategy.fromConfiguration(configuration);
     }
