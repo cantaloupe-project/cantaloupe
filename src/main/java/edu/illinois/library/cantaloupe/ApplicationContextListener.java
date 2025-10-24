@@ -73,7 +73,8 @@ public class ApplicationContextListener implements ServletContextListener {
         CacheFactory.shutdownCaches();
 
         // Shut down all sources.
-        SourceFactory.getAllSources().forEach(Source::shutdown);
+        SourceFactory sourceFactory = new SourceFactory(Configuration.getInstance());
+        sourceFactory.getAllSources().forEach(Source::shutdown);
 
         // Shut down the application thread pool.
         ThreadPool.getInstance().shutdown();
