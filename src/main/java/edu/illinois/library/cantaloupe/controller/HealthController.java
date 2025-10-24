@@ -1,10 +1,6 @@
 package edu.illinois.library.cantaloupe.controller;
 
-import edu.illinois.library.cantaloupe.config.Configuration;
-import edu.illinois.library.cantaloupe.config.Key;
-import edu.illinois.library.cantaloupe.resource.EndpointDisabledException;
-import edu.illinois.library.cantaloupe.status.Health;
-import edu.illinois.library.cantaloupe.status.HealthChecker;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -12,6 +8,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
+import edu.illinois.library.cantaloupe.config.Configuration;
+import edu.illinois.library.cantaloupe.config.Key;
+import edu.illinois.library.cantaloupe.resource.EndpointDisabledException;
+import edu.illinois.library.cantaloupe.status.Health;
+import edu.illinois.library.cantaloupe.status.HealthChecker;
 import jakarta.servlet.http.HttpServletResponse;
 
 /**
@@ -21,11 +22,16 @@ import jakarta.servlet.http.HttpServletResponse;
 @RestController
 @RequestMapping("/health")
 public class HealthController {
+    private final Configuration configuration;
+
+    @Autowired
+    public HealthController(Configuration configuration ) {
+        this.configuration = configuration;
+    }
 
     @GetMapping
     public ResponseEntity<Health> health(HttpServletResponse response) throws EndpointDisabledException {
-        final Configuration config = Configuration.getInstance();
-        if (!config.getBoolean(Key.HEALTH_ENDPOINT_ENABLED, false)) {
+        if (!configuration.getBoolean(Key.HEALTH_ENDPOINT_ENABLED, false)) {
             throw new EndpointDisabledException();
         }
 
@@ -34,7 +40,7 @@ public class HealthController {
         response.setHeader("Content-Type", "application/json;charset=UTF-8");
 
         Health health;
-        if (config.getBoolean(Key.HEALTH_DEPENDENCY_CHECK, false)) {
+        if (configuration.getBoolean(Key.HEALTH_DEPENDENCY_CHECK, false)) {
             health = new HealthChecker().checkConcurrently();
         } else {
             health = new Health();

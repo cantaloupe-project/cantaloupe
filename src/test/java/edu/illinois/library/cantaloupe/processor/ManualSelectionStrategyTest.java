@@ -1,30 +1,32 @@
 package edu.illinois.library.cantaloupe.processor;
 
-import edu.illinois.library.cantaloupe.config.Configuration;
-import edu.illinois.library.cantaloupe.config.Key;
-import edu.illinois.library.cantaloupe.image.Format;
-import edu.illinois.library.cantaloupe.test.BaseTest;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.util.Collections;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import edu.illinois.library.cantaloupe.config.Configuration;
+import edu.illinois.library.cantaloupe.config.Key;
+import edu.illinois.library.cantaloupe.image.Format;
+import edu.illinois.library.cantaloupe.test.BaseTest;
 
 public class ManualSelectionStrategyTest extends BaseTest {
 
     private ManualSelectionStrategy instance;
+    private  Configuration config = Configuration.getInstance();
 
     @BeforeEach
     public void setUp() throws Exception {
         super.setUp();
-        instance = new ManualSelectionStrategy();
+        instance = new ManualSelectionStrategy(config);
     }
 
     @Test
     void getPreferredProcessorsWhenOnlyAssignedIsSet() {
-        Configuration config = Configuration.getInstance();
         config.setProperty("processor.ManualSelectionStrategy.pdf",
                 PdfBoxProcessor.class.getSimpleName());
 

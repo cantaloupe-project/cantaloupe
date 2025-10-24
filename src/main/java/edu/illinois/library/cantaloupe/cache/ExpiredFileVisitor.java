@@ -1,14 +1,16 @@
 package edu.illinois.library.cantaloupe.cache;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.IOException;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import edu.illinois.library.cantaloupe.config.Configuration;
 
 /**
  * Used by {@link Files#walkFileTree} to delete all expired files within
@@ -33,9 +35,10 @@ class ExpiredFileVisitor extends SimpleFileVisitor<Path> {
     @Override
     public FileVisitResult visitFile(Path path,
                                      BasicFileAttributes attrs) {
+        FilesystemCache filesystemCache = new FilesystemCache(Configuration.getInstance());
         try {
             final boolean delete =
-                    (Files.isRegularFile(path) && FilesystemCache.isExpired(path));
+                    (Files.isRegularFile(path) && filesystemCache.isExpired(path));
 
             LOGGER.trace("{}: last accessed: {}; last modified; {}; " +
                             "effective last accessed: {}; delete? {}",

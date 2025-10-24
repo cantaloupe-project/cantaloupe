@@ -1,25 +1,5 @@
 package edu.illinois.library.cantaloupe.cache;
 
-import com.microsoft.azure.storage.CloudStorageAccount;
-import com.microsoft.azure.storage.StorageException;
-import com.microsoft.azure.storage.blob.BlobOutputStream;
-import com.microsoft.azure.storage.blob.CloudBlob;
-import com.microsoft.azure.storage.blob.CloudBlobClient;
-import com.microsoft.azure.storage.blob.CloudBlobContainer;
-import com.microsoft.azure.storage.blob.CloudBlockBlob;
-import com.microsoft.azure.storage.blob.ListBlobItem;
-import edu.illinois.library.cantaloupe.async.TaskQueue;
-import edu.illinois.library.cantaloupe.config.Configuration;
-import edu.illinois.library.cantaloupe.config.Key;
-import edu.illinois.library.cantaloupe.image.Identifier;
-import edu.illinois.library.cantaloupe.image.Info;
-import edu.illinois.library.cantaloupe.operation.Encode;
-import edu.illinois.library.cantaloupe.operation.OperationList;
-import edu.illinois.library.cantaloupe.util.Stopwatch;
-import edu.illinois.library.cantaloupe.util.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStreamWriter;
@@ -30,6 +10,28 @@ import java.time.temporal.ChronoUnit;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentSkipListSet;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.microsoft.azure.storage.CloudStorageAccount;
+import com.microsoft.azure.storage.StorageException;
+import com.microsoft.azure.storage.blob.BlobOutputStream;
+import com.microsoft.azure.storage.blob.CloudBlob;
+import com.microsoft.azure.storage.blob.CloudBlobClient;
+import com.microsoft.azure.storage.blob.CloudBlobContainer;
+import com.microsoft.azure.storage.blob.CloudBlockBlob;
+import com.microsoft.azure.storage.blob.ListBlobItem;
+
+import edu.illinois.library.cantaloupe.async.TaskQueue;
+import edu.illinois.library.cantaloupe.config.Configuration;
+import edu.illinois.library.cantaloupe.config.Key;
+import edu.illinois.library.cantaloupe.image.Identifier;
+import edu.illinois.library.cantaloupe.image.Info;
+import edu.illinois.library.cantaloupe.operation.Encode;
+import edu.illinois.library.cantaloupe.operation.OperationList;
+import edu.illinois.library.cantaloupe.util.Stopwatch;
+import edu.illinois.library.cantaloupe.util.StringUtils;
 
 /**
  * @see <a href="https://github.com/azure/azure-storage-java">
@@ -146,7 +148,7 @@ class AzureStorageCache implements DerivativeCache {
 
     private static final String INFO_EXTENSION = ".json";
 
-    private static CloudBlobClient client;
+    private CloudBlobClient client;
 
     /**
      * Blob keys currently being written to Azure Storage from any thread.
@@ -154,14 +156,19 @@ class AzureStorageCache implements DerivativeCache {
     private static final Set<String> uploadingKeys =
             new ConcurrentSkipListSet<>();
 
-    static synchronized CloudBlobClient getClientInstance() {
+    private Configuration configuration;
+
+    AzureStorageCache(Configuration configuration) { 
+        this.configuration = configuration;
+    }
+
+    synchronized CloudBlobClient getClientInstance() {
         if (client == null) {
             try {
-                final Configuration config = Configuration.getInstance();
                 final String accountName =
-                        config.getString(Key.AZURESTORAGECACHE_ACCOUNT_NAME);
+                        configuration.getString(Key.AZURESTORAGECACHE_ACCOUNT_NAME);
                 final String accountKey =
-                        config.getString(Key.AZURESTORAGECACHE_ACCOUNT_KEY);
+                        configuration.getString(Key.AZURESTORAGECACHE_ACCOUNT_KEY);
 
                 final String connectionString = String.format(
                         "DefaultEndpointsProtocol=https;" +
@@ -183,15 +190,14 @@ class AzureStorageCache implements DerivativeCache {
         return client;
     }
 
-    static String getContainerName() {
+    String getContainerName() {
         // All letters in a container name must be lowercase.
-        return Configuration.getInstance().
+        return configuration.
                 getString(Key.AZURESTORAGECACHE_CONTAINER_NAME).toLowerCase();
     }
 
-    private static Instant getEarliestValidInstant() {
-        final Configuration config = Configuration.getInstance();
-        final long ttl = config.getLong(Key.DERIVATIVE_CACHE_TTL);
+    private Instant getEarliestValidInstant() {
+        final long ttl = configuration.getLong(Key.DERIVATIVE_CACHE_TTL);
         return (ttl > 0) ?
                 Instant.now().truncatedTo(ChronoUnit.SECONDS).minusSeconds(ttl) :
                 Instant.MIN;
@@ -324,7 +330,7 @@ class AzureStorageCache implements DerivativeCache {
      *         with trailing slash.
      */
     String getObjectKeyPrefix() {
-        String prefix = Configuration.getInstance().
+        String prefix = configuration.
                 getString(Key.AZURESTORAGECACHE_OBJECT_KEY_PREFIX);
         if (prefix.isEmpty() || prefix.equals("/")) {
             return "";
