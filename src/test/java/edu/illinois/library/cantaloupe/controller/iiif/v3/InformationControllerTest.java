@@ -38,6 +38,8 @@ import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.FormatRegistry;
 import edu.illinois.library.cantaloupe.image.FormatRegistryAccessor;
 import edu.illinois.library.cantaloupe.image.Info;
+import edu.illinois.library.cantaloupe.image.MetaIdentifier;
+import edu.illinois.library.cantaloupe.image.StandardMetaIdentifierTransformer;
 import edu.illinois.library.cantaloupe.resource.InformationRequestHandlerFactory;
 import edu.illinois.library.cantaloupe.source.AccessDeniedSource;
 import edu.illinois.library.cantaloupe.test.TestUtil;
@@ -301,7 +303,7 @@ class InformationControllerTest {
     }
 
     // @Test
-    // void testGETCacheHeadersWhenClientCachingIsEnabledAndResponseIsNotCacheable()
+    // void testGetInformation_CacheHeadersWhenClientCachingIsEnabledAndResponseIsNotCacheable()
     //         throws Exception {
     //     URI uri = getHTTPURI("/bogus/info.json");
     //     tester.testCacheHeadersWhenClientCachingIsEnabledAndResponseIsNotCacheable(uri);
@@ -313,34 +315,34 @@ class InformationControllerTest {
     //  * URL query.
     //  */
     // @Test
-    // void testGETCacheHeadersWhenClientCachingIsEnabledButCachingIsDisabledInURL()
+    // void testGetInformation_CacheHeadersWhenClientCachingIsEnabledButCachingIsDisabledInURL()
     //         throws Exception {
     //     URI uri = getHTTPURI("/" + IMAGE + "/info.json?cache=false");
     //     tester.testCacheHeadersWhenClientCachingIsEnabledButCachingIsDisabledInURL(uri);
     // }
 
     // @Test
-    // void testGETCacheHeadersWhenClientCachingIsDisabled() throws Exception {
+    // void testGetInformation_CacheHeadersWhenClientCachingIsDisabled() throws Exception {
     //     URI uri = getHTTPURI("/" + IMAGE + "/info.json");
     //     tester.testCacheHeadersWhenClientCachingIsDisabled(uri);
     // }
 
     // @Test
-    // void testGETCachingWhenCachesAreEnabledButNegativeCacheQueryArgumentIsSupplied1()
+    // void testGetInformation_CachingWhenCachesAreEnabledButNegativeCacheQueryArgumentIsSupplied1()
     //         throws Exception {
     //     URI uri = getHTTPURI("/" + IMAGE + "/info.json?cache=nocache");
     //     tester.testCachingWhenCachesAreEnabledButNegativeCacheQueryArgumentIsSupplied(uri);
     // }
 
     // @Test
-    // void testGETCachingWhenCachesAreEnabledButNegativeCacheQueryArgumentIsSupplied2()
+    // void testGetInformation_CachingWhenCachesAreEnabledButNegativeCacheQueryArgumentIsSupplied2()
     //         throws Exception {
     //     URI uri = getHTTPURI("/" + IMAGE + "/info.json?cache=false");
     //     tester.testCachingWhenCachesAreEnabledButNegativeCacheQueryArgumentIsSupplied(uri);
     // }
 
     // @Test
-    // void testGETCachingWhenCachesAreEnabledAndRecacheQueryArgumentIsSupplied()
+    // void testGetInformation_CachingWhenCachesAreEnabledAndRecacheQueryArgumentIsSupplied()
     //         throws Exception {
     //     assumeFalse(SystemUtils.IS_OS_WINDOWS); // TODO: why does this fail in Windows?
 
@@ -349,7 +351,7 @@ class InformationControllerTest {
     // }
 
     // @Test
-    // void testGETCacheWithDerivativeCacheEnabledAndInfoCacheEnabledAndResolveFirstEnabled()
+    // void testGetInformation_CacheWithDerivativeCacheEnabledAndInfoCacheEnabledAndResolveFirstEnabled()
     //         throws Exception {
     //     // The image must be modified as unmodified images aren't cached.
     //     URI uri = getHTTPURI("/" + IMAGE + "/info.json");
@@ -358,7 +360,7 @@ class InformationControllerTest {
     // }
 
     // @Test
-    // void testGETCacheWithDerivativeCacheEnabledAndInfoCacheEnabledAndResolveFirstDisabled()
+    // void testGetInformation_CacheWithDerivativeCacheEnabledAndInfoCacheEnabledAndResolveFirstDisabled()
     //         throws Exception {
     //     // The image must be modified as unmodified images aren't cached.
     //     URI uri = getHTTPURI("/" + IMAGE + "/info.json");
@@ -367,7 +369,7 @@ class InformationControllerTest {
     // }
 
     // @Test
-    // void testGETCacheWithDerivativeCacheEnabledAndInfoCacheDisabledAndResolveFirstEnabled()
+    // void testGetInformation_CacheWithDerivativeCacheEnabledAndInfoCacheDisabledAndResolveFirstEnabled()
     //         throws Exception {
     //     // The image must be modified as unmodified images aren't cached.
     //     URI uri = getHTTPURI("/" + IMAGE + "/info.json");
@@ -376,7 +378,7 @@ class InformationControllerTest {
     // }
 
     // @Test
-    // void testGETCacheWithDerivativeCacheEnabledAndInfoCacheDisabledAndResolveFirstDisabled()
+    // void testGetInformation_CacheWithDerivativeCacheEnabledAndInfoCacheDisabledAndResolveFirstDisabled()
     //         throws Exception {
     //     // The image must be modified as unmodified images aren't cached.
     //     URI uri = getHTTPURI("/" + IMAGE + "/info.json");
@@ -385,7 +387,7 @@ class InformationControllerTest {
     // }
 
     // @Test
-    // void testGETCacheWithDerivativeCacheDisabledAndInfoCacheEnabledAndResolveFirstEnabled()
+    // void testGetInformation_CacheWithDerivativeCacheDisabledAndInfoCacheEnabledAndResolveFirstEnabled()
     //         throws Exception {
     //     // The image must be modified as unmodified images aren't cached.
     //     URI uri = getHTTPURI("/" + IMAGE + "/info.json");
@@ -394,7 +396,7 @@ class InformationControllerTest {
     // }
 
     // @Test
-    // void testGETCacheWithDerivativeCacheDisabledAndInfoCacheEnabledAndResolveFirstDisabled()
+    // void testGetInformation_CacheWithDerivativeCacheDisabledAndInfoCacheEnabledAndResolveFirstDisabled()
     //         throws Exception {
     //     // The image must be modified as unmodified images aren't cached.
     //     URI uri = getHTTPURI("/" + IMAGE + "/info.json");
@@ -403,7 +405,7 @@ class InformationControllerTest {
     // }
 
     // @Test
-    // void testGETCacheWithDerivativeCacheDisabledAndInfoCacheDisabledAndResolveFirstEnabled()
+    // void testGetInformation_CacheWithDerivativeCacheDisabledAndInfoCacheDisabledAndResolveFirstEnabled()
     //         throws Exception {
     //     // The image must be modified as unmodified images aren't cached.
     //     URI uri = getHTTPURI("/" + IMAGE + "/info.json");
@@ -412,7 +414,7 @@ class InformationControllerTest {
     // }
 
     // @Test
-    // void testGETCacheWithDerivativeCacheDisabledAndInfoCacheDisabledAndResolveFirstDisabled()
+    // void testGetInformation_CacheWithDerivativeCacheDisabledAndInfoCacheDisabledAndResolveFirstDisabled()
     //         throws Exception {
     //     // The image must be modified as unmodified images aren't cached.
     //     URI uri = getHTTPURI("/" + IMAGE + "/info.json");
@@ -422,19 +424,19 @@ class InformationControllerTest {
 
 
     // @Test
-    // void testGETWithForwardSlashInIdentifier() {
+    // void testGetInformation_WithForwardSlashInIdentifier() {
     //     URI uri = getHTTPURI("/subfolder%2Fjpg/info.json");
     //     tester.testForwardSlashInIdentifier(uri);
     // }
 
     // @Test
-    // void testGETWithBackslashInIdentifier() {
+    // void testGetInformation_WithBackslashInIdentifier() {
     //     URI uri = getHTTPURI("/subfolder%5Cjpg/info.json");
     //     tester.testBackslashInIdentifier(uri);
     // }
 
     // @Test
-    // void testGETWithIllegalCharactersInIdentifier() {
+    // void testGetInformation_WithIllegalCharactersInIdentifier() {
     //     String uri = getHTTPURIString("/[bogus]/info.json");
     //     tester.testIllegalCharactersInIdentifier(uri);
     // }
@@ -475,102 +477,103 @@ class InformationControllerTest {
     // }
 
     // @Test
-    // void testGETPurgeFromCacheWhenSourceIsMissingAndOptionIsFalse()
+    // void testGetInformation_PurgeFromCacheWhenSourceIsMissingAndOptionIsFalse()
     //         throws Exception {
     //     URI uri = getHTTPURI("/" + IMAGE + "/info.json");
     //     tester.testPurgeFromCacheWhenSourceIsMissingAndOptionIsFalse(uri);
     // }
 
     // @Test
-    // void testGETPurgeFromCacheWhenSourceIsMissingAndOptionIsTrue()
+    // void testGetInformation_PurgeFromCacheWhenSourceIsMissingAndOptionIsTrue()
     //         throws Exception {
     //     URI uri = getHTTPURI("/" + IMAGE + "/info.json");
     //     tester.testPurgeFromCacheWhenSourceIsMissingAndOptionIsTrue(uri);
     // }
 
     // @Test
-    // void testGETRecoveryFromDerivativeCacheNewDerivativeImageInputStreamException()
+    // void testGetInformation_RecoveryFromDerivativeCacheNewDerivativeImageInputStreamException()
     //         throws Exception {
     //     URI uri = getHTTPURI("/" + IMAGE + "/info.json");
     //     tester.testRecoveryFromDerivativeCacheNewDerivativeImageInputStreamException(uri);
     // }
 
     // @Test
-    // void testGETRecoveryFromDerivativeCacheNewDerivativeImageOutputStreamException()
+    // void testGetInformation_RecoveryFromDerivativeCacheNewDerivativeImageOutputStreamException()
     //         throws Exception {
     //     URI uri = getHTTPURI("/" + IMAGE + "/info.json");
     //     tester.testRecoveryFromDerivativeCacheNewDerivativeImageOutputStreamException(uri);
     // }
 
     // @Test
-    // void testGETRecoveryFromIncorrectSourceFormat() throws Exception {
+    // void testGetInformation_RecoveryFromIncorrectSourceFormat() throws Exception {
     //     URI uri = getHTTPURI("/jpg-incorrect-extension.png/info.json");
     //     tester.testRecoveryFromIncorrectSourceFormat(uri);
     // }
 
-    // /**
-    //  * Tests that a scale constraint of {@literal 1:1} is redirected to no
-    //  * scale constraint.
-    //  */
+    /**
+     * Tests that a scale constraint of {@literal 1:1} is redirected to no
+     * scale constraint.
+     * @throws Exception 
+     */
+    @Test
+    void testGetInformation_RedirectToNormalizedScaleConstraint1() throws Exception {
+        MetaIdentifier metaIdentifier = MetaIdentifier.builder()
+                .withIdentifier(IMAGE)
+                .withScaleConstraint(1, 1)
+                .build();
+        String metaIdentifierString = new StandardMetaIdentifierTransformer()
+                .serialize(metaIdentifier, false);
+
+        mockMvc.perform(get("/iiif/3/{identifier}/info.json", metaIdentifierString))
+                .andExpect(redirectedUrl("http://localhost/iiif/3/" + IMAGE + "/info.json"));
+    }
+
+    /**
+     * Tests that a scale constraint of {@literal 2:2} is redirected to no
+     * scale constraint.
+     * @throws Exception 
+     */
+    @Test
+    void testGetInformation_RedirectToNormalizedScaleConstraint2() throws Exception {
+        MetaIdentifier metaIdentifier = MetaIdentifier.builder()
+                .withIdentifier(IMAGE)
+                .withScaleConstraint(2, 2)
+                .build();
+        String metaIdentifierString = new StandardMetaIdentifierTransformer()
+                .serialize(metaIdentifier, false);
+
+        mockMvc.perform(get("/iiif/3/{identifier}/info.json", metaIdentifierString))
+                .andExpect(redirectedUrl("http://localhost/iiif/3/" + IMAGE + "/info.json"));
+    }
+    
+
+    /**
+     * Tests that a scale constraint of {@literal 2:4} is redirected to
+     * {@literal 1:2}.
+     * @throws Exception 
+     */
+    @Test
+    void testGetInformation_RedirectToNormalizedScaleConstraint3() throws Exception {
+        MetaIdentifier.Builder builder = MetaIdentifier.builder()
+                .withIdentifier(IMAGE);
+        // create the "from" URI
+        MetaIdentifier metaIdentifier = builder
+                .withScaleConstraint(2, 4)
+                .build();
+        String metaIdentifierString =
+                new StandardMetaIdentifierTransformer().serialize(metaIdentifier);
+
+        // create the "to" URI
+        metaIdentifier = builder.withScaleConstraint(1, 2).build();
+        String expectedIdentifierString =
+                new StandardMetaIdentifierTransformer().serialize(metaIdentifier);
+
+        mockMvc.perform(get("/iiif/3/{identifier}/info.json", metaIdentifierString))
+            .andExpect(redirectedUrl("http://localhost/iiif/3/" + expectedIdentifierString + "/info.json"));
+    }
+
     // @Test
-    // void testGETRedirectToNormalizedScaleConstraint1() {
-    //     MetaIdentifier metaIdentifier = MetaIdentifier.builder()
-    //             .withIdentifier(IMAGE)
-    //             .withScaleConstraint(1, 1)
-    //             .build();
-    //     String metaIdentifierString = new StandardMetaIdentifierTransformer()
-    //             .serialize(metaIdentifier, false);
-
-    //     URI fromURI = getHTTPURI("/" + metaIdentifierString + "/info.json");
-    //     URI toURI   = getHTTPURI("/" + IMAGE + "/info.json");
-    //     assertRedirect(fromURI, toURI, 301);
-    // }
-
-    // /**
-    //  * Tests that a scale constraint of {@literal 2:2} is redirected to no
-    //  * scale constraint.
-    //  */
-    // @Test
-    // void testGETRedirectToNormalizedScaleConstraint2() {
-    //     MetaIdentifier metaIdentifier = MetaIdentifier.builder()
-    //             .withIdentifier(IMAGE)
-    //             .withScaleConstraint(2, 2)
-    //             .build();
-    //     String metaIdentifierString = new StandardMetaIdentifierTransformer()
-    //             .serialize(metaIdentifier, false);
-
-    //     URI fromURI = getHTTPURI("/" + metaIdentifierString + "/info.json");
-    //     URI toURI   = getHTTPURI("/" + IMAGE + "/info.json");
-    //     assertRedirect(fromURI, toURI, 301);
-    // }
-
-    // /**
-    //  * Tests that a scale constraint of {@literal 2:4} is redirected to
-    //  * {@literal 1:2}.
-    //  */
-    // @Test
-    // void testGETRedirectToNormalizedScaleConstraint3() {
-    //     MetaIdentifier.Builder builder = MetaIdentifier.builder()
-    //             .withIdentifier(IMAGE);
-    //     // create the "from" URI
-    //     MetaIdentifier metaIdentifier = builder
-    //             .withScaleConstraint(2, 4)
-    //             .build();
-    //     String metaIdentifierString =
-    //             new StandardMetaIdentifierTransformer().serialize(metaIdentifier);
-    //     URI fromURI = getHTTPURI("/" + metaIdentifierString + "/info.json");
-
-    //     // create the "to" URI
-    //     metaIdentifier = builder.withScaleConstraint(1, 2).build();
-    //     metaIdentifierString =
-    //             new StandardMetaIdentifierTransformer().serialize(metaIdentifier);
-    //     URI toURI = getHTTPURI("/" + metaIdentifierString + "/info.json");
-
-    //     assertRedirect(fromURI, toURI, 301);
-    // }
-
-    // @Test
-    // void testGETScaleConstraintIsRespected() throws Exception {
+    // void testGetInformation_ScaleConstraintIsRespected() throws Exception {
     //     client = newClient("/" + IMAGE + ";1:2/info.json");
     //     Response response = client.send();
 
@@ -582,14 +585,14 @@ class InformationControllerTest {
     // }
 
     // @Test
-    // void testGETSourceCheckAccessNotCalledWithSourceCacheHit()
+    // void testGetInformation_SourceCheckAccessNotCalledWithSourceCacheHit()
     //         throws Exception {
     //     URI uri = getHTTPURI("/" + IMAGE + "/info.json");
     //     tester.testSourceCheckAccessNotCalledWithSourceCacheHit(new Identifier(IMAGE), uri);
     // }
 
     // @Test
-    // void testGETSourceGetSourceFormatNotCalledWithSourceCacheHit()
+    // void testGetInformation_SourceGetSourceFormatNotCalledWithSourceCacheHit()
     //         throws Exception {
     //     URI uri = getHTTPURI("/" + IMAGE + "/info.json");
     //     tester.testSourceGetFormatNotCalledWithSourceCacheHit(new Identifier(IMAGE), uri);
@@ -600,7 +603,7 @@ class InformationControllerTest {
     //  * used with a non-StreamProcessor.
     //  */
     // @Test
-    // void testGETSourceProcessorCompatibility() {
+    // void testGetInformation_SourceProcessorCompatibility() {
     //     URI uri = getHTTPURI("/jp2/info.json");
     //     tester.testSourceProcessorCompatibility(
     //             uri,
@@ -609,19 +612,19 @@ class InformationControllerTest {
     // }
 
     // @Test
-    // void testGETSlashSubstitution() {
+    // void testGetInformation_SlashSubstitution() {
     //     URI uri = getHTTPURI("/subfolderCATSjpg/info.json");
     //     tester.testSlashSubstitution(uri);
     // }
 
     // @Test
-    // void testGETUnavailableSourceFormat() {
+    // void testGetInformation_UnavailableSourceFormat() {
     //     URI uri = getHTTPURI("/text.txt/info.json");
     //     tester.testUnavailableSourceFormat(uri);
     // }
 
     // @Test
-    // void testGETURIsInJSON() throws Exception {
+    // void testGetInformation_URIsInJSON() throws Exception {
     //     client = newClient("/" + IMAGE + "/info.json");
     //     Response response = client.send();
 
@@ -635,7 +638,7 @@ class InformationControllerTest {
 
 
     // @Test
-    // void testGETURIsInJSONWithSlashSubstitution() throws Exception {
+    // void testGetInformation_URIsInJSONWithSlashSubstitution() throws Exception {
     //     Configuration config = Configuration.getInstance();
     //     config.setProperty(Key.SLASH_SUBSTITUTE, "CATS");
 
@@ -651,7 +654,7 @@ class InformationControllerTest {
     // }
 
     // @Test
-    // void testGETURIsInJSONWithEncodedCharacters() throws Exception {
+    // void testGetInformation_URIsInJSONWithEncodedCharacters() throws Exception {
     //     Configuration config = Configuration.getInstance();
     //     config.setProperty(Key.SLASH_SUBSTITUTE, "`");
 
@@ -670,7 +673,6 @@ class InformationControllerTest {
     @Test
     void testGetInformation_URIsInJSONWithBaseURIOverride() throws Exception {
         when(configuration.getString(Key.BASE_URI, "")).thenReturn("http://example.org/");
-
 
         MvcResult result = mockMvc.perform(get("/iiif/3/{identifier}/info.json", IMAGE))
             .andReturn();
@@ -706,7 +708,7 @@ class InformationControllerTest {
     }
 
     // @Test
-    // void testGETLastModifiedResponseHeaderWhenDerivativeCacheIsEnabled()
+    // void testGetInformation_LastModifiedResponseHeaderWhenDerivativeCacheIsEnabled()
     //         throws Exception {
     //     URI uri = getHTTPURI("/" + IMAGE + "/info.json");
     //     tester.testLastModifiedHeaderWhenDerivativeCacheIsEnabled(uri);
