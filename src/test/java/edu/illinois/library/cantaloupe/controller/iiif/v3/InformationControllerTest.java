@@ -614,11 +614,11 @@ class InformationControllerTest {
     //             appServer.getHTTPPort());
     // }
 
-    // @Test
-    // void testGetInformation_UnavailableSourceFormat() {
-    //     URI uri = getHTTPURI("/text.txt/info.json");
-    //     tester.testUnavailableSourceFormat(uri);
-    // }
+    @Test
+    void testGetInformation_UnavailableSourceFormat() throws Exception {
+        mockMvc.perform(get("/iiif/3/{identifier}/info.json",  "text.txt"))
+            .andExpect(status().is(501));
+    }
 
     @Test
     void testGetInformation_SlashSubstitution() throws Exception {
