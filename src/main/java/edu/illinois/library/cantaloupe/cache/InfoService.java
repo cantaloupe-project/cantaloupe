@@ -1,6 +1,13 @@
 package edu.illinois.library.cantaloupe.cache;
 
+import java.io.IOException;
+import java.util.Optional;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.fasterxml.jackson.core.JsonParseException;
+
 import edu.illinois.library.cantaloupe.async.TaskQueue;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
@@ -9,11 +16,6 @@ import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.processor.Processor;
 import edu.illinois.library.cantaloupe.util.ObjectCache;
 import edu.illinois.library.cantaloupe.util.Stopwatch;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.io.IOException;
-import java.util.Optional;
 
 /**
  * <p>Used to obtain {@link Info} instances in an efficient way, utilizing
@@ -29,6 +31,11 @@ public final class InfoService {
     private static InfoService instance;
 
     private final InfoCache infoCache = new InfoCache();
+    private CacheFactory cacheFactory;
+
+    InfoService(Configuration configuration) {
+        this.cacheFactory = new CacheFactory(configuration);
+    }
 
     /**
      * For testing only!
@@ -40,9 +47,9 @@ public final class InfoService {
     /**
      * @return Shared instance.
      */
-    public static synchronized InfoService getInstance() {
+    public static synchronized InfoService getInstance(Configuration configuration) {
         if (instance == null) {
-            instance = new InfoService();
+            instance = new InfoService(configuration);
         }
         return instance;
     }
@@ -80,7 +87,7 @@ public final class InfoService {
         }
         // Check the derivative cache.
         final DerivativeCache derivCache =
-                CacheFactory.getDerivativeCache().orElse(null);
+                cacheFactory.getDerivativeCache().orElse(null);
         if (derivCache != null) {
             Stopwatch watch = new Stopwatch();
             try {
@@ -154,7 +161,7 @@ public final class InfoService {
 
             // Add it to the derivative and object caches.
             final DerivativeCache derivCache =
-                    CacheFactory.getDerivativeCache().orElse(null);
+                    cacheFactory.getDerivativeCache().orElse(null);
             putInCachesAsync(identifier, info, derivCache);
             optInfo = Optional.of(info);
         }

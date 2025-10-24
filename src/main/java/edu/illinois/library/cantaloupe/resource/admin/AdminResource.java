@@ -291,10 +291,11 @@ public class AdminResource extends AbstractAdminResource {
         ////////////////////////////////////////////////////////////////////
         //////////////////////// caches section ////////////////////////////
         ////////////////////////////////////////////////////////////////////
+        CacheFactory cacheFactory = new CacheFactory(config);
         {
             // source caches
             try {
-                CacheFactory.getSourceCache().ifPresent(sc ->
+                cacheFactory.getSourceCache().ifPresent(sc ->
                         vars.put("currentSourceCache", sc));
             } catch (Exception e) {
                 // noop
@@ -310,7 +311,7 @@ public class AdminResource extends AbstractAdminResource {
             // derivative caches
             try {
                 vars.put("currentDerivativeCache",
-                        CacheFactory.getDerivativeCache());
+                        cacheFactory.getDerivativeCache());
             } catch (Exception e) {
                 // noop
             }

@@ -15,6 +15,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,6 +34,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import edu.illinois.library.cantaloupe.Application;
+import edu.illinois.library.cantaloupe.cache.CacheFactory;
+import edu.illinois.library.cantaloupe.cache.SourceCache;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.config.Key;
@@ -37,10 +43,12 @@ import edu.illinois.library.cantaloupe.delegate.DelegateProxyService;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.FormatRegistry;
 import edu.illinois.library.cantaloupe.image.FormatRegistryAccessor;
+import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.image.MetaIdentifier;
 import edu.illinois.library.cantaloupe.image.StandardMetaIdentifierTransformer;
 import edu.illinois.library.cantaloupe.resource.InformationRequestHandlerFactory;
+import edu.illinois.library.cantaloupe.resource.iiif.ImageAPIResourceTester.NotReadingSourceFormatSource;
 import edu.illinois.library.cantaloupe.source.AccessDeniedSource;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import edu.illinois.library.cantaloupe.util.StringUtils;
@@ -594,12 +602,29 @@ class InformationControllerTest {
     //     tester.testSourceCheckAccessNotCalledWithSourceCacheHit(new Identifier(IMAGE), uri);
     // }
 
-    // @Test
-    // void testGetInformation_SourceGetSourceFormatNotCalledWithSourceCacheHit()
-    //         throws Exception {
-    //     URI uri = getHTTPURI("/" + IMAGE + "/info.json");
-    //     tester.testSourceGetFormatNotCalledWithSourceCacheHit(new Identifier(IMAGE), uri);
-    // }
+    @Test
+    void testGetInformation_SourceGetSourceFormatNotCalledWithSourceCacheHit()
+            throws Exception {
+
+        when(configuration.getBoolean(Key.CACHE_SERVER_RESOLVE_FIRST, true)).thenReturn(false);
+        when(configuration.getString(Key.SOURCE_STATIC)).thenReturn(NotReadingSourceFormatSource.class.getName());
+        when(configuration.getString(Key.SOURCE_CACHE, "")).thenReturn("FilesystemCache");
+        when(configuration.getLong(Key.SOURCE_CACHE_TTL, 0)).thenReturn((long) 10);
+        when(configuration.getString(Key.FILESYSTEMCACHE_PATHNAME, "")).thenReturn(Files.createTempDirectory("test").toString());
+        when(configuration.getString(Key.PROCESSOR_FALLBACK)).thenReturn("Java2dProcessor");
+
+        // Put an image in the source cache.
+        Path image = TestUtil.getImage("jpg");
+
+        CacheFactory cacheFactory = new CacheFactory(configuration);
+        SourceCache sourceCache = cacheFactory.getSourceCache().get();
+
+        Identifier identifier = new Identifier(IMAGE);
+        try (OutputStream os = sourceCache.newSourceImageOutputStream(identifier)) {
+            Files.copy(image, os);
+        }
+        mockMvc.perform(get("/iiif/3/{identifier}/info.json",  IMAGE));
+    }
 
     @Test
     void testGetInformation_UnavailableSourceFormat() throws Exception {

@@ -1,14 +1,17 @@
 package edu.illinois.library.cantaloupe.controller;
 
-import edu.illinois.library.cantaloupe.status.ApplicationStatus;
+import java.util.Map;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
+import edu.illinois.library.cantaloupe.config.Configuration;
+import edu.illinois.library.cantaloupe.status.ApplicationStatus;
 import jakarta.servlet.http.HttpServletResponse;
-import java.util.Map;
 
 /**
  * Spring Boot controller for status endpoints.
@@ -17,6 +20,12 @@ import java.util.Map;
 @RestController
 @RequestMapping("/status")
 public class StatusController {
+    private Configuration configuration;
+
+    @Autowired
+    public StatusController(Configuration configuration) {
+        this.configuration = configuration;
+    }
 
     /**
      * Provides live status updates via the HTTP API.
