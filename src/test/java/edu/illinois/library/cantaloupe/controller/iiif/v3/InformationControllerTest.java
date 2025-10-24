@@ -469,13 +469,17 @@ class InformationControllerTest {
                         result2.getResponse().getContentAsString());
     }
 
-    // @Test
-    // void testGetInformation_WithPageNumberInQuery() {
-    //     final String image = "pdf-multipage.pdf";
-    //     URI uri1 = getHTTPURI("/" + image + "/info.json");
-    //     URI uri2 = getHTTPURI("/" + image + "/info.json?page=2");
-    //     assertRepresentationsNotSame(uri1, uri2);
-    // }
+    @Test
+    void testGetInformation_WithPageNumberInQuery() throws Exception {
+        final String image = "pdf-multipage.pdf";
+        MvcResult result1 = mockMvc.perform(get("/iiif/3/{identifier}/info.json", image))
+                .andReturn();
+        MvcResult result2 = mockMvc.perform(get("/iiif/3/{identifier}/info.json?page=2", image))
+                .andReturn();
+
+        assertNotEquals(result1.getResponse().getContentAsString(),
+                        result2.getResponse().getContentAsString());
+    }
 
     // @Test
     // void testGetInformation_PurgeFromCacheWhenSourceIsMissingAndOptionIsFalse()
@@ -505,11 +509,10 @@ class InformationControllerTest {
     //     tester.testRecoveryFromDerivativeCacheNewDerivativeImageOutputStreamException(uri);
     // }
 
-    // @Test
-    // void testGetInformation_RecoveryFromIncorrectSourceFormat() throws Exception {
-    //     URI uri = getHTTPURI("/jpg-incorrect-extension.png/info.json");
-    //     tester.testRecoveryFromIncorrectSourceFormat(uri);
-    // }
+    @Test
+    void testGetInformation_RecoveryFromIncorrectSourceFormat() throws Exception {
+        mockMvc.perform(get("/iiif/3/{identifier}/info.json", "jpg-incorrect-extension.png"));
+    }
 
     /**
      * Tests that a scale constraint of {@literal 1:1} is redirected to no
@@ -628,27 +631,26 @@ class InformationControllerTest {
         String responseBody = result.getResponse().getContentAsString();
         JsonNode json = objectMapper.readTree(responseBody);
 
-        // Verify ID contains the decoded identifier
+        // Verify ID contains the encoded identifier
         String id = json.get("id").asText();
-        assertEquals("http://localhost/iiif/3/subfolder/jpg", id);
+        assertEquals("http://localhost/iiif/3/subfolderCATSjpg", id);
     }
 
-    // @Test
-    // void testGetInformation_URIsInJSONWithEncodedCharacters() throws Exception {
-    //     Configuration config = Configuration.getInstance();
-    //     config.setProperty(Key.SLASH_SUBSTITUTE, "`");
+    @Test
+    void testGetInformation_URIsInJSONWithEncodedCharacters() throws Exception {
+        when(configuration.getString(Key.SLASH_SUBSTITUTE, "")).thenReturn("`");
 
-    //     final String path = "/subfolder%60jpg";
-    //     client = newClient(path + "/info.json");
-    //     Response response = client.send();
+        MvcResult result = mockMvc.perform(get("/iiif/3/{identifier}/info.json",  "subfolder%60jpg"))
+                .andExpect(status().isOk())
+                .andReturn();
 
-    //     String json = response.getBodyAsString();
-    //     ObjectMapper mapper = new ObjectMapper();
-    //     Information<?, ?> info = mapper.readValue(json, Information.class);
-    //     assertEquals("http://localhost:" + getHTTPPort() +
-    //             Route.IIIF_3_PATH + path, info.get("id"));
-    // }
+        String responseBody = result.getResponse().getContentAsString();
+        JsonNode json = objectMapper.readTree(responseBody);
 
+        // Verify ID contains the encoded identifier
+        String id = json.get("id").asText();
+        assertEquals("http://localhost/iiif/3/subfolder%60jpg", id);
+    }
 
     @Test
     void testGetInformation_URIsInJSONWithBaseURIOverride() throws Exception {
