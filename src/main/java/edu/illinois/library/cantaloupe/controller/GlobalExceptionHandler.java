@@ -60,7 +60,9 @@ public class GlobalExceptionHandler {
         errorResponse.put("message", ex.getMessage());
         errorResponse.put("path", request.getDescription(false));
 
-        return ResponseEntity.status(ex.getStatus().getCode()).body(errorResponse);
+        return ResponseEntity.status(ex.getStatus().getCode())
+                             .header("Cache-Control", "no-cache, must-revalidate")
+                             .body(errorResponse);
     }
 
     @ExceptionHandler(IllegalArgumentException.class)
@@ -85,7 +87,9 @@ public class GlobalExceptionHandler {
         errorResponse.put("message", "The requested resource was not found");
         errorResponse.put("path", request.getDescription(false));
 
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                             .header("Cache-Control", "no-cache, must-revalidate")
+                             .body(errorResponse);
     }
 
     @ExceptionHandler(NoSuchFileException.class)
@@ -96,7 +100,9 @@ public class GlobalExceptionHandler {
         errorResponse.put("message", "The requested resource was not found");
         errorResponse.put("path", request.getDescription(false));
 
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                             .header("Cache-Control", "no-cache, must-revalidate")
+                             .body(errorResponse);
     }
 
     @ExceptionHandler(SourceFormatException.class)
