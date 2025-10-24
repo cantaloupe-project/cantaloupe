@@ -5,6 +5,7 @@ import static edu.illinois.library.cantaloupe.source.SourceFactory.SelectionStra
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.script.ScriptException;
 
@@ -50,14 +51,15 @@ public final class SourceFactory {
     private static final Logger LOGGER =
             LoggerFactory.getLogger(SourceFactory.class);
 
-    private static final Set<Source> ALL_SOURCES = Set.of(
-            new AzureStorageSource(),
-            new FilesystemSource(),
-            new HttpSource(),
-            new JdbcSource(),
-            new S3Source());
+    private static final Set<String> ALL_SOURCE_CLASSES = Set.of(
+            "AzureStorageSource",
+            "FilesystemSource",
+            "HttpSource",
+            "JdbcSource",
+            "S3Source");
 
     private Configuration configuration;
+
     @Autowired
     public SourceFactory(Configuration config) {
         this.configuration = config;
@@ -66,8 +68,18 @@ public final class SourceFactory {
     /**
      * @return Set of instances of each unique source.
      */
-    public static Set<Source> getAllSources() {
-        return ALL_SOURCES;
+    public Set<Source> getAllSources() {
+        return ALL_SOURCE_CLASSES.stream()
+                .map(className -> {
+                    try {
+                        return newSource(className);
+                    } catch (Exception e) {
+                        LOGGER.warn("Failed to instantiate source {}: {}", className, e.getMessage());
+                        return null;
+                    }
+                })
+                .filter(source -> source != null)
+                .collect(Collectors.toSet());
     }
 
     /**

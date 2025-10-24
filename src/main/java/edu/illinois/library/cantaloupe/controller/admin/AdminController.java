@@ -34,6 +34,7 @@ import edu.illinois.library.cantaloupe.resource.Request;
 import edu.illinois.library.cantaloupe.resource.TemplateVariables;
 import edu.illinois.library.cantaloupe.source.Source;
 import edu.illinois.library.cantaloupe.source.SourceFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import edu.illinois.library.cantaloupe.util.StringUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -46,13 +47,16 @@ import jakarta.servlet.http.HttpServletResponse;
 @RequestMapping("/admin")
 public class AdminController {
     private final Configuration configuration;
+    private final SourceFactory sourceFactory;
 
     private final MetaIdentifierTransformerFactory metaIdentifierTransformerFactory;
 
     @Autowired
     public AdminController(Configuration configuration,
+                          SourceFactory sourceFactory,
                           MetaIdentifierTransformerFactory metaIdentifierTransformerFactory) {
         this.configuration = configuration;
+        this.sourceFactory = sourceFactory;
         this.metaIdentifierTransformerFactory = metaIdentifierTransformerFactory;
     }
 
@@ -227,7 +231,7 @@ public class AdminController {
             }
         }
 
-        List<ObjectProxy> sortedProxies = SourceFactory.getAllSources().
+        List<ObjectProxy> sortedProxies = sourceFactory.getAllSources().
                 stream().
                 map(ObjectProxy::new).
                 sorted(Comparator.comparing(ObjectProxy::getName)).

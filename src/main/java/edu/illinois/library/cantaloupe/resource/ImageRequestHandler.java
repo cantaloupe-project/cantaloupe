@@ -127,6 +127,7 @@ public class ImageRequestHandler extends AbstractRequestHandler
     private Callback callback;
     private OperationList operationList;
     private Future<Path> tempFileFuture;
+    private Configuration configuration;
 
 
     /**
@@ -160,7 +161,7 @@ public class ImageRequestHandler extends AbstractRequestHandler
         this.callback = callback;
         this.isBypassingCache = request.isBypassingCache();
         this.isBypassingCacheRead = request.isBypassingCacheRead();
-        // Store configuration for potential future use
+        this.configuration = configuration;
     }
 
     /**
@@ -200,7 +201,6 @@ public class ImageRequestHandler extends AbstractRequestHandler
         }
 
         final Identifier identifier   = operationList.getIdentifier();
-        final Configuration config    = Configuration.getInstance();
         final CacheFacade cacheFacade = new CacheFacade();
 
         Iterator<Format> formatIterator = Collections.emptyIterator();
@@ -244,7 +244,7 @@ public class ImageRequestHandler extends AbstractRequestHandler
             }
         }
 
-        final Source source = new SourceFactory(config).newSource(
+        final Source source = new SourceFactory(configuration).newSource(
                 identifier, delegateProxy);
 
         // If we are resolving first, or if the source image is not present in
@@ -256,7 +256,7 @@ public class ImageRequestHandler extends AbstractRequestHandler
                 StatResult result = source.stat();
                 callback.sourceAccessed(result);
             } catch (NoSuchFileException e) { // this needs to be rethrown!
-                if (config.getBoolean(Key.CACHE_SERVER_PURGE_MISSING, false)) {
+                if (configuration.getBoolean(Key.CACHE_SERVER_PURGE_MISSING, false)) {
                     // If the image was not found, purge it from the cache.
                     cacheFacade.purgeAsync(operationList.getIdentifier());
                 }
@@ -335,7 +335,7 @@ public class ImageRequestHandler extends AbstractRequestHandler
                         format, identifier);
             }
         }
-        if (config.getBoolean(Key.PROCESSOR_PURGE_INCOMPATIBLE_FROM_SOURCE_CACHE, false)) {
+        if (configuration.getBoolean(Key.PROCESSOR_PURGE_INCOMPATIBLE_FROM_SOURCE_CACHE, false)) {
             TaskQueue.getInstance().submit(() -> {
                 try {
                     cacheFacade.getSourceCacheFile(identifier).ifPresent(file -> {
