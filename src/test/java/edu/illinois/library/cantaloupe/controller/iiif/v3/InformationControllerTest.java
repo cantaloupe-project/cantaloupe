@@ -94,6 +94,22 @@ class InformationControllerTest {
         when(configuration.getString(Key.SLASH_SUBSTITUTE, "")).thenReturn("");
         when(configuration.getString(Key.SOURCE_CACHE, "")).thenReturn("");
 
+        // Additional configuration needed for real ProcessorFactory
+        when(configuration.getString(Key.PROCESSOR_SELECTION_STRATEGY)).thenReturn("ManualSelectionStrategy");
+        when(configuration.getString(Key.PROCESSOR_SELECTION_STRATEGY, "")).thenReturn("ManualSelectionStrategy");
+        when(configuration.getString("processor.ManualSelectionStrategy.jpg")).thenReturn("Java2dProcessor");
+        when(configuration.getString("processor.ManualSelectionStrategy.pdf")).thenReturn("PdfBoxProcessor");
+        when(configuration.getString(Key.PROCESSOR_FALLBACK, "")).thenReturn("Java2dProcessor");
+        when(configuration.getDouble(Key.MAX_SCALE, 1.0)).thenReturn(1.0);
+        when(configuration.getLong(Key.MAX_PIXELS, 0L)).thenReturn(0L);
+        when(configuration.getInt(Key.IIIF_MIN_SIZE, 1)).thenReturn(1);
+        when(configuration.getBoolean(Key.CLIENT_CACHE_ENABLED, false)).thenReturn(false);
+        when(configuration.getBoolean(Key.IIIF_RESTRICT_TO_SIZES, false)).thenReturn(false);
+
+        // Cache configuration
+        when(configuration.getString(Key.DERIVATIVE_CACHE, "")).thenReturn("");
+        when(configuration.getBoolean(Key.CACHE_SERVER_RESOLVE_FIRST, true)).thenReturn(true);
+
 
     }
 
@@ -308,7 +324,7 @@ class InformationControllerTest {
     void testGetInformation_CacheHeadersWhenClientCachingIsEnabledAndResponseIsCacheable()
             throws Exception {
         stubCacheControlHeaders();
-   
+
         mockMvc.perform(get("/iiif/3/{identifier}/info.json", IMAGE))
                 .andExpect(header().string("Cache-Control", "max-age=1234, s-maxage=4567, public, no-transform"));
     }
@@ -458,7 +474,7 @@ class InformationControllerTest {
     @Test
     void testGetInformation_WithIllegalCharactersInIdentifier() throws Exception {
         mockMvc.perform(get("/iiif/3/{identifier}/info.json", "[bogus]"))
-            .andExpect(status().isNotFound());        
+            .andExpect(status().isNotFound());
     }
 
     @Test
@@ -546,7 +562,7 @@ class InformationControllerTest {
     /**
      * Tests that a scale constraint of {@literal 1:1} is redirected to no
      * scale constraint.
-     * @throws Exception 
+     * @throws Exception
      */
     @Test
     void testGetInformation_RedirectToNormalizedScaleConstraint1() throws Exception {
@@ -564,7 +580,7 @@ class InformationControllerTest {
     /**
      * Tests that a scale constraint of {@literal 2:2} is redirected to no
      * scale constraint.
-     * @throws Exception 
+     * @throws Exception
      */
     @Test
     void testGetInformation_RedirectToNormalizedScaleConstraint2() throws Exception {
@@ -578,12 +594,12 @@ class InformationControllerTest {
         mockMvc.perform(get("/iiif/3/{identifier}/info.json", metaIdentifierString))
                 .andExpect(redirectedUrl("http://localhost/iiif/3/" + IMAGE + "/info.json"));
     }
-    
+
 
     /**
      * Tests that a scale constraint of {@literal 2:4} is redirected to
      * {@literal 1:2}.
-     * @throws Exception 
+     * @throws Exception
      */
     @Test
     void testGetInformation_RedirectToNormalizedScaleConstraint3() throws Exception {
