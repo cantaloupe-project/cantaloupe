@@ -101,7 +101,6 @@ public class InformationRequestHandler extends AbstractRequestHandler
     };
     private Identifier identifier;
     private Future<Path> tempFileFuture;
-    private Configuration config;
 
     /**
      * Creates a new InformationRequestHandler with full configuration options.
@@ -116,7 +115,7 @@ public class InformationRequestHandler extends AbstractRequestHandler
         this.callback = callback;
         this.isBypassingCache = request.isBypassingCache();
         this.isBypassingCacheRead = request.isBypassingCacheRead();
-        config = Configuration.getInstance();
+        configuration = Configuration.getInstance();
     }
 
     /**
@@ -133,7 +132,7 @@ public class InformationRequestHandler extends AbstractRequestHandler
         this.callback = callback;
         this.isBypassingCache = request.isBypassingCache();
         this.isBypassingCacheRead = request.isBypassingCacheRead();
-        this.config = configuration;
+        this.configuration = configuration;
     }
 
     /**
@@ -170,7 +169,7 @@ public class InformationRequestHandler extends AbstractRequestHandler
             return null;
         }
 
-        final CacheFacade cacheFacade = new CacheFacade(config);
+        final CacheFacade cacheFacade = new CacheFacade(configuration);
 
         // If we are using a cache, and don't need to resolve first, and the
         // cache contains an info matching the request, skip all the setup and
@@ -195,7 +194,7 @@ public class InformationRequestHandler extends AbstractRequestHandler
             }
         }
 
-        SourceFactory sourceFactory = new SourceFactory(config);
+        SourceFactory sourceFactory = new SourceFactory(configuration);
         final Source source = sourceFactory.newSource(
                 identifier, delegateProxy);
 
@@ -208,7 +207,7 @@ public class InformationRequestHandler extends AbstractRequestHandler
                 StatResult result = source.stat();
                 callback.sourceAccessed(result);
             } catch (NoSuchFileException e) { // this needs to be rethrown!
-                if (config.getBoolean(Key.CACHE_SERVER_PURGE_MISSING, false)) {
+                if (configuration.getBoolean(Key.CACHE_SERVER_PURGE_MISSING, false)) {
                     // If the image was not found, purge it from the cache.
                     cacheFacade.purgeAsync(identifier);
                 }
@@ -241,7 +240,7 @@ public class InformationRequestHandler extends AbstractRequestHandler
             try (Processor processor = new ProcessorFactory().newProcessor(format)) {
                 processorName = processor.getClass().getSimpleName();
                 // Connect it to the source.
-                tempFileFuture = new ProcessorConnector(config).connect(
+                tempFileFuture = new ProcessorConnector(configuration).connect(
                         source, processor, identifier, format);
                 callback.knowAvailableOutputFormats(
                         processor.getAvailableOutputFormats());
