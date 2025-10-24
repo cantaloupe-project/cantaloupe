@@ -62,14 +62,13 @@ public class AdminConfigurationController {
     @PutMapping
     public ResponseEntity<Void> updateConfiguration(@RequestBody Map<String, Object> submittedConfig)
             throws IOException {
-        final Configuration config = Configuration.getInstance();
 
         // Copy configuration keys and values from the request JSON payload to
         // the application configuration.
         submittedConfig.forEach((key, value) ->
-                config.setProperty(key, value));
+                configuration.setProperty(key, value));
 
-        config.save();
+        configuration.save();
 
         return ResponseEntity.noContent().build();
     }
