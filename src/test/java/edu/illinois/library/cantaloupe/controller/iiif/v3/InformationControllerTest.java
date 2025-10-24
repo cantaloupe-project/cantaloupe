@@ -601,19 +601,6 @@ class InformationControllerTest {
     //     tester.testSourceGetFormatNotCalledWithSourceCacheHit(new Identifier(IMAGE), uri);
     // }
 
-    // /**
-    //  * Checks that the server responds with HTTP 500 when a non-FileSource is
-    //  * used with a non-StreamProcessor.
-    //  */
-    // @Test
-    // void testGetInformation_SourceProcessorCompatibility() {
-    //     URI uri = getHTTPURI("/jp2/info.json");
-    //     tester.testSourceProcessorCompatibility(
-    //             uri,
-    //             appServer.getHTTPHost(),
-    //             appServer.getHTTPPort());
-    // }
-
     @Test
     void testGetInformation_UnavailableSourceFormat() throws Exception {
         mockMvc.perform(get("/iiif/3/{identifier}/info.json",  "text.txt"))
