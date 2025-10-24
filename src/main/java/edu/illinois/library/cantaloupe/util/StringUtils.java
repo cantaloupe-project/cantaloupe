@@ -2,6 +2,8 @@ package edu.illinois.library.cantaloupe.util;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import javax.xml.bind.DatatypeConverter;
 import java.awt.FontMetrics;
@@ -15,7 +17,35 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.apache.commons.lang3.Strings;
 
-public final class StringUtils {
+@Component
+public class StringUtils {
+
+    static StringUtils instance;
+    private final Configuration configuration;
+
+    /**
+     * Default constructor for non-Spring contexts (backward compatibility).
+     */
+    public StringUtils() {
+        this.configuration = Configuration.getInstance();
+    }
+
+    /**
+     * Constructor for Spring dependency injection.
+     */
+    @Autowired
+    public StringUtils(Configuration configuration) {
+        this.configuration = configuration;
+        // Set static instance for backward compatibility
+        StringUtils.instance = this;
+    }
+
+    /**
+     * Get Spring-managed instance if available, otherwise create new instance.
+     */
+    private static StringUtils getInstance() {
+        return instance != null ? instance : new StringUtils();
+    }
 
     public static final String ASCII_FILENAME_UNSAFE_REGEX =
             "[^A-Za-z0-9\\-._ ]";
@@ -33,8 +63,14 @@ public final class StringUtils {
      * @return                 Path component with slashes decoded.
      */
     public static String decodeSlashes(final String uriPathComponent) {
-        final String substitute = Configuration.getInstance().
-                getString(Key.SLASH_SUBSTITUTE, "");
+        return getInstance().decodeSlashesInstance(uriPathComponent);
+    }
+
+    /**
+     * Instance method that uses injected Configuration.
+     */
+    public String decodeSlashesInstance(final String uriPathComponent) {
+        final String substitute = configuration.getString(Key.SLASH_SUBSTITUTE, "");
         if (!substitute.isEmpty()) {
             return Strings.CS.replace(
                     uriPathComponent, substitute, "/");
@@ -49,8 +85,14 @@ public final class StringUtils {
      * @return                  Identifier with slashes substituted.
      */
     public static String encodeSlashes(final String slashedIdentifier) {
-        final String substitute = Configuration.getInstance().
-                getString(Key.SLASH_SUBSTITUTE, "");
+        return getInstance().encodeSlashesInstance(slashedIdentifier);
+    }
+
+    /**
+     * Instance method that uses injected Configuration.
+     */
+    public String encodeSlashesInstance(final String slashedIdentifier) {
+        final String substitute = configuration.getString(Key.SLASH_SUBSTITUTE, "");
         if (!substitute.isEmpty()) {
             return Strings.CS.replace(
                     slashedIdentifier, "/", substitute);
@@ -327,6 +369,6 @@ public final class StringUtils {
         return -1;
     }
 
-    private StringUtils() {}
+
 
 }
