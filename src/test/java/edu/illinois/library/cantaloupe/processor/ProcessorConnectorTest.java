@@ -60,6 +60,7 @@ public class ProcessorConnectorTest extends BaseTest {
             }
         });
     }
+    private ProcessorFactory processorFactory;
 
     @BeforeEach
     public void setUp() throws Exception {
@@ -78,6 +79,8 @@ public class ProcessorConnectorTest extends BaseTest {
 
         instance = new ProcessorConnector(config);
         cacheFactory = new CacheFactory(config);
+        processorFactory = new ProcessorFactory(Configuration.getInstance());
+
     }
 
     @Test
@@ -139,7 +142,7 @@ public class ProcessorConnectorTest extends BaseTest {
         Configuration config = Configuration.getInstance();
 
         final Source source = new SourceFactory(config).newSource(IDENTIFIER, null);
-        final Processor processor = new ProcessorFactory().newProcessor(Format.get("jpg"));
+        final Processor processor = processorFactory.newProcessor(Format.get("jpg"));
 
         assertNull(instance.connect(source, processor, IDENTIFIER, Format.get("jpg")));
 
@@ -154,7 +157,7 @@ public class ProcessorConnectorTest extends BaseTest {
         config.setProperty(Key.PROCESSOR_FALLBACK, MockStreamProcessor.class.getName());
 
         final Source source = new SourceFactory(config).newSource(IDENTIFIER, null);
-        final Processor processor = new ProcessorFactory().newProcessor(Format.get("jpg"));
+        final Processor processor = processorFactory.newProcessor(Format.get("jpg"));
 
         assertNull(instance.connect(source, processor, IDENTIFIER, Format.get("jpg")));
 
@@ -185,7 +188,7 @@ public class ProcessorConnectorTest extends BaseTest {
 
             final Source source = new SourceFactory(config).newSource(
                     identifier, null);
-            final Processor processor = new ProcessorFactory().newProcessor(Format.get("jp2"));
+            final Processor processor = processorFactory.newProcessor(Format.get("jp2"));
 
             assertNotNull(instance.connect(source, processor, identifier, Format.get("jpg")));
         } finally {
@@ -218,7 +221,7 @@ public class ProcessorConnectorTest extends BaseTest {
                     RetrievalStrategy.CACHE.getConfigValue());
 
             final Source source = new SourceFactory(config).newSource(identifier, null);
-            final Processor processor = new ProcessorFactory().newProcessor(Format.get("jp2"));
+            final Processor processor = processorFactory.newProcessor(Format.get("jp2"));
 
             assertNull(instance.connect(source, processor, identifier, Format.get("jpg")));
 
@@ -243,7 +246,7 @@ public class ProcessorConnectorTest extends BaseTest {
                 RetrievalStrategy.CACHE.getConfigValue());
 
         final Source source = new SourceFactory(config).newSource(identifier, null);
-        final Processor processor = new ProcessorFactory().newProcessor(Format.get("jp2"));
+        final Processor processor = processorFactory.newProcessor(Format.get("jp2"));
 
         assertThrows(CacheDisabledException.class,
                 () -> instance.connect(source, processor, identifier, Format.get("jpg")));
@@ -261,7 +264,7 @@ public class ProcessorConnectorTest extends BaseTest {
                 RetrievalStrategy.ABORT.getConfigValue());
 
         final Source source = new SourceFactory(config).newSource(identifier, null);
-        final Processor processor = new ProcessorFactory().newProcessor(Format.get("jp2"));
+        final Processor processor = processorFactory.newProcessor(Format.get("jp2"));
 
         assertThrows(IncompatibleSourceException.class,
                 () -> instance.connect(source, processor, identifier, Format.get("jpg")));
@@ -284,7 +287,7 @@ public class ProcessorConnectorTest extends BaseTest {
                     MockFileProcessor.class.getName());
 
             final Source source = new SourceFactory(config).newSource(identifier, null);
-            final Processor processor = new ProcessorFactory().newProcessor(Format.get("jp2"));
+            final Processor processor = processorFactory.newProcessor(Format.get("jp2"));
 
             assertNotNull(instance.connect(source, processor, identifier, Format.get("jpg")));
         } finally {

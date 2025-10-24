@@ -237,7 +237,7 @@ public class InformationRequestHandler extends AbstractRequestHandler
             final Format format = formatIterator.next();
             // Obtain an instance of the processor assigned to this format.
             String processorName = "unknown processor";
-            try (Processor processor = new ProcessorFactory().newProcessor(format)) {
+            try (Processor processor = new ProcessorFactory(configuration).newProcessor(format)) {
                 processorName = processor.getClass().getSimpleName();
                 // Connect it to the source.
                 tempFileFuture = new ProcessorConnector(configuration).connect(

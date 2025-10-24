@@ -1,11 +1,12 @@
 package edu.illinois.library.cantaloupe.processor;
 
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import org.junit.jupiter.api.Test;
+
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.test.BaseTest;
-import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 public class SelectionStrategyTest extends BaseTest {
 
@@ -15,11 +16,11 @@ public class SelectionStrategyTest extends BaseTest {
 
         config.setProperty(Key.PROCESSOR_SELECTION_STRATEGY,
                 "AutomaticSelectionStrategy");
-        assertTrue(SelectionStrategy.fromConfiguration() instanceof AutomaticSelectionStrategy);
+        assertTrue(SelectionStrategy.fromConfiguration(config) instanceof AutomaticSelectionStrategy);
 
         config.setProperty(Key.PROCESSOR_SELECTION_STRATEGY,
                 "ManualSelectionStrategy");
-        assertTrue(SelectionStrategy.fromConfiguration() instanceof ManualSelectionStrategy);
+        assertTrue(SelectionStrategy.fromConfiguration(config) instanceof ManualSelectionStrategy);
     }
 
 }
