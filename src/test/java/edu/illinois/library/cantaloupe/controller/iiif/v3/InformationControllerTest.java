@@ -48,7 +48,7 @@ import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.image.MetaIdentifier;
 import edu.illinois.library.cantaloupe.image.StandardMetaIdentifierTransformer;
 import edu.illinois.library.cantaloupe.resource.InformationRequestHandlerFactory;
-import edu.illinois.library.cantaloupe.resource.iiif.ImageAPIResourceTester.NotReadingSourceFormatSource;
+import edu.illinois.library.cantaloupe.resource.iiif.ImageAPIResourceTester.NotCheckingAccessSource;
 import edu.illinois.library.cantaloupe.source.AccessDeniedSource;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import edu.illinois.library.cantaloupe.util.StringUtils;
@@ -597,19 +597,11 @@ class InformationControllerTest {
         assertEquals(28, json.get("height").asInt());
     }
 
-    // @Test
-    // void testGetInformation_SourceCheckAccessNotCalledWithSourceCacheHit()
-    //         throws Exception {
-    //     URI uri = getHTTPURI("/" + IMAGE + "/info.json");
-    //     tester.testSourceCheckAccessNotCalledWithSourceCacheHit(new Identifier(IMAGE), uri);
-    // }
-
     @Test
-    void testGetInformation_SourceGetSourceFormatNotCalledWithSourceCacheHit()
+    void testGetInformation_SourceCheckAccessNotCalledWithSourceCacheHit()
             throws Exception {
-
         when(configuration.getBoolean(Key.CACHE_SERVER_RESOLVE_FIRST, true)).thenReturn(false);
-        when(configuration.getString(Key.SOURCE_STATIC)).thenReturn(NotReadingSourceFormatSource.class.getName());
+        when(configuration.getString(Key.SOURCE_STATIC)).thenReturn(NotCheckingAccessSource.class.getName());
         when(configuration.getString(Key.SOURCE_CACHE, "")).thenReturn("FilesystemCache");
         when(configuration.getLong(Key.SOURCE_CACHE_TTL, 0)).thenReturn((long) 10);
         when(configuration.getString(Key.FILESYSTEMCACHE_PATHNAME, "")).thenReturn(Files.createTempDirectory("test").toString());
