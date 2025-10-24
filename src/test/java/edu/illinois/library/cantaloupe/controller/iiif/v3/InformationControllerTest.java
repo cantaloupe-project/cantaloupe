@@ -35,6 +35,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.cache.CacheFactory;
+import edu.illinois.library.cantaloupe.cache.MockBrokenDerivativeInputStreamCache;
+import edu.illinois.library.cantaloupe.cache.MockBrokenDerivativeOutputStreamCache;
 import edu.illinois.library.cantaloupe.cache.SourceCache;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
@@ -295,9 +297,7 @@ class InformationControllerTest {
                 .andExpect(redirectedUrl("http://localhost/iiif/3/reduce.jpg;1:2/info.json"));
     }
 
-    @Test
-    void testGetInformation_CacheHeadersWhenClientCachingIsEnabledAndResponseIsCacheable()
-            throws Exception {
+    private void stubCacheControlHeaders() {
         when(configuration.getBoolean(Key.CLIENT_CACHE_ENABLED, false)).thenReturn(true);
         when(configuration.getBoolean(Key.CLIENT_CACHE_PUBLIC, true)).thenReturn(true);
         when(configuration.getBoolean(Key.CLIENT_CACHE_PRIVATE, false)).thenReturn(false);
@@ -308,36 +308,50 @@ class InformationControllerTest {
         when(configuration.getBoolean(Key.CLIENT_CACHE_NO_TRANSFORM, false)).thenReturn(true);
         when(configuration.getString(Key.CLIENT_CACHE_MAX_AGE, "")).thenReturn("1234");
         when(configuration.getString(Key.CLIENT_CACHE_SHARED_MAX_AGE, "")).thenReturn("4567");
+    }
 
+    @Test
+    void testGetInformation_CacheHeadersWhenClientCachingIsEnabledAndResponseIsCacheable()
+            throws Exception {
+        stubCacheControlHeaders();
    
         mockMvc.perform(get("/iiif/3/{identifier}/info.json", IMAGE))
                 .andExpect(header().string("Cache-Control", "max-age=1234, s-maxage=4567, public, no-transform"));
     }
 
-    // @Test
-    // void testGetInformation_CacheHeadersWhenClientCachingIsEnabledAndResponseIsNotCacheable()
-    //         throws Exception {
-    //     URI uri = getHTTPURI("/bogus/info.json");
-    //     tester.testCacheHeadersWhenClientCachingIsEnabledAndResponseIsNotCacheable(uri);
-    // }
+    @Test
+    void testGetInformation_CacheHeadersWhenClientCachingIsEnabledAndResponseIsNotCacheable()
+            throws Exception {
+        stubCacheControlHeaders();
 
-    // /**
-    //  * Tests that there is no Cache-Control header returned when
-    //  * cache.client.enabled = true but a cache=false argument is present in the
-    //  * URL query.
-    //  */
-    // @Test
-    // void testGetInformation_CacheHeadersWhenClientCachingIsEnabledButCachingIsDisabledInURL()
-    //         throws Exception {
-    //     URI uri = getHTTPURI("/" + IMAGE + "/info.json?cache=false");
-    //     tester.testCacheHeadersWhenClientCachingIsEnabledButCachingIsDisabledInURL(uri);
-    // }
+        mockMvc.perform(get("/iiif/3/{identifier}/info.json", "bogus"))
+            .andExpect(status().isNotFound())
+            .andExpect(header().string("Cache-Control", "no-cache, must-revalidate"));
+    }
 
-    // @Test
-    // void testGetInformation_CacheHeadersWhenClientCachingIsDisabled() throws Exception {
-    //     URI uri = getHTTPURI("/" + IMAGE + "/info.json");
-    //     tester.testCacheHeadersWhenClientCachingIsDisabled(uri);
-    // }
+    /**
+     * Tests that there is no Cache-Control header returned when
+     * cache.client.enabled = true but a cache=false argument is present in the
+     * URL query.
+     */
+    @Test
+    void testGetInformation_CacheHeadersWhenClientCachingIsEnabledButCachingIsDisabledInURL()
+            throws Exception {
+        stubCacheControlHeaders();
+
+        mockMvc.perform(get("/iiif/3/{identifier}/info.json?cache=false", IMAGE))
+            .andExpect(status().isOk())
+            .andExpect(header().doesNotExist("Cache-Control"));
+    }
+
+    @Test
+    void testGetInformation_CacheHeadersWhenClientCachingIsDisabled() throws Exception {
+        when(configuration.getBoolean(Key.CLIENT_CACHE_ENABLED, false)).thenReturn(false);
+
+        mockMvc.perform(get("/iiif/3/{identifier}/info.json", IMAGE))
+            .andExpect(status().isOk())
+            .andExpect(header().doesNotExist("Cache-Control"));
+    }
 
     // @Test
     // void testGetInformation_CachingWhenCachesAreEnabledButNegativeCacheQueryArgumentIsSupplied1()
@@ -435,23 +449,23 @@ class InformationControllerTest {
     // }
 
 
-    // @Test
-    // void testGetInformation_WithForwardSlashInIdentifier() {
-    //     URI uri = getHTTPURI("/subfolder%2Fjpg/info.json");
-    //     tester.testForwardSlashInIdentifier(uri);
-    // }
+    @Test
+    void testGetInformation_WithForwardSlashInIdentifier() throws Exception {
+        mockMvc.perform(get("/iiif/3/{identifier}/info.json", "subfolder%2Fjpg"))
+                .andExpect(status().isOk());
+    }
 
-    // @Test
-    // void testGetInformation_WithBackslashInIdentifier() {
-    //     URI uri = getHTTPURI("/subfolder%5Cjpg/info.json");
-    //     tester.testBackslashInIdentifier(uri);
-    // }
+    @Test
+    void testGetInformation_WithBackslashInIdentifier() throws Exception {
+        mockMvc.perform(get("/iiif/3/{identifier}/info.json", "subfolder%5Cjpg"))
+            .andExpect(status().isOk());
+    }
 
-    // @Test
-    // void testGetInformation_WithIllegalCharactersInIdentifier() {
-    //     String uri = getHTTPURIString("/[bogus]/info.json");
-    //     tester.testIllegalCharactersInIdentifier(uri);
-    // }
+    @Test
+    void testGetInformation_WithIllegalCharactersInIdentifier() throws Exception {
+        mockMvc.perform(get("/iiif/3/{identifier}/info.json", "[bogus]"))
+            .andExpect(status().isNotFound());        
+    }
 
     @Test
     void testGetInformation_AccessDeniedSource() throws Exception {
@@ -506,19 +520,29 @@ class InformationControllerTest {
     //     tester.testPurgeFromCacheWhenSourceIsMissingAndOptionIsTrue(uri);
     // }
 
-    // @Test
-    // void testGetInformation_RecoveryFromDerivativeCacheNewDerivativeImageInputStreamException()
-    //         throws Exception {
-    //     URI uri = getHTTPURI("/" + IMAGE + "/info.json");
-    //     tester.testRecoveryFromDerivativeCacheNewDerivativeImageInputStreamException(uri);
-    // }
+    @Test
+    void testGetInformation_RecoveryFromDerivativeCacheNewDerivativeImageInputStreamException()
+            throws Exception {
+        when(configuration.getBoolean(Key.DERIVATIVE_CACHE_ENABLED, false)).thenReturn(true);
+        when(configuration.getString(Key.DERIVATIVE_CACHE, "")).thenReturn(MockBrokenDerivativeInputStreamCache.class.getSimpleName());
+        when(configuration.getBoolean(Key.INFO_CACHE_ENABLED, false)).thenReturn(false);
+        when(configuration.getBoolean(Key.CACHE_SERVER_RESOLVE_FIRST, true)).thenReturn(false);
 
-    // @Test
-    // void testGetInformation_RecoveryFromDerivativeCacheNewDerivativeImageOutputStreamException()
-    //         throws Exception {
-    //     URI uri = getHTTPURI("/" + IMAGE + "/info.json");
-    //     tester.testRecoveryFromDerivativeCacheNewDerivativeImageOutputStreamException(uri);
-    // }
+        mockMvc.perform(get("/iiif/3/{identifier}/info.json", IMAGE))
+            .andExpect(status().isOk());
+    }
+
+    @Test
+    void testGetInformation_RecoveryFromDerivativeCacheNewDerivativeImageOutputStreamException()
+            throws Exception {
+        when(configuration.getBoolean(Key.DERIVATIVE_CACHE_ENABLED, false)).thenReturn(true);
+        when(configuration.getString(Key.DERIVATIVE_CACHE, "")).thenReturn(MockBrokenDerivativeOutputStreamCache.class.getSimpleName());
+        when(configuration.getBoolean(Key.INFO_CACHE_ENABLED, false)).thenReturn(false);
+        when(configuration.getBoolean(Key.CACHE_SERVER_RESOLVE_FIRST, true)).thenReturn(false);
+
+        mockMvc.perform(get("/iiif/3/{identifier}/info.json", IMAGE))
+            .andExpect(status().isOk());
+    }
 
     @Test
     void testGetInformation_RecoveryFromIncorrectSourceFormat() throws Exception {
