@@ -1,15 +1,16 @@
 package edu.illinois.library.cantaloupe.resource.api;
 
-import edu.illinois.library.cantaloupe.cache.CacheFacade;
-
 import java.util.concurrent.Callable;
+
+import edu.illinois.library.cantaloupe.cache.CacheFacade;
+import edu.illinois.library.cantaloupe.config.Configuration;
 
 final class PurgeInvalidFromCacheCommand<T> extends Command
         implements Callable<T> {
 
     @Override
     public T call() throws Exception {
-        new CacheFacade().purgeInvalid();
+        new CacheFacade(Configuration.getInstance()).purgeInvalid();
         return null;
     }
 

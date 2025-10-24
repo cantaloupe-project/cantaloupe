@@ -201,7 +201,7 @@ public class ImageRequestHandler extends AbstractRequestHandler
         }
 
         final Identifier identifier   = operationList.getIdentifier();
-        final CacheFacade cacheFacade = new CacheFacade();
+        final CacheFacade cacheFacade = new CacheFacade(configuration);
 
         Iterator<Format> formatIterator = Collections.emptyIterator();
         boolean isFormatKnownYet = false;

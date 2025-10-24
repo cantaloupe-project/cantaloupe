@@ -42,7 +42,7 @@ public class CacheFacadeTest extends BaseTest {
 
     @BeforeEach
     public void setUp() {
-        instance = new CacheFacade();
+        instance = new CacheFacade(config);
         try {
             config.setProperty(Key.SOURCE_CACHE, FilesystemCache.class.getSimpleName());
             config.setProperty(Key.FILESYSTEMCACHE_PATHNAME,

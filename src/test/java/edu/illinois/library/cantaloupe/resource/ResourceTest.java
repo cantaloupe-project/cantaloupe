@@ -1,8 +1,16 @@
 package edu.illinois.library.cantaloupe.resource;
 
-import edu.illinois.library.cantaloupe.StandaloneEntry;
+import static org.junit.jupiter.api.Assertions.fail;
+
+import java.net.URI;
+import java.net.URISyntaxException;
+
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+
 import edu.illinois.library.cantaloupe.ApplicationServer;
 import edu.illinois.library.cantaloupe.Ssl;
+import edu.illinois.library.cantaloupe.StandaloneEntry;
 import edu.illinois.library.cantaloupe.cache.CacheFacade;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
@@ -10,13 +18,6 @@ import edu.illinois.library.cantaloupe.http.Client;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import edu.illinois.library.cantaloupe.util.SocketUtils;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-
-import java.net.URI;
-import java.net.URISyntaxException;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Abstract base class for functional HTTP endpoint tests.
@@ -55,7 +56,7 @@ public abstract class ResourceTest extends BaseTest {
         config.setProperty(Key.FILESYSTEMSOURCE_PATH_PREFIX,
                 TestUtil.getFixturePath() + "/images/");
 
-        new CacheFacade().purge();
+        new CacheFacade(config).purge();
 
         appServer = StandaloneEntry.getAppServer();
         appServer.setHTTPEnabled(true);

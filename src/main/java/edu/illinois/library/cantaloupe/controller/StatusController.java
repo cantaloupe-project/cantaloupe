@@ -34,7 +34,7 @@ public class StatusController {
     public ResponseEntity<Map<String, Object>> getStatus(HttpServletResponse response) {
         response.setHeader("Content-Type", "application/json;charset=UTF-8");
 
-        Map<String, Object> statusMap = new ApplicationStatus().toMap();
+        Map<String, Object> statusMap = new ApplicationStatus(configuration).toMap();
         return ResponseEntity.ok(statusMap);
     }
 

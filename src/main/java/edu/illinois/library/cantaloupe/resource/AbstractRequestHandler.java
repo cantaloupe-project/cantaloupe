@@ -37,7 +37,7 @@ abstract class AbstractRequestHandler {
         Info info;
         if (!isBypassingCache) {
             if (!isBypassingCacheRead) {
-                info = new CacheFacade().getOrReadInfo(identifier, proc).orElseThrow();
+                info = new CacheFacade(Configuration.getInstance()).getOrReadInfo(identifier, proc).orElseThrow();
             } else {
                 info = proc.readInfo();
                 DerivativeCache cache = new CacheFactory(Configuration.getInstance()).getDerivativeCache().orElse(null);

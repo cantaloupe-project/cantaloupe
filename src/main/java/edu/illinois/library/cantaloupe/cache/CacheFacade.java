@@ -25,10 +25,8 @@ public final class CacheFacade {
 
     private CacheFactory cacheFactory;
     private InfoService infoService;
-    private Configuration  configuration;
 
-    public CacheFacade() {
-        this.configuration = Configuration.getInstance();
+    public CacheFacade(Configuration configuration) {
         this.cacheFactory = new CacheFactory(configuration);
         this.infoService = InfoService.getInstance(configuration);
     }
