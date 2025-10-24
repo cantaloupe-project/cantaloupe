@@ -219,7 +219,8 @@ public class AdminResource extends AbstractAdminResource {
             }
         }
 
-        List<ObjectProxy> sortedProxies = SourceFactory.getAllSources().
+        SourceFactory sourceFactory = new SourceFactory(Configuration.getInstance());
+        List<ObjectProxy> sortedProxies = sourceFactory.getAllSources().
                 stream().
                 map(ObjectProxy::new).
                 sorted(Comparator.comparing(ObjectProxy::getName)).

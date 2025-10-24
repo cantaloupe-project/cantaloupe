@@ -23,9 +23,9 @@
  * edu.illinois.library.cantaloupe.source.AbstractSource} will get you a
  * couple of them for free.</p>
  *
- * <p>To add a custom source, the
- * {@link edu.illinois.library.cantaloupe.source.SourceFactory#getAllSources()}
- * method must be modified to return it. Then, it will be available for use
- * like any other source.</p>
+ * <p>To add a custom source, the ALL_SOURCE_CLASSES constant in
+ * {@link edu.illinois.library.cantaloupe.source.SourceFactory} must be
+ * modified to include it. Then, it will be available for use like any other
+ * source.</p>
  */
 package edu.illinois.library.cantaloupe.source;
