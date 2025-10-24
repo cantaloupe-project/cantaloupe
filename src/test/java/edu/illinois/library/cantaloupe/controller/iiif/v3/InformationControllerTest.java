@@ -43,6 +43,7 @@ import edu.illinois.library.cantaloupe.image.StandardMetaIdentifierTransformer;
 import edu.illinois.library.cantaloupe.resource.InformationRequestHandlerFactory;
 import edu.illinois.library.cantaloupe.source.AccessDeniedSource;
 import edu.illinois.library.cantaloupe.test.TestUtil;
+import edu.illinois.library.cantaloupe.util.StringUtils;
 
 /**
  * Spring Boot test for IIIF v3 Information Controller.
@@ -50,7 +51,7 @@ import edu.illinois.library.cantaloupe.test.TestUtil;
  * Note: These tests may fail if image sources are not properly configured.
  */
 @WebMvcTest(InformationController.class)
-@Import({FormatRegistry.class, FormatRegistryAccessor.class, DelegateProxyService.class, InformationRequestHandlerFactory.class})
+@Import({FormatRegistry.class, FormatRegistryAccessor.class, DelegateProxyService.class, InformationRequestHandlerFactory.class, StringUtils.class})
 @TestPropertySource(properties = {
     "cantaloupe.config=test.properties"
 })
@@ -572,17 +573,16 @@ class InformationControllerTest {
             .andExpect(redirectedUrl("http://localhost/iiif/3/" + expectedIdentifierString + "/info.json"));
     }
 
-    // @Test
-    // void testGetInformation_ScaleConstraintIsRespected() throws Exception {
-    //     client = newClient("/" + IMAGE + ";1:2/info.json");
-    //     Response response = client.send();
+    @Test
+    void testGetInformation_ScaleConstraintIsRespected() throws Exception {
+        MvcResult result = mockMvc.perform(get("/iiif/3/{identifier}/info.json",  IMAGE + ";1:2")).andReturn();
 
-    //     String json = response.getBodyAsString();
-    //     ObjectMapper mapper = new ObjectMapper();
-    //     Information<?, ?> info = mapper.readValue(json, Information.class);
-    //     assertEquals(32, info.get("width"));
-    //     assertEquals(28, info.get("height"));
-    // }
+        String responseBody = result.getResponse().getContentAsString();
+        JsonNode json = objectMapper.readTree(responseBody);
+
+        assertEquals(32, json.get("width").asInt());
+        assertEquals(28, json.get("height").asInt());
+    }
 
     // @Test
     // void testGetInformation_SourceCheckAccessNotCalledWithSourceCacheHit()
@@ -611,11 +611,13 @@ class InformationControllerTest {
     //             appServer.getHTTPPort());
     // }
 
-    // @Test
-    // void testGetInformation_SlashSubstitution() {
-    //     URI uri = getHTTPURI("/subfolderCATSjpg/info.json");
-    //     tester.testSlashSubstitution(uri);
-    // }
+    @Test
+    void testGetInformation_SlashSubstitution() throws Exception {
+        when(configuration.getString(Key.SLASH_SUBSTITUTE, "")).thenReturn("CATS");
+
+        mockMvc.perform(get("/iiif/3/{identifier}/info.json",  "subfolderCATSjpg"))
+                .andExpect(status().isOk());
+    }
 
     // @Test
     // void testGetInformation_UnavailableSourceFormat() {
