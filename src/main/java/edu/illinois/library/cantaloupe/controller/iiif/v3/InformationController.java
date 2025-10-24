@@ -121,8 +121,7 @@ public class InformationController extends AbstractIIIFController {
                 setContentTypeAndLastModified(headers, info);
 
                 // Create the IIIF Information response
-                Information<String, Object> iiifInfo = createInformation(
-                        info, availableOutputFormats, identifier, request, iiifrequest);
+                Information<String, Object> iiifInfo = createInformation(info, availableOutputFormats,  iiifrequest);
 
                 return new ResponseEntity<Information<String, Object>>(iiifInfo, headers, HttpStatus.OK);
             } catch (ResourceException e) {
@@ -160,13 +159,11 @@ public class InformationController extends AbstractIIIFController {
      */
     private Information<String, Object> createInformation(Info info,
                                                           Set<Format> availableOutputFormats,
-                                                          String identifier,
-                                                          HttpServletRequest request,
                                                           IIIFRequest iiifrequest) throws Exception {
         final InformationFactory factory = new InformationFactory();
         factory.setDelegateProxy(iiifrequest.getDelegateProxy());
 
-        final String imageURI = getImageURI(identifier, request, iiifrequest);
+        final String imageURI = getImageURI(iiifrequest);
         final int pageIndex = getPageIndex(iiifrequest);
 
         return factory.newImageInfo(
@@ -187,7 +184,7 @@ public class InformationController extends AbstractIIIFController {
                                                                IIIFRequest iiifrequest) throws Exception {
         final Map<String,Object> map = new LinkedHashMap<>(); // preserves key order
         map.put("@context", "http://iiif.io/api/image/3/context.json");
-        map.put("id", getImageURI(identifier, request, iiifrequest));
+        map.put("id", getImageURI(iiifrequest));
         map.put("type", "ImageService3");
         map.put("protocol", "http://iiif.io/api/image");
         map.put("profile", "level2");
@@ -209,7 +206,7 @@ public class InformationController extends AbstractIIIFController {
     /**
      * Builds the image URI from the request.
      */
-    private String getImageURI(String identifier, HttpServletRequest request, IIIFRequest iiifRequest) {
+    private String getImageURI(IIIFRequest iiifRequest) {
         return iiifRequest.getPublicRootReference() + Route.IIIF_3_PATH + "/" +
                 iiifRequest.getPublicIdentifier();
 
