@@ -1,5 +1,17 @@
 package edu.illinois.library.cantaloupe.cache;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.util.Optional;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Format;
@@ -10,14 +22,6 @@ import edu.illinois.library.cantaloupe.processor.MockFileProcessor;
 import edu.illinois.library.cantaloupe.processor.ProcessorFactory;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
-import java.io.IOException;
-import java.nio.file.Files;
-import java.util.Optional;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 public class InfoServiceTest extends BaseTest {
 
@@ -33,7 +37,7 @@ public class InfoServiceTest extends BaseTest {
         config.setProperty(Key.INFO_CACHE_ENABLED, true);
 
         InfoService.clearInstance();
-        instance = InfoService.getInstance();
+        instance = InfoService.getInstance(config);
     }
 
     private FileProcessor newFileProcessor() throws Exception {
@@ -87,8 +91,9 @@ public class InfoServiceTest extends BaseTest {
 
         final Identifier identifier = new Identifier("jpg");
         final Info info = new Info();
-
-        DerivativeCache cache = CacheFactory.getDerivativeCache().get();
+        
+        CacheFactory cacheFactory = new CacheFactory(Configuration.getInstance());
+        DerivativeCache cache = cacheFactory.getDerivativeCache().get();
         cache.put(identifier, info);
 
         Optional<Info> actualInfo = instance.getInfo(identifier);
@@ -102,7 +107,8 @@ public class InfoServiceTest extends BaseTest {
         final Identifier identifier = new Identifier("jpg");
         final String info           = "{\"this\": is corrupt JSON}";
 
-        DerivativeCache cache = CacheFactory.getDerivativeCache().get();
+        CacheFactory cacheFactory = new CacheFactory(Configuration.getInstance());
+        DerivativeCache cache = cacheFactory.getDerivativeCache().get();
         cache.put(identifier, info);
 
         Optional<Info> actualInfo = instance.getInfo(identifier);
@@ -136,7 +142,8 @@ public class InfoServiceTest extends BaseTest {
         final Identifier identifier = new Identifier("jpg");
         final Info info = new Info();
 
-        DerivativeCache cache = CacheFactory.getDerivativeCache().get();
+        CacheFactory cacheFactory = new CacheFactory(Configuration.getInstance());
+        DerivativeCache cache = cacheFactory.getDerivativeCache().get();
         cache.put(identifier, info);
 
         Optional<Info> actualInfo = instance.getOrReadInfo(identifier, newMockProcessor());
@@ -154,7 +161,9 @@ public class InfoServiceTest extends BaseTest {
         final Identifier identifier = new Identifier("jpg");
         final String info = "{\"this\": is corrupt JSON}";
 
-        DerivativeCache cache = CacheFactory.getDerivativeCache().get();
+
+        CacheFactory cacheFactory = new CacheFactory(Configuration.getInstance());
+        DerivativeCache cache = cacheFactory.getDerivativeCache().get();
         cache.put(identifier, info);
 
         Optional<Info> actualInfo = instance.getOrReadInfo(identifier, newMockProcessor());

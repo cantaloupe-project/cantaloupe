@@ -1,13 +1,14 @@
 package edu.illinois.library.cantaloupe.cache;
 
-import edu.illinois.library.cantaloupe.config.Configuration;
-import edu.illinois.library.cantaloupe.config.Key;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.lang.reflect.InvocationTargetException;
 import java.util.Optional;
 import java.util.Set;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import edu.illinois.library.cantaloupe.config.Configuration;
+import edu.illinois.library.cantaloupe.config.Key;
 
 /**
  * Used to obtain {@link Cache} instances according to the application
@@ -39,6 +40,12 @@ public final class CacheFactory {
      */
     private static volatile SourceCache sourceCache;
 
+    private Configuration configuration;
+
+    public CacheFactory(Configuration configuration) {
+        this.configuration = configuration;
+    }
+
     /**
      * @return Set of instances of all available derivative caches.
      */
@@ -61,12 +68,11 @@ public final class CacheFactory {
      * @return The shared instance, or {@code null} if a derivative cache
      *         is not available.
      */
-    public static Optional<DerivativeCache> getDerivativeCache() {
+    public Optional<DerivativeCache> getDerivativeCache() {
         DerivativeCache cache = null;
 
         if (isDerivativeCacheEnabled()) {
-            final Configuration config = Configuration.getInstance();
-            final String unqualifiedName = config.getString(Key.DERIVATIVE_CACHE, "");
+            final String unqualifiedName = configuration.getString(Key.DERIVATIVE_CACHE, "");
 
             if (!unqualifiedName.isEmpty()) {
                 final String qualifiedName = getQualifiedName(unqualifiedName);
@@ -115,11 +121,10 @@ public final class CacheFactory {
      *         implementation specified in the configuration is invalid or not
      *         specified.
      */
-    public static Optional<SourceCache> getSourceCache() {
+    public Optional<SourceCache> getSourceCache() {
         SourceCache cache = null;
 
-        final Configuration config = Configuration.getInstance();
-        final String unqualifiedName = config.getString(Key.SOURCE_CACHE, "");
+        final String unqualifiedName = configuration.getString(Key.SOURCE_CACHE, "");
 
         if (!unqualifiedName.isEmpty()) {
             final String qualifiedName = getQualifiedName(unqualifiedName);
@@ -160,9 +165,8 @@ public final class CacheFactory {
                         unqualifiedName;
     }
 
-    private static boolean isDerivativeCacheEnabled() {
-        final Configuration config = Configuration.getInstance();
-        return config.getBoolean(Key.DERIVATIVE_CACHE_ENABLED, false);
+    private boolean isDerivativeCacheEnabled() {
+        return configuration.getBoolean(Key.DERIVATIVE_CACHE_ENABLED, false);
     }
 
     /**
@@ -221,7 +225,4 @@ public final class CacheFactory {
             sourceCache = null;
         }
     }
-
-    private CacheFactory() {}
-
 }

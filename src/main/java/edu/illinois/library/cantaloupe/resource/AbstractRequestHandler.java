@@ -1,17 +1,18 @@
 package edu.illinois.library.cantaloupe.resource;
 
+import java.io.IOException;
+
+import org.slf4j.Logger;
+
 import edu.illinois.library.cantaloupe.cache.CacheFacade;
 import edu.illinois.library.cantaloupe.cache.CacheFactory;
 import edu.illinois.library.cantaloupe.cache.DerivativeCache;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
+import edu.illinois.library.cantaloupe.delegate.DelegateProxy;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.processor.Processor;
-import edu.illinois.library.cantaloupe.delegate.DelegateProxy;
-import org.slf4j.Logger;
-
-import java.io.IOException;
 
 abstract class AbstractRequestHandler {
 
@@ -39,7 +40,7 @@ abstract class AbstractRequestHandler {
                 info = new CacheFacade().getOrReadInfo(identifier, proc).orElseThrow();
             } else {
                 info = proc.readInfo();
-                DerivativeCache cache = CacheFactory.getDerivativeCache().orElse(null);
+                DerivativeCache cache = new CacheFactory(Configuration.getInstance()).getDerivativeCache().orElse(null);
                 if (cache != null) {
                     cache.put(identifier, info);
                 }

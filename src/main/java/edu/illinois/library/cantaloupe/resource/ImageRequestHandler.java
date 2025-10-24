@@ -291,7 +291,7 @@ public class ImageRequestHandler extends AbstractRequestHandler
                 processorName = processor.getClass().getSimpleName();
 
                 // Connect it to the source.
-                tempFileFuture = new ProcessorConnector().connect(
+                tempFileFuture = new ProcessorConnector(configuration).connect(
                         source, processor, identifier, format);
 
                 final Info info = getOrReadInfo(
