@@ -95,6 +95,8 @@ class InformationControllerTest {
         when(configuration.getString(Key.FILESYSTEMSOURCE_PATH_SUFFIX, "")).thenReturn("");
         when(configuration.getString(Key.BASE_URI, "")).thenReturn("");
         when(configuration.getString(Key.SLASH_SUBSTITUTE, "")).thenReturn("");
+        when(configuration.getString(Key.SOURCE_CACHE, "")).thenReturn("");
+
 
     }
 

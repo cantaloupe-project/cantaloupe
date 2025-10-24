@@ -1,12 +1,14 @@
 package edu.illinois.library.cantaloupe.cache;
 
-import edu.illinois.library.cantaloupe.image.Identifier;
-import edu.illinois.library.cantaloupe.image.Info;
-import edu.illinois.library.cantaloupe.operation.OperationList;
+import java.io.IOException;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
+import edu.illinois.library.cantaloupe.config.Configuration;
+import edu.illinois.library.cantaloupe.image.Identifier;
+import edu.illinois.library.cantaloupe.image.Info;
+import edu.illinois.library.cantaloupe.operation.OperationList;
 
 /**
  * <p>Interface to be implemented by all caches. A cache stores and retrieves
@@ -53,7 +55,7 @@ public interface Cache {
      * call {@code super}.
      */
     default void onCacheWorker() {
-        CacheFacade cacheFacade = new CacheFacade();
+        CacheFacade cacheFacade = new CacheFacade(Configuration.getInstance());
 
         // Purge invalid content.
         try {
