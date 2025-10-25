@@ -52,6 +52,7 @@ import edu.illinois.library.cantaloupe.resource.iiif.ImageAPIResourceTester.NotC
 import edu.illinois.library.cantaloupe.resource.iiif.ImageAPIResourceTester.NotReadingSourceFormatSource;
 import edu.illinois.library.cantaloupe.source.AccessDeniedSource;
 import edu.illinois.library.cantaloupe.test.TestUtil;
+import edu.illinois.library.cantaloupe.util.StringUtils;
 
 /**
  * Spring Boot test for IIIF v3 Information Controller.
@@ -59,7 +60,7 @@ import edu.illinois.library.cantaloupe.test.TestUtil;
  * Note: These tests may fail if image sources are not properly configured.
  */
 @WebMvcTest(InformationController.class)
-@Import({InformationRequestHandlerFactory.class, DelegateProxyService.class})
+@Import({InformationRequestHandlerFactory.class, DelegateProxyService.class, StringUtils.class})
 @TestPropertySource(properties = {
     "cantaloupe.config=test.properties"
 })
