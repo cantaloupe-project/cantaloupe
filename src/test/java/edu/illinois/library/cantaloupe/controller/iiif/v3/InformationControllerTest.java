@@ -60,7 +60,12 @@ import edu.illinois.library.cantaloupe.util.StringUtils;
  * Note: These tests may fail if image sources are not properly configured.
  */
 @WebMvcTest(InformationController.class)
-@Import({InformationRequestHandlerFactory.class, DelegateProxyService.class, StringUtils.class})
+@Import({InformationRequestHandlerFactory.class,
+         DelegateProxyService.class,
+         StringUtils.class,
+        //  FormatRegistry.class,
+        //  FormatRegistryAccessor.class,
+        })
 @TestPropertySource(properties = {
     "cantaloupe.config=test.properties"
 })

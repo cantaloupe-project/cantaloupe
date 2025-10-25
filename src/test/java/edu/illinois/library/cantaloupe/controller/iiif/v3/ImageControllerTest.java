@@ -22,8 +22,6 @@ import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.delegate.DelegateProxyService;
-import edu.illinois.library.cantaloupe.image.FormatRegistry;
-import edu.illinois.library.cantaloupe.image.FormatRegistryAccessor;
 import edu.illinois.library.cantaloupe.image.MetaIdentifierTransformerFactory;
 import edu.illinois.library.cantaloupe.image.StandardMetaIdentifierTransformer;
 import edu.illinois.library.cantaloupe.resource.ImageRequestHandlerFactory;
@@ -35,9 +33,13 @@ import edu.illinois.library.cantaloupe.test.TestUtil;
  * Note: These tests may fail if image sources are not properly configured.
  */
 @WebMvcTest(ImageController.class)
-@Import({DelegateProxyService.class, MetaIdentifierTransformerFactory.class,
-         FormatRegistry.class, FormatRegistryAccessor.class,
-         StandardMetaIdentifierTransformer.class, ImageRequestHandlerFactory.class})
+@Import({DelegateProxyService.class,
+         MetaIdentifierTransformerFactory.class,
+         //  FormatRegistry.class, FormatRegistryAccessor.class,
+         StandardMetaIdentifierTransformer.class,
+         ImageRequestHandlerFactory.class,
+         //   StringUtils.class
+        })
 @TestPropertySource(properties = {
     "cantaloupe.config=test.properties"
 })
