@@ -565,7 +565,7 @@ class ImageControllerTest {
     @Test
     void testGETUnavailableSourceFormat() throws Exception {
         mockMvc.perform(get("/iiif/3/{identifier}/full/max/0/color.jpg", "text.txt"))
-                .andExpect(status().is(415)); // Unsupported media type
+                .andExpect(status().is(501));
     }
 
     @Test
