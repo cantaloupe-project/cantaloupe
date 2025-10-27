@@ -87,7 +87,7 @@ public class Parameters {
      * @throws IllegalClientArgumentException if any of the other arguments are
      *         invalid.
      */
-    Parameters(String identifier,
+    public Parameters(String identifier,
                String region,
                String size,
                String rotation,
