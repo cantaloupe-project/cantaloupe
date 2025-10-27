@@ -459,8 +459,7 @@ class ImageControllerTest {
 
     @Test
     void testGETProcessorValidationFailure() throws Exception {
-        mockMvc.perform(get("/iiif/3/{identifier}/full/max/0/color.jpg", "pdf-multipage.pdf")
-                .param("page", "999999"))
+        mockMvc.perform(get("/iiif/3/{identifier}/full/max/0/color.jpg?page=999999", "pdf-multipage.pdf"))
                 .andExpect(status().is(400));
     }
 
