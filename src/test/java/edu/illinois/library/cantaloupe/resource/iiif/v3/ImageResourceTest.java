@@ -1,5 +1,19 @@
 package edu.illinois.library.cantaloupe.resource.iiif.v3;
 
+import static edu.illinois.library.cantaloupe.test.Assert.HTTPAssert.assertRedirect;
+import static edu.illinois.library.cantaloupe.test.Assert.HTTPAssert.assertRepresentationsNotSame;
+import static edu.illinois.library.cantaloupe.test.Assert.HTTPAssert.assertStatus;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.net.URI;
+import java.util.List;
+
+import org.apache.commons.lang3.StringUtils;
+import org.junit.jupiter.api.Test;
+
 import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
@@ -16,14 +30,6 @@ import edu.illinois.library.cantaloupe.resource.ResourceTest;
 import edu.illinois.library.cantaloupe.resource.Route;
 import edu.illinois.library.cantaloupe.resource.iiif.ImageResourceTester;
 import edu.illinois.library.cantaloupe.test.TestUtil;
-import org.apache.commons.lang3.StringUtils;
-import org.junit.jupiter.api.Test;
-
-import java.net.URI;
-import java.util.List;
-
-import static edu.illinois.library.cantaloupe.test.Assert.HTTPAssert.*;
-import static org.junit.jupiter.api.Assertions.*;
 
 public class ImageResourceTest extends ResourceTest {
 
