@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
+import edu.illinois.library.cantaloupe.processor.OutputFormatException;
 import edu.illinois.library.cantaloupe.processor.SourceFormatException;
 import edu.illinois.library.cantaloupe.resource.EndpointDisabledException;
 import edu.illinois.library.cantaloupe.resource.IllegalClientArgumentException;
@@ -84,6 +85,19 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(FormatException.class)
     public ResponseEntity<Map<String, Object>> handleIllegalArgumentException(
             FormatException ex, WebRequest request) {
+
+        Map<String, Object> errorResponse = new HashMap<>();
+        errorResponse.put("status", 415);
+        errorResponse.put("error", "Bad Request");
+        errorResponse.put("message", ex.getMessage());
+        errorResponse.put("path", request.getDescription(false));
+
+        return ResponseEntity.status(HttpStatus.UNSUPPORTED_MEDIA_TYPE).body(errorResponse);
+    }
+
+    @ExceptionHandler(OutputFormatException.class)
+    public ResponseEntity<Map<String, Object>> handleIllegalArgumentException(
+            OutputFormatException ex, WebRequest request) {
 
         Map<String, Object> errorResponse = new HashMap<>();
         errorResponse.put("status", 415);
