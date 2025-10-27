@@ -322,7 +322,7 @@ class ImageControllerTest {
     @Test
     void testGETWithIllegalCharactersInIdentifier() throws Exception {
         mockMvc.perform(get("/iiif/3/[bogus]/full/max/0/color.jpg"))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isNotFound());
     }
 
     @Test
