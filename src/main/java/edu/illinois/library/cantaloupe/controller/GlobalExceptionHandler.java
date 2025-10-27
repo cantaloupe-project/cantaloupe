@@ -15,6 +15,7 @@ import org.springframework.web.servlet.resource.NoResourceFoundException;
 import edu.illinois.library.cantaloupe.processor.SourceFormatException;
 import edu.illinois.library.cantaloupe.resource.EndpointDisabledException;
 import edu.illinois.library.cantaloupe.resource.ResourceException;
+import edu.illinois.library.cantaloupe.resource.iiif.FormatException;
 
 /**
  * Global exception handler for Spring Boot controllers.
@@ -65,17 +66,17 @@ public class GlobalExceptionHandler {
                              .body(errorResponse);
     }
 
-    @ExceptionHandler(IllegalArgumentException.class)
+    @ExceptionHandler(FormatException.class)
     public ResponseEntity<Map<String, Object>> handleIllegalArgumentException(
-            IllegalArgumentException ex, WebRequest request) {
+            FormatException ex, WebRequest request) {
 
         Map<String, Object> errorResponse = new HashMap<>();
-        errorResponse.put("status", 400);
+        errorResponse.put("status", 415);
         errorResponse.put("error", "Bad Request");
         errorResponse.put("message", ex.getMessage());
         errorResponse.put("path", request.getDescription(false));
 
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+        return ResponseEntity.status(HttpStatus.UNSUPPORTED_MEDIA_TYPE).body(errorResponse);
     }
 
 
