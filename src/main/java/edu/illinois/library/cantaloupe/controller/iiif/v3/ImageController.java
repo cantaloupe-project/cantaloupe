@@ -206,7 +206,7 @@ public class ImageController extends AbstractIIIFController {
         String paramsStr = paramsCopy.toCanonicalString(fullSize);
         queuedHeaders.put("Link",
                 String.format("<%s%s/%s>;rel=\"canonical\"",
-                        getPublicRootReference(request),
+                        iiifrequest.getPublicRootReference(),
                         Route.IIIF_3_PATH,
                         paramsStr));
     }
@@ -256,24 +256,6 @@ public class ImageController extends AbstractIIIFController {
         } catch (Exception e) {
             return iiifrequest.getIdentifier().toString();
         }
-    }
-
-    /**
-     * Gets the public root reference from the request.
-     */
-    private String getPublicRootReference(HttpServletRequest request) {
-        String scheme = request.getScheme();
-        String serverName = request.getServerName();
-        int serverPort = request.getServerPort();
-        String contextPath = request.getContextPath();
-
-        StringBuilder uri = new StringBuilder();
-        uri.append(scheme).append("://").append(serverName);
-        if (serverPort != 80 && serverPort != 443) {
-            uri.append(":").append(serverPort);
-        }
-        uri.append(contextPath);
-        return uri.toString();
     }
 
     /**
