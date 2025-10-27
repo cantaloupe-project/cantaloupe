@@ -83,14 +83,15 @@ public class ImageController extends AbstractIIIFController {
         checkEndpointEnabled();
         addCorsHeaders(response);
 
-        // Assemble the URI path segments into a Parameters object using fromURI
-        String paramsStr = String.join("/", identifier, region, size, rotation, quality + "." + format);
-        final Parameters params = Parameters.fromURI(paramsStr);
 
         // Create an IIIFRequest from the HttpServletRequest
-        List<String> pathArguments = Arrays.asList(identifier, region, size, rotation, quality + "." + format);
+        List<String> pathArguments = Arrays.asList(identifier, region, size, rotation, quality, format);
         IIIFRequest iiifrequest = new IIIFRequest(request, pathArguments, configuration);
         RequestContextDecorator.decorateRequestContext(iiifrequest);
+        
+        final Parameters params = new Parameters(
+                iiifrequest.getIdentifier().toString(), region, size, rotation, quality, format);
+
 
         // Convert parameters into an OperationList
         final OperationList ops = params.toOperationList(
