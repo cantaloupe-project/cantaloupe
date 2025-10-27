@@ -183,46 +183,45 @@ class ImageControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(header().string("Cache-Control", "max-age=1234, s-maxage=4567, public, no-transform"));
     }
-    // Cache header tests - these require complex cache configuration
-    /*
+
+
     @Test
     void testGETCacheHeadersWhenClientCachingIsEnabledAndResponseIsNotCacheable() throws Exception {
-        when(configuration.getBoolean(Key.CLIENT_CACHE_ENABLED, false)).thenReturn(true);
-
+        stubCacheControlHeaders();
         mockMvc.perform(get("/iiif/3/{identifier}/full/max/0/color.jpg", "bogus"))
-                .andExpect(status().isNotFound());
+                .andExpect(status().isNotFound())
+                .andExpect(header().string("Cache-Control", "no-cache, must-revalidate"));
     }
+
 
     @Test
     void testGETCacheHeadersWhenClientCachingIsEnabledButCachingIsDisabledInURL1() throws Exception {
-        when(configuration.getBoolean(Key.CLIENT_CACHE_ENABLED, false)).thenReturn(true);
+        stubCacheControlHeaders();
 
-        mockMvc.perform(get("/iiif/3/{identifier}/full/max/0/color.jpg", IMAGE)
-                .param("cache", "nocache"))
+        mockMvc.perform(get("/iiif/3/{identifier}/full/max/0/color.jpg?cache=nocache", IMAGE))
                 .andExpect(status().isOk())
                 .andExpect(header().doesNotExist("Cache-Control"));
     }
 
     @Test
     void testGETCacheHeadersWhenClientCachingIsEnabledButCachingIsDisabledInURL2() throws Exception {
-        when(configuration.getBoolean(Key.CLIENT_CACHE_ENABLED, false)).thenReturn(true);
+        stubCacheControlHeaders();
 
-        mockMvc.perform(get("/iiif/3/{identifier}/full/max/0/color.jpg", IMAGE)
-                .param("cache", "false"))
+        mockMvc.perform(get("/iiif/3/{identifier}/full/max/0/color.jpg?cache=false", IMAGE))
                 .andExpect(status().isOk())
                 .andExpect(header().doesNotExist("Cache-Control"));
     }
 
+
     @Test
     void testGETCacheHeadersWhenClientCachingIsEnabledAndRecachingIsEnabledInURL() throws Exception {
-        when(configuration.getBoolean(Key.CLIENT_CACHE_ENABLED, false)).thenReturn(true);
-        when(configuration.getString(Key.CLIENT_CACHE_MAX_AGE, "")).thenReturn("86400");
+        stubCacheControlHeaders();
 
-        mockMvc.perform(get("/iiif/3/{identifier}/full/max/0/color.jpg", IMAGE)
-                .param("cache", "recache"))
+        mockMvc.perform(get("/iiif/3/{identifier}/full/max/0/color.jpg?cache=recache", IMAGE))
                 .andExpect(status().isOk())
-                .andExpect(header().string("Cache-Control", "max-age=86400"));
+                .andExpect(header().string("Cache-Control", "max-age=1234, s-maxage=4567, public, no-transform"));
     }
+
 
     @Test
     void testGETCacheHeadersWhenClientCachingIsDisabled() throws Exception {
@@ -233,6 +232,8 @@ class ImageControllerTest {
                 .andExpect(header().doesNotExist("Cache-Control"));
     }
 
+    // Cache header tests - these require complex cache configuration
+    /*
     @Test
     void testGETCachingWhenCachesAreEnabledButNegativeCacheQueryArgumentIsSupplied() throws Exception {
         // Complex caching behavior test
