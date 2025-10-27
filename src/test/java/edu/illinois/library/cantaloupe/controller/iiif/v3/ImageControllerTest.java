@@ -436,8 +436,10 @@ class ImageControllerTest {
     void testGETGreaterThanMaxScale() throws Exception {
         when(configuration.getDouble(Key.MAX_SCALE, 1.0)).thenReturn(1.0);
 
+        // max_scale of 1.0 means the server does not support upscaling, so a
+        // caret size gets 501 rather than 400.
         mockMvc.perform(get("/iiif/3/{identifier}/full/^pct:101/0/color.png", IMAGE))
-                .andExpect(status().is(400)); // Bad request due to scale constraint
+                .andExpect(status().is(501));
     }
 
     @Test
