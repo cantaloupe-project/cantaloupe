@@ -24,6 +24,8 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.cache.CacheFactory;
+import edu.illinois.library.cantaloupe.cache.MockBrokenDerivativeInputStreamCache;
+import edu.illinois.library.cantaloupe.cache.MockBrokenDerivativeOutputStreamCache;
 import edu.illinois.library.cantaloupe.cache.SourceCache;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
@@ -498,24 +500,52 @@ class ImageControllerTest {
     /*
     @Test
     void testGETPurgeFromCacheWhenSourceIsMissingAndOptionIsFalse() throws Exception {
-        // TODO: Implement with proper cache and delegate mocking
+        // TODO Implement
+        DelegateProxy delegateProxy = TestUtil.newDelegateProxy();
+        String imagePath            = "/" + IMAGE + "/full/max/0/color.jpg";
+        URI uri                     = getHTTPURI(imagePath);
+        OperationList opList        = Parameters.fromURI(imagePath)
+                .toOperationList(delegateProxy, 1);
+        tester.testPurgeFromCacheWhenSourceIsMissingAndOptionIsFalse(
+                uri, opList);
     }
 
     @Test
     void testGETPurgeFromCacheWhenSourceIsMissingAndOptionIsTrue() throws Exception {
-        // TODO: Implement with proper cache and delegate mocking
+        // TODO Implement
+
+        DelegateProxy delegateProxy = TestUtil.newDelegateProxy();
+        String imagePath            = "/" + IMAGE + "/full/max/0/color.jpg";
+        URI uri                     = getHTTPURI(imagePath);
+        OperationList opList        = Parameters.fromURI(imagePath)
+                .toOperationList(delegateProxy, 1);
+        tester.testPurgeFromCacheWhenSourceIsMissingAndOptionIsTrue(
+                uri, opList);
     }
+    */
 
     @Test
     void testGETRecoveryFromDerivativeCacheNewDerivativeImageInputStreamException() throws Exception {
-        // TODO: Implement with proper cache exception mocking
+        when(configuration.getBoolean(Key.DERIVATIVE_CACHE_ENABLED, false)).thenReturn(true);
+        when(configuration.getString(Key.DERIVATIVE_CACHE, "")).thenReturn(MockBrokenDerivativeInputStreamCache.class.getSimpleName());
+        when(configuration.getBoolean(Key.INFO_CACHE_ENABLED, false)).thenReturn(false);
+        when(configuration.getBoolean(Key.CACHE_SERVER_RESOLVE_FIRST, true)).thenReturn(false);
+
+        mockMvc.perform(get("/iiif/3/{identifier}/full/max/0/color.jpg", IMAGE))
+                .andExpect(status().isOk());
     }
 
     @Test
     void testGETRecoveryFromDerivativeCacheNewDerivativeImageOutputStreamException() throws Exception {
-        // TODO: Implement with proper cache exception mocking
+        when(configuration.getBoolean(Key.DERIVATIVE_CACHE_ENABLED, false)).thenReturn(true);
+        when(configuration.getString(Key.DERIVATIVE_CACHE, "")).thenReturn(MockBrokenDerivativeOutputStreamCache.class.getSimpleName());
+        when(configuration.getBoolean(Key.INFO_CACHE_ENABLED, false)).thenReturn(false);
+        when(configuration.getBoolean(Key.CACHE_SERVER_RESOLVE_FIRST, true)).thenReturn(false);
+
+        mockMvc.perform(get("/iiif/3/{identifier}/full/max/0/color.jpg", IMAGE))
+                .andExpect(status().isOk());
     }
-    */
+
 
     @Test
     void testGETRecoveryFromIncorrectSourceFormat() throws Exception {
