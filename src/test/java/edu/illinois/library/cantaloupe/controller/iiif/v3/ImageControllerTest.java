@@ -548,7 +548,7 @@ class ImageControllerTest {
     void testGETNotRestrictedToSizes() throws Exception {
         when(configuration.getBoolean(Key.IIIF_RESTRICT_TO_SIZES, false)).thenReturn(false);
 
-        mockMvc.perform(get("/iiif/3/{identifier}/full/100,100/0/color.jpg", IMAGE))
+        mockMvc.perform(get("/iiif/3/{identifier}/full/53,37/0/color.jpg", IMAGE))
                 .andExpect(status().isOk());
     }
 
