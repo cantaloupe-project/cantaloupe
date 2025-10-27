@@ -6,6 +6,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.options;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -126,29 +127,40 @@ class ImageControllerTest {
                 .andExpect(content().string(containsString("\"status\":403")));
     }
 
-    // Complex caching tests that involve multiple components - commenting out for now
-    /*
     @Test
     void testGETAuthorizationWhenNotAuthorizedWhenAccessingCachedResource() throws Exception {
         // This test involves complex caching behavior that's difficult to mock
-        // TODO: Implement with proper cache mocking
-    }
-    */
+        when(configuration.getBoolean(Key.DERIVATIVE_CACHE_ENABLED, false)).thenReturn(true);
+        when(configuration.getBoolean(Key.INFO_CACHE_ENABLED, false)).thenReturn(false);
+        when(configuration.getLong(Key.DERIVATIVE_CACHE_TTL, 0L)).thenReturn(10L);
 
-    // Delegate-based tests that are complex to mock
-    /*
+        // Request the resource to cache it.
+        // This status code may vary depending on the return value of a
+        // delegate method, but the way the tests are set up, it's 403.
+         mockMvc.perform(get("/iiif/3/{identifier}/full/max/0/color.jpg", "forbidden.jpg"))
+                .andExpect(status().isForbidden());
+
+        Thread.sleep(1000); // the resource may write asynchronously
+
+        // Request it again. We expect to receive the same response. Any
+        // different response would indicate a logic error.
+
+        mockMvc.perform(get("/iiif/3/{identifier}/full/max/0/color.jpg", "forbidden.jpg"))
+                .andExpect(status().isForbidden());
+    }
+
     @Test
     void testGETAuthorizationWhenRedirecting() throws Exception {
-        // This test involves delegate script behavior
-        // TODO: Implement with proper delegate mocking
+        mockMvc.perform(get("/iiif/3/{identifier}/full/max/0/color.jpg", "redirect.jpg"))
+            .andExpect(redirectedUrl("http://example.org/"));
     }
+
 
     @Test
     void testGETAuthorizationWhenScaleConstraining() throws Exception {
-        // This test involves delegate script behavior
-        // TODO: Implement with proper delegate mocking
+        mockMvc.perform(get("/iiif/3/{identifier}/full/max/0/color.jpg", "reduce.jpg"))
+            .andExpect(redirectedUrl("http://localhost/iiif/3/reduce.jpg;1:2/full/max/0/color.jpg"));
     }
-    */
 
     // Cache header tests - these require complex cache configuration
     /*
