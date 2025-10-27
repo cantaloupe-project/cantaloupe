@@ -587,26 +587,22 @@ class ImageControllerTest {
                 .andExpect(status().isOk()); // Should recover and serve the image
     }
 
-    // Scale constraint redirect tests
-    /*
+
+    /**
+     * Tests that a scale constraint of {@literal 1:1} is redirected to no
+     * scale constraint.
+     */
     @Test
     void testGETRedirectToNormalizedScaleConstraint1() throws Exception {
-        // Complex meta-identifier with scale constraints
-        // TODO: Implement proper meta-identifier handling
+        mockMvc.perform(get("/iiif/3/{identifier}/full/max/0/color.jpg", "jpg-rgb-64x56x8-baseline.jpg;1:1"))
+            .andExpect(redirectedUrl("http://localhost/iiif/3/jpg-rgb-64x56x8-baseline.jpg/full/max/0/color.jpg"));
     }
 
     @Test
-    void testGETRedirectToNormalizedScaleConstraint2() throws Exception {
-        // Complex meta-identifier with scale constraints
-        // TODO: Implement proper meta-identifier handling
+    void testGETRedirectToNormalizedScaleConstraint2over4() throws Exception {
+        mockMvc.perform(get("/iiif/3/{identifier}/full/max/0/color.jpg", "jpg-rgb-64x56x8-baseline.jpg;2:4"))
+            .andExpect(redirectedUrl("http://localhost/iiif/3/jpg-rgb-64x56x8-baseline.jpg;1:2/full/max/0/color.jpg"));
     }
-
-    @Test
-    void testGETRedirectToNormalizedScaleConstraint3() throws Exception {
-        // Complex meta-identifier with scale constraints
-        // TODO: Implement proper meta-identifier handling
-    }
-    */
 
     @Test
     void testGETScaleConstraintIsRespected() throws Exception {

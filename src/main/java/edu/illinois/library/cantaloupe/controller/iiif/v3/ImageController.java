@@ -78,15 +78,18 @@ public class ImageController extends AbstractIIIFController {
 
         checkEndpointEnabled();
         addCorsHeaders(response);
+
         /**
          * Response headers to be added to the response upon success.
          */
         HttpHeaders headers = new HttpHeaders();
 
-
         // Create an IIIFRequest from the HttpServletRequest
         List<String> pathArguments = Arrays.asList(identifier, region, size, rotation, quality, format);
         IIIFRequest iiifrequest = new IIIFRequest(request, pathArguments, configuration);
+        if (redirectToNormalizedScaleConstraint(iiifrequest, response)) {
+            return;
+        }
         RequestContextDecorator.decorateRequestContext(iiifrequest);
         
         final Parameters params = new Parameters(
