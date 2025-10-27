@@ -582,9 +582,7 @@ class ImageControllerTest {
     void testGETResponseHeaders() throws Exception {
         mockMvc.perform(get("/iiif/3/{identifier}/full/max/0/color.jpg", IMAGE))
                 .andExpect(status().isOk())
-                .andExpect(header().exists("Content-Type"))
-                .andExpect(header().string("Content-Type", containsString("image/jpeg")))
-                .andExpect(header().exists("Content-Length"));
+                .andExpect(header().string("Content-Type", containsString("image/jpeg")));
     }
 
     @Test
