@@ -27,6 +27,7 @@ import edu.illinois.library.cantaloupe.image.StandardMetaIdentifierTransformer;
 import edu.illinois.library.cantaloupe.resource.ImageRequestHandlerFactory;
 import edu.illinois.library.cantaloupe.source.AccessDeniedSource;
 import edu.illinois.library.cantaloupe.test.TestUtil;
+import edu.illinois.library.cantaloupe.util.StringUtils;
 
 /**
  * Spring Boot test for IIIF v3 Image Controller.
@@ -39,7 +40,7 @@ import edu.illinois.library.cantaloupe.test.TestUtil;
          //  FormatRegistry.class, FormatRegistryAccessor.class,
          StandardMetaIdentifierTransformer.class,
          ImageRequestHandlerFactory.class,
-         //   StringUtils.class
+         StringUtils.class
         })
 @TestPropertySource(properties = {
     "cantaloupe.config=test.properties"
