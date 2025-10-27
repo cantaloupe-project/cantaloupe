@@ -105,6 +105,19 @@ class ImageControllerTest {
         when(configuration.getFile()).thenReturn(java.util.Optional.empty());
     }
 
+    private void stubCacheControlHeaders() {
+        when(configuration.getBoolean(Key.CLIENT_CACHE_ENABLED, false)).thenReturn(true);
+        when(configuration.getBoolean(Key.CLIENT_CACHE_PUBLIC, true)).thenReturn(true);
+        when(configuration.getBoolean(Key.CLIENT_CACHE_PRIVATE, false)).thenReturn(false);
+        when(configuration.getBoolean(Key.CLIENT_CACHE_NO_CACHE, false)).thenReturn(false);
+        when(configuration.getBoolean(Key.CLIENT_CACHE_NO_STORE, false)).thenReturn(false);
+        when(configuration.getBoolean(Key.CLIENT_CACHE_MUST_REVALIDATE, false)).thenReturn(false);
+        when(configuration.getBoolean(Key.CLIENT_CACHE_PROXY_REVALIDATE, false)).thenReturn(false);
+        when(configuration.getBoolean(Key.CLIENT_CACHE_NO_TRANSFORM, false)).thenReturn(true);
+        when(configuration.getString(Key.CLIENT_CACHE_MAX_AGE, "")).thenReturn("1234");
+        when(configuration.getString(Key.CLIENT_CACHE_SHARED_MAX_AGE, "")).thenReturn("4567");
+    }
+
     @Test
     void testGETAuthorizationWhenAuthorized() throws Exception {
         // This test verifies that we're using the real ImageRequestHandler implementation
@@ -162,18 +175,16 @@ class ImageControllerTest {
             .andExpect(redirectedUrl("http://localhost/iiif/3/reduce.jpg;1:2/full/max/0/color.jpg"));
     }
 
-    // Cache header tests - these require complex cache configuration
-    /*
+
     @Test
     void testGETCacheHeadersWhenClientCachingIsEnabledAndResponseIsCacheable() throws Exception {
-        when(configuration.getBoolean(Key.CLIENT_CACHE_ENABLED, false)).thenReturn(true);
-        when(configuration.getString(Key.CLIENT_CACHE_MAX_AGE, "")).thenReturn("86400");
-
+        stubCacheControlHeaders();
         mockMvc.perform(get("/iiif/3/{identifier}/full/max/0/color.jpg", IMAGE))
                 .andExpect(status().isOk())
-                .andExpect(header().string("Cache-Control", "max-age=86400"));
+                .andExpect(header().string("Cache-Control", "max-age=1234, s-maxage=4567, public, no-transform"));
     }
-
+    // Cache header tests - these require complex cache configuration
+    /*
     @Test
     void testGETCacheHeadersWhenClientCachingIsEnabledAndResponseIsNotCacheable() throws Exception {
         when(configuration.getBoolean(Key.CLIENT_CACHE_ENABLED, false)).thenReturn(true);

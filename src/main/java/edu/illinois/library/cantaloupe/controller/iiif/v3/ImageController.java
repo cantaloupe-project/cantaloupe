@@ -139,7 +139,7 @@ public class ImageController extends AbstractIIIFController {
 
             @Override
             public void willStreamImageFromDerivativeCache() throws Exception {
-                sendHeaders(headers, response);
+                sendHeaders(headers, response, iiifrequest);
             }
 
             @Override
@@ -154,7 +154,7 @@ public class ImageController extends AbstractIIIFController {
                 ScaleValidator.validateScale(virtualSize, scale, Status.BAD_REQUEST, iiifrequest.getMetaIdentifier());
                 validateSize(virtualSize, resultingSize);
 
-                sendHeaders(headers, response);
+                sendHeaders(headers, response, iiifrequest);
             }
         }
 
@@ -212,13 +212,16 @@ public class ImageController extends AbstractIIIFController {
                         paramsStr));
     }
 
-    private static void sendHeaders(HttpHeaders queuedHeaders, HttpServletResponse response) {
+    private void sendHeaders(HttpHeaders queuedHeaders, HttpServletResponse response, IIIFRequest iiifrequest) {
         for (String headerName : queuedHeaders.keySet()) {
             List<String> headerValues = queuedHeaders.get(headerName);
             for (String headerValue : headerValues) {
                 response.addHeader(headerName, headerValue);
             }
         }
+
+        addHeaders(response, iiifrequest);
+
     }
 
     private double getMaxScale() {
