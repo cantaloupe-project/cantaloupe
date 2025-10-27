@@ -25,6 +25,7 @@ import edu.illinois.library.cantaloupe.delegate.DelegateProxyService;
 import edu.illinois.library.cantaloupe.image.MetaIdentifierTransformerFactory;
 import edu.illinois.library.cantaloupe.image.StandardMetaIdentifierTransformer;
 import edu.illinois.library.cantaloupe.resource.ImageRequestHandlerFactory;
+import edu.illinois.library.cantaloupe.source.AccessDeniedSource;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 
 /**
@@ -427,6 +428,7 @@ class ImageControllerTest {
 
     @Test
     void testGETForbidden() throws Exception {
+        when(configuration.getString(Key.SOURCE_STATIC)).thenReturn(AccessDeniedSource.class.getName());
         mockMvc.perform(get("/iiif/3/{identifier}/full/max/0/color.jpg", "forbidden"))
                 .andExpect(status().isForbidden());
     }
