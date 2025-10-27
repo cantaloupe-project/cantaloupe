@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -58,11 +59,6 @@ public class ImageController extends AbstractIIIFController {
 
     private final ImageRequestHandlerFactory handlerFactory;
 
-    /**
-     * Map of response headers to be added to the response upon success.
-     */
-    private final Map<String, String> queuedHeaders = new HashMap<>();
-
     @Autowired
     public ImageController(Configuration configuration, ImageRequestHandlerFactory handlerFactory) {
         super(configuration);
@@ -82,6 +78,10 @@ public class ImageController extends AbstractIIIFController {
 
         checkEndpointEnabled();
         addCorsHeaders(response);
+        /**
+         * Response headers to be added to the response upon success.
+         */
+        HttpHeaders headers = new HttpHeaders();
 
 
         // Create an IIIFRequest from the HttpServletRequest
@@ -131,7 +131,7 @@ public class ImageController extends AbstractIIIFController {
                     }
                 }
                 try {
-                    enqueueHeaders(params, info.getSize(pageIndex), disposition, request, iiifrequest);
+                    enqueueHeaders(headers, params, info.getSize(pageIndex), disposition, request, iiifrequest);
                 } catch (IndexOutOfBoundsException e) {
                     throw new IllegalClientArgumentException(e.getMessage(), e);
                 }
@@ -139,7 +139,7 @@ public class ImageController extends AbstractIIIFController {
 
             @Override
             public void willStreamImageFromDerivativeCache() throws Exception {
-                sendHeaders(response);
+                sendHeaders(headers, response);
             }
 
             @Override
@@ -154,7 +154,7 @@ public class ImageController extends AbstractIIIFController {
                 ScaleValidator.validateScale(virtualSize, scale, Status.BAD_REQUEST, iiifrequest.getMetaIdentifier());
                 validateSize(virtualSize, resultingSize);
 
-                sendHeaders(response);
+                sendHeaders(headers, response);
             }
         }
 
@@ -186,33 +186,39 @@ public class ImageController extends AbstractIIIFController {
      * Adds Content-Disposition, Content-Type, and Link response headers to a queue
      * which will be sent upon a success response.
      */
-    private void enqueueHeaders(Parameters params,
+    private void enqueueHeaders(HttpHeaders queuedHeaders,
+                                Parameters params,
                                Dimension fullSize,
                                String disposition,
                                HttpServletRequest request,
                                IIIFRequest iiifrequest) {
         // Content-Disposition
         if (disposition != null) {
-            queuedHeaders.put("Content-Disposition", disposition);
+            queuedHeaders.add("Content-Disposition", disposition);
         }
 
         // Content-Type
-        queuedHeaders.put("Content-Type",
+        queuedHeaders.add("Content-Type",
                 params.getOutputFormat().toFormat().getPreferredMediaType().toString());
 
         // Link
         Parameters paramsCopy = new Parameters(params);
         paramsCopy.setIdentifier(getPublicIdentifier(iiifrequest));
         String paramsStr = paramsCopy.toCanonicalString(fullSize);
-        queuedHeaders.put("Link",
+        queuedHeaders.add("Link",
                 String.format("<%s%s/%s>;rel=\"canonical\"",
                         iiifrequest.getPublicRootReference(),
                         Route.IIIF_3_PATH,
                         paramsStr));
     }
 
-    private void sendHeaders(HttpServletResponse response) {
-        queuedHeaders.forEach(response::setHeader);
+    private static void sendHeaders(HttpHeaders queuedHeaders, HttpServletResponse response) {
+        for (String headerName : queuedHeaders.keySet()) {
+            List<String> headerValues = queuedHeaders.get(headerName);
+            for (String headerValue : headerValues) {
+                response.addHeader(headerName, headerValue);
+            }
+        }
     }
 
     private double getMaxScale() {

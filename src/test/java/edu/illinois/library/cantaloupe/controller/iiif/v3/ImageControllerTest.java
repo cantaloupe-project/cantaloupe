@@ -59,7 +59,6 @@ class ImageControllerTest {
         // Configure handlerFactory to return real ImageRequestHandler instances
         // Note: The real factory will handle creating ImageRequestHandler instances
         // Set up configuration system properties
-        ConfigurationFactory.clearInstance();
         System.setProperty(ConfigurationFactory.CONFIG_VM_ARGUMENT, "memory");
         System.setProperty(Application.TEST_VM_ARGUMENT, "true");
 
