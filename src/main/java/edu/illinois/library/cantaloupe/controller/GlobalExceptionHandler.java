@@ -138,8 +138,6 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(SourceFormatException.class)
     public  ResponseEntity<Map<String, Object>> handleSourceFormatException(SourceFormatException ex, WebRequest request) {
         Map<String, Object> errorResponse = new HashMap<>();
-                ex.printStackTrace();
-
         errorResponse.put("status", 501);
         errorResponse.put("error", "Not Implemented");
         errorResponse.put("message", "Unable to use the requested source format");
