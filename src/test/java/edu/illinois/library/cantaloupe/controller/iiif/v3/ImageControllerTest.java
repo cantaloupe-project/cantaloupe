@@ -9,6 +9,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,13 +23,17 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import edu.illinois.library.cantaloupe.Application;
+import edu.illinois.library.cantaloupe.cache.CacheFactory;
+import edu.illinois.library.cantaloupe.cache.SourceCache;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.delegate.DelegateProxyService;
+import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.MetaIdentifierTransformerFactory;
 import edu.illinois.library.cantaloupe.image.StandardMetaIdentifierTransformer;
 import edu.illinois.library.cantaloupe.resource.ImageRequestHandlerFactory;
+import edu.illinois.library.cantaloupe.resource.iiif.ImageAPIResourceTester.NotCheckingAccessSource;
 import edu.illinois.library.cantaloupe.source.AccessDeniedSource;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import edu.illinois.library.cantaloupe.util.StringUtils;
@@ -77,7 +85,6 @@ class ImageControllerTest {
         when(configuration.getString(Key.FILESYSTEMSOURCE_PATH_SUFFIX, "")).thenReturn("");
         when(configuration.getString(Key.BASE_URI, "")).thenReturn("");
         when(configuration.getString(Key.SLASH_SUBSTITUTE, "")).thenReturn("");
-        when(configuration.getString(Key.SOURCE_CACHE, "")).thenReturn("");
 
         // Additional configuration needed for real ImageRequestHandler
         when(configuration.getString(Key.PROCESSOR_SELECTION_STRATEGY, "")).thenReturn("ManualSelectionStrategy");
@@ -543,13 +550,34 @@ class ImageControllerTest {
                 .andExpect(status().isOk()); // Scale constraint should be applied
     }
 
-    // Source cache tests are complex
-    /*
+
     @Test
     void testGETSourceCheckAccessNotCalledWithSourceCacheHit() throws Exception {
-        // TODO: Implement with source cache mocking
+        // Set up the environment to use the source cache, not resolve first,
+        // and use a non-FileSource.
+        when(configuration.getBoolean(Key.CACHE_SERVER_RESOLVE_FIRST, true)).thenReturn(false);
+        when(configuration.getString(Key.SOURCE_STATIC)).thenReturn(NotCheckingAccessSource.class.getName());
+        when(configuration.getString(Key.SOURCE_CACHE, "")).thenReturn("FilesystemCache");
+        when(configuration.getLong(Key.SOURCE_CACHE_TTL, 0L)).thenReturn(10L);
+        when(configuration.getString(Key.FILESYSTEMCACHE_PATHNAME, "")).thenReturn(Files.createTempDirectory("test").toString());
+
+        // Put an image in the source cache.
+        Path image = TestUtil.getImage("jpg");
+        CacheFactory cacheFactory = new CacheFactory(configuration);
+        SourceCache sourceCache = cacheFactory.getSourceCache().get();
+        Identifier identifier = new Identifier(IMAGE);
+
+        try (OutputStream os = sourceCache.newSourceImageOutputStream(identifier)) {
+            Files.copy(image, os);
+        }
+
+        mockMvc.perform(get("/iiif/3/{identifier}/full/max/0/color.jpg", IMAGE + ";1:2"))
+            .andExpect(status().isOk()); // Scale constraint should be applied
+
     }
 
+    // Source cache tests are complex
+    /*
     @Test
     void testGETSourceGetSourceFormatNotCalledWithSourceCacheHit() throws Exception {
         // TODO: Implement with source cache mocking
