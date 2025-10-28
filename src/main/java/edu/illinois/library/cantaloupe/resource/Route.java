@@ -70,8 +70,6 @@ public final class Route {
                 new RouteEntry(edu.illinois.library.cantaloupe.resource.iiif.v3.InformationResource.class, IIIFRequest.class));
         MAPPINGS.put(Pattern.compile("^" + IIIF_3_PATH + "/([^/]+)$"),
                 new RouteEntry(edu.illinois.library.cantaloupe.resource.iiif.v3.IdentifierResource.class, IIIFRequest.class));
-        MAPPINGS.put(Pattern.compile("^" + IIIF_3_PATH + "/([^/]+)/([^/]+)/([^/]+)/([^/]+)/([^/]+)\\.([^/]+)$"),
-                new RouteEntry(edu.illinois.library.cantaloupe.resource.iiif.v3.ImageResource.class, IIIFRequest.class));
 
         // IIIF Image API v2 routes
         MAPPINGS.put(Pattern.compile("^" + IIIF_2_PATH + "$"),
