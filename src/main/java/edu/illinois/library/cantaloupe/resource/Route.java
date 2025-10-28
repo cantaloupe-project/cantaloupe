@@ -92,8 +92,6 @@ public final class Route {
                 new RouteEntry(edu.illinois.library.cantaloupe.resource.admin.ConfigurationResource.class, Request.class));
         MAPPINGS.put(Pattern.compile("^" + ADMIN_PATH + "$"),
                 new RouteEntry(edu.illinois.library.cantaloupe.resource.admin.AdminResource.class, Request.class));
-        MAPPINGS.put(Pattern.compile("^" + ADMIN_STATUS_PATH + "$"),
-                new RouteEntry(edu.illinois.library.cantaloupe.resource.admin.StatusResource.class, Request.class));
 
         // API routes
         MAPPINGS.put(Pattern.compile("^" + CONFIGURATION_PATH + "$"),
