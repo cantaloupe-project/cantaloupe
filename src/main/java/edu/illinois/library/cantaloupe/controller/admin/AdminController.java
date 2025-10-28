@@ -18,6 +18,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
+import edu.illinois.library.cantaloupe.Application;
+import edu.illinois.library.cantaloupe.auth.BasicAuth;
 import edu.illinois.library.cantaloupe.cache.CacheFactory;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
@@ -30,7 +32,9 @@ import edu.illinois.library.cantaloupe.processor.InitializationException;
 import edu.illinois.library.cantaloupe.processor.Processor;
 import edu.illinois.library.cantaloupe.processor.ProcessorFactory;
 import edu.illinois.library.cantaloupe.processor.SourceFormatException;
+import edu.illinois.library.cantaloupe.resource.EndpointDisabledException;
 import edu.illinois.library.cantaloupe.resource.Request;
+import edu.illinois.library.cantaloupe.resource.ResourceException;
 import edu.illinois.library.cantaloupe.resource.TemplateVariables;
 import edu.illinois.library.cantaloupe.source.Source;
 import edu.illinois.library.cantaloupe.source.SourceFactory;
@@ -144,8 +148,10 @@ public class AdminController {
     }
 
     @GetMapping
-    public String admin(Model model, HttpServletRequest request, HttpServletResponse response) {
+    public String admin(Model model, HttpServletRequest request, HttpServletResponse response) throws ResourceException {
+        beforeAll(request, response);
         response.setHeader("Content-Type", "text/html;charset=UTF-8");
+        response.setHeader("Cache-Control", "no-cache");
 
         // Create request wrapper and get template variables
         Request requestWrapper = new Request(request, Collections.emptyList(), configuration);
@@ -157,7 +163,8 @@ public class AdminController {
     }
 
     @RequestMapping(value = "", method = RequestMethod.OPTIONS)
-    public void options(HttpServletResponse response) {
+    public void options(HttpServletRequest request, HttpServletResponse response) throws ResourceException {
+        beforeAll(request, response);
         response.setStatus(HttpServletResponse.SC_NO_CONTENT);
         response.setHeader("Allow", "GET,OPTIONS");
     }
@@ -344,5 +351,22 @@ public class AdminController {
                     getString(Key.OVERLAY_STRING_FONT, ""));
         }
         return vars;
+    }
+
+
+    static final String BASIC_REALM = Application.getName() + " Control Panel";
+
+    private void beforeAll(HttpServletRequest request, HttpServletResponse response) throws ResourceException {
+        if (!configuration.getBoolean(Key.ADMIN_ENABLED, false)) {
+            throw new EndpointDisabledException();
+        }
+        // Perform HTTP Basic Authentication
+        BasicAuth.authenticateUsingBasic(BASIC_REALM, user -> {
+            final String configUser = configuration.getString(Key.ADMIN_USERNAME, "");
+            if (!configUser.isEmpty() && configUser.equals(user)) {
+                return configuration.getString(Key.ADMIN_SECRET);
+            }
+            return null;
+        }, request, response);
     }
 }
