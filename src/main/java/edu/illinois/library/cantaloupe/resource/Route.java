@@ -65,10 +65,6 @@ public final class Route {
         MAPPINGS.put(Pattern.compile("/$"),
                 new RouteEntry(TrailingSlashRemovingResource.class, Request.class));
 
-        // IIIF Image API v3 routes
-        MAPPINGS.put(Pattern.compile("^" + IIIF_3_PATH + "/([^/]+)/info\\.json$"),
-                new RouteEntry(edu.illinois.library.cantaloupe.resource.iiif.v3.InformationResource.class, IIIFRequest.class));
-
         // IIIF Image API v2 routes
         MAPPINGS.put(Pattern.compile("^" + IIIF_2_PATH + "$"),
                 new RouteEntry(edu.illinois.library.cantaloupe.resource.iiif.v2.LandingResource.class, IIIFRequest.class));
