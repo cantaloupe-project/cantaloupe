@@ -1,8 +1,13 @@
 package edu.illinois.library.cantaloupe.resource.admin;
 
-import edu.illinois.library.cantaloupe.config.Configuration;
-import edu.illinois.library.cantaloupe.config.Key;
-import edu.illinois.library.cantaloupe.resource.Route;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+
+import java.net.URI;
+import java.net.URISyntaxException;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -12,15 +17,15 @@ import org.openqa.selenium.WebElement;
 import org.openqa.selenium.htmlunit.HtmlUnitDriver;
 import org.openqa.selenium.support.ui.Select;
 
-import java.net.URI;
-import java.net.URISyntaxException;
-
-import static org.junit.jupiter.api.Assertions.*;
+import edu.illinois.library.cantaloupe.config.Configuration;
+import edu.illinois.library.cantaloupe.config.Key;
+import edu.illinois.library.cantaloupe.resource.ResourceTest;
+import edu.illinois.library.cantaloupe.resource.Route;
 
 /**
  * Functional test of the Control Panel using Selenium.
  */
-public class AdminResourceUITest extends AbstractAdminResourceTest {
+public class AdminResourceUITest extends ResourceTest {
 
     private static final double DELTA = 0.00000001;
     private static final int WAIT_AFTER_SUBMIT = 2000;
@@ -45,6 +50,8 @@ public class AdminResourceUITest extends AbstractAdminResourceTest {
         webDriver = new HtmlUnitDriver(true);
         ((HtmlUnitDriver) webDriver).setJavascriptEnabled(true);
         webDriver.get(getHTTPURI("").toString());
+        client = newClient("", USERNAME, SECRET,
+                AbstractAdminResource.BASIC_REALM);
     }
 
     @Override

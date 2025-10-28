@@ -16,8 +16,6 @@ import java.util.regex.Pattern;
 public final class Route {
 
     public static final String ADMIN_PATH         = "/admin";
-    public static final String ADMIN_CONFIG_PATH  = "/admin/configuration";
-    public static final String ADMIN_STATUS_PATH  = "/admin/status";
     public static final String CONFIGURATION_PATH = "/configuration";
     public static final String HEALTH_PATH        = "/health";
     public static final String IIIF_1_PATH        = "/iiif/1";
@@ -86,10 +84,6 @@ public final class Route {
                 new RouteEntry(edu.illinois.library.cantaloupe.resource.iiif.v1.ImageResource.class, IIIFRequest.class));
         MAPPINGS.put(Pattern.compile("^" + IIIF_1_PATH + "/([^/]+)/([^/]+)/([^/]+)/([^/]+)/([^/.]+)\\.([^/]+)$"),
                 new RouteEntry(edu.illinois.library.cantaloupe.resource.iiif.v1.ImageResource.class, IIIFRequest.class));
-
-        // Control Panel routes
-        MAPPINGS.put(Pattern.compile("^" + ADMIN_CONFIG_PATH + "$"),
-                new RouteEntry(edu.illinois.library.cantaloupe.resource.admin.ConfigurationResource.class, Request.class));
 
         // API routes
         MAPPINGS.put(Pattern.compile("^" + CONFIGURATION_PATH + "$"),
