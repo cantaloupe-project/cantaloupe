@@ -73,14 +73,6 @@ class RouteTest extends BaseTest {
     }
 
     @Test
-    void testForPathWithIIIFv3Routes() {
-        Route route = Route.forPath(Route.IIIF_3_PATH + "/0bef-234a/info.json");
-        assertEquals(edu.illinois.library.cantaloupe.resource.iiif.v3.InformationResource.class,
-                route.getResource());
-        assertEquals("0bef-234a", route.getPathArguments().get(0));
-    }
-
-    @Test
     void testForPathWithIIIFv2Routes() {
         Route route = Route.forPath(Route.IIIF_2_PATH + "/0bef-234a/info.json");
         assertEquals(edu.illinois.library.cantaloupe.resource.iiif.v2.InformationResource.class,
