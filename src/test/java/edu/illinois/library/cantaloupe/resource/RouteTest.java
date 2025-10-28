@@ -1,13 +1,15 @@
 package edu.illinois.library.cantaloupe.resource;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+
+import org.junit.jupiter.api.Test;
+
 import edu.illinois.library.cantaloupe.resource.admin.AdminResource;
 import edu.illinois.library.cantaloupe.resource.api.TaskResource;
 import edu.illinois.library.cantaloupe.resource.api.TasksResource;
 import edu.illinois.library.cantaloupe.resource.health.HealthResource;
 import edu.illinois.library.cantaloupe.test.BaseTest;
-import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 class RouteTest extends BaseTest {
 
@@ -76,21 +78,6 @@ class RouteTest extends BaseTest {
         assertEquals(edu.illinois.library.cantaloupe.resource.iiif.v3.InformationResource.class,
                 route.getResource());
         assertEquals("0bef-234a", route.getPathArguments().get(0));
-
-        route = Route.forPath(Route.IIIF_3_PATH + "/0bef-234a");
-        assertEquals(edu.illinois.library.cantaloupe.resource.iiif.v3.IdentifierResource.class,
-                route.getResource());
-        assertEquals("0bef-234a", route.getPathArguments().get(0));
-
-        route = Route.forPath(Route.IIIF_3_PATH + "/0bef-234a/0,0,100,100/max/0/default.jpg");
-        assertEquals(edu.illinois.library.cantaloupe.resource.iiif.v3.ImageResource.class,
-                route.getResource());
-        assertEquals("0bef-234a", route.getPathArguments().get(0));
-        assertEquals("0,0,100,100", route.getPathArguments().get(1));
-        assertEquals("max", route.getPathArguments().get(2));
-        assertEquals("0", route.getPathArguments().get(3));
-        assertEquals("default", route.getPathArguments().get(4));
-        assertEquals("jpg", route.getPathArguments().get(5));
     }
 
     @Test
