@@ -90,8 +90,6 @@ public final class Route {
         // Control Panel routes
         MAPPINGS.put(Pattern.compile("^" + ADMIN_CONFIG_PATH + "$"),
                 new RouteEntry(edu.illinois.library.cantaloupe.resource.admin.ConfigurationResource.class, Request.class));
-        MAPPINGS.put(Pattern.compile("^" + ADMIN_PATH + "$"),
-                new RouteEntry(edu.illinois.library.cantaloupe.resource.admin.AdminResource.class, Request.class));
 
         // API routes
         MAPPINGS.put(Pattern.compile("^" + CONFIGURATION_PATH + "$"),
