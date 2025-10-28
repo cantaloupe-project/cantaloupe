@@ -1,8 +1,10 @@
 package edu.illinois.library.cantaloupe.controller;
 
+import static org.hamcrest.Matchers.containsString;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.options;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -35,6 +37,9 @@ public class StatusControllerTest {
         System.setProperty(ConfigurationFactory.CONFIG_VM_ARGUMENT, "memory");
         System.setProperty(Application.TEST_VM_ARGUMENT, "true");
 
+        when(configuration.getBoolean(Key.ADMIN_ENABLED, false)).thenReturn(true);
+
+
         // Set up basic auth credentials for tests
         when(configuration.getString(Key.ADMIN_USERNAME, "")).thenReturn("admin");
         when(configuration.getString(Key.ADMIN_SECRET)).thenReturn("secret");
@@ -62,7 +67,9 @@ public class StatusControllerTest {
         mockMvc.perform(get("/status")
                 .header("Authorization", "Basic " + validAuth))
                 .andExpect(status().isOk())
-                .andExpect(header().string("Content-Type", "application/json;charset=UTF-8"));
+                .andExpect(header().string("Content-Type", "application/json;charset=UTF-8"))
+                .andExpect(header().string("Cache-Control", "no-cache"))
+                .andExpect(content().string(containsString("\"infoCache\":")));
     }
 
     @Test
@@ -92,53 +99,13 @@ public class StatusControllerTest {
     }
 
 
-    // @Test
-    // void testGETWhenEnabled() throws Exception {
-    //     Configuration config = Configuration.getInstance();
-    //     config.setProperty(Key.ADMIN_ENABLED, true);
+    @Test
+    void testGETWhenDisabled() throws Exception {
+        when(configuration.getBoolean(Key.ADMIN_ENABLED, false)).thenReturn(false);
 
-    //     Response response = client.send();
-    //     assertEquals(200, response.getStatus());
-    // }
-
-    // @Test
-    // void testGETWhenDisabled() throws Exception {
-    //     Configuration config = Configuration.getInstance();
-    //     config.setProperty(Key.ADMIN_ENABLED, false);
-    //     try {
-    //         client.send();
-    //         fail("Expected exception");
-    //     } catch (ResourceException e) {
-    //         assertEquals(403, e.getStatusCode());
-    //     }
-    // }
-
-    // @Test
-    // void testGETResponseBody() throws Exception {
-    //     Response response = client.send();
-    //     assertTrue(response.getBodyAsString().contains("\"infoCache\":"));
-    // }
-
-    // @Test
-    // void testGETResponseHeaders() throws Exception {
-    //     Response response = client.send();
-    //     Headers headers = response.getHeaders();
-    //     assertEquals(6, headers.size());
-
-    //     // Cache-Control
-    //     assertEquals("no-cache", headers.getFirstValue("Cache-Control"));
-    //     // Content-Length
-    //     assertNotNull(headers.getFirstValue("Content-Length"));
-    //     // Content-Type
-    //     assertTrue("application/json;charset=UTF-8".equalsIgnoreCase(
-    //             headers.getFirstValue("Content-Type")));
-    //     // Date
-    //     assertNotNull(headers.getFirstValue("Date"));
-    //     // Server
-    //     assertNotNull(headers.getFirstValue("Server"));
-    //     // X-Powered-By
-    //     assertEquals(Application.getName() + "/" + Application.getVersion(),
-    //             headers.getFirstValue("X-Powered-By"));
-    // }
-
+        String validAuth = Base64.getEncoder().encodeToString("admin:secret".getBytes());
+        mockMvc.perform(get("/status")
+                .header("Authorization", "Basic " + validAuth))
+                .andExpect(status().isForbidden());
+    }
 }
