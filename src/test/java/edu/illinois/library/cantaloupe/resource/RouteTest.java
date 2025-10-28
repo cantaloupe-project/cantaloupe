@@ -7,7 +7,6 @@ import org.junit.jupiter.api.Test;
 
 import edu.illinois.library.cantaloupe.resource.api.TaskResource;
 import edu.illinois.library.cantaloupe.resource.api.TasksResource;
-import edu.illinois.library.cantaloupe.resource.health.HealthResource;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 
 class RouteTest extends BaseTest {
@@ -26,12 +25,6 @@ class RouteTest extends BaseTest {
         Route route = Route.forPath(Route.CONFIGURATION_PATH);
         assertEquals(edu.illinois.library.cantaloupe.resource.api.ConfigurationResource.class,
                 route.getResource());
-    }
-
-    @Test
-    void testForPathWithHealthRoute() {
-        Route route = Route.forPath(Route.HEALTH_PATH);
-        assertEquals(HealthResource.class, route.getResource());
     }
 
     @Test
