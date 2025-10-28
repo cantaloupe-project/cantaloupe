@@ -37,19 +37,19 @@ public class StatusControllerTest {
         System.setProperty(ConfigurationFactory.CONFIG_VM_ARGUMENT, "memory");
         System.setProperty(Application.TEST_VM_ARGUMENT, "true");
 
-        when(configuration.getBoolean(Key.ADMIN_ENABLED, false)).thenReturn(true);
+        when(configuration.getBoolean(Key.API_ENABLED, false)).thenReturn(true);
 
 
         // Set up basic auth credentials for tests
-        when(configuration.getString(Key.ADMIN_USERNAME, "")).thenReturn("admin");
-        when(configuration.getString(Key.ADMIN_SECRET)).thenReturn("secret");
+        when(configuration.getString(Key.API_USERNAME, "")).thenReturn("admin");
+        when(configuration.getString(Key.API_SECRET)).thenReturn("secret");
     }
 
     @Test
     void testGETWithNoCredentials() throws Exception {
         mockMvc.perform(get("/status"))
                 .andExpect(status().isUnauthorized())
-                .andExpect(header().string("WWW-Authenticate", "Basic realm=\"" + Application.getName() + " Control Panel\" charset=\"UTF-8\""));
+                .andExpect(header().string("WWW-Authenticate", "Basic realm=\"" + Application.getName() + " API Realm\" charset=\"UTF-8\""));
     }
 
     @Test
@@ -58,7 +58,7 @@ public class StatusControllerTest {
         mockMvc.perform(get("/status")
                 .header("Authorization", "Basic " + invalidAuth))
                 .andExpect(status().isUnauthorized())
-                .andExpect(header().string("WWW-Authenticate", "Basic realm=\"" + Application.getName() + " Control Panel\" charset=\"UTF-8\""));
+                .andExpect(header().string("WWW-Authenticate", "Basic realm=\"" + Application.getName() + " API Realm\" charset=\"UTF-8\""));
     }
 
     @Test
@@ -76,7 +76,7 @@ public class StatusControllerTest {
     void testOPTIONSWithNoCredentials() throws Exception {
         mockMvc.perform(options("/status"))
                 .andExpect(status().isUnauthorized())
-                .andExpect(header().string("WWW-Authenticate", "Basic realm=\"" + Application.getName() + " Control Panel\" charset=\"UTF-8\""));
+                .andExpect(header().string("WWW-Authenticate", "Basic realm=\"" + Application.getName() + " API Realm\" charset=\"UTF-8\""));
     }
 
     @Test
@@ -90,18 +90,18 @@ public class StatusControllerTest {
 
     @Test
     void testGETWithNoConfiguredCredentials() throws Exception {
-        when(configuration.getString(Key.ADMIN_USERNAME, "")).thenReturn("");
-        when(configuration.getString(Key.ADMIN_SECRET, "")).thenReturn("");
+        when(configuration.getString(Key.API_USERNAME, "")).thenReturn("");
+        when(configuration.getString(Key.API_SECRET, "")).thenReturn("");
 
         mockMvc.perform(get("/status"))
                 .andExpect(status().isUnauthorized())
-                .andExpect(header().string("WWW-Authenticate", "Basic realm=\"" + Application.getName() + " Control Panel\" charset=\"UTF-8\""));
+                .andExpect(header().string("WWW-Authenticate", "Basic realm=\"" + Application.getName() + " API Realm\" charset=\"UTF-8\""));
     }
 
 
     @Test
     void testGETWhenDisabled() throws Exception {
-        when(configuration.getBoolean(Key.ADMIN_ENABLED, false)).thenReturn(false);
+        when(configuration.getBoolean(Key.API_ENABLED, false)).thenReturn(false);
 
         String validAuth = Base64.getEncoder().encodeToString("admin:secret".getBytes());
         mockMvc.perform(get("/status")
