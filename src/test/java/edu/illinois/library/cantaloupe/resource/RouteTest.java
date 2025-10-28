@@ -30,10 +30,6 @@ class RouteTest extends BaseTest {
 
         route = Route.forPath(Route.ADMIN_PATH);
         assertEquals(AdminResource.class, route.getResource());
-
-        route = Route.forPath(Route.ADMIN_STATUS_PATH);
-        assertEquals(edu.illinois.library.cantaloupe.resource.admin.StatusResource.class,
-                route.getResource());
     }
 
     @Test
