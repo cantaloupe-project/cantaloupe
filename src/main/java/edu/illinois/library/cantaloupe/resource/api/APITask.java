@@ -1,22 +1,23 @@
 package edu.illinois.library.cantaloupe.resource.api;
 
-import com.fasterxml.jackson.annotation.JsonGetter;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import edu.illinois.library.cantaloupe.async.AuditableFutureTask;
-
 import java.util.concurrent.Callable;
 
-class APITask<T> extends AuditableFutureTask<T> {
+import com.fasterxml.jackson.annotation.JsonGetter;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
+import edu.illinois.library.cantaloupe.async.AuditableFutureTask;
+
+public class APITask<T> extends AuditableFutureTask<T> {
 
     private String verb;
 
-    APITask(Callable<T> callable) {
+    public APITask(Callable<T> callable) {
         super(callable);
         setVerb(((Command) callable).getVerb());
     }
 
     @JsonGetter
-    String getVerb() {
+    public String getVerb() {
         return verb;
     }
 
