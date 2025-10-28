@@ -21,13 +21,6 @@ class RouteTest extends BaseTest {
     }
 
     @Test
-    void testForPathWithConfigurationRoute() {
-        Route route = Route.forPath(Route.CONFIGURATION_PATH);
-        assertEquals(edu.illinois.library.cantaloupe.resource.api.ConfigurationResource.class,
-                route.getResource());
-    }
-
-    @Test
     void testForPathWithTasksRoutes() {
         Route route = Route.forPath(Route.TASKS_PATH);
         assertEquals(TasksResource.class, route.getResource());
