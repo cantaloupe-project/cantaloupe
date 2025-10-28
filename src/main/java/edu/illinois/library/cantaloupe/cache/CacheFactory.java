@@ -88,7 +88,7 @@ public final class CacheFactory {
                             try {
                                 Class<?> implClass = Class.forName(qualifiedName);
                                 cache = (DerivativeCache)
-                                        implClass.getDeclaredConstructor().newInstance();
+                                        implClass.getDeclaredConstructor(Configuration.class).newInstance(configuration);
                                 setDerivativeCache(cache);
                             } catch (ClassNotFoundException e) {
                                 cache = null;

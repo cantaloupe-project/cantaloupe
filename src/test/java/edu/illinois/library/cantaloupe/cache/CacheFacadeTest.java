@@ -173,9 +173,13 @@ public class CacheFacadeTest extends BaseTest {
     @Test
     void testIsInfoCacheAvailable() {
         enableInfoCache();
+        InfoService.clearInstance();
+        instance = new CacheFacade(config);
         assertTrue(instance.isInfoCacheAvailable());
 
         disableInfoCache();
+        InfoService.clearInstance();
+        instance = new CacheFacade(config);
         assertFalse(instance.isInfoCacheAvailable());
     }
 
