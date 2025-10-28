@@ -5,21 +5,9 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 
 import org.junit.jupiter.api.Test;
 
-import edu.illinois.library.cantaloupe.resource.api.TaskResource;
-import edu.illinois.library.cantaloupe.resource.api.TasksResource;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 
 class RouteTest extends BaseTest {
-    @Test
-    void testForPathWithTasksRoutes() {
-        Route route = Route.forPath(Route.TASKS_PATH);
-        assertEquals(TasksResource.class, route.getResource());
-
-        route = Route.forPath(Route.TASKS_PATH + "/0bef-234a");
-        assertEquals(TaskResource.class, route.getResource());
-        assertEquals("0bef-234a", route.getPathArguments().get(0));
-    }
-
     @Test
     void testForPathWithRootIIIFRoute() {
         Route route = Route.forPath("/iiif/");

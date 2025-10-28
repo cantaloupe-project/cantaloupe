@@ -19,7 +19,6 @@ public final class Route {
     public static final String IIIF_1_PATH        = "/iiif/1";
     public static final String IIIF_2_PATH        = "/iiif/2";
     public static final String IIIF_3_PATH        = "/iiif/3";
-    public static final String TASKS_PATH         = "/tasks";
 
     /**
      * N.B.: the {@link LinkedHashMap} preserves order as each mapping will be
@@ -77,11 +76,6 @@ public final class Route {
                 new RouteEntry(edu.illinois.library.cantaloupe.resource.iiif.v1.ImageResource.class, IIIFRequest.class));
         MAPPINGS.put(Pattern.compile("^" + IIIF_1_PATH + "/([^/]+)/([^/]+)/([^/]+)/([^/]+)/([^/.]+)\\.([^/]+)$"),
                 new RouteEntry(edu.illinois.library.cantaloupe.resource.iiif.v1.ImageResource.class, IIIFRequest.class));
-
-        MAPPINGS.put(Pattern.compile("^" + TASKS_PATH + "$"),
-                new RouteEntry(edu.illinois.library.cantaloupe.resource.api.TasksResource.class, Request.class));
-        MAPPINGS.put(Pattern.compile("^" + TASKS_PATH + "/([^/]+)$"),
-                new RouteEntry(edu.illinois.library.cantaloupe.resource.api.TaskResource.class, Request.class));
     }
 
     /**
