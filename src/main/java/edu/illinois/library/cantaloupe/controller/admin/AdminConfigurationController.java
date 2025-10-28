@@ -14,9 +14,16 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
+import edu.illinois.library.cantaloupe.Application;
+import edu.illinois.library.cantaloupe.auth.BasicAuth;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationProvider;
 import edu.illinois.library.cantaloupe.config.FileConfiguration;
+import edu.illinois.library.cantaloupe.config.Key;
+import edu.illinois.library.cantaloupe.config.MapConfiguration;
+import edu.illinois.library.cantaloupe.resource.EndpointDisabledException;
+import edu.illinois.library.cantaloupe.resource.ResourceException;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 /**
@@ -27,6 +34,7 @@ import jakarta.servlet.http.HttpServletResponse;
 @RequestMapping("/admin/configuration")
 public class AdminConfigurationController {
     private final Configuration configuration;
+    static final String BASIC_REALM = Application.getName() + " Control Panel";
 
     @Autowired
     public AdminConfigurationController(Configuration configuration ) {
@@ -38,8 +46,11 @@ public class AdminConfigurationController {
      * <strong>This may contain sensitive info and must be protected.</strong>
      */
     @GetMapping
-    public ResponseEntity<Map<String, Object>> getConfiguration(HttpServletResponse response) {
+    public ResponseEntity<Map<String, Object>> getConfiguration(HttpServletRequest request, HttpServletResponse response) throws ResourceException {
+        beforeAll(request, response);
+        
         response.setHeader("Content-Type", "application/json;charset=UTF-8");
+        response.setHeader("Cache-Control", "no-cache");
 
         Map<String, Object> map = Collections.emptyMap();
         final ConfigurationProvider provider = (ConfigurationProvider) configuration;
@@ -48,7 +59,8 @@ public class AdminConfigurationController {
         for (Configuration config : wrappedConfigs) {
             if (config instanceof FileConfiguration) {
                 map = ((FileConfiguration) config).toMap();
-                break;
+            } else if (config instanceof MapConfiguration) {
+                map = ((MapConfiguration) config).getBackingMap();
             }
         }
 
@@ -58,10 +70,15 @@ public class AdminConfigurationController {
     /**
      * Deserializes submitted JSON data and updates the application
      * configuration instance with it.
+     * @throws ResourceException 
+     * @throws IOException 
      */
     @PutMapping
-    public ResponseEntity<Void> updateConfiguration(@RequestBody Map<String, Object> submittedConfig)
-            throws IOException {
+    public ResponseEntity<Void> updateConfiguration(@RequestBody Map<String, Object> submittedConfig,
+                                                   HttpServletRequest request,
+                                                   HttpServletResponse response)
+            throws IOException, ResourceException {
+        beforeAll(request, response);
 
         // Copy configuration keys and values from the request JSON payload to
         // the application configuration.
@@ -74,9 +91,25 @@ public class AdminConfigurationController {
     }
 
     @RequestMapping(value = "", method = RequestMethod.OPTIONS)
-    public ResponseEntity<Void> options() {
+    public ResponseEntity<Void> options(HttpServletRequest request, HttpServletResponse response) throws ResourceException {
+        beforeAll(request, response);
+
         return ResponseEntity.noContent()
                 .header("Allow", "GET,PUT,OPTIONS")
                 .build();
+    }
+
+    private void beforeAll(HttpServletRequest request, HttpServletResponse response) throws ResourceException {
+        if (!configuration.getBoolean(Key.ADMIN_ENABLED, false)) {
+            throw new EndpointDisabledException();
+        }
+        // Perform HTTP Basic Authentication
+        BasicAuth.authenticateUsingBasic(BASIC_REALM, user -> {
+            final String configUser = configuration.getString(Key.ADMIN_USERNAME, "");
+            if (!configUser.isEmpty() && configUser.equals(user)) {
+                return configuration.getString(Key.ADMIN_SECRET);
+            }
+            return null;
+        }, request, response);
     }
 }

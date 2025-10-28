@@ -34,7 +34,7 @@ import jakarta.servlet.http.HttpServletResponse;
 @RequestMapping("/configuration")
 public class ConfigurationController {
 
-    static final String BASIC_REALM = Application.getName() + " Control Panel";
+    static final String BASIC_REALM = Application.getName() + " API Realm";
 
     private final Configuration configuration;
 
@@ -103,14 +103,14 @@ public class ConfigurationController {
     }
 
     private void beforeAll(HttpServletRequest request, HttpServletResponse response) throws ResourceException {
-        if (!configuration.getBoolean(Key.ADMIN_ENABLED, false)) {
+        if (!configuration.getBoolean(Key.API_ENABLED, false)) {
             throw new EndpointDisabledException();
         }
         // Perform HTTP Basic Authentication
         BasicAuth.authenticateUsingBasic(BASIC_REALM, user -> {
-            final String configUser = configuration.getString(Key.ADMIN_USERNAME, "");
+            final String configUser = configuration.getString(Key.API_USERNAME, "");
             if (!configUser.isEmpty() && configUser.equals(user)) {
-                return configuration.getString(Key.ADMIN_SECRET);
+                return configuration.getString(Key.API_SECRET);
             }
             return null;
         }, request, response);
