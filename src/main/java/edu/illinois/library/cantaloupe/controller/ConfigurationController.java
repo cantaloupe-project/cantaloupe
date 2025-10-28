@@ -20,6 +20,8 @@ import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationProvider;
 import edu.illinois.library.cantaloupe.config.FileConfiguration;
 import edu.illinois.library.cantaloupe.config.Key;
+import edu.illinois.library.cantaloupe.config.MapConfiguration;
+import edu.illinois.library.cantaloupe.resource.EndpointDisabledException;
 import edu.illinois.library.cantaloupe.resource.ResourceException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -48,16 +50,10 @@ public class ConfigurationController {
      */
     @GetMapping
     public ResponseEntity<Map<String, Object>> getConfiguration(HttpServletRequest request, HttpServletResponse response) throws ResourceException {
-        // Perform HTTP Basic Authentication
-       BasicAuth.authenticateUsingBasic(BASIC_REALM, user -> {
-            final String configUser = configuration.getString(Key.ADMIN_USERNAME, "");
-            if (!configUser.isEmpty() && configUser.equals(user)) {
-                return configuration.getString(Key.ADMIN_SECRET);
-            }
-            return null;
-        }, request, response);
+        beforeAll(request, response);
 
         response.setHeader("Content-Type", "application/json;charset=UTF-8");
+        response.setHeader("Cache-Control", "no-cache");
 
         Map<String, Object> map = Collections.emptyMap();
         final ConfigurationProvider provider = (ConfigurationProvider) configuration;
@@ -66,7 +62,8 @@ public class ConfigurationController {
         for (Configuration config : wrappedConfigs) {
             if (config instanceof FileConfiguration) {
                 map = ((FileConfiguration) config).toMap();
-                break;
+            } else if (config instanceof MapConfiguration) {
+                map = ((MapConfiguration) config).getBackingMap();
             }
         }
 
@@ -83,14 +80,8 @@ public class ConfigurationController {
                                                    HttpServletRequest request,
                                                    HttpServletResponse response)
             throws IOException, ResourceException {
-        // Perform HTTP Basic Authentication
-        BasicAuth.authenticateUsingBasic(BASIC_REALM, user -> {
-            final String configUser = configuration.getString(Key.ADMIN_USERNAME, "");
-            if (!configUser.isEmpty() && configUser.equals(user)) {
-                return configuration.getString(Key.ADMIN_SECRET);
-            }
-            return null;
-        }, request, response);
+        beforeAll(request, response);
+
 
         // Copy configuration keys and values from the request JSON payload to
         // the application configuration.
@@ -104,6 +95,17 @@ public class ConfigurationController {
 
     @RequestMapping(value = "", method = RequestMethod.OPTIONS)
     public ResponseEntity<Void> options(HttpServletRequest request, HttpServletResponse response) throws ResourceException {
+        beforeAll(request, response);
+        
+        return ResponseEntity.noContent()
+                .header("Allow", "GET,PUT,OPTIONS")
+                .build();
+    }
+
+    private void beforeAll(HttpServletRequest request, HttpServletResponse response) throws ResourceException {
+        if (!configuration.getBoolean(Key.ADMIN_ENABLED, false)) {
+            throw new EndpointDisabledException();
+        }
         // Perform HTTP Basic Authentication
         BasicAuth.authenticateUsingBasic(BASIC_REALM, user -> {
             final String configUser = configuration.getString(Key.ADMIN_USERNAME, "");
@@ -112,9 +114,5 @@ public class ConfigurationController {
             }
             return null;
         }, request, response);
-        
-        return ResponseEntity.noContent()
-                .header("Allow", "GET,PUT,OPTIONS")
-                .build();
     }
 }
