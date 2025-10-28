@@ -154,7 +154,7 @@ public class ImageController extends AbstractIIIFController {
                 final Dimension virtualSize = orientation.adjustedSize(info.getSize(pageIndex));
                 final Dimension resultingSize = ops.getResultingSize(info.getSize(pageIndex));
                 validateScale(virtualSize, scale, params.getSize().isUpscalingAllowed(), iiifrequest);
-                ScaleValidator.validateScale(virtualSize, scale, Status.BAD_REQUEST, iiifrequest.getMetaIdentifier());
+                ScaleValidator.validateScale(configuration, virtualSize, scale, Status.BAD_REQUEST, iiifrequest.getMetaIdentifier());
                 validateSize(virtualSize, resultingSize);
 
                 sendHeaders(headers, response, iiifrequest);
@@ -228,7 +228,7 @@ public class ImageController extends AbstractIIIFController {
     }
 
     private double getMaxScale() {
-        return configuration.getDouble(Key.MAX_SCALE, 1);
+        return configuration.getDouble(Key.MAX_SCALE, 1.0);
     }
 
     /**

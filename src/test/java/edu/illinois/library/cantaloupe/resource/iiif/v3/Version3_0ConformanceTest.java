@@ -64,8 +64,6 @@ import edu.illinois.library.cantaloupe.util.StringUtils;
 })
 public class Version3_0ConformanceTest {
 
-
-
     private static final String IMAGE = "jpg-rgb-64x56x8-baseline.jpg";
 
     @Autowired
@@ -92,6 +90,7 @@ public class Version3_0ConformanceTest {
         when(configuration.getBoolean(Key.DELEGATE_SCRIPT_ENABLED, false)).thenReturn(true);
         when(configuration.getString(Key.DELEGATE_SCRIPT_PATHNAME, "")).thenReturn(TestUtil.getFixture("delegates.rb").toString());
         when(configuration.getString(Key.PROCESSOR_SELECTION_STRATEGY, "")).thenReturn("ManualSelectionStrategy");
+        when(configuration.getString("processor.ManualSelectionStrategy.jpg")).thenReturn("Java2dProcessor");
         when(configuration.getString("processor.ManualSelectionStrategy.pdf")).thenReturn("PdfBoxProcessor");
         when(configuration.getString(Key.PROCESSOR_FALLBACK, "")).thenReturn("Java2dProcessor");
         when(configuration.getString(Key.SOURCE_STATIC)).thenReturn("FilesystemSource");
@@ -100,6 +99,8 @@ public class Version3_0ConformanceTest {
         when(configuration.getString(Key.FILESYSTEMSOURCE_PATH_SUFFIX, "")).thenReturn("");
         when(configuration.getString(Key.BASE_URI, "")).thenReturn("");
         when(configuration.getString(Key.SLASH_SUBSTITUTE, "")).thenReturn("");
+        when(configuration.getString(Key.DERIVATIVE_CACHE, "")).thenReturn("");
+        when(configuration.getString(Key.SOURCE_CACHE, "")).thenReturn("");
     }
 
     /**
@@ -253,7 +254,7 @@ public class Version3_0ConformanceTest {
     void testMaxSizeUpscaled() throws Exception {
         when(configuration.getDouble(Key.MAX_SCALE, 0.0)).thenReturn(999.0);
 
-        MvcResult result = mockMvc.perform(get("/iiif/3/{identifier}/full/%5Emax/0/default.jpg", IMAGE))
+        MvcResult result = mockMvc.perform(get("/iiif/3/{identifier}/full/^max/0/default.jpg", IMAGE))
                 .andExpect(status().isOk())
                 .andReturn();
 
@@ -290,7 +291,7 @@ public class Version3_0ConformanceTest {
     void testSizeUpscaledToFitWidth() throws Exception {
         when(configuration.getDouble(Key.MAX_SCALE, 0.0)).thenReturn(999.0);
 
-        MvcResult result = mockMvc.perform(get("/iiif/3/{identifier}/full/%5E100,/0/default.jpg", IMAGE))
+        MvcResult result = mockMvc.perform(get("/iiif/3/{identifier}/full/^100,/0/default.jpg", IMAGE))
                 .andExpect(status().isOk())
                 .andReturn();
 
@@ -298,7 +299,7 @@ public class Version3_0ConformanceTest {
         try (InputStream is = new ByteArrayInputStream(imageBytes)) {
             BufferedImage image = ImageIO.read(is);
             assertEquals(100, image.getWidth());
-            assertEquals(87, image.getHeight()); // Maintains aspect ratio
+            assertEquals(88, image.getHeight()); // Maintains aspect ratio
         }
     }
 
@@ -307,9 +308,9 @@ public class Version3_0ConformanceTest {
      */
     @Test
     void testSizeUpscaledToFitWidthWithoutServerSupport() throws Exception {
-        when(configuration.getDouble(Key.MAX_SCALE, 0.0)).thenReturn(1.0);
+        when(configuration.getDouble(Key.MAX_SCALE, 1.0)).thenReturn(1.0);
 
-        mockMvc.perform(get("/iiif/3/{identifier}/full/%5E100,/0/default.jpg", IMAGE))
+        mockMvc.perform(get("/iiif/3/{identifier}/full/^100,/0/default.jpg", IMAGE))
                 .andExpect(status().isBadRequest());
     }
 
@@ -337,15 +338,15 @@ public class Version3_0ConformanceTest {
     void testSizeUpscaledToFitHeight() throws Exception {
         when(configuration.getDouble(Key.MAX_SCALE, 0.0)).thenReturn(999.0);
 
-        MvcResult result = mockMvc.perform(get("/iiif/3/{identifier}/full/,%5E80/0/default.jpg", IMAGE))
+        MvcResult result = mockMvc.perform(get("/iiif/3/{identifier}/full/^,100/0/default.jpg", IMAGE))
                 .andExpect(status().isOk())
                 .andReturn();
 
         byte[] imageBytes = result.getResponse().getContentAsByteArray();
         try (InputStream is = new ByteArrayInputStream(imageBytes)) {
             BufferedImage image = ImageIO.read(is);
-            assertEquals(91, image.getWidth()); // Maintains aspect ratio
-            assertEquals(80, image.getHeight());
+            assertEquals(114, image.getWidth()); // Maintains aspect ratio
+            assertEquals(100, image.getHeight());
         }
     }
 
@@ -356,7 +357,7 @@ public class Version3_0ConformanceTest {
     void testSizeUpscaledToFitHeightWithoutServerSupport() throws Exception {
         when(configuration.getDouble(Key.MAX_SCALE, 0.0)).thenReturn(1.0);
 
-        mockMvc.perform(get("/iiif/3/{identifier}/full/,%5E80/0/default.jpg", IMAGE))
+        mockMvc.perform(get("/iiif/3/{identifier}/full/,^80/0/default.jpg", IMAGE))
                 .andExpect(status().isBadRequest());
     }
 
@@ -384,15 +385,15 @@ public class Version3_0ConformanceTest {
     void testSizeUpscaledToPercent() throws Exception {
         when(configuration.getDouble(Key.MAX_SCALE, 0.0)).thenReturn(999.0);
 
-        MvcResult result = mockMvc.perform(get("/iiif/3/{identifier}/full/pct:150/0/default.jpg", IMAGE))
+        MvcResult result = mockMvc.perform(get("/iiif/3/{identifier}/full/^pct:110/0/color.jpg", IMAGE))
                 .andExpect(status().isOk())
                 .andReturn();
 
         byte[] imageBytes = result.getResponse().getContentAsByteArray();
         try (InputStream is = new ByteArrayInputStream(imageBytes)) {
             BufferedImage image = ImageIO.read(is);
-            assertEquals(96, image.getWidth());
-            assertEquals(84, image.getHeight());
+            assertEquals(70, image.getWidth());
+            assertEquals(62, image.getHeight());
         }
     }
 
@@ -431,7 +432,7 @@ public class Version3_0ConformanceTest {
     void testUpscaleToAbsoluteWidthAndHeight() throws Exception {
         when(configuration.getDouble(Key.MAX_SCALE, 0.0)).thenReturn(999.0);
 
-        MvcResult result = mockMvc.perform(get("/iiif/3/{identifier}/full/%5E100,80/0/default.jpg", IMAGE))
+        MvcResult result = mockMvc.perform(get("/iiif/3/{identifier}/full/^100,80/0/default.jpg", IMAGE))
                 .andExpect(status().isOk())
                 .andReturn();
 
@@ -448,9 +449,9 @@ public class Version3_0ConformanceTest {
      */
     @Test
     void testUpscaleToAbsoluteWidthAndHeightWithoutServerSupport() throws Exception {
-        when(configuration.getDouble(Key.MAX_SCALE, 0.0)).thenReturn(1.0);
+        when(configuration.getDouble(Key.MAX_SCALE, 1.0)).thenReturn(1.0);
 
-        mockMvc.perform(get("/iiif/3/{identifier}/full/%5E100,80/0/default.jpg", IMAGE))
+        mockMvc.perform(get("/iiif/3/{identifier}/full/^100,80/0/default.jpg", IMAGE))
                 .andExpect(status().isBadRequest());
     }
 
@@ -479,7 +480,7 @@ public class Version3_0ConformanceTest {
     void testSizeUpscaledToFitInside() throws Exception {
         when(configuration.getDouble(Key.MAX_SCALE, 0.0)).thenReturn(999.0);
 
-        MvcResult result = mockMvc.perform(get("/iiif/3/{identifier}/full/%5E!150,150/0/default.jpg", IMAGE))
+        MvcResult result = mockMvc.perform(get("/iiif/3/{identifier}/full/^!150,150/0/default.jpg", IMAGE))
                 .andExpect(status().isOk())
                 .andReturn();
 
@@ -498,9 +499,9 @@ public class Version3_0ConformanceTest {
      */
     @Test
     void testSizeUpscaledToFitInsideWithoutServerSupport() throws Exception {
-        when(configuration.getDouble(Key.MAX_SCALE, 0.0)).thenReturn(1.0);
+        when(configuration.getDouble(Key.MAX_SCALE, 1.0)).thenReturn(1.0);
 
-        mockMvc.perform(get("/iiif/3/{identifier}/full/%5E!150,150/0/default.jpg", IMAGE))
+        mockMvc.perform(get("/iiif/3/{identifier}/full/^!150,150/0/default.jpg", IMAGE))
                 .andExpect(status().isBadRequest());
     }
 
