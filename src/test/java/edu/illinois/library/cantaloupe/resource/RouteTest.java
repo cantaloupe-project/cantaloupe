@@ -10,16 +10,6 @@ import edu.illinois.library.cantaloupe.resource.api.TasksResource;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 
 class RouteTest extends BaseTest {
-
-    @Test
-    void testForPathWithRootRoutes() {
-        Route route = Route.forPath("");
-        assertEquals(LandingResource.class, route.getResource());
-
-        route = Route.forPath("/");
-        assertEquals(LandingResource.class, route.getResource());
-    }
-
     @Test
     void testForPathWithTasksRoutes() {
         Route route = Route.forPath(Route.TASKS_PATH);

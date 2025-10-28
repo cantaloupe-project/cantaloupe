@@ -53,10 +53,6 @@ public final class Route {
     static {
 
         // N.B.: Regex groups are used to extract the URI path arguments.
-        MAPPINGS.put(Pattern.compile("\\A\\z"),
-                new RouteEntry(LandingResource.class, Request.class));
-        MAPPINGS.put(Pattern.compile("^/$"),
-                new RouteEntry(LandingResource.class, Request.class));
         MAPPINGS.put(Pattern.compile("/$"),
                 new RouteEntry(TrailingSlashRemovingResource.class, Request.class));
 
