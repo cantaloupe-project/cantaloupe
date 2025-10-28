@@ -5,7 +5,6 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 
 import org.junit.jupiter.api.Test;
 
-import edu.illinois.library.cantaloupe.resource.admin.AdminResource;
 import edu.illinois.library.cantaloupe.resource.api.TaskResource;
 import edu.illinois.library.cantaloupe.resource.api.TasksResource;
 import edu.illinois.library.cantaloupe.resource.health.HealthResource;
@@ -27,9 +26,6 @@ class RouteTest extends BaseTest {
         Route route = Route.forPath(Route.ADMIN_CONFIG_PATH);
         assertEquals(edu.illinois.library.cantaloupe.resource.admin.ConfigurationResource.class,
                 route.getResource());
-
-        route = Route.forPath(Route.ADMIN_PATH);
-        assertEquals(AdminResource.class, route.getResource());
     }
 
     @Test
