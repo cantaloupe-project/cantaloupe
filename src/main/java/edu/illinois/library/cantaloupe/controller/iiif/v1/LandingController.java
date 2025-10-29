@@ -1,4 +1,4 @@
-package edu.illinois.library.cantaloupe.controller.iiif.v2;
+package edu.illinois.library.cantaloupe.controller.iiif.v1;
 
 import java.net.URI;
 import java.util.Collections;
@@ -20,11 +20,11 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 /**
- * Spring Boot controller for IIIF Image API 2.x landing page.
- * Replaces the previous iiif.v2.LandingResource class.
+ * Spring Boot controller for IIIF Image API 1.x landing page.
+ * Replaces the previous iiif.v1.LandingResource class.
  */
-@Controller("v2LandingController")
-@RequestMapping("/iiif/2")
+@Controller("v1LandingController")
+@RequestMapping("/iiif/1")
 public class LandingController extends AbstractIIIFController {
 
     @Autowired
@@ -33,7 +33,7 @@ public class LandingController extends AbstractIIIFController {
     }
 
     @GetMapping
-    public String iiif2Landing(Model model, HttpServletRequest request, HttpServletResponse response) throws EndpointDisabledException {
+    public String iiif1Landing(Model model, HttpServletRequest request, HttpServletResponse response) throws EndpointDisabledException {
         checkEndpointEnabled();
 
         response.setHeader("Content-Type", "text/html;charset=UTF-8");
@@ -42,7 +42,7 @@ public class LandingController extends AbstractIIIFController {
         Request requestWrapper = new Request(request, Collections.emptyList(), configuration);
         model.addAllAttributes(TemplateVariables.getDefault(requestWrapper).getVars());
 
-        return "iiif_2_landing";
+        return "iiif_1_landing";
     }
 
     @GetMapping("/")
@@ -50,7 +50,7 @@ public class LandingController extends AbstractIIIFController {
                                                HttpServletResponse response) throws EndpointDisabledException {
         checkEndpointEnabled();
         return ResponseEntity.status(HttpStatus.SEE_OTHER)
-                .location(URI.create(request.getContextPath() + "/iiif/2"))
+                .location(URI.create(request.getContextPath() + "/iiif/1"))
                 .build();
     }
 
