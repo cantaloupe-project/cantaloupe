@@ -1,5 +1,7 @@
 package edu.illinois.library.cantaloupe.resource.iiif.v1;
 
+import org.apache.commons.lang3.StringUtils;
+
 import edu.illinois.library.cantaloupe.delegate.DelegateProxy;
 import edu.illinois.library.cantaloupe.http.Reference;
 import edu.illinois.library.cantaloupe.image.Format;
@@ -8,7 +10,6 @@ import edu.illinois.library.cantaloupe.operation.Encode;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.resource.IllegalClientArgumentException;
 import edu.illinois.library.cantaloupe.resource.iiif.FormatException;
-import org.apache.commons.lang3.StringUtils;
 
 /**
  * Encapsulates the parameters of a request URI.
@@ -73,7 +74,7 @@ public final class Parameters {
      * @throws IllegalClientArgumentException if any of the other arguments are
      *         invalid.
      */
-    Parameters(String identifier,
+    public Parameters(String identifier,
                String region,
                String size,
                String rotation,
@@ -164,7 +165,7 @@ public final class Parameters {
      *         additional operations that may need to be performed, such as
      *         overlays, etc.
      */
-    OperationList toOperationList(DelegateProxy delegateProxy) {
+    public OperationList toOperationList(DelegateProxy delegateProxy) {
         final OperationList ops = new OperationList(
                 MetaIdentifier.fromString(getIdentifier(), delegateProxy));
         if (!getRegion().isFull()) {

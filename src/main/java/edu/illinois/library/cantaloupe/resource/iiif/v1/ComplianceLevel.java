@@ -1,15 +1,15 @@
 package edu.illinois.library.cantaloupe.resource.iiif.v1;
 
-import edu.illinois.library.cantaloupe.image.Format;
-
 import java.util.HashSet;
 import java.util.Set;
+
+import edu.illinois.library.cantaloupe.image.Format;
 
 /**
  * @see <a href="http://iiif.io/api/image/1.1/compliance.html">Compliance
  * Levels</a>
  */
-enum ComplianceLevel {
+public enum ComplianceLevel {
 
     LEVEL_0("http://library.stanford.edu/iiif/image-api/1.1/compliance.html#level0"),
     LEVEL_1("http://library.stanford.edu/iiif/image-api/1.1/compliance.html#level1"),
