@@ -15,7 +15,7 @@ import edu.illinois.library.cantaloupe.util.StringUtils;
  */
 public class Size {
 
-    enum ScaleMode {
+    public enum ScaleMode {
 
         /**
          * Represents a size argument in {@literal ,h} format.
@@ -124,7 +124,7 @@ public class Size {
         return percent;
     }
 
-    ScaleMode getScaleMode() {
+    public ScaleMode getScaleMode() {
         return scaleMode;
     }
 
