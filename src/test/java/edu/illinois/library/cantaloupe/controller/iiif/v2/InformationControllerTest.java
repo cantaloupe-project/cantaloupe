@@ -24,8 +24,6 @@ import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
@@ -60,12 +58,8 @@ class InformationControllerTest {
     @MockitoBean
     private Configuration configuration;
 
-    private ObjectMapper objectMapper;
-
     @BeforeEach
     void setUp() throws Exception {
-        objectMapper = new ObjectMapper();
-
         // Set up configuration system properties
         ConfigurationFactory.clearInstance();
         System.setProperty(ConfigurationFactory.CONFIG_VM_ARGUMENT, "memory");
