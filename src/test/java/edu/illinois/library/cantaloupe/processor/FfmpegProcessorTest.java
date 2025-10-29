@@ -152,7 +152,7 @@ public class FfmpegProcessorTest extends AbstractProcessorTest {
         Dimension fullSize = new Dimension(1000, 1000);
 
         assertThrows(IllegalArgumentException.class,
-                () -> instance.validate(ops, fullSize));
+                () -> instance.validate(ops, fullSize, Configuration.getInstance()));
     }
 
 }

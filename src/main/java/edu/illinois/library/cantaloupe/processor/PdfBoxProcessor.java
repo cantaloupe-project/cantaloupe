@@ -290,9 +290,9 @@ class PdfBoxProcessor extends AbstractProcessor
     }
 
     @Override
-    public void validate(OperationList opList, Dimension fullSize)
+    public void validate(OperationList opList, Dimension fullSize, Configuration configuration)
             throws ValidationException, ProcessorException, OutputFormatException {
-        StreamProcessor.super.validate(opList, fullSize);
+        StreamProcessor.super.validate(opList, fullSize, configuration);
 
         // Ensure that the page is contained in the PDF.
         final int pageIndex = opList.getPageIndex();

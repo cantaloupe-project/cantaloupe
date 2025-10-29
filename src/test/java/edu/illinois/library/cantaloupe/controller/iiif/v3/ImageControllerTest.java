@@ -99,6 +99,7 @@ class ImageControllerTest {
         when(configuration.getString("processor.ManualSelectionStrategy.webp")).thenReturn("Java2dProcessor");
         when(configuration.getString("processor.ManualSelectionStrategy.pdf")).thenReturn("PdfBoxProcessor");
         when(configuration.getString(Key.PROCESSOR_FALLBACK, "")).thenReturn("Java2dProcessor");
+        when(configuration.getInt(Key.PROCESSOR_JPG_QUALITY, 80)).thenReturn(80);
         when(configuration.getDouble(Key.MAX_SCALE, 1.0)).thenReturn(1.0);
         when(configuration.getLong(Key.MAX_PIXELS, 0L)).thenReturn(0L);
         when(configuration.getInt(Key.IIIF_MIN_SIZE, 1)).thenReturn(1);
@@ -457,6 +458,7 @@ class ImageControllerTest {
     @Test
     void testGETMoreThanMaxPixelsWithMaxSizeArgument() throws Exception {
         when(configuration.getLong(Key.MAX_PIXELS, 0L)).thenReturn(1000L);
+        when(configuration.getInt(Key.MAX_PIXELS, 0)).thenReturn(1000);
 
         mockMvc.perform(get("/iiif/3/{identifier}/full/max/0/color.png", IMAGE))
                 .andExpect(status().isOk()); // Should downscale to max pixels
@@ -481,6 +483,7 @@ class ImageControllerTest {
     @Test
     void testGETPixelRegionMoreThanMaxPixelsWithMaxSizeArgument() throws Exception {
         when(configuration.getLong(Key.MAX_PIXELS, 0L)).thenReturn(1000L);
+        when(configuration.getInt(Key.MAX_PIXELS, 0)).thenReturn(1000);
 
         mockMvc.perform(get("/iiif/3/{identifier}/0,0,50,50/max/0/color.png", IMAGE))
                 .andExpect(status().isOk()); // Should downscale to max pixels
@@ -489,6 +492,7 @@ class ImageControllerTest {
     @Test
     void testGETPercentRegionMoreThanMaxPixelsWithMaxSizeArgument() throws Exception {
         when(configuration.getLong(Key.MAX_PIXELS, 0L)).thenReturn(1000L);
+        when(configuration.getInt(Key.MAX_PIXELS, 0)).thenReturn(1000);
 
         mockMvc.perform(get("/iiif/3/{identifier}/pct:0,0,75,75/max/0/color.png", IMAGE))
                 .andExpect(status().isOk()); // Should downscale to max pixels

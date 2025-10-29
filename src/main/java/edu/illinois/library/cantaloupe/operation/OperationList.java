@@ -223,9 +223,11 @@ public final class OperationList implements Iterable<Operation> {
      *
      * @param info          Source image info.
      * @param delegateProxy Delegate proxy for the current request.
+     * @param configuration Configuration instance.
      */
     public void applyNonEndpointMutations(final Info info,
-                                          final DelegateProxy delegateProxy) {
+                                          final DelegateProxy delegateProxy,
+                                          final Configuration configuration) {
         checkFrozen();
 
         // If there is a scale constraint set, but no Scale operation, add one.
@@ -242,7 +244,7 @@ public final class OperationList implements Iterable<Operation> {
             }
         }
 
-        final Configuration config = Configuration.getInstance();
+        final Configuration config = configuration;
         final Dimension sourceImageSize = info.getSize(this.getPageIndex());
 
         // If the source image has a different orientation, adjust any Crop
@@ -776,7 +778,8 @@ public final class OperationList implements Iterable<Operation> {
      * @throws ValidationException if the instance is invalid in some other way.
      */
     public void validate(Dimension fullSize,
-                         Format sourceFormat) throws ValidationException {
+                         Format sourceFormat,
+                         Configuration configuration) throws ValidationException {
         // Ensure that an identifier is set.
         if (getIdentifier() == null) {
             throw new ValidationException("Identifier is not set.");
@@ -820,7 +823,7 @@ public final class OperationList implements Iterable<Operation> {
         // Ensure that the resulting pixel area is less than or equal to the
         // max allowed area, unless the processing is a no-op.
         final long maxAllowedSize =
-                Configuration.getInstance().getLong(Key.MAX_PIXELS, 0);
+                configuration.getLong(Key.MAX_PIXELS, 0);
         if (maxAllowedSize > 0 && hasEffect(fullSize, sourceFormat) &&
                 resultingSize.area() > maxAllowedSize) {
             throw new IllegalSizeException();
