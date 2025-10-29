@@ -1,6 +1,5 @@
-package edu.illinois.library.cantaloupe.controller.iiif.v2;
+package edu.illinois.library.cantaloupe.controller.iiif.v1;
 
-import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -39,8 +38,8 @@ import edu.illinois.library.cantaloupe.test.TestUtil;
 import edu.illinois.library.cantaloupe.util.StringUtils;
 
 /**
- * Spring Boot test for IIIF v2 Information Controller using MockMvc.
- * Tests the information endpoint functionality and IIIF 2.x compliance.
+ * Spring Boot test for IIIF v1 Information Controller using MockMvc.
+ * Tests the information endpoint functionality and IIIF 1.x compliance.
  */
 @WebMvcTest(InformationController.class)
 @Import({FormatRegistry.class, FormatRegistryAccessor.class, DelegateProxyService.class,
@@ -66,7 +65,7 @@ class InformationControllerTest {
         System.setProperty(Application.TEST_VM_ARGUMENT, "true");
 
         // Mock the default configuration similar to ResourceTest.setUp()
-        when(configuration.getBoolean(Key.IIIF_2_ENDPOINT_ENABLED, true)).thenReturn(true);
+        when(configuration.getBoolean(Key.IIIF_1_ENDPOINT_ENABLED, true)).thenReturn(true);
         when(configuration.getDouble(Key.MAX_SCALE, 0.0)).thenReturn(0.0);
         when(configuration.getBoolean(Key.ADMIN_ENABLED, false)).thenReturn(true);
         when(configuration.getBoolean(Key.DELEGATE_SCRIPT_ENABLED, false)).thenReturn(true);
@@ -102,60 +101,53 @@ class InformationControllerTest {
 
     @Test
     void testGetInformationBasic() throws Exception {
-        mockMvc.perform(get("/iiif/2/{identifier}/info.json", IMAGE))
+        mockMvc.perform(get("/iiif/1/{identifier}/info.json", IMAGE))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType("application/json;charset=UTF-8"))
-                .andExpect(jsonPath("$['@context']", is("http://iiif.io/api/image/2/context.json")))
-                .andExpect(jsonPath("$.protocol", is("http://iiif.io/api/image")))
+                .andExpect(jsonPath("$['@context']", is("http://library.stanford.edu/iiif/image-api/1.1/context.json")))
                 .andExpect(jsonPath("$.width").exists())
                 .andExpect(jsonPath("$.height").exists());
     }
 
     @Test
     void testGetInformationWithJsonLdContentType() throws Exception {
-        mockMvc.perform(get("/iiif/2/{identifier}/info.json", IMAGE)
+        mockMvc.perform(get("/iiif/1/{identifier}/info.json", IMAGE)
                 .accept("application/ld+json"))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType("application/ld+json;charset=UTF-8"))
-                .andExpect(jsonPath("$['@context']", is("http://iiif.io/api/image/2/context.json")));
+                .andExpect(jsonPath("$['@context']", is("http://library.stanford.edu/iiif/image-api/1.1/context.json")));
     }
 
     @Test
     void testGetInformationAuthorizationWhenUnauthorized() throws Exception {
-        mockMvc.perform(get("/iiif/2/unauthorized.jpg/info.json"))
+        mockMvc.perform(get("/iiif/1/unauthorized.jpg/info.json"))
                 .andExpect(status().isUnauthorized())
-                .andExpect(jsonPath("$['@context']", is("http://iiif.io/api/image/2/context.json")))
-                .andExpect(jsonPath("$.protocol", is("http://iiif.io/api/image")))
+                .andExpect(jsonPath("$['@id']", is("http://localhost/iiif/2/unauthorized.jpg")))
+                .andExpect(jsonPath("$['@context']", is("http://library.stanford.edu/iiif/image-api/1.1/context.json")))
                 .andExpect(jsonPath("$.status", is(401)))
-                .andExpect(jsonPath("$.message", is("Unauthorized")))
-                .andExpect(jsonPath("$.attribution", is("Copyright My Great Organization. All rights reserved.")))
-                .andExpect(jsonPath("$.license", is("http://example.org/license.html")))
-                .andExpect(jsonPath("$.service['@context']", is("http://iiif.io/api/annex/services/physdim/1/context.json")))
-                .andExpect(jsonPath("$.service.profile", is("http://iiif.io/api/annex/services/physdim")))
-                .andExpect(jsonPath("$.service.physicalScale", is(0.0025)))
-                .andExpect(jsonPath("$.service.physicalUnits", is("in")));
+                .andExpect(jsonPath("$.message", is("Unauthorized")));
     }
 
     @Test
     void testGetInformationAuthorizationWhenForbidden() throws Exception {
-        mockMvc.perform(get("/iiif/2/forbidden.jpg/info.json"))
+        mockMvc.perform(get("/iiif/1/forbidden.jpg/info.json"))
                 .andExpect(status().isForbidden())
                 .andExpect(jsonPath("$.status", is(403)));
     }
 
     @Test
     void testGetInformationEndpointEnabled() throws Exception {
-        when(configuration.getBoolean(Key.IIIF_2_ENDPOINT_ENABLED, true)).thenReturn(true);
+        when(configuration.getBoolean(Key.IIIF_1_ENDPOINT_ENABLED, true)).thenReturn(true);
 
-        mockMvc.perform(get("/iiif/2/{identifier}/info.json", IMAGE))
+        mockMvc.perform(get("/iiif/1/{identifier}/info.json", IMAGE))
                 .andExpect(status().isOk());
     }
 
     @Test
     void testGetInformationEndpointDisabled() throws Exception {
-        when(configuration.getBoolean(Key.IIIF_2_ENDPOINT_ENABLED, true)).thenReturn(false);
+        when(configuration.getBoolean(Key.IIIF_1_ENDPOINT_ENABLED, true)).thenReturn(false);
 
-        mockMvc.perform(get("/iiif/2/{identifier}/info.json", IMAGE))
+        mockMvc.perform(get("/iiif/1/{identifier}/info.json", IMAGE))
                 .andExpect(status().isForbidden());
     }
 
@@ -170,9 +162,9 @@ class InformationControllerTest {
 
         final String identifier = "images%2F" + IMAGE;
 
-        mockMvc.perform(get("/iiif/2/{identifier}/info.json", identifier))
+        mockMvc.perform(get("/iiif/1/{identifier}/info.json", identifier))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$['@context']", is("http://iiif.io/api/image/2/context.json")));
+                .andExpect(jsonPath("$['@context']", is("http://library.stanford.edu/iiif/image-api/1.1/context.json")));
     }
 
     @Test
@@ -186,14 +178,14 @@ class InformationControllerTest {
 
         final String identifier = "images%5C" + IMAGE;
 
-        mockMvc.perform(get("/iiif/2/{identifier}/info.json", identifier))
+        mockMvc.perform(get("/iiif/1/{identifier}/info.json", identifier))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$['@context']", is("http://iiif.io/api/image/2/context.json")));
+                .andExpect(jsonPath("$['@context']", is("http://library.stanford.edu/iiif/image-api/1.1/context.json")));
     }
 
     @Test
     void testGetInformationNotFound() throws Exception {
-        mockMvc.perform(get("/iiif/2/bogus/info.json"))
+        mockMvc.perform(get("/iiif/1/bogus/info.json"))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.status", is(404)));
     }
@@ -202,7 +194,7 @@ class InformationControllerTest {
     void testGetInformationWithCacheHeaders() throws Exception {
         stubCacheControlHeaders();
 
-        mockMvc.perform(get("/iiif/2/{identifier}/info.json", IMAGE))
+        mockMvc.perform(get("/iiif/1/{identifier}/info.json", IMAGE))
                 .andExpect(status().isOk())
                 .andExpect(header().string("Cache-Control", "max-age=1234, s-maxage=4567, public, no-transform"));
     }
@@ -211,7 +203,7 @@ class InformationControllerTest {
     void testGetInformationWithCachingDisabled() throws Exception {
         when(configuration.getBoolean(Key.CLIENT_CACHE_ENABLED, false)).thenReturn(false);
 
-        mockMvc.perform(get("/iiif/2/{identifier}/info.json", IMAGE))
+        mockMvc.perform(get("/iiif/1/{identifier}/info.json", IMAGE))
                 .andExpect(status().isOk())
                 .andExpect(result -> {
                     String cacheControl = result.getResponse().getHeader("Cache-Control");
@@ -225,7 +217,7 @@ class InformationControllerTest {
     void testGetInformationWithCacheQueryParameter() throws Exception {
         when(configuration.getBoolean(Key.CLIENT_CACHE_ENABLED, false)).thenReturn(true);
 
-        mockMvc.perform(get("/iiif/2/{identifier}/info.json?cache=nocache", IMAGE))
+        mockMvc.perform(get("/iiif/1/{identifier}/info.json?cache=nocache", IMAGE))
                 .andExpect(status().isOk())
                 .andExpect(result -> {
                     String cacheControl = result.getResponse().getHeader("Cache-Control");
@@ -239,14 +231,14 @@ class InformationControllerTest {
     void testGetInformationWithCacheRecacheQueryParameter() throws Exception {
         stubCacheControlHeaders();
 
-        mockMvc.perform(get("/iiif/2/{identifier}/info.json?cache=recache", IMAGE))
+        mockMvc.perform(get("/iiif/1/{identifier}/info.json?cache=recache", IMAGE))
                 .andExpect(status().isOk())
                 .andExpect(header().string("Cache-Control", "max-age=1234, s-maxage=4567, public, no-transform"));
     }
 
     @Test
     void testGetInformationCorsHeaders() throws Exception {
-        mockMvc.perform(get("/iiif/2/{identifier}/info.json", IMAGE))
+        mockMvc.perform(get("/iiif/1/{identifier}/info.json", IMAGE))
                 .andExpect(status().isOk())
                 .andExpect(header().string("Access-Control-Allow-Origin", "*"));
     }
@@ -255,10 +247,9 @@ class InformationControllerTest {
     void testGetInformationWithPageIndex() throws Exception {
         final String multiPageImage = "pdf-multipage.pdf";
 
-        mockMvc.perform(get("/iiif/2/{identifier}/info.json", multiPageImage))
+        mockMvc.perform(get("/iiif/1/{identifier}/info.json", multiPageImage))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$['@context']", is("http://iiif.io/api/image/2/context.json")))
-                .andExpect(jsonPath("$.protocol", is("http://iiif.io/api/image")));
+                .andExpect(jsonPath("$['@context']", is("http://library.stanford.edu/iiif/image-api/1.1/context.json")));
     }
 
     /**
@@ -275,13 +266,13 @@ class InformationControllerTest {
         String metaIdentifierString = new StandardMetaIdentifierTransformer()
                 .serialize(metaIdentifier, false);
 
-        mockMvc.perform(get("/iiif/2/{identifier}/info.json", metaIdentifierString))
-                .andExpect(redirectedUrl("http://localhost/iiif/2/" + IMAGE + "/info.json"));
+        mockMvc.perform(get("/iiif/1/{identifier}/info.json", metaIdentifierString))
+                .andExpect(redirectedUrl("http://localhost/iiif/1/" + IMAGE + "/info.json"));
     }
 
     @Test
     void testOptionsInformation() throws Exception {
-        mockMvc.perform(options("/iiif/2/{identifier}/info.json", IMAGE))
+        mockMvc.perform(options("/iiif/1/{identifier}/info.json", IMAGE))
                 .andExpect(status().isNoContent())
                 .andExpect(header().string("Allow", "GET,OPTIONS"))
                 .andExpect(header().string("Access-Control-Allow-Origin", "*"));
@@ -289,43 +280,28 @@ class InformationControllerTest {
 
     @Test
     void testOptionsInformationEndpointDisabled() throws Exception {
-        when(configuration.getBoolean(Key.IIIF_2_ENDPOINT_ENABLED, true)).thenReturn(false);
+        when(configuration.getBoolean(Key.IIIF_1_ENDPOINT_ENABLED, true)).thenReturn(false);
 
-        mockMvc.perform(options("/iiif/2/{identifier}/info.json", IMAGE))
+        mockMvc.perform(options("/iiif/1/{identifier}/info.json", IMAGE))
                 .andExpect(status().isForbidden());
     }
 
     @Test
     void testGetInformationWithLastModifiedHeader() throws Exception {
-        mockMvc.perform(get("/iiif/2/{identifier}/info.json", IMAGE))
+        mockMvc.perform(get("/iiif/1/{identifier}/info.json", IMAGE))
                 .andExpect(status().isOk())
                 .andExpect(header().exists("Last-Modified"));
     }
 
     @Test
     void testGetInformationJsonFormat() throws Exception {
-        mockMvc.perform(get("/iiif/2/{identifier}/info.json", IMAGE))
+        mockMvc.perform(get("/iiif/1/{identifier}/info.json", IMAGE))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType("application/json;charset=UTF-8"))
                 .andExpect(jsonPath("$['@context']").exists())
                 .andExpect(jsonPath("$['@id']").exists())
-                .andExpect(jsonPath("$.protocol").exists())
                 .andExpect(jsonPath("$.width").exists())
                 .andExpect(jsonPath("$.height").exists())
-                .andExpect(jsonPath("$.profile").exists());
-    }
-
-    @Test
-    void testGetInformationWithEmptyProfile() throws Exception {
-        mockMvc.perform(get("/iiif/2/{identifier}/info.json", IMAGE))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.profile").isArray());
-    }
-
-    @Test
-    void testGetInformationComplianceLevel() throws Exception {
-        mockMvc.perform(get("/iiif/2/{identifier}/info.json", IMAGE))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.profile[0]", containsString("http://iiif.io/api/image/2/level")));
+                .andExpect(jsonPath("$.profile", is("http://library.stanford.edu/iiif/image-api/1.1/compliance.html#level2")));
     }
 }
