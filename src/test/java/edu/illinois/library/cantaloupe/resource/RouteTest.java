@@ -21,11 +21,6 @@ class RouteTest extends BaseTest {
                 route.getResource());
         assertEquals("0bef-234a", route.getPathArguments().get(0));
 
-        route = Route.forPath(Route.IIIF_1_PATH + "/0bef-234a");
-        assertEquals(edu.illinois.library.cantaloupe.resource.iiif.v1.IdentifierResource.class,
-                route.getResource());
-        assertEquals("0bef-234a", route.getPathArguments().get(0));
-
         route = Route.forPath(Route.IIIF_1_PATH + "/0bef-234a/0,0,100,100/max/0/native.jpg");
         assertEquals(edu.illinois.library.cantaloupe.resource.iiif.v1.ImageResource.class,
                 route.getResource());

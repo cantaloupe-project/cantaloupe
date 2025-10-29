@@ -58,8 +58,6 @@ public final class Route {
         // IIIF Image API v1 routes
         MAPPINGS.put(Pattern.compile("^" + IIIF_1_PATH + "/([^/]+)/info\\.json$"),
                 new RouteEntry(edu.illinois.library.cantaloupe.resource.iiif.v1.InformationResource.class, IIIFRequest.class));
-        MAPPINGS.put(Pattern.compile("^" + IIIF_1_PATH + "/([^/]+)$"),
-                new RouteEntry(edu.illinois.library.cantaloupe.resource.iiif.v1.IdentifierResource.class, IIIFRequest.class));
         MAPPINGS.put(Pattern.compile("^" + IIIF_1_PATH + "/([^/]+)/([^/]+)/([^/]+)/([^/]+)/([^/.]+)$"),
                 new RouteEntry(edu.illinois.library.cantaloupe.resource.iiif.v1.ImageResource.class, IIIFRequest.class));
         MAPPINGS.put(Pattern.compile("^" + IIIF_1_PATH + "/([^/]+)/([^/]+)/([^/]+)/([^/]+)/([^/.]+)\\.([^/]+)$"),
