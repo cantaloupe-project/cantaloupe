@@ -7,6 +7,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
+import edu.illinois.library.cantaloupe.http.Reference;
+import edu.illinois.library.cantaloupe.image.MetaIdentifier;
 import edu.illinois.library.cantaloupe.resource.EndpointDisabledException;
 import edu.illinois.library.cantaloupe.resource.IIIFRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -80,5 +82,34 @@ public class AbstractIIIFController {
             }
         }
     }
-
+    
+    /**
+     * <p>If an identifier is present in the URI, and it contains a scale
+     * constraint suffix in a non-normalized form, this method redirects to
+     * a normalized URI.</p>
+     *
+     * <p>Examples:</p>
+     *
+     * <dl>
+     *     <dt>1:2</dt>
+     *     <dd>No redirect</dd>
+     *     <dt>2:4</dt>
+     *     <dd>Redirect to 1:2</dd>
+     *     <dt>1:1 and 5:5</dt>
+     *     <dd>Redirect to no constraint</dd>
+     * </dl>
+     *
+     * @return {@code true} if redirecting. Clients should stop processing if
+     *         this is the case.
+     */
+    protected final boolean redirectToNormalizedScaleConstraint(IIIFRequest iiifrequest, HttpServletResponse response) {
+        MetaIdentifier newMetaId = iiifrequest.getMetaIdentifier().getNormalizedScaleConstraintMetaIdentifier();
+        if (newMetaId == null) {
+            return false;
+        }
+        Reference newRef = iiifrequest.getPublicReference(newMetaId, iiifrequest.getIdentifierPathComponent(), iiifrequest.getDelegateProxy());
+        response.setStatus(301);
+        response.setHeader("Location", newRef.toString());
+        return true;
+    }
 }
