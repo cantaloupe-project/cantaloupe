@@ -1,10 +1,11 @@
 package edu.illinois.library.cantaloupe;
 
-import edu.illinois.library.cantaloupe.config.Configuration;
-import edu.illinois.library.cantaloupe.config.Key;
-import edu.illinois.library.cantaloupe.processor.codec.IIOProviderContextListener;
-import edu.illinois.library.cantaloupe.resource.FileServlet;
-import edu.illinois.library.cantaloupe.resource.HandlerServlet;
+import java.lang.management.ManagementFactory;
+
+import org.eclipse.jetty.ee10.servlet.ListenerHolder;
+import org.eclipse.jetty.ee10.servlet.ServletContextHandler;
+import org.eclipse.jetty.ee10.servlet.ServletHandler;
+import org.eclipse.jetty.http.UriCompliance;
 import org.eclipse.jetty.http2.server.HTTP2CServerConnectionFactory;
 import org.eclipse.jetty.jmx.MBeanContainer;
 import org.eclipse.jetty.server.CustomRequestLog;
@@ -14,13 +15,11 @@ import org.eclipse.jetty.server.RequestLog;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.server.Slf4jRequestLogWriter;
-import org.eclipse.jetty.ee10.servlet.ListenerHolder;
-import org.eclipse.jetty.ee10.servlet.ServletContextHandler;
-import org.eclipse.jetty.http.UriCompliance;
 import org.eclipse.jetty.util.thread.QueuedThreadPool;
-import org.eclipse.jetty.ee10.servlet.ServletHandler;
 
-import java.lang.management.ManagementFactory;
+import edu.illinois.library.cantaloupe.config.Configuration;
+import edu.illinois.library.cantaloupe.config.Key;
+import edu.illinois.library.cantaloupe.processor.codec.IIOProviderContextListener;
 /**
  * <p>Provides the embedded Servlet container in standalone mode.</p>
  *
@@ -102,8 +101,6 @@ public class ApplicationServer {
                 "false");
 
         context.setContextPath("/");
-        context.addServlet(HandlerServlet.class, "/*");
-        context.addServlet(FileServlet.class, "/static/*");
         context.getServletHandler().addListener(new ListenerHolder(ApplicationContextListener.class));
         context.getServletHandler().addListener(new ListenerHolder(IIOProviderContextListener.class));
 
