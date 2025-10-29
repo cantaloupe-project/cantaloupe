@@ -125,7 +125,7 @@ public class Request {
     /**
      * @return Full request URI including query. Note that this may not be the
      *         URI that the user agent supplies or sees.
-     * @see AbstractResource#getPublicReference()
+     * @see IIIFRequest#getPublicReference()
      */
     public Reference getReference() {
         if (reference == null) {

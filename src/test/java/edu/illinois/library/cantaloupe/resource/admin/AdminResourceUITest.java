@@ -17,6 +17,7 @@ import org.openqa.selenium.WebElement;
 import org.openqa.selenium.htmlunit.HtmlUnitDriver;
 import org.openqa.selenium.support.ui.Select;
 
+import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.resource.ResourceTest;
@@ -50,8 +51,7 @@ public class AdminResourceUITest extends ResourceTest {
         webDriver = new HtmlUnitDriver(true);
         ((HtmlUnitDriver) webDriver).setJavascriptEnabled(true);
         webDriver.get(getHTTPURI("").toString());
-        client = newClient("", USERNAME, SECRET,
-                AbstractAdminResource.BASIC_REALM);
+        client = newClient("", USERNAME, SECRET, Application.getName() + " Control Panel");
     }
 
     @Override

@@ -72,7 +72,7 @@ class RequestTest extends BaseTest {
 
 
     /**
-     * Tests behavior of {@link AbstractResource#getPublicReference()} when
+     * Tests behavior of {@link IIIFRequest#getPublicReference()} when
      * using {@link Key#BASE_URI}.
      */
     @Test
@@ -92,7 +92,7 @@ class RequestTest extends BaseTest {
     }
 
     /**
-     * Tests behavior of {@link AbstractResource#getPublicReference()} when
+     * Tests behavior of {@link IIIFRequest#getPublicReference()} when
      * using {@literal X-Forwarded} headers.
      *
      * This isn't a thorough test of every possible header/URI combination.
@@ -121,7 +121,7 @@ class RequestTest extends BaseTest {
     }
 
     /**
-     * Tests behavior of {@link AbstractResource#getPublicReference()} when
+     * Tests behavior of {@link IIIFRequest#getPublicReference()} when
      * using neither {@link Key#BASE_URI} nor {@literal X-Forwarded} headers.
      */
     @Test
@@ -139,7 +139,7 @@ class RequestTest extends BaseTest {
     }
 
     /**
-     * Tests behavior of {@link AbstractResource#getPublicReference()} when
+     * Tests behavior of {@link IIIFRequest#getPublicReference()} when
      * using neither {@link Key#BASE_URI} nor {@literal X-Forwarded} headers.
      */
     @Test

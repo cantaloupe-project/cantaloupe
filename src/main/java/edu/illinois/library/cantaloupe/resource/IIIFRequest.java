@@ -144,7 +144,7 @@ public class IIIFRequest extends Request {
      * come from one of two sources, in order of preference:</p>
      *
      * <ol>
-     *     <li>The {@link AbstractResource#getMetaIdentifier()
+     *     <li>The {@link IIIFRequest#getMetaIdentifier()
      *     meta-identifier}</li>
      *     <li>The {@link #PAGE_NUMBER_QUERY_ARG page number query argument
      *     (deprecated in 5.0)</li>
