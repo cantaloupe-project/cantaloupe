@@ -132,6 +132,7 @@ public class ImageRequestHandler extends AbstractRequestHandler
     /**
      * Creates a new ImageRequestHandler with full configuration options.
      *
+     * @deprecated                 Use the constructor that takes configuration
      * @param operationList        Operation list to process.
      * @param request              The IIIF request.
      * @param callback             Callback to receive events during request handling.
