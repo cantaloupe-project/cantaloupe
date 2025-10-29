@@ -125,7 +125,7 @@ public class PdfBoxProcessorTest extends AbstractProcessorTest {
                 .withOperations(new Encode(Format.get("jpg")))
                 .build();
         Dimension fullSize = new Dimension(100, 88);
-        instance.validate(ops, fullSize);
+        instance.validate(ops, fullSize, Configuration.getInstance());
     }
 
     @Test
@@ -139,7 +139,7 @@ public class PdfBoxProcessorTest extends AbstractProcessorTest {
                 .build();
         Dimension fullSize = new Dimension(100, 88);
 
-        instance.validate(ops, fullSize);
+        instance.validate(ops, fullSize, Configuration.getInstance());
     }
 
     @Test
@@ -154,7 +154,7 @@ public class PdfBoxProcessorTest extends AbstractProcessorTest {
         Dimension fullSize = new Dimension(100, 88);
 
         assertThrows(ValidationException.class,
-                () -> instance.validate(ops, fullSize));
+                () -> instance.validate(ops, fullSize, Configuration.getInstance()));
     }
 
 }

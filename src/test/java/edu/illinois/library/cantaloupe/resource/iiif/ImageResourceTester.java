@@ -568,7 +568,7 @@ public class ImageResourceTester extends ImageAPIResourceTester {
 
         try {
             Info info = Info.builder().withSize(64, 56).build();
-            opList.applyNonEndpointMutations(info, null);
+            opList.applyNonEndpointMutations(info, null, Configuration.getInstance());
 
             assertRecursiveFileCount(cacheDir, 0);
 

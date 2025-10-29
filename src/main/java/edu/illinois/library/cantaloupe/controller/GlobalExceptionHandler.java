@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
+import edu.illinois.library.cantaloupe.operation.IllegalSizeException;
 import edu.illinois.library.cantaloupe.processor.OutputFormatException;
 import edu.illinois.library.cantaloupe.processor.SourceFormatException;
 import edu.illinois.library.cantaloupe.resource.EndpointDisabledException;
@@ -42,6 +43,19 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(AccessDeniedException.class)
     public ResponseEntity<Map<String, Object>> handleAccessDeniedException(
             AccessDeniedException ex, WebRequest request) {
+
+        Map<String, Object> errorResponse = new HashMap<>();
+        errorResponse.put("status", 403);
+        errorResponse.put("error", "Forbidden");
+        errorResponse.put("message", ex.getMessage());
+        errorResponse.put("path", request.getDescription(false));
+
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(errorResponse);
+    }
+
+    @ExceptionHandler(IllegalSizeException.class)
+    public ResponseEntity<Map<String, Object>> handleIllegalSizeException(
+            IllegalSizeException ex, WebRequest request) {
 
         Map<String, Object> errorResponse = new HashMap<>();
         errorResponse.put("status", 403);
