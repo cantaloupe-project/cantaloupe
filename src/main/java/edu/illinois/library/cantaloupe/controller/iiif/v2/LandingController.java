@@ -23,7 +23,7 @@ import jakarta.servlet.http.HttpServletResponse;
  * Spring Boot controller for IIIF Image API 2.x landing page.
  * Replaces the previous iiif.v2.LandingResource class.
  */
-@Controller("v3LandingController")
+@Controller("v2LandingController")
 @RequestMapping("/iiif/2")
 public class LandingController extends AbstractIIIFController {
 
@@ -33,7 +33,7 @@ public class LandingController extends AbstractIIIFController {
     }
 
     @GetMapping
-    public String iiif3Landing(Model model, HttpServletRequest request, HttpServletResponse response) throws EndpointDisabledException {
+    public String iiif2Landing(Model model, HttpServletRequest request, HttpServletResponse response) throws EndpointDisabledException {
         checkEndpointEnabled();
 
         response.setHeader("Content-Type", "text/html;charset=UTF-8");
