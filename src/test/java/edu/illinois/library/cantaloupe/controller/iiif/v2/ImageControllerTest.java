@@ -79,6 +79,7 @@ class ImageControllerTest {
         when(configuration.getString("processor.ManualSelectionStrategy.jpg")).thenReturn("Java2dProcessor");
         when(configuration.getString("processor.ManualSelectionStrategy.pdf")).thenReturn("PdfBoxProcessor");
         when(configuration.getString(Key.PROCESSOR_FALLBACK, "")).thenReturn("Java2dProcessor");
+        when(configuration.getInt(Key.PROCESSOR_JPG_QUALITY, 80)).thenReturn(80);
         when(configuration.getInt(Key.MAX_PIXELS, 0)).thenReturn(0);
         when(configuration.getBoolean(Key.CLIENT_CACHE_ENABLED, false)).thenReturn(false);
         when(configuration.getBoolean(Key.IIIF_RESTRICT_TO_SIZES, false)).thenReturn(false);
