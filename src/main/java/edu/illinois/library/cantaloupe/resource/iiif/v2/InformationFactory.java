@@ -207,7 +207,7 @@ public final class InformationFactory {
      * @param virtualSize Orientation-aware and {@link ScaleConstraint
      *                    scale-constrained} full size.
      */
-    List<Information.Size> getSizes(Dimension virtualSize) {
+    public List<Information.Size> getSizes(Dimension virtualSize) {
         // This will be a 2^n series that will work for both multi- and
         // monoresolution images.
         final List<Information.Size> sizes = new ArrayList<>();
