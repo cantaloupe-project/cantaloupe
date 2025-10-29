@@ -1,5 +1,6 @@
 package edu.illinois.library.cantaloupe.processor;
 
+import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.image.Dimension;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.Info;
@@ -810,7 +811,7 @@ abstract class AbstractProcessorTest extends BaseTest {
                 .build();
         try (Processor proc = newInstance()) {
             proc.setSourceFormat(getAnySupportedSourceFormat(proc));
-            proc.validate(ops, new Dimension(1000, 1000));
+            proc.validate(ops, new Dimension(1000, 1000), Configuration.getInstance());
         } catch (OutputFormatException e) {
             pass = true;
         }

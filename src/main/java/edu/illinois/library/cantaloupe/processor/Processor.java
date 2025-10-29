@@ -1,5 +1,6 @@
 package edu.illinois.library.cantaloupe.processor;
 
+import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.image.Dimension;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Info;
@@ -196,9 +197,9 @@ public interface Processor extends AutoCloseable {
      * @throws ProcessorException if there is an error in performing the
      *         validation.
      */
-    default void validate(OperationList opList, Dimension fullSize)
+    default void validate(OperationList opList, Dimension fullSize, Configuration configuration)
             throws ValidationException, ProcessorException, OutputFormatException {
-        opList.validate(fullSize, getSourceFormat());
+        opList.validate(fullSize, getSourceFormat(), configuration);
 
         if (!getAvailableOutputFormats().contains(opList.getOutputFormat())) {
             throw new OutputFormatException(opList.getOutputFormat());
