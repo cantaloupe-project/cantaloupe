@@ -1,14 +1,15 @@
 package edu.illinois.library.cantaloupe.operation.overlay;
 
-import edu.illinois.library.cantaloupe.config.Configuration;
-import edu.illinois.library.cantaloupe.config.ConfigurationException;
-import edu.illinois.library.cantaloupe.config.Key;
-import edu.illinois.library.cantaloupe.image.Dimension;
-import edu.illinois.library.cantaloupe.delegate.DelegateProxy;
+import java.util.Optional;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Optional;
+import edu.illinois.library.cantaloupe.config.Configuration;
+import edu.illinois.library.cantaloupe.config.ConfigurationException;
+import edu.illinois.library.cantaloupe.config.Key;
+import edu.illinois.library.cantaloupe.delegate.DelegateProxy;
+import edu.illinois.library.cantaloupe.image.Dimension;
 
 /**
  * Provides access to {@link Overlay} instances.
@@ -34,18 +35,19 @@ public final class OverlayFactory {
             LoggerFactory.getLogger(OverlayFactory.class);
 
     private Strategy strategy;
+    private Configuration configuration;
 
-    public OverlayFactory() throws ConfigurationException {
+    public OverlayFactory(Configuration configuration) throws ConfigurationException {
+        this.configuration = configuration;
         readStrategy();
     }
 
     private OverlayService newOverlayService(DelegateProxy delegateProxy)
             throws ConfigurationException {
-        final Configuration config = Configuration.getInstance();
         OverlayService instance = null;
         switch (getStrategy()) {
             case BASIC:
-                switch (config.getString(Key.OVERLAY_TYPE, "")) {
+                switch (configuration.getString(Key.OVERLAY_TYPE, "")) {
                     case "image":
                         instance = new BasicImageOverlayService();
                         break;
@@ -55,7 +57,7 @@ public final class OverlayFactory {
                 }
                 break;
             case DELEGATE_METHOD:
-                instance = new DelegateOverlayService(delegateProxy);
+                instance = new DelegateOverlayService(delegateProxy, configuration);
                 break;
         }
         if (instance != null) {
@@ -92,9 +94,7 @@ public final class OverlayFactory {
     }
 
     private void readStrategy() throws ConfigurationException {
-        final Configuration config = Configuration.getInstance();
-        final String configValue = config.getString(
-                Key.OVERLAY_STRATEGY, "BasicStrategy");
+        final String configValue = configuration.getString(Key.OVERLAY_STRATEGY, "BasicStrategy");
         switch (configValue) {
             case "ScriptStrategy":
                 setStrategy(Strategy.DELEGATE_METHOD);
