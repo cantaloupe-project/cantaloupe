@@ -103,22 +103,6 @@ public class InformationRequestHandler extends AbstractRequestHandler
     private Future<Path> tempFileFuture;
 
     /**
-     * Creates a new InformationRequestHandler with full configuration options.
-     *
-     * @param request.             The IIIF request.
-     * @param callback             Callback to receive events during request handling.
-     */
-    public InformationRequestHandler(IIIFRequest request, Callback callback) {
-        this.identifier = request.getMetaIdentifier().getIdentifier();
-        this.delegateProxy = request.getDelegateProxy();
-        this.requestContext = request.getRequestContext();
-        this.callback = callback;
-        this.isBypassingCache = request.isBypassingCache();
-        this.isBypassingCacheRead = request.isBypassingCacheRead();
-        configuration = Configuration.getInstance();
-    }
-
-    /**
      * Creates a new InformationRequestHandler with injected Configuration.
      *
      * @param request              The IIIF request.
