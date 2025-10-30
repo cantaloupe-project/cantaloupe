@@ -1,7 +1,6 @@
 package edu.illinois.library.cantaloupe.controller.iiif.v1;
 
 import java.net.URI;
-import java.util.Collections;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -14,7 +13,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.resource.EndpointDisabledException;
-import edu.illinois.library.cantaloupe.resource.Request;
 import edu.illinois.library.cantaloupe.resource.TemplateVariables;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -37,10 +35,7 @@ public class LandingController extends AbstractIIIFController {
         checkEndpointEnabled();
 
         response.setHeader("Content-Type", "text/html;charset=UTF-8");
-
-        // Create a minimal request wrapper for template variables
-        Request requestWrapper = new Request(request, Collections.emptyList(), configuration);
-        model.addAllAttributes(TemplateVariables.getDefault(requestWrapper).getVars());
+        model.addAllAttributes(TemplateVariables.getDefault(request.getHeader("X-Forwarded-Path")).getVars());
 
         return "iiif_1_landing";
     }

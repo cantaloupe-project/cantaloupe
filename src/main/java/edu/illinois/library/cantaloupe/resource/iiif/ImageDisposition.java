@@ -9,8 +9,8 @@ import java.util.regex.Pattern;
 
 import edu.illinois.library.cantaloupe.http.Reference;
 import edu.illinois.library.cantaloupe.image.Format;
+import edu.illinois.library.cantaloupe.resource.IIIFRequest;
 import edu.illinois.library.cantaloupe.util.StringUtils;
-import edu.illinois.library.cantaloupe.resource.Request;
 
 public class ImageDisposition {
     
@@ -30,7 +30,7 @@ public class ImageDisposition {
      * @return Value for a {@code Content-Disposition} header, which may be
      *         {@code null}.
      */
-    public static String getRepresentationDisposition(Request request,
+    public static String getRepresentationDisposition(IIIFRequest request,
                                                   String identifierStr,
                                                   Format outputFormat) {
         var queryArg = request.getReference().getQuery()
