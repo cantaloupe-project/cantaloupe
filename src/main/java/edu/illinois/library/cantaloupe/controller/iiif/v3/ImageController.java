@@ -53,7 +53,7 @@ import jakarta.servlet.http.HttpServletResponse;
  *
  * @see <a href="https://iiif.io/api/image/3.0/#4-image-requests">Image Requests</a>
  */
-@RestController
+@RestController("v3ImageController")
 @RequestMapping("/iiif/3")
 public class ImageController extends AbstractIIIFController {
 
@@ -91,7 +91,7 @@ public class ImageController extends AbstractIIIFController {
             return;
         }
         RequestContextDecorator.decorateRequestContext(iiifrequest);
-        
+
         final Parameters params = new Parameters(
                 iiifrequest.getIdentifier().toString(), region, size, rotation, quality, format);
 
