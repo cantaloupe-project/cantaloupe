@@ -8,7 +8,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
-import edu.illinois.library.cantaloupe.resource.Request;
 import edu.illinois.library.cantaloupe.resource.TemplateVariables;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -31,7 +30,7 @@ public class LandingController {
         addHeaders(response);
 
         // Add template variables to the model
-        model.addAllAttributes(TemplateVariables.getDefault(createRequestWrapper(request)).getVars());
+        model.addAllAttributes(TemplateVariables.getDefault(request.getHeader("X-Forwarded-Path")).getVars());
 
         return "landing";
     }
@@ -45,13 +44,5 @@ public class LandingController {
     private void addHeaders(HttpServletResponse response) {
         response.setHeader("Content-Type", "text/html;charset=UTF-8");
         response.setHeader("Cache-Control", "public, max-age=" + Integer.MAX_VALUE);
-    }
-
-    /**
-     * Creates a request wrapper that's compatible with the existing TemplateVariables system.
-     * This is a temporary bridge until we fully migrate the template system.
-     */
-    private Request createRequestWrapper(HttpServletRequest request) {
-        return new Request(request, java.util.Collections.emptyList(), configuration);
     }
 }

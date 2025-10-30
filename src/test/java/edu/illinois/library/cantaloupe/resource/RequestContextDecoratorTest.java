@@ -14,7 +14,7 @@ public class RequestContextDecoratorTest {
         MockHttpServletRequest sr = new MockHttpServletRequest();
         sr.getHeaders().put("Cookie", List.of("fruit=apples; animal=cats",
                 "shape=cube; car=ford"));
-        Request instance = new Request(sr, Collections.emptyList(), Configuration.getInstance());
+        IIIFRequest instance = new IIIFRequest(sr, Collections.emptyList(), Configuration.getInstance());
 
         Cookies cookies = RequestContextDecorator.getCookies(instance);
         assertEquals(4, cookies.size());
