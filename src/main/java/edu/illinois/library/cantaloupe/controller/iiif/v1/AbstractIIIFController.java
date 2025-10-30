@@ -1,16 +1,19 @@
 package edu.illinois.library.cantaloupe.controller.iiif.v1;
 
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
+import edu.illinois.library.cantaloupe.http.Headers;
 import edu.illinois.library.cantaloupe.http.Reference;
 import edu.illinois.library.cantaloupe.image.MetaIdentifier;
 import edu.illinois.library.cantaloupe.resource.EndpointDisabledException;
 import edu.illinois.library.cantaloupe.resource.IIIFRequest;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 public class AbstractIIIFController {
@@ -111,5 +114,20 @@ public class AbstractIIIFController {
         response.setStatus(301);
         response.setHeader("Location", newRef.toString());
         return true;
+    }
+
+    protected Headers getHeaders(HttpServletRequest request) {
+        Headers headers = new Headers();
+        final Enumeration<String> names = request.getHeaderNames();
+        if (names != null) {
+            while (names.hasMoreElements()) {
+                final String name = names.nextElement();
+                final Enumeration<String> values = request.getHeaders(name);
+                while (values.hasMoreElements()) {
+                    headers.add(name, values.nextElement());
+                }
+            }
+        }
+        return headers;
     }
 }
