@@ -21,7 +21,7 @@ import jakarta.servlet.http.HttpServletResponse;
  * Redirects /{identifier} to /{identifier}/info.json.
  * Replaces the previous iiif.v1.IdentifierResource class.
  */
-@RestController
+@RestController("v1IdentifierController")
 @RequestMapping("/iiif/1")
 public class IdentifierController extends AbstractIIIFController {
 

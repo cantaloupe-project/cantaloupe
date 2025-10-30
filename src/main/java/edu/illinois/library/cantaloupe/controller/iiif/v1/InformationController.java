@@ -47,10 +47,10 @@ import jakarta.servlet.http.HttpServletResponse;
  * This implementation uses real IIIF classes and integrates with the complete
  * image processing pipeline, similar to InformationResource.
  *
- * @see <a href="https://iiif.io/api/image/1.0/#22-image-information-request-url-syntax">
+ * @see <a href="https://iiif.io/api/image/1.1/#image-info-request">
  *     Image Information Requests</a>
  */
-@RestController
+@RestController("v1InformationController")
 @RequestMapping("/iiif/1")
 public class InformationController extends AbstractIIIFController {
     private final InformationRequestHandlerFactory handlerFactory;
@@ -124,7 +124,7 @@ public class InformationController extends AbstractIIIFController {
                     return null; // Auth failure.
                 }
                 addHeaders(response, iiifrequest);
- 
+
                 setContentTypeAndLastModified(request, headers, info);
 
                 // Create the IIIF Information response

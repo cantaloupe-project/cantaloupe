@@ -16,17 +16,34 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.htmlunit.HtmlUnitDriver;
 import org.openqa.selenium.support.ui.Select;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.web.server.LocalServerPort;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Scope;
+import org.springframework.test.context.TestPropertySource;
 
 import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.config.Configuration;
+import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.config.Key;
-import edu.illinois.library.cantaloupe.resource.ResourceTest;
-import edu.illinois.library.cantaloupe.resource.Route;
 
 /**
- * Functional test of the Control Panel using Selenium.
+ * Functional test of the Control Panel using Selenium with Spring Boot embedded server.
  */
-public class AdminResourceUITest extends ResourceTest {
+@SpringBootTest(classes = edu.illinois.library.cantaloupe.Cantaloupe.class, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@TestPropertySource(properties = {
+    "cantaloupe.config=memory"
+})
+public class AdminResourceUITest {
+
+    static {
+        // Set VM arguments before Spring context loads
+        System.setProperty(ConfigurationFactory.CONFIG_VM_ARGUMENT, "memory");
+        System.setProperty(Application.TEST_VM_ARGUMENT, "true");
+    }
+
+
 
     private static final double DELTA = 0.00000001;
     private static final int WAIT_AFTER_SUBMIT = 2000;
@@ -35,42 +52,45 @@ public class AdminResourceUITest extends ResourceTest {
 
     private static WebDriver webDriver;
 
-    @Override
+    @LocalServerPort
+    private int port;
+
+    @Autowired
+    private Configuration injectedConfiguration;
+
     @BeforeEach
     public void setUp() throws Exception {
-        super.setUp();
-        Configuration config = Configuration.getInstance();
-        config.setProperty(Key.ADMIN_USERNAME, USERNAME);
-        config.setProperty(Key.ADMIN_SECRET, SECRET);
-        config.setProperty(Key.SOURCE_STATIC, "FilesystemSource");
-        config.setProperty(Key.PROCESSOR_FALLBACK, "Java2dProcessor");
+        // Set up configuration properties for the test
+        injectedConfiguration.setProperty(Key.ADMIN_ENABLED, true);
+        injectedConfiguration.setProperty(Key.ADMIN_USERNAME, USERNAME);
+        injectedConfiguration.setProperty(Key.ADMIN_SECRET, SECRET);
+        injectedConfiguration.setProperty(Key.SOURCE_STATIC, "FilesystemSource");
+        injectedConfiguration.setProperty(Key.PROCESSOR_FALLBACK, "Java2dProcessor");
 
-        config.clearProperty(Key.FILESYSTEMSOURCE_PATH_PREFIX);
-        config.clearProperty(Key.DELEGATE_SCRIPT_PATHNAME);
+        // Clear any existing configuration properties that might interfere
+        injectedConfiguration.clearProperty(Key.FILESYSTEMSOURCE_PATH_PREFIX);
+        injectedConfiguration.clearProperty(Key.DELEGATE_SCRIPT_PATHNAME);
 
         webDriver = new HtmlUnitDriver(true);
         ((HtmlUnitDriver) webDriver).setJavascriptEnabled(true);
-        webDriver.get(getHTTPURI("").toString());
-        client = newClient("", USERNAME, SECRET, Application.getName() + " Control Panel");
+
+        String url = getHTTPURI("").toString();
+        System.out.println("Loading URL: " + url);
+        webDriver.get(url);
+        System.out.println("Page title: " + webDriver.getTitle());
+        System.out.println("Response status: " + ((HtmlUnitDriver) webDriver).getWebClient().getCurrentWindow().getEnclosedPage().getWebResponse().getStatusCode());
+        System.out.println("Response headers: " + ((HtmlUnitDriver) webDriver).getWebClient().getCurrentWindow().getEnclosedPage().getWebResponse().getResponseHeaders());
+        System.out.println("Page source: " + webDriver.getPageSource());
     }
 
-    @Override
     @AfterEach
     public void tearDown() throws Exception {
-        super.tearDown();
         webDriver.close();
     }
 
-    @Override
-    protected String getEndpointPath() {
-        return Route.ADMIN_PATH;
-    }
-
-    @Override
     protected URI getHTTPURI(String path) {
         try {
-            return new URI("http://admin:" + SECRET + "@localhost:" +
-                    appServer.getHTTPPort() + getEndpointPath() + path);
+            return new URI("http://admin:" + SECRET + "@localhost:" + port + "/admin" + path);
         } catch (URISyntaxException e) {
             fail(e.getMessage());
         }
@@ -161,7 +181,7 @@ public class AdminResourceUITest extends ResourceTest {
         Thread.sleep(WAIT_AFTER_SUBMIT);
 
         // Assert that the application configuration has been updated correctly
-        final Configuration config = Configuration.getInstance();
+        final Configuration config = injectedConfiguration;
 
         // Temporary Directory
         assertEquals("/bla/bla", config.getString(Key.TEMP_PATHNAME));
@@ -260,7 +280,7 @@ public class AdminResourceUITest extends ResourceTest {
         Thread.sleep(WAIT_AFTER_SUBMIT);
 
         // Assert that the application configuration has been updated correctly
-        final Configuration config = Configuration.getInstance();
+        final Configuration config = injectedConfiguration;
         assertTrue(config.getBoolean(Key.HTTP_ENABLED));
         assertEquals("1.2.3.4", config.getString(Key.HTTP_HOST));
         assertEquals(8989, config.getInt(Key.HTTP_PORT));
@@ -308,7 +328,7 @@ public class AdminResourceUITest extends ResourceTest {
         Thread.sleep(WAIT_AFTER_SUBMIT);
 
         // Assert that the application configuration has been updated correctly
-        final Configuration config = Configuration.getInstance();
+        final Configuration config = injectedConfiguration;
         assertEquals(5000, config.getLong(Key.MAX_PIXELS));
         assertEquals(1.1, config.getDouble(Key.MAX_SCALE), DELTA);
         assertEquals(75, config.getInt(Key.IIIF_MIN_SIZE));
@@ -399,7 +419,7 @@ public class AdminResourceUITest extends ResourceTest {
         Thread.sleep(WAIT_AFTER_SUBMIT);
 
         // Assert that the application configuration has been updated correctly
-        final Configuration config = Configuration.getInstance();
+        final Configuration config = injectedConfiguration;
         assertFalse(config.getBoolean(Key.SOURCE_DELEGATE));
         assertEquals("FilesystemSource",
                 config.getString(Key.SOURCE_STATIC));
@@ -544,7 +564,7 @@ public class AdminResourceUITest extends ResourceTest {
         Thread.sleep(WAIT_AFTER_SUBMIT);
 
         // Assert that the application configuration has been updated correctly
-        final Configuration config = Configuration.getInstance();
+        final Configuration config = injectedConfiguration;
         assertEquals("ManualSelectionStrategy",
                 config.getString(Key.PROCESSOR_SELECTION_STRATEGY));
         assertEquals("Java2dProcessor",
@@ -654,7 +674,7 @@ public class AdminResourceUITest extends ResourceTest {
         Thread.sleep(WAIT_AFTER_SUBMIT);
 
         // Assert that the application configuration has been updated correctly
-        final Configuration config = Configuration.getInstance();
+        final Configuration config = injectedConfiguration;
         assertTrue(config.getBoolean(Key.CLIENT_CACHE_ENABLED));
         assertEquals("250", config.getString(Key.CLIENT_CACHE_MAX_AGE));
         assertEquals("220", config.getString(Key.CLIENT_CACHE_SHARED_MAX_AGE));
@@ -741,7 +761,7 @@ public class AdminResourceUITest extends ResourceTest {
         Thread.sleep(WAIT_AFTER_SUBMIT);
 
         // Assert that the application configuration has been updated correctly
-        final Configuration config = Configuration.getInstance();
+        final Configuration config = injectedConfiguration;
         assertTrue(config.getBoolean(Key.OVERLAY_ENABLED));
         assertEquals("BasicStrategy",
                 config.getString(Key.OVERLAY_STRATEGY));
