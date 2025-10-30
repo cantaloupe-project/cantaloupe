@@ -51,7 +51,7 @@ import jakarta.servlet.http.HttpServletResponse;
  *
  * @see <a href="https://iiif.io/api/image/2.1/#4-image-requests">Image Requests</a>
  */
-@RestController
+@RestController("v2ImageController")
 @RequestMapping("/iiif/2")
 public class ImageController extends AbstractIIIFController {
 
