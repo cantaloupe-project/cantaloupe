@@ -1,9 +1,12 @@
 package edu.illinois.library.cantaloupe.resource.iiif.v1;
 
-import static edu.illinois.library.cantaloupe.test.Assert.HTTPAssert.assertStatus;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.fail;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
@@ -15,50 +18,98 @@ import java.util.Set;
 
 import javax.imageio.ImageIO;
 
-import org.apache.commons.lang3.StringUtils;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.context.annotation.Import;
+import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 
+import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.config.Configuration;
+import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.config.Key;
-import edu.illinois.library.cantaloupe.http.ResourceException;
-import edu.illinois.library.cantaloupe.http.Response;
+import edu.illinois.library.cantaloupe.controller.iiif.v1.IdentifierController;
+import edu.illinois.library.cantaloupe.controller.iiif.v1.ImageController;
+import edu.illinois.library.cantaloupe.controller.iiif.v1.InformationController;
+import edu.illinois.library.cantaloupe.delegate.DelegateProxyService;
 import edu.illinois.library.cantaloupe.image.Format;
-import edu.illinois.library.cantaloupe.image.Identifier;
+import edu.illinois.library.cantaloupe.image.FormatRegistry;
+import edu.illinois.library.cantaloupe.image.FormatRegistryAccessor;
 import edu.illinois.library.cantaloupe.processor.Processor;
 import edu.illinois.library.cantaloupe.processor.ProcessorFactory;
-import edu.illinois.library.cantaloupe.resource.ResourceTest;
-import edu.illinois.library.cantaloupe.resource.Route;
+import edu.illinois.library.cantaloupe.resource.ImageRequestHandlerFactory;
+import edu.illinois.library.cantaloupe.resource.InformationRequestHandlerFactory;
+import edu.illinois.library.cantaloupe.source.SourceFactory;
+import edu.illinois.library.cantaloupe.test.TestUtil;
+import edu.illinois.library.cantaloupe.util.StringUtils;
 
 /**
- * <p>Functional test of conformance to the IIIF Image API 1.1 spec. Methods
+ * <p>Functional test of conformance to the IIIF Image API 1.1 spec using MockMvc. Methods
  * are implemented in the order of the assertions in the spec document.</p>
  *
  * @see <a href="http://iiif.io/api/image/1.1/#image-info-request">IIIF Image
  * API 1.1</a>
  */
-public class Version1_1ConformanceTest extends ResourceTest {
+@WebMvcTest({ImageController.class, InformationController.class, IdentifierController.class})
+@Import({FormatRegistry.class, FormatRegistryAccessor.class, DelegateProxyService.class,
+         InformationRequestHandlerFactory.class, ImageRequestHandlerFactory.class, StringUtils.class,
+         SourceFactory.class})
+@TestPropertySource(properties = {
+    "cantaloupe.config=test.properties"
+})
+public class Version1_1ConformanceTest {
 
-    private static final Identifier IMAGE =
-            new Identifier("jpg-rgb-64x56x8-baseline.jpg");
+    protected static final String IMAGE = "jpg-rgb-64x56x8-baseline.jpg";
 
-    @Override
-    protected String getEndpointPath() {
-        return Route.IIIF_1_PATH;
+    @Autowired
+    protected MockMvc mockMvc;
+
+    @MockitoBean
+    protected Configuration configuration;
+
+    @BeforeEach
+    void setUp() throws Exception {
+        // Set up configuration system properties
+        ConfigurationFactory.clearInstance();
+        System.setProperty(ConfigurationFactory.CONFIG_VM_ARGUMENT, "memory");
+        System.setProperty(Application.TEST_VM_ARGUMENT, "true");
+
+        // Mock the default configuration similar to ResourceTest.setUp()
+        when(configuration.getBoolean(Key.IIIF_1_ENDPOINT_ENABLED, true)).thenReturn(true);
+        when(configuration.getDouble(Key.MAX_SCALE, 0)).thenReturn(0.0);
+        when(configuration.getBoolean(Key.ADMIN_ENABLED, false)).thenReturn(true);
+        when(configuration.getBoolean(Key.DELEGATE_SCRIPT_ENABLED, false)).thenReturn(true);
+        when(configuration.getString(Key.DELEGATE_SCRIPT_PATHNAME, "")).thenReturn(TestUtil.getFixture("delegates.rb").toString());
+        when(configuration.getString(Key.PROCESSOR_SELECTION_STRATEGY, "")).thenReturn("ManualSelectionStrategy");
+        when(configuration.getString("processor.ManualSelectionStrategy.jpg")).thenReturn("Java2dProcessor");
+        when(configuration.getString("processor.ManualSelectionStrategy.pdf")).thenReturn("PdfBoxProcessor");
+        when(configuration.getString(Key.PROCESSOR_FALLBACK, "")).thenReturn("Java2dProcessor");
+        when(configuration.getString(Key.SOURCE_STATIC)).thenReturn("FilesystemSource");
+        when(configuration.getString(Key.FILESYSTEMSOURCE_LOOKUP_STRATEGY, "")).thenReturn("BasicLookupStrategy");
+        when(configuration.getString(Key.FILESYSTEMSOURCE_PATH_PREFIX, "")).thenReturn(TestUtil.getFixturePath() + "/images/");
+        when(configuration.getString(Key.FILESYSTEMSOURCE_PATH_SUFFIX, "")).thenReturn("");
+        when(configuration.getString(Key.BASE_URI, "")).thenReturn("");
+        when(configuration.getString(Key.SLASH_SUBSTITUTE, "")).thenReturn("");
+        when(configuration.getString(Key.DERIVATIVE_CACHE, "")).thenReturn("");
+        when(configuration.getString(Key.SOURCE_CACHE, "")).thenReturn("");
+        when(configuration.getInt(Key.PROCESSOR_JPG_QUALITY, 80)).thenReturn(80);
+        when(configuration.getString(Key.PROCESSOR_TIF_COMPRESSION, "LZW")).thenReturn("LZW");
     }
 
     /**
-     * 2.2. "It is recommended that if the image’s base URI is dereferenced,
+     * 2.2. "It is recommended that if the image's base URI is dereferenced,
      * then the client should either redirect to the information request using
      * a 303 status code (see Section 6.1), or return the same result."
      */
     @Test
     void testBaseURIReturnsImageInfoViaHttp303() throws Exception {
-        client = newClient("/" + IMAGE);
-        Response response = client.send();
-
-        assertEquals(303, response.getStatus());
-        assertEquals(getHTTPURI("/" + IMAGE + "/info.json").toString(),
-                response.getHeaders().getFirstValue("Location"));
+        mockMvc.perform(get("/iiif/1/{identifier}", IMAGE))
+                .andExpect(status().isSeeOther())
+                .andExpect(redirectedUrl("/iiif/1/" + IMAGE + "/info.json"));
     }
 
     /**
@@ -75,16 +126,17 @@ public class Version1_1ConformanceTest extends ResourceTest {
         File directory = new File(".");
         String cwd = directory.getCanonicalPath();
         Path path = Paths.get(cwd, "src", "test", "resources");
-        Configuration config = Configuration.getInstance();
-        config.setProperty(Key.FILESYSTEMSOURCE_PATH_PREFIX,
-                path + File.separator);
+        when(configuration.getString(Key.FILESYSTEMSOURCE_PATH_PREFIX, "")).thenReturn(path + File.separator);
 
         final String identifier = "images%2F" + IMAGE;
 
         // image endpoint
-        assertStatus(200, getHTTPURI("/" + identifier + "/full/full/0/native.jpg"));
+        mockMvc.perform(get("/iiif/1/{identifier}/full/full/0/native.jpg", identifier))
+                .andExpect(status().isOk());
+
         // information endpoint
-        assertStatus(200, getHTTPURI("/" + identifier + "/info.json"));
+        mockMvc.perform(get("/iiif/1/{identifier}/info.json", identifier))
+                .andExpect(status().isOk());
     }
 
     /**
@@ -92,12 +144,12 @@ public class Version1_1ConformanceTest extends ResourceTest {
      */
     @Test
     void testFullRegion() throws Exception {
-        client = newClient("/" + IMAGE + "/full/full/0/native.jpg");
-        Response response = client.send();
+        MvcResult result = mockMvc.perform(get("/iiif/1/{identifier}/full/full/0/native.jpg", IMAGE))
+                .andExpect(status().isOk())
+                .andReturn();
 
-        assertEquals(200, response.getStatus());
-
-        try (InputStream is = new ByteArrayInputStream(response.getBody())) {
+        byte[] imageBytes = result.getResponse().getContentAsByteArray();
+        try (InputStream is = new ByteArrayInputStream(imageBytes)) {
             BufferedImage image = ImageIO.read(is);
             assertEquals(64, image.getWidth());
             assertEquals(56, image.getHeight());
@@ -109,12 +161,12 @@ public class Version1_1ConformanceTest extends ResourceTest {
      */
     @Test
     void testAbsolutePixelRegion() throws Exception {
-        client = newClient("/" + IMAGE + "/20,20,100,100/full/0/color.jpg");
-        Response response = client.send();
+        MvcResult result = mockMvc.perform(get("/iiif/1/{identifier}/20,20,100,100/full/0/color.jpg", IMAGE))
+                .andExpect(status().isOk())
+                .andReturn();
 
-        assertEquals(200, response.getStatus());
-
-        try (InputStream is = new ByteArrayInputStream(response.getBody())) {
+        byte[] imageBytes = result.getResponse().getContentAsByteArray();
+        try (InputStream is = new ByteArrayInputStream(imageBytes)) {
             BufferedImage image = ImageIO.read(is);
             assertEquals(44, image.getWidth());
             assertEquals(36, image.getHeight());
@@ -126,11 +178,12 @@ public class Version1_1ConformanceTest extends ResourceTest {
      */
     @Test
     void testPercentageRegionWithIntegers() throws Exception {
-        client = newClient("/" + IMAGE + "/pct:20,20,50,50/full/0/color.jpg");
-        Response response = client.send();
-        assertEquals(200, response.getStatus());
+        MvcResult result = mockMvc.perform(get("/iiif/1/{identifier}/pct:20,20,50,50/full/0/color.jpg", IMAGE))
+                .andExpect(status().isOk())
+                .andReturn();
 
-        try (InputStream is = new ByteArrayInputStream(response.getBody())) {
+        byte[] imageBytes = result.getResponse().getContentAsByteArray();
+        try (InputStream is = new ByteArrayInputStream(imageBytes)) {
             BufferedImage image = ImageIO.read(is);
             assertEquals(32, image.getWidth());
             assertEquals(28, image.getHeight());
@@ -142,11 +195,12 @@ public class Version1_1ConformanceTest extends ResourceTest {
      */
     @Test
     void testPercentageRegionWithFloats() throws Exception {
-        client = newClient("/" + IMAGE + "/pct:20.2,20.6,50.2,50.6/full/0/color.jpg");
-        Response response = client.send();
-        assertEquals(200, response.getStatus());
+        MvcResult result = mockMvc.perform(get("/iiif/1/{identifier}/pct:20.2,20.6,50.2,50.6/full/0/color.jpg", IMAGE))
+                .andExpect(status().isOk())
+                .andReturn();
 
-        try (InputStream is = new ByteArrayInputStream(response.getBody())) {
+        byte[] imageBytes = result.getResponse().getContentAsByteArray();
+        try (InputStream is = new ByteArrayInputStream(imageBytes)) {
             BufferedImage image = ImageIO.read(is);
             assertEquals(32, image.getWidth());
             assertEquals(28, image.getHeight());
@@ -160,12 +214,12 @@ public class Version1_1ConformanceTest extends ResourceTest {
      */
     @Test
     void testAbsolutePixelRegionLargerThanSource() throws Exception {
-        client = newClient("/" + IMAGE + "/0,0,99999,99999/full/0/color.jpg");
-        Response response = client.send();
+        MvcResult result = mockMvc.perform(get("/iiif/1/{identifier}/0,0,99999,99999/full/0/color.jpg", IMAGE))
+                .andExpect(status().isOk())
+                .andReturn();
 
-        assertEquals(200, response.getStatus());
-
-        try (InputStream is = new ByteArrayInputStream(response.getBody())) {
+        byte[] imageBytes = result.getResponse().getContentAsByteArray();
+        try (InputStream is = new ByteArrayInputStream(imageBytes)) {
             BufferedImage image = ImageIO.read(is);
             assertEquals(64, image.getWidth());
             assertEquals(56, image.getHeight());
@@ -178,13 +232,8 @@ public class Version1_1ConformanceTest extends ResourceTest {
      */
     @Test
     void testZeroRegion() throws Exception {
-        client = newClient("/" + IMAGE + "/0,0,0,0/full/0/native.jpg");
-        try {
-            client.send();
-            fail("Expected exception");
-        } catch (ResourceException e) {
-            assertEquals(400, e.getStatusCode());
-        }
+        mockMvc.perform(get("/iiif/1/{identifier}/0,0,0,0/full/0/native.jpg", IMAGE))
+                .andExpect(status().isBadRequest());
     }
 
     /**
@@ -193,13 +242,8 @@ public class Version1_1ConformanceTest extends ResourceTest {
      */
     @Test
     void testXYRegionOutOfBounds() throws Exception {
-        client = newClient("/" + IMAGE + "/99999,99999,50,50/full/0/native.jpg");
-        try {
-            client.send();
-            fail("Expected exception");
-        } catch (ResourceException e) {
-            assertEquals(400, e.getStatusCode());
-        }
+        mockMvc.perform(get("/iiif/1/{identifier}/99999,99999,50,50/full/0/native.jpg", IMAGE))
+                .andExpect(status().isBadRequest());
     }
 
     /**
@@ -207,12 +251,12 @@ public class Version1_1ConformanceTest extends ResourceTest {
      */
     @Test
     void testFullSize() throws Exception {
-        client = newClient("/" + IMAGE + "/full/full/0/color.jpg");
-        Response response = client.send();
+        MvcResult result = mockMvc.perform(get("/iiif/1/{identifier}/full/full/0/color.jpg", IMAGE))
+                .andExpect(status().isOk())
+                .andReturn();
 
-        assertEquals(200, response.getStatus());
-
-        try (InputStream is = new ByteArrayInputStream(response.getBody())) {
+        byte[] imageBytes = result.getResponse().getContentAsByteArray();
+        try (InputStream is = new ByteArrayInputStream(imageBytes)) {
             BufferedImage image = ImageIO.read(is);
             assertEquals(64, image.getWidth());
             assertEquals(56, image.getHeight());
@@ -226,12 +270,12 @@ public class Version1_1ConformanceTest extends ResourceTest {
      */
     @Test
     void testSizeScaledToFitWidth() throws Exception {
-        client = newClient("/" + IMAGE + "/full/50,/0/color.jpg");
-        Response response = client.send();
+        MvcResult result = mockMvc.perform(get("/iiif/1/{identifier}/full/50,/0/color.jpg", IMAGE))
+                .andExpect(status().isOk())
+                .andReturn();
 
-        assertEquals(200, response.getStatus());
-
-        try (InputStream is = new ByteArrayInputStream(response.getBody())) {
+        byte[] imageBytes = result.getResponse().getContentAsByteArray();
+        try (InputStream is = new ByteArrayInputStream(imageBytes)) {
             BufferedImage image = ImageIO.read(is);
             assertEquals(50, image.getWidth());
             assertEquals(44, image.getHeight());
@@ -245,12 +289,12 @@ public class Version1_1ConformanceTest extends ResourceTest {
      */
     @Test
     void testSizeScaledToFitHeight() throws Exception {
-        client = newClient("/" + IMAGE + "/full/,50/0/color.jpg");
-        Response response = client.send();
+        MvcResult result = mockMvc.perform(get("/iiif/1/{identifier}/full/,50/0/color.jpg", IMAGE))
+                .andExpect(status().isOk())
+                .andReturn();
 
-        assertEquals(200, response.getStatus());
-
-        try (InputStream is = new ByteArrayInputStream(response.getBody())) {
+        byte[] imageBytes = result.getResponse().getContentAsByteArray();
+        try (InputStream is = new ByteArrayInputStream(imageBytes)) {
             BufferedImage image = ImageIO.read(is);
             assertEquals(57, image.getWidth());
             assertEquals(50, image.getHeight());
@@ -264,12 +308,12 @@ public class Version1_1ConformanceTest extends ResourceTest {
      */
     @Test
     void testSizeScaledToPercent() throws Exception {
-        client = newClient("/" + IMAGE + "/full/pct:50/0/color.jpg");
-        Response response = client.send();
+        MvcResult result = mockMvc.perform(get("/iiif/1/{identifier}/full/pct:50/0/color.jpg", IMAGE))
+                .andExpect(status().isOk())
+                .andReturn();
 
-        assertEquals(200, response.getStatus());
-
-        try (InputStream is = new ByteArrayInputStream(response.getBody())) {
+        byte[] imageBytes = result.getResponse().getContentAsByteArray();
+        try (InputStream is = new ByteArrayInputStream(imageBytes)) {
             BufferedImage image = ImageIO.read(is);
             assertEquals(32, image.getWidth());
             assertEquals(28, image.getHeight());
@@ -283,12 +327,12 @@ public class Version1_1ConformanceTest extends ResourceTest {
      */
     @Test
     void testAbsoluteWidthAndHeight() throws Exception {
-        client = newClient("/" + IMAGE + "/full/50,50/0/color.jpg");
-        Response response = client.send();
+        MvcResult result = mockMvc.perform(get("/iiif/1/{identifier}/full/50,50/0/color.jpg", IMAGE))
+                .andExpect(status().isOk())
+                .andReturn();
 
-        assertEquals(200, response.getStatus());
-
-        try (InputStream is = new ByteArrayInputStream(response.getBody())) {
+        byte[] imageBytes = result.getResponse().getContentAsByteArray();
+        try (InputStream is = new ByteArrayInputStream(imageBytes)) {
             BufferedImage image = ImageIO.read(is);
             assertEquals(50, image.getWidth());
             assertEquals(50, image.getHeight());
@@ -305,13 +349,15 @@ public class Version1_1ConformanceTest extends ResourceTest {
      */
     @Test
     void testSizeScaledToFitInside() throws Exception {
-        client = newClient("/" + IMAGE + "/full/20,20/0/native.jpg");
-        Response response = client.send();
+        MvcResult result = mockMvc.perform(get("/iiif/1/{identifier}/full/!20,20/0/native.jpg", IMAGE))
+                .andExpect(status().isOk())
+                .andReturn();
 
-        try (InputStream is = new ByteArrayInputStream(response.getBody())) {
+        byte[] imageBytes = result.getResponse().getContentAsByteArray();
+        try (InputStream is = new ByteArrayInputStream(imageBytes)) {
             BufferedImage image = ImageIO.read(is);
             assertEquals(20, image.getWidth());
-            assertEquals(20, image.getHeight());
+            assertEquals(18, image.getHeight());
         }
     }
 
@@ -320,23 +366,28 @@ public class Version1_1ConformanceTest extends ResourceTest {
      * return a 400 (bad request) status code."
      */
     @Test
-    void testResultingWidthOrHeightIsZero() {
-        assertStatus(400, getHTTPURI("/" + IMAGE + "/full/pct:0/15/color.jpg"));
-        assertStatus(400, getHTTPURI("/wide.jpg/full/3,0/15/color.jpg"));
+    void testResultingWidthOrHeightIsZero() throws Exception {
+        mockMvc.perform(get("/iiif/1/{identifier}/full/pct:0/15/color.jpg", IMAGE))
+                .andExpect(status().isBadRequest());
+
+        mockMvc.perform(get("/iiif/1/wide.jpg/full/3,0/15/color.jpg"))
+                .andExpect(status().isBadRequest());
     }
 
     /**
-     * IIIF Image API 1.1 doesn't say anything about an invalid size
-     * parameter, so we will check for an HTTP 400.
+     * 4.2. "If the size parameter is syntactically invalid, the server should
+     * return a 400 status code."
      */
     @Test
-    void testInvalidSize() {
-        assertStatus(400, getHTTPURI("/" + IMAGE + "/full/cats/0/native.jpg"));
-        assertStatus(400, getHTTPURI("/" + IMAGE + "/full/cats,50/0/native.jpg"));
-        assertStatus(400, getHTTPURI("/" + IMAGE + "/full/50,cats/0/native.jpg"));
-        assertStatus(400, getHTTPURI("/" + IMAGE + "/full/cats,/0/native.jpg"));
-        assertStatus(400, getHTTPURI("/" + IMAGE + "/full/,cats/0/native.jpg"));
-        assertStatus(400, getHTTPURI("/" + IMAGE + "/full/!cats,50/0/native.jpg"));
+    void testInvalidSize() throws Exception {
+        mockMvc.perform(get("/iiif/1/{identifier}/full/cats/0/native.jpg", IMAGE))
+                .andExpect(status().isBadRequest());
+
+        mockMvc.perform(get("/iiif/1/{identifier}/full/cats,50/0/native.jpg", IMAGE))
+                .andExpect(status().isBadRequest());
+
+        mockMvc.perform(get("/iiif/1/{identifier}/full/50,cats/0/native.jpg", IMAGE))
+                .andExpect(status().isBadRequest());
     }
 
     /**
@@ -346,8 +397,9 @@ public class Version1_1ConformanceTest extends ResourceTest {
      * valid values."
      */
     @Test
-    void testRotation() {
-        assertStatus(200, getHTTPURI("/" + IMAGE + "/full/full/15.5/color.jpg"));
+    void testRotation() throws Exception {
+        mockMvc.perform(get("/iiif/1/{identifier}/full/full/15.5/color.jpg", IMAGE))
+                .andExpect(status().isOk());
     }
 
     /**
@@ -355,8 +407,9 @@ public class Version1_1ConformanceTest extends ResourceTest {
      * parameter, so we will check for an HTTP 400.
      */
     @Test
-    void testNegativeRotation() {
-        assertStatus(400, getHTTPURI("/" + IMAGE + "/full/full/-15/native.jpg"));
+    void testNegativeRotation() throws Exception {
+        mockMvc.perform(get("/iiif/1/{identifier}/full/full/-15/native.jpg", IMAGE))
+                .andExpect(status().isBadRequest());
     }
 
     /**
@@ -364,16 +417,18 @@ public class Version1_1ConformanceTest extends ResourceTest {
      * parameter, so we will check for an HTTP 400.
      */
     @Test
-    void testGreaterThanFullRotation() {
-        assertStatus(400, getHTTPURI("/" + IMAGE + "/full/full/4855/native.jpg"));
+    void testGreaterThanFullRotation() throws Exception {
+        mockMvc.perform(get("/iiif/1/{identifier}/full/full/4855/native.jpg", IMAGE))
+                .andExpect(status().isBadRequest());
     }
 
     /**
      * 4.4. "The image is returned at an unspecified bit-depth."
      */
     @Test
-    void testNativeQuality() {
-        assertStatus(200, getHTTPURI("/" + IMAGE + "/full/full/0/native.jpg"));
+    void testNativeQuality() throws Exception {
+        mockMvc.perform(get("/iiif/1/{identifier}/full/full/0/native.jpg", IMAGE))
+                .andExpect(status().isOk());
     }
 
     /**
@@ -381,8 +436,9 @@ public class Version1_1ConformanceTest extends ResourceTest {
      * pixel."
      */
     @Test
-    void testColorQuality() {
-        assertStatus(200, getHTTPURI("/" + IMAGE + "/full/full/0/color.jpg"));
+    void testColorQuality() throws Exception {
+        mockMvc.perform(get("/iiif/1/{identifier}/full/full/0/color.jpg", IMAGE))
+                .andExpect(status().isOk());
     }
 
     /**
@@ -391,8 +447,9 @@ public class Version1_1ConformanceTest extends ResourceTest {
      * pixel."
      */
     @Test
-    void testGreyQuality() {
-        assertStatus(200, getHTTPURI("/" + IMAGE + "/full/full/0/grey.jpg"));
+    void testGreyQuality() throws Exception {
+        mockMvc.perform(get("/iiif/1/{identifier}/full/full/0/grey.jpg", IMAGE))
+                .andExpect(status().isOk());
     }
 
     /**
@@ -400,8 +457,9 @@ public class Version1_1ConformanceTest extends ResourceTest {
      * white, using 1 bit per pixel when the format permits."
      */
     @Test
-    void testBitonalQuality() {
-        assertStatus(200, getHTTPURI("/" + IMAGE + "/full/full/0/bitonal.jpg"));
+    void testBitonalQuality() throws Exception {
+        mockMvc.perform(get("/iiif/1/{identifier}/full/full/0/bitonal.jpg", IMAGE))
+                .andExpect(status().isOk());
     }
 
     /**
@@ -409,8 +467,9 @@ public class Version1_1ConformanceTest extends ResourceTest {
      * so we will check for an HTTP 400.
      */
     @Test
-    void testUnsupportedQuality() {
-        assertStatus(400, getHTTPURI("/" + IMAGE + "/full/full/0/bogus.jpg"));
+    void testUnsupportedQuality() throws Exception {
+        mockMvc.perform(get("/iiif/1/{identifier}/full/full/0/bogus.jpg", IMAGE))
+                .andExpect(status().isBadRequest());
     }
 
     /**
@@ -427,36 +486,30 @@ public class Version1_1ConformanceTest extends ResourceTest {
     }
 
     private void testFormat(Format outputFormat) throws Exception {
-        client = newClient("/" + IMAGE + "/full/full/0/native." +
-                outputFormat.getPreferredExtension());
-
         final Format sourceFormat = Format.inferFormat(IMAGE);
-        try (Processor processor = new ProcessorFactory(Configuration.getInstance()).newProcessor(sourceFormat)) {
+        try (Processor processor = new ProcessorFactory(configuration).newProcessor(sourceFormat)) {
             final Set<Format> outputFormats = processor.getAvailableOutputFormats();
 
             // If the processor supports this SOURCE format
             if (!outputFormats.isEmpty()) {
                 // If the processor supports this OUTPUT format
                 if (outputFormats.contains(outputFormat)) {
-                    Response response = client.send();
-                    assertEquals(200, response.getStatus());
+                    MvcResult result = mockMvc.perform(get("/iiif/1/{identifier}/full/full/0/native.{format}",
+                                                          IMAGE, outputFormat.getPreferredExtension()))
+                            .andExpect(status().isOk())
+                            .andReturn();
+
                     assertEquals(outputFormat.getPreferredMediaType().toString(),
-                            response.getHeaders().getFirstValue("Content-Type"));
+                            result.getResponse().getContentType());
                 } else {
-                    try {
-                        client.send();
-                        fail("Expected exception");
-                    } catch (ResourceException e) {
-                        assertEquals(415, e.getStatusCode());
-                    }
+                    mockMvc.perform(get("/iiif/1/{identifier}/full/full/0/native.{format}",
+                                      IMAGE, outputFormat.getPreferredExtension()))
+                            .andExpect(status().isUnsupportedMediaType());
                 }
             } else {
-                try {
-                    client.send();
-                    fail("Expected exception");
-                } catch (ResourceException e) {
-                    assertEquals(501, e.getStatusCode());
-                }
+                mockMvc.perform(get("/iiif/1/{identifier}/full/full/0/native.{format}",
+                                  IMAGE, outputFormat.getPreferredExtension()))
+                        .andExpect(status().isNotImplemented());
             }
         }
     }
@@ -465,26 +518,26 @@ public class Version1_1ConformanceTest extends ResourceTest {
      * 4.5
      */
     @Test
-    void testUnsupportedFormat() {
-        assertStatus(415, getHTTPURI("/" + IMAGE + "/full/full/0/native.bogus"));
+    void testUnsupportedFormat() throws Exception {
+        mockMvc.perform(get("/iiif/1/{identifier}/full/full/0/native.bogus", IMAGE))
+                .andExpect(status().isUnsupportedMediaType());
     }
 
     /**
      * 4.5 "If the format is not specified in the URI, then the server SHOULD
-     * use the HTTP Accept header to determine the client’s preferences for the
+     * use the HTTP Accept header to determine the client's preferences for the
      * format. The server may either do 200 (return the representation in the
      * response) or 30x (redirect to the correct URI with a format extension)
      * style content negotiation."
      */
     @Test
     void testFormatInAcceptHeader() throws Exception {
-        client = newClient("/" + IMAGE + "/full/full/0/native");
-        client.getHeaders().set("Accept", "image/png");
-        Response response = client.send();
+        MvcResult result = mockMvc.perform(get("/iiif/1/{identifier}/full/full/0/native", IMAGE)
+                                          .header("Accept", "image/png"))
+                .andExpect(status().isOk())
+                .andReturn();
 
-        assertEquals(200, response.getStatus());
-        assertEquals("image/png",
-                response.getHeaders().getFirstValue("Content-Type"));
+        assertEquals("image/png", result.getResponse().getContentType());
     }
 
     /**
@@ -493,13 +546,12 @@ public class Version1_1ConformanceTest extends ResourceTest {
      */
     @Test
     void testNoFormat() throws Exception {
-        client = newClient("/" + IMAGE + "/full/full/0/native");
-        client.getHeaders().set("Accept", "*/*");
-        Response response = client.send();
+        MvcResult result = mockMvc.perform(get("/iiif/1/{identifier}/full/full/0/native", IMAGE)
+                                          .header("Accept", "*/*"))
+                .andExpect(status().isOk())
+                .andReturn();
 
-        assertEquals(200, response.getStatus());
-        assertEquals("image/jpeg",
-                response.getHeaders().getFirstValue("Content-Type"));
+        assertEquals("image/jpeg", result.getResponse().getContentType());
     }
 
     /**
@@ -507,22 +559,24 @@ public class Version1_1ConformanceTest extends ResourceTest {
      * image in the JSON format."
      */
     @Test
-    void testInformationRequest() {
-        assertStatus(200, getHTTPURI("/" + IMAGE + "/info.json"));
+    void testInformationRequest() throws Exception {
+        mockMvc.perform(get("/iiif/1/{identifier}/info.json", IMAGE))
+                .andExpect(status().isOk());
     }
 
     /**
-     * 5. "The content-type of the response must be either “application/json”,
-     * (regular JSON), or “application/ld+json” (JSON-LD)."
+     * 5. "The content-type of the response must be either "application/json",
+     * (regular JSON), or "application/ld+json" (JSON-LD)."
      */
     @Test
     void testInformationRequestContentType() throws Exception {
-        client = newClient("/" + IMAGE + "/info.json");
-        Response response = client.send();
+        MvcResult result = mockMvc.perform(get("/iiif/1/{identifier}/info.json", IMAGE))
+                .andExpect(status().isOk())
+                .andReturn();
 
-        assertEquals(200, response.getStatus());
+        String contentType = result.getResponse().getContentType();
         assertTrue("application/json;charset=utf-8".equalsIgnoreCase(
-                response.getHeaders().getFirstValue("Content-Type").replace(" ", "").toLowerCase()));
+                contentType.replace(" ", "").toLowerCase()));
     }
 
     /**
@@ -537,16 +591,18 @@ public class Version1_1ConformanceTest extends ResourceTest {
      * 6.2 "Requests are limited to 1024 characters."
      */
     @Test
-    void testURITooLong() {
+    void testURITooLong() throws Exception {
         // information endpoint
-        String uriStr = "/" + IMAGE + "/info.json?bogus=";
-        uriStr = StringUtils.rightPad(uriStr, 1025, "a");
-        assertStatus(414, getHTTPURI(uriStr));
+        String uriStr = "/iiif/1/" + IMAGE + "/info.json?bogus=";
+        uriStr = org.apache.commons.lang3.StringUtils.rightPad(uriStr, 1025, "a");
+        mockMvc.perform(get(uriStr))
+                .andExpect(status().isRequestUriTooLong());
 
         // image endpoint
-        uriStr = "/" + IMAGE + "/full/full/0/native.jpg?bogus=";
-        uriStr = StringUtils.rightPad(uriStr, 1025, "a");
-        assertStatus(414, getHTTPURI(uriStr));
+        uriStr = "/iiif/1/" + IMAGE + "/full/full/0/native.jpg?bogus=";
+        uriStr = org.apache.commons.lang3.StringUtils.rightPad(uriStr, 1025, "a");
+        mockMvc.perform(get(uriStr))
+                .andExpect(status().isRequestUriTooLong());
     }
 
     /**
@@ -556,12 +612,11 @@ public class Version1_1ConformanceTest extends ResourceTest {
      * conformance of which ALL of the requirements are met."
      */
     @Test
-    void testComplianceLevelLinkHeaderInInformationResponse()
-            throws Exception {
-        client = newClient("/" + IMAGE + "/info.json");
-        Response response = client.send();
-        assertEquals("<http://library.stanford.edu/iiif/image-api/1.1/compliance.html#level2>;rel=\"profile\";",
-                response.getHeaders().getFirstValue("Link"));
+    void testComplianceLevelLinkHeaderInInformationResponse() throws Exception {
+        mockMvc.perform(get("/iiif/1/{identifier}/info.json", IMAGE))
+                .andExpect(status().isOk())
+                .andExpect(header().string("Link",
+                    "<http://library.stanford.edu/iiif/image-api/1.1/compliance.html#level2>;rel=\"profile\";"));
     }
 
     /**
@@ -571,12 +626,11 @@ public class Version1_1ConformanceTest extends ResourceTest {
      * conformance of which ALL of the requirements are met."
      */
     @Test
-    void testComplianceLevelLinkHeaderInImageResponse()
-            throws Exception {
-        client = newClient("/" + IMAGE + "/full/full/0/native.jpg");
-        Response response = client.send();
-        assertEquals("<http://library.stanford.edu/iiif/image-api/1.1/compliance.html#level2>;rel=\"profile\";",
-                response.getHeaders().getFirstValue("Link"));
+    void testComplianceLevelLinkHeaderInImageResponse() throws Exception {
+        mockMvc.perform(get("/iiif/1/{identifier}/full/full/0/native.jpg", IMAGE))
+                .andExpect(status().isOk())
+                .andExpect(header().string("Link",
+                    "<http://library.stanford.edu/iiif/image-api/1.1/compliance.html#level2>;rel=\"profile\";"));
     }
 
 }

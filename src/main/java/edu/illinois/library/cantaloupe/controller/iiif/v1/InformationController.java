@@ -3,7 +3,6 @@ package edu.illinois.library.cantaloupe.controller.iiif.v1;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
-import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -23,8 +22,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.http.ContentTypeNegotiator;
-import edu.illinois.library.cantaloupe.http.Headers;
 import edu.illinois.library.cantaloupe.http.Reference;
+import edu.illinois.library.cantaloupe.http.Status;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.image.MetaIdentifier;
@@ -71,6 +70,11 @@ public class InformationController extends AbstractIIIFController {
         checkEndpointEnabled();
         List<String> pathArguments = Arrays.asList(identifier);
         IIIFRequest iiifrequest = new IIIFRequest(request, pathArguments, configuration);
+
+        // 6.2: http://iiif.io/api/image/1.1/#server-responses-error
+        if (iiifrequest.getReference().toString().length() > 1024) {
+            throw new ResourceException(Status.URI_TOO_LONG);
+        }
 
         MetaIdentifier newMetaId = iiifrequest.getMetaIdentifier().getNormalizedScaleConstraintMetaIdentifier();
         if (newMetaId != null) { // We need to redirect to the normalized scale constraint
@@ -125,7 +129,7 @@ public class InformationController extends AbstractIIIFController {
 
                 // Create the IIIF Information response
                 Information iiifInfo = createInformation(info, availableOutputFormats,  iiifrequest);
-
+                headers.add("Link", String.format("<%s>;rel=\"profile\";", iiifInfo.profile));
                 return new ResponseEntity<Information>(iiifInfo, headers, HttpStatus.OK);
             } catch (ResourceException e) {
                 if (e.getStatus().getCode() < 500) {
@@ -162,20 +166,6 @@ public class InformationController extends AbstractIIIFController {
         return mediaType + ";charset=UTF-8";
     }
 
-    private Headers getHeaders(HttpServletRequest request) {
-        Headers headers = new Headers();
-        final Enumeration<String> names = request.getHeaderNames();
-        if (names != null) {
-            while (names.hasMoreElements()) {
-                final String name = names.nextElement();
-                final Enumeration<String> values = request.getHeaders(name);
-                while (values.hasMoreElements()) {
-                    headers.add(name, values.nextElement());
-                }
-            }
-        }
-        return headers;
-    }
 
     /**
      * Creates a real IIIF Information object using the InformationFactory.
