@@ -1,19 +1,19 @@
 package edu.illinois.library.cantaloupe;
 
-import edu.illinois.library.cantaloupe.config.Configuration;
-import edu.illinois.library.cantaloupe.config.Key;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.IOException;
 import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import edu.illinois.library.cantaloupe.config.Configuration;
+import edu.illinois.library.cantaloupe.config.Key;
+
 /**
- * Class representing the application. This is not the main application class,
- * which is actually {@link StandaloneEntry}.
+ * Class representing the application. This is not the main application class.
  */
 public final class Application {
 
