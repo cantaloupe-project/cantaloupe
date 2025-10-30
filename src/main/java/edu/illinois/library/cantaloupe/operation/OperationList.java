@@ -1,5 +1,19 @@
 package edu.illinois.library.cantaloupe.operation;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.delegate.DelegateProxy;
@@ -17,19 +31,6 @@ import edu.illinois.library.cantaloupe.operation.overlay.OverlayFactory;
 import edu.illinois.library.cantaloupe.operation.redaction.Redaction;
 import edu.illinois.library.cantaloupe.operation.redaction.RedactionService;
 import edu.illinois.library.cantaloupe.util.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * <p>Normalized list of {@link Operation image transform operations}
@@ -309,7 +310,7 @@ public final class OperationList implements Iterable<Operation> {
 
         // Overlay
         try {
-            final OverlayFactory overlayFactory = new OverlayFactory();
+            final OverlayFactory overlayFactory = new OverlayFactory(config);
             if (overlayFactory.shouldApplyToImage(getResultingSize(sourceImageSize))) {
                 final Optional<Overlay> overlay =
                         overlayFactory.newOverlay(delegateProxy);

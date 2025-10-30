@@ -125,8 +125,8 @@ public class IIIFRequest extends Request {
      *         {@code null}.
      */
     public final DelegateProxy getDelegateProxy() {
-        if (delegateProxy == null && DelegateProxyService.isDelegateAvailable()) {
-            DelegateProxyService service = DelegateProxyService.getInstance();
+        DelegateProxyService service = DelegateProxyService.getInstance();
+        if (delegateProxy == null && service.isDelegateAvailable()) {
             try {
                 delegateProxy = service.newDelegateProxy(getRequestContext());
             } catch (UnavailableException e) {
