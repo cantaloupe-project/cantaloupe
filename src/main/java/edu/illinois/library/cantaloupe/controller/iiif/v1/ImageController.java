@@ -46,7 +46,7 @@ import jakarta.servlet.http.HttpServletResponse;
  *
  * @see <a href="https://iiif.io/api/image/1.0/#21-image-request-url-syntax">Image Requests</a>
  */
-@RestController
+@RestController("v1ImageController")
 @RequestMapping("/iiif/1")
 public class ImageController extends AbstractIIIFController {
     private static final List<String> AVAILABLE_OUTPUT_MEDIA_TYPES =

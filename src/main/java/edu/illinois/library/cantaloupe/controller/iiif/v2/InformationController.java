@@ -51,7 +51,7 @@ import jakarta.servlet.http.HttpServletResponse;
  * @see <a href="https://iiif.io/api/image/2.0/#image-information-request-uri-syntax">
  *     Image Information Requests</a>
  */
-@RestController
+@RestController("v2InformationController")
 @RequestMapping("/iiif/2")
 public class InformationController extends AbstractIIIFController {
     private final InformationRequestHandlerFactory handlerFactory;
@@ -120,7 +120,7 @@ public class InformationController extends AbstractIIIFController {
                     return null; // Auth failure.
                 }
                 addHeaders(response, iiifrequest);
- 
+
                 setContentTypeAndLastModified(request, headers, info);
 
                 // Create the IIIF Information response
