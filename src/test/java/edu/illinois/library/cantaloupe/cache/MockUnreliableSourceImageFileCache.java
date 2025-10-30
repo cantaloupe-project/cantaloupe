@@ -1,15 +1,20 @@
 package edu.illinois.library.cantaloupe.cache;
 
-import edu.illinois.library.cantaloupe.image.Identifier;
-import edu.illinois.library.cantaloupe.test.TestUtil;
-
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Optional;
 
+import edu.illinois.library.cantaloupe.config.Configuration;
+import edu.illinois.library.cantaloupe.image.Identifier;
+import edu.illinois.library.cantaloupe.test.TestUtil;
+
 public class MockUnreliableSourceImageFileCache extends MockCache {
 
     private int callCount = 0;
+
+    MockUnreliableSourceImageFileCache(Configuration configuration) { 
+        super(configuration);
+    }
 
     /**
      * @throws IOException only the first time it's called.
