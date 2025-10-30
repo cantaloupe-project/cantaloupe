@@ -17,11 +17,12 @@ import edu.illinois.library.cantaloupe.test.BaseTest;
 public class ManualSelectionStrategyTest extends BaseTest {
 
     private ManualSelectionStrategy instance;
-    private  Configuration config = Configuration.getInstance();
+    private  Configuration config;
 
     @BeforeEach
     public void setUp() throws Exception {
         super.setUp();
+        config = Configuration.getInstance();
         instance = new ManualSelectionStrategy(config);
     }
 
@@ -30,8 +31,7 @@ public class ManualSelectionStrategyTest extends BaseTest {
         config.setProperty("processor.ManualSelectionStrategy.pdf",
                 PdfBoxProcessor.class.getSimpleName());
 
-        List<Class<? extends Processor>> expected =
-                Collections.singletonList(PdfBoxProcessor.class);
+        List<Class<? extends Processor>> expected = Collections.singletonList(PdfBoxProcessor.class);
         assertEquals(expected, instance.getPreferredProcessors(Format.get("pdf")));
     }
 
