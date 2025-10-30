@@ -75,7 +75,8 @@ public class InformationRequestHandlerTest extends BaseTest {
 
         try (InformationRequestHandler handler = new InformationRequestHandler(
                 request,
-                callback)) {
+                callback,
+                configuration)) {
             handler.handle();
             assertTrue(callback.isAuthorizeCalled);
         }
@@ -92,7 +93,8 @@ public class InformationRequestHandlerTest extends BaseTest {
         final IntrospectiveCallback callback = new IntrospectiveCallback();
         try (InformationRequestHandler handler = new InformationRequestHandler(
                 request,
-                callback)) {
+                callback,
+                configuration)) {
             handler.handle();
             assertTrue(callback.isSourceAccessedCalled);
         }
@@ -109,7 +111,8 @@ public class InformationRequestHandlerTest extends BaseTest {
         final IntrospectiveCallback callback = new IntrospectiveCallback();
         try (InformationRequestHandler handler = new InformationRequestHandler(
                 request,
-                callback)) {
+                callback,
+                configuration)) {
             handler.handle();
             assertTrue(callback.isKnowAvailableOutputFormatsCalled);
         }
@@ -144,7 +147,8 @@ public class InformationRequestHandlerTest extends BaseTest {
         final IntrospectiveCallback callback = new IntrospectiveCallback();
         try (InformationRequestHandler handler = new InformationRequestHandler(
                 request,
-                callback)) {
+                callback,
+                configuration)) {
             Info cachedInfo = handler.handle();
             assertEquals(info, cachedInfo);
         }
@@ -182,7 +186,8 @@ public class InformationRequestHandlerTest extends BaseTest {
 
         final IntrospectiveCallback callback = new IntrospectiveCallback();
         try (InformationRequestHandler handler = new InformationRequestHandler(request,
-                callback)) {
+                callback,
+                configuration)) {
             Info handledInfo = handler.handle();
             assertNotNull(handledInfo);
             assertEquals(1, handledInfo.getNumPages());
@@ -201,7 +206,8 @@ public class InformationRequestHandlerTest extends BaseTest {
         final IntrospectiveCallback callback = new IntrospectiveCallback();
         try (InformationRequestHandler handler = new InformationRequestHandler(
                 request,
-                callback)) {
+                callback,
+                configuration)) {
             Info info = handler.handle();
             assertNotNull(info);
         }
@@ -219,7 +225,8 @@ public class InformationRequestHandlerTest extends BaseTest {
         final IntrospectiveCallback callback = new IntrospectiveCallback();
         try (InformationRequestHandler handler = new InformationRequestHandler(
                 request,
-                callback)) {
+                callback,
+                configuration)) {
             Info info = handler.handle();
             assertEquals(1, info.getNumPages());
         }
@@ -240,7 +247,8 @@ public class InformationRequestHandlerTest extends BaseTest {
                     @Override
                     public void knowAvailableOutputFormats(Set<Format> availableOutputFormats) {
                     }
-                })) {
+                },
+                configuration)) {
             Info info = handler.handle();
             assertNull(info);
         }
