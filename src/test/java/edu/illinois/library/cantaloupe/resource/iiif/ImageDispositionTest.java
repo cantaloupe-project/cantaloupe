@@ -11,10 +11,10 @@ import org.junit.jupiter.api.Test;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.image.Format;
+import edu.illinois.library.cantaloupe.resource.IIIFRequest;
 import edu.illinois.library.cantaloupe.resource.MockHttpServletRequest;
-import edu.illinois.library.cantaloupe.resource.Request;
 public class ImageDispositionTest {
-    Request request = new Request(new MockHttpServletRequest(), Collections.emptyList(), Configuration.getInstance());
+    IIIFRequest request = new IIIFRequest(new MockHttpServletRequest(), Collections.emptyList(), Configuration.getInstance());
 
     @BeforeAll
     public static void beforeClass() throws Exception {
@@ -81,7 +81,7 @@ public class ImageDispositionTest {
                 disposition);
 
         // attachment; filename="unsafe_injection_.....//./.jpg"
-        request = new Request(new MockHttpServletRequest(), Collections.emptyList(), Configuration.getInstance());
+        request = new IIIFRequest(new MockHttpServletRequest(), Collections.emptyList(), Configuration.getInstance());
         request.getReference().getQuery().set(
                 ImageDisposition.RESPONSE_CONTENT_DISPOSITION_QUERY_ARG,
                 "attachment; filename=\"unsafe_injection_.....//./.jpg\"");
@@ -116,7 +116,7 @@ public class ImageDispositionTest {
                 disposition);
 
         // attachment; filename*= utf-8''"unsafe_injection_.....//./.jpg"
-        request = new Request(new MockHttpServletRequest(), Collections.emptyList(), Configuration.getInstance());
+        request = new IIIFRequest(new MockHttpServletRequest(), Collections.emptyList(), Configuration.getInstance());
         request.getReference().getQuery().set(
                 ImageDisposition.RESPONSE_CONTENT_DISPOSITION_QUERY_ARG,
                 "attachment; filename*= utf-8''unsafe_injection_.....//./.jpg");

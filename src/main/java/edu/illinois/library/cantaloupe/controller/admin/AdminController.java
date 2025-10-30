@@ -4,10 +4,10 @@ import java.awt.GraphicsEnvironment;
 import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
 
@@ -23,7 +23,6 @@ import edu.illinois.library.cantaloupe.auth.BasicAuth;
 import edu.illinois.library.cantaloupe.cache.CacheFactory;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
-import edu.illinois.library.cantaloupe.http.Headers;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.MetaIdentifierTransformerFactory;
@@ -33,7 +32,6 @@ import edu.illinois.library.cantaloupe.processor.Processor;
 import edu.illinois.library.cantaloupe.processor.ProcessorFactory;
 import edu.illinois.library.cantaloupe.processor.SourceFormatException;
 import edu.illinois.library.cantaloupe.resource.EndpointDisabledException;
-import edu.illinois.library.cantaloupe.resource.Request;
 import edu.illinois.library.cantaloupe.resource.ResourceException;
 import edu.illinois.library.cantaloupe.resource.TemplateVariables;
 import edu.illinois.library.cantaloupe.source.Source;
@@ -154,8 +152,7 @@ public class AdminController {
         response.setHeader("Cache-Control", "no-cache");
 
         // Create request wrapper and get template variables
-        Request requestWrapper = new Request(request, Collections.emptyList(), configuration);
-        TemplateVariables vars = getTemplateVars(requestWrapper);
+        TemplateVariables vars = getTemplateVars(request);
 
         model.addAllAttributes(vars.getVars());
 
@@ -173,8 +170,8 @@ public class AdminController {
      * @return Map containing keys that will be used as variables in the admin
      *         interface's HTML template.
      */
-    private TemplateVariables getTemplateVars(Request request) {
-        final TemplateVariables vars = TemplateVariables.getDefault(request);
+    private TemplateVariables getTemplateVars(HttpServletRequest servletRequest) {
+        final TemplateVariables vars = TemplateVariables.getDefault(servletRequest.getHeader("X-Forwarded-Path"));
         vars.put("adminUri", StringUtils.stripEnd((String) vars.get("basePath"), "/") + "/admin");
 
         ////////////////////////////////////////////////////////////////////
@@ -190,17 +187,11 @@ public class AdminController {
             vars.put("javaVersion", runtimeMxBean.getSpecVersion());
 
             // Reverse-Proxy headers
-            final Headers headers = request.getHeaders();
-            vars.put("xForwardedProtoHeader",
-                    headers.getFirstValue("X-Forwarded-Proto", ""));
-            vars.put("xForwardedHostHeader",
-                    headers.getFirstValue("X-Forwarded-Host", ""));
-            vars.put("xForwardedPortHeader",
-                    headers.getFirstValue("X-Forwarded-Port", ""));
-            vars.put("xForwardedPathHeader",
-                    headers.getFirstValue("X-Forwarded-Path", ""));
-            vars.put("xForwardedForHeader",
-                    headers.getFirstValue("X-Forwarded-For", ""));
+            vars.put("xForwardedProtoHeader", Optional.ofNullable(servletRequest.getHeader("X-Forwarded-Proto")).orElse(""));
+            vars.put("xForwardedHostHeader", Optional.ofNullable(servletRequest.getHeader("X-Forwarded-Host")).orElse(""));
+            vars.put("xForwardedPortHeader", Optional.ofNullable(servletRequest.getHeader("X-Forwarded-Port")).orElse(""));
+            vars.put("xForwardedPathHeader", Optional.ofNullable(servletRequest.getHeader("X-Forwarded-Path")).orElse(""));
+            vars.put("xForwardedForHeader", Optional.ofNullable(servletRequest.getHeader("X-Forwarded-For")).orElse(""));
         }
 
         ////////////////////////////////////////////////////////////////////
