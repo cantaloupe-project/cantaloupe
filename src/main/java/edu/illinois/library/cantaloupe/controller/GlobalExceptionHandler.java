@@ -7,6 +7,7 @@ import java.util.Map;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
@@ -66,11 +67,23 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body(errorResponse);
     }
 
+    // Handles invalid quality
+    @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
+    public ResponseEntity<Map<String, Object>> handleMethodNotSupportedException(
+            HttpRequestMethodNotSupportedException ex, WebRequest request) {
+        Map<String, Object> errorResponse = new HashMap<>();
+        errorResponse.put("status", 400);
+        errorResponse.put("error", "Bad Request");
+        errorResponse.put("message", ex.getMessage());
+        errorResponse.put("path", request.getDescription(false));
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+    }
+
     // Handles a page request that is greater than the max
     @ExceptionHandler(IllegalClientArgumentException.class)
     public ResponseEntity<Map<String, Object>> handleAccessDeniedException(
             IllegalClientArgumentException ex, WebRequest request) {
-
         Map<String, Object> errorResponse = new HashMap<>();
         errorResponse.put("status", 400);
         errorResponse.put("error", "Bad Request");

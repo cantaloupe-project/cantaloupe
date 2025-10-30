@@ -14,9 +14,12 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
+import edu.illinois.library.cantaloupe.http.ContentTypeNegotiator;
 import edu.illinois.library.cantaloupe.http.Status;
 import edu.illinois.library.cantaloupe.image.Dimension;
+import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Info;
+import edu.illinois.library.cantaloupe.image.MediaType;
 import edu.illinois.library.cantaloupe.image.Metadata;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.operation.Scale;
@@ -26,6 +29,7 @@ import edu.illinois.library.cantaloupe.resource.IIIFRequest;
 import edu.illinois.library.cantaloupe.resource.ImageRequestHandler;
 import edu.illinois.library.cantaloupe.resource.ImageRequestHandlerFactory;
 import edu.illinois.library.cantaloupe.resource.RequestContextDecorator;
+import edu.illinois.library.cantaloupe.resource.ResourceException;
 import edu.illinois.library.cantaloupe.resource.iiif.IIIFAuth;
 import edu.illinois.library.cantaloupe.resource.iiif.ImageDisposition;
 import edu.illinois.library.cantaloupe.resource.iiif.ScaleValidator;
@@ -45,7 +49,8 @@ import jakarta.servlet.http.HttpServletResponse;
 @RestController
 @RequestMapping("/iiif/1")
 public class ImageController extends AbstractIIIFController {
-
+    private static final List<String> AVAILABLE_OUTPUT_MEDIA_TYPES =
+            List.of("image/jpeg", "image/tiff", "image/png", "image/gif");
     private final ImageRequestHandlerFactory handlerFactory;
 
     @Autowired
@@ -54,26 +59,37 @@ public class ImageController extends AbstractIIIFController {
         this.handlerFactory = handlerFactory;
     }
 
-    @GetMapping("/{identifier}/{region}/{size}/{rotation}/{quality}.{format}")
+    @GetMapping({"/{identifier}/{region}/{size}/{rotation}/{quality:native|color|grey|bitonal}.{format}", "/{identifier}/{region}/{size}/{rotation}/{quality:native|color|grey|bitonal}"} )
     public void getImage(
             @PathVariable String identifier,
             @PathVariable String region,
             @PathVariable String size,
             @PathVariable String rotation,
             @PathVariable String quality,
-            @PathVariable String format,
+            @PathVariable(required = false) String format,
             HttpServletRequest request,
             HttpServletResponse response) throws Exception {
 
         checkEndpointEnabled();
 
+        if (format == null) {
+            format = getEffectiveOutputFormat(format, request).toString();
+        }
+
         // Create an IIIFRequest from the HttpServletRequest
         List<String> pathArguments = Arrays.asList(identifier, region, size, rotation, quality, format);
         IIIFRequest iiifrequest = new IIIFRequest(request, pathArguments, configuration);
+
+        // 6.2: http://iiif.io/api/image/1.1/#server-responses-error
+        if (iiifrequest.getReference().toString().length() > 1024) {
+            throw new ResourceException(Status.URI_TOO_LONG);
+        }
+
         if (redirectToNormalizedScaleConstraint(iiifrequest, response)) {
             return;
         }
         RequestContextDecorator.decorateRequestContext(iiifrequest);
+
         addHeaders(response, iiifrequest);
 
         final Parameters params = new Parameters(
@@ -189,5 +205,42 @@ public class ImageController extends AbstractIIIFController {
 
     private void setLastModifiedHeader(HttpServletResponse response, java.time.Instant timestamp) {
         response.setDateHeader("Last-Modified", timestamp.toEpochMilli());
+    }
+
+        /**
+     * Negotiates an output format.
+     *
+     * @return The best output format based on the URI extension, {@code
+     *         Accept} header, or default.
+     */
+    private Format getEffectiveOutputFormat(String extension, HttpServletRequest iiifRequest) {
+
+        Format format = null;
+        if (extension != null) {
+            format = Format.all().stream()
+                    .filter(f -> f.getPreferredExtension().equals(extension))
+                    .findFirst()
+                    .orElse(null);
+        }
+
+        if (format == null) { // if none, check the Accept header.
+            ContentTypeNegotiator negotiator = new ContentTypeNegotiator(getHeaders(iiifRequest));
+            String contentType = negotiator.negotiateContentType(AVAILABLE_OUTPUT_MEDIA_TYPES);
+            if (contentType != null) {
+                format = new MediaType(contentType).toFormat();
+            }
+        }
+
+        if (format == null) {
+            format = defaultFormat();
+        }
+        return format;
+    }
+
+    /**
+     * Format to assume when no extension is present in the URI.
+     */
+    private Format defaultFormat() {
+        return Format.get("jpg");
     }
 }
