@@ -6,6 +6,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 
 public interface FileConfiguration extends Configuration {
@@ -41,6 +42,7 @@ public interface FileConfiguration extends Configuration {
             final String key = keys.next();
             map.put(key, getProperty(key));
         }
+        map.values().removeIf(Objects::isNull);
         return Collections.unmodifiableMap(map);
     }
 
