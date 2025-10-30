@@ -1,12 +1,5 @@
 package edu.illinois.library.cantaloupe.operation.overlay;
 
-import edu.illinois.library.cantaloupe.delegate.DelegateProxyService;
-import edu.illinois.library.cantaloupe.operation.Color;
-import edu.illinois.library.cantaloupe.delegate.DelegateProxy;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import javax.script.ScriptException;
 import java.awt.Font;
 import java.awt.font.TextAttribute;
 import java.io.File;
@@ -16,20 +9,32 @@ import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.script.ScriptException;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import edu.illinois.library.cantaloupe.config.Configuration;
+import edu.illinois.library.cantaloupe.delegate.DelegateProxy;
+import edu.illinois.library.cantaloupe.delegate.DelegateProxyService;
+import edu.illinois.library.cantaloupe.operation.Color;
+
 final class DelegateOverlayService implements OverlayService {
 
     private static final Logger LOGGER =
             LoggerFactory.getLogger(DelegateOverlayService.class);
 
     private final DelegateProxy delegateProxy;
+    private final Configuration configuration;
 
-    DelegateOverlayService(DelegateProxy delegateProxy) {
+    DelegateOverlayService(DelegateProxy delegateProxy, Configuration configuration) {
         this.delegateProxy = delegateProxy;
+        this.configuration = configuration;
     }
 
     @Override
     public boolean isAvailable() {
-        return DelegateProxyService.isDelegateAvailable();
+        return new DelegateProxyService(configuration).isDelegateAvailable();
     }
 
     /**
