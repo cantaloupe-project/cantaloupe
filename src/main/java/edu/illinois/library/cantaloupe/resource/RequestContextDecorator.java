@@ -9,7 +9,8 @@ import edu.illinois.library.cantaloupe.image.ScaleConstraint;
 
 public class RequestContextDecorator {
     public static void decorateRequestContext(IIIFRequest request) {
-        if (!DelegateProxyService.isDelegateAvailable()) {
+        DelegateProxyService proxyService = DelegateProxyService.getInstance();
+        if (!proxyService.isDelegateAvailable()) {
             return;
         }
         RequestContext context = request.getRequestContext();

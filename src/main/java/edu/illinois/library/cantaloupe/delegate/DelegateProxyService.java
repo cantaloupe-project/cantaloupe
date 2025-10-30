@@ -64,27 +64,14 @@ public class DelegateProxyService {
     /**
      * @return Whether a Java delegate is available, or the delegate script is enabled.
      */
-    public static boolean isDelegateAvailable() {
+    public boolean isDelegateAvailable() {
         return getJavaDelegate().isPresent() || isScriptEnabled();
-    }
-
-    /**
-     * @return Whether the delegate script is enabled.
-     */
-    public static boolean isScriptEnabled() {
-        if (staticInstance != null) {
-            return staticInstance.isScriptEnabledInternal();
-        } else {
-            // Fallback to singleton pattern for non-Spring contexts
-            var config = edu.illinois.library.cantaloupe.config.Configuration.getInstance();
-            return config.getBoolean(Key.DELEGATE_SCRIPT_ENABLED, false);
-        }
     }
 
     /**
      * Instance method for checking if script is enabled using injected Configuration.
      */
-    public boolean isScriptEnabledInternal() {
+    public boolean isScriptEnabled() {
         return configuration.getBoolean(Key.DELEGATE_SCRIPT_ENABLED, false);
     }
 
@@ -230,7 +217,7 @@ public class DelegateProxyService {
             var proxy = new JavaDelegateProxy(getJavaDelegate().get());
             proxy.setRequestContext(context);
             return proxy;
-        } else if (isScriptEnabledInternal()) {
+        } else if (isScriptEnabled()) {
             LOGGER.debug("Instantiating a {}",
                     JRubyDelegateProxy.class.getSimpleName());
             try {
