@@ -1,19 +1,23 @@
 package edu.illinois.library.cantaloupe.cache;
 
-import edu.illinois.library.cantaloupe.image.Identifier;
-import edu.illinois.library.cantaloupe.image.Info;
-import edu.illinois.library.cantaloupe.operation.OperationList;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Path;
 import java.util.Optional;
 
+import edu.illinois.library.cantaloupe.config.Configuration;
+import edu.illinois.library.cantaloupe.image.Identifier;
+import edu.illinois.library.cantaloupe.image.Info;
+import edu.illinois.library.cantaloupe.operation.OperationList;
+
 class MockCache implements DerivativeCache, SourceCache {
 
     private boolean isCleanUpCalled, isInitializeCalled, isOnCacheWorkerCalled,
             isPurgeInfosCalled, isPurgeInvalidCalled, isShutdownCalled;
+
+    MockCache(Configuration configuration) { 
+    }
 
     @Override
     public void cleanUp() {

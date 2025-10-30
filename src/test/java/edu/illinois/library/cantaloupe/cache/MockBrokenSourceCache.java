@@ -1,14 +1,17 @@
 package edu.illinois.library.cantaloupe.cache;
 
-import edu.illinois.library.cantaloupe.image.Identifier;
-
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.file.Path;
 import java.util.Optional;
 
-public class MockBrokenSourceCache implements SourceCache {
+import edu.illinois.library.cantaloupe.config.Configuration;
+import edu.illinois.library.cantaloupe.image.Identifier;
 
+public class MockBrokenSourceCache implements SourceCache {
+    MockBrokenSourceCache(Configuration configuration) { 
+    }
+    
     @Override
     public Optional<Path> getSourceImageFile(Identifier identifier)
             throws IOException {
