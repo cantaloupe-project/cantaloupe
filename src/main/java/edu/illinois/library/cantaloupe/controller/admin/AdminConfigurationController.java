@@ -63,7 +63,6 @@ public class AdminConfigurationController {
                 map = ((MapConfiguration) config).getBackingMap();
             }
         }
-
         return ResponseEntity.ok(map);
     }
 
