@@ -2,6 +2,8 @@ package edu.illinois.library.cantaloupe.operation.overlay;
 
 import java.util.Optional;
 
+import javax.script.ScriptException;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,17 +44,16 @@ public final class OverlayFactory {
         readStrategy();
     }
 
-    private OverlayService newOverlayService(DelegateProxy delegateProxy)
-            throws ConfigurationException {
+    private OverlayService newOverlayService(DelegateProxy delegateProxy) {
         OverlayService instance = null;
         switch (getStrategy()) {
             case BASIC:
                 switch (configuration.getString(Key.OVERLAY_TYPE, "")) {
                     case "image":
-                        instance = new BasicImageOverlayService();
+                        instance = new BasicImageOverlayService(configuration);
                         break;
                     case "string":
-                        instance = new BasicStringOverlayService();
+                        instance = new BasicStringOverlayService(configuration);
                         break;
                 }
                 break;
@@ -80,8 +81,7 @@ public final class OverlayFactory {
      * @return              Instance respecting the overlay strategy and given
      *                      arguments.
      */
-    public Optional<Overlay> newOverlay(DelegateProxy delegateProxy)
-            throws Exception {
+    public Optional<Overlay> newOverlay(DelegateProxy delegateProxy) throws ConfigurationException, ScriptException {
         OverlayService service = newOverlayService(delegateProxy);
         if (service != null && service.isAvailable()) {
             return Optional.ofNullable(service.newOverlay());
@@ -123,11 +123,24 @@ public final class OverlayFactory {
     public boolean shouldApplyToImage(Dimension outputImageSize) {
         switch (strategy) {
             case BASIC:
-                return BasicOverlayService.shouldApplyToImage(outputImageSize);
+                return shouldBasicApplyToImage(outputImageSize);
             default:
                 // The delegate method will decide.
                 return true;
         }
+    }
+
+    /**
+     * @return Whether an overlay should be applied to an output image with
+     * the given dimensions.
+     */
+    private boolean shouldBasicApplyToImage(Dimension outputImageSize) {
+        final int minOutputWidth =
+                configuration.getInt(Key.OVERLAY_OUTPUT_WIDTH_THRESHOLD, 0);
+        final int minOutputHeight =
+                configuration.getInt(Key.OVERLAY_OUTPUT_HEIGHT_THRESHOLD, 0);
+        return (outputImageSize.width() >= minOutputWidth &&
+                outputImageSize.height() >= minOutputHeight);
     }
 
 }
