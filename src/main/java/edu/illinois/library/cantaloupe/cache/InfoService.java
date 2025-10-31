@@ -42,7 +42,7 @@ public final class InfoService {
     /**
      * For testing only!
      */
-    static synchronized void clearInstance() {
+    public static synchronized void clearInstance() {
         instance = null;
     }
 
