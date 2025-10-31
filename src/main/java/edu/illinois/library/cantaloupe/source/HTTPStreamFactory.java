@@ -1,5 +1,12 @@
 package edu.illinois.library.cantaloupe.source;
 
+import static edu.illinois.library.cantaloupe.source.HttpSource.LOGGER;
+
+import java.io.IOException;
+import java.io.InputStream;
+
+import javax.imageio.stream.ImageInputStream;
+
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.http.Headers;
@@ -7,13 +14,6 @@ import edu.illinois.library.cantaloupe.source.stream.HTTPImageInputStream;
 import okhttp3.Request;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
-
-import javax.imageio.stream.ImageInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-
-import static edu.illinois.library.cantaloupe.source.HttpSource.LOGGER;
-import static edu.illinois.library.cantaloupe.source.HttpSource.getHTTPClient;
 
 /**
  * Source of streams for {@link HttpSource}, returned from {@link
@@ -27,13 +27,16 @@ final class HTTPStreamFactory implements StreamFactory {
     private final HTTPRequestInfo requestInfo;
     private final long contentLength;
     private final boolean serverAcceptsRanges;
+    private final HttpSource httpSource;
 
     HTTPStreamFactory(HTTPRequestInfo requestInfo,
                       long contentLength,
-                      boolean serverAcceptsRanges) {
+                      boolean serverAcceptsRanges,
+                      HttpSource httpSource) {
         this.requestInfo         = requestInfo;
         this.contentLength       = contentLength;
         this.serverAcceptsRanges = serverAcceptsRanges;
+        this.httpSource          = httpSource;
     }
 
     @Override
@@ -56,7 +59,7 @@ final class HTTPStreamFactory implements StreamFactory {
         LOGGER.trace("Requesting GET {} [extra headers: {}]",
                 requestInfo.getURI(), HttpSource.toString(request.headers()));
 
-        Response response = getHTTPClient().newCall(request).execute();
+        Response response = httpSource.getHTTPClient().newCall(request).execute();
         ResponseBody body = response.body();
 
         return (body != null) ? body.byteStream() : null;
@@ -69,8 +72,9 @@ final class HTTPStreamFactory implements StreamFactory {
                 final int chunkSize = getChunkSize();
                 LOGGER.debug("newSeekableStream(): using {}-byte chunks",
                         chunkSize);
+
                 OkHttpHTTPImageInputStreamClient rangingClient =
-                        new OkHttpHTTPImageInputStreamClient(requestInfo);
+                        new OkHttpHTTPImageInputStreamClient(requestInfo, httpSource);
 
                 HTTPImageInputStream stream = new HTTPImageInputStream(
                         rangingClient, contentLength);
