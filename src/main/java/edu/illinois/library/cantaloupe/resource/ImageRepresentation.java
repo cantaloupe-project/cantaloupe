@@ -40,6 +40,7 @@ public class ImageRepresentation implements Representation {
     private final Info imageInfo;
     private final OperationList opList;
     private final Processor processor;
+    private final Configuration configuration;
 
     /**
      * @param imageInfo        Info corresponding to the source image.
@@ -54,12 +55,14 @@ public class ImageRepresentation implements Representation {
                                final Processor processor,
                                final OperationList opList,
                                final boolean bypassCacheRead,
-                               final boolean bypassCacheWrite) {
+                               final boolean bypassCacheWrite,
+                               final Configuration configuration) {
         this.imageInfo        = imageInfo;
         this.processor        = processor;
         this.opList           = opList;
         this.bypassCacheRead  = bypassCacheRead;
         this.bypassCacheWrite = bypassCacheWrite;
+        this.configuration    = configuration;
     }
 
     /**
@@ -77,7 +80,7 @@ public class ImageRepresentation implements Representation {
         }
 
         // If no derivative cache is available, write directly to the response.
-        final CacheFacade cacheFacade = new CacheFacade(Configuration.getInstance());
+        final CacheFacade cacheFacade = new CacheFacade(configuration);
         if (!cacheFacade.isDerivativeCacheAvailable()) {
             LOGGER.debug("Derivative cache not available; writing directly " +
                     "to the response");
@@ -91,6 +94,8 @@ public class ImageRepresentation implements Representation {
             final Optional<DerivativeCache> optCache = cacheFacade.getDerivativeCache();
             if (optCache.isPresent()) {
                 DerivativeCache cache = optCache.get();
+                                System.out.println("In code derivative cache Cache is "+ cache.hashCode());
+
                 try (InputStream cacheIS = cache.newDerivativeImageInputStream(opList)) {
                     if (cacheIS != null) {
                         // The image is available, so write it to the response.
