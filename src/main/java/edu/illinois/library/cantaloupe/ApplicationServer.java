@@ -2,7 +2,6 @@ package edu.illinois.library.cantaloupe;
 
 import java.lang.management.ManagementFactory;
 
-import org.eclipse.jetty.ee10.servlet.ListenerHolder;
 import org.eclipse.jetty.ee10.servlet.ServletContextHandler;
 import org.eclipse.jetty.ee10.servlet.ServletHandler;
 import org.eclipse.jetty.http.UriCompliance;
@@ -19,7 +18,6 @@ import org.eclipse.jetty.util.thread.QueuedThreadPool;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
-import edu.illinois.library.cantaloupe.processor.codec.IIOProviderContextListener;
 /**
  * <p>Provides the embedded Servlet container in standalone mode.</p>
  *
@@ -101,8 +99,6 @@ public class ApplicationServer {
                 "false");
 
         context.setContextPath("/");
-        context.getServletHandler().addListener(new ListenerHolder(ApplicationContextListener.class));
-        context.getServletHandler().addListener(new ListenerHolder(IIOProviderContextListener.class));
 
         QueuedThreadPool pool = new QueuedThreadPool(
                 getMaxThreads(), getMinThreads());
