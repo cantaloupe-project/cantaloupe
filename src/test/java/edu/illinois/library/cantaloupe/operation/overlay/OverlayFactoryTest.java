@@ -2,6 +2,7 @@ package edu.illinois.library.cantaloupe.operation.overlay;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.net.URI;
 import java.util.Optional;
@@ -13,6 +14,7 @@ import org.junit.jupiter.api.Test;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.delegate.DelegateProxy;
+import edu.illinois.library.cantaloupe.image.Dimension;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.operation.Color;
 import edu.illinois.library.cantaloupe.test.BaseTest;
@@ -119,4 +121,32 @@ public class OverlayFactoryTest extends BaseTest {
         assertFalse(result.isPresent());
     }
 
+
+    @Test
+    void testShouldApplyToImage() {
+        Configuration config = Configuration.getInstance();
+        config.clear();
+
+        final Dimension imageSize = new Dimension(100, 100);
+
+        // image width > width threshold, image height > height threshold
+        config.setProperty(Key.OVERLAY_OUTPUT_WIDTH_THRESHOLD, 50);
+        config.setProperty(Key.OVERLAY_OUTPUT_HEIGHT_THRESHOLD, 50);
+        assertTrue(instance.shouldApplyToImage(imageSize));
+
+        // image width < width threshold, image height < height threshold
+        config.setProperty(Key.OVERLAY_OUTPUT_WIDTH_THRESHOLD, 200);
+        config.setProperty(Key.OVERLAY_OUTPUT_HEIGHT_THRESHOLD, 200);
+        assertFalse(instance.shouldApplyToImage(imageSize));
+
+        // image width < width threshold, image height > height threshold
+        config.setProperty(Key.OVERLAY_OUTPUT_WIDTH_THRESHOLD, 200);
+        config.setProperty(Key.OVERLAY_OUTPUT_HEIGHT_THRESHOLD, 50);
+        assertFalse(instance.shouldApplyToImage(imageSize));
+
+        // image width > width threshold, image height < height threshold
+        config.setProperty(Key.OVERLAY_OUTPUT_WIDTH_THRESHOLD, 50);
+        config.setProperty(Key.OVERLAY_OUTPUT_HEIGHT_THRESHOLD, 200);
+        assertFalse(instance.shouldApplyToImage(imageSize));
+    }
 }
