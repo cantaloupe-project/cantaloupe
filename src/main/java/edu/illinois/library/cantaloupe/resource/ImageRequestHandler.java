@@ -323,7 +323,7 @@ public class ImageRequestHandler extends AbstractRequestHandler
                 callback.willProcessImage(processor, info);
 
                 new ImageRepresentation(info, processor, operationList,
-                        isBypassingCacheRead, isBypassingCache)
+                        isBypassingCacheRead, isBypassingCache, configuration)
                         .write(outputStream);
 
                 // Notify the health checker of a successful response.
