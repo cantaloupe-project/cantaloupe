@@ -7,6 +7,8 @@ import org.junit.jupiter.api.BeforeEach;
 
 import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.cache.CacheFacade;
+import edu.illinois.library.cantaloupe.cache.CacheFactory;
+import edu.illinois.library.cantaloupe.cache.InfoService;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 
@@ -45,6 +47,11 @@ public abstract class BaseTest {
     }
 
     @AfterEach
-    public void tearDown() throws Exception {}
+    public void tearDown() throws Exception {
+        // Shut down static cache instances to prevent test interference
+        CacheFactory.shutdownCaches();
+        // Clear static InfoService instance to prevent configuration interference
+        InfoService.clearInstance();
+    }
 
 }
