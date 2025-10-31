@@ -50,11 +50,13 @@ public class InformationRequestHandlerTest extends BaseTest {
 
     private MockHttpServletRequest servletRequest;
     private IIIFRequest request;
-    private Configuration configuration = Configuration.getInstance();
+    private Configuration configuration;
 
     @BeforeEach
     public void setUp() throws Exception {
         super.setUp();
+        configuration = Configuration.getInstance();
+
         servletRequest = new MockHttpServletRequest();
         servletRequest.setRequestURL("http://example.org/iiif/2/foo");
         request = new IIIFRequest(servletRequest,
