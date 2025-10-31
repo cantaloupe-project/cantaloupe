@@ -104,6 +104,8 @@ public class Version2_0ConformanceTest {
         when(configuration.getString(Key.DERIVATIVE_CACHE, "")).thenReturn("");
         when(configuration.getString(Key.SOURCE_CACHE, "")).thenReturn("");
         when(configuration.getInt(Key.PROCESSOR_JPG_QUALITY, 80)).thenReturn(80);
+        when(configuration.getString(Key.PROCESSOR_TIF_COMPRESSION, "LZW")).thenReturn("LZW");
+
     }
 
     /**
