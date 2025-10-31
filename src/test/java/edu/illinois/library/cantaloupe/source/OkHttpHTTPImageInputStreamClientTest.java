@@ -1,28 +1,31 @@
 package edu.illinois.library.cantaloupe.source;
 
-import edu.illinois.library.cantaloupe.http.Range;
-import edu.illinois.library.cantaloupe.test.BaseTest;
-import edu.illinois.library.cantaloupe.test.WebServer;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.Response;
-
 import org.eclipse.jetty.server.handler.DefaultHandler;
 import org.eclipse.jetty.util.Callback;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.*;
+import edu.illinois.library.cantaloupe.http.Range;
+import edu.illinois.library.cantaloupe.test.BaseTest;
+import edu.illinois.library.cantaloupe.test.WebServer;
 
 public class OkHttpHTTPImageInputStreamClientTest extends BaseTest {
 
     private WebServer server;
+    HttpSource httpSource;
 
     @Override
     @BeforeEach
     public void setUp() throws Exception {
         super.setUp();
         server = new WebServer();
+        httpSource = new HttpSource();
     }
 
     @Override
@@ -50,7 +53,7 @@ public class OkHttpHTTPImageInputStreamClientTest extends BaseTest {
         final HTTPRequestInfo requestInfo = new HTTPRequestInfo();
         requestInfo.setURI(server.getHTTPURI().toString());
         final OkHttpHTTPImageInputStreamClient instance =
-                new OkHttpHTTPImageInputStreamClient(requestInfo);
+                new OkHttpHTTPImageInputStreamClient(requestInfo, httpSource);
 
         instance.sendHEADRequest();
     }
@@ -75,7 +78,7 @@ public class OkHttpHTTPImageInputStreamClientTest extends BaseTest {
         requestInfo.setUsername("user");
         requestInfo.setSecret("secret");
         final OkHttpHTTPImageInputStreamClient instance =
-                new OkHttpHTTPImageInputStreamClient(requestInfo);
+                new OkHttpHTTPImageInputStreamClient(requestInfo, httpSource);
 
         instance.sendHEADRequest();
     }
@@ -99,7 +102,7 @@ public class OkHttpHTTPImageInputStreamClientTest extends BaseTest {
         requestInfo.getHeaders().add("X-Cats", "yes");
 
         final OkHttpHTTPImageInputStreamClient instance =
-                new OkHttpHTTPImageInputStreamClient(requestInfo);
+                new OkHttpHTTPImageInputStreamClient(requestInfo, httpSource);
 
         instance.sendHEADRequest();
     }
@@ -111,7 +114,7 @@ public class OkHttpHTTPImageInputStreamClientTest extends BaseTest {
         final HTTPRequestInfo requestInfo = new HTTPRequestInfo();
         requestInfo.setURI(server.getHTTPURI() + "/jpg");
         final OkHttpHTTPImageInputStreamClient instance =
-                new OkHttpHTTPImageInputStreamClient(requestInfo);
+                new OkHttpHTTPImageInputStreamClient(requestInfo, httpSource);
 
         edu.illinois.library.cantaloupe.http.Response response = instance.sendGETRequest(new Range(0, 1, 4));
 
@@ -140,7 +143,7 @@ public class OkHttpHTTPImageInputStreamClientTest extends BaseTest {
         requestInfo.setUsername("user");
         requestInfo.setSecret("secret");
         final OkHttpHTTPImageInputStreamClient instance =
-                new OkHttpHTTPImageInputStreamClient(requestInfo);
+                new OkHttpHTTPImageInputStreamClient(requestInfo, httpSource);
 
         instance.sendGETRequest(new Range(0, 1, 4));
     }
@@ -163,7 +166,7 @@ public class OkHttpHTTPImageInputStreamClientTest extends BaseTest {
         requestInfo.setURI(server.getHTTPURI() + "/jpg");
         requestInfo.getHeaders().add("X-Cats", "yes");
         final OkHttpHTTPImageInputStreamClient instance =
-                new OkHttpHTTPImageInputStreamClient(requestInfo);
+                new OkHttpHTTPImageInputStreamClient(requestInfo, httpSource);
 
         instance.sendGETRequest(new Range(0, 1, 4));
     }

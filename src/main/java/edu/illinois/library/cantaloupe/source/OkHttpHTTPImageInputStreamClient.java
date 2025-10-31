@@ -1,14 +1,13 @@
 package edu.illinois.library.cantaloupe.source;
 
-import edu.illinois.library.cantaloupe.http.Range;
+import java.io.IOException;
+import java.util.Map;
 
+import edu.illinois.library.cantaloupe.http.Range;
 import edu.illinois.library.cantaloupe.http.Response;
 import edu.illinois.library.cantaloupe.source.stream.HTTPImageInputStreamClient;
 import okhttp3.OkHttpClient;
 import okhttp3.ResponseBody;
-
-import java.io.IOException;
-import java.util.Map;
 
 /**
  * Implementation backed by an {@link OkHttpClient}.
@@ -16,6 +15,7 @@ import java.util.Map;
 class OkHttpHTTPImageInputStreamClient implements HTTPImageInputStreamClient {
 
     private final HTTPRequestInfo requestInfo;
+    private final HttpSource httpSource;
 
     /**
      * @return New instance corresponding to the argument.
@@ -36,14 +36,15 @@ class OkHttpHTTPImageInputStreamClient implements HTTPImageInputStreamClient {
         return response;
     }
 
-    OkHttpHTTPImageInputStreamClient(HTTPRequestInfo requestInfo) {
+    OkHttpHTTPImageInputStreamClient(HTTPRequestInfo requestInfo, HttpSource httpSource) {
         this.requestInfo = requestInfo;
+        this.httpSource = httpSource;
     }
 
     @Override
     public Response sendHEADRequest() throws IOException {
         try (okhttp3.Response response =
-                     HttpSource.request(requestInfo, "HEAD")) {
+                     httpSource.request(requestInfo, "HEAD")) {
             return toResponse(response);
         }
     }
@@ -53,7 +54,7 @@ class OkHttpHTTPImageInputStreamClient implements HTTPImageInputStreamClient {
         final Map<String,String> extraHeaders =
                 Map.of("Range", "bytes=" + range.start + "-" + range.end);
         try (okhttp3.Response okHttpResponse =
-                     HttpSource.request(requestInfo, "GET", extraHeaders)) {
+                     httpSource.request(requestInfo, "GET", extraHeaders)) {
             if (okHttpResponse.code() == 200 || okHttpResponse.code() == 206) {
                 return toResponse(okHttpResponse);
             } else {
