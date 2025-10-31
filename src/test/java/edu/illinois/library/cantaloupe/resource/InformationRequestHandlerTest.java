@@ -127,6 +127,7 @@ public class InformationRequestHandlerTest extends BaseTest {
                     TestUtil.getImagesPath() + "/");
             configuration.setProperty(Key.DERIVATIVE_CACHE_ENABLED, true);
             configuration.setProperty(Key.DERIVATIVE_CACHE, "HeapCache");
+            configuration.setProperty(Key.HEAPCACHE_TARGET_SIZE, "1MB");
         }
 
         // Configure the request.
