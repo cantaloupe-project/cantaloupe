@@ -97,8 +97,8 @@ var Form = function(config) {
         ////////////////////// individual sections //////////////////////////
 
         // Server
-        showOrHideAllOtherTableRows(
-            '[name="http.enabled"], [name="https.enabled"]');
+        showOrHideAllOtherTableRows('[name="server.ssl.enabled"]');
+
         // Endpoints
         showOrHideAllOtherTableRows(
             '[name="endpoint.iiif.1.enabled"], [name="endpoint.iiif.2.enabled"]');
