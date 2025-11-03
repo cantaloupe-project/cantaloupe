@@ -1,13 +1,12 @@
 package edu.illinois.library.cantaloupe.config;
 
-import java.util.Optional;
-
+import edu.illinois.library.cantaloupe.delegate.DelegateProxyService;
+import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 
-import edu.illinois.library.cantaloupe.delegate.DelegateProxyService;
-import jakarta.annotation.PostConstruct;
+import java.util.Optional;
 
 /**
  * Separate component to handle DelegateProxyService initialization

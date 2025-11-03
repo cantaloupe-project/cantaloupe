@@ -1,11 +1,10 @@
 package edu.illinois.library.cantaloupe.resource.api;
 
-import java.util.concurrent.Callable;
-
 import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-
 import edu.illinois.library.cantaloupe.async.AuditableFutureTask;
+
+import java.util.concurrent.Callable;
 
 public class APITask<T> extends AuditableFutureTask<T> {
 

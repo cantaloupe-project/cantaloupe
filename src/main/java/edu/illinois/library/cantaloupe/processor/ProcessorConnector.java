@@ -1,13 +1,5 @@
 package edu.illinois.library.cantaloupe.processor;
 
-import java.io.IOException;
-import java.nio.file.Path;
-import java.util.UUID;
-import java.util.concurrent.Future;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.cache.CacheDisabledException;
 import edu.illinois.library.cantaloupe.cache.CacheFactory;
@@ -19,6 +11,13 @@ import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.source.PathStreamFactory;
 import edu.illinois.library.cantaloupe.source.Source;
 import edu.illinois.library.cantaloupe.source.StreamFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+import java.nio.file.Path;
+import java.util.UUID;
+import java.util.concurrent.Future;
 
 /**
  * Establishes an optimal connection between a {@link Source} and a

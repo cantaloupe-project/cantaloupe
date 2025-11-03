@@ -1,9 +1,9 @@
 package edu.illinois.library.cantaloupe.resource;
 
+import edu.illinois.library.cantaloupe.Application;
+
 import java.util.HashMap;
 import java.util.Map;
-
-import edu.illinois.library.cantaloupe.Application;
 
 public class TemplateVariables {
     public static TemplateVariables getDefault(String basePath) {

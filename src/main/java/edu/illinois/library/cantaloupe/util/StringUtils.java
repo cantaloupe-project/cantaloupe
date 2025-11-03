@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.xml.bind.DatatypeConverter;
+
 import java.awt.FontMetrics;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;

@@ -1,7 +1,5 @@
 package edu.illinois.library.cantaloupe.resource.iiif;
 
-import java.util.Arrays;
-
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.http.Status;
@@ -10,6 +8,8 @@ import edu.illinois.library.cantaloupe.image.MetaIdentifier;
 import edu.illinois.library.cantaloupe.image.ScaleConstraint;
 import edu.illinois.library.cantaloupe.operation.Scale;
 import edu.illinois.library.cantaloupe.resource.ScaleRestrictedException;
+
+import java.util.Arrays;
 
 /**
  * Shared scale validation logic for IIIF.

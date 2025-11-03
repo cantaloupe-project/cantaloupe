@@ -1,14 +1,13 @@
 package edu.illinois.library.cantaloupe.source;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
-import java.io.InputStream;
-import java.util.Map;
-
-import javax.imageio.stream.ImageInputStream;
-
+import edu.illinois.library.cantaloupe.config.Configuration;
+import edu.illinois.library.cantaloupe.config.Key;
+import edu.illinois.library.cantaloupe.image.Identifier;
+import edu.illinois.library.cantaloupe.source.stream.ClosingMemoryCacheImageInputStream;
+import edu.illinois.library.cantaloupe.source.stream.HTTPImageInputStream;
+import edu.illinois.library.cantaloupe.test.BaseTest;
+import edu.illinois.library.cantaloupe.test.WebServer;
+import edu.illinois.library.cantaloupe.util.SocketUtils;
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.Response;
 import org.eclipse.jetty.server.handler.DefaultHandler;
@@ -18,14 +17,14 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
-import edu.illinois.library.cantaloupe.config.Configuration;
-import edu.illinois.library.cantaloupe.config.Key;
-import edu.illinois.library.cantaloupe.image.Identifier;
-import edu.illinois.library.cantaloupe.source.stream.ClosingMemoryCacheImageInputStream;
-import edu.illinois.library.cantaloupe.source.stream.HTTPImageInputStream;
-import edu.illinois.library.cantaloupe.test.BaseTest;
-import edu.illinois.library.cantaloupe.test.WebServer;
-import edu.illinois.library.cantaloupe.util.SocketUtils;
+import javax.imageio.stream.ImageInputStream;
+
+import java.io.InputStream;
+import java.util.Map;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class HTTPStreamFactoryTest extends BaseTest {
 

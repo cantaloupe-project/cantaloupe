@@ -1,16 +1,16 @@
 package edu.illinois.library.cantaloupe.resource.iiif;
 
+import edu.illinois.library.cantaloupe.http.Reference;
+import edu.illinois.library.cantaloupe.image.Format;
+import edu.illinois.library.cantaloupe.resource.IIIFRequest;
+import edu.illinois.library.cantaloupe.util.StringUtils;
+
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import edu.illinois.library.cantaloupe.http.Reference;
-import edu.illinois.library.cantaloupe.image.Format;
-import edu.illinois.library.cantaloupe.resource.IIIFRequest;
-import edu.illinois.library.cantaloupe.util.StringUtils;
 
 public class ImageDisposition {
     

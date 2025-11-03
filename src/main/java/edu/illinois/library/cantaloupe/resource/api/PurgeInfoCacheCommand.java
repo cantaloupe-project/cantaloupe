@@ -1,9 +1,9 @@
 package edu.illinois.library.cantaloupe.resource.api;
 
-import java.util.concurrent.Callable;
-
 import edu.illinois.library.cantaloupe.cache.InfoService;
 import edu.illinois.library.cantaloupe.config.Configuration;
+
+import java.util.concurrent.Callable;
 
 final class PurgeInfoCacheCommand<T> extends Command implements Callable<T> {
 

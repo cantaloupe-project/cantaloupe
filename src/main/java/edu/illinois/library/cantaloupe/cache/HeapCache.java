@@ -1,8 +1,15 @@
 package edu.illinois.library.cantaloupe.cache;
 
-import static edu.illinois.library.cantaloupe.config.Key.HEAPCACHE_PATHNAME;
-import static edu.illinois.library.cantaloupe.config.Key.HEAPCACHE_PERSIST;
-import static edu.illinois.library.cantaloupe.config.Key.HEAPCACHE_TARGET_SIZE;
+import com.google.protobuf.ByteString;
+import edu.illinois.library.cantaloupe.async.ThreadPool;
+import edu.illinois.library.cantaloupe.config.Configuration;
+import edu.illinois.library.cantaloupe.config.ConfigurationException;
+import edu.illinois.library.cantaloupe.image.Identifier;
+import edu.illinois.library.cantaloupe.image.Info;
+import edu.illinois.library.cantaloupe.operation.OperationList;
+import edu.illinois.library.cantaloupe.util.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -26,18 +33,9 @@ import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.google.protobuf.ByteString;
-
-import edu.illinois.library.cantaloupe.async.ThreadPool;
-import edu.illinois.library.cantaloupe.config.Configuration;
-import edu.illinois.library.cantaloupe.config.ConfigurationException;
-import edu.illinois.library.cantaloupe.image.Identifier;
-import edu.illinois.library.cantaloupe.image.Info;
-import edu.illinois.library.cantaloupe.operation.OperationList;
-import edu.illinois.library.cantaloupe.util.StringUtils;
+import static edu.illinois.library.cantaloupe.config.Key.HEAPCACHE_PATHNAME;
+import static edu.illinois.library.cantaloupe.config.Key.HEAPCACHE_PERSIST;
+import static edu.illinois.library.cantaloupe.config.Key.HEAPCACHE_TARGET_SIZE;
 
 /**
  * <p>Heap-based LRU cache.</p>
