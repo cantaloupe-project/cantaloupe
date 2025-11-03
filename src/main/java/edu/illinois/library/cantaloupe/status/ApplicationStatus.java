@@ -1,14 +1,14 @@
 package edu.illinois.library.cantaloupe.status;
 
-import java.lang.management.ManagementFactory;
-import java.lang.management.RuntimeMXBean;
-import java.util.LinkedHashMap;
-import java.util.Map;
-
 import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.cache.InfoCache;
 import edu.illinois.library.cantaloupe.cache.InfoService;
 import edu.illinois.library.cantaloupe.config.Configuration;
+
+import java.lang.management.ManagementFactory;
+import java.lang.management.RuntimeMXBean;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 /**
  * Provides views into various application status data points. All accessors

@@ -1,5 +1,19 @@
 package edu.illinois.library.cantaloupe.status;
 
+import edu.illinois.library.cantaloupe.async.ThreadPool;
+import edu.illinois.library.cantaloupe.cache.CacheFacade;
+import edu.illinois.library.cantaloupe.cache.DerivativeCache;
+import edu.illinois.library.cantaloupe.cache.SourceCache;
+import edu.illinois.library.cantaloupe.config.Configuration;
+import edu.illinois.library.cantaloupe.image.Identifier;
+import edu.illinois.library.cantaloupe.image.Info;
+import edu.illinois.library.cantaloupe.source.Source;
+import edu.illinois.library.cantaloupe.util.Stopwatch;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.imageio.stream.ImageInputStream;
+
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
@@ -12,21 +26,6 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
-
-import javax.imageio.stream.ImageInputStream;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import edu.illinois.library.cantaloupe.async.ThreadPool;
-import edu.illinois.library.cantaloupe.cache.CacheFacade;
-import edu.illinois.library.cantaloupe.cache.DerivativeCache;
-import edu.illinois.library.cantaloupe.cache.SourceCache;
-import edu.illinois.library.cantaloupe.config.Configuration;
-import edu.illinois.library.cantaloupe.image.Identifier;
-import edu.illinois.library.cantaloupe.image.Info;
-import edu.illinois.library.cantaloupe.source.Source;
-import edu.illinois.library.cantaloupe.util.Stopwatch;
 
 /**
  * <p>Checks various aspects of the application to verify that they are

@@ -1,9 +1,9 @@
 package edu.illinois.library.cantaloupe.resource.api;
 
-import java.util.concurrent.Callable;
-
 import edu.illinois.library.cantaloupe.cache.CacheFacade;
 import edu.illinois.library.cantaloupe.config.Configuration;
+
+import java.util.concurrent.Callable;
 
 /**
  * @since 6.0

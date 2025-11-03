@@ -1,10 +1,10 @@
 package edu.illinois.library.cantaloupe.processor;
 
-import java.util.List;
-
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Format;
+
+import java.util.List;
 
 interface SelectionStrategy {
 

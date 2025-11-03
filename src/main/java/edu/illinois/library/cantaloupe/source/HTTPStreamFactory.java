@@ -1,12 +1,5 @@
 package edu.illinois.library.cantaloupe.source;
 
-import static edu.illinois.library.cantaloupe.source.HttpSource.LOGGER;
-
-import java.io.IOException;
-import java.io.InputStream;
-
-import javax.imageio.stream.ImageInputStream;
-
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.http.Headers;
@@ -14,6 +7,13 @@ import edu.illinois.library.cantaloupe.source.stream.HTTPImageInputStream;
 import okhttp3.Request;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
+
+import javax.imageio.stream.ImageInputStream;
+
+import java.io.IOException;
+import java.io.InputStream;
+
+import static edu.illinois.library.cantaloupe.source.HttpSource.LOGGER;
 
 /**
  * Source of streams for {@link HttpSource}, returned from {@link

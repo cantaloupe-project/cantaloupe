@@ -1,7 +1,5 @@
 package edu.illinois.library.cantaloupe.resource.iiif.v1;
 
-import org.apache.commons.lang3.StringUtils;
-
 import edu.illinois.library.cantaloupe.delegate.DelegateProxy;
 import edu.illinois.library.cantaloupe.http.Reference;
 import edu.illinois.library.cantaloupe.image.Format;
@@ -10,6 +8,7 @@ import edu.illinois.library.cantaloupe.operation.Encode;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.resource.IllegalClientArgumentException;
 import edu.illinois.library.cantaloupe.resource.iiif.FormatException;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * Encapsulates the parameters of a request URI.

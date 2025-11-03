@@ -1,5 +1,24 @@
 package edu.illinois.library.cantaloupe.source;
 
+import edu.illinois.library.cantaloupe.Application;
+import edu.illinois.library.cantaloupe.config.Configuration;
+import edu.illinois.library.cantaloupe.config.Key;
+import edu.illinois.library.cantaloupe.delegate.DelegateMethod;
+import edu.illinois.library.cantaloupe.delegate.DelegateProxy;
+import edu.illinois.library.cantaloupe.image.Format;
+import edu.illinois.library.cantaloupe.image.Identifier;
+import edu.illinois.library.cantaloupe.image.MediaType;
+import okhttp3.Headers;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.X509TrustManager;
+import javax.script.ScriptException;
+
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.Proxy;
@@ -24,26 +43,6 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
-
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.X509TrustManager;
-import javax.script.ScriptException;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import edu.illinois.library.cantaloupe.Application;
-import edu.illinois.library.cantaloupe.config.Configuration;
-import edu.illinois.library.cantaloupe.config.Key;
-import edu.illinois.library.cantaloupe.delegate.DelegateMethod;
-import edu.illinois.library.cantaloupe.delegate.DelegateProxy;
-import edu.illinois.library.cantaloupe.image.Format;
-import edu.illinois.library.cantaloupe.image.Identifier;
-import edu.illinois.library.cantaloupe.image.MediaType;
-import okhttp3.Headers;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.Response;
 
 /**
  * <p>Provides access to source content located on an HTTP(S) server. Backed by

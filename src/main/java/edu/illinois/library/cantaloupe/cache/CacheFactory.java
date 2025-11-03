@@ -1,14 +1,13 @@
 package edu.illinois.library.cantaloupe.cache;
 
-import java.lang.reflect.InvocationTargetException;
-import java.util.Optional;
-import java.util.Set;
-
+import edu.illinois.library.cantaloupe.config.Configuration;
+import edu.illinois.library.cantaloupe.config.Key;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import edu.illinois.library.cantaloupe.config.Configuration;
-import edu.illinois.library.cantaloupe.config.Key;
+import java.lang.reflect.InvocationTargetException;
+import java.util.Optional;
+import java.util.Set;
 
 /**
  * Used to obtain {@link Cache} instances according to the application

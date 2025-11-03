@@ -1,13 +1,13 @@
 package edu.illinois.library.cantaloupe.cache;
 
+import edu.illinois.library.cantaloupe.config.Configuration;
+import edu.illinois.library.cantaloupe.image.Identifier;
+import edu.illinois.library.cantaloupe.test.TestUtil;
+
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.file.Path;
 import java.util.Optional;
-
-import edu.illinois.library.cantaloupe.config.Configuration;
-import edu.illinois.library.cantaloupe.image.Identifier;
-import edu.illinois.library.cantaloupe.test.TestUtil;
 
 public class MockUnreliableSourceOutputStreamCache extends MockCache {
 
