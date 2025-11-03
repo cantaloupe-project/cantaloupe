@@ -1,13 +1,13 @@
 package edu.illinois.library.cantaloupe.source;
 
-import java.io.IOException;
-import java.util.Map;
-
 import edu.illinois.library.cantaloupe.http.Range;
 import edu.illinois.library.cantaloupe.http.Response;
 import edu.illinois.library.cantaloupe.source.stream.HTTPImageInputStreamClient;
 import okhttp3.OkHttpClient;
 import okhttp3.ResponseBody;
+
+import java.io.IOException;
+import java.util.Map;
 
 /**
  * Implementation backed by an {@link OkHttpClient}.

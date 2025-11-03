@@ -1,11 +1,11 @@
 package edu.illinois.library.cantaloupe.processor;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Format;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Selects {@link Processor}s based on the settings of {@literal processor.*}

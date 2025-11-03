@@ -1,11 +1,4 @@
 package edu.illinois.library.cantaloupe.resource;
-import java.util.Enumeration;
-import java.util.List;
-import java.util.Set;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.delegate.DelegateProxy;
@@ -19,6 +12,12 @@ import edu.illinois.library.cantaloupe.image.MetaIdentifier;
 import edu.illinois.library.cantaloupe.util.StringUtils;
 import edu.illinois.library.cantaloupe.util.TimeUtils;
 import jakarta.servlet.http.HttpServletRequest;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.Enumeration;
+import java.util.List;
+import java.util.Set;
 
 public class IIIFRequest {
 

@@ -1,12 +1,12 @@
 package edu.illinois.library.cantaloupe.operation.overlay;
 
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.nio.file.Paths;
-
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationException;
 import edu.illinois.library.cantaloupe.config.Key;
+
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.nio.file.Paths;
 
 /**
  * Used to acquire overlay images when using BasicStrategy for overlays.

@@ -1,17 +1,16 @@
 package edu.illinois.library.cantaloupe.operation.overlay;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
-import java.awt.font.TextAttribute;
-
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationException;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.operation.Color;
 import edu.illinois.library.cantaloupe.test.BaseTest;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import java.awt.font.TextAttribute;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class BasicStringOverlayServiceTest extends BaseTest {
 

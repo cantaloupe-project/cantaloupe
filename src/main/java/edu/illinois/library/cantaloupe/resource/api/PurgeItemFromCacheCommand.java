@@ -1,12 +1,11 @@
 package edu.illinois.library.cantaloupe.resource.api;
 
-import java.util.concurrent.Callable;
-
 import com.fasterxml.jackson.annotation.JsonGetter;
-
 import edu.illinois.library.cantaloupe.cache.CacheFacade;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.image.Identifier;
+
+import java.util.concurrent.Callable;
 
 final class PurgeItemFromCacheCommand<T> extends Command
         implements Callable<T> {
