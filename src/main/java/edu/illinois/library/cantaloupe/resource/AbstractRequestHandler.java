@@ -1,9 +1,5 @@
 package edu.illinois.library.cantaloupe.resource;
 
-import java.io.IOException;
-
-import org.slf4j.Logger;
-
 import edu.illinois.library.cantaloupe.cache.CacheFacade;
 import edu.illinois.library.cantaloupe.cache.CacheFactory;
 import edu.illinois.library.cantaloupe.cache.DerivativeCache;
@@ -13,6 +9,9 @@ import edu.illinois.library.cantaloupe.delegate.DelegateProxy;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.processor.Processor;
+import org.slf4j.Logger;
+
+import java.io.IOException;
 
 abstract class AbstractRequestHandler {
 

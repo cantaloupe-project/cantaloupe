@@ -1,13 +1,14 @@
 package edu.illinois.library.cantaloupe.perf.processor;
 
-import static edu.illinois.library.cantaloupe.test.PerformanceTestConstants.MEASUREMENT_ITERATIONS;
-import static edu.illinois.library.cantaloupe.test.PerformanceTestConstants.MEASUREMENT_TIME;
-import static edu.illinois.library.cantaloupe.test.PerformanceTestConstants.WARMUP_ITERATIONS;
-import static edu.illinois.library.cantaloupe.test.PerformanceTestConstants.WARMUP_TIME;
-
-import java.io.OutputStream;
-import java.util.concurrent.TimeUnit;
-
+import edu.illinois.library.cantaloupe.config.Configuration;
+import edu.illinois.library.cantaloupe.config.Key;
+import edu.illinois.library.cantaloupe.image.Format;
+import edu.illinois.library.cantaloupe.image.Info;
+import edu.illinois.library.cantaloupe.operation.Encode;
+import edu.illinois.library.cantaloupe.operation.OperationList;
+import edu.illinois.library.cantaloupe.processor.FileProcessor;
+import edu.illinois.library.cantaloupe.processor.ProcessorFactory;
+import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.BenchmarkMode;
 import org.openjdk.jmh.annotations.Fork;
@@ -20,15 +21,13 @@ import org.openjdk.jmh.annotations.State;
 import org.openjdk.jmh.annotations.TearDown;
 import org.openjdk.jmh.annotations.Warmup;
 
-import edu.illinois.library.cantaloupe.config.Configuration;
-import edu.illinois.library.cantaloupe.config.Key;
-import edu.illinois.library.cantaloupe.image.Format;
-import edu.illinois.library.cantaloupe.image.Info;
-import edu.illinois.library.cantaloupe.operation.Encode;
-import edu.illinois.library.cantaloupe.operation.OperationList;
-import edu.illinois.library.cantaloupe.processor.FileProcessor;
-import edu.illinois.library.cantaloupe.processor.ProcessorFactory;
-import edu.illinois.library.cantaloupe.test.TestUtil;
+import java.io.OutputStream;
+import java.util.concurrent.TimeUnit;
+
+import static edu.illinois.library.cantaloupe.test.PerformanceTestConstants.MEASUREMENT_ITERATIONS;
+import static edu.illinois.library.cantaloupe.test.PerformanceTestConstants.MEASUREMENT_TIME;
+import static edu.illinois.library.cantaloupe.test.PerformanceTestConstants.WARMUP_ITERATIONS;
+import static edu.illinois.library.cantaloupe.test.PerformanceTestConstants.WARMUP_TIME;
 
 @BenchmarkMode(Mode.AverageTime)
 @OutputTimeUnit(TimeUnit.MICROSECONDS)

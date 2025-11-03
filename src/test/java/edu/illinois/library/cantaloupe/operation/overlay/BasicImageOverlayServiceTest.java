@@ -1,16 +1,15 @@
 package edu.illinois.library.cantaloupe.operation.overlay;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
-import java.net.URI;
-
+import edu.illinois.library.cantaloupe.config.Configuration;
+import edu.illinois.library.cantaloupe.config.Key;
+import edu.illinois.library.cantaloupe.test.BaseTest;
 import org.apache.commons.lang3.SystemUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import edu.illinois.library.cantaloupe.config.Configuration;
-import edu.illinois.library.cantaloupe.config.Key;
-import edu.illinois.library.cantaloupe.test.BaseTest;
+import java.net.URI;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class BasicImageOverlayServiceTest extends BaseTest {
 

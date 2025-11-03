@@ -1,13 +1,13 @@
 package edu.illinois.library.cantaloupe.operation.overlay;
 
-import java.awt.Font;
-import java.awt.font.TextAttribute;
-import java.util.Map;
-
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationException;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.operation.Color;
+
+import java.awt.Font;
+import java.awt.font.TextAttribute;
+import java.util.Map;
 
 class BasicStringOverlayService extends BasicOverlayService
         implements OverlayService {

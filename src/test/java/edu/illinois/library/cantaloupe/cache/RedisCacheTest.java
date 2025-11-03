@@ -1,11 +1,10 @@
 package edu.illinois.library.cantaloupe.cache;
 
-import org.junit.jupiter.api.Test;
-
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.test.ConfigurationConstants;
 import edu.illinois.library.cantaloupe.test.TestUtil;
+import org.junit.jupiter.api.Test;
 
 public class RedisCacheTest extends AbstractCacheTest {
 
