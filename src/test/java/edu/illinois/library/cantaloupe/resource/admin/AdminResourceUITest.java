@@ -19,8 +19,6 @@ import org.openqa.selenium.support.ui.Select;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Scope;
 import org.springframework.test.context.TestPropertySource;
 
 import edu.illinois.library.cantaloupe.Application;
@@ -75,12 +73,12 @@ public class AdminResourceUITest {
         ((HtmlUnitDriver) webDriver).setJavascriptEnabled(true);
 
         String url = getHTTPURI("").toString();
-        System.out.println("Loading URL: " + url);
+        // System.out.println("Loading URL: " + url);
         webDriver.get(url);
-        System.out.println("Page title: " + webDriver.getTitle());
-        System.out.println("Response status: " + ((HtmlUnitDriver) webDriver).getWebClient().getCurrentWindow().getEnclosedPage().getWebResponse().getStatusCode());
-        System.out.println("Response headers: " + ((HtmlUnitDriver) webDriver).getWebClient().getCurrentWindow().getEnclosedPage().getWebResponse().getResponseHeaders());
-        System.out.println("Page source: " + webDriver.getPageSource());
+        // System.out.println("Page title: " + webDriver.getTitle());
+        // System.out.println("Response status: " + ((HtmlUnitDriver) webDriver).getWebClient().getCurrentWindow().getEnclosedPage().getWebResponse().getStatusCode());
+        // System.out.println("Response headers: " + ((HtmlUnitDriver) webDriver).getWebClient().getCurrentWindow().getEnclosedPage().getWebResponse().getResponseHeaders());
+        // System.out.println("Page source: " + webDriver.getPageSource());
     }
 
     @AfterEach
@@ -257,22 +255,17 @@ public class AdminResourceUITest {
         Thread.sleep(100); // give the tab time to render
 
         // Fill in the form
-        inputNamed(Key.HTTP_ENABLED).click();
-        inputNamed(Key.HTTP_HOST).sendKeys("1.2.3.4");
-        inputNamed(Key.HTTP_PORT).sendKeys("8989");
-        inputNamed(Key.HTTPS_ENABLED).click();
-        inputNamed(Key.HTTPS_HOST).sendKeys("2.3.4.5");
-        inputNamed(Key.HTTPS_PORT).sendKeys("8990");
-        selectNamed(Key.HTTPS_KEY_STORE_TYPE).selectByVisibleText("PKCS12");
-        inputNamed(Key.HTTPS_KEY_STORE_PATH).sendKeys("/something");
-        inputNamed(Key.HTTPS_KEY_STORE_PASSWORD).sendKeys("cats");
-        inputNamed(Key.HTTP_MIN_THREADS).sendKeys("35");
-        inputNamed(Key.HTTP_MAX_THREADS).sendKeys("38");
-        inputNamed(Key.HTTP_ACCEPT_QUEUE_LIMIT).sendKeys("50");
+        inputNamed("server.address").sendKeys("1.2.3.4");
+        inputNamed("server.port").sendKeys("8989");
+        inputNamed("server.ssl.enabled").click();
+        selectNamed("server.ssl.key-store-type").selectByVisibleText("PKCS12");
+        inputNamed("server.ssl.key-store").sendKeys("/something");
+        inputNamed("server.ssl.key-store-password").sendKeys("cats");
+        inputNamed("server.jetty.threads.min").sendKeys("35");
+        inputNamed("server.jetty.threads.max").sendKeys("38");
+        inputNamed("server.jetty.threads.max-queue-capacity").sendKeys("50");
         inputNamed(Key.BASE_URI).sendKeys("http://bla/bla/");
         inputNamed(Key.SLASH_SUBSTITUTE).sendKeys("^");
-        inputNamed(Key.LOG_ERROR_RESPONSES).click();
-        inputNamed(Key.PRINT_STACK_TRACE_ON_ERROR_PAGES).click();
 
         // Submit the form
         css("#cl-http input[type=\"submit\"]").click();
@@ -281,22 +274,17 @@ public class AdminResourceUITest {
 
         // Assert that the application configuration has been updated correctly
         final Configuration config = injectedConfiguration;
-        assertTrue(config.getBoolean(Key.HTTP_ENABLED));
-        assertEquals("1.2.3.4", config.getString(Key.HTTP_HOST));
-        assertEquals(8989, config.getInt(Key.HTTP_PORT));
-        assertTrue(config.getBoolean(Key.HTTPS_ENABLED));
-        assertEquals("2.3.4.5", config.getString(Key.HTTPS_HOST));
-        assertEquals(8990, config.getInt(Key.HTTPS_PORT));
-        assertEquals("PKCS12", config.getString(Key.HTTPS_KEY_STORE_TYPE));
-        assertEquals("/something", config.getString(Key.HTTPS_KEY_STORE_PATH));
-        assertEquals("cats", config.getString(Key.HTTPS_KEY_STORE_PASSWORD));
-        assertEquals("35", config.getString(Key.HTTP_MIN_THREADS));
-        assertEquals("38", config.getString(Key.HTTP_MAX_THREADS));
-        assertEquals("50", config.getString(Key.HTTP_ACCEPT_QUEUE_LIMIT));
+        assertEquals("1.2.3.4", config.getString("server.address"));
+        assertEquals(8989, config.getInt("server.port"));
+        assertTrue(config.getBoolean("server.ssl.enabled"));
+        assertEquals("PKCS12", config.getString("server.ssl.key-store-type"));
+        assertEquals("/something", config.getString("server.ssl.key-store"));
+        assertEquals("cats", config.getString("server.ssl.key-store-password"));
+        assertEquals("35", config.getString("server.jetty.threads.min"));
+        assertEquals("38", config.getString("server.jetty.threads.max"));
+        assertEquals("50", config.getString("server.jetty.threads.max-queue-capacity"));
         assertEquals("http://bla/bla/", config.getString(Key.BASE_URI));
         assertEquals("^", config.getString(Key.SLASH_SUBSTITUTE));
-        assertTrue(config.getBoolean(Key.LOG_ERROR_RESPONSES));
-        assertTrue(config.getBoolean(Key.PRINT_STACK_TRACE_ON_ERROR_PAGES));
     }
 
     @Test
