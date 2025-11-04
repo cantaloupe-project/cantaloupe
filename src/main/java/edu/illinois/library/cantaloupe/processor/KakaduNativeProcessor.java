@@ -74,8 +74,8 @@ class KakaduNativeProcessor implements FileProcessor, StreamProcessor {
 
     private static String initializationError;
 
-    private final JPEG2000KakaduImageReader reader =
-            new JPEG2000KakaduImageReader();
+    private JPEG2000KakaduImageReader reader;
+           
 
     /**
      * Will be {@literal null} if {@link #streamFactory} isn't.
@@ -97,6 +97,19 @@ class KakaduNativeProcessor implements FileProcessor, StreamProcessor {
             }
         }
     }
+
+
+    KakaduNativeProcessor() {
+        initializeClass();
+        try {
+            reader = new JPEG2000KakaduImageReader();
+        } catch (UnsatisfiedLinkError ignore) {
+            // This will be thrown if Kakadu failed to initialize,
+            // which would happen if Kakadu Libs are not available. It's
+            // swallowed because this isn't the place to handle it.
+        }
+    }
+
 
     static synchronized void resetInitialization() {
         IS_CLASS_INITIALIZED.set(false);
