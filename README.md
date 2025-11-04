@@ -21,14 +21,14 @@ Cantaloupe is tested to work on the two most recent LTS versions of Java (curren
 * `mvn clean package -DskipTests` will build a release JAR in the `target`
   folder, which can be run via:
 
-  `java -cp cantaloupe-{version}.jar -Dcantaloupe.config=... edu.illinois.library.cantaloupe.StandaloneEntry`
+  `java -Dspring.config.name=cantaloupe -Dcantaloupe.config=... -jar cantaloupe-{version}.jar`
 
 ### IDE
 
 1. Add a new run configuration using the "Java Application" template or
    similar.
-2. Set the main class to `edu.illinois.library.cantaloupe.StandaloneEntry` and
-   add the `-Dcantaloupe.config=cantaloupe.properties` VM option.
+2. Set the main class to `edu.illinois.library.cantaloupe.Cantaloupe` and
+   add the `-Dspring.config.name=cantaloupe -Dcantaloupe.config=cantaloupe.properties` VM options.
 
 ## Test
 
