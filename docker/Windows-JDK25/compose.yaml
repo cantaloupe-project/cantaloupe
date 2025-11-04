@@ -7,14 +7,12 @@ services:
   cantaloupe:
     build:
       context: ../../
-      dockerfile: $PWD/docker/Linux-JDK22/Dockerfile
+      dockerfile: docker/Windows-JDK25/Dockerfile
   minio:
-    image: minio/minio
+    build:
+      context: ../../
+      dockerfile: docker/Windows-JDK25/Dockerfile-minio
     environment:
       MINIO_ACCESS_KEY: MinioUser
       MINIO_SECRET_KEY: OpenSesame
     hostname: minio
-    command: server /data
-  redis:
-    image: redis:alpine
-    hostname: redis

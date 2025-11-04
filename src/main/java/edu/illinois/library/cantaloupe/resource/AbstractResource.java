@@ -7,6 +7,7 @@ import edu.illinois.library.cantaloupe.auth.AuthorizerFactory;
 import edu.illinois.library.cantaloupe.auth.CredentialStore;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
+import edu.illinois.library.cantaloupe.http.ContentTypeNegotiator;
 import edu.illinois.library.cantaloupe.http.Method;
 import edu.illinois.library.cantaloupe.http.Reference;
 import edu.illinois.library.cantaloupe.http.Status;
@@ -497,48 +498,8 @@ public abstract class AbstractResource {
      *         RFC 2616</a>
      */
     protected final List<String> getPreferredMediaTypes() {
-        class Preference implements Comparable<Preference> {
-            private String mediaType;
-            private float qValue;
-
-            @Override
-            public int compareTo(Preference o) {
-                if (o.qValue < qValue) {
-                    return -1;
-                } else if (o.qValue > o.qValue) {
-                    return 1;
-                }
-                return 0;
-            }
-        }
-
-        final List<Preference> preferences = new ArrayList<>();
-        final String acceptHeader = request.getHeaders().getFirstValue("Accept");
-        if (acceptHeader != null) {
-            String[] clauses = acceptHeader.split(",");
-            for (String clause : clauses) {
-                String[] parts        = clause.split(";");
-                Preference preference = new Preference();
-                preference.mediaType  = parts[0].trim();
-                if ("*/*".equals(preference.mediaType)) {
-                    continue;
-                }
-                if (parts.length > 1) {
-                    String q = parts[1].trim();
-                    if (q.startsWith("q=")) {
-                        q = q.substring(2);
-                        preference.qValue = Float.parseFloat(q);
-                    }
-                } else {
-                    preference.qValue = 1;
-                }
-                preferences.add(preference);
-            }
-        }
-        return preferences.stream()
-                .sorted()
-                .map(p -> p.mediaType)
-                .collect(Collectors.toUnmodifiableList());
+        ContentTypeNegotiator negotiator = new ContentTypeNegotiator(request.getHeaders());
+        return negotiator.getPreferredMediaTypes();
     }
 
     /**
@@ -698,19 +659,6 @@ public abstract class AbstractResource {
         return new Method[] { Method.OPTIONS };
     }
 
-    /**
-     * @param limitToTypes Media types to limit the result to, in order of most
-     *                     to least preferred by the application.
-     * @return             Best media type conforming to client preferences as
-     *                     expressed in the {@code Accept} header; or {@code
-     *                     null} if negotiation failed.
-     */
-    protected final String negotiateContentType(List<String> limitToTypes) {
-        return getPreferredMediaTypes().stream()
-                .filter(limitToTypes::contains)
-                .findFirst()
-                .orElse(null);
-    }
 
     final void setPathArguments(List<String> pathArguments) {
         this.pathArguments = pathArguments;

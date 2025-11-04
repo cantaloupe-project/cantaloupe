@@ -13,6 +13,7 @@ import edu.illinois.library.cantaloupe.operation.Scale;
 import edu.illinois.library.cantaloupe.processor.Processor;
 import edu.illinois.library.cantaloupe.resource.ImageRequestHandler;
 import edu.illinois.library.cantaloupe.source.StatResult;
+import edu.illinois.library.cantaloupe.http.ContentTypeNegotiator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -178,7 +179,8 @@ public class ImageResource extends IIIF1Resource {
         }
 
         if (format == null) { // if none, check the Accept header.
-            String contentType = negotiateContentType(AVAILABLE_OUTPUT_MEDIA_TYPES);
+            ContentTypeNegotiator negotiator = new ContentTypeNegotiator(getRequest().getHeaders());
+            String contentType = negotiator.negotiateContentType(AVAILABLE_OUTPUT_MEDIA_TYPES);
             if (contentType != null) {
                 format = new MediaType(contentType).toFormat();
             } else {

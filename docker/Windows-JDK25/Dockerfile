@@ -10,9 +10,22 @@ RUN powershell -Command \
 
 # Install various dependencies
 # TODO: openjpeg
-# Java needs to be first or maven instal complains 
-RUN choco install -y openjdk --version=22.0.2 
-RUN choco install -y maven ffmpeg 
+# Java needs to be first or maven instal complains
+
+# Install OpenJDK 24
+# RUN powershell -Command \
+#   $url = 'https://download.java.net/java/GA/jdk24.0.2/fdc5d0102fe0414db21410ad5834341f/12/GPL/openjdk-24.0.2_windows-x64_bin.zip'; \
+#   $output = 'C:\openjdk.zip'; \
+#   Invoke-WebRequest -Uri $url -OutFile $output; \
+#   Expand-Archive -Path $output -DestinationPath 'C:\'; \
+#   Move-Item -Path 'C:\jdk-24.0.2' -Destination 'C:\openjdk'; \
+#   Remove-Item -Path $output; \
+#   [Environment]::SetEnvironmentVariable('JAVA_HOME', 'C:\openjdk', [EnvironmentVariableTarget]::Machine); \
+#   [Environment]::SetEnvironmentVariable('PATH', $env:PATH + ';C:\openjdk\bin', [EnvironmentVariableTarget]::Machine)
+
+
+RUN choco install -y openjdk --version=25.0.0.1
+RUN choco install -y maven ffmpeg
 
 
 

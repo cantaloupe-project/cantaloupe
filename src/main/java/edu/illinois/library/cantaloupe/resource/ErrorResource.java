@@ -1,8 +1,8 @@
 package edu.illinois.library.cantaloupe.resource;
 
+import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
-import edu.illinois.library.cantaloupe.http.Method;
 import edu.illinois.library.cantaloupe.http.Status;
 import edu.illinois.library.cantaloupe.operation.IllegalScaleException;
 import edu.illinois.library.cantaloupe.operation.IllegalSizeException;
@@ -10,6 +10,9 @@ import edu.illinois.library.cantaloupe.operation.ValidationException;
 import edu.illinois.library.cantaloupe.processor.OutputFormatException;
 import edu.illinois.library.cantaloupe.processor.SourceFormatException;
 import edu.illinois.library.cantaloupe.resource.iiif.FormatException;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletRequest;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -20,21 +23,20 @@ import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.nio.file.AccessDeniedException;
 import java.nio.file.NoSuchFileException;
-import java.util.List;
+import java.util.HashMap;
 import java.util.Map;
 
 /**
  * Translates a {@link Throwable} to an HTTP 4xx or 5xx-level response.
  */
-class ErrorResource extends AbstractResource {
+class ErrorResource {
 
     private static final Logger LOGGER =
             LoggerFactory.getLogger(ErrorResource.class);
 
-    private static final List<String> SUPPORTED_MEDIA_TYPES =
-            List.of("text/plain", "text/html", "application/xhtml+xml");
-
     private final Throwable error;
+    private HttpServletRequest request;
+    private HttpServletResponse response;
 
     private static Status toStatus(Throwable t) {
         Status status;
@@ -62,26 +64,19 @@ class ErrorResource extends AbstractResource {
         return status;
     }
 
-    ErrorResource(Throwable error) {
+
+    ErrorResource(Throwable error, HttpServletRequest request, HttpServletResponse response) {
         this.error = error;
+        this.request = request;
+        this.response = response;
     }
 
-    @Override
-    protected Logger getLogger() {
-        return LOGGER;
-    }
-
-    @Override
-    public Method[] getSupportedMethods() {
-        return Method.values();
-    }
-
-    @Override
     public void doGET() throws Exception {
         final Status status = toStatus(error);
         log(status.getCode());
 
-        final Map<String,Object> templateVars = getCommonTemplateVars();
+        final Map<String,Object> templateVars = new HashMap<>();
+        templateVars.put("baseUri", request.getContextPath());
         templateVars.put("pageTitle", status.toString());
         templateVars.put("message", error.getMessage());
 
@@ -90,18 +85,10 @@ class ErrorResource extends AbstractResource {
             templateVars.put("stackTrace", getStackTrace());
         }
 
-        // Negotiate a response representation content type.
-        // Web browsers will usually request `text/html` and
-        // `application/xhtml+xml` in order of priority. In the absence
-        // of either of those, we will prefer to return `text/plain`.
-        String requestedType = negotiateContentType(SUPPORTED_MEDIA_TYPES);
-        if (requestedType == null) {
-            requestedType = "text/plain";
-        }
-
         // Use a template that best fits the representation's content type.
         String template, mediaType;
-        if (List.of("text/html", "application/xhtml+xml").contains(requestedType)) {
+        String header = request.getHeader("Accept");
+        if (header == null || header.contains("html")) {
             template = "/error.html.vm";
             mediaType = "text/html";
         } else {
@@ -109,12 +96,17 @@ class ErrorResource extends AbstractResource {
             mediaType = "text/plain";
         }
 
-        getResponse().setStatus(status.getCode());
-        getResponse().setHeader("Cache-Control", "no-cache, must-revalidate");
-        getResponse().setHeader("Content-Type", mediaType + ";charset=UTF-8");
+        response.setStatus(status.getCode());
+        // Only show the x-powered-by header if configured to do so.
+        if (config.getBoolean(Key.HEADERS_POWERED_BY_DISPLAY, true)) {
+          response.setHeader("X-Powered-By",
+                  Application.getName() + "/" + Application.getVersion());
+        }
+        response.setHeader("Cache-Control", "no-cache, must-revalidate");
+        response.setHeader("Content-Type", mediaType + ";charset=UTF-8");
 
         new VelocityRepresentation(template, templateVars)
-                .write(getResponse().getOutputStream());
+                .write(response.getOutputStream());
     }
 
     private String getStackTrace() {
@@ -135,8 +127,8 @@ class ErrorResource extends AbstractResource {
         String message = "Responding with HTTP {} to {} {}: {}";
         Object[] args = {
                 statusCode,
-                getRequest().getMethod(),
-                getRequest().getReference(),
+                request.getMethod(),
+                request.getRequestURI(),
                 error.getMessage(),
                 error };
         if (statusCode >= 500) {

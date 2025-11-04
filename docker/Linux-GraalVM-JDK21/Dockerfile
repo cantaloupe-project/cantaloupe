@@ -23,14 +23,15 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
   libgrokj2k1 \
   grokj2k-tools \
   adduser \
+  libturbojpeg \
+  libturbojpeg-dev \ 
   && rm -rf /var/lib/apt/lists/*
-
-# Install TurboJpegProcessor dependencies
-RUN mkdir -p /opt/libjpeg-turbo/lib
-COPY docker/image_files/libjpeg-turbo/lib64 /opt/libjpeg-turbo/lib
 
 # Install KakaduNativeProcessor dependencies
 COPY dist/deps/Linux-x86-64/lib/* /usr/lib/
+
+# Ensure libturbojpeg can be found
+ENV LD_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu:${LD_LIBRARY_PATH}
 
 # Install GrokProcessor dependencies
 #RUN wget -q https://github.com/GrokImageCompression/grok/releases/download/v7.6.5/libgrokj2k1_7.6.5-1_amd64.deb \
@@ -45,9 +46,8 @@ RUN wget -q https://github.com/graalvm/graalvm-ce-builds/releases/download/jdk-2
 
 # A non-root user is needed for some FilesystemSourceTest tests to work.
 ARG user=cantaloupe
-ARG home=/home/$user
-RUN adduser --home $home $user
-RUN chown -R $user $home
+ARG home=/home/${user}
+RUN useradd -m -d "${home}" -s /bin/bash -U "${user}"
 USER $user
 WORKDIR $home
 
