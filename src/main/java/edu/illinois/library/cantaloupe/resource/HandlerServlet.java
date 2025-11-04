@@ -142,21 +142,13 @@ public class HandlerServlet extends HttpServlet {
                              HttpServletResponse response,
                              Throwable t) {
         // Try to use an ErrorResource, which will render an HTML template.
-        ErrorResource resource = new ErrorResource(t);
+        ErrorResource resource = new ErrorResource(t, request, response);
         try {
-            // N.B.: the response status will be set by ErrorResource based on
-            // the type of Throwable.
-            response.setContentType("text/html;charset=UTF-8");
-            resource.setRequest(new Request(request));
-            resource.setResponse(response);
-            resource.doInit();
             resource.doGET();
         } catch (IllegalClientArgumentException e) {
             handleError(response, e, 400);
         } catch (Throwable t2) {
             handleError(response, t2, 500);
-        } finally {
-            resource.destroy();
         }
     }
 
