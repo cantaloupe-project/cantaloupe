@@ -3,7 +3,6 @@
 ## 6.0
 ### Configuration
 * log_error_responses has been removed
-* print_stack_trace_on_error_pages has been removed
 * http.enabled has been removed
 * https.enabled has been replaced by server.ssl.enabled
 * http.port / https.port have been replaced by server.port
