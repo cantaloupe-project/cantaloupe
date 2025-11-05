@@ -1,10 +1,14 @@
 package edu.illinois.library.cantaloupe.controller;
 
-import java.nio.file.AccessDeniedException;
-import java.nio.file.NoSuchFileException;
-import java.util.HashMap;
-import java.util.Map;
-
+import edu.illinois.library.cantaloupe.config.Configuration;
+import edu.illinois.library.cantaloupe.operation.IllegalSizeException;
+import edu.illinois.library.cantaloupe.processor.OutputFormatException;
+import edu.illinois.library.cantaloupe.processor.SourceFormatException;
+import edu.illinois.library.cantaloupe.resource.EndpointDisabledException;
+import edu.illinois.library.cantaloupe.resource.IllegalClientArgumentException;
+import edu.illinois.library.cantaloupe.resource.ResourceException;
+import edu.illinois.library.cantaloupe.resource.iiif.FormatException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
@@ -13,13 +17,12 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
-import edu.illinois.library.cantaloupe.operation.IllegalSizeException;
-import edu.illinois.library.cantaloupe.processor.OutputFormatException;
-import edu.illinois.library.cantaloupe.processor.SourceFormatException;
-import edu.illinois.library.cantaloupe.resource.EndpointDisabledException;
-import edu.illinois.library.cantaloupe.resource.IllegalClientArgumentException;
-import edu.illinois.library.cantaloupe.resource.ResourceException;
-import edu.illinois.library.cantaloupe.resource.iiif.FormatException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.nio.file.AccessDeniedException;
+import java.nio.file.NoSuchFileException;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Global exception handler for Spring Boot controllers.
@@ -27,6 +30,13 @@ import edu.illinois.library.cantaloupe.resource.iiif.FormatException;
  */
 @ControllerAdvice
 public class GlobalExceptionHandler {
+
+    private final Configuration configuration;
+
+    @Autowired
+    public GlobalExceptionHandler(Configuration configuration) {
+        this.configuration = configuration;
+    }
 
     @ExceptionHandler(EndpointDisabledException.class)
     public ResponseEntity<Map<String, Object>> handleEndpointDisabledException(
@@ -135,12 +145,22 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.UNSUPPORTED_MEDIA_TYPE).body(errorResponse);
     }
 
+    private void addStackTrace(Exception ex, Map<String, Object> errorResponse) {
+        if (configuration.getBoolean("print_stack_trace_on_error_pages", false)) {
+            StringWriter sw = new StringWriter();
+            PrintWriter pw = new PrintWriter(sw);
+            ex.printStackTrace(pw);
+            errorResponse.put("trace", sw.toString());
+        }
+    }
 
     @ExceptionHandler(NoResourceFoundException.class)
     public  ResponseEntity<Map<String, Object>> handleNoResourceFoundException(NoResourceFoundException ex, WebRequest request) {
         Map<String, Object> errorResponse = new HashMap<>();
         errorResponse.put("status", 404);
         errorResponse.put("error", "Not Found");
+        addStackTrace(ex, errorResponse);
+
         errorResponse.put("message", "The requested resource was not found");
         errorResponse.put("path", request.getDescription(false));
 
@@ -154,6 +174,8 @@ public class GlobalExceptionHandler {
         Map<String, Object> errorResponse = new HashMap<>();
         errorResponse.put("status", 404);
         errorResponse.put("error", "Not Found");
+        addStackTrace(ex, errorResponse);
+
         errorResponse.put("message", "The requested resource was not found");
         errorResponse.put("path", request.getDescription(false));
 
