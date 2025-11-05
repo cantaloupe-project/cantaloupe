@@ -1,6 +1,5 @@
 package edu.illinois.library.cantaloupe.config;
 
-import edu.illinois.library.cantaloupe.logging.LoggerUtil;
 import edu.illinois.library.cantaloupe.util.FilesystemWatcher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,7 +46,6 @@ class FileChangeHandler implements FilesystemWatcher.Callback {
     private void reload(Configuration config) {
         try {
             config.reload();
-            LoggerUtil.reloadConfiguration();
         } catch (FileNotFoundException e) {
             LOGGER.error("reload(): file not found: {}", e.getMessage());
         } catch (Exception e) {
