@@ -129,48 +129,7 @@ public class AdminResourceUITest {
         inputNamed(Key.DELEGATE_SCRIPT_PATHNAME).sendKeys("file");
 
         // Application log
-        selectNamed(Key.APPLICATION_LOG_LEVEL).selectByValue("warn");
-        inputNamed(Key.APPLICATION_LOG_CONSOLEAPPENDER_ENABLED).click();
-        inputNamed(Key.APPLICATION_LOG_FILEAPPENDER_ENABLED).click();
-        inputNamed(Key.APPLICATION_LOG_FILEAPPENDER_PATHNAME).sendKeys("/path1");
-        inputNamed(Key.APPLICATION_LOG_ROLLINGFILEAPPENDER_ENABLED).click();
-        inputNamed(Key.APPLICATION_LOG_ROLLINGFILEAPPENDER_PATHNAME).
-                sendKeys("/path2");
-        inputNamed(Key.APPLICATION_LOG_ROLLINGFILEAPPENDER_FILENAME_PATTERN).
-                sendKeys("pattern");
-        inputNamed(Key.APPLICATION_LOG_ROLLINGFILEAPPENDER_MAX_HISTORY).
-                sendKeys("15");
-        inputNamed(Key.APPLICATION_LOG_SYSLOGAPPENDER_ENABLED).click();
-        inputNamed(Key.APPLICATION_LOG_SYSLOGAPPENDER_HOST).sendKeys("host");
-        inputNamed(Key.APPLICATION_LOG_SYSLOGAPPENDER_PORT).sendKeys("555");
-        inputNamed(Key.APPLICATION_LOG_SYSLOGAPPENDER_FACILITY).
-                sendKeys("cats");
-        // Error log
-        inputNamed(Key.ERROR_LOG_FILEAPPENDER_ENABLED).click();
-        inputNamed(Key.ERROR_LOG_FILEAPPENDER_PATHNAME).sendKeys("/path50");
-        inputNamed(Key.ERROR_LOG_ROLLINGFILEAPPENDER_ENABLED).click();
-        inputNamed(Key.ERROR_LOG_ROLLINGFILEAPPENDER_PATHNAME).
-                sendKeys("/path2");
-        inputNamed(Key.ERROR_LOG_ROLLINGFILEAPPENDER_FILENAME_PATTERN).
-                sendKeys("pattern2");
-        inputNamed(Key.ERROR_LOG_ROLLINGFILEAPPENDER_MAX_HISTORY).
-                sendKeys("20");
-        // Access log
-        inputNamed(Key.ACCESS_LOG_CONSOLEAPPENDER_ENABLED).click();
-        inputNamed(Key.ACCESS_LOG_FILEAPPENDER_ENABLED).click();
-        inputNamed(Key.ACCESS_LOG_FILEAPPENDER_PATHNAME).
-                sendKeys("/path3");
-        inputNamed(Key.ACCESS_LOG_ROLLINGFILEAPPENDER_ENABLED).click();
-        inputNamed(Key.ACCESS_LOG_ROLLINGFILEAPPENDER_PATHNAME).
-                sendKeys("/path4");
-        inputNamed(Key.ACCESS_LOG_ROLLINGFILEAPPENDER_FILENAME_PATTERN).
-                sendKeys("dogs");
-        inputNamed(Key.ACCESS_LOG_ROLLINGFILEAPPENDER_MAX_HISTORY).
-                sendKeys("531");
-        inputNamed(Key.ACCESS_LOG_SYSLOGAPPENDER_ENABLED).click();
-        inputNamed(Key.ACCESS_LOG_SYSLOGAPPENDER_HOST).sendKeys("host2");
-        inputNamed(Key.ACCESS_LOG_SYSLOGAPPENDER_PORT).sendKeys("251");
-        inputNamed(Key.ACCESS_LOG_SYSLOGAPPENDER_FACILITY).sendKeys("foxes");
+        selectNamed("logging.level.edu.illinois.library.cantaloupe").selectByValue("warn");
 
         // Submit the form
         css("#cl-application input[type=\"submit\"]").click();
@@ -188,64 +147,7 @@ public class AdminResourceUITest {
         assertEquals("file", config.getString(Key.DELEGATE_SCRIPT_PATHNAME));
 
         // Application log
-        assertEquals("warn", config.getString(Key.APPLICATION_LOG_LEVEL));
-        assertTrue(config.getBoolean(Key.APPLICATION_LOG_CONSOLEAPPENDER_ENABLED));
-
-        assertTrue(config.getBoolean(Key.APPLICATION_LOG_FILEAPPENDER_ENABLED));
-        assertEquals("/path1",
-                config.getString(Key.APPLICATION_LOG_FILEAPPENDER_PATHNAME));
-
-        assertTrue(config.getBoolean(Key.APPLICATION_LOG_ROLLINGFILEAPPENDER_ENABLED));
-        assertEquals("/path2",
-                config.getString(Key.APPLICATION_LOG_ROLLINGFILEAPPENDER_PATHNAME));
-        assertEquals("pattern",
-                config.getString(Key.APPLICATION_LOG_ROLLINGFILEAPPENDER_FILENAME_PATTERN));
-        assertEquals("15",
-                config.getString(Key.APPLICATION_LOG_ROLLINGFILEAPPENDER_MAX_HISTORY));
-
-        assertTrue(config.getBoolean(Key.APPLICATION_LOG_SYSLOGAPPENDER_ENABLED));
-        assertEquals("host",
-                config.getString(Key.APPLICATION_LOG_SYSLOGAPPENDER_HOST));
-        assertEquals("555",
-                config.getString(Key.APPLICATION_LOG_SYSLOGAPPENDER_PORT));
-        assertEquals("cats",
-                config.getString(Key.APPLICATION_LOG_SYSLOGAPPENDER_FACILITY));
-
-        // Error log
-        assertTrue(config.getBoolean(Key.ERROR_LOG_FILEAPPENDER_ENABLED));
-        assertEquals("/path50",
-                config.getString(Key.ERROR_LOG_FILEAPPENDER_PATHNAME));
-
-        assertTrue(config.getBoolean(Key.ERROR_LOG_ROLLINGFILEAPPENDER_ENABLED));
-        assertEquals("/path2",
-                config.getString(Key.ERROR_LOG_ROLLINGFILEAPPENDER_PATHNAME));
-        assertEquals("pattern2",
-                config.getString(Key.ERROR_LOG_ROLLINGFILEAPPENDER_FILENAME_PATTERN));
-        assertEquals("20",
-                config.getString(Key.ERROR_LOG_ROLLINGFILEAPPENDER_MAX_HISTORY));
-
-        // Access log
-        assertTrue(config.getBoolean(Key.ACCESS_LOG_CONSOLEAPPENDER_ENABLED));
-
-        assertTrue(config.getBoolean(Key.ACCESS_LOG_FILEAPPENDER_ENABLED));
-        assertEquals("/path3",
-                config.getString(Key.ACCESS_LOG_FILEAPPENDER_PATHNAME));
-
-        assertTrue(config.getBoolean(Key.ACCESS_LOG_ROLLINGFILEAPPENDER_ENABLED));
-        assertEquals("/path4",
-                config.getString(Key.ACCESS_LOG_ROLLINGFILEAPPENDER_PATHNAME));
-        assertEquals("dogs",
-                config.getString(Key.ACCESS_LOG_ROLLINGFILEAPPENDER_FILENAME_PATTERN));
-        assertEquals("531",
-                config.getString(Key.ACCESS_LOG_ROLLINGFILEAPPENDER_MAX_HISTORY));
-
-        assertTrue(config.getBoolean(Key.ACCESS_LOG_SYSLOGAPPENDER_ENABLED));
-        assertEquals("host2",
-                config.getString(Key.ACCESS_LOG_SYSLOGAPPENDER_HOST));
-        assertEquals("251",
-                config.getString(Key.ACCESS_LOG_SYSLOGAPPENDER_PORT));
-        assertEquals("foxes",
-                config.getString(Key.ACCESS_LOG_SYSLOGAPPENDER_FACILITY));
+        assertEquals("warn", config.getString("logging.level.edu.illinois.library.cantaloupe"));
     }
 
     @Test
