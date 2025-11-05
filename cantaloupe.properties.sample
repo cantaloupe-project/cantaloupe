@@ -701,6 +701,7 @@ overlays.BasicStrategy.output_height_threshold = 300
 logging.level.root=INFO
 logging.level.edu.illinois.library.cantaloupe=INFO
 logging.pattern.console=%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n
+print_stack_trace_on_error_pages=false
 
 # Disable Spring Boot banner
 spring.main.banner-mode=off
