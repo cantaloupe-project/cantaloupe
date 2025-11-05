@@ -128,16 +128,6 @@ var Form = function(config) {
             '[name="overlays.BasicStrategy.enabled"], [name="redaction.enabled"]');
         // Delegate Script
         showOrHideAllOtherTableRows('[name="delegate_script.enabled"]');
-        // Logging
-        showOrHideAllOtherTableRows(
-            '[name="log.application.ConsoleAppender.enabled"], ' +
-            '[name="log.application.FileAppender.enabled"], ' +
-            '[name="log.application.RollingFileAppender.enabled"], ' +
-            '[name="log.application.SyslogAppender.enabled"], ' +
-            '[name="log.access.ConsoleAppender.enabled"], ' +
-            '[name="log.access.FileAppender.enabled"], ' +
-            '[name="log.access.RollingFileAppender.enabled"], ' +
-            '[name="log.access.SyslogAppender.enabled"]');
     };
 
     /**
