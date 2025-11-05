@@ -15,7 +15,7 @@
     <groupId>edu.illinois.library.cantaloupe</groupId>
     <artifactId>cantaloupe</artifactId>
     <packaging>jar</packaging>
-    <version>6.0.0-alpha.2</version>
+    <version>6.0.0-alpha.3</version>
     <name>Cantaloupe</name>
     <url>https://cantaloupe-project.github.io/</url>
     <inceptionYear>2015</inceptionYear>
