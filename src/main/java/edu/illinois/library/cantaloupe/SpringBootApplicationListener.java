@@ -8,7 +8,6 @@ import edu.illinois.library.cantaloupe.config.ConfigurationFileWatcher;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.delegate.DelegateProxyService;
 import edu.illinois.library.cantaloupe.image.Format;
-import edu.illinois.library.cantaloupe.logging.LoggerUtil;
 import edu.illinois.library.cantaloupe.source.Source;
 import edu.illinois.library.cantaloupe.source.SourceFactory;
 import org.slf4j.Logger;
@@ -70,11 +69,6 @@ public class SpringBootApplicationListener {
     public void onApplicationReady() {
         // Initialize ImageIO providers first
         initializeImageIOProviders();
-
-        // Logback has already initialized itself, which is a problem because
-        // logbook.xml depends on the application configuration, which at the
-        // time, had not been initialized yet. So, reload it.
-        LoggerUtil.reloadConfiguration();
 
         logSystemInfo();
 
