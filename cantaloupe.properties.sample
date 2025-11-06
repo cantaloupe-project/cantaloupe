@@ -698,6 +698,7 @@ overlays.BasicStrategy.output_height_threshold = 300
 ###########################################################################
 
 # Logging configuration - use Spring Boot defaults
+# See https://docs.spring.io/spring-boot/reference/features/logging.html for configuration options
 logging.level.root=INFO
 logging.level.edu.illinois.library.cantaloupe=INFO
 logging.pattern.console=%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n
