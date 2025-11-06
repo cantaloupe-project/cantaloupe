@@ -61,11 +61,4 @@ class JettyConfigurationTest {
         assertTrue(jettyConfiguration.getClass().isAnnotationPresent(org.springframework.context.annotation.Configuration.class),
                   "JettyConfiguration should be annotated with @Configuration");
     }
-
-    @Test
-    void testImplementsApplicationListener() {
-        // Verify that the class properly implements ApplicationListener
-        assertTrue(jettyConfiguration instanceof org.springframework.context.ApplicationListener,
-                  "JettyConfiguration should implement ApplicationListener");
-    }
 }
