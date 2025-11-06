@@ -18,7 +18,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.context.annotation.Import;
-import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -44,9 +43,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @WebMvcTest(InformationController.class)
 @Import({FormatRegistry.class, FormatRegistryAccessor.class, DelegateProxyService.class,
          InformationRequestHandlerFactory.class, StringUtils.class, SourceFactory.class})
-@TestPropertySource(properties = {
-    "cantaloupe.config=test.properties"
-})
+
 class InformationControllerTest {
 
     private static final String IMAGE = "jpg-rgb-64x56x8-baseline.jpg";

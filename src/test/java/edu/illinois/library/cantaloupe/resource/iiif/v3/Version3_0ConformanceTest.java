@@ -23,7 +23,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
@@ -57,9 +56,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @Import({FormatRegistry.class, FormatRegistryAccessor.class, DelegateProxyService.class,
          InformationRequestHandlerFactory.class, ImageRequestHandlerFactory.class, StringUtils.class,
          SourceFactory.class})
-@TestPropertySource(properties = {
-    "cantaloupe.config=test.properties"
-})
+
 public class Version3_0ConformanceTest {
 
     private static final String IMAGE = "jpg-rgb-64x56x8-baseline.jpg";

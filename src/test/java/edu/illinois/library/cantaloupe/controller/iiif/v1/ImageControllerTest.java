@@ -38,9 +38,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @WebMvcTest(ImageController.class)
 @Import({FormatRegistry.class, FormatRegistryAccessor.class, DelegateProxyService.class,
          ImageRequestHandlerFactory.class, StringUtils.class, SourceFactory.class})
-@TestPropertySource(properties = {
-    "cantaloupe.config=test.properties"
-})
 class ImageControllerTest {
 
     @Autowired
