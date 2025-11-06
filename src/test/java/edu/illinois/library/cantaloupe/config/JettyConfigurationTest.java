@@ -6,7 +6,9 @@ import org.junit.jupiter.api.Test;
 import org.springframework.boot.web.embedded.jetty.JettyServletWebServerFactory;
 import org.springframework.boot.web.server.WebServerFactoryCustomizer;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Unit tests for JettyConfiguration.
@@ -18,7 +20,9 @@ class JettyConfigurationTest {
 
     @BeforeEach
     void setUp() {
-        jettyConfiguration = new JettyConfiguration();
+        System.setProperty(ConfigurationFactory.CONFIG_VM_ARGUMENT, "memory");
+
+        jettyConfiguration = new JettyConfiguration(Configuration.getInstance());
     }
 
     @Test
