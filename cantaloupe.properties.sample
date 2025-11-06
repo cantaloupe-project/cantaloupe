@@ -31,8 +31,8 @@ server.ssl.key-password = myPassword
 # !! Constrains the size of the web server's thread pool. Leave blank to
 # use the defaults (min_threads: 8, max_threads: 150).
 # Was http.min_threads, http.max_threads
-server.jetty.threads.min = 
-server.jetty.threads.max = 
+server.jetty.threads.min =
+server.jetty.threads.max =
 
 # !! Maximum size of the request queue. Leave blank to use the default.
 server.jetty.threads.max-queue-capacity =
@@ -703,6 +703,19 @@ logging.level.root=INFO
 logging.level.edu.illinois.library.cantaloupe=INFO
 logging.pattern.console=%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n
 print_stack_trace_on_error_pages=false
+
+###########################################################################
+# HTTP Access Logging
+###########################################################################
+
+# !! Enable HTTP access logging to stdout
+http.access_log.enabled = false
+
+# !! Access log format options:
+# - "common" for Common Log Format
+# - "combined" for Combined Log Format (default)
+# - "json" for structured JSON logging
+http.access_log.format = combined
 
 # Disable Spring Boot banner
 spring.main.banner-mode=off
