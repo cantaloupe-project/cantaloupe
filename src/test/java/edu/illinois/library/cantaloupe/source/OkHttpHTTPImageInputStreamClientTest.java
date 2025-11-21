@@ -1,17 +1,16 @@
 package edu.illinois.library.cantaloupe.source;
 
 import edu.illinois.library.cantaloupe.http.Range;
-import edu.illinois.library.cantaloupe.http.Response;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.WebServer;
 import org.eclipse.jetty.server.Request;
+import org.eclipse.jetty.server.Response;
+
 import org.eclipse.jetty.server.handler.DefaultHandler;
+import org.eclipse.jetty.util.Callback;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -37,13 +36,13 @@ public class OkHttpHTTPImageInputStreamClientTest extends BaseTest {
     void sendHEADRequest() throws Exception {
         server.setHandler(new DefaultHandler() {
             @Override
-            public void handle(String target,
-                               Request baseRequest,
-                               HttpServletRequest request,
-                               HttpServletResponse response) {
-                assertEquals("HEAD", baseRequest.getMethod());
+            public boolean handle(Request request,
+                Response response,
+                Callback callback) {
+                assertEquals("HEAD", request.getMethod());
                 response.setStatus(200);
-                baseRequest.setHandled(true);
+                callback.succeeded();
+                return true;
             }
         });
         server.start();
@@ -60,13 +59,13 @@ public class OkHttpHTTPImageInputStreamClientTest extends BaseTest {
     void sendHEADRequestSendsRequestInfoCredentials() throws Exception {
         server.setHandler(new DefaultHandler() {
             @Override
-            public void handle(String target,
-                               Request baseRequest,
-                               HttpServletRequest request,
-                               HttpServletResponse response) {
+            public boolean handle(Request request,
+                Response response,
+                Callback callback) {
                 assertEquals("Basic dXNlcjpzZWNyZXQ=",
-                        baseRequest.getHeader("Authorization"));
-                baseRequest.setHandled(true);
+                        request.getHeaders().get("Authorization"));
+                callback.succeeded();
+                return true;
             }
         });
         server.start();
@@ -85,12 +84,12 @@ public class OkHttpHTTPImageInputStreamClientTest extends BaseTest {
     void sendHEADRequestSendsRequestInfoHeaders() throws Exception {
         server.setHandler(new DefaultHandler() {
             @Override
-            public void handle(String target,
-                               Request baseRequest,
-                               HttpServletRequest request,
-                               HttpServletResponse response) {
-                assertEquals("yes", baseRequest.getHeader("X-Cats"));
-                baseRequest.setHandled(true);
+            public boolean handle(Request request,
+                Response response,
+                Callback callback) {
+                assertEquals("yes", request.getHeaders().get("X-Cats"));
+                callback.succeeded();
+                return true;
             }
         });
         server.start();
@@ -114,7 +113,7 @@ public class OkHttpHTTPImageInputStreamClientTest extends BaseTest {
         final OkHttpHTTPImageInputStreamClient instance =
                 new OkHttpHTTPImageInputStreamClient(requestInfo);
 
-        Response response = instance.sendGETRequest(new Range(0, 1, 4));
+        edu.illinois.library.cantaloupe.http.Response response = instance.sendGETRequest(new Range(0, 1, 4));
 
         assertArrayEquals(new byte[] { (byte) 0xff, (byte) 0xd8 },
                 response.getBody());
@@ -125,13 +124,13 @@ public class OkHttpHTTPImageInputStreamClientTest extends BaseTest {
     void sendGETRequestSendsRequestInfoCredentials() throws Exception {
         server.setHandler(new DefaultHandler() {
             @Override
-            public void handle(String target,
-                               Request baseRequest,
-                               HttpServletRequest request,
-                               HttpServletResponse response) {
+            public boolean handle(Request request,
+                Response response,
+                Callback callback) {
                 assertEquals("Basic dXNlcjpzZWNyZXQ=",
-                        baseRequest.getHeader("Authorization"));
-                baseRequest.setHandled(true);
+                        request.getHeaders().get("Authorization"));
+                callback.succeeded();
+                return true;
             }
         });
         server.start();
@@ -150,12 +149,12 @@ public class OkHttpHTTPImageInputStreamClientTest extends BaseTest {
     void sendGETRequestSendsRequestInfoHeaders() throws Exception {
         server.setHandler(new DefaultHandler() {
             @Override
-            public void handle(String target,
-                               Request baseRequest,
-                               HttpServletRequest request,
-                               HttpServletResponse response) {
-                assertEquals("yes", baseRequest.getHeader("X-Cats"));
-                baseRequest.setHandled(true);
+            public boolean handle(Request request,
+                Response response,
+                Callback callback) {
+                assertEquals("yes", request.getHeaders().get("X-Cats"));
+                callback.succeeded();
+                return true;
             }
         });
         server.start();
