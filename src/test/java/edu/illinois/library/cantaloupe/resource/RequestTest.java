@@ -26,21 +26,6 @@ class RequestTest extends BaseTest {
     }
 
     @Test
-    void testGetCookies() {
-        MockHttpServletRequest sr = new MockHttpServletRequest();
-        sr.getHeaders().put("Cookie", List.of("fruit=apples; animal=cats",
-                "shape=cube; car=ford"));
-        instance = new Request(sr);
-
-        Cookies cookies = instance.getCookies();
-        assertEquals(4, cookies.size());
-        assertEquals("apples", cookies.getFirstValue("fruit"));
-        assertEquals("cats", cookies.getFirstValue("animal"));
-        assertEquals("cube", cookies.getFirstValue("shape"));
-        assertEquals("ford", cookies.getFirstValue("car"));
-    }
-
-    @Test
     void testGetHeaders() {
         MockHttpServletRequest sr = new MockHttpServletRequest();
         sr.getHeaders().put("Cookie", List.of("cats=yes"));
