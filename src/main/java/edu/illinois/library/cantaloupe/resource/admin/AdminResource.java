@@ -14,7 +14,7 @@ import edu.illinois.library.cantaloupe.processor.Processor;
 import edu.illinois.library.cantaloupe.processor.ProcessorFactory;
 import edu.illinois.library.cantaloupe.processor.SourceFormatException;
 import edu.illinois.library.cantaloupe.resource.Route;
-import edu.illinois.library.cantaloupe.resource.VelocityRepresentation;
+import edu.illinois.library.cantaloupe.resource.ThymeleafRepresentation;
 import edu.illinois.library.cantaloupe.source.Source;
 import edu.illinois.library.cantaloupe.source.SourceFactory;
 import org.slf4j.Logger;
@@ -144,7 +144,7 @@ public class AdminResource extends AbstractAdminResource {
     public void doGET() throws Exception {
         getResponse().setHeader("Content-Type", "text/html;charset=UTF-8");
 
-        new VelocityRepresentation("/admin.vm", getTemplateVars())
+        new ThymeleafRepresentation("/admin.html", getTemplateVars())
                 .write(getResponse().getOutputStream());
     }
 

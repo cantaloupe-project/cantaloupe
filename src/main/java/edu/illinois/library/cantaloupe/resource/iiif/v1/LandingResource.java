@@ -1,7 +1,7 @@
 package edu.illinois.library.cantaloupe.resource.iiif.v1;
 
 import edu.illinois.library.cantaloupe.http.Method;
-import edu.illinois.library.cantaloupe.resource.VelocityRepresentation;
+import edu.illinois.library.cantaloupe.resource.ThymeleafRepresentation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,7 +30,7 @@ public class LandingResource extends IIIF1Resource {
     public void doGET() throws Exception {
         getResponse().setHeader("Content-Type", "text/html;charset=UTF-8");
 
-        new VelocityRepresentation("/iiif_1_landing.vm", getCommonTemplateVars())
+        new ThymeleafRepresentation("/iiif_1_landing.html", getCommonTemplateVars())
                 .write(getResponse().getOutputStream());
     }
 
