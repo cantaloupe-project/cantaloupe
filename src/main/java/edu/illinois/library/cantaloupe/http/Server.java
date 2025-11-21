@@ -5,8 +5,8 @@ import org.eclipse.jetty.alpn.server.ALPNServerConnectionFactory;
 import org.eclipse.jetty.http2.HTTP2Cipher;
 import org.eclipse.jetty.http2.server.HTTP2CServerConnectionFactory;
 import org.eclipse.jetty.http2.server.HTTP2ServerConnectionFactory;
-import org.eclipse.jetty.security.ConstraintMapping;
-import org.eclipse.jetty.security.ConstraintSecurityHandler;
+import org.eclipse.jetty.ee10.servlet.security.ConstraintMapping;
+import org.eclipse.jetty.ee10.servlet.security.ConstraintSecurityHandler;
 import org.eclipse.jetty.security.HashLoginService;
 import org.eclipse.jetty.security.UserStore;
 import org.eclipse.jetty.security.authentication.BasicAuthenticator;
@@ -17,7 +17,7 @@ import org.eclipse.jetty.server.SecureRequestCustomizer;
 import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.server.SslConnectionFactory;
 import org.eclipse.jetty.server.handler.ResourceHandler;
-import org.eclipse.jetty.util.security.Constraint;
+import org.eclipse.jetty.security.Constraint;
 import org.eclipse.jetty.util.security.Password;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 
@@ -149,9 +149,9 @@ public final class Server {
         // If a custom handler has not been set, use a static file server.
         if (handler == null) {
             ResourceHandler handler = new ResourceHandler();
-            handler.setDirectoriesListed(false);
+            handler.setDirAllowed(false);
             handler.setAcceptRanges(isAcceptingRanges);
-            handler.setResourceBase(root.toString());
+            handler.setBaseResourceAsString(root.toString());
             this.handler = handler;
         }
 
@@ -164,10 +164,7 @@ public final class Server {
             loginService.setUserStore(userStore);
             server.addBean(loginService);
 
-            Constraint constraint = new Constraint();
-            constraint.setName("auth");
-            constraint.setAuthenticate(true);
-            constraint.setRoles(roles);
+            Constraint constraint = Constraint.from("auth", Constraint.Authorization.SPECIFIC_ROLE, roles);
 
             ConstraintMapping mapping = new ConstraintMapping();
             mapping.setPathSpec("/*");
