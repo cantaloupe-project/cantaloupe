@@ -2,6 +2,7 @@ package edu.illinois.library.cantaloupe.image;
 
 import edu.illinois.library.cantaloupe.delegate.DelegateProxy;
 import edu.illinois.library.cantaloupe.http.Reference;
+import edu.illinois.library.cantaloupe.resource.StringRepresentation;
 import edu.illinois.library.cantaloupe.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -113,6 +114,34 @@ public final class MetaIdentifier {
     public static MetaIdentifier.Builder builder() {
         return new Builder();
     }
+
+
+    public MetaIdentifier getNormalizedScaleConstraintMetaIdentifier() {
+        final ScaleConstraint scaleConstraint = getScaleConstraint();
+        if (scaleConstraint == null) {
+            return null;
+        }
+        // and it contains a scale constraint...
+        // ...and the numerator and denominator are equal, redirect to
+        // the non-suffixed identifier.
+        if (!scaleConstraint.hasEffect()) {
+            MetaIdentifier metaIdentifier = new MetaIdentifier(this);
+            metaIdentifier.setScaleConstraint(null);
+            return metaIdentifier;
+        } else {
+            ScaleConstraint reducedConstraint =
+                    scaleConstraint.getReduced();
+            // ...and the fraction is not reduced, redirect to the
+            // reduced version.
+            if (!reducedConstraint.equals(scaleConstraint)) {
+                MetaIdentifier metaIdentifier = new MetaIdentifier(this);
+                metaIdentifier.setScaleConstraint(reducedConstraint);
+                return metaIdentifier;
+            }
+            return null;
+        }
+    }
+    
 
     /**
      * <p>Deserializes the given meta-identifier string using the {@link
