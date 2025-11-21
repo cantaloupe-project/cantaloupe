@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <base th:if="${baseUri}" th:href="${baseUri + '/'}">
+    <meta charset="utf-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <link rel="stylesheet" href="static/styles/base.css">
+
+    <title>Cantaloupe Image Server</title>
+</head>
+
+<body id="cl-landing">
+    <div class="container-fluid">
+        <h1>IIIF Image API 2.x Endpoint</h1>
+
+        <ul>
+            <li>Documentation
+                <ul>
+                    <li><a href="http://iiif.io/api/image/2.0/">2.0</a></li>
+                    <li><a href="http://iiif.io/api/image/2.1/">2.1</a></li>
+                </ul>
+            </li>
+            <li>Sample Requests
+                <ul>
+                    <li th:text="${baseUri + '/iiif/2/{identifier}/info.json'}"></li>
+                    <li th:text="${baseUri + '/iiif/2/{identifier}/full/full/0/default.jpg'}"></li>
+                </ul>
+            </li>
+            <li>Also Available:
+                <ul>
+                    <li><a th:href="${baseUri + '/iiif/1'}">IIIF Image API 1.x endpoint</a></li>
+                    <li><a th:href="${baseUri + '/iiif/3'}">IIIF Image API 3.x endpoint</a></li>
+                </ul>
+            </li>
+        </ul>
+    </div>
+</body>
+</html>

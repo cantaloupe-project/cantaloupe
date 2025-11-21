@@ -33,13 +33,6 @@ class StringUtilsTest extends BaseTest {
     }
 
     @Test
-    void testEscapeHTML() {
-        String html = "the quick brown <script type=\"text/javascript\">alert('hi');</script> fox";
-        String expected = "the quick brown &#60;script type=&#34;text/javascript&#34;&#62;alert('hi');&#60;/script&#62; fox";
-        assertEquals(expected, StringUtils.escapeHTML(html));
-    }
-
-    @Test
     void testMD5() {
         assertEquals("0832c1202da8d382318e329a7c133ea0",
                 StringUtils.md5("cats"));

@@ -328,11 +328,11 @@
             <artifactId>jackson-datatype-jdk8</artifactId>
             <version>${jackson.version}</version>
         </dependency>
-        <!-- Provides Velocity for the landing and error page templates -->
+        <!-- Provides Thymeleaf for the landing and error page templates -->
         <dependency>
-            <groupId>org.apache.velocity</groupId>
-            <artifactId>velocity-engine-core</artifactId>
-            <version>2.3</version>
+            <groupId>org.thymeleaf</groupId>
+            <artifactId>thymeleaf</artifactId>
+            <version>3.1.2.RELEASE</version>
         </dependency>
         <!-- Selenium is used to test the control panel, using a headless HtmlUnit
         browser. -->
