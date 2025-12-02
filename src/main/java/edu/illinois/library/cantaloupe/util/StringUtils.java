@@ -57,21 +57,6 @@ public final class StringUtils {
         return slashedIdentifier;
     }
 
-    public static String escapeHTML(String html) {
-        StringBuilder out = new StringBuilder(Math.max(16, html.length()));
-        for (int i = 0, length = html.length(); i < length; i++) {
-            char c = html.charAt(i);
-            if (c > 127 || c == '"' || c == '<' || c == '>' || c == '&') {
-                out.append("&#");
-                out.append((int) c);
-                out.append(';');
-            } else {
-                out.append(c);
-            }
-        }
-        return out.toString();
-    }
-
     /**
      * @param str String to hash.
      * @return    Lowercase MD5 checksum string.

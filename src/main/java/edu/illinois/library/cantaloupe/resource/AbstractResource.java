@@ -4,7 +4,6 @@ import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.auth.AuthInfo;
 import edu.illinois.library.cantaloupe.auth.Authorizer;
 import edu.illinois.library.cantaloupe.auth.AuthorizerFactory;
-import edu.illinois.library.cantaloupe.auth.CredentialStore;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.http.ContentTypeNegotiator;
@@ -26,7 +25,6 @@ import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Base64;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -235,39 +233,7 @@ public abstract class AbstractResource {
         response.setStatus(Status.METHOD_NOT_ALLOWED.getCode());
     }
 
-    /**
-     * Checks the {@code Authorization} header for credentials that exist in
-     * the given {@link CredentialStore}. If not found, sends a {@code
-     * WWW-Authenticate} header and throws an exception.
-     *
-     * @param realm           Basic realm.
-     * @param credentialStore Credential store.
-     * @throws ResourceException if authentication failed.
-     */
-    protected final void authenticateUsingBasic(String realm,
-                                                CredentialStore credentialStore)
-            throws ResourceException {
-        boolean isAuthenticated = false;
-        String header = getRequest().getHeaders().getFirstValue("Authorization", "");
-        if ("Basic ".equals(header.substring(0, Math.min(header.length(), 6)))) {
-            String encoded = header.substring(6);
-            String decoded = new String(Base64.getDecoder().decode(encoded.getBytes(StandardCharsets.UTF_8)),
-                    StandardCharsets.UTF_8);
-            String[] parts = decoded.split(":");
-            if (parts.length == 2) {
-                String user = parts[0];
-                String secret = parts[1];
-                if (secret.equals(credentialStore.getSecret(user))) {
-                    isAuthenticated = true;
-                }
-            }
-        }
-        if (!isAuthenticated) {
-            getResponse().setHeader("WWW-Authenticate",
-                    "Basic realm=\"" + realm + "\" charset=\"UTF-8\"");
-            throw new ResourceException(Status.UNAUTHORIZED);
-        }
-    }
+
 
     /**
      * <p>Uses an {@link Authorizer} to determine how to respond to the

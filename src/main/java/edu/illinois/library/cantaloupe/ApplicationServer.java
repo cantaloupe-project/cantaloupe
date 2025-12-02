@@ -19,13 +19,14 @@ import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.server.Slf4jRequestLogWriter;
 import org.eclipse.jetty.server.SslConnectionFactory;
-import org.eclipse.jetty.servlet.ListenerHolder;
-import org.eclipse.jetty.servlet.ServletContextHandler;
+import org.eclipse.jetty.ee10.servlet.ListenerHolder;
+import org.eclipse.jetty.ee10.servlet.ServletContextHandler;
+import org.eclipse.jetty.http.UriCompliance;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.eclipse.jetty.util.thread.QueuedThreadPool;
+import org.eclipse.jetty.ee10.servlet.ServletHandler;
 
 import java.lang.management.ManagementFactory;
-
 /**
  * <p>Provides the embedded Servlet container in standalone mode.</p>
  *
@@ -265,6 +266,8 @@ public class ApplicationServer {
             // HTTP/2.
             if (isHTTPEnabled()) {
                 HttpConfiguration config = new HttpConfiguration();
+                config.setUriCompliance(
+                        UriCompliance.from("DEFAULT,SUSPICIOUS_PATH_CHARACTERS,AMBIGUOUS_PATH_SEPARATOR"));
                 HttpConnectionFactory http1 = new HttpConnectionFactory(config);
 
                 HTTP2CServerConnectionFactory http2 =
@@ -275,11 +278,16 @@ public class ApplicationServer {
                 connector.setIdleTimeout(IDLE_TIMEOUT);
                 connector.setAcceptQueueSize(getAcceptQueueLimit());
                 server.addConnector(connector);
+                server.getContainedBeans(ServletHandler.class)
+                    .forEach(handler -> handler.setDecodeAmbiguousURIs(true));
             }
 
             // Initialize the HTTPS server.
             if (isHTTPSEnabled()) {
                 HttpConfiguration config = new HttpConfiguration();
+                config.setUriCompliance(
+                        UriCompliance.from("DEFAULT,SUSPICIOUS_PATH_CHARACTERS,AMBIGUOUS_PATH_SEPARATOR"));
+
                 config.setSecureScheme("https");
                 config.setSecurePort(getHTTPSPort());
                 config.addCustomizer(new SecureRequestCustomizer());
@@ -317,6 +325,8 @@ public class ApplicationServer {
                 connector.setIdleTimeout(IDLE_TIMEOUT);
                 connector.setAcceptQueueSize(getAcceptQueueLimit());
                 server.addConnector(connector);
+                server.getContainedBeans(ServletHandler.class)
+                    .forEach(handler -> handler.setDecodeAmbiguousURIs(true));
             }
 
             // If the Cantaloupe server is started with jmxremote, add the Jetty
