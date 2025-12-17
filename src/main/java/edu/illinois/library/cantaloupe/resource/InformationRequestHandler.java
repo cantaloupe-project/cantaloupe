@@ -232,7 +232,7 @@ public class InformationRequestHandler extends AbstractRequestHandler
         // cache contains an info matching the request, skip all the setup and
         // just return the cached info.
         if (!isBypassingCache && !isBypassingCacheRead &&
-                !isResolvingFirst()) {
+                !verifyExistenceBeforeReturningCachedValue()) {
             try {
                 Optional<Info> optInfo = cacheFacade.getInfo(identifier);
                 if (optInfo.isPresent()) {
@@ -258,7 +258,7 @@ public class InformationRequestHandler extends AbstractRequestHandler
         // the source cache (if enabled), check access to it in preparation for
         // retrieval.
         final Optional<Path> optSrcImage = cacheFacade.getSourceCacheFile(identifier);
-        if (optSrcImage.isEmpty() || isResolvingFirst()) {
+        if (optSrcImage.isEmpty() || verifyExistenceBeforeReturningCachedValue()) {
             try {
                 StatResult result = source.stat();
                 callback.sourceAccessed(result);
@@ -277,7 +277,7 @@ public class InformationRequestHandler extends AbstractRequestHandler
         // expect source cache access to be more efficient.
         // Otherwise, read it from the source.
         Iterator<Format> formatIterator = Collections.emptyIterator();
-        if (!isResolvingFirst() && optSrcImage.isPresent()) {
+        if (!verifyExistenceBeforeReturningCachedValue() && optSrcImage.isPresent()) {
             List<MediaType> mediaTypes = MediaType.detectMediaTypes(optSrcImage.get());
             if (!mediaTypes.isEmpty()) {
                 formatIterator = mediaTypes
