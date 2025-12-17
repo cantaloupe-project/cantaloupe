@@ -42,10 +42,10 @@ RUN wget -q https://download.java.net/java/GA/jdk25/bd75d5f9689641da8e1daabeccb5
   && tar xfz openjdk-25_linux-x64_bin.tar.gz \
   && mv jdk-25 /opt/jdk \
   # Install a newer Maven than the one in apt
-  && wget -q https://dlcdn.apache.org/maven/maven-3/3.9.11/binaries/apache-maven-3.9.11-bin.tar.gz \
-  && tar xfz apache-maven-3.9.11-bin.tar.gz \
-  && mv apache-maven-3.9.11 /opt/maven \
-  && rm apache-maven-3.9.11-bin.tar.gz
+  && wget -q https://dlcdn.apache.org/maven/maven-3/3.9.12/binaries/apache-maven-3.9.12-bin.tar.gz \
+  && tar xfz apache-maven-3.9.12-bin.tar.gz \
+  && mv apache-maven-3.9.12 /opt/maven \
+  && rm apache-maven-3.9.12-bin.tar.gz
 
 # A non-root user is needed for some FilesystemSourceTest tests to work.
 ARG user=cantaloupe
