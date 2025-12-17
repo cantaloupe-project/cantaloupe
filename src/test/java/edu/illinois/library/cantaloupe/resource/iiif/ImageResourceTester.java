@@ -339,53 +339,6 @@ public class ImageResourceTester extends ImageAPIResourceTester {
         }
     }
 
-    public void testContentDispositionHeaderWithNoHeader(URI uri)
-            throws Exception {
-        Client client = newClient(uri);
-        try {
-            Response response = client.send();
-            assertNull(response.getHeaders().getFirstValue("Content-Disposition"));
-        } finally {
-            client.stop();
-        }
-    }
-
-    public void testContentDispositionHeaderSetToInline(URI uri)
-            throws Exception {
-        Client client = newClient(uri);
-        try {
-            Response response = client.send();
-            assertEquals("inline; filename=\"" + IMAGE + ".jpg\"",
-                    response.getHeaders().getFirstValue("Content-Disposition"));
-        } finally {
-            client.stop();
-        }
-    }
-
-    public void testContentDispositionHeaderSetToAttachment(URI uri)
-            throws Exception {
-        Client client = newClient(uri);
-        try {
-            Response response = client.send();
-            assertEquals("attachment; filename=\"" + IMAGE + ".jpg\"",
-                    response.getHeaders().getFirstValue("Content-Disposition"));
-        } finally {
-            client.stop();
-        }
-    }
-
-    public void testContentDispositionHeaderSetToAttachmentWithFilename(URI uri,
-                                                                        String filename) throws Exception {
-        Client client = newClient(uri);
-        try {
-            Response response = client.send();
-            assertEquals("attachment; filename=\"" + filename + "\"",
-                    response.getHeaders().getFirstValue("Content-Disposition"));
-        } finally {
-            client.stop();
-        }
-    }
-
     public void testDimensions(URI uri,
                                int expectedWidth,
                                int expectedHeight) throws Exception {

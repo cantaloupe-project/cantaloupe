@@ -102,11 +102,8 @@ public class ImageResource extends IIIF1Resource {
                         (Scale) opList.getFirst(Scale.class),
                         Status.FORBIDDEN);
 
-                final String disposition = getRepresentationDisposition(
-                        getMetaIdentifier().toString(),
-                        opList.getOutputFormat());
                 addHeaders(processor.getAvailableOutputFormats(),
-                        opList.getOutputFormat(), disposition);
+                        opList.getOutputFormat());
             }
         }
 
@@ -122,11 +119,7 @@ public class ImageResource extends IIIF1Resource {
     }
 
     private void addHeaders(Set<Format> availableOutputFormats,
-                            Format outputFormat,
-                            String disposition) {
-        if (disposition != null) {
-            getResponse().setHeader("Content-Disposition", disposition);
-        }
+                            Format outputFormat) {
         getResponse().setHeader("Content-Type",
                 outputFormat.getPreferredMediaType().toString());
 

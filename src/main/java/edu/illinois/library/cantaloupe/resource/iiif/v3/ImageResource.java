@@ -75,8 +75,6 @@ public class ImageResource extends IIIF3Resource {
         ops.setPageIndex(getPageIndex());
         ops.getOptions().putAll(getRequest().getReference().getQuery().toMap());
         final int pageIndex = getPageIndex();
-        final String disposition = getRepresentationDisposition(
-                ops.getMetaIdentifier().toString(), ops.getOutputFormat());
 
         class CustomCallback implements ImageRequestHandler.Callback {
             @Override
@@ -106,7 +104,7 @@ public class ImageResource extends IIIF3Resource {
                     }
                 }
                 try {
-                    enqueueHeaders(params, info.getSize(pageIndex), disposition);
+                    enqueueHeaders(params, info.getSize(pageIndex));
                 } catch (IndexOutOfBoundsException e) {
                     throw new IllegalClientArgumentException(e.getMessage(), e);
                 }
@@ -149,12 +147,7 @@ public class ImageResource extends IIIF3Resource {
      * response headers to a queue which will be sent upon a success response.
      */
     private void enqueueHeaders(Parameters params,
-                                Dimension fullSize,
-                                String disposition) {
-        // Content-Disposition
-        if (disposition != null) {
-            queuedHeaders.put("Content-Disposition", disposition);
-        }
+                                Dimension fullSize) {
         // Content-Type
         queuedHeaders.put("Content-Type",
                 params.getOutputFormat().toFormat().getPreferredMediaType().toString());
