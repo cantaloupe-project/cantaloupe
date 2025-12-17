@@ -14,6 +14,8 @@ import edu.illinois.library.cantaloupe.processor.Processor;
 import edu.illinois.library.cantaloupe.resource.ImageRequestHandler;
 import edu.illinois.library.cantaloupe.source.StatResult;
 import edu.illinois.library.cantaloupe.http.ContentTypeNegotiator;
+import edu.illinois.library.cantaloupe.resource.iiif.ScaleValidator;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -98,9 +100,10 @@ public class ImageResource extends IIIF1Resource {
             public void willProcessImage(Processor processor,
                                          Info info) throws Exception {
                 final Dimension fullSize = info.getSize(getPageIndex());
-                validateScale(info.getMetadata().getOrientation().adjustedSize(fullSize),
+                ScaleValidator.validateScale(info.getMetadata().getOrientation().adjustedSize(fullSize),
                         (Scale) opList.getFirst(Scale.class),
-                        Status.FORBIDDEN);
+                        Status.FORBIDDEN,
+                        getMetaIdentifier());
 
                 final String disposition = getRepresentationDisposition(
                         getMetaIdentifier().toString(),

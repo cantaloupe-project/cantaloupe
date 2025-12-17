@@ -19,6 +19,8 @@ import edu.illinois.library.cantaloupe.resource.ScaleRestrictedException;
 import edu.illinois.library.cantaloupe.resource.ImageRequestHandler;
 import edu.illinois.library.cantaloupe.resource.iiif.SizeRestrictedException;
 import edu.illinois.library.cantaloupe.source.StatResult;
+import edu.illinois.library.cantaloupe.resource.iiif.ScaleValidator;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -127,7 +129,7 @@ public class ImageResource extends IIIF3Resource {
                 final Dimension virtualSize   = orientation.adjustedSize(info.getSize(pageIndex));
                 final Dimension resultingSize = ops.getResultingSize(info.getSize(pageIndex));
                 validateScale(virtualSize, scale, params.getSize().isUpscalingAllowed());
-                validateScale(virtualSize, scale, Status.BAD_REQUEST);
+                ScaleValidator.validateScale(virtualSize, scale, Status.BAD_REQUEST, getMetaIdentifier());
                 validateSize(virtualSize, resultingSize);
                 sendHeaders();
             }
