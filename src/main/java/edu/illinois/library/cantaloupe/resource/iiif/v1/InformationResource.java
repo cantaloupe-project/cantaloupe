@@ -92,8 +92,8 @@ public class InformationResource extends IIIF1Resource {
 
         try (InformationRequestHandler handler = InformationRequestHandler.builder()
                 .withIdentifier(getMetaIdentifier().getIdentifier())
-                .withBypassingCache(isBypassingCache())
-                .withBypassingCacheRead(isBypassingCacheRead())
+                .withBypassingCache(getRequest().isBypassingCache())
+                .withBypassingCacheRead(getRequest().isBypassingCacheRead())
                 .withDelegateProxy(getDelegateProxy())
                 .withRequestContext(getRequestContext())
                 .withCallback(new CustomCallback())

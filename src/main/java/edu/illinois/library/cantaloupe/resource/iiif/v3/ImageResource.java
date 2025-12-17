@@ -135,8 +135,8 @@ public class ImageResource extends IIIF3Resource {
 
         try (ImageRequestHandler handler = ImageRequestHandler.builder()
                 .withOperationList(ops)
-                .withBypassingCache(isBypassingCache())
-                .withBypassingCacheRead(isBypassingCacheRead())
+                .withBypassingCache(getRequest().isBypassingCache())
+                .withBypassingCacheRead(getRequest().isBypassingCacheRead())
                 .optionallyWithDelegateProxy(getDelegateProxy(), getRequestContext())
                 .withCallback(new CustomCallback())
                 .build()) {
