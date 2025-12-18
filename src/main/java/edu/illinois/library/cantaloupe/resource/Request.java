@@ -1,15 +1,23 @@
 package edu.illinois.library.cantaloupe.resource;
 
+import edu.illinois.library.cantaloupe.config.Configuration;
+import edu.illinois.library.cantaloupe.config.Key;
+import edu.illinois.library.cantaloupe.delegate.DelegateProxy;
 import edu.illinois.library.cantaloupe.http.Cookies;
 import edu.illinois.library.cantaloupe.http.Headers;
 import edu.illinois.library.cantaloupe.http.Method;
 import edu.illinois.library.cantaloupe.http.Query;
 import edu.illinois.library.cantaloupe.http.Reference;
-
+import edu.illinois.library.cantaloupe.image.MetaIdentifier;
+import edu.illinois.library.cantaloupe.util.StringUtils;
 import jakarta.servlet.http.HttpServletRequest;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Enumeration;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -22,6 +30,9 @@ public final class Request {
     private Cookies cookies;
     private Headers headers;
     private Reference reference;
+
+    private static final Logger LOGGER =
+            LoggerFactory.getLogger(Request.class);
 
     /**
      * URL argument values that can be used with the {@code cache} query key to
@@ -109,6 +120,85 @@ public final class Request {
             }
         }
         return reference;
+    }
+
+        /**
+     * <p>Returns a reference to the base URI path of the application.</p>
+     *
+     * <p>{@link Key#BASE_URI} is respected, if set. Otherwise, the {@code
+     * X-Forwarded-*} request headers are respected, if available. Finally,
+     * Servlet-supplied information is used otherwise.</p>
+     *
+     * @see #getPublicReference()
+     */
+    public Reference getPublicRootReference() {
+        Reference ref = new Reference(getReference());
+        ref.getQuery().clear();
+        ref.setPath(getContextPath());
+
+        // If base_uri is set in the configuration, build a URI based on that.
+        final String baseUri = Configuration.getInstance()
+                .getString(Key.BASE_URI, "");
+        if (!baseUri.isEmpty()) {
+            final Reference baseRef = new Reference(baseUri);
+            ref.setScheme(baseRef.getScheme());
+            ref.setHost(baseRef.getHost());
+            ref.setPort(baseRef.getPort());
+            ref.setPath(StringUtils.stripEnd(baseRef.getPath(), "/"));
+            LOGGER.debug("Base URI from assembled from {} key: {}",
+                    Key.BASE_URI, ref);
+        } else {
+            // Try to use X-Forwarded-* headers.
+            ref.applyProxyHeaders(getHeaders());
+            LOGGER.debug("Base URI assembled from X-Forwarded headers: {}",
+                    ref);
+        }
+        return ref;
+    }
+
+
+    /**
+     * Variant of {@link #getPublicReference()} that replaces the identifier
+     * path component's meta-identifier if an identifier path component is
+     * available.
+     */
+    public Reference getPublicReference(MetaIdentifier newMetaIdentifier, String identifierPathComponent, DelegateProxy delegateProxy) {
+        final Reference publicRef         = new Reference(getPublicReference());
+        final List<String> pathComponents = publicRef.getPathComponents();
+        final int identifierIndex         = pathComponents.indexOf(identifierPathComponent);
+
+        final String newMetaIdentifierString = newMetaIdentifier.toURIPathComponent(delegateProxy);
+        publicRef.setPathComponent(identifierIndex, newMetaIdentifierString);
+        return publicRef;
+    }
+
+    /**
+     * <p>Returns the current public reference.</p>
+     *
+     * <p>{@link Key#BASE_URI} is respected, if set. Otherwise, the {@code
+     * X-Forwarded-*} request headers are respected, if available. Finally,
+     * Servlet-supplied information is used otherwise.</p>
+     *
+     * <p>Note that the return value may not be something the client is
+     * expecting to see&mdash;for example, any {@link #getIdentifier()
+     * identifier} present in the URI path is not {@link #getPublicIdentifier()
+     * translated}.</p>
+     *
+     * @see #getPublicRootReference()
+     */
+    public Reference getPublicReference() {
+        final Reference ref        = getPublicRootReference();
+        final Reference requestRef = new Reference(getReference());
+        final Reference appRootRef = new Reference(requestRef);
+        appRootRef.setPath(getContextPath());
+        final String appRootRelativePath =
+                requestRef.getRelativePath(appRootRef.getPath());
+        if (!appRootRelativePath.isEmpty()) {
+            String path = StringUtils.stripEnd(ref.getPath(), "/") + "/" +
+                    StringUtils.stripStart(appRootRelativePath, "/");
+            ref.setPath(path);
+        }
+        return ref;
     }
 
     /**
