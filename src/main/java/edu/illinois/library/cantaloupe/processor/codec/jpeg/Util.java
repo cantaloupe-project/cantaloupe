@@ -18,7 +18,11 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 final class Util {
+    private static final Logger LOGGER =
+            LoggerFactory.getLogger(Util.class);
 
     /**
      * @param xmp XMP data with a root {@literal <rdf:RDF>} element.
@@ -121,17 +125,22 @@ final class Util {
     private static Model readModel(String rdfXML) {
         Model model = ModelFactory.createDefaultModel();
         String base = null;
-        try (StringReader reader = new StringReader(rdfXML)) {
-            model.read(reader, base, "RDF/XML");
-        } catch (RiotException exception) {
-            if (exception.getMessage().indexOf("Base URI is null, but there are relative URIs to resolve") != -1) {
-                // Version 4.8+ of jena requires a rdf:about link to not be empty
-                try (StringReader reader = new StringReader(rdfXML)) {
-                    model.read(reader, "http://example.com", "RDF/XML");
-                }    
-            } else {
-                throw exception;
+        try{
+            try (StringReader reader = new StringReader(rdfXML)) {
+                model.read(reader, base, "RDF/XML");
+            } catch (RiotException exception) {
+                if (exception.getMessage().indexOf("Base URI is null, but there are relative URIs to resolve") != -1) {
+                    // Version 4.8+ of jena requires a rdf:about link to not be empty
+                    try (StringReader reader = new StringReader(rdfXML)) {
+                        model.read(reader, "http://example.com", "RDF/XML");
+                    }    
+                } else {
+                    throw exception;
+                }
             }
+        } catch (RiotException ex) {
+            LOGGER.warn(ex.getMessage(),ex);
+            // Return empty model on parse failure.
         }
         return model;
     }
