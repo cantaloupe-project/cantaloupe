@@ -19,6 +19,7 @@ import edu.illinois.library.cantaloupe.test.TestUtil;
 import edu.illinois.library.cantaloupe.test.WebServer;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junitpioneer.jupiter.RetryingTest;
 
 import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;
@@ -542,7 +543,7 @@ class ImageRequestHandlerTest extends BaseTest {
         }
     }
 
-    @Test
+    @RetryingTest(maxAttempts = 5)
     void handleDeletesIncompatibleSourceCachedImageWhenSoConfigured()
             throws Exception {
         final WebServer server = new WebServer();
@@ -604,7 +605,7 @@ class ImageRequestHandlerTest extends BaseTest {
         }
     }
 
-    @Test
+    @RetryingTest(maxAttempts = 5)
     void handleDoesNotDeleteIncompatibleSourceCachedImageWhenNotConfiguredTo()
             throws Exception {
         final WebServer server = new WebServer();

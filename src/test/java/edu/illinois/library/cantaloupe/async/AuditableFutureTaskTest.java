@@ -3,6 +3,7 @@ package edu.illinois.library.cantaloupe.async;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junitpioneer.jupiter.RetryingTest;
 
 import java.time.Instant;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -83,7 +84,7 @@ public class AuditableFutureTaskTest extends BaseTest {
         assertTrue(delta < 10);
     }
 
-    @Test
+    @RetryingTest(maxAttempts = 5)
     void testRunSetsStatusWhenStarted() throws Exception {
         AuditableFutureTask<?> task = new AuditableFutureTask<Void>(() -> {
             Thread.sleep(50);

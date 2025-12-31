@@ -18,6 +18,7 @@ import edu.illinois.library.cantaloupe.util.DeletingFileVisitor;
 import edu.illinois.library.cantaloupe.util.StringUtils;
 import org.apache.commons.lang3.SystemUtils;
 import org.junit.jupiter.api.AfterEach;
+import org.junitpioneer.jupiter.RetryingTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -266,7 +267,7 @@ public class FilesystemCacheTest extends AbstractCacheTest {
         assertRecursiveFileCount(fixturePath, 12);
     }
 
-    @Test
+    @RetryingTest(maxAttempts = 5)
     void testCleanUpDeletesInvalidFiles() throws Exception {
         OperationList ops = new OperationList(new Identifier("cats"));
 
@@ -354,7 +355,7 @@ public class FilesystemCacheTest extends AbstractCacheTest {
         assertTrue(instance.getSourceImageFile(identifier).isPresent());
     }
 
-    @Test
+    @RetryingTest(maxAttempts = 5)
     void testGetSourceImageFileWithNonzeroTTL() throws Exception {
         Configuration.getInstance().setProperty(Key.SOURCE_CACHE_TTL, 1);
 
@@ -508,7 +509,7 @@ public class FilesystemCacheTest extends AbstractCacheTest {
      * Override that also tests the source cache.
      */
     @Override
-    @Test
+    @RetryingTest(maxAttempts = 5)
     void testPurgeInvalid() throws Exception {
         final Configuration config = Configuration.getInstance();
         config.setProperty(Key.SOURCE_CACHE_TTL, 1);

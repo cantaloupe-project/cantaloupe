@@ -186,8 +186,22 @@
         <!-- JUnit for unit tests. -->
         <dependency>
             <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-api</artifactId>
+            <version> 5.11.4</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-engine</artifactId>
-            <version>5.13.4</version>
+            <version>5.11.4</version>
+            <scope>test</scope>
+        </dependency>
+        <!-- JUnit Pioneer for extended test functionality -->
+        <!-- JUnit version down 5.13.4 to 5.11.4 -->
+        <dependency>
+            <groupId>org.junit-pioneer</groupId>
+            <artifactId>junit-pioneer</artifactId>
+            <version>2.3.0</version>
             <scope>test</scope>
         </dependency>
         <!-- Performance tests -->

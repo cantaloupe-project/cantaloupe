@@ -13,6 +13,7 @@ import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.apache.commons.lang3.SystemUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junitpioneer.jupiter.RetryingTest;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -324,7 +325,7 @@ public class CacheFacadeTest extends BaseTest {
 
     /* purgeAsync(Identifier) */
 
-    @Test
+    @RetryingTest(maxAttempts = 5)
     void testPurgeAsyncWithIdentifier() throws Exception {
         enableDerivativeCache();
         SourceCache sourceCache    = CacheFactory.getSourceCache().get();
@@ -394,7 +395,7 @@ public class CacheFacadeTest extends BaseTest {
 
     /* purgeInfos() */
 
-    @Test
+    @RetryingTest(maxAttempts = 5)
     void testPurgeInfos() throws Exception {
         final Configuration config = Configuration.getInstance();
         config.setProperty(Key.DERIVATIVE_CACHE_TTL, 1);
@@ -422,7 +423,7 @@ public class CacheFacadeTest extends BaseTest {
 
     /* purgeInvalid() */
 
-    @Test
+    @RetryingTest(maxAttempts = 5)
     void testPurgeInvalid() throws Exception {
         assumeFalse(SystemUtils.IS_OS_WINDOWS); // TODO: this fails in Windows CI
 

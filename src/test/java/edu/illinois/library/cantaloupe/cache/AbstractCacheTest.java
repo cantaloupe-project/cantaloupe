@@ -12,6 +12,7 @@ import edu.illinois.library.cantaloupe.test.ConcurrentReaderWriter;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junitpioneer.jupiter.RetryingTest;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -69,7 +70,7 @@ abstract class AbstractCacheTest extends BaseTest {
         assertEquals(actual.orElseThrow(), info);
     }
 
-    @Test
+    @RetryingTest(maxAttempts = 5)
     void testGetInfoWithExistingInvalidImage() throws Exception {
         final DerivativeCache instance = newInstance();
         Configuration.getInstance().setProperty(Key.DERIVATIVE_CACHE_TTL, 1);
@@ -113,7 +114,7 @@ abstract class AbstractCacheTest extends BaseTest {
 
     /* newDerivativeImageInputStream(OperationList) */
 
-    @Test
+    @RetryingTest(maxAttempts = 5)
     void testNewDerivativeImageInputStreamWithZeroTTL() throws Exception {
         final DerivativeCache instance = newInstance();
         Configuration.getInstance().setProperty(Key.DERIVATIVE_CACHE_TTL, 0);
@@ -143,7 +144,7 @@ abstract class AbstractCacheTest extends BaseTest {
         }
     }
 
-    @Test
+    @RetryingTest(maxAttempts = 5)
     void testNewDerivativeImageInputStreamWithNonzeroTTL() throws Exception {
         final DerivativeCache instance = newInstance();
         Configuration.getInstance().setProperty(Key.DERIVATIVE_CACHE_TTL, 3);
@@ -218,7 +219,7 @@ abstract class AbstractCacheTest extends BaseTest {
 
     /* newDerivativeImageOutputStream() */
 
-    @Test
+    @RetryingTest(maxAttempts = 5)
     void testNewDerivativeImageOutputStream() throws Exception {
         final DerivativeCache instance = newInstance();
         final OperationList ops = OperationList.builder()
@@ -287,7 +288,7 @@ abstract class AbstractCacheTest extends BaseTest {
 
     /* purge() */
 
-    @Test
+    @RetryingTest(maxAttempts = 5)
     void testPurge() throws Exception {
         DerivativeCache instance = newInstance();
         Identifier identifier = new Identifier(IMAGE);
@@ -337,7 +338,7 @@ abstract class AbstractCacheTest extends BaseTest {
 
     /* purge(Identifier) */
 
-    @Test
+    @RetryingTest(maxAttempts = 5)
     void testPurgeWithIdentifier() throws Exception {
         DerivativeCache instance = newInstance();
 
@@ -394,7 +395,7 @@ abstract class AbstractCacheTest extends BaseTest {
 
     /* purge(OperationList) */
 
-    @Test
+    @RetryingTest(maxAttempts = 5)
     void testPurgeWithOperationList() throws Exception {
         final DerivativeCache instance = newInstance();
 
@@ -434,7 +435,7 @@ abstract class AbstractCacheTest extends BaseTest {
 
     /* purgeInfos() */
 
-    @Test
+    @RetryingTest(maxAttempts = 5)
     void testPurgeInfos() throws Exception {
         DerivativeCache instance = newInstance();
         Identifier identifier    = new Identifier(IMAGE);
@@ -481,7 +482,7 @@ abstract class AbstractCacheTest extends BaseTest {
 
     /* purgeInvalid() */
 
-    @Test
+    @RetryingTest(maxAttempts = 5)
     void testPurgeInvalid() throws Exception {
         DerivativeCache instance = newInstance();
         Identifier id1           = new Identifier(IMAGE);

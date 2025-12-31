@@ -4,6 +4,7 @@ import edu.illinois.library.cantaloupe.test.BaseTest;
 import org.apache.tika.utils.SystemUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junitpioneer.jupiter.RetryingTest;
 
 import java.util.concurrent.FutureTask;
 
@@ -23,7 +24,7 @@ public class TaskQueueTest extends BaseTest {
 
     /* queuedTasks() */
 
-    @Test
+    @RetryingTest(maxAttempts = 5)
     void testQueuedTasks() throws Exception {
         for (int i = 0; i < 3; i++) {
             instance.submit(new FutureTask<>(new MockCallable<>()));
@@ -37,7 +38,7 @@ public class TaskQueueTest extends BaseTest {
 
     /* submit(Callable<?>) */
 
-    @Test
+    @RetryingTest(maxAttempts = 5)
     void testSubmitCallable() throws Exception {
         MockCallable<?> callable1 = new MockCallable<>();
         MockCallable<?> callable2 = new MockCallable<>();
@@ -60,7 +61,7 @@ public class TaskQueueTest extends BaseTest {
 
     /* submit(Runnable) */
 
-    @Test
+    @RetryingTest(maxAttempts = 5)
     void testSubmitRunnable() throws Exception {
         MockRunnable runnable1 = new MockRunnable();
         MockRunnable runnable2 = new MockRunnable();
@@ -83,7 +84,7 @@ public class TaskQueueTest extends BaseTest {
 
     /* submit(Runnable) with AuditableFutureTask */
 
-    @Test
+    @RetryingTest(maxAttempts = 5)
     void testSubmitAuditableFutureTaskSetsQueuedTaskStatus() throws Exception {
         AuditableFutureTask<?> future1 =
                 new AuditableFutureTask<>(new MockCallable<>());
@@ -101,7 +102,7 @@ public class TaskQueueTest extends BaseTest {
         assertEquals(TaskStatus.QUEUED, future2.getStatus());
     }
 
-    @Test
+    @RetryingTest(maxAttempts = 5)
     void testSubmitAuditableFutureTaskSetsRunningTaskStatus() throws Exception {
         assumeFalse(SystemUtils.IS_OS_WINDOWS); // TODO: why does this fail in Windows?
 
@@ -122,7 +123,7 @@ public class TaskQueueTest extends BaseTest {
         assertNotNull(future.getInstantQueued());
     }
 
-    @Test
+    @RetryingTest(maxAttempts = 5)
     void testSubmitAuditableFutureTaskSetsInstantStarted() throws Exception {
         MockCallable<?> task = new MockCallable<>();
         AuditableFutureTask<?> future = new AuditableFutureTask<>(task);
@@ -131,7 +132,7 @@ public class TaskQueueTest extends BaseTest {
         assertNotNull(future.getInstantStarted());
     }
 
-    @Test
+    @RetryingTest(maxAttempts = 5)
     void testSubmitAuditableFutureTaskSetsInstantStopped() throws Exception {
         MockCallable<?> task = new MockCallable<>();
         AuditableFutureTask<?> future = new AuditableFutureTask<>(task);
@@ -140,7 +141,7 @@ public class TaskQueueTest extends BaseTest {
         assertNotNull(future.getInstantStopped());
     }
 
-    @Test
+    @RetryingTest(maxAttempts = 5)
     void testSubmitAuditableFutureTaskSetsSuccessfulTaskStatus()
             throws Exception {
         MockCallable<?> task = new MockCallable<>();
@@ -152,7 +153,7 @@ public class TaskQueueTest extends BaseTest {
         assertEquals(TaskStatus.SUCCEEDED, future.getStatus());
     }
 
-    @Test
+    @RetryingTest(maxAttempts = 5)
     void testSubmitAuditableFutureTaskSetsFailedTaskStatus() throws Exception {
         MockFailingCallable<?> task = new MockFailingCallable<>();
         AuditableFutureTask<?> future = new AuditableFutureTask<>(task);

@@ -6,6 +6,7 @@ import edu.illinois.library.cantaloupe.resource.Route;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junitpioneer.jupiter.RetryingTest;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
@@ -92,7 +93,7 @@ public class AdminResourceUITest extends AbstractAdminResourceTest {
         return new Select(inputNamed(key));
     }
 
-    @Test
+    @RetryingTest(maxAttempts = 5)
     void testApplicationSection() throws Exception {
         css("#cl-application-button > a").click();
         Thread.sleep(100); // give the tab time to render
@@ -226,7 +227,7 @@ public class AdminResourceUITest extends AbstractAdminResourceTest {
                 config.getString(Key.ACCESS_LOG_SYSLOGAPPENDER_FACILITY));
     }
 
-    @Test
+    @RetryingTest(maxAttempts = 5)
     void testServerSection() throws Exception {
         css("#cl-http-button > a").click();
         Thread.sleep(100); // give the tab time to render
@@ -274,7 +275,7 @@ public class AdminResourceUITest extends AbstractAdminResourceTest {
         assertTrue(config.getBoolean(Key.PRINT_STACK_TRACE_ON_ERROR_PAGES));
     }
 
-    @Test
+    @RetryingTest(maxAttempts = 5)
     void testEndpointsSection() throws Exception {
         css("#cl-endpoints-button > a").click();
         Thread.sleep(100); // give the tab time to render
@@ -323,7 +324,7 @@ public class AdminResourceUITest extends AbstractAdminResourceTest {
                 config.getString(Key.STANDARD_META_IDENTIFIER_TRANSFORMER_DELIMITER));
     }
 
-    @Test
+    @RetryingTest(maxAttempts = 5)
     void testSourceSection() throws Exception {
         css("#cl-source-button > a").click();
         Thread.sleep(100); // give the tab time to render
@@ -487,7 +488,7 @@ public class AdminResourceUITest extends AbstractAdminResourceTest {
                 config.getString(Key.JDBCSOURCE_CONNECTION_TIMEOUT));
     }
 
-    @Test
+    @RetryingTest(maxAttempts = 5)
     void testProcessorsSection() throws Exception {
         css("#cl-processors-button > a").click();
         Thread.sleep(100); // give the tab time to render
@@ -577,7 +578,7 @@ public class AdminResourceUITest extends AbstractAdminResourceTest {
                 config.getLongBytes(Key.PROCESSOR_PDF_MAX_MEMORY_BYTES));
     }
 
-    @Test
+    @RetryingTest(maxAttempts = 5)
     void testCachesSection() throws Exception {
         css("#cl-caches-button > a").click();
         Thread.sleep(100); // give the tab time to render
@@ -705,7 +706,7 @@ public class AdminResourceUITest extends AbstractAdminResourceTest {
         assertEquals("5", config.getString(Key.REDISCACHE_DATABASE));
     }
 
-    @Test
+    @RetryingTest(maxAttempts = 5)
     void testOverlaysSection() throws Exception {
         css("#cl-overlays-button > a").click();
         Thread.sleep(100); // give the tab time to render

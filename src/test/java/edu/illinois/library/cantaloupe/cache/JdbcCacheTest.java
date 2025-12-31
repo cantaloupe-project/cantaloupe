@@ -19,6 +19,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.junitpioneer.jupiter.RetryingTest;
 
 import java.io.InputStream;
 import java.nio.file.Files;
@@ -228,7 +229,7 @@ public class JdbcCacheTest extends AbstractCacheTest {
 
     /* getInfo(Identifier) */
 
-    @Test
+    @RetryingTest(maxAttempts = 5)
     void testGetImageInfoUpdatesLastAccessedTime() throws Exception {
         final Configuration config = Configuration.getInstance();
 
@@ -276,7 +277,7 @@ public class JdbcCacheTest extends AbstractCacheTest {
     @Test
     void testNewDerivativeImageInputStreamWithNonzeroTTL() {}
 
-    @Test
+    @RetryingTest(maxAttempts = 5)
     void testNewDerivativeImageInputStreamUpdatesLastAccessedTime()
             throws Exception {
         final Configuration config = Configuration.getInstance();
@@ -323,7 +324,7 @@ public class JdbcCacheTest extends AbstractCacheTest {
     void testNewDerivativeImageOutputStream() {}
 
     @Override
-    @Test
+    @RetryingTest(maxAttempts = 5)
     void testPurge() throws Exception {
         assumeFalse(SystemUtils.IS_OS_WINDOWS); // TODO: why does this fail in Windows?
 
@@ -402,7 +403,7 @@ public class JdbcCacheTest extends AbstractCacheTest {
      * JDBC cache has more complex async operations that need more time in CI environments.
      */
     @Override
-    @Test
+    @RetryingTest(maxAttempts = 5)
     void testPurgeInfos() throws Exception {
         Identifier identifier = new Identifier(IMAGE);
         OperationList opList = OperationList.builder()

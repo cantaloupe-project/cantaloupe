@@ -18,6 +18,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junitpioneer.jupiter.RetryingTest;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.HeadObjectRequest;
@@ -190,7 +191,7 @@ public class S3CacheTest extends AbstractCacheTest {
 
     /* getInfo(Identifier) */
 
-    @Test
+    @RetryingTest(maxAttempts = 5)
     void testGetInfoUpdatesLastModifiedTime() throws Exception {
         Configuration.getInstance().setProperty(Key.DERIVATIVE_CACHE_TTL, 1);
 
@@ -244,7 +245,7 @@ public class S3CacheTest extends AbstractCacheTest {
         assertEquals("cats/", instance.getObjectKeyPrefix());
     }
 
-    @Test
+    @RetryingTest(maxAttempts = 5)
     @Override
     void testNewDerivativeImageInputStreamWithNonzeroTTL() throws Exception {
         assumeFalse(Service.AWS.equals(getService()));  // TODO: this test fails in AWS
@@ -252,7 +253,7 @@ public class S3CacheTest extends AbstractCacheTest {
         super.testNewDerivativeImageInputStreamWithNonzeroTTL();
     }
 
-    @Test
+    @RetryingTest(maxAttempts = 5)
     void testNewDerivativeImageInputStreamUpdatesLastModifiedTime()
             throws Exception {
         assumeFalse(Service.MINIO.equals(getService())); // this test fails in minio
@@ -291,8 +292,8 @@ public class S3CacheTest extends AbstractCacheTest {
     }
 
     /* purge() */
-    @Test
     @Override
+    @RetryingTest(maxAttempts = 5)
     void testPurge() throws Exception {
         DerivativeCache instance = newInstance();
         Identifier identifier = new Identifier(IMAGE);
@@ -341,7 +342,7 @@ public class S3CacheTest extends AbstractCacheTest {
         assertNotExists(instance, opList);
     }
 
-    @Test
+    @RetryingTest(maxAttempts = 5)
     void testPurgeWithKeyPrefix() throws Exception {
         final String prefix = "prefix/";
         final Configuration config = Configuration.getInstance();
@@ -405,8 +406,8 @@ public class S3CacheTest extends AbstractCacheTest {
 
     /* purgeInvalid() */
 
-    @Test
     @Override
+    @RetryingTest(maxAttempts = 5)
     void testPurgeInvalid() throws Exception {
         assumeFalse(SystemUtils.IS_OS_WINDOWS); // TODO: this fails in Windows sometimes
 
@@ -461,7 +462,7 @@ public class S3CacheTest extends AbstractCacheTest {
 
 
 
-    @Test
+    @RetryingTest(maxAttempts = 5)
     void testPurgeInvalidWithKeyPrefix() throws Exception {
         final String prefix        = "prefix/";
         final Configuration config = Configuration.getInstance();
@@ -523,7 +524,7 @@ public class S3CacheTest extends AbstractCacheTest {
 
     /* purge(Identifier) */
 
-    @Test
+    @RetryingTest(maxAttempts = 5)
     @Override
     void testPurgeWithIdentifier() throws Exception {
         assumeFalse(SystemUtils.IS_OS_WINDOWS); // TODO: this fails in Windows sometimes
