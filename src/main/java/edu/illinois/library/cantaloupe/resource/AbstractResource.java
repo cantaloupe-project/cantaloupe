@@ -155,7 +155,7 @@ public abstract class AbstractResource {
         }
         // Log request info.
         getLogger().info("Handling {} {}",
-                request.getMethod(), request.getReference().getPath());
+                request.getServletRequest().getMethod(), request.getReference().getPath());
         getLogger().debug("Request headers: {}",
                 request.getHeaders().stream()
                         .map(h -> h.getName() + ": " +

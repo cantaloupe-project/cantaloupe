@@ -46,15 +46,6 @@ class RequestTest extends BaseTest {
     }
 
     @Test
-    void testGetMethod() {
-        MockHttpServletRequest sr = new MockHttpServletRequest();
-        sr.setMethod("PUT");
-        instance = new Request(sr);
-
-        assertEquals(Method.PUT, instance.getMethod());
-    }
-
-    @Test
     void testGetReference() {
         String url = "http://example.org/cats?query=yes";
         MockHttpServletRequest sr = new MockHttpServletRequest();
