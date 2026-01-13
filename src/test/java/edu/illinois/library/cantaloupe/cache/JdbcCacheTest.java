@@ -1,11 +1,13 @@
 package edu.illinois.library.cantaloupe.cache;
 
-import edu.illinois.library.cantaloupe.config.Key;
-import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.config.Configuration;
-import edu.illinois.library.cantaloupe.operation.Crop;
+import edu.illinois.library.cantaloupe.config.Key;
+import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
+import edu.illinois.library.cantaloupe.image.Info;
+import edu.illinois.library.cantaloupe.operation.Crop;
 import edu.illinois.library.cantaloupe.operation.CropByPixels;
+import edu.illinois.library.cantaloupe.operation.Encode;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.operation.Rotate;
 import edu.illinois.library.cantaloupe.operation.Scale;
@@ -18,7 +20,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
+import java.io.InputStream;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -28,14 +32,53 @@ import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.junit.jupiter.api.Assumptions.assumeFalse;
 
 public class JdbcCacheTest extends AbstractCacheTest {
 
     private static final String IMAGE = "jpg-rgb-64x56x8-baseline.jpg";
 
+    /**
+     * JDBC cache operations need longer wait times due to database transaction
+     * complexity and async operations through TaskQueue.
+     */
+    private static final int JDBC_ASYNC_WAIT = getJdbcAsyncWaitTime();
+
     private JdbcCache instance;
+
+    /**
+     * Determines appropriate wait time for JDBC cache async operations.
+     * Uses longer timeouts than the base AbstractCacheTest due to database complexity.
+     */
+    private static int getJdbcAsyncWaitTime() {
+        // Check for system property override first
+        String timeoutProperty = System.getProperty("test.jdbc.async.wait");
+        if (timeoutProperty != null) {
+            try {
+                return Integer.parseInt(timeoutProperty);
+            } catch (NumberFormatException e) {
+                System.err.printf("Invalid test.jdbc.async.wait property value '%s', using default%n", timeoutProperty);
+            }
+        }
+
+        // Check for CI environment
+        if (System.getenv("CI") != null) {
+            // Longer timeouts for CI environments
+            String runner = System.getenv("RUNNER_OS");
+            if ("Windows".equals(runner)) {
+                return 15000; // Windows runners with JDBC are particularly slow
+            }
+            return 10000; // CI environments need more time for JDBC operations
+        }
+
+        return ASYNC_WAIT; // Local development
+    }
 
     @BeforeEach
     public void setUp() throws Exception {
@@ -209,7 +252,7 @@ public class JdbcCacheTest extends AbstractCacheTest {
             // this should cause the last-accessed time to update asynchronously
             instance.getInfo(identifier);
 
-            Thread.sleep(100);
+            Thread.sleep(JDBC_ASYNC_WAIT / 10); // Use proportional wait for async update
 
             // get the new last-accessed time
             resultSet = statement.executeQuery();
@@ -260,7 +303,7 @@ public class JdbcCacheTest extends AbstractCacheTest {
             instance.newDerivativeImageInputStream(opList).close();
 
             // wait for it to happen
-            Thread.sleep(100);
+            Thread.sleep(JDBC_ASYNC_WAIT / 10); // Use proportional wait for async update
 
             // get the new last-accessed time
             resultSet = statement.executeQuery();
@@ -283,7 +326,51 @@ public class JdbcCacheTest extends AbstractCacheTest {
     @Test
     void testPurge() throws Exception {
         assumeFalse(SystemUtils.IS_OS_WINDOWS); // TODO: why does this fail in Windows?
-        super.testPurge();
+
+        Identifier identifier = new Identifier(IMAGE);
+        OperationList opList = OperationList.builder()
+                .withIdentifier(identifier)
+                .withOperations(new Encode(Format.get("jpg")))
+                .build();
+        Info info = new Info();
+
+        // assert that a particular image doesn't exist
+        try (InputStream is = instance.newDerivativeImageInputStream(opList)) {
+            assertNull(is);
+        }
+
+        // assert that a particular info doesn't exist
+        assertFalse(instance.getInfo(identifier).isPresent());
+
+        // add the image
+        try (CompletableOutputStream outputStream =
+                     instance.newDerivativeImageOutputStream(opList)) {
+            Path fixture = TestUtil.getImage(IMAGE);
+            Files.copy(fixture, outputStream);
+            outputStream.setComplete(true);
+        }
+
+        // add the info
+        instance.put(identifier, info);
+
+        // Use JDBC-specific longer wait time instead of base ASYNC_WAIT
+        Thread.sleep(JDBC_ASYNC_WAIT);
+
+        // assert that they've been added
+        assertExists(instance, opList);
+        assertNotNull(instance.getInfo(identifier));
+
+        // purge everything
+        instance.purge();
+
+        // Allow time for purge but not as long as upload - use JDBC-specific timeout
+        Thread.sleep(JDBC_ASYNC_WAIT / 2);
+
+        // assert that the info has been purged
+        assertFalse(instance.getInfo(identifier).isPresent());
+
+        // assert that the image has been purged
+        assertNotExists(instance, opList);
     }
 
     /* put(Identifier, Info) */
@@ -308,6 +395,56 @@ public class JdbcCacheTest extends AbstractCacheTest {
             resultSet.next();
             assertNotNull(resultSet.getTimestamp(1));
         }
+    }
+
+    /**
+     * Override testPurgeInfos to use longer wait time specific to JDBC operations.
+     * JDBC cache has more complex async operations that need more time in CI environments.
+     */
+    @Override
+    @Test
+    void testPurgeInfos() throws Exception {
+        Identifier identifier = new Identifier(IMAGE);
+        OperationList opList = OperationList.builder()
+                .withIdentifier(identifier)
+                .withOperations(new Encode(Format.get("jpg")))
+                .build();
+        Info info = new Info();
+
+        // assert that a particular image doesn't exist
+        try (InputStream is = instance.newDerivativeImageInputStream(opList)) {
+            assertNull(is);
+        }
+
+        // assert that a particular info doesn't exist
+        assertFalse(instance.getInfo(identifier).isPresent());
+
+        // add the image
+        try (CompletableOutputStream outputStream =
+                     instance.newDerivativeImageOutputStream(opList)) {
+            Path fixture = TestUtil.getImage(IMAGE);
+            Files.copy(fixture, outputStream);
+            outputStream.setComplete(true);
+        }
+
+        // add the info
+        instance.put(identifier, info);
+
+        // Use JDBC-specific longer wait time instead of base ASYNC_WAIT
+        Thread.sleep(JDBC_ASYNC_WAIT);
+
+        // assert that they've been added
+        assertExists(instance, opList);
+        assertNotNull(instance.getInfo(identifier));
+
+        // purge infos
+        instance.purgeInfos();
+
+        // assert that the info has been purged
+        assertFalse(instance.getInfo(identifier).isPresent());
+
+        // assert that the image has NOT been purged
+        assertExists(instance, opList);
     }
 
 }

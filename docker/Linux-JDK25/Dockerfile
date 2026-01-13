@@ -38,9 +38,9 @@ ENV LD_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu:${LD_LIBRARY_PATH}
 
 # Install various other dependencies that aren't in apt
 # Install OpenJDK
-RUN wget -q https://download.java.net/java/GA/jdk25/bd75d5f9689641da8e1daabeccb5528b/36/GPL/openjdk-25_linux-x64_bin.tar.gz \
-  && tar xfz openjdk-25_linux-x64_bin.tar.gz \
-  && mv jdk-25 /opt/jdk \
+RUN wget -q https://download.java.net/java/GA/jdk25.0.1/2fbf10d8c78e40bd87641c434705079d/8/GPL/openjdk-25.0.1_linux-x64_bin.tar.gz \
+  && tar xfz openjdk-25.0.1_linux-x64_bin.tar.gz \
+  && mv jdk-25.0.1 /opt/jdk \
   # Install a newer Maven than the one in apt
   && wget -q https://dlcdn.apache.org/maven/maven-3/3.9.12/binaries/apache-maven-3.9.12-bin.tar.gz \
   && tar xfz apache-maven-3.9.12-bin.tar.gz \

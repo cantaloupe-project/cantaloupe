@@ -31,7 +31,7 @@ public class IdentifierResource extends IIIF1Resource {
     @Override
     public void doGET() {
         final Reference newRef = new Reference(
-                getPublicRootReference() +
+                getRequest().getPublicRootReference() +
                 Route.IIIF_1_PATH +
                 "/" + getPublicIdentifier() +
                 "/info.json");
