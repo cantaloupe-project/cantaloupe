@@ -2,7 +2,6 @@ package edu.illinois.library.cantaloupe.resource.iiif;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
-import edu.illinois.library.cantaloupe.delegate.DelegateProxyService;
 import edu.illinois.library.cantaloupe.http.Reference;
 import edu.illinois.library.cantaloupe.http.Status;
 import edu.illinois.library.cantaloupe.image.Dimension;
@@ -10,12 +9,12 @@ import edu.illinois.library.cantaloupe.image.MetaIdentifier;
 import edu.illinois.library.cantaloupe.image.ScaleConstraint;
 import edu.illinois.library.cantaloupe.operation.Crop;
 import edu.illinois.library.cantaloupe.operation.Operation;
-import edu.illinois.library.cantaloupe.operation.ValidationException;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.operation.Scale;
 import edu.illinois.library.cantaloupe.operation.ScaleByPixels;
+import edu.illinois.library.cantaloupe.operation.ValidationException;
 import edu.illinois.library.cantaloupe.resource.AbstractResource;
-import edu.illinois.library.cantaloupe.resource.RequestContext;
+import edu.illinois.library.cantaloupe.resource.RequestContextDecorator;
 import edu.illinois.library.cantaloupe.resource.ScaleRestrictedException;
 import edu.illinois.library.cantaloupe.resource.StringRepresentation;
 import edu.illinois.library.cantaloupe.util.TimeUtils;
@@ -28,42 +27,20 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
-import java.util.Set;
 
 public abstract class IIIFResource extends AbstractResource {
 
-    /**
-     * URL argument values that can be used with the {@code cache} query key to
-     * bypass all caching.
-     */
-    private static final Set<String> CACHE_BYPASS_ARGUMENTS =
-            Set.of("false", "nocache");
     private static final String PAGE_NUMBER_QUERY_ARG = "page";
     private static final String TIME_QUERY_ARG        = "time";
 
     @Override
     public void doInit() throws Exception {
         super.doInit();
-        if (DelegateProxyService.isDelegateAvailable()) {
-            RequestContext context = getRequestContext();
-            context.setLocalURI(getRequest().getReference());
-            context.setRequestURI(getPublicReference());
-            context.setRequestHeaders(getRequest().getHeaders().toMap());
-            context.setClientIP(getCanonicalClientIPAddress());
-            context.setCookies(getRequest().getCookies().toMap());
-            MetaIdentifier metaID = getMetaIdentifier();
-            if (metaID != null) {
-                context.setIdentifier(metaID.getIdentifier());
-                context.setPageNumber(metaID.getPageNumber());
-                ScaleConstraint scaleConstraint = metaID.getScaleConstraint();
-                if (scaleConstraint == null) {
-                    // Delegate users will appreciate not having to check for
-                    // null.
-                    scaleConstraint = new ScaleConstraint(1, 1);
-                }
-                context.setScaleConstraint(scaleConstraint);
-            }
-        }
+        RequestContextDecorator.decorateRequestContext(
+                            getRequestContext(),
+                            getMetaIdentifier(),
+                            getRequest().getPublicReference(),
+                            getRequest());
         addHeaders();
     }
 
@@ -71,7 +48,7 @@ public abstract class IIIFResource extends AbstractResource {
         getResponse().setHeader("Access-Control-Allow-Origin", "*");
         getResponse().setHeader("Vary",
                 "Accept, Accept-Charset, Accept-Encoding, Accept-Language, Origin");
-        if (!isBypassingCache()) {
+        if (!getRequest().isBypassingCache()) {
             final Configuration config = Configuration.getInstance();
             if (config.getBoolean(Key.CLIENT_CACHE_ENABLED, false)) {
                 final List<String> directives = new ArrayList<>();
@@ -106,22 +83,6 @@ public abstract class IIIFResource extends AbstractResource {
                 getResponse().setHeader("Cache-Control",
                         String.join(", ", directives));
             }
-        }
-    }
-
-    /**
-     * @return User agent's IP address, respecting the {@code X-Forwarded-For}
-     *         request header, if present.
-     */
-    private String getCanonicalClientIPAddress() {
-        // The value is expected to be in the format: "client, proxy1, proxy2"
-        final String forwardedFor =
-                getRequest().getHeaders().getFirstValue("X-Forwarded-For", "");
-        if (!forwardedFor.isEmpty()) {
-            return forwardedFor.split(",")[0].trim();
-        } else {
-            // Fall back to the client IP address.
-            return getRequest().getRemoteAddr();
         }
     }
 
@@ -173,26 +134,6 @@ public abstract class IIIFResource extends AbstractResource {
     }
 
     /**
-     * @return Whether there is a {@code cache} argument set to {@code false}
-     *         or {@code nocache} in the URI query string indicating that cache
-     *         reads and writes are both bypassed.
-     */
-    protected final boolean isBypassingCache() {
-        String value = getRequest().getReference().getQuery().getFirstValue("cache");
-        return (value != null) && CACHE_BYPASS_ARGUMENTS.contains(value);
-    }
-
-    /**
-     * @return Whether there is a {@code cache} argument set to {@code recache}
-     *         in the URI query string indicating that cache reads are
-     *         bypassed.
-     */
-    protected final boolean isBypassingCacheRead() {
-        String value = getRequest().getReference().getQuery().getFirstValue("cache");
-        return "recache".equals(value);
-    }
-
-    /**
      * <p>If an identifier is present in the URI, and it contains a scale
      * constraint suffix in a non-normalized form, this method redirects to
      * a normalized URI.</p>
@@ -213,68 +154,18 @@ public abstract class IIIFResource extends AbstractResource {
      */
     protected final boolean redirectToNormalizedScaleConstraint()
             throws IOException {
-        MetaIdentifier metaIdentifier = getMetaIdentifier();
-        // If a meta-identifier is present in the URI...
-        if (metaIdentifier != null) {
-            final ScaleConstraint scaleConstraint =
-                    metaIdentifier.getScaleConstraint();
-            // and it contains a scale constraint...
-            if (scaleConstraint != null) {
-                Reference newRef = null;
-                // ...and the numerator and denominator are equal, redirect to
-                // the non-suffixed identifier.
-                if (!scaleConstraint.hasEffect()) {
-                    metaIdentifier = new MetaIdentifier(metaIdentifier);
-                    metaIdentifier.setScaleConstraint(null);
-                    newRef = getPublicReference(metaIdentifier);
-                } else {
-                    ScaleConstraint reducedConstraint =
-                            scaleConstraint.getReduced();
-                    // ...and the fraction is not reduced, redirect to the
-                    // reduced version.
-                    if (!reducedConstraint.equals(scaleConstraint)) {
-                        metaIdentifier = new MetaIdentifier(metaIdentifier);
-                        metaIdentifier.setScaleConstraint(reducedConstraint);
-                        newRef = getPublicReference(metaIdentifier);
-                    }
-                }
-                if (newRef != null) {
-                    getResponse().setStatus(301);
-                    getResponse().setHeader("Location", newRef.toString());
-                    new StringRepresentation("Redirect: " + newRef + "\n")
-                            .write(getResponse().getOutputStream());
-                    return true;
-                }
-            }
+        MetaIdentifier newMetaId = getMetaIdentifier().getNormalizedScaleConstraintMetaIdentifier();
+        if (newMetaId == null) {
+            return false;
         }
-        return false;
+        Reference newRef = getRequest().getPublicReference(newMetaId, getIdentifierPathComponent(), getDelegateProxy());
+        getResponse().setStatus(301);
+        getResponse().setHeader("Location", newRef.toString());
+        new StringRepresentation("Redirect: " + newRef + "\n")
+                .write(getResponse().getOutputStream());
+        return true;
     }
 
-    /**
-     * @param virtualSize   Orientation-aware full source image size.
-     * @param scale         May be {@code null}.
-     * @param invalidStatus Status code to return when the given scale fails
-     *                      validation.
-     */
-    protected void validateScale(Dimension virtualSize,
-                                 Scale scale,
-                                 Status invalidStatus) throws ScaleRestrictedException {
-        final ScaleConstraint scaleConstraint =
-                (getMetaIdentifier().getScaleConstraint() != null) ?
-                getMetaIdentifier().getScaleConstraint() : new ScaleConstraint(1, 1);
-        double scalePct = scaleConstraint.getRational().doubleValue();
-        if (scale != null) {
-            scalePct = Arrays.stream(
-                    scale.getResultingScales(virtualSize, scaleConstraint))
-                    .max().orElse(1);
-        }
-        final Configuration config = Configuration.getInstance();
-        final double maxScale      = config.getDouble(Key.MAX_SCALE, 1.0);
-        if (maxScale > 0.0001 && scalePct > maxScale) {
-            throw new ScaleRestrictedException(invalidStatus, maxScale);
-        }
-    }
-    
     protected void setLastModifiedHeader(Instant lastModified) {
         getResponse().setHeader("Last-Modified",
                 DateTimeFormatter.RFC_1123_DATE_TIME
@@ -283,48 +174,5 @@ public abstract class IIIFResource extends AbstractResource {
                         .format(lastModified));
     }
 
-    /**
-     * When the size expressed in the endpoint URI is {@code max}, and the
-     * resulting image dimensions are larger than {@link Key#MAX_PIXELS}, the
-     * image must be downscaled to fit that area.
-     * 
-     * @param requestedSize  Full size of the source image.
-     * @param opList OperationsList.
-     * @throws ValidationException if a cropping Operation is invalid.
-     */
-    protected void constrainSizeToMaxPixels(Dimension requestedSize,
-                                            OperationList opList) throws ValidationException {
-        final var config    = Configuration.getInstance();
-        final int maxPixels = config.getInt(Key.MAX_PIXELS, 0);
-        // This ensures we compare maxPixels against the Resulting size 
-        // after operations like cropping/region are applied.
-        Operation cropOp = opList.getFirst(Crop.class);
-        if (cropOp != null) {
-            // Crop arguments could be wrong or out of bounds
-            // and we might get an internal exception thrown on validate().
-            cropOp.validate(requestedSize, opList.getScaleConstraint());
-            requestedSize = cropOp.getResultingSize(requestedSize, opList.getScaleConstraint());
-        }
-        if (maxPixels > 0 && requestedSize.intArea() > maxPixels) {
-            Scale scaleOp = (Scale) opList.getFirst(Scale.class);
-            // This should be null because the client requested max size...
-            if (scaleOp != null) {
-                opList.remove(scaleOp);
-            }
-            Dimension scaledSize =
-                    Dimension.ofScaledArea(requestedSize, maxPixels);
-            // The scale dimensions must be floored because rounding up could
-            // cause max_pixels to be exceeded.
-            scaleOp = new ScaleByPixels(
-                    (int) Math.floor(scaledSize.width()),
-                    (int) Math.floor(scaledSize.height()),
-                    ScaleByPixels.Mode.ASPECT_FIT_INSIDE);
-            if (opList.getFirst(Crop.class) != null) {
-                opList.addAfter(scaleOp, Crop.class);
-            } else {
-                opList.add(0, scaleOp);
-            }
-        }
-    }
 
 }

@@ -13,8 +13,10 @@ import edu.illinois.library.cantaloupe.operation.Scale;
 import edu.illinois.library.cantaloupe.operation.ValidationException;
 import edu.illinois.library.cantaloupe.processor.Processor;
 import edu.illinois.library.cantaloupe.resource.IllegalClientArgumentException;
-import edu.illinois.library.cantaloupe.resource.Route;
 import edu.illinois.library.cantaloupe.resource.ImageRequestHandler;
+import edu.illinois.library.cantaloupe.resource.Route;
+import edu.illinois.library.cantaloupe.resource.iiif.ScaleValidator;
+import edu.illinois.library.cantaloupe.resource.iiif.SizeConstrainer;
 import edu.illinois.library.cantaloupe.resource.iiif.SizeRestrictedException;
 import edu.illinois.library.cantaloupe.source.StatResult;
 import org.slf4j.Logger;
@@ -97,7 +99,7 @@ public class ImageResource extends IIIF2Resource {
             public void infoAvailable(Info info) {
                 if (Size.ScaleMode.MAX.equals(params.getSize().getScaleMode())) {
                     try {
-                        constrainSizeToMaxPixels(info.getSize(), ops);
+                        SizeConstrainer.constrainSizeToMaxPixels(info.getSize(), ops);
                     } catch (ValidationException e) {
                         throw new IllegalClientArgumentException(e.getMessage(), e);
                     }
@@ -122,10 +124,12 @@ public class ImageResource extends IIIF2Resource {
                         metadata.getOrientation() : Orientation.ROTATE_0;
                 final Dimension virtualSize   = orientation.adjustedSize(info.getSize(pageIndex));
                 final Dimension resultingSize = ops.getResultingSize(info.getSize());
-                validateScale(
+                ScaleValidator.validateScale(
                         virtualSize,
                         (Scale) ops.getFirst(Scale.class),
-                        Status.FORBIDDEN);
+                        Status.FORBIDDEN,
+                        getMetaIdentifier());
+                
                 validateSize(resultingSize, virtualSize);
                 sendHeaders();
             }
@@ -133,8 +137,8 @@ public class ImageResource extends IIIF2Resource {
 
         try (ImageRequestHandler handler = ImageRequestHandler.builder()
                 .withOperationList(ops)
-                .withBypassingCache(isBypassingCache())
-                .withBypassingCacheRead(isBypassingCacheRead())
+                .withBypassingCache(getRequest().isBypassingCache())
+                .withBypassingCacheRead(getRequest().isBypassingCacheRead())
                 .optionallyWithDelegateProxy(getDelegateProxy(), getRequestContext())
                 .withCallback(new CustomCallback())
                 .build()) {
@@ -162,7 +166,7 @@ public class ImageResource extends IIIF2Resource {
         String paramsStr = paramsCopy.toCanonicalString(fullSize);
         queuedHeaders.put("Link",
                 String.format("<%s%s/%s>;rel=\"canonical\"",
-                        getPublicRootReference(),
+                        getRequest().getPublicRootReference(),
                         Route.IIIF_2_PATH,
                         paramsStr));
     }

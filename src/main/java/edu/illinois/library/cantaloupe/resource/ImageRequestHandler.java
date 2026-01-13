@@ -304,12 +304,12 @@ public class ImageRequestHandler extends AbstractRequestHandler
         Iterator<Format> formatIterator = Collections.emptyIterator();
         boolean isFormatKnownYet = false;
 
-        // If we are using a cache, and don't need to resolve first:
+        // If we are using a cache, and don't need to verify the existence of the source image:
         // 1. If the cache contains an image matching the request, skip all the
         //    setup and just return the cached image.
         // 2. Otherwise, if the cache contains a relevant info, get it to avoid
         //    having to get it from a source later.
-        if (!isBypassingCache && !isBypassingCacheRead && !isResolvingFirst()) {
+        if (!isBypassingCache && !isBypassingCacheRead && !verifyExistenceBeforeReturningCachedValue()) {
             final Optional<Info> optInfo = cacheFacade.getInfo(identifier);
             if (optInfo.isPresent()) {
                 Info info = optInfo.get();
@@ -346,7 +346,7 @@ public class ImageRequestHandler extends AbstractRequestHandler
         // the source cache (if enabled), check access to it in preparation for
         // retrieval.
         final Optional<Path> sourceImage = cacheFacade.getSourceCacheFile(identifier);
-        if (sourceImage.isEmpty() || isResolvingFirst()) {
+        if (sourceImage.isEmpty() || verifyExistenceBeforeReturningCachedValue()) {
             try {
                 StatResult result = source.stat();
                 callback.sourceAccessed(result);
@@ -364,7 +364,7 @@ public class ImageRequestHandler extends AbstractRequestHandler
             // cache, read the format from the source-cached-file, as we expect
             // source cache access to be more efficient.
             // Otherwise, read it from the source.
-            if (!isResolvingFirst() && sourceImage.isPresent()) {
+            if (!verifyExistenceBeforeReturningCachedValue() && sourceImage.isPresent()) {
                 List<MediaType> mediaTypes =
                         MediaType.detectMediaTypes(sourceImage.get());
                 if (!mediaTypes.isEmpty()) {
