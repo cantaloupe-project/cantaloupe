@@ -15,6 +15,10 @@ import jakarta.servlet.http.HttpServletRequest;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.thymeleaf.TemplateEngine;
+import org.thymeleaf.context.Context;
+import org.thymeleaf.templatemode.TemplateMode;
+import org.thymeleaf.templateresolver.ClassLoaderTemplateResolver;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -33,6 +37,21 @@ class ErrorResource {
 
     private static final Logger LOGGER =
             LoggerFactory.getLogger(ErrorResource.class);
+
+    // Text template engine for error.txt template
+    private static final TemplateEngine textTemplateEngine;
+
+    static {
+        ClassLoaderTemplateResolver textResolver = new ClassLoaderTemplateResolver();
+        textResolver.setTemplateMode(TemplateMode.TEXT);
+        textResolver.setPrefix("/");
+        textResolver.setSuffix(".txt");
+        textResolver.setCacheable(true);
+        textResolver.setCharacterEncoding("UTF-8");
+
+        textTemplateEngine = new TemplateEngine();
+        textTemplateEngine.addTemplateResolver(textResolver);
+    }
 
     private final Throwable error;
     private HttpServletRequest request;
@@ -85,17 +104,6 @@ class ErrorResource {
             templateVars.put("stackTrace", getStackTrace());
         }
 
-        // Use a template that best fits the representation's content type.
-        String template, mediaType;
-        String header = request.getHeader("Accept");
-        if (header == null || header.contains("html")) {
-            template = "/error.html.vm";
-            mediaType = "text/html";
-        } else {
-            template = "/error.txt.vm";
-            mediaType = "text/plain";
-        }
-
         response.setStatus(status.getCode());
         // Only show the x-powered-by header if configured to do so.
         if (config.getBoolean(Key.HEADERS_POWERED_BY_DISPLAY, true)) {
@@ -103,10 +111,30 @@ class ErrorResource {
                   Application.getName() + "/" + Application.getVersion());
         }
         response.setHeader("Cache-Control", "no-cache, must-revalidate");
-        response.setHeader("Content-Type", mediaType + ";charset=UTF-8");
 
-        new VelocityRepresentation(template, templateVars)
-                .write(response.getOutputStream());
+        // Use a template that best fits the representation's content type.
+        String header = request.getHeader("Accept");
+        if (header == null || header.contains("html")) {
+            response.setHeader("Content-Type", "text/html;charset=UTF-8");
+            new ThymeleafRepresentation("/error.html", templateVars)
+                    .write(response.getOutputStream());
+        } else {
+            response.setHeader("Content-Type", "text/plain;charset=UTF-8");
+            renderTextTemplate(templateVars);
+        }
+    }
+
+    private void renderTextTemplate(Map<String, Object> templateVars) throws IOException {
+        Context context = new Context();
+        if (templateVars != null) {
+            for (Map.Entry<String, Object> entry : templateVars.entrySet()) {
+                context.setVariable(entry.getKey(), entry.getValue());
+            }
+        }
+
+        try (java.io.OutputStreamWriter writer = new java.io.OutputStreamWriter(response.getOutputStream(), "UTF-8")) {
+            textTemplateEngine.process("error", context, writer);
+        }
     }
 
     private String getStackTrace() {
