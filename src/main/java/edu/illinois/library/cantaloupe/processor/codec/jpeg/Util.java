@@ -125,22 +125,18 @@ final class Util {
     private static Model readModel(String rdfXML) {
         Model model = ModelFactory.createDefaultModel();
         String base = null;
-        try{
-            try (StringReader reader = new StringReader(rdfXML)) {
-                model.read(reader, base, "RDF/XML");
-            } catch (RiotException exception) {
-                if (exception.getMessage().indexOf("Base URI is null, but there are relative URIs to resolve") != -1) {
-                    // Version 4.8+ of jena requires a rdf:about link to not be empty
-                    try (StringReader reader = new StringReader(rdfXML)) {
-                        model.read(reader, "http://example.com", "RDF/XML");
-                    }    
-                } else {
-                    throw exception;
-                }
+        try (StringReader reader = new StringReader(rdfXML)) {
+            model.read(reader, base, "RDF/XML");
+        } catch (RiotException exception) {
+            if (exception.getMessage().indexOf("Base URI is null, but there are relative URIs to resolve") != -1) {
+                // Version 4.8+ of jena requires a rdf:about link to not be empty
+                try (StringReader reader = new StringReader(rdfXML)) {
+                    model.read(reader, "http://example.com", "RDF/XML");
+                }    
+            } else {
+                // Return empty model on parse failure.
+                LOGGER.warn(exception.getMessage(),exception);
             }
-        } catch (RiotException ex) {
-            LOGGER.warn(ex.getMessage(),ex);
-            // Return empty model on parse failure.
         }
         return model;
     }
