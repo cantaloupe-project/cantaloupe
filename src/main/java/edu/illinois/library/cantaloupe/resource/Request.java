@@ -5,7 +5,6 @@ import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.delegate.DelegateProxy;
 import edu.illinois.library.cantaloupe.http.Cookies;
 import edu.illinois.library.cantaloupe.http.Headers;
-import edu.illinois.library.cantaloupe.http.Method;
 import edu.illinois.library.cantaloupe.http.Query;
 import edu.illinois.library.cantaloupe.http.Reference;
 import edu.illinois.library.cantaloupe.image.MetaIdentifier;
@@ -77,11 +76,6 @@ public final class Request {
     public InputStream getInputStream() throws IOException {
         return wrappedRequest.getInputStream();
     }
-
-    public Method getMethod() {
-        return Method.valueOf(wrappedRequest.getMethod());
-    }
-
 
     /**
      * @return Whether there is a {@code cache} argument set to {@code false}
