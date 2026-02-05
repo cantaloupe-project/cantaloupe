@@ -13,6 +13,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.apache.commons.lang3.Strings;
 
 public final class StringUtils {
 
@@ -35,7 +36,7 @@ public final class StringUtils {
         final String substitute = Configuration.getInstance().
                 getString(Key.SLASH_SUBSTITUTE, "");
         if (!substitute.isEmpty()) {
-            return org.apache.commons.lang3.StringUtils.replace(
+            return Strings.CS.replace(
                     uriPathComponent, substitute, "/");
         }
         return uriPathComponent;
@@ -51,7 +52,7 @@ public final class StringUtils {
         final String substitute = Configuration.getInstance().
                 getString(Key.SLASH_SUBSTITUTE, "");
         if (!substitute.isEmpty()) {
-            return org.apache.commons.lang3.StringUtils.replace(
+            return Strings.CS.replace(
                     slashedIdentifier, "/", substitute);
         }
         return slashedIdentifier;

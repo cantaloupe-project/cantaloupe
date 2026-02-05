@@ -18,7 +18,7 @@
         <jetty.version>12.1.2</jetty.version>
         <aws-sdk.version>2.21.4</aws-sdk.version>
         <jackson.version>2.15.2</jackson.version>
-        <jruby.version>9.4.13.0</jruby.version>
+        <jruby.version>10.0.0.1</jruby.version>
         <surefire.version>3.5.3</surefire.version>
         <seleniumhq.version>2.53.1</seleniumhq.version><!-- There are many new versions for this library 4.10.0 latest-->
         <logback.version>1.2.13</logback.version> <!-- The next two need to be updated in lockstep latest version 1.4 -->
@@ -153,7 +153,12 @@
         <dependency>
             <groupId>it.geosolutions.imageio-ext</groupId>
             <artifactId>imageio-ext-tiff</artifactId>
-            <version>1.4.14</version>
+            <!-- Delay upgrading to 1.4.x or 2.x.x until 
+                 https://github.com/geosolutions-it/imageio-ext/issues/346 is resolved 
+                 and we can verify that https://github.com/cantaloupe-project/cantaloupe/issues/879 
+                 is solved under those versions
+                 -->
+            <version>1.3.2</version>
         </dependency>
         <dependency>
             <groupId>jakarta.servlet</groupId>
@@ -215,7 +220,7 @@
         <dependency>
             <groupId>org.apache.tika</groupId>
             <artifactId>tika-core</artifactId>
-            <version>2.8.0</version>
+            <version>3.2.2</version>
         </dependency>
         <!-- Assists PDFBox in decoding certain PDFs -->
         <dependency>
