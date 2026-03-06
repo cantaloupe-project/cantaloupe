@@ -345,8 +345,9 @@ public class ApplicationServer {
 
     public void stop() throws Exception {
         if (server != null) {
+            // Set a 5 second timeout for graceful shutdown
+            server.setStopTimeout(5000);
             server.stop();
-            server.join();
         }
         server = null;
         isStarted = false;
