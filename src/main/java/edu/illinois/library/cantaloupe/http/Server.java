@@ -265,6 +265,7 @@ public final class Server {
     public void stop() throws Exception {
         if (server != null) {
             server.stop();
+            server.join();
         }
     }
 
