@@ -70,6 +70,7 @@ public final class Server {
 
     private void initializeServer() {
         server = new org.eclipse.jetty.server.Server();
+        server.setStopAtShutdown(false);
 
         ServerConnector connector;
         HttpConfiguration config = new HttpConfiguration();

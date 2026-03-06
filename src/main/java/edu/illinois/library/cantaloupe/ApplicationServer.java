@@ -133,6 +133,7 @@ public class ApplicationServer {
                 getMaxThreads(), getMinThreads());
 
         server = new Server(pool);
+        server.setStopAtShutdown(false);
         context.setServer(server);
         server.setHandler(context);
 
@@ -345,6 +346,7 @@ public class ApplicationServer {
     public void stop() throws Exception {
         if (server != null) {
             server.stop();
+            server.join();
         }
         server = null;
         isStarted = false;
