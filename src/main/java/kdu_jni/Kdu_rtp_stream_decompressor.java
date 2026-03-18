@@ -1,6 +1,6 @@
 package kdu_jni;
 
-public class Kdu_rtp_stream_decompressor extends Kdu_ovlp_stream_decompressor {
+public class Kdu_rtp_stream_decompressor extends Kdu_ovlp_stream_decompressor implements AutoCloseable {
   static {
     System.loadLibrary("kdu_jni");
     Native_init_class();
@@ -10,12 +10,14 @@ public class Kdu_rtp_stream_decompressor extends Kdu_ovlp_stream_decompressor {
     super(ptr);
   }
   public native void Native_destroy();
-  public void finalize() {
+  @Override
+  public void close() {
     if ((_native_ptr & 1) != 0)
       { // Resource created and not donated
         Native_destroy();
       }
   }
+
   private static native long Native_create();
   public Kdu_rtp_stream_decompressor() {
     this(Native_create());

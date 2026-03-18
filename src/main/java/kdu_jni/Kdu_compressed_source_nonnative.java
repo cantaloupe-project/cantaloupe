@@ -1,6 +1,6 @@
 package kdu_jni;
 
-public class Kdu_compressed_source_nonnative extends Kdu_compressed_source {
+public class Kdu_compressed_source_nonnative extends Kdu_compressed_source implements AutoCloseable {
   static {
     System.loadLibrary("kdu_jni");
     Native_init_class();
@@ -10,12 +10,14 @@ public class Kdu_compressed_source_nonnative extends Kdu_compressed_source {
     super(ptr);
   }
   public native void Native_destroy();
-  public void finalize() {
+  @Override
+  public void close() {
     if ((_native_ptr & 1) != 0)
       { // Resource created and not donated
         Native_destroy();
       }
   }
+
   private static native long Native_create();
   private native void Native_init();
   public Kdu_compressed_source_nonnative() {

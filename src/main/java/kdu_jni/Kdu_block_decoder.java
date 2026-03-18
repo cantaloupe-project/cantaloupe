@@ -1,6 +1,6 @@
 package kdu_jni;
 
-public class Kdu_block_decoder extends Kdu_block_decoder_base {
+public class Kdu_block_decoder extends Kdu_block_decoder_base implements AutoCloseable {
   static {
     System.loadLibrary("kdu_jni");
     Native_init_class();
@@ -10,12 +10,14 @@ public class Kdu_block_decoder extends Kdu_block_decoder_base {
     super(ptr);
   }
   private native void Native_destroy();
-  public void finalize() {
+  @Override
+  public void close() {
     if ((_native_ptr & 1) != 0)
       { // Resource created and not donated
         Native_destroy();
       }
   }
+
   private static native long Native_create();
   public Kdu_block_decoder() {
     this(Native_create());

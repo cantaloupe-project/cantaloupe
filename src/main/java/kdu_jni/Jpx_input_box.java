@@ -1,6 +1,6 @@
 package kdu_jni;
 
-public class Jpx_input_box extends Jp2_input_box {
+public class Jpx_input_box extends Jp2_input_box implements AutoCloseable {
   static {
     System.loadLibrary("kdu_jni");
     Native_init_class();
@@ -10,11 +10,17 @@ public class Jpx_input_box extends Jp2_input_box {
     super(ptr);
   }
   public native void Native_destroy();
-  public void finalize() {
+  @Override
+  public void close() {
     if ((_native_ptr & 1) != 0)
       { // Resource created and not donated
         Native_destroy();
       }
+  }
+  @Override
+  @SuppressWarnings("removal")
+  protected void finalize() {
+    close();
   }
   private static native long Native_create();
   public Jpx_input_box() {

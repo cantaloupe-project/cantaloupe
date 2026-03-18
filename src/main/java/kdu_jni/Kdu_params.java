@@ -1,6 +1,6 @@
 package kdu_jni;
 
-public class Kdu_params {
+public class Kdu_params implements AutoCloseable {
   static {
     System.loadLibrary("kdu_jni");
     Native_init_class();
@@ -11,12 +11,14 @@ public class Kdu_params {
     _native_ptr = ptr;
   }
   public native void Native_destroy();
-  public void finalize() {
+  @Override
+  public void close() {
     if ((_native_ptr & 1) != 0)
       { // Resource created and not donated
         Native_destroy();
       }
   }
+
   private static native long Native_create(String _cluster_name, boolean _allow_tile_diversity, boolean _allow_component_diversity, boolean _allow_instance_diversity, boolean _force_component_specific_forms, boolean _treat_instances_like_components);
   public Kdu_params(String _cluster_name, boolean _allow_tile_diversity, boolean _allow_component_diversity, boolean _allow_instance_diversity, boolean _force_component_specific_forms, boolean _treat_instances_like_components) {
     this(Native_create(_cluster_name, _allow_tile_diversity, _allow_component_diversity, _allow_instance_diversity, _force_component_specific_forms, _treat_instances_like_components));

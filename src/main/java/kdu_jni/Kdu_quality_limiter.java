@@ -1,6 +1,6 @@
 package kdu_jni;
 
-public class Kdu_quality_limiter {
+public class Kdu_quality_limiter implements AutoCloseable {
   static {
     System.loadLibrary("kdu_jni");
     Native_init_class();
@@ -11,12 +11,14 @@ public class Kdu_quality_limiter {
     _native_ptr = ptr;
   }
   public native void Native_destroy();
-  public void finalize() {
+  @Override
+  public void close() {
     if ((_native_ptr & 1) != 0)
       { // Resource created and not donated
         Native_destroy();
       }
   }
+
   private static native long Native_create(float _weighted_rmse, boolean _preserve_if_reversible);
   public Kdu_quality_limiter(float _weighted_rmse, boolean _preserve_if_reversible) {
     this(Native_create(_weighted_rmse, _preserve_if_reversible));

@@ -1,6 +1,6 @@
 package kdu_jni;
 
-public class Kdu_ovlp_stream_decompressor {
+public class Kdu_ovlp_stream_decompressor implements AutoCloseable {
   static {
     System.loadLibrary("kdu_jni");
     Native_init_class();
@@ -11,12 +11,14 @@ public class Kdu_ovlp_stream_decompressor {
     _native_ptr = ptr;
   }
   public native void Native_destroy();
-  public void finalize() {
+  @Override
+  public void close() {
     if ((_native_ptr & 1) != 0)
       { // Resource created and not donated
         Native_destroy();
       }
   }
+
   public native void Set_service_successor(Kdu_ovlp_stream_decompressor _successor) throws KduException;
   public native void Set_consumer_successor(Kdu_ovlp_stream_decompressor _successor) throws KduException;
   public native void Set_resilience_opts(boolean _fussy, boolean _resilient, boolean _expect_ubiquitous_sop, boolean _allow_parsing_errors, boolean _propagate_to_consumers) throws KduException;

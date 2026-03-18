@@ -1,6 +1,6 @@
 package kdu_jni;
 
-public class Kdu_thread_entity_event {
+public class Kdu_thread_entity_event implements AutoCloseable {
   static {
     System.loadLibrary("kdu_jni");
     Native_init_class();
@@ -11,12 +11,14 @@ public class Kdu_thread_entity_event {
     _native_ptr = ptr;
   }
   public native void Native_destroy();
-  public void finalize() {
+  @Override
+  public void close() {
     if ((_native_ptr & 1) != 0)
       { // Resource created and not donated
         Native_destroy();
       }
   }
+
   private static native long Native_create();
   private native void Native_init();
   public Kdu_thread_entity_event() {

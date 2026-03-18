@@ -1,6 +1,6 @@
 package kdu_jni;
 
-public class Kdu_membroker {
+public class Kdu_membroker implements AutoCloseable {
   static {
     System.loadLibrary("kdu_jni");
     Native_init_class();
@@ -11,11 +11,13 @@ public class Kdu_membroker {
     _native_ptr = ptr;
   }
   public native void Native_destroy();
-  public void finalize() {
+  @Override
+  public void close() {
     if ((_native_ptr & 1) != 0)
       { // Resource created and not donated
         Native_destroy();
       }
   }
+
   public native boolean Detach_from_parent() throws KduException;
 }

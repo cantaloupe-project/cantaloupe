@@ -1,6 +1,6 @@
 package kdu_jni;
 
-public class Kdu_window_model {
+public class Kdu_window_model implements AutoCloseable {
   static {
     System.loadLibrary("kdu_jni");
     Native_init_class();
@@ -11,12 +11,14 @@ public class Kdu_window_model {
     _native_ptr = ptr;
   }
   public native void Native_destroy();
-  public void finalize() {
+  @Override
+  public void close() {
     if ((_native_ptr & 1) != 0)
       { // Resource created and not donated
         Native_destroy();
       }
   }
+
   private static native long Native_create();
   public Kdu_window_model() {
     this(Native_create());

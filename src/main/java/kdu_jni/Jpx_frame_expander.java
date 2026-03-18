@@ -1,6 +1,6 @@
 package kdu_jni;
 
-public class Jpx_frame_expander {
+public class Jpx_frame_expander implements AutoCloseable {
   static {
     System.loadLibrary("kdu_jni");
     Native_init_class();
@@ -11,12 +11,14 @@ public class Jpx_frame_expander {
     _native_ptr = ptr;
   }
   public native void Native_destroy();
-  public void finalize() {
+  @Override
+  public void close() {
     if ((_native_ptr & 1) != 0)
       { // Resource created and not donated
         Native_destroy();
       }
   }
+
   private static native long Native_create();
   public Jpx_frame_expander() {
     this(Native_create());

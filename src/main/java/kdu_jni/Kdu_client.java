@@ -1,6 +1,6 @@
 package kdu_jni;
 
-public class Kdu_client extends Kdu_cache {
+public class Kdu_client extends Kdu_cache implements AutoCloseable {
   static {
     System.loadLibrary("kdu_jni");
     Native_init_class();
@@ -10,12 +10,14 @@ public class Kdu_client extends Kdu_cache {
     super(ptr);
   }
   public native void Native_destroy();
-  public void finalize() {
+  @Override
+  public void close() {
     if ((_native_ptr & 1) != 0)
       { // Resource created and not donated
         Native_destroy();
       }
   }
+
   private static native long Native_create();
   public Kdu_client() {
     this(Native_create());

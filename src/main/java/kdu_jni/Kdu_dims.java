@@ -1,6 +1,6 @@
 package kdu_jni;
 
-public class Kdu_dims {
+public class Kdu_dims implements AutoCloseable {
   static {
     System.loadLibrary("kdu_jni");
     Native_init_class();
@@ -11,11 +11,17 @@ public class Kdu_dims {
     _native_ptr = ptr;
   }
   public native void Native_destroy();
-  public void finalize() {
+  @Override
+  public void close() {
     if ((_native_ptr & 1) != 0)
       { // Resource created and not donated
         Native_destroy();
       }
+  }
+  @Override
+  @SuppressWarnings("removal")
+  protected void finalize() {
+    close();
   }
   private static native long Native_create();
   public Kdu_dims() {

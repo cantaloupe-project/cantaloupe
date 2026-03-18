@@ -1,6 +1,6 @@
 package kdu_jni;
 
-public class Kdu_message_formatter extends Kdu_message {
+public class Kdu_message_formatter extends Kdu_message implements AutoCloseable {
   static {
     System.loadLibrary("kdu_jni");
     Native_init_class();
@@ -10,12 +10,14 @@ public class Kdu_message_formatter extends Kdu_message {
     super(ptr);
   }
   public native void Native_destroy();
-  public void finalize() {
+  @Override
+  public void close() {
     if ((_native_ptr & 1) != 0)
       { // Resource created and not donated
         Native_destroy();
       }
   }
+
   private static native long Native_create(Kdu_message _output, int _max_line);
   public Kdu_message_formatter(Kdu_message _output, int _max_line) {
     this(Native_create(_output, _max_line));

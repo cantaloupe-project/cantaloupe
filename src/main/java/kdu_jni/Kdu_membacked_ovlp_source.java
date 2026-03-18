@@ -1,6 +1,6 @@
 package kdu_jni;
 
-public class Kdu_membacked_ovlp_source extends Kdu_membacked_compressed_source {
+public class Kdu_membacked_ovlp_source extends Kdu_membacked_compressed_source implements AutoCloseable {
   static {
     System.loadLibrary("kdu_jni");
     Native_init_class();
@@ -10,12 +10,14 @@ public class Kdu_membacked_ovlp_source extends Kdu_membacked_compressed_source {
     super(ptr);
   }
   public native void Native_destroy();
-  public void finalize() {
+  @Override
+  public void close() {
     if ((_native_ptr & 1) != 0)
       { // Resource created and not donated
         Native_destroy();
       }
   }
+
   public native int Ovlp_open(boolean _blocking, long _queue_sequence_idx, Kdu_thread_env _env) throws KduException;
   public native boolean Ovlp_close(Kdu_thread_env _env) throws KduException;
   public native void Ovlp_shutdown(Kdu_thread_env _env) throws KduException;

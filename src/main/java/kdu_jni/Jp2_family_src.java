@@ -1,6 +1,6 @@
 package kdu_jni;
 
-public class Jp2_family_src {
+public class Jp2_family_src implements AutoCloseable {
   static {
     System.loadLibrary("kdu_jni");
     Native_init_class();
@@ -11,12 +11,14 @@ public class Jp2_family_src {
     _native_ptr = ptr;
   }
   public native void Native_destroy();
-  public void finalize() {
+  @Override
+  public void close() {
     if ((_native_ptr & 1) != 0)
       { // Resource created and not donated
         Native_destroy();
       }
   }
+
   private static native long Native_create();
   public Jp2_family_src() {
     this(Native_create());

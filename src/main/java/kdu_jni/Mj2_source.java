@@ -1,6 +1,6 @@
 package kdu_jni;
 
-public class Mj2_source {
+public class Mj2_source implements AutoCloseable {
   static {
     System.loadLibrary("kdu_jni");
     Native_init_class();
@@ -11,12 +11,14 @@ public class Mj2_source {
     _native_ptr = ptr;
   }
   private native void Native_destroy();
-  public void finalize() {
+  @Override
+  public void close() {
     if ((_native_ptr & 1) != 0)
       { // Resource created and not donated
         Native_destroy();
       }
   }
+
   private static native long Native_create();
   public Mj2_source() {
     this(Native_create());

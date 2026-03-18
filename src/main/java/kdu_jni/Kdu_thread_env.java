@@ -1,6 +1,6 @@
 package kdu_jni;
 
-public class Kdu_thread_env extends Kdu_thread_entity {
+public class Kdu_thread_env extends Kdu_thread_entity implements AutoCloseable {
   static {
     System.loadLibrary("kdu_jni");
     Native_init_class();
@@ -10,11 +10,17 @@ public class Kdu_thread_env extends Kdu_thread_entity {
     super(ptr);
   }
   public native void Native_destroy();
-  public void finalize() {
+  @Override
+  public void close() {
     if ((_native_ptr & 1) != 0)
       { // Resource created and not donated
         Native_destroy();
       }
+  }
+  @Override
+  @SuppressWarnings("removal")
+  protected void finalize() {
+    close();
   }
   private static native long Native_create();
   public Kdu_thread_env() {

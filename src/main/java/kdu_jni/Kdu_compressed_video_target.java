@@ -1,6 +1,6 @@
 package kdu_jni;
 
-public class Kdu_compressed_video_target extends Kdu_compressed_target {
+public class Kdu_compressed_video_target extends Kdu_compressed_target implements AutoCloseable {
   static {
     System.loadLibrary("kdu_jni");
     Native_init_class();
@@ -10,12 +10,14 @@ public class Kdu_compressed_video_target extends Kdu_compressed_target {
     super(ptr);
   }
   public native void Native_destroy();
-  public void finalize() {
+  @Override
+  public void close() {
     if ((_native_ptr & 1) != 0)
       { // Resource created and not donated
         Native_destroy();
       }
   }
+
   public native void Open_image() throws KduException;
   public native void Close_image(Kdu_codestream _codestream) throws KduException;
 }

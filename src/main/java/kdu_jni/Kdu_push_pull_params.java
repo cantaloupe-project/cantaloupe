@@ -1,6 +1,6 @@
 package kdu_jni;
 
-public class Kdu_push_pull_params {
+public class Kdu_push_pull_params implements AutoCloseable {
   static {
     System.loadLibrary("kdu_jni");
     Native_init_class();
@@ -11,12 +11,14 @@ public class Kdu_push_pull_params {
     _native_ptr = ptr;
   }
   private native void Native_destroy();
-  public void finalize() {
+  @Override
+  public void close() {
     if ((_native_ptr & 1) != 0)
       { // Resource created and not donated
         Native_destroy();
       }
   }
+
   private static native long Native_create();
   public Kdu_push_pull_params() {
     this(Native_create());
