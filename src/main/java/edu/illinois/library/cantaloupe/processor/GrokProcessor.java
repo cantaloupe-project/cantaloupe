@@ -497,6 +497,11 @@ class GrokProcessor  extends AbstractProcessor implements FileProcessor {
                         EnumSet.of(ReaderHint.ALREADY_CROPPED);
 
                 BufferedImage image = reader.read(0);
+
+                // Drain any remaining bytes (e.g. ICC profiles) from the stdout pipe.
+                // If we don't, the OS pipe buffer may fill up and hang grk_decompress
+                processInputStream.transferTo(OutputStream.nullOutputStream());
+
                 image = Java2DPostProcessor.postProcess(
                         image, hints, opList, info, reductionFactor);
 
