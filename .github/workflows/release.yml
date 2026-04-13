@@ -1,7 +1,7 @@
 on:
   push:
     tags:
-      - 'v*'
+      - "v*"
 name: Upload Release Asset
 jobs:
   build:
@@ -10,7 +10,7 @@ jobs:
     steps:
       - uses: actions/setup-java@v1
         with:
-          java-version: '17'
+          java-version: "21"
           java-package: jdk
           architecture: x64
       - name: Checkout Code
