@@ -132,7 +132,7 @@ class S3Cache implements DerivativeCache {
                 .build();
         final Stopwatch watch = new Stopwatch();
         try (ResponseInputStream<GetObjectResponse> is = client.getObject(request)) {
-            // This extra validity check may be needed with minio server
+            // This extra validity check may be needed with rustfs server
             if (is != null && is.response().lastModified().isAfter(earliestValidInstant())) {
                 final Info info = Info.fromJSON(is);
                 // Populate the serialization timestamp if it is not already,
@@ -175,7 +175,7 @@ class S3Cache implements DerivativeCache {
                 .build();
         try {
             ResponseInputStream<GetObjectResponse> is = client.getObject(request);
-            // This extra validity check may be needed with minio server
+            // This extra validity check may be needed with rustfs server
             if (is != null && is.response().lastModified().isAfter(earliestValidInstant())) {
                 touchAsync(objectKey);
                 return is;

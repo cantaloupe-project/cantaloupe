@@ -8,11 +8,3 @@ services:
     build:
       context: ../../
       dockerfile: docker/Windows-JDK21/Dockerfile
-  minio:
-    build:
-      context: ../../
-      dockerfile: docker/Windows-JDK21/Dockerfile-minio
-    environment:
-      MINIO_ACCESS_KEY: MinioUser
-      MINIO_SECRET_KEY: OpenSesame
-    hostname: minio

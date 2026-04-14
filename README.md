@@ -50,7 +50,7 @@ on third-party services and do not require any external tools or libraries.
 depend on open-source tools or libraries. These are the tests run in
 continuous integration. The following dependencies are required:
 
-* MinIO (for S3SourceTest & S3CacheTest)
+* RustFS (for S3SourceTest & S3CacheTest)
 * FFmpeg (for FfmpegProcessorTest)
 * Grok (for GrokProcessorTest)
 * OpenJPEG (for OpenJpegProcessorTest)

@@ -43,7 +43,7 @@ public class S3CacheTest extends AbstractCacheTest {
     private static final Logger LOGGER = LoggerFactory.getLogger(S3CacheTest.class);
 
     private enum Service {
-        AWS("aws"), MINIO("minio");
+        AWS("aws"), RUSTFS("rustfs");
 
         private final String key;
 
@@ -141,7 +141,7 @@ public class S3CacheTest extends AbstractCacheTest {
             outputStream = instance.newDerivativeImageOutputStream(ops1);
             if (outputStream instanceof S3MultipartAsyncOutputStream) {
                 ((S3MultipartAsyncOutputStream)outputStream).observer = this;
-            }    
+            }
             Files.copy(fixture, outputStream);
             outputStream.setComplete(true);
         } finally {
@@ -255,7 +255,7 @@ public class S3CacheTest extends AbstractCacheTest {
     @Test
     void testNewDerivativeImageInputStreamUpdatesLastModifiedTime()
             throws Exception {
-        assumeFalse(Service.MINIO.equals(getService())); // this test fails in minio
+        assumeFalse(Service.RUSTFS.equals(getService())); // this test failed in minio
 
         final DerivativeCache instance = newInstance();
         Configuration.getInstance().setProperty(Key.DERIVATIVE_CACHE_TTL, 2);

@@ -10,14 +10,13 @@ services:
       context: ../../../
       dockerfile: $PWD/docker/ubuntu/jammy/Dockerfile
     ports:
-      - "8182:8182"  
-  minio:
-    image: minio/minio
+      - "8182:8182"
+  rustfs-server:
+    image: rustfs/rustfs
     environment:
-      MINIO_ACCESS_KEY: MinioUser
-      MINIO_SECRET_KEY: OpenSesame
-    hostname: minio
-    command: server /data
+      RUSTFS_ACCESS_KEY: RustfsUser
+      RUSTFS_SECRET_KEY: OpenSesame
+    ports: ["9000:9000/tcp"]
   redis:
     image: redis:alpine
     hostname: redis
