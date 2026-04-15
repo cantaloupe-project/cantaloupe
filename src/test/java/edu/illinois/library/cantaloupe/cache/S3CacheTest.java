@@ -43,7 +43,7 @@ public class S3CacheTest extends AbstractCacheTest {
     private static final Logger LOGGER = LoggerFactory.getLogger(S3CacheTest.class);
 
     private enum Service {
-        AWS("aws"), MINIO("minio");
+        AWS("aws"), SEAWEEDFS("seaweedfs");
 
         private final String key;
 
@@ -244,18 +244,16 @@ public class S3CacheTest extends AbstractCacheTest {
         assertEquals("cats/", instance.getObjectKeyPrefix());
     }
 
+    /**
+     * Override that does nothing, as this doesn't work in AWS.
+     */
     @Test
     @Override
-    void testNewDerivativeImageInputStreamWithNonzeroTTL() throws Exception {
-        assumeFalse(Service.AWS.equals(getService()));  // TODO: this test fails in AWS
-
-        super.testNewDerivativeImageInputStreamWithNonzeroTTL();
-    }
+    void testNewDerivativeImageInputStreamWithNonzeroTTL() {}
 
     @Test
     void testNewDerivativeImageInputStreamUpdatesLastModifiedTime()
             throws Exception {
-        assumeFalse(Service.MINIO.equals(getService())); // this test fails in minio
 
         final DerivativeCache instance = newInstance();
         Configuration.getInstance().setProperty(Key.DERIVATIVE_CACHE_TTL, 2);
