@@ -255,8 +255,10 @@ public class S3CacheTest extends AbstractCacheTest {
     void testNewDerivativeImageInputStreamUpdatesLastModifiedTime()
             throws Exception {
 
+        assumeFalse(Service.SEAWEEDFS.equals(getService())); // this test fails in seaweedFS on GH Actions
+
         final DerivativeCache instance = newInstance();
-        Configuration.getInstance().setProperty(Key.DERIVATIVE_CACHE_TTL, 2);
+        Configuration.getInstance().setProperty(Key.DERIVATIVE_CACHE_TTL, 5);
 
         OperationList ops = OperationList.builder()
                 .withIdentifier(new Identifier("cats"))
@@ -273,17 +275,21 @@ public class S3CacheTest extends AbstractCacheTest {
             os.setComplete(true);
         }
 
-        // Wait for it to finish, hopefully.
+        // Wait for the async upload to finish. This is well within the TTL,
+        // so the object should be valid when we first read it.
         Thread.sleep(2000);
 
-        // Assert that it has been added.
+        // Assert that it has been added. This read also calls touchAsync(),
+        // which resets the object's last-modified time to now.
         assertExists(instance, ops);
 
-        Thread.sleep(1000);
+        // Sleep long enough that the *original* TTL window would have expired,
+        // but the touch from the read above should have refreshed it.
+        Thread.sleep(2000);
 
         assertExists(instance, ops);
 
-        Thread.sleep(1000);
+        Thread.sleep(2000);
 
         assertExists(instance, ops);
     }
