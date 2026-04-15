@@ -6,10 +6,10 @@ import edu.illinois.library.cantaloupe.delegate.DelegateProxyService;
 import edu.illinois.library.cantaloupe.delegate.UnavailableException;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.resource.RequestContext;
-import org.apache.commons.configuration.BaseConfiguration;
-import org.apache.commons.configuration.Configuration;
-import org.apache.commons.configuration.ConfigurationException;
-import org.apache.commons.configuration.PropertiesConfiguration;
+import org.apache.commons.configuration2.BaseConfiguration;
+import org.apache.commons.configuration2.Configuration;
+import org.apache.commons.configuration2.builder.fluent.Configurations;
+import org.apache.commons.configuration2.ex.ConfigurationException;
 
 import java.io.File;
 import java.io.IOException;
@@ -91,7 +91,7 @@ public final class TestUtil {
 
     public static Configuration getTestConfig() {
         try {
-            return new PropertiesConfiguration("./test.properties");
+            return new Configurations().properties(new File("./test.properties"));
         } catch (ConfigurationException e) {
             System.err.println(e.getMessage());
             e.printStackTrace();

@@ -60,19 +60,19 @@ class S3MultipartAsyncOutputStreamTest extends BaseTest {
     }
 
     private static String getAccessKeyId() {
-        org.apache.commons.configuration.Configuration testConfig =
+        org.apache.commons.configuration2.Configuration testConfig =
                 TestUtil.getTestConfig();
         return testConfig.getString(ConfigurationConstants.S3_ACCESS_KEY_ID.getKey());
     }
 
     private static String getBucket() {
-        org.apache.commons.configuration.Configuration testConfig =
+        org.apache.commons.configuration2.Configuration testConfig =
                 TestUtil.getTestConfig();
         return testConfig.getString(ConfigurationConstants.S3_BUCKET.getKey());
     }
 
     private static URI getEndpoint() {
-        org.apache.commons.configuration.Configuration testConfig =
+        org.apache.commons.configuration2.Configuration testConfig =
                 TestUtil.getTestConfig();
         String endpointStr = testConfig.getString(ConfigurationConstants.S3_ENDPOINT.getKey());
         if (endpointStr != null && !endpointStr.isBlank()) {
@@ -86,13 +86,13 @@ class S3MultipartAsyncOutputStreamTest extends BaseTest {
     }
 
     private static String getRegion() {
-        org.apache.commons.configuration.Configuration testConfig =
+        org.apache.commons.configuration2.Configuration testConfig =
                 TestUtil.getTestConfig();
         return testConfig.getString(ConfigurationConstants.S3_REGION.getKey());
     }
 
     private static String getSecretKey() {
-        org.apache.commons.configuration.Configuration testConfig =
+        org.apache.commons.configuration2.Configuration testConfig =
                 TestUtil.getTestConfig();
         return testConfig.getString(ConfigurationConstants.S3_SECRET_KEY.getKey());
     }
