@@ -15,6 +15,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import software.amazon.awssdk.services.s3.S3AsyncClient;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
@@ -214,8 +215,8 @@ public class S3SourceTest extends AbstractSourceTest {
         S3ObjectInfo info1 = new S3ObjectInfo();
         S3ObjectInfo info2 = new S3ObjectInfo();
         info2.setEndpoint("http://example.org/endpoint");
-        S3Client client1 = S3Source.getClientInstance(info1);
-        S3Client client2 = S3Source.getClientInstance(info2);
+        S3AsyncClient client1 = S3Source.getClientInstance(info1);
+        S3AsyncClient client2 = S3Source.getClientInstance(info2);
         assertNotSame(client1, client2);
     }
 
@@ -225,8 +226,8 @@ public class S3SourceTest extends AbstractSourceTest {
         S3ObjectInfo info2 = new S3ObjectInfo();
         info1.setEndpoint("http://example.org/endpoint");
         info2.setEndpoint(info1.getEndpoint());
-        S3Client client1 = S3Source.getClientInstance(info1);
-        S3Client client2 = S3Source.getClientInstance(info2);
+        S3AsyncClient client1 = S3Source.getClientInstance(info1);
+        S3AsyncClient client2 = S3Source.getClientInstance(info2);
         assertSame(client1, client2);
     }
 

@@ -10,7 +10,7 @@ import software.amazon.awssdk.auth.credentials.ProfileCredentialsProvider;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.auth.credentials.SystemPropertyCredentialsProvider;
 import software.amazon.awssdk.core.exception.SdkClientException;
-import software.amazon.awssdk.http.urlconnection.UrlConnectionHttpClient;
+import software.amazon.awssdk.http.crt.AwsCrtHttpClient;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.regions.providers.AwsProfileRegionProvider;
 import software.amazon.awssdk.regions.providers.AwsRegionProviderChain;
@@ -147,7 +147,7 @@ public final class S3ClientBuilder {
                 .checksumValidationEnabled(false)
                 .build();
         software.amazon.awssdk.services.s3.S3ClientBuilder builder = S3Client.builder()
-                .httpClientBuilder(UrlConnectionHttpClient.builder())
+                .httpClientBuilder(AwsCrtHttpClient.builder())
                 .serviceConfiguration(config)
                 // A region is required even for non-AWS endpoints.
                 .region(getEffectiveRegion())
