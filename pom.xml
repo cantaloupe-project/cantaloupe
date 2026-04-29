@@ -20,7 +20,7 @@
         <jetty.version>12.1.7</jetty.version>
         <aws-sdk.version>2.42.37</aws-sdk.version>
         <jackson.version>2.18.6</jackson.version>
-        <jruby.version>10.0.4.0</jruby.version>
+        <jruby.version>10.1.0.0</jruby.version>
         <surefire.version>3.5.3</surefire.version>
         <seleniumhq.version>2.53.1</seleniumhq.version><!-- There are many new versions for this library 4.10.0 latest-->
         <logback.version>1.4.14</logback.version> <!-- slf4j depends on specific versions of logback. 1.4 is an LTS release. -->
