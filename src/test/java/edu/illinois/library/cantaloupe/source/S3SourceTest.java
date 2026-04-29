@@ -317,7 +317,7 @@ public class S3SourceTest extends AbstractSourceTest {
         S3Source.FormatIterator<Format> it = source.getFormatIterator();
         assertEquals(Format.get("png"), it.next());     // object key
         assertEquals(Format.get("png"), it.next());     // identifier extension
-        assertEquals(Format.UNKNOWN, it.next()); // Content-Type is null
+        it.next(); // skip over Content-Type interator.  SeaweedFS returns a content-type inferred from the extension.
         assertEquals(Format.get("jpg"), it.next());     // magic bytes
         assertThrows(NoSuchElementException.class, it::next);
     }

@@ -9,13 +9,14 @@ services:
     build:
       context: ../../
       dockerfile: $PWD/docker/Linux-JDK26/Dockerfile
-  minio:
-    image: minio/minio
+  seaweedfs:
+    image: chrislusf/seaweedfs
     environment:
-      MINIO_ACCESS_KEY: MinioUser
-      MINIO_SECRET_KEY: OpenSesame
-    hostname: minio
-    command: server /data
+      AWS_ACCESS_KEY_ID: SeaweedUser
+      AWS_SECRET_ACCESS_KEY: OpenSesame
+    command: mini -dir=/data
+    ports:
+      - 8333:8333
   redis:
     image: redis:alpine
     hostname: redis
