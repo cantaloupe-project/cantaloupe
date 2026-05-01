@@ -38,14 +38,15 @@ ENV LD_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu:${LD_LIBRARY_PATH}
 
 # Install various other dependencies that aren't in apt
 # Install OpenJDK
+#https://download.java.net/java/GA/jdk25.0.2/b1e0dfa218384cb9959bdcb897162d4e/10/GPL/openjdk-25.0.2_linux-x64_bin.tar.gz
 RUN wget -q https://download.java.net/java/GA/jdk25.0.2/b1e0dfa218384cb9959bdcb897162d4e/10/GPL/openjdk-25.0.2_linux-x64_bin.tar.gz \
   && tar xfz openjdk-25.0.2_linux-x64_bin.tar.gz \
   && mv jdk-25.0.2 /opt/jdk \
   # Install a newer Maven than the one in apt
-  && wget -q https://dlcdn.apache.org/maven/maven-3/3.9.14/binaries/apache-maven-3.9.14-bin.tar.gz \
-  && tar xfz apache-maven-3.9.14-bin.tar.gz \
-  && mv apache-maven-3.9.14 /opt/maven \
-  && rm apache-maven-3.9.14-bin.tar.gz
+  && wget -q https://dlcdn.apache.org/maven/maven-3/3.9.15/binaries/apache-maven-3.9.15-bin.tar.gz \
+  && tar xfz apache-maven-3.9.15-bin.tar.gz \
+  && mv apache-maven-3.9.15 /opt/maven \
+  && rm apache-maven-3.9.15-bin.tar.gz
 
 # A non-root user is needed for some FilesystemSourceTest tests to work.
 ARG user=cantaloupe
