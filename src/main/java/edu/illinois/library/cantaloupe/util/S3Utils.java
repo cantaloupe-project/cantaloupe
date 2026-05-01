@@ -1,5 +1,6 @@
 package edu.illinois.library.cantaloupe.util;
 
+import software.amazon.awssdk.services.s3.S3AsyncClient;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.CreateBucketRequest;
 import software.amazon.awssdk.services.s3.model.DeleteBucketRequest;
@@ -131,6 +132,46 @@ public final class S3Utils {
                     .marker(marker)
                     .build();
             response = client.listObjects(request);
+            response.contents().forEach(handler::handle);
+            marker = response.nextMarker();
+        } while (response.isTruncated());
+    }
+
+    /**
+     * Invokes the given handler on all objects in the given bucket.
+     *
+     * @param client     S3 async client.
+     * @param bucketName Bucket name.
+     * @param handler    Handler to invoke.
+     */
+    public static void walkObjects(S3AsyncClient client,
+                                   String bucketName,
+                                   ResponseObjectHandler<S3Object> handler) {
+        walkObjects(client, bucketName, null, handler);
+    }
+
+    /**
+     * Invokes the given handler on all objects in the given bucket that have
+     * the given key prefix.
+     *
+     * @param client     S3 async client.
+     * @param bucketName Bucket name.
+     * @param prefix     Key prefix. May be {@code null}.
+     * @param handler    Handler to invoke.
+     */
+    public static void walkObjects(S3AsyncClient client,
+                                   String bucketName,
+                                   String prefix,
+                                   ResponseObjectHandler<S3Object> handler) {
+        String marker = null;
+        ListObjectsResponse response;
+        do {
+            ListObjectsRequest request = ListObjectsRequest.builder()
+                    .bucket(bucketName)
+                    .prefix(prefix)
+                    .marker(marker)
+                    .build();
+            response = client.listObjects(request).join();
             response.contents().forEach(handler::handle);
             marker = response.nextMarker();
         } while (response.isTruncated());
