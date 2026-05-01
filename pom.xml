@@ -1,6 +1,8 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project
+  xmlns="http://maven.apache.org/POM/4.0.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd"
+>
     <modelVersion>4.0.0</modelVersion>
     <groupId>edu.illinois.library.cantaloupe</groupId>
     <artifactId>cantaloupe</artifactId>
@@ -16,9 +18,9 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <jetty.version>12.1.7</jetty.version>
-        <aws-sdk.version>2.21.4</aws-sdk.version>
+        <aws-sdk.version>2.42.37</aws-sdk.version>
         <jackson.version>2.18.6</jackson.version>
-        <jruby.version>10.0.4.0</jruby.version>
+        <jruby.version>10.1.0.0</jruby.version>
         <surefire.version>3.5.3</surefire.version>
         <seleniumhq.version>2.53.1</seleniumhq.version><!-- There are many new versions for this library 4.10.0 latest-->
         <logback.version>1.4.14</logback.version> <!-- slf4j depends on specific versions of logback. 1.4 is an LTS release. -->
@@ -119,9 +121,16 @@
         </dependency>
         <!-- Manages the test configuration. -->
         <dependency>
-            <groupId>commons-configuration</groupId>
-            <artifactId>commons-configuration</artifactId>
-            <version>1.10</version>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-configuration2</artifactId>
+            <version>2.13.0</version>
+            <scope>test</scope>
+        </dependency>
+        <!-- Required at runtime by commons-configuration2's builder API -->
+        <dependency>
+            <groupId>commons-beanutils</groupId>
+            <artifactId>commons-beanutils</artifactId>
+            <version>1.11.0</version>
             <scope>test</scope>
         </dependency>
         <!-- IOUtils is used widely -->
@@ -153,9 +162,9 @@
         <dependency>
             <groupId>it.geosolutions.imageio-ext</groupId>
             <artifactId>imageio-ext-tiff</artifactId>
-            <!-- Delay upgrading to 1.4.x or 2.x.x until 
-                 https://github.com/geosolutions-it/imageio-ext/issues/346 is resolved 
-                 and we can verify that https://github.com/cantaloupe-project/cantaloupe/issues/879 
+            <!-- Delay upgrading to 1.4.x or 2.x.x until
+                 https://github.com/geosolutions-it/imageio-ext/issues/346 is resolved
+                 and we can verify that https://github.com/cantaloupe-project/cantaloupe/issues/879
                  is solved under those versions
                  -->
             <version>1.3.2</version>
@@ -469,7 +478,7 @@
                 <configuration>
                     <createDependencyReducedPom>false</createDependencyReducedPom>
                     <transformers>
-                        <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
+                        <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer" />
                         <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
                             <manifestEntries>
                                 <Main-Class>edu.illinois.library.cantaloupe.StandaloneEntry</Main-Class>
@@ -638,7 +647,7 @@
                                     <executable>java</executable>
                                     <arguments>
                                         <argument>-classpath</argument>
-                                        <classpath/>
+                                        <classpath />
                                         <argument>org.openjdk.jmh.Main
                                         </argument>
                                         <argument>-rf</argument>

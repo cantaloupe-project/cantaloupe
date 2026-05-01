@@ -15,7 +15,7 @@ jobs:
       fail-fast: false
     steps:
       - name: Check out the repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       - name: Test in Linux JDK 26 (non-LTS)
         if: matrix.os == 'ubuntu-latest' && matrix.java == 'jdk26'
         run: docker compose -f docker/Linux-JDK26/compose.yaml up --build --exit-code-from cantaloupe

@@ -42,31 +42,31 @@ public class S3StreamFactoryTest extends BaseTest {
     }
 
     private static String accessKeyID() {
-        org.apache.commons.configuration.Configuration testConfig =
+        org.apache.commons.configuration2.Configuration testConfig =
                 TestUtil.getTestConfig();
         return testConfig.getString(ConfigurationConstants.S3_ACCESS_KEY_ID.getKey());
     }
 
     private static String bucket() {
-        org.apache.commons.configuration.Configuration testConfig =
+        org.apache.commons.configuration2.Configuration testConfig =
                 TestUtil.getTestConfig();
         return testConfig.getString(ConfigurationConstants.S3_BUCKET.getKey());
     }
 
     private static String endpoint() {
-        org.apache.commons.configuration.Configuration testConfig =
+        org.apache.commons.configuration2.Configuration testConfig =
                 TestUtil.getTestConfig();
         return testConfig.getString(ConfigurationConstants.S3_ENDPOINT.getKey());
     }
 
     private static String region() {
-        org.apache.commons.configuration.Configuration testConfig =
+        org.apache.commons.configuration2.Configuration testConfig =
                 TestUtil.getTestConfig();
         return testConfig.getString(ConfigurationConstants.S3_REGION.getKey());
     }
 
     private static String secretAccessKey() {
-        org.apache.commons.configuration.Configuration testConfig =
+        org.apache.commons.configuration2.Configuration testConfig =
                 TestUtil.getTestConfig();
         return testConfig.getString(ConfigurationConstants.S3_SECRET_KEY.getKey());
     }

@@ -105,19 +105,19 @@ public class S3SourceTest extends AbstractSourceTest {
     }
 
     private static String getAccessKeyId() {
-        org.apache.commons.configuration.Configuration testConfig =
+        org.apache.commons.configuration2.Configuration testConfig =
                 TestUtil.getTestConfig();
         return testConfig.getString(ConfigurationConstants.S3_ACCESS_KEY_ID.getKey());
     }
 
     private static String getBucket() {
-        org.apache.commons.configuration.Configuration testConfig =
+        org.apache.commons.configuration2.Configuration testConfig =
                 TestUtil.getTestConfig();
         return testConfig.getString(ConfigurationConstants.S3_BUCKET.getKey());
     }
 
     private static URI getEndpoint() {
-        org.apache.commons.configuration.Configuration testConfig =
+        org.apache.commons.configuration2.Configuration testConfig =
                 TestUtil.getTestConfig();
         String endpointStr = testConfig.getString(ConfigurationConstants.S3_ENDPOINT.getKey());
         if (endpointStr != null && !endpointStr.isEmpty()) {
@@ -131,13 +131,13 @@ public class S3SourceTest extends AbstractSourceTest {
     }
 
     private static String getRegion() {
-        org.apache.commons.configuration.Configuration testConfig =
+        org.apache.commons.configuration2.Configuration testConfig =
                 TestUtil.getTestConfig();
         return testConfig.getString(ConfigurationConstants.S3_REGION.getKey());
     }
 
     private static String getSecretKey() {
-        org.apache.commons.configuration.Configuration testConfig =
+        org.apache.commons.configuration2.Configuration testConfig =
                 TestUtil.getTestConfig();
         return testConfig.getString(ConfigurationConstants.S3_SECRET_KEY.getKey());
     }
@@ -317,7 +317,7 @@ public class S3SourceTest extends AbstractSourceTest {
         S3Source.FormatIterator<Format> it = source.getFormatIterator();
         assertEquals(Format.get("png"), it.next());     // object key
         assertEquals(Format.get("png"), it.next());     // identifier extension
-        assertEquals(Format.UNKNOWN, it.next()); // Content-Type is null
+        it.next(); // skip over Content-Type interator.  SeaweedFS returns a content-type inferred from the extension.
         assertEquals(Format.get("jpg"), it.next());     // magic bytes
         assertThrows(NoSuchElementException.class, it::next);
     }
