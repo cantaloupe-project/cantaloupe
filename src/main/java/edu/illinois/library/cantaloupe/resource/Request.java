@@ -3,7 +3,6 @@ package edu.illinois.library.cantaloupe.resource;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.delegate.DelegateProxy;
-import edu.illinois.library.cantaloupe.http.Cookies;
 import edu.illinois.library.cantaloupe.http.Headers;
 import edu.illinois.library.cantaloupe.http.Query;
 import edu.illinois.library.cantaloupe.http.Reference;
@@ -25,8 +24,6 @@ import java.util.Set;
 public final class Request {
 
     private HttpServletRequest wrappedRequest;
-
-    private Cookies cookies;
     private Headers headers;
     private Reference reference;
 
@@ -50,8 +47,6 @@ public final class Request {
     public String getContextPath() {
         return wrappedRequest.getContextPath();
     }
-
-
 
     public Headers getHeaders() {
         if (headers == null) {
