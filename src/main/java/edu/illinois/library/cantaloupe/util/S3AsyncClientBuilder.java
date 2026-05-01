@@ -1,5 +1,14 @@
 package edu.illinois.library.cantaloupe.util;
 
+import software.amazon.awssdk.auth.credentials.AwsCredentials;
+import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider;
+import software.amazon.awssdk.auth.credentials.AwsCredentialsProviderChain;
+import software.amazon.awssdk.auth.credentials.ContainerCredentialsProvider;
+import software.amazon.awssdk.auth.credentials.EnvironmentVariableCredentialsProvider;
+import software.amazon.awssdk.auth.credentials.InstanceProfileCredentialsProvider;
+import software.amazon.awssdk.auth.credentials.ProfileCredentialsProvider;
+import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
+import software.amazon.awssdk.auth.credentials.SystemPropertyCredentialsProvider;
 import software.amazon.awssdk.core.exception.SdkClientException;
 import software.amazon.awssdk.http.crt.AwsCrtAsyncHttpClient;
 import software.amazon.awssdk.regions.Region;
@@ -20,7 +29,6 @@ import java.net.URI;
  *
  * @see <a href="https://docs.aws.amazon.com/sdk-for-java/latest/developer-guide/http-configuration-crt.html">
  *     Configure the AWS CRT-based HTTP client</a>
- * @see S3ClientBuilder
  */
 public final class S3AsyncClientBuilder {
 
@@ -33,6 +41,45 @@ public final class S3AsyncClientBuilder {
     private URI endpointURI;
     private Region region;
     private String accessKeyID, secretAccessKey;
+
+    /**
+     * Returns credentials using a similar strategy as the {@link
+     * software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider}
+     * except the application configuration is consulted between the
+     * environment and AWS profile.
+     *
+     * @param accessKeyIDFromConfig Access key ID from the application
+     *                              configuration.
+     * @param secretKeyFromConfig   Secret key from the application
+     *                              configuration.
+     * @see <a href="https://sdk.amazonaws.com/java/api/latest/index.html?software/amazon/awssdk/auth/credentials/AwsCredentialsProvider.html">
+     *     AwsCredentialsProvider</a>
+     */
+    public static AwsCredentialsProvider newCredentialsProvider(
+            final String accessKeyIDFromConfig,
+            final String secretKeyFromConfig) {
+        final AwsCredentialsProviderChain.Builder builder =
+                AwsCredentialsProviderChain.builder();
+        builder.addCredentialsProvider(SystemPropertyCredentialsProvider.create());
+        builder.addCredentialsProvider(EnvironmentVariableCredentialsProvider.create());
+        if (accessKeyIDFromConfig != null && !accessKeyIDFromConfig.isBlank() &&
+                secretKeyFromConfig != null && !secretKeyFromConfig.isBlank()) {
+            builder.addCredentialsProvider(StaticCredentialsProvider.create(new AwsCredentials() {
+                @Override
+                public String accessKeyId() {
+                    return accessKeyIDFromConfig;
+                }
+                @Override
+                public String secretAccessKey() {
+                    return secretKeyFromConfig;
+                }
+            }));
+        }
+        builder.addCredentialsProvider(ProfileCredentialsProvider.create());
+        builder.addCredentialsProvider(ContainerCredentialsProvider.builder().build());
+        builder.addCredentialsProvider(InstanceProfileCredentialsProvider.builder().build());
+        return builder.build();
+    }
 
     /**
      * Returns a region using a similar strategy as the {@link
@@ -105,7 +152,7 @@ public final class S3AsyncClientBuilder {
                 .serviceConfiguration(config)
                 // A region is required even for non-AWS endpoints.
                 .region(getEffectiveRegion())
-                .credentialsProvider(S3ClientBuilder.newCredentialsProvider(accessKeyID, secretAccessKey));
+                .credentialsProvider(newCredentialsProvider(accessKeyID, secretAccessKey));
         if (endpointURI != null) {
             builder = builder.endpointOverride(endpointURI);
         }

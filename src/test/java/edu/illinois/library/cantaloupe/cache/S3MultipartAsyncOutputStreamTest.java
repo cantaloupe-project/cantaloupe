@@ -4,14 +4,13 @@ import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.ConfigurationConstants;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import edu.illinois.library.cantaloupe.util.S3AsyncClientBuilder;
-import edu.illinois.library.cantaloupe.util.S3ClientBuilder;
 import edu.illinois.library.cantaloupe.util.S3Utils;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import software.amazon.awssdk.core.ResponseInputStream;
+import software.amazon.awssdk.core.async.AsyncResponseTransformer;
 import software.amazon.awssdk.services.s3.S3AsyncClient;
-import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 import software.amazon.awssdk.services.s3.model.GetObjectResponse;
@@ -26,12 +25,11 @@ import static org.junit.jupiter.api.Assertions.*;
 class S3MultipartAsyncOutputStreamTest extends BaseTest {
 
     private static S3AsyncClient asyncClient;
-    private static S3Client client;
 
     @BeforeAll
     public static void beforeClass() throws Exception {
         BaseTest.beforeClass();
-        S3Utils.createBucket(client(), getBucket());
+        S3Utils.createBucket(asyncClient(), getBucket());
     }
 
     @AfterAll
@@ -39,9 +37,6 @@ class S3MultipartAsyncOutputStreamTest extends BaseTest {
         BaseTest.afterClass();
         if (asyncClient != null) {
             asyncClient.close();
-        }
-        if (client != null) {
-            client.close();
         }
     }
 
@@ -57,24 +52,12 @@ class S3MultipartAsyncOutputStreamTest extends BaseTest {
         return asyncClient;
     }
 
-    private static synchronized S3Client client() {
-        if (client == null) {
-            client = new S3ClientBuilder()
-                    .endpointURI(getEndpoint())
-                    .region(getRegion())
-                    .accessKeyID(getAccessKeyId())
-                    .secretAccessKey(getSecretKey())
-                    .build();
-        }
-        return client;
-    }
-
     private static void delete(String key) {
         DeleteObjectRequest request = DeleteObjectRequest.builder()
                 .bucket(getBucket())
                 .key(key)
                 .build();
-        client.deleteObject(request);
+        asyncClient().deleteObject(request).join();
     }
 
     private static String getAccessKeyId() {
@@ -120,8 +103,10 @@ class S3MultipartAsyncOutputStreamTest extends BaseTest {
                 .bucket(getBucket())
                 .key(key)
                 .build();
-        ResponseInputStream<GetObjectResponse> is = client().getObject(request);
-        return is.readAllBytes();
+        try (ResponseInputStream<GetObjectResponse> is =
+                     asyncClient().getObject(request, AsyncResponseTransformer.toBlockingInputStream()).join()) {
+            return is.readAllBytes();
+        }
     }
 
     @Test
