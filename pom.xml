@@ -23,7 +23,7 @@
         <jruby.version>10.1.0.0</jruby.version>
         <surefire.version>3.5.3</surefire.version>
         <seleniumhq.version>2.53.1</seleniumhq.version><!-- There are many new versions for this library 4.10.0 latest-->
-        <logback.version>1.4.14</logback.version> <!-- slf4j depends on specific versions of logback. 1.4 is an LTS release. -->
+        <logback.version>1.5.25</logback.version> <!-- slf4j depends on specific versions of logback. 1.4 is an LTS release. -->
         <slf4j.version>2.0.13</slf4j.version>
     </properties>
 
