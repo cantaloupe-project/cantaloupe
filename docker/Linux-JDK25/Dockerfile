@@ -1,4 +1,44 @@
-FROM ubuntu:noble
+# Build stage: compile grok JPEG 2000 tools from source.
+# libgrokj2k1 and grokj2k-tools are not available in Ubuntu resolute; they
+# were dropped from Debian testing due to an unresolved armhf build failure
+# (https://bugs.debian.org/1085165) and were never synced into Ubuntu 25.04+.
+FROM ubuntu:resolute AS grok-builder
+
+ARG DEBIAN_FRONTEND=noninteractive
+ARG GROK_VERSION=20.3.1
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+  ca-certificates \
+  cmake \
+  g++ \
+  git \
+  make \
+  wget \
+  liblcms2-dev \
+  libpng-dev \
+  libzstd-dev \
+  libtiff-dev \
+  libjpeg-dev \
+  zlib1g-dev \
+  libwebp-dev \
+  && rm -rf /var/lib/apt/lists/*
+
+# source-full.tar.gz includes all submodules (unlike GitHub's auto-generated archives)
+RUN mkdir /grok-src && \
+    wget -qO /tmp/grok.tar.gz \
+      "https://github.com/GrokImageCompression/grok/releases/download/v${GROK_VERSION}/source-full.tar.gz" && \
+    tar xf /tmp/grok.tar.gz -C /grok-src --strip-components=1 && \
+    rm /tmp/grok.tar.gz
+
+RUN cmake -B /grok-build -S /grok-src \
+      -DCMAKE_BUILD_TYPE=Release \
+      -DBUILD_SHARED_LIBS=OFF \
+      -DBUILD_TESTING=OFF \
+      -DGRK_BUILD_DOC=OFF && \
+    cmake --build /grok-build --parallel $(nproc) && \
+    cmake --install /grok-build --prefix /grok-install
+
+FROM ubuntu:resolute
 
 ENV JAVA_HOME=/opt/jdk
 ENV PATH=$PATH:/opt/jdk/bin:/opt/maven/bin
@@ -7,7 +47,7 @@ ARG DEBIAN_FRONTEND=noninteractive
 # Install various dependencies:
 # * ca-certificates is needed by wget
 # * ffmpeg is needed by FfmpegProcessor
-# * wget download stuffs in this dockerfile
+# * wget downloads stuff in this dockerfile
 # * libopenjp2-tools is needed by OpenJpegProcessor
 # * All the rest is needed by GrokProcessor
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -23,12 +63,18 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
   zlib1g-dev \
   libwebp-dev \
   libimage-exiftool-perl \
-  libgrokj2k1 \
-  grokj2k-tools \
   adduser \
-  libturbojpeg \
-  libturbojpeg-dev \
-  && rm -rf /var/lib/apt/lists/*
+  openjdk-25-jdk \
+  libturbojpeg0 \
+  libturbojpeg0-dev \
+  maven \
+  && rm -rf /var/lib/apt/lists/* \
+  && ln -sf "$(dirname $(dirname $(readlink -f /usr/bin/javac)))" /opt/jdk
+
+# Copy grok binaries from the builder stage.
+# Built with BUILD_SHARED_LIBS=OFF so libgrokj2k is statically linked into
+# the binaries and does not need to be present at runtime.
+COPY --from=grok-builder /grok-install/bin/ /usr/local/bin/
 
 # Install KakaduNativeProcessor dependencies
 COPY dist/deps/Linux-x86-64/lib/* /usr/lib/
@@ -36,17 +82,7 @@ COPY dist/deps/Linux-x86-64/lib/* /usr/lib/
 # Ensure libturbojpeg can be found
 ENV LD_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu:${LD_LIBRARY_PATH}
 
-# Install various other dependencies that aren't in apt
-# Install OpenJDK
-#https://download.java.net/java/GA/jdk25.0.2/b1e0dfa218384cb9959bdcb897162d4e/10/GPL/openjdk-25.0.2_linux-x64_bin.tar.gz
-RUN wget -q https://download.java.net/java/GA/jdk25.0.2/b1e0dfa218384cb9959bdcb897162d4e/10/GPL/openjdk-25.0.2_linux-x64_bin.tar.gz \
-  && tar xfz openjdk-25.0.2_linux-x64_bin.tar.gz \
-  && mv jdk-25.0.2 /opt/jdk \
-  # Install a newer Maven than the one in apt
-  && wget -q https://dlcdn.apache.org/maven/maven-3/3.9.15/binaries/apache-maven-3.9.15-bin.tar.gz \
-  && tar xfz apache-maven-3.9.15-bin.tar.gz \
-  && mv apache-maven-3.9.15 /opt/maven \
-  && rm apache-maven-3.9.15-bin.tar.gz
+# JDK 25 is the default JDK for Ubuntu 26.04 (resolute)
 
 # A non-root user is needed for some FilesystemSourceTest tests to work.
 ARG user=cantaloupe
