@@ -161,14 +161,6 @@ public abstract class AbstractResource {
     }
 
     /**
-     * <p>Called at the end of the instance's lifecycle.</p>
-     *
-     * <p>Overrides must call {@code super}.</p>
-     */
-    public void destroy() {
-    }
-
-    /**
      * <p>Must be overridden by implementations that support {@literal
      * DELETE}.</p>
      *
