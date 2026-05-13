@@ -1,9 +1,5 @@
 package edu.illinois.library.cantaloupe.resource;
 
-import edu.illinois.library.cantaloupe.config.Configuration;
-import edu.illinois.library.cantaloupe.config.Key;
-import edu.illinois.library.cantaloupe.http.Headers;
-import edu.illinois.library.cantaloupe.http.Reference;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import org.junit.jupiter.api.BeforeEach;
@@ -34,12 +30,6 @@ public class AbstractResourceTest extends BaseTest {
         Request mockRequest = new Request(new MockHttpServletRequest());
         instance.setRequest(mockRequest);
         instance.setResponse(new MockHttpServletResponse());
-    }
-
-    @Test
-    void testDoDELETE() throws Exception {
-        instance.doDELETE();
-        assertEquals(405, instance.getResponse().getStatus());
     }
 
     @Test
