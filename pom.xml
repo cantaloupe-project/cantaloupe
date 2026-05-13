@@ -345,8 +345,8 @@
         browser. -->
         <dependency>
             <groupId>org.seleniumhq.selenium</groupId>
-            <artifactId>htmlunit-driver</artifactId>
-            <version>4.13.0</version>
+            <artifactId>htmlunit3-driver</artifactId>
+            <version>4.43.0</version>
             <scope>test</scope>
         </dependency>
         <dependency>
