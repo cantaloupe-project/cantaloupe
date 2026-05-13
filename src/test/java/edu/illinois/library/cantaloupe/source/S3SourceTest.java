@@ -8,14 +8,15 @@ import edu.illinois.library.cantaloupe.delegate.DelegateProxy;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.ConfigurationConstants;
 import edu.illinois.library.cantaloupe.test.TestUtil;
-import edu.illinois.library.cantaloupe.util.S3ClientBuilder;
+import edu.illinois.library.cantaloupe.util.S3AsyncClientBuilder;
 import edu.illinois.library.cantaloupe.util.S3Utils;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.core.async.AsyncRequestBody;
+import software.amazon.awssdk.services.s3.S3AsyncClient;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
 import java.net.URI;
@@ -37,7 +38,7 @@ public class S3SourceTest extends AbstractSourceTest {
     private static final String OBJECT_KEY_WITH_NO_CONTENT_TYPE_OR_EXTENSION               = "jpg";
     private static final String NON_IMAGE_KEY                                              = "NotAnImage";
 
-    private static S3Client client;
+    private static S3AsyncClient client;
 
     private S3Source instance;
 
@@ -57,8 +58,8 @@ public class S3SourceTest extends AbstractSourceTest {
     }
 
     private static void seedFixtures() {
-        final S3Client client = client();
-        Path fixture          = TestUtil.getImage("jpg");
+        final S3AsyncClient client = client();
+        Path fixture               = TestUtil.getImage("jpg");
 
         for (final String key : new String[] {
                 OBJECT_KEY_WITH_CONTENT_TYPE_AND_RECOGNIZED_EXTENSION,
@@ -80,7 +81,7 @@ public class S3SourceTest extends AbstractSourceTest {
                     .key(key)
                     .contentType(contentType)
                     .build();
-            client.putObject(request, fixture);
+            client.putObject(request, AsyncRequestBody.fromFile(fixture)).join();
         }
 
         // Add a non-image
@@ -89,12 +90,12 @@ public class S3SourceTest extends AbstractSourceTest {
                 .bucket(getBucket())
                 .key(NON_IMAGE_KEY)
                 .build();
-        client.putObject(request, fixture);
+        client.putObject(request, AsyncRequestBody.fromFile(fixture)).join();
     }
 
-    private static S3Client client() {
+    private static S3AsyncClient client() {
         if (client == null) {
-            client = new S3ClientBuilder()
+            client = new S3AsyncClientBuilder()
                     .endpointURI(getEndpoint())
                     .region(getRegion())
                     .accessKeyID(getAccessKeyId())
@@ -214,8 +215,8 @@ public class S3SourceTest extends AbstractSourceTest {
         S3ObjectInfo info1 = new S3ObjectInfo();
         S3ObjectInfo info2 = new S3ObjectInfo();
         info2.setEndpoint("http://example.org/endpoint");
-        S3Client client1 = S3Source.getClientInstance(info1);
-        S3Client client2 = S3Source.getClientInstance(info2);
+        S3AsyncClient client1 = S3Source.getClientInstance(info1);
+        S3AsyncClient client2 = S3Source.getClientInstance(info2);
         assertNotSame(client1, client2);
     }
 
@@ -225,8 +226,8 @@ public class S3SourceTest extends AbstractSourceTest {
         S3ObjectInfo info2 = new S3ObjectInfo();
         info1.setEndpoint("http://example.org/endpoint");
         info2.setEndpoint(info1.getEndpoint());
-        S3Client client1 = S3Source.getClientInstance(info1);
-        S3Client client2 = S3Source.getClientInstance(info2);
+        S3AsyncClient client1 = S3Source.getClientInstance(info1);
+        S3AsyncClient client2 = S3Source.getClientInstance(info2);
         assertSame(client1, client2);
     }
 

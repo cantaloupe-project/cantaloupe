@@ -411,6 +411,11 @@
             <artifactId>url-connection-client</artifactId>
             <version>${aws-sdk.version}</version>
         </dependency>
+        <dependency>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>aws-crt-client</artifactId>
+            <version>${aws-sdk.version}</version>
+        </dependency>
     </dependencies>
 
     <repositories>

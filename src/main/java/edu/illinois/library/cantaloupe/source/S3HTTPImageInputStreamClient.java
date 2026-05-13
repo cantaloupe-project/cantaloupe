@@ -6,7 +6,7 @@ import edu.illinois.library.cantaloupe.source.stream.HTTPImageInputStreamClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import software.amazon.awssdk.core.exception.SdkClientException;
-import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.S3AsyncClient;
 import software.amazon.awssdk.services.s3.model.HeadObjectRequest;
 import software.amazon.awssdk.services.s3.model.HeadObjectResponse;
 import software.amazon.awssdk.services.s3.model.NoSuchBucketException;
@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.AccessDeniedException;
 import java.nio.file.NoSuchFileException;
+import java.util.concurrent.CompletionException;
 
 /**
  * Implementation backed by an AWS S3 client.
@@ -36,33 +37,37 @@ class S3HTTPImageInputStreamClient implements HTTPImageInputStreamClient {
 
     @Override
     public Response sendHEADRequest() throws IOException {
-        final S3Client client = S3Source.getClientInstance(objectInfo);
-        final String bucket   = objectInfo.getBucketName();
-        final String key      = objectInfo.getKey();
+        final S3AsyncClient client = S3Source.getClientInstance(objectInfo);
+        final String bucket        = objectInfo.getBucketName();
+        final String key           = objectInfo.getKey();
         try {
             final HeadObjectResponse headResponse =
                     client.headObject(HeadObjectRequest.builder()
                             .bucket(bucket)
                             .key(key)
-                            .build());
+                            .build()).join();
             final Response response = new Response();
             response.setStatus(200);
             response.getHeaders().set("Content-Length",
                     Long.toString(headResponse.contentLength()));
             response.getHeaders().set("Accept-Ranges", "bytes");
             return response;
-        } catch (NoSuchBucketException | NoSuchKeyException e) {
-            throw new NoSuchFileException(objectInfo.toString());
-        } catch (S3Exception e) {
-            final int code = e.statusCode();
-            if (code == 403) {
-                throw new AccessDeniedException(objectInfo.toString());
-            } else {
-                LOGGER.error(e.getMessage(), e);
-                throw new IOException(e);
+        } catch (CompletionException e) {
+            final Throwable cause = e.getCause();
+            if (cause instanceof NoSuchBucketException || cause instanceof NoSuchKeyException) {
+                throw new NoSuchFileException(objectInfo.toString());
+            } else if (cause instanceof S3Exception s3e) {
+                final int code = s3e.statusCode();
+                if (code == 403) {
+                    throw new AccessDeniedException(objectInfo.toString());
+                } else {
+                    LOGGER.error(s3e.getMessage(), s3e);
+                    throw new IOException(s3e);
+                }
+            } else if (cause instanceof SdkClientException sdkE) {
+                LOGGER.error(sdkE.getMessage(), sdkE);
+                throw new IOException(objectInfo.toString(), sdkE);
             }
-        } catch (SdkClientException e) {
-            LOGGER.error(e.getMessage(), e);
             throw new IOException(objectInfo.toString(), e);
         }
     }
