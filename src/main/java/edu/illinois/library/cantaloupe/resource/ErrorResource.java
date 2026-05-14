@@ -10,9 +10,8 @@ import edu.illinois.library.cantaloupe.operation.ValidationException;
 import edu.illinois.library.cantaloupe.processor.OutputFormatException;
 import edu.illinois.library.cantaloupe.processor.SourceFormatException;
 import edu.illinois.library.cantaloupe.resource.iiif.FormatException;
-import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpServletRequest;
-
+import jakarta.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.thymeleaf.TemplateEngine;
@@ -27,8 +26,6 @@ import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.nio.file.AccessDeniedException;
 import java.nio.file.NoSuchFileException;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * Translates a {@link Throwable} to an HTTP 4xx or 5xx-level response.
@@ -94,8 +91,7 @@ class ErrorResource {
         final Status status = toStatus(error);
         log(status.getCode());
 
-        final Map<String,Object> templateVars = new HashMap<>();
-        templateVars.put("baseUri", request.getContextPath());
+        final TemplateVariables templateVars = new TemplateVariables();
         templateVars.put("pageTitle", status.toString());
         templateVars.put("message", error.getMessage());
 
@@ -124,13 +120,8 @@ class ErrorResource {
         }
     }
 
-    private void renderTextTemplate(Map<String, Object> templateVars) throws IOException {
-        Context context = new Context();
-        if (templateVars != null) {
-            for (Map.Entry<String, Object> entry : templateVars.entrySet()) {
-                context.setVariable(entry.getKey(), entry.getValue());
-            }
-        }
+    private void renderTextTemplate(TemplateVariables templateVars) throws IOException {
+        Context context = new Context(java.util.Locale.getDefault(), templateVars.getVars());
 
         try (java.io.OutputStreamWriter writer = new java.io.OutputStreamWriter(response.getOutputStream(), "UTF-8")) {
             textTemplateEngine.process("error", context, writer);

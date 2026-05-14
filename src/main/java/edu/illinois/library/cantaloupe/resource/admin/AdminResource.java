@@ -14,6 +14,7 @@ import edu.illinois.library.cantaloupe.processor.Processor;
 import edu.illinois.library.cantaloupe.processor.ProcessorFactory;
 import edu.illinois.library.cantaloupe.processor.SourceFormatException;
 import edu.illinois.library.cantaloupe.resource.Route;
+import edu.illinois.library.cantaloupe.resource.TemplateVariables;
 import edu.illinois.library.cantaloupe.resource.ThymeleafRepresentation;
 import edu.illinois.library.cantaloupe.source.Source;
 import edu.illinois.library.cantaloupe.source.SourceFactory;
@@ -153,8 +154,8 @@ public class AdminResource extends AbstractAdminResource {
      * @return Map containing keys that will be used as variables in the admin
      *         interface's HTML template.
      */
-    private Map<String,Object> getTemplateVars() {
-        final Map<String, Object> vars = getCommonTemplateVars();
+    private TemplateVariables getTemplateVars() {
+        final TemplateVariables vars = TemplateVariables.getDefault(getRequest());
         vars.put("adminUri", StringUtils.stripEnd((String) vars.get("basePath"), "/") + Route.ADMIN_PATH);
 
         ////////////////////////////////////////////////////////////////////

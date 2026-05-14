@@ -1,6 +1,5 @@
 package edu.illinois.library.cantaloupe.resource;
 
-import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.delegate.DelegateProxy;
 import edu.illinois.library.cantaloupe.delegate.DelegateProxyService;
 import edu.illinois.library.cantaloupe.delegate.UnavailableException;
@@ -20,9 +19,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -204,19 +201,6 @@ public abstract class AbstractResource {
      */
     public void doPUT() throws Exception {
         response.setStatus(Status.METHOD_NOT_ALLOWED.getCode());
-    }
-
-    /**
-     * @return Template variables common to most or all templates, such as
-     *         variables that appear in a common header.
-     */
-    protected final Map<String, Object> getCommonTemplateVars() {
-        final Map<String,Object> vars = new HashMap<>();
-        vars.put("version", Application.getVersion());
-        vars.put("basePath", getRequest().
-                                 getHeaders().
-                                 getFirstValue("X-Forwarded-Path", "/"));
-        return vars;
     }
 
     /**
