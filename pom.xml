@@ -24,7 +24,7 @@
         <surefire.version>3.5.3</surefire.version>
         <seleniumhq.version>4.43.0</seleniumhq.version>
         <logback.version>1.5.25</logback.version> <!-- slf4j depends on specific versions of logback. -->
-        <slf4j.version>2.0.13</slf4j.version>
+        <slf4j.version>2.0.18</slf4j.version>
     </properties>
 
     <developers>
