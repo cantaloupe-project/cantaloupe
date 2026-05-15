@@ -478,6 +478,22 @@ public class ImageRequestHandler extends AbstractRequestHandler
                         format, identifier);
             }
         }
+        purgeIncompatibleSourceImageIfConfigured(identifier, config, cacheFacade);
+        throw new SourceFormatException();
+    }
+
+    /**
+     * Asynchronously purges an incompatible source image from the source cache
+     * if so configured.
+     *
+     * @param identifier   Source image identifier.
+     * @param config       Application configuration.
+     * @param cacheFacade  Cache facade.
+     */
+    private void purgeIncompatibleSourceImageIfConfigured(
+            Identifier identifier,
+            Configuration config,
+            CacheFacade cacheFacade) {
         if (config.getBoolean(Key.PROCESSOR_PURGE_INCOMPATIBLE_FROM_SOURCE_CACHE, false)) {
             TaskQueue.getInstance().submit(() -> {
                 try {
@@ -495,7 +511,5 @@ public class ImageRequestHandler extends AbstractRequestHandler
                 }
             });
         }
-        throw new SourceFormatException();
     }
-
 }
