@@ -2,6 +2,7 @@ package edu.illinois.library.cantaloupe.operation;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
+import edu.illinois.library.cantaloupe.delegate.DelegateProxy;
 import edu.illinois.library.cantaloupe.image.Compression;
 import edu.illinois.library.cantaloupe.image.Dimension;
 import edu.illinois.library.cantaloupe.image.Format;
@@ -15,7 +16,6 @@ import edu.illinois.library.cantaloupe.operation.overlay.Overlay;
 import edu.illinois.library.cantaloupe.operation.overlay.OverlayFactory;
 import edu.illinois.library.cantaloupe.operation.redaction.Redaction;
 import edu.illinois.library.cantaloupe.operation.redaction.RedactionService;
-import edu.illinois.library.cantaloupe.delegate.DelegateProxy;
 import edu.illinois.library.cantaloupe.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -825,6 +825,22 @@ public final class OperationList implements Iterable<Operation> {
                 resultingSize.area() > maxAllowedSize) {
             throw new IllegalSizeException();
         }
+    }
+
+    /**
+     * Creates a shallow copy of this OperationList with the same operations,
+     * options, identifier, and page index.
+     *
+     * @return A new OperationList with the same state as this instance.
+     */
+    public OperationList copy() {
+        OperationList copy = new OperationList();
+        copy.identifier = this.identifier;
+        copy.metaIdentifier = this.metaIdentifier;
+        copy.pageIndex = this.pageIndex;
+        copy.operations.addAll(this.operations);
+        copy.options.putAll(this.options);
+        return copy;
     }
 
 }

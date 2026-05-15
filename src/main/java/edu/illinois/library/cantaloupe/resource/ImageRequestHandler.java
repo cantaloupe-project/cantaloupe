@@ -4,6 +4,7 @@ import edu.illinois.library.cantaloupe.async.TaskQueue;
 import edu.illinois.library.cantaloupe.cache.CacheFacade;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
+import edu.illinois.library.cantaloupe.delegate.DelegateProxy;
 import edu.illinois.library.cantaloupe.image.Dimension;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
@@ -14,11 +15,10 @@ import edu.illinois.library.cantaloupe.processor.Processor;
 import edu.illinois.library.cantaloupe.processor.ProcessorConnector;
 import edu.illinois.library.cantaloupe.processor.ProcessorFactory;
 import edu.illinois.library.cantaloupe.processor.SourceFormatException;
-import edu.illinois.library.cantaloupe.delegate.DelegateProxy;
-import edu.illinois.library.cantaloupe.source.StatResult;
-import edu.illinois.library.cantaloupe.status.HealthChecker;
 import edu.illinois.library.cantaloupe.source.Source;
 import edu.illinois.library.cantaloupe.source.SourceFactory;
+import edu.illinois.library.cantaloupe.source.StatResult;
+import edu.illinois.library.cantaloupe.status.HealthChecker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -313,11 +313,14 @@ public class ImageRequestHandler extends AbstractRequestHandler
             final Optional<Info> optInfo = cacheFacade.getInfo(identifier);
             if (optInfo.isPresent()) {
                 Info info = optInfo.get();
-                operationList.applyNonEndpointMutations(info, delegateProxy);
+                // Use a copy of operationList for cache lookup to avoid mutations
+                // persisting if no cached image is found.
+                OperationList cacheOpList = operationList.copy();
+                cacheOpList.applyNonEndpointMutations(info, delegateProxy);
 
                 InputStream cacheStream = null;
                 try {
-                    cacheStream = cacheFacade.newDerivativeImageInputStream(operationList);
+                    cacheStream = cacheFacade.newDerivativeImageInputStream(cacheOpList);
                 } catch (IOException e) {
                     // Don't rethrow -- it's still possible to service the
                     // request.
