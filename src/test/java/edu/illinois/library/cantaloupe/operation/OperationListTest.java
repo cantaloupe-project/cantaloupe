@@ -403,6 +403,39 @@ class OperationListTest extends BaseTest {
     }
 
     @Test
+    void applyNonEndpointMutationsIsIdempotent() {
+        BasicStringOverlayServiceTest.setUpConfiguration();
+        Configuration config = Configuration.getInstance();
+        config.setProperty(Key.PROCESSOR_SHARPEN, 0.5);
+
+        final Dimension fullSize   = new Dimension(2000, 1000);
+        final Info info            = Info.builder().withSize(fullSize).build();
+        final OperationList opList = OperationList.builder()
+                .withIdentifier(new Identifier("redacted"))
+                .withOperations(new Encode(Format.get("tif")))
+                .build();
+
+        DelegateProxy proxy = TestUtil.newDelegateProxy();
+        proxy.getRequestContext().setOperationList(opList, fullSize);
+
+        opList.applyNonEndpointMutations(info, proxy);
+        opList.applyNonEndpointMutations(info, proxy);
+
+        long overlays = opList.stream()
+                .filter(op -> op instanceof Overlay).count();
+        long redactions = opList.stream()
+                .filter(op -> op instanceof Redaction).count();
+        long sharpens = opList.stream()
+                .filter(op -> op instanceof Sharpen).count();
+        assertEquals(1, overlays,
+                "overlay should be appended exactly once");
+        assertEquals(1, redactions,
+                "redaction should be appended exactly once");
+        assertEquals(1, sharpens,
+                "sharpen should be appended exactly once");
+    }
+
+    @Test
     void applyNonEndpointMutationsWithRedactions() {
         final Dimension fullSize   = new Dimension(2000, 1000);
         final Info info            = Info.builder().withSize(fullSize).build();

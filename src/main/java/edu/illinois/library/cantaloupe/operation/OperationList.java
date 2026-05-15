@@ -110,6 +110,7 @@ public final class OperationList implements Iterable<Operation> {
             LoggerFactory.getLogger(OperationList.class);
 
     private boolean isFrozen;
+    private boolean haveAppliedNonEndpointMutations;
     private Identifier identifier;
     private MetaIdentifier metaIdentifier;
     private final List<Operation> operations = new ArrayList<>();
@@ -221,12 +222,29 @@ public final class OperationList implements Iterable<Operation> {
      * <p>The instance's identifier must be {@link #setIdentifier(Identifier)
      * set}.</p>
      *
+     * <p>This method is idempotent: subsequent calls on the same instance are
+     * no-ops. Several of the mutations append operations unconditionally, so
+     * repeated invocations would otherwise stack duplicate redactions, sharpen
+     * passes, and overlays on the same list.</p>
+     *
      * @param info          Source image info.
      * @param delegateProxy Delegate proxy for the current request.
      */
     public void applyNonEndpointMutations(final Info info,
                                           final DelegateProxy delegateProxy) {
         checkFrozen();
+        // Several mutations below (Redaction, Sharpen, Overlay) call
+        // addBefore() without checking whether an equivalent operation is
+        // already present, so calling this method more than once on the same
+        // instance would append duplicates. ImageRequestHandler.handle()
+        // legitimately needs to call this twice in the cache-miss path (once
+        // to form the derivative cache key, once after the request context is
+        // fully populated), so guard against the second call here rather than
+        // requiring every caller to track state.
+        if (haveAppliedNonEndpointMutations) {
+            return;
+        }
+        haveAppliedNonEndpointMutations = true;
 
         // If there is a scale constraint set, but no Scale operation, add one.
         if (getScaleConstraint().hasEffect()) {
