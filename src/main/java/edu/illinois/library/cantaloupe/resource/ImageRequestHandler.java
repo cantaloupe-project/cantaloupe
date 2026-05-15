@@ -226,6 +226,25 @@ public class ImageRequestHandler extends AbstractRequestHandler
 
     }
 
+    /**
+     * Result of a derivative cache check. Analogous to an Either monad:
+     * success case (Hit) contains an InputStreamRepresentation, while the
+     * failure case (Miss) contains an optional source Format for format
+     * iteration.
+     */
+    sealed interface DerivativeCacheCheckResult {
+        /**
+         * Cache hit: a derivative image was found in the cache.
+         */
+        record Hit(InputStreamRepresentation representation) implements DerivativeCacheCheckResult {}
+
+        /**
+         * Cache miss: info was found but no derivative image in cache.
+         * The sourceFormat, if present, can be used for format iteration.
+         */
+        record Miss(Format sourceFormat) implements DerivativeCacheCheckResult {}
+    }
+
     private static final Logger LOGGER =
             LoggerFactory.getLogger(ImageRequestHandler.class);
 
@@ -287,6 +306,56 @@ public class ImageRequestHandler extends AbstractRequestHandler
     }
 
     /**
+     * Attempts to find and stream a derivative image from the cache.
+     *
+     * @param identifier       Source image identifier.
+     * @param cacheFacade      Cache facade.
+     * @param operationList    Operation list to apply.
+     * @param outputStream     Stream to write cached image to if found.
+     * @return DerivativeCacheCheckResult indicating hit or miss with optional source format.
+     * @throws Exception if an error occurs during cache lookup or callbacks.
+     */
+    private DerivativeCacheCheckResult checkDerivativeCacheForImage(
+            Identifier identifier,
+            CacheFacade cacheFacade,
+            OperationList operationList,
+            OutputStream outputStream) throws Exception {
+
+        if (isBypassingCache || isBypassingCacheRead || verifyExistenceBeforeReturningCachedValue()) {
+            return new DerivativeCacheCheckResult.Miss(null);
+        }
+
+        final Optional<Info> optInfo = cacheFacade.getInfo(identifier);
+        if (optInfo.isEmpty()) {
+            return new DerivativeCacheCheckResult.Miss(null);
+        }
+
+        Info info = optInfo.get();
+        // Use a copy of operationList for cache lookup to avoid mutations
+        // persisting if no cached image is found.
+        OperationList cacheOpList = operationList.copy();
+        cacheOpList.applyNonEndpointMutations(info, delegateProxy);
+
+        InputStream cacheStream = null;
+        try {
+            cacheStream = cacheFacade.newDerivativeImageInputStream(cacheOpList);
+        } catch (IOException e) {
+            // Don't rethrow -- it's still possible to service the request.
+            LOGGER.error(e.getMessage());
+        }
+
+        if (cacheStream != null) {
+            callback.infoAvailable(info);
+            callback.willStreamImageFromDerivativeCache();
+            return new DerivativeCacheCheckResult.Hit(
+                    new InputStreamRepresentation(cacheStream));
+        } else {
+            Format infoFormat = info.getSourceFormat();
+            return new DerivativeCacheCheckResult.Miss(infoFormat);
+        }
+    }
+
+    /**
      * Handles an image request.
      *
      * @param outputStream Stream to write the resulting image to. Will not be
@@ -304,42 +373,18 @@ public class ImageRequestHandler extends AbstractRequestHandler
         Iterator<Format> formatIterator = Collections.emptyIterator();
         boolean isFormatKnownYet = false;
 
-        // If we are using a cache, and don't need to verify the existence of the source image:
-        // 1. If the cache contains an image matching the request, skip all the
-        //    setup and just return the cached image.
-        // 2. Otherwise, if the cache contains a relevant info, get it to avoid
-        //    having to get it from a source later.
-        if (!isBypassingCache && !isBypassingCacheRead && !verifyExistenceBeforeReturningCachedValue()) {
-            final Optional<Info> optInfo = cacheFacade.getInfo(identifier);
-            if (optInfo.isPresent()) {
-                Info info = optInfo.get();
-                // Use a copy of operationList for cache lookup to avoid mutations
-                // persisting if no cached image is found.
-                OperationList cacheOpList = operationList.copy();
-                cacheOpList.applyNonEndpointMutations(info, delegateProxy);
+        // Check the derivative cache for a cached image.
+        DerivativeCacheCheckResult cacheResult =
+                checkDerivativeCacheForImage(identifier, cacheFacade, operationList, outputStream);
 
-                InputStream cacheStream = null;
-                try {
-                    cacheStream = cacheFacade.newDerivativeImageInputStream(cacheOpList);
-                } catch (IOException e) {
-                    // Don't rethrow -- it's still possible to service the
-                    // request.
-                    LOGGER.error(e.getMessage());
-                }
-
-                if (cacheStream != null) {
-                    callback.infoAvailable(info);
-                    callback.willStreamImageFromDerivativeCache();
-                    new InputStreamRepresentation(cacheStream).write(outputStream);
-                    return;
-                } else {
-                    Format infoFormat = info.getSourceFormat();
-                    if (infoFormat != null) {
-                        formatIterator = Collections.singletonList(infoFormat).iterator();
-                        isFormatKnownYet = true;
-                    }
-                }
-            }
+        if (cacheResult instanceof DerivativeCacheCheckResult.Hit hit) {
+            // Cache hit: stream the cached image and return.
+            hit.representation().write(outputStream);
+            return;
+        } else if (cacheResult instanceof DerivativeCacheCheckResult.Miss miss && miss.sourceFormat() != null) {
+            // Cache miss but source format available from cache info: use it for format iteration.
+            formatIterator = Collections.singletonList(miss.sourceFormat()).iterator();
+            isFormatKnownYet = true;
         }
 
         final Source source = new SourceFactory().newSource(
