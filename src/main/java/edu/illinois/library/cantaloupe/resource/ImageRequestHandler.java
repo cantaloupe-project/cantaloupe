@@ -4,6 +4,7 @@ import edu.illinois.library.cantaloupe.async.TaskQueue;
 import edu.illinois.library.cantaloupe.cache.CacheFacade;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
+import edu.illinois.library.cantaloupe.delegate.DelegateProxy;
 import edu.illinois.library.cantaloupe.image.Dimension;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
@@ -14,11 +15,10 @@ import edu.illinois.library.cantaloupe.processor.Processor;
 import edu.illinois.library.cantaloupe.processor.ProcessorConnector;
 import edu.illinois.library.cantaloupe.processor.ProcessorFactory;
 import edu.illinois.library.cantaloupe.processor.SourceFormatException;
-import edu.illinois.library.cantaloupe.delegate.DelegateProxy;
-import edu.illinois.library.cantaloupe.source.StatResult;
-import edu.illinois.library.cantaloupe.status.HealthChecker;
 import edu.illinois.library.cantaloupe.source.Source;
 import edu.illinois.library.cantaloupe.source.SourceFactory;
+import edu.illinois.library.cantaloupe.source.StatResult;
+import edu.illinois.library.cantaloupe.status.HealthChecker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -287,6 +287,72 @@ public class ImageRequestHandler extends AbstractRequestHandler
     }
 
     /**
+     * Processes the remaining format candidates until one succeeds.
+     *
+     * @param formatIterator Iterator over candidate formats.
+     * @param source         Source to connect.
+     * @param identifier     Source image identifier.
+     * @return An ImageRepresentation if processing completed, or {@code null} if authorization halted processing.
+     * @throws Exception if an error occurs during processing.
+     */
+    private ImageRepresentation processFormats(Iterator<Format> formatIterator,
+                                               Source source,
+                                               Identifier identifier) throws Exception {
+        while (formatIterator.hasNext()) {
+            final Format format = formatIterator.next();
+            // Obtain an instance of the processor assigned to this format.
+            String processorName = "unknown processor";
+            try (Processor processor = new ProcessorFactory().newProcessor(format)) {
+                processorName = processor.getClass().getSimpleName();
+
+                // Connect it to the source.
+                tempFileFuture = new ProcessorConnector().connect(
+                        source, processor, identifier, format);
+
+                final Info info = getOrReadInfo(
+                        operationList.getIdentifier(),
+                        processor);
+                callback.infoAvailable(info);
+
+                Dimension fullSize;
+                try {
+                    fullSize = info.getSize(operationList.getPageIndex());
+                    requestContext.setMetadata(info.getMetadata());
+                    requestContext.setOperationList(operationList, fullSize);
+                    requestContext.setPageCount(info.getNumPages());
+                    // This must be done *after* the request context is fully
+                    // populated, as some of the mutations may depend on it.
+                    operationList.applyNonEndpointMutations(info, delegateProxy);
+                    operationList.freeze();
+                } catch (IllegalArgumentException | IndexOutOfBoundsException e) {
+                    throw new IllegalClientArgumentException(e);
+                }
+
+                if (!callback.authorize()) {
+                    return null;
+                }
+
+                processor.validate(operationList, fullSize);
+
+                callback.willProcessImage(processor, info);
+
+                ImageRepresentation representation = new ImageRepresentation(info, processor, operationList,
+                        isBypassingCacheRead, isBypassingCache);
+
+                // Notify the health checker of a successful response.
+                HealthChecker.addSourceUsage(source);
+                return representation;
+            } catch (SourceFormatException e) {
+                LOGGER.debug("Format inferred by {} disagrees with the one " +
+                                "supplied by {} ({}) for {}; trying again",
+                        processorName, source.getClass().getSimpleName(),
+                        format, identifier);
+            }
+        }
+        throw new SourceFormatException();
+    }
+
+    /**
      * Handles an image request.
      *
      * @param outputStream Stream to write the resulting image to. Will not be
@@ -378,76 +444,33 @@ public class ImageRequestHandler extends AbstractRequestHandler
             }
         }
 
-        while (formatIterator.hasNext()) {
-            final Format format = formatIterator.next();
-            // Obtain an instance of the processor assigned to this format.
-            String processorName = "unknown processor";
-            try (Processor processor = new ProcessorFactory().newProcessor(format)) {
-                processorName = processor.getClass().getSimpleName();
-
-                // Connect it to the source.
-                tempFileFuture = new ProcessorConnector().connect(
-                        source, processor, identifier, format);
-
-                final Info info = getOrReadInfo(
-                        operationList.getIdentifier(),
-                        processor);
-                callback.infoAvailable(info);
-
-                Dimension fullSize;
-                try {
-                    fullSize = info.getSize(operationList.getPageIndex());
-                    requestContext.setMetadata(info.getMetadata());
-                    requestContext.setOperationList(operationList, fullSize);
-                    requestContext.setPageCount(info.getNumPages());
-                    // This must be done *after* the request context is fully
-                    // populated, as some of the mutations may depend on it.
-                    operationList.applyNonEndpointMutations(info, delegateProxy);
-                    operationList.freeze();
-                } catch (IllegalArgumentException | IndexOutOfBoundsException e) {
-                    throw new IllegalClientArgumentException(e);
-                }
-
-                if (!callback.authorize()) {
-                    return;
-                }
-
-                processor.validate(operationList, fullSize);
-
-                callback.willProcessImage(processor, info);
-
-                new ImageRepresentation(info, processor, operationList,
-                        isBypassingCacheRead, isBypassingCache)
-                        .write(outputStream);
-
-                // Notify the health checker of a successful response.
-                HealthChecker.addSourceUsage(source);
-                return;
-            } catch (SourceFormatException e) {
-                LOGGER.debug("Format inferred by {} disagrees with the one " +
-                                "supplied by {} ({}) for {}; trying again",
-                        processorName, source.getClass().getSimpleName(),
-                        format, identifier);
+        try {
+            ImageRepresentation representation = processFormats(formatIterator, source, identifier);
+            if (representation != null) {
+                representation.write(outputStream);
             }
+            return;
+
+        } catch (SourceFormatException e) {
+            if (config.getBoolean(Key.PROCESSOR_PURGE_INCOMPATIBLE_FROM_SOURCE_CACHE, false)) {
+                TaskQueue.getInstance().submit(() -> {
+                    try {
+                        cacheFacade.getSourceCacheFile(identifier).ifPresent(file -> {
+                            try {
+                                getLogger().debug("Deleting {}", file);
+                                Files.delete(file);
+                            } catch (IOException ex) {
+                                getLogger().warn("Failed to delete file from source cache: {}",
+                                        ex.getMessage());
+                            }
+                        });
+                    } catch (IOException ex) {
+                        throw new UncheckedIOException(ex);
+                    }
+                });
+            }
+            throw e;
         }
-        if (config.getBoolean(Key.PROCESSOR_PURGE_INCOMPATIBLE_FROM_SOURCE_CACHE, false)) {
-            TaskQueue.getInstance().submit(() -> {
-                try {
-                    cacheFacade.getSourceCacheFile(identifier).ifPresent(file -> {
-                        try {
-                            getLogger().debug("Deleting {}", file);
-                            Files.delete(file);
-                        } catch (IOException e) {
-                            getLogger().warn("Failed to delete file from source cache: {}",
-                                    e.getMessage());
-                        }
-                    });
-                } catch (IOException e) {
-                    throw new UncheckedIOException(e);
-                }
-            });
-        }
-        throw new SourceFormatException();
     }
 
 }
