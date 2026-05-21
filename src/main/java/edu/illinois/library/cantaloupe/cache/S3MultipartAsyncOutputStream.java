@@ -4,8 +4,8 @@ import edu.illinois.library.cantaloupe.async.ThreadPool;
 import org.apache.commons.compress.utils.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import software.amazon.awssdk.core.sync.RequestBody;
-import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.core.async.AsyncRequestBody;
+import software.amazon.awssdk.services.s3.S3AsyncClient;
 import software.amazon.awssdk.services.s3.model.AbortMultipartUploadRequest;
 import software.amazon.awssdk.services.s3.model.CompleteMultipartUploadRequest;
 import software.amazon.awssdk.services.s3.model.CompletedMultipartUpload;
@@ -99,7 +99,7 @@ public class S3MultipartAsyncOutputStream extends CompletableOutputStream {
                             .contentEncoding("UTF-8")
                             .build();
             CreateMultipartUploadResponse response =
-                    client.createMultipartUpload(createMultipartUploadRequest);
+                    client.createMultipartUpload(createMultipartUploadRequest).join();
             uploadID = response.uploadId();
         }
     }
@@ -139,7 +139,7 @@ public class S3MultipartAsyncOutputStream extends CompletableOutputStream {
 
                 String etag = client.uploadPart(
                         uploadPartRequest,
-                        RequestBody.fromBytes(bytes)).eTag();
+                        AsyncRequestBody.fromBytes(bytes)).join().eTag();
                 CompletedPart completedPart = CompletedPart.builder()
                         .partNumber(uploadPartRequest.partNumber())
                         .eTag(etag)
@@ -172,7 +172,7 @@ public class S3MultipartAsyncOutputStream extends CompletableOutputStream {
                                 .uploadId(uploadID)
                                 .multipartUpload(completedMultipartUpload)
                                 .build();
-                client.completeMultipartUpload(completeMultipartUploadRequest);
+                client.completeMultipartUpload(completeMultipartUploadRequest).join();
                 setComplete(true); // CompletableOutputStream method
             } catch (S3Exception e) {
                 logger.warn(e.getMessage());
@@ -202,7 +202,7 @@ public class S3MultipartAsyncOutputStream extends CompletableOutputStream {
                                 .key(key)
                                 .uploadId(uploadID)
                                 .build();
-                client.abortMultipartUpload(abortMultipartUploadRequest);
+                client.abortMultipartUpload(abortMultipartUploadRequest).join();
                 setComplete(false);
             } catch (S3Exception e) {
                 logger.warn(e.getMessage());
@@ -219,7 +219,7 @@ public class S3MultipartAsyncOutputStream extends CompletableOutputStream {
     /** 5 MB is the minimum allowed by S3 for all but the last part. */
     public static final int MINIMUM_PART_LENGTH = 1024 * 1024 * 5;
 
-    private final S3Client client;
+    private final S3AsyncClient client;
     private final String bucket, key, contentType;
 
     private ByteArrayOutputStream currentPart;
@@ -245,7 +245,7 @@ public class S3MultipartAsyncOutputStream extends CompletableOutputStream {
      * @param key         Target key.
      * @param contentType Content type of the created object.
      */
-    public S3MultipartAsyncOutputStream(S3Client client,
+    public S3MultipartAsyncOutputStream(S3AsyncClient client,
                                         String bucket,
                                         String key,
                                         String contentType) {

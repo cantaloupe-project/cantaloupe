@@ -76,7 +76,7 @@ final class Java2DPostProcessor {
 
         image = Java2DUtil.reduceTo8Bits(image);
 
-        final Dimension fullSize = info.getSize();
+        final Dimension fullSize = info.getSize(opList.getPageIndex());
 
         // N.B.: Any Crop or Rotate operations present in the operation list
         // have already been corrected for this orientation, but we also need

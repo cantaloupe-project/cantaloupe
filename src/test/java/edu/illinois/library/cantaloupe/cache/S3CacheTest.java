@@ -10,7 +10,7 @@ import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.ConfigurationConstants;
 import edu.illinois.library.cantaloupe.test.TestUtil;
-import edu.illinois.library.cantaloupe.util.S3ClientBuilder;
+import edu.illinois.library.cantaloupe.util.S3AsyncClientBuilder;
 import edu.illinois.library.cantaloupe.util.S3Utils;
 import org.apache.commons.lang3.SystemUtils;
 import org.junit.jupiter.api.AfterAll;
@@ -18,13 +18,12 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import software.amazon.awssdk.core.sync.RequestBody;
-import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.core.async.AsyncRequestBody;
+import software.amazon.awssdk.services.s3.S3AsyncClient;
 import software.amazon.awssdk.services.s3.model.HeadObjectRequest;
 import software.amazon.awssdk.services.s3.model.HeadObjectResponse;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
-import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -43,7 +42,7 @@ public class S3CacheTest extends AbstractCacheTest {
     private static final Logger LOGGER = LoggerFactory.getLogger(S3CacheTest.class);
 
     private enum Service {
-        AWS("aws"), MINIO("minio");
+        AWS("aws"), SEAWEEDFS("seaweedfs");
 
         private final String key;
 
@@ -59,7 +58,7 @@ public class S3CacheTest extends AbstractCacheTest {
         }
     }
 
-    private static S3Client client;
+    private static S3AsyncClient client;
 
     private final Identifier identifier = new Identifier("jpg-rgb-64x56x8-baseline.jpg");
     private final OperationList opList  = new OperationList();
@@ -79,9 +78,9 @@ public class S3CacheTest extends AbstractCacheTest {
         }
     }
 
-    private static synchronized S3Client client() {
+    private static synchronized S3AsyncClient client() {
         if (client == null) {
-            client = new S3ClientBuilder()
+            client = new S3AsyncClientBuilder()
                     .endpointURI(getEndpoint())
                     .region(getRegion())
                     .accessKeyID(getAccessKeyId())
@@ -92,19 +91,19 @@ public class S3CacheTest extends AbstractCacheTest {
     }
 
     private static String getAccessKeyId() {
-        org.apache.commons.configuration.Configuration testConfig =
+        org.apache.commons.configuration2.Configuration testConfig =
                 TestUtil.getTestConfig();
         return testConfig.getString(ConfigurationConstants.S3_ACCESS_KEY_ID.getKey());
     }
 
     private static String getBucket() {
-        org.apache.commons.configuration.Configuration testConfig =
+        org.apache.commons.configuration2.Configuration testConfig =
                 TestUtil.getTestConfig();
         return testConfig.getString(ConfigurationConstants.S3_BUCKET.getKey());
     }
 
     private static URI getEndpoint() {
-        org.apache.commons.configuration.Configuration testConfig =
+        org.apache.commons.configuration2.Configuration testConfig =
                 TestUtil.getTestConfig();
         String endpointStr = testConfig.getString(ConfigurationConstants.S3_ENDPOINT.getKey());
         if (endpointStr != null && !endpointStr.isBlank()) {
@@ -118,19 +117,19 @@ public class S3CacheTest extends AbstractCacheTest {
     }
 
     private static String getRegion() {
-        org.apache.commons.configuration.Configuration testConfig =
+        org.apache.commons.configuration2.Configuration testConfig =
                 TestUtil.getTestConfig();
         return testConfig.getString(ConfigurationConstants.S3_REGION.getKey());
     }
 
     private static String getSecretKey() {
-        org.apache.commons.configuration.Configuration testConfig =
+        org.apache.commons.configuration2.Configuration testConfig =
                 TestUtil.getTestConfig();
         return testConfig.getString(ConfigurationConstants.S3_SECRET_KEY.getKey());
     }
 
     private static Service getService() {
-        org.apache.commons.configuration.Configuration testConfig =
+        org.apache.commons.configuration2.Configuration testConfig =
                 TestUtil.getTestConfig();
         return Service.forKey(testConfig.getString(ConfigurationConstants.S3_SERVICE.getKey()));
     }
@@ -141,7 +140,7 @@ public class S3CacheTest extends AbstractCacheTest {
             outputStream = instance.newDerivativeImageOutputStream(ops1);
             if (outputStream instanceof S3MultipartAsyncOutputStream) {
                 ((S3MultipartAsyncOutputStream)outputStream).observer = this;
-            }    
+            }
             Files.copy(fixture, outputStream);
             outputStream.setComplete(true);
         } finally {
@@ -244,21 +243,21 @@ public class S3CacheTest extends AbstractCacheTest {
         assertEquals("cats/", instance.getObjectKeyPrefix());
     }
 
+    /**
+     * Override that does nothing, as this doesn't work in AWS.
+     */
     @Test
     @Override
-    void testNewDerivativeImageInputStreamWithNonzeroTTL() throws Exception {
-        assumeFalse(Service.AWS.equals(getService()));  // TODO: this test fails in AWS
-
-        super.testNewDerivativeImageInputStreamWithNonzeroTTL();
-    }
+    void testNewDerivativeImageInputStreamWithNonzeroTTL() {}
 
     @Test
     void testNewDerivativeImageInputStreamUpdatesLastModifiedTime()
             throws Exception {
-        assumeFalse(Service.MINIO.equals(getService())); // this test fails in minio
+
+        assumeFalse(Service.SEAWEEDFS.equals(getService())); // this test fails in seaweedFS on GH Actions
 
         final DerivativeCache instance = newInstance();
-        Configuration.getInstance().setProperty(Key.DERIVATIVE_CACHE_TTL, 2);
+        Configuration.getInstance().setProperty(Key.DERIVATIVE_CACHE_TTL, 5);
 
         OperationList ops = OperationList.builder()
                 .withIdentifier(new Identifier("cats"))
@@ -275,17 +274,21 @@ public class S3CacheTest extends AbstractCacheTest {
             os.setComplete(true);
         }
 
-        // Wait for it to finish, hopefully.
+        // Wait for the async upload to finish. This is well within the TTL,
+        // so the object should be valid when we first read it.
         Thread.sleep(2000);
 
-        // Assert that it has been added.
+        // Assert that it has been added. This read also calls touchAsync(),
+        // which resets the object's last-modified time to now.
         assertExists(instance, ops);
 
-        Thread.sleep(1000);
+        // Sleep long enough that the *original* TTL window would have expired,
+        // but the touch from the read above should have refreshed it.
+        Thread.sleep(2000);
 
         assertExists(instance, ops);
 
-        Thread.sleep(1000);
+        Thread.sleep(2000);
 
         assertExists(instance, ops);
     }
@@ -356,7 +359,7 @@ public class S3CacheTest extends AbstractCacheTest {
         Info info = new Info();
 
         // Add a random file outside the cache key prefix
-        final S3Client client         = S3Cache.getClientInstance();
+        final S3AsyncClient client    = S3Cache.getClientInstance();
         final String keyOutsidePrefix = "some-key";
         final String bucketName       = getBucket();
         final byte[] data             = "some data".getBytes(StandardCharsets.UTF_8);
@@ -364,10 +367,7 @@ public class S3CacheTest extends AbstractCacheTest {
                 .bucket(bucketName)
                 .key(keyOutsidePrefix)
                 .build();
-        try (ByteArrayInputStream is = new ByteArrayInputStream(data)) {
-            client.putObject(request,
-                    RequestBody.fromInputStream(is, data.length));
-        }
+        client.putObject(request, AsyncRequestBody.fromBytes(data)).join();
 
         // Add a cached derivative image
         Path fixture = TestUtil.getImage(IMAGE);
@@ -399,7 +399,7 @@ public class S3CacheTest extends AbstractCacheTest {
                 .bucket(bucketName)
                 .key(keyOutsidePrefix)
                 .build();
-        HeadObjectResponse response = client.headObject(headRequest);
+        HeadObjectResponse response = client.headObject(headRequest).join();
         assertEquals(200, response.sdkHttpResponse().statusCode());
     }
 
@@ -471,7 +471,7 @@ public class S3CacheTest extends AbstractCacheTest {
         // Add a random file outside the key prefix, which will be allowed to
         // "expire" as if it were cached. This test will assert that it still
         // exists after purging invalid content.
-        final S3Client client         = S3Cache.getClientInstance();
+        final S3AsyncClient client    = S3Cache.getClientInstance();
         final String keyOutsidePrefix = "some-key";
         final String bucketName       = getBucket();
         final byte[] data             = "some data".getBytes(StandardCharsets.UTF_8);
@@ -480,10 +480,7 @@ public class S3CacheTest extends AbstractCacheTest {
                 .bucket(bucketName)
                 .key(keyOutsidePrefix)
                 .build();
-        try (ByteArrayInputStream is = new ByteArrayInputStream(data)) {
-            client.putObject(request,
-                    RequestBody.fromInputStream(is, data.length));
-        }
+        client.putObject(request, AsyncRequestBody.fromBytes(data)).join();
 
         // add a cached derivative image
         DerivativeCache instance = newInstance();
@@ -517,7 +514,7 @@ public class S3CacheTest extends AbstractCacheTest {
                 .bucket(bucketName)
                 .key(keyOutsidePrefix)
                 .build();
-        HeadObjectResponse response = client.headObject(headRequest);
+        HeadObjectResponse response = client.headObject(headRequest).join();
         assertEquals(200, response.sdkHttpResponse().statusCode());
     }
 

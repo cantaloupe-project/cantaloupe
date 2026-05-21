@@ -11,7 +11,7 @@ public class RedisCacheTest extends AbstractCacheTest {
     @Override
     RedisCache newInstance() {
         Configuration config = Configuration.getInstance();
-        org.apache.commons.configuration.Configuration testConfig =
+        org.apache.commons.configuration2.Configuration testConfig =
                 TestUtil.getTestConfig();
         config.setProperty(Key.REDISCACHE_HOST,
                 testConfig.getString(ConfigurationConstants.REDIS_HOST.getKey()));

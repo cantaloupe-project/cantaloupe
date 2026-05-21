@@ -1,0 +1,22 @@
+#
+# N.B.: docker compose must be invoked from the project root directory:
+#
+# docker compose -f path/to/compose.yaml up --exit-code-from cantaloupe
+#
+services:
+  cantaloupe:
+    platform: linux/amd64
+    build:
+      context: ../../
+      dockerfile: $PWD/docker/Linux-JDK26/Dockerfile
+  seaweedfs:
+    image: chrislusf/seaweedfs
+    environment:
+      AWS_ACCESS_KEY_ID: SeaweedUser
+      AWS_SECRET_ACCESS_KEY: OpenSesame
+    command: mini -dir=/data
+    ports:
+      - 8333:8333
+  redis:
+    image: redis:alpine
+    hostname: redis

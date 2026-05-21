@@ -243,7 +243,7 @@ public final class OperationList implements Iterable<Operation> {
         }
 
         final Configuration config = Configuration.getInstance();
-        final Dimension sourceImageSize = info.getSize();
+        final Dimension sourceImageSize = info.getSize(this.getPageIndex());
 
         // If the source image has a different orientation, adjust any Crop
         // and Rotate operations accordingly.

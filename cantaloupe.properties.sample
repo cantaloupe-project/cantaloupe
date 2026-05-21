@@ -77,6 +77,10 @@ log_error_responses = false
 
 print_stack_trace_on_error_pages = true
 
+# If true, display the x-powered-by header. You may choose to disable this behavior
+# to prevent attackers from fingerprinting the server. Default value is true.
+headers.powered_by.display = true
+
 ###########################################################################
 # DELEGATE SCRIPT
 ###########################################################################
@@ -128,7 +132,7 @@ endpoint.api.enabled = false
 endpoint.api.username =
 endpoint.api.secret =
 
-# Enables the health check endpoint, at /health.
+# Enables the health check endpoint, at /health. (Requires endpoint.api.enabled = true)
 endpoint.health.enabled = true
 
 # If true, sources and caches will be checked, resulting in a more robust
@@ -223,7 +227,7 @@ HttpSource.chunking.cache.max_size = 5M
 # !! Endpoint URI. Only needed for non-AWS endpoints.
 S3Source.endpoint =
 
-# !! AWS region. Only needed for AWS endpoints.
+# !! AWS region. Must be set if using S3Source, even if not using an AWS endpoint.
 S3Source.region =
 
 # !! Credentials for your AWS account.

@@ -321,6 +321,23 @@ class Java2DUtilTest extends BaseTest {
         assertEquals(BufferedImage.TYPE_INT_ARGB, outImage.getType());
     }
 
+    /* convertGrayToARGB() */
+
+    @Test
+    void convertGrayToARGB() {
+        BufferedImage inImage, outImage;
+
+        // Color image
+        inImage = new BufferedImage(10, 10, BufferedImage.TYPE_INT_ARGB);
+        outImage = Java2DUtil.convertGrayToARGB(inImage);
+        assertSame(inImage, outImage);
+
+        // Gray image
+        inImage = new BufferedImage(10, 10, BufferedImage.TYPE_BYTE_GRAY);
+        outImage = Java2DUtil.convertGrayToARGB(inImage);
+        assertEquals(BufferedImage.TYPE_INT_ARGB, outImage.getType());
+    }
+
     /* convertToLinearRGB(BufferedImage) */
 
     @Test
@@ -924,6 +941,75 @@ class Java2DUtilTest extends BaseTest {
         BufferedImage outImage = Java2DUtil.transformColor(inImage,
                 ColorTransform.GRAY);
         assertSame(inImage, outImage);
+    }
+
+    @Test
+    void transformColorFrom8BitGrayToBitonal() {
+        BufferedImage inImage = newGrayImage(8, false);
+
+        // Create a dark gray rectangle, then a light gray one.
+        // The histogram algorithm needs contrast.
+        Graphics2D g2d = inImage.createGraphics();
+        g2d.setColor(new java.awt.Color(5,5,5));
+        g2d.fill(new Rectangle(0, 0, 10, 10).toAWTRectangle());
+        g2d.setColor(new java.awt.Color(192,192,192));
+        g2d.fill(new Rectangle(10, 10, 10, 10).toAWTRectangle());
+        g2d.dispose();
+
+        // Transform to bitonal.
+        BufferedImage outImage = Java2DUtil.transformColor(inImage,
+                ColorTransform.BITONAL);
+
+        // Expect it to be transformed to black.
+        assertRGBA(outImage.getRGB(0, 0), 0, 0, 0, 255);
+
+        // Create a Light gray rectangle, then a dark gray one.
+        g2d = inImage.createGraphics();
+        g2d.setColor(new java.awt.Color(192,192,192));
+        g2d.fill(new Rectangle(0, 0, 10, 10).toAWTRectangle());
+        g2d.setColor(new java.awt.Color(5,5,5));
+        g2d.fill(new Rectangle(10, 10, 10, 10).toAWTRectangle());
+        g2d.dispose();
+
+        // Transform to bitonal.
+        outImage = Java2DUtil.transformColor(inImage, ColorTransform.BITONAL);
+
+        // Expect it to be transformed to white.
+        assertRGBA(outImage.getRGB(0, 0), 255, 255, 255, 255);
+    }
+    @Test
+    void transformColorFrom16BitGrayToBitonal() {
+        BufferedImage inImage = newGrayImage(16, false);
+
+        // Create a dark gray rectangle, then a light gray one.
+        // The histogram algorithm needs contrast.
+        Graphics2D g2d = inImage.createGraphics();
+        g2d.setColor(new java.awt.Color(5,5,5));
+        g2d.fill(new Rectangle(0, 0, 10, 10).toAWTRectangle());
+        g2d.setColor(new java.awt.Color(192,192,192));
+        g2d.fill(new Rectangle(10, 10, 10, 10).toAWTRectangle());
+        g2d.dispose();
+
+        // Transform to bitonal.
+        BufferedImage outImage = Java2DUtil.transformColor(inImage,
+                ColorTransform.BITONAL);
+
+        // Expect it to be transformed to black.
+        assertRGBA(outImage.getRGB(0, 0), 0, 0, 0, 255);
+
+        // Create a Light gray rectangle, then a dark gray one.
+        g2d = inImage.createGraphics();
+        g2d.setColor(new java.awt.Color(192,192,192));
+        g2d.fill(new Rectangle(0, 0, 10, 10).toAWTRectangle());
+        g2d.setColor(new java.awt.Color(5,5,5));
+        g2d.fill(new Rectangle(10, 10, 10, 10).toAWTRectangle());
+        g2d.dispose();
+
+        // Transform to bitonal.
+        outImage = Java2DUtil.transformColor(inImage, ColorTransform.BITONAL);
+
+        // Expect it to be transformed to white.
+        assertRGBA(outImage.getRGB(0, 0), 255, 255, 255, 255);
     }
 
     @Test

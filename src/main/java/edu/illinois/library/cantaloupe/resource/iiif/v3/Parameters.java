@@ -107,7 +107,7 @@ class Parameters {
         try {
             setOutputFormat(OutputFormat.valueOf(format.toUpperCase()));
         } catch (IllegalArgumentException e) {
-            throw new FormatException("Unsupported format. Available output" +
+            throw new FormatException("Unsupported format. Available output " +
                     "formats for this image are listed in the information " +
                     "response.");
         }

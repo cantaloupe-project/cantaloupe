@@ -7,12 +7,13 @@ import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.MediaType;
 import edu.illinois.library.cantaloupe.delegate.DelegateMethod;
-import edu.illinois.library.cantaloupe.util.S3ClientBuilder;
+import edu.illinois.library.cantaloupe.util.S3AsyncClientBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import software.amazon.awssdk.core.async.AsyncResponseTransformer;
 import software.amazon.awssdk.core.exception.SdkClientException;
 import software.amazon.awssdk.core.exception.SdkException;
-import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.S3AsyncClient;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 import software.amazon.awssdk.services.s3.model.HeadObjectRequest;
 import software.amazon.awssdk.services.s3.model.HeadObjectResponse;
@@ -34,6 +35,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.concurrent.CompletionException;
 
 /**
  * <p>Maps an identifier to an <a href="https://aws.amazon.com/s3/">Amazon
@@ -199,7 +201,7 @@ final class S3Source extends AbstractSource implements Source {
      * This is not thread-safe, so should only be accessed via {@link
      * #getClientInstance(S3ObjectInfo)}.
      */
-    private static final Map<String,S3Client> CLIENTS = new HashMap<>();
+    private static final Map<String,S3AsyncClient> CLIENTS = new HashMap<>();
 
     /**
      * Cached by {@link #getObjectInfo()}.
@@ -213,9 +215,9 @@ final class S3Source extends AbstractSource implements Source {
 
     private FormatIterator<Format> formatIterator = new FormatIterator<>();
 
-    static synchronized S3Client getClientInstance(S3ObjectInfo info) {
+    static synchronized S3AsyncClient getClientInstance(S3ObjectInfo info) {
         String endpoint = info.getEndpoint();
-        S3Client client = CLIENTS.get(endpoint);
+        S3AsyncClient client = CLIENTS.get(endpoint);
         if (client == null) {
             final Configuration config = Configuration.getInstance();
             if (endpoint == null) {
@@ -244,7 +246,7 @@ final class S3Source extends AbstractSource implements Source {
             if (secretAccessKey == null) {
                 secretAccessKey = config.getString(Key.S3SOURCE_SECRET_KEY);
             }
-            client = new S3ClientBuilder()
+            client = new S3AsyncClientBuilder()
                     .accessKeyID(accessKeyID)
                     .secretAccessKey(secretAccessKey)
                     .endpointURI(endpointURI)
@@ -273,7 +275,7 @@ final class S3Source extends AbstractSource implements Source {
      */
     static InputStream newObjectInputStream(S3ObjectInfo info,
                                             Range range) throws IOException {
-        final S3Client client = getClientInstance(info);
+        final S3AsyncClient client = getClientInstance(info);
         try {
             GetObjectRequest request;
             if (range != null) {
@@ -291,11 +293,13 @@ final class S3Source extends AbstractSource implements Source {
                         .key(info.getKey())
                         .build();
             }
-            return client.getObject(request);
-        } catch (NoSuchBucketException | NoSuchKeyException e) {
-            throw new NoSuchFileException(info.toString());
-        } catch (SdkException e) {
-            throw new IOException(info.toString(), e);
+            return client.getObject(request, AsyncResponseTransformer.toBlockingInputStream()).join();
+        } catch (CompletionException e) {
+            final Throwable cause = e.getCause();
+            if (cause instanceof NoSuchBucketException || cause instanceof NoSuchKeyException) {
+                throw new NoSuchFileException(info.toString());
+            }
+            throw new IOException(info.toString(), cause != null ? cause : e);
         }
     }
 
@@ -318,28 +322,32 @@ final class S3Source extends AbstractSource implements Source {
             final S3ObjectInfo info = getObjectInfo();
             final String bucket     = info.getBucketName();
             final String key        = info.getKey();
-            final S3Client client   = getClientInstance(info);
+            final S3AsyncClient client = getClientInstance(info);
             try {
                 HeadObjectResponse response = client.headObject(HeadObjectRequest.builder()
                         .bucket(bucket)
                         .key(key)
-                        .build());
+                        .build()).join();
                 objectAttributes              = new S3ObjectAttributes();
                 objectAttributes.length       = response.contentLength();
                 objectAttributes.contentType  = response.contentType();
                 objectAttributes.lastModified = response.lastModified();
-            } catch (NoSuchBucketException | NoSuchKeyException e) {
-                throw new NoSuchFileException(info.toString());
-            } catch (S3Exception e) {
-                final int code = e.statusCode();
-                if (code == 403) {
-                    throw new AccessDeniedException(info.toString());
-                } else {
-                    LOGGER.error(e.getMessage(), e);
-                    throw new IOException(e);
+            } catch (CompletionException e) {
+                final Throwable cause = e.getCause();
+                if (cause instanceof NoSuchBucketException || cause instanceof NoSuchKeyException) {
+                    throw new NoSuchFileException(info.toString());
+                } else if (cause instanceof S3Exception s3e) {
+                    final int code = s3e.statusCode();
+                    if (code == 403) {
+                        throw new AccessDeniedException(info.toString());
+                    } else {
+                        LOGGER.error(s3e.getMessage(), s3e);
+                        throw new IOException(s3e);
+                    }
+                } else if (cause instanceof SdkClientException sdkE) {
+                    LOGGER.error(sdkE.getMessage(), sdkE);
+                    throw new IOException(info.toString(), sdkE);
                 }
-            } catch (SdkClientException e) {
-                LOGGER.error(e.getMessage(), e);
                 throw new IOException(info.toString(), e);
             }
         }
