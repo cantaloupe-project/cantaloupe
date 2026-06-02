@@ -200,6 +200,7 @@ public enum Key {
     S3SOURCE_CHUNK_SIZE("S3Source.chunking.chunk_size"),
     S3SOURCE_CHUNK_CACHE_ENABLED("S3Source.chunking.cache.enabled"),
     S3SOURCE_CHUNK_CACHE_MAX_SIZE("S3Source.chunking.cache.max_size"),
+    S3SOURCE_CHUNK_PREFETCH_COUNT("S3Source.chunking.prefetch_count"),
     S3SOURCE_ENDPOINT("S3Source.endpoint"),
     S3SOURCE_LOOKUP_STRATEGY("S3Source.lookup_strategy"),
     S3SOURCE_PATH_PREFIX("S3Source.BasicLookupStrategy.path_prefix"),

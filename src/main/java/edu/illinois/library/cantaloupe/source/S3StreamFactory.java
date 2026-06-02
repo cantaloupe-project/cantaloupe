@@ -23,6 +23,7 @@ class S3StreamFactory implements StreamFactory {
 
     private static final int DEFAULT_CHUNK_SIZE       = 1024 * 512;
     private static final int DEFAULT_CHUNK_CACHE_SIZE = 1024 * 1024 * 10;
+    private static final int DEFAULT_PREFETCH_COUNT   = 2;
 
     private S3ObjectInfoSupplier objectInfo;
 
@@ -112,6 +113,17 @@ class S3StreamFactory implements StreamFactory {
                 if (isChunkCacheEnabled()) {
                     stream.setMaxChunkCacheSize(getMaxChunkCacheSize());
                 }
+                final int prefetchCount = getPrefetchCount();
+                stream.setPrefetchCount(prefetchCount);
+                if (isChunkCacheEnabled() && prefetchCount > 0) {
+                    final long need = (long) chunkSize * (prefetchCount + 1);
+                    if (getMaxChunkCacheSize() < need) {
+                        LOGGER.warn("Chunk cache ({} bytes) is smaller than the " +
+                                "prefetch working set ({} bytes); prefetched " +
+                                "chunks may be evicted before use",
+                                getMaxChunkCacheSize(), need);
+                    }
+                }
                 return stream;
             } catch (Throwable t) {
                 IOUtils.closeQuietly(stream);
@@ -146,6 +158,11 @@ class S3StreamFactory implements StreamFactory {
     private int getMaxChunkCacheSize() {
         return (int) Configuration.getInstance().getLongBytes(
                 Key.S3SOURCE_CHUNK_CACHE_MAX_SIZE, DEFAULT_CHUNK_CACHE_SIZE);
+    }
+
+    private int getPrefetchCount() {
+        return Configuration.getInstance().getInt(
+                Key.S3SOURCE_CHUNK_PREFETCH_COUNT, DEFAULT_PREFETCH_COUNT);
     }
 
 }

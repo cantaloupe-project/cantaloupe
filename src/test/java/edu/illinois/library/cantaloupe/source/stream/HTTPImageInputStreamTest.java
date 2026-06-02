@@ -19,6 +19,10 @@ import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Iterator;
+import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -300,6 +304,175 @@ public class HTTPImageInputStreamTest extends BaseTest {
             reader.read(0);
             assertEquals(64, reader.getWidth(0));
             assertEquals(56, reader.getHeight(0));
+        }
+    }
+
+    @Test
+    void testGetPrefetchCountDefaultsToZero() throws Exception {
+        final Path fixture = TestUtil.getImage("tif");
+        try (HTTPImageInputStream instance = newInstanceFromConstructor2(fixture)) {
+            assertEquals(0, instance.getPrefetchCount());
+        }
+    }
+
+    @Test
+    void testSetPrefetchCountClampsNegativeToZero() throws Exception {
+        final Path fixture = TestUtil.getImage("tif");
+        try (HTTPImageInputStream instance = newInstanceFromConstructor2(fixture)) {
+            instance.setPrefetchCount(-5);
+            assertEquals(0, instance.getPrefetchCount());
+        }
+    }
+
+    /**
+     * Counts both sync and async GET requests issued by the stream.
+     */
+    private static class CountingClient implements HTTPImageInputStreamClient {
+        private final HTTPImageInputStreamClient delegate;
+        private final AtomicInteger syncCalls  = new AtomicInteger();
+        private final AtomicInteger asyncCalls = new AtomicInteger();
+
+        CountingClient(HTTPImageInputStreamClient delegate) {
+            this.delegate = delegate;
+        }
+
+        @Override
+        public Response sendHEADRequest() throws IOException {
+            return delegate.sendHEADRequest();
+        }
+
+        @Override
+        public Response sendGETRequest(Range range) throws IOException {
+            syncCalls.incrementAndGet();
+            return delegate.sendGETRequest(range);
+        }
+
+        @Override
+        public CompletableFuture<Response> sendGETRequestAsync(Range range) {
+            asyncCalls.incrementAndGet();
+            return HTTPImageInputStreamClient.super.sendGETRequestAsync(range);
+        }
+    }
+
+    @Test
+    void testPrefetchIssuesAsyncRequestsAhead() throws Exception {
+        final Path fixture = TestUtil.getImage("tif");
+        final URI uri      = webServer.getHTTPURI().resolve("/" + fixture.getFileName());
+        final CountingClient client = new CountingClient(
+                new MockHTTPImageInputStreamClient(uri));
+
+        try (HTTPImageInputStream instance =
+                     new HTTPImageInputStream(client, Files.size(fixture))) {
+            instance.setWindowSize(1024);
+            instance.setMaxChunkCacheSize(1024L * 10);
+            instance.setPrefetchCount(2);
+            // Trigger a single sync fetch of window 0; this should also queue
+            // async prefetches for windows 1 and 2.
+            instance.read();
+            // Allow background prefetches to complete.
+            Thread.sleep(200);
+        }
+
+        assertTrue(client.asyncCalls.get() >= 2,
+                "Expected at least 2 async prefetches, got " + client.asyncCalls.get());
+    }
+
+    @Test
+    void testSequentialReadServesChunksFromPrefetchCache() throws Exception {
+        final Path fixture = TestUtil.getImage("tif");
+        final URI uri      = webServer.getHTTPURI().resolve("/" + fixture.getFileName());
+        final CountingClient client = new CountingClient(
+                new MockHTTPImageInputStreamClient(uri));
+
+        try (HTTPImageInputStream instance =
+                     new HTTPImageInputStream(client, Files.size(fixture))) {
+            instance.setWindowSize(1024);
+            instance.setMaxChunkCacheSize(1024L * 50);
+            instance.setPrefetchCount(4);
+            byte[] buf = new byte[(int) Files.size(fixture)];
+            instance.read(buf, 0, buf.length);
+        }
+
+        // With prefetch, the number of *synchronous* GETs should be far fewer
+        // than the total number of windows touched. The exact number depends
+        // on scheduling, but at minimum we expect prefetches to fire.
+        assertTrue(client.asyncCalls.get() > 0,
+                "Expected async prefetches to fire on sequential read");
+    }
+
+    @Test
+    void testCloseCancelsInFlightPrefetches() throws Exception {
+        final List<CompletableFuture<Response>> issued = new CopyOnWriteArrayList<>();
+        final Path fixture = TestUtil.getImage("tif");
+        final URI uri      = webServer.getHTTPURI().resolve("/" + fixture.getFileName());
+        final HTTPImageInputStreamClient backing =
+                new MockHTTPImageInputStreamClient(uri);
+
+        HTTPImageInputStreamClient tracking = new HTTPImageInputStreamClient() {
+            @Override
+            public Response sendHEADRequest() throws IOException {
+                return backing.sendHEADRequest();
+            }
+            @Override
+            public Response sendGETRequest(Range range) throws IOException {
+                return backing.sendGETRequest(range);
+            }
+            @Override
+            public CompletableFuture<Response> sendGETRequestAsync(Range range) {
+                // Never complete on its own; cancellation is the only way out.
+                CompletableFuture<Response> f = new CompletableFuture<>();
+                issued.add(f);
+                return f;
+            }
+        };
+
+        HTTPImageInputStream instance =
+                new HTTPImageInputStream(tracking, Files.size(fixture));
+        instance.setWindowSize(1024);
+        instance.setPrefetchCount(3);
+        instance.read();  // triggers prefetches that will never complete on their own
+        assertFalse(issued.isEmpty(), "Expected prefetches to be issued");
+        instance.close();
+
+        for (CompletableFuture<Response> f : issued) {
+            assertTrue(f.isCancelled() || f.isDone(),
+                    "Expected prefetch future to be cancelled by close()");
+        }
+    }
+
+    @Test
+    void testPrefetchFailureFallsBackToSyncFetch() throws Exception {
+        final Path fixture = TestUtil.getImage("tif");
+        final URI uri      = webServer.getHTTPURI().resolve("/" + fixture.getFileName());
+        final HTTPImageInputStreamClient backing =
+                new MockHTTPImageInputStreamClient(uri);
+        final AtomicInteger syncCalls = new AtomicInteger();
+
+        HTTPImageInputStreamClient failingPrefetch = new HTTPImageInputStreamClient() {
+            @Override
+            public Response sendHEADRequest() throws IOException {
+                return backing.sendHEADRequest();
+            }
+            @Override
+            public Response sendGETRequest(Range range) throws IOException {
+                syncCalls.incrementAndGet();
+                return backing.sendGETRequest(range);
+            }
+            @Override
+            public CompletableFuture<Response> sendGETRequestAsync(Range range) {
+                return CompletableFuture.failedFuture(
+                        new IOException("simulated prefetch failure"));
+            }
+        };
+
+        try (HTTPImageInputStream instance =
+                     new HTTPImageInputStream(failingPrefetch, Files.size(fixture))) {
+            instance.setWindowSize(1024);
+            instance.setPrefetchCount(2);
+            byte[] buf = new byte[(int) Files.size(fixture)];
+            instance.read(buf, 0, buf.length);
+            // Sequential read should still succeed via the sync fallback.
+            assertTrue(syncCalls.get() > 0);
         }
     }
 /*

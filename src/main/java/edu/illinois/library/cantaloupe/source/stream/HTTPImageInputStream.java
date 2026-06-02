@@ -9,6 +9,11 @@ import org.slf4j.LoggerFactory;
 import javax.imageio.stream.ImageInputStream;
 import javax.imageio.stream.ImageInputStreamImpl;
 import java.io.IOException;
+import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.atomic.LongAdder;
 
 /**
  * <p>Input stream that supports pseudo-seeking over HTTP.</p>
@@ -61,8 +66,14 @@ public class HTTPImageInputStream extends ImageInputStreamImpl
     private int windowIndex     = -1;
     private byte[] windowBuffer = new byte[windowSize];
 
-    private int numChunkDownloads, numChunkCacheHits, numChunkCacheMisses;
-    private long numBytesDownloaded, numBytesRead;
+    private int prefetchCount;
+    private final Map<Range,CompletableFuture<Response>> inFlight =
+            new ConcurrentHashMap<>();
+
+    private int numChunkDownloads, numChunkCacheHits, numChunkCacheMisses,
+            numPrefetchHits;
+    private long numBytesRead;
+    private final LongAdder bytesDownloadedAdder = new LongAdder();
 
     private static void debug(String message, Object... vars) {
         if (DEBUG) {
@@ -124,6 +135,23 @@ public class HTTPImageInputStream extends ImageInputStreamImpl
         }
     }
 
+    public int getPrefetchCount() {
+        return prefetchCount;
+    }
+
+    /**
+     * <p>Sets the number of windows to prefetch asynchronously after each
+     * fetched chunk. Must be called before any reading or seeking occurs.</p>
+     *
+     * <p>Set to {@code 0} (the default) to disable prefetching. Each
+     * outstanding prefetch holds {@link #getWindowSize() windowSize} bytes
+     * once it completes, so memory usage per stream is bounded by
+     * {@code (prefetchCount + 1) * windowSize}.</p>
+     */
+    public void setPrefetchCount(int prefetchCount) {
+        this.prefetchCount = Math.max(0, prefetchCount);
+    }
+
     /**
      * <p>Sets the window size. Must be called before any reading or seeking
      * occurs.</p>
@@ -162,6 +190,10 @@ public class HTTPImageInputStream extends ImageInputStreamImpl
 
     @Override
     public void close() throws IOException {
+        for (CompletableFuture<Response> f : inFlight.values()) {
+            f.cancel(true);
+        }
+        inFlight.clear();
         logStatistics();
         try {
             super.close();
@@ -173,14 +205,17 @@ public class HTTPImageInputStream extends ImageInputStreamImpl
     }
 
     private void logStatistics() {
+        final long numBytesDownloaded = bytesDownloadedAdder.sum();
         LOGGER.debug("Downloaded {} chunks ({} ({}%) of {} bytes); " +
-                        "read {}% of chunk data; {} cache hits; {} cache misses",
+                        "read {}% of chunk data; {} cache hits; " +
+                        "{} prefetch hits; {} cache misses",
                 numChunkDownloads,
                 numBytesDownloaded,
                 String.format("%.2f", numBytesDownloaded * 100 / (double) streamLength),
                 streamLength,
-                String.format("%.2f", numBytesRead * 100 / (double) numBytesDownloaded),
+                String.format("%.2f", numBytesRead * 100 / (double) Math.max(1, numBytesDownloaded)),
                 numChunkCacheHits,
+                numPrefetchHits,
                 numChunkCacheMisses);
     }
 
@@ -314,35 +349,94 @@ public class HTTPImageInputStream extends ImageInputStreamImpl
     }
 
     /**
-     * Fetches a chunk for the given range by either retrieving it from the
-     * chunk cache or downloading it.
+     * Fetches a chunk for the given range. Lookup order: chunk cache,
+     * in-flight prefetch, synchronous download. After serving the chunk,
+     * triggers asynchronous prefetches for the next {@link #prefetchCount}
+     * windows.
      */
     private byte[] fetchChunk(Range range) throws IOException {
-        byte[] chunk;
         if (chunkCache != null) {
-            chunk = chunkCache.get(range);
-            if (chunk != null) {
+            byte[] cached = chunkCache.get(range);
+            if (cached != null) {
                 LOGGER.trace("Chunk cache hit for range: {}", range);
                 numChunkCacheHits++;
-            } else {
-                numChunkCacheMisses++;
-                chunk = downloadChunk(range);
-                chunkCache.put(range, chunk);
+                triggerPrefetch(windowIndexOf(range));
+                return cached;
             }
-        } else {
-            numChunkCacheMisses++;
-            chunk = downloadChunk(range);
         }
-        return chunk;
+
+        CompletableFuture<Response> pending = inFlight.get(range);
+        if (pending != null) {
+            try {
+                byte[] data = pending.get().getBody();
+                numPrefetchHits++;
+                triggerPrefetch(windowIndexOf(range));
+                return data;
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                throw new IOException("Interrupted awaiting prefetch of " + range, e);
+            } catch (ExecutionException e) {
+                inFlight.remove(range);
+                LOGGER.debug("Prefetch failed for {}; falling back to sync",
+                        range, e);
+                // Fall through to the synchronous path below.
+            }
+        }
+
+        numChunkCacheMisses++;
+        byte[] data = downloadChunk(range);
+        if (chunkCache != null) chunkCache.put(range, data);
+        triggerPrefetch(windowIndexOf(range));
+        return data;
     }
 
     private byte[] downloadChunk(Range range) throws IOException {
         debug("Downloading range: {}", range);
-        Response response  = client.sendGETRequest(range);
-        byte[] entity      = response.getBody();
-        numBytesDownloaded += entity.length;
+        Response response = client.sendGETRequest(range);
+        byte[] entity     = response.getBody();
+        bytesDownloadedAdder.add(entity.length);
         numChunkDownloads++;
         return entity;
+    }
+
+    private void triggerPrefetch(int currentWindowIndex) {
+        if (prefetchCount <= 0 || client == null) {
+            return;
+        }
+        for (int i = 1; i <= prefetchCount; i++) {
+            final int targetWindow = currentWindowIndex + i;
+            final long start = (long) targetWindow * windowSize;
+            if (start >= streamLength) {
+                break;
+            }
+            final Range r = getRange(targetWindow);
+            if (inFlight.containsKey(r)) {
+                continue;
+            }
+            if (chunkCache != null && chunkCache.get(r) != null) {
+                continue;
+            }
+            CompletableFuture<Response> future = client.sendGETRequestAsync(r);
+            future.whenComplete((response, err) -> {
+                inFlight.remove(r);
+                if (err == null && response != null) {
+                    byte[] data = response.getBody();
+                    if (data != null) {
+                        bytesDownloadedAdder.add(data.length);
+                        if (chunkCache != null) {
+                            chunkCache.put(r, data);
+                        }
+                    }
+                }
+            });
+            inFlight.put(r, future);
+            numChunkDownloads++;
+            LOGGER.trace("Prefetching range: {}", r);
+        }
+    }
+
+    private int windowIndexOf(Range range) {
+        return (int) (range.start / windowSize);
     }
 
     private Range getRange(int windowIndex) {
