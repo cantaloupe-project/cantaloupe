@@ -1,8 +1,8 @@
 package edu.illinois.library.cantaloupe.resource;
 
+import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
-import edu.illinois.library.cantaloupe.http.Method;
 import edu.illinois.library.cantaloupe.http.Status;
 import edu.illinois.library.cantaloupe.operation.IllegalScaleException;
 import edu.illinois.library.cantaloupe.operation.IllegalSizeException;
@@ -10,8 +10,14 @@ import edu.illinois.library.cantaloupe.operation.ValidationException;
 import edu.illinois.library.cantaloupe.processor.OutputFormatException;
 import edu.illinois.library.cantaloupe.processor.SourceFormatException;
 import edu.illinois.library.cantaloupe.resource.iiif.FormatException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.thymeleaf.TemplateEngine;
+import org.thymeleaf.context.Context;
+import org.thymeleaf.templatemode.TemplateMode;
+import org.thymeleaf.templateresolver.ClassLoaderTemplateResolver;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -20,21 +26,33 @@ import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.nio.file.AccessDeniedException;
 import java.nio.file.NoSuchFileException;
-import java.util.List;
-import java.util.Map;
 
 /**
  * Translates a {@link Throwable} to an HTTP 4xx or 5xx-level response.
  */
-class ErrorResource extends AbstractResource {
+class ErrorResource {
 
     private static final Logger LOGGER =
             LoggerFactory.getLogger(ErrorResource.class);
 
-    private static final List<String> SUPPORTED_MEDIA_TYPES =
-            List.of("text/plain", "text/html", "application/xhtml+xml");
+    // Text template engine for error.txt template
+    private static final TemplateEngine textTemplateEngine;
+
+    static {
+        ClassLoaderTemplateResolver textResolver = new ClassLoaderTemplateResolver();
+        textResolver.setTemplateMode(TemplateMode.TEXT);
+        textResolver.setPrefix("/");
+        textResolver.setSuffix(".txt");
+        textResolver.setCacheable(true);
+        textResolver.setCharacterEncoding("UTF-8");
+
+        textTemplateEngine = new TemplateEngine();
+        textTemplateEngine.addTemplateResolver(textResolver);
+    }
 
     private final Throwable error;
+    private HttpServletRequest request;
+    private HttpServletResponse response;
 
     private static Status toStatus(Throwable t) {
         Status status;
@@ -62,26 +80,18 @@ class ErrorResource extends AbstractResource {
         return status;
     }
 
-    ErrorResource(Throwable error) {
+
+    ErrorResource(Throwable error, HttpServletRequest request, HttpServletResponse response) {
         this.error = error;
+        this.request = request;
+        this.response = response;
     }
 
-    @Override
-    protected Logger getLogger() {
-        return LOGGER;
-    }
-
-    @Override
-    public Method[] getSupportedMethods() {
-        return Method.values();
-    }
-
-    @Override
     public void doGET() throws Exception {
         final Status status = toStatus(error);
         log(status.getCode());
 
-        final Map<String,Object> templateVars = getCommonTemplateVars();
+        final TemplateVariables templateVars = new TemplateVariables();
         templateVars.put("pageTitle", status.toString());
         templateVars.put("message", error.getMessage());
 
@@ -90,31 +100,32 @@ class ErrorResource extends AbstractResource {
             templateVars.put("stackTrace", getStackTrace());
         }
 
-        // Negotiate a response representation content type.
-        // Web browsers will usually request `text/html` and
-        // `application/xhtml+xml` in order of priority. In the absence
-        // of either of those, we will prefer to return `text/plain`.
-        String requestedType = negotiateContentType(SUPPORTED_MEDIA_TYPES);
-        if (requestedType == null) {
-            requestedType = "text/plain";
+        response.setStatus(status.getCode());
+        // Only show the x-powered-by header if configured to do so.
+        if (config.getBoolean(Key.HEADERS_POWERED_BY_DISPLAY, true)) {
+          response.setHeader("X-Powered-By",
+                  Application.getName() + "/" + Application.getVersion());
         }
+        response.setHeader("Cache-Control", "no-cache, must-revalidate");
 
         // Use a template that best fits the representation's content type.
-        String template, mediaType;
-        if (List.of("text/html", "application/xhtml+xml").contains(requestedType)) {
-            template = "/error.html.vm";
-            mediaType = "text/html";
+        String header = request.getHeader("Accept");
+        if (header == null || header.contains("html")) {
+            response.setHeader("Content-Type", "text/html;charset=UTF-8");
+            new ThymeleafRepresentation("/error.html", templateVars)
+                    .write(response.getOutputStream());
         } else {
-            template = "/error.txt.vm";
-            mediaType = "text/plain";
+            response.setHeader("Content-Type", "text/plain;charset=UTF-8");
+            renderTextTemplate(templateVars);
         }
+    }
 
-        getResponse().setStatus(status.getCode());
-        getResponse().setHeader("Cache-Control", "no-cache, must-revalidate");
-        getResponse().setHeader("Content-Type", mediaType + ";charset=UTF-8");
+    private void renderTextTemplate(TemplateVariables templateVars) throws IOException {
+        Context context = new Context(java.util.Locale.getDefault(), templateVars.getVars());
 
-        new VelocityRepresentation(template, templateVars)
-                .write(getResponse().getOutputStream());
+        try (java.io.OutputStreamWriter writer = new java.io.OutputStreamWriter(response.getOutputStream(), "UTF-8")) {
+            textTemplateEngine.process("error", context, writer);
+        }
     }
 
     private String getStackTrace() {
@@ -135,8 +146,8 @@ class ErrorResource extends AbstractResource {
         String message = "Responding with HTTP {} to {} {}: {}";
         Object[] args = {
                 statusCode,
-                getRequest().getMethod(),
-                getRequest().getReference(),
+                request.getMethod(),
+                request.getRequestURI(),
                 error.getMessage(),
                 error };
         if (statusCode >= 500) {

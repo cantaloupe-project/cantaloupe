@@ -10,24 +10,27 @@ import software.amazon.awssdk.auth.credentials.ProfileCredentialsProvider;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.auth.credentials.SystemPropertyCredentialsProvider;
 import software.amazon.awssdk.core.exception.SdkClientException;
-import software.amazon.awssdk.http.urlconnection.UrlConnectionHttpClient;
+import software.amazon.awssdk.http.crt.AwsCrtAsyncHttpClient;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.regions.providers.AwsProfileRegionProvider;
 import software.amazon.awssdk.regions.providers.AwsRegionProviderChain;
 import software.amazon.awssdk.regions.providers.InstanceProfileRegionProvider;
 import software.amazon.awssdk.regions.providers.SystemSettingsRegionProvider;
-import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.S3AsyncClient;
 import software.amazon.awssdk.services.s3.S3Configuration;
 
 import java.net.URI;
 
 /**
- * Creates an S3 client using the Builder pattern.
+ * Creates an S3 async client using the Builder pattern. The client is backed
+ * by the AWS Common Runtime (CRT) async HTTP client, which provides
+ * non-blocking I/O and higher throughput than the URL-connection-based
+ * client.
  *
- * @see <a href="http://docs.aws.amazon.com/AWSSdkDocsJava/latest/DeveloperGuide/welcome.html">
- *     AWS SDK for Java</a>
+ * @see <a href="https://docs.aws.amazon.com/sdk-for-java/latest/developer-guide/http-configuration-crt.html">
+ *     Configure the AWS CRT-based HTTP client</a>
  */
-public final class S3ClientBuilder {
+public final class S3AsyncClientBuilder {
 
     /**
      * This region is used when the region provider chain used by {@link
@@ -85,8 +88,6 @@ public final class S3ClientBuilder {
      * environment and AWS profile.
      *
      * @return Region, or {@link #DEFAULT_REGION} if none could be found.
-     * @see <a href="https://sdk.amazonaws.com/java/api/latest/software/amazon/awssdk/regions/providers/DefaultAwsRegionProviderChain.html">
-     *     DefaultAwsRegionProviderChain</a>
      */
     private Region getEffectiveRegion() {
         try {
@@ -104,7 +105,7 @@ public final class S3ClientBuilder {
      * @param accessKeyID AWS access key ID.
      * @return            The instance.
      */
-    public S3ClientBuilder accessKeyID(String accessKeyID) {
+    public S3AsyncClientBuilder accessKeyID(String accessKeyID) {
         this.accessKeyID = accessKeyID;
         return this;
     }
@@ -114,7 +115,7 @@ public final class S3ClientBuilder {
      *            used based on {@link #region(String)}.
      * @return    The instance.
      */
-    public S3ClientBuilder endpointURI(URI uri) {
+    public S3AsyncClientBuilder endpointURI(URI uri) {
         this.endpointURI = uri;
         return this;
     }
@@ -123,7 +124,7 @@ public final class S3ClientBuilder {
      * @param region Region to use. This is relevant only for AWS endpoints.
      * @return       The instance.
      */
-    public S3ClientBuilder region(String region) {
+    public S3AsyncClientBuilder region(String region) {
         try {
             this.region = (region != null) ? Region.of(region) : null;
         } catch (IllegalArgumentException | SdkClientException e) {
@@ -134,20 +135,20 @@ public final class S3ClientBuilder {
 
     /**
      * @param secretAccessKey AWS secret access key.
-     * @return          The instance.
+     * @return                The instance.
      */
-    public S3ClientBuilder secretAccessKey(String secretAccessKey) {
+    public S3AsyncClientBuilder secretAccessKey(String secretAccessKey) {
         this.secretAccessKey = secretAccessKey;
         return this;
     }
 
-    public S3Client build() {
+    public S3AsyncClient build() {
         final S3Configuration config = S3Configuration.builder()
                 .pathStyleAccessEnabled(endpointURI != null)
                 .checksumValidationEnabled(false)
                 .build();
-        software.amazon.awssdk.services.s3.S3ClientBuilder builder = S3Client.builder()
-                .httpClientBuilder(UrlConnectionHttpClient.builder())
+        software.amazon.awssdk.services.s3.S3AsyncClientBuilder builder = S3AsyncClient.builder()
+                .httpClientBuilder(AwsCrtAsyncHttpClient.builder())
                 .serviceConfiguration(config)
                 // A region is required even for non-AWS endpoints.
                 .region(getEffectiveRegion())

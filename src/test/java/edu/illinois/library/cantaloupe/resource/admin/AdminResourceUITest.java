@@ -10,7 +10,6 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.htmlunit.HtmlUnitDriver;
-import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.support.ui.Select;
 
 import java.net.URI;
@@ -43,8 +42,7 @@ public class AdminResourceUITest extends AbstractAdminResourceTest {
         config.clearProperty(Key.FILESYSTEMSOURCE_PATH_PREFIX);
         config.clearProperty(Key.DELEGATE_SCRIPT_PATHNAME);
 
-        DesiredCapabilities capabilities = DesiredCapabilities.htmlUnitWithJs();
-        webDriver = new HtmlUnitDriver(capabilities);
+        webDriver = new HtmlUnitDriver(true);
         ((HtmlUnitDriver) webDriver).setJavascriptEnabled(true);
         webDriver.get(getHTTPURI("").toString());
     }

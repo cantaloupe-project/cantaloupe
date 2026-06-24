@@ -8,12 +8,13 @@ import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.ConfigurationConstants;
 import edu.illinois.library.cantaloupe.util.S3Utils;
 import edu.illinois.library.cantaloupe.test.TestUtil;
-import edu.illinois.library.cantaloupe.util.S3ClientBuilder;
+import edu.illinois.library.cantaloupe.util.S3AsyncClientBuilder;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.core.async.AsyncRequestBody;
+import software.amazon.awssdk.services.s3.S3AsyncClient;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
 import javax.imageio.stream.ImageInputStream;
@@ -42,37 +43,37 @@ public class S3StreamFactoryTest extends BaseTest {
     }
 
     private static String accessKeyID() {
-        org.apache.commons.configuration.Configuration testConfig =
+        org.apache.commons.configuration2.Configuration testConfig =
                 TestUtil.getTestConfig();
         return testConfig.getString(ConfigurationConstants.S3_ACCESS_KEY_ID.getKey());
     }
 
     private static String bucket() {
-        org.apache.commons.configuration.Configuration testConfig =
+        org.apache.commons.configuration2.Configuration testConfig =
                 TestUtil.getTestConfig();
         return testConfig.getString(ConfigurationConstants.S3_BUCKET.getKey());
     }
 
     private static String endpoint() {
-        org.apache.commons.configuration.Configuration testConfig =
+        org.apache.commons.configuration2.Configuration testConfig =
                 TestUtil.getTestConfig();
         return testConfig.getString(ConfigurationConstants.S3_ENDPOINT.getKey());
     }
 
     private static String region() {
-        org.apache.commons.configuration.Configuration testConfig =
+        org.apache.commons.configuration2.Configuration testConfig =
                 TestUtil.getTestConfig();
         return testConfig.getString(ConfigurationConstants.S3_REGION.getKey());
     }
 
     private static String secretAccessKey() {
-        org.apache.commons.configuration.Configuration testConfig =
+        org.apache.commons.configuration2.Configuration testConfig =
                 TestUtil.getTestConfig();
         return testConfig.getString(ConfigurationConstants.S3_SECRET_KEY.getKey());
     }
 
-    private static S3Client client() {
-        return new S3ClientBuilder()
+    private static S3AsyncClient client() {
+        return new S3AsyncClientBuilder()
                 .endpointURI(URI.create(endpoint()))
                 .region(region())
                 .accessKeyID(accessKeyID())
@@ -88,12 +89,12 @@ public class S3StreamFactoryTest extends BaseTest {
     }
 
     private static void seedFixtures() {
-        final S3Client s3  = client();
-        final Path fixture = TestUtil.getImage(FIXTURE_KEY);
+        final S3AsyncClient s3 = client();
+        final Path fixture     = TestUtil.getImage(FIXTURE_KEY);
         s3.putObject(PutObjectRequest.builder()
                         .bucket(bucket())
                         .key(fixture.getFileName().toString())
-                        .build(), fixture);
+                        .build(), AsyncRequestBody.fromFile(fixture)).join();
     }
 
     @BeforeEach

@@ -88,19 +88,19 @@ public final class AzureStorageTestUtil {
     }
 
     public static String getAccountName() {
-        org.apache.commons.configuration.Configuration testConfig =
+        org.apache.commons.configuration2.Configuration testConfig =
                 TestUtil.getTestConfig();
         return testConfig.getString(ConfigurationConstants.AZURE_ACCOUNT_NAME.getKey());
     }
 
     public static String getAccountKey() {
-        org.apache.commons.configuration.Configuration testConfig =
+        org.apache.commons.configuration2.Configuration testConfig =
                 TestUtil.getTestConfig();
         return testConfig.getString(ConfigurationConstants.AZURE_ACCOUNT_KEY.getKey());
     }
 
     public static String getContainer() {
-        org.apache.commons.configuration.Configuration testConfig =
+        org.apache.commons.configuration2.Configuration testConfig =
                 TestUtil.getTestConfig();
         return testConfig.getString(ConfigurationConstants.AZURE_CONTAINER.getKey());
     }

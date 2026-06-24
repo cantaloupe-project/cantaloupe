@@ -10,7 +10,6 @@ import edu.illinois.library.cantaloupe.image.ScaleConstraint;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.delegate.JavaContext;
 
-import java.net.URI;
 import java.util.Map;
 
 /**

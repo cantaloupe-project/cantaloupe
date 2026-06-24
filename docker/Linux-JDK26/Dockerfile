@@ -27,7 +27,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
   grokj2k-tools \
   adduser \
   libturbojpeg \
-  libturbojpeg-dev \ 
+  libturbojpeg-dev \
+  maven \
   && rm -rf /var/lib/apt/lists/*
 
 # Install KakaduNativeProcessor dependencies
@@ -38,14 +39,9 @@ ENV LD_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu:${LD_LIBRARY_PATH}
 
 # Install various other dependencies that aren't in apt
 # Install OpenJDK
-RUN wget -q https://download.java.net/java/GA/jdk24.0.2/fdc5d0102fe0414db21410ad5834341f/12/GPL/openjdk-24.0.2_linux-x64_bin.tar.gz \
-  && tar xfz openjdk-24.0.2_linux-x64_bin.tar.gz \
-  && mv jdk-24.0.2 /opt/jdk \
-  # Install a newer Maven than the one in apt
-  && wget -q https://dlcdn.apache.org/maven/maven-3/3.9.11/binaries/apache-maven-3.9.11-bin.tar.gz \
-  && tar xfz apache-maven-3.9.11-bin.tar.gz \
-  && mv apache-maven-3.9.11 /opt/maven \
-  && rm apache-maven-3.9.11-bin.tar.gz
+RUN wget -q https://download.java.net/java/GA/jdk26/c3cc523845074aa0af4f5e1e1ed4151d/35/GPL/openjdk-26_linux-x64_bin.tar.gz \
+  && tar xfz openjdk-26_linux-x64_bin.tar.gz \
+  && mv jdk-26 /opt/jdk
 
 # A non-root user is needed for some FilesystemSourceTest tests to work.
 ARG user=cantaloupe

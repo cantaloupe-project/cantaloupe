@@ -13,6 +13,9 @@ import edu.illinois.library.cantaloupe.operation.Scale;
 import edu.illinois.library.cantaloupe.processor.Processor;
 import edu.illinois.library.cantaloupe.resource.ImageRequestHandler;
 import edu.illinois.library.cantaloupe.source.StatResult;
+import edu.illinois.library.cantaloupe.http.ContentTypeNegotiator;
+import edu.illinois.library.cantaloupe.resource.iiif.ScaleValidator;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -97,9 +100,10 @@ public class ImageResource extends IIIF1Resource {
             public void willProcessImage(Processor processor,
                                          Info info) throws Exception {
                 final Dimension fullSize = info.getSize(getPageIndex());
-                validateScale(info.getMetadata().getOrientation().adjustedSize(fullSize),
+                ScaleValidator.validateScale(info.getMetadata().getOrientation().adjustedSize(fullSize),
                         (Scale) opList.getFirst(Scale.class),
-                        Status.FORBIDDEN);
+                        Status.FORBIDDEN,
+                        getMetaIdentifier());
 
                 final String disposition = getRepresentationDisposition(
                         getMetaIdentifier().toString(),
@@ -111,8 +115,8 @@ public class ImageResource extends IIIF1Resource {
 
         try (ImageRequestHandler handler = ImageRequestHandler.builder()
                 .withOperationList(opList)
-                .withBypassingCache(isBypassingCache())
-                .withBypassingCacheRead(isBypassingCacheRead())
+                .withBypassingCache(getRequest().isBypassingCache())
+                .withBypassingCacheRead(getRequest().isBypassingCacheRead())
                 .optionallyWithDelegateProxy(getDelegateProxy(), getRequestContext())
                 .withCallback(new CustomCallback())
                 .build()) {
@@ -178,7 +182,8 @@ public class ImageResource extends IIIF1Resource {
         }
 
         if (format == null) { // if none, check the Accept header.
-            String contentType = negotiateContentType(AVAILABLE_OUTPUT_MEDIA_TYPES);
+            ContentTypeNegotiator negotiator = new ContentTypeNegotiator(getRequest().getHeaders());
+            String contentType = negotiator.negotiateContentType(AVAILABLE_OUTPUT_MEDIA_TYPES);
             if (contentType != null) {
                 format = new MediaType(contentType).toFormat();
             } else {

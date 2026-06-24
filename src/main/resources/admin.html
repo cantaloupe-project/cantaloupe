@@ -1,29 +1,26 @@
 <!DOCTYPE html>
-<html>
+<html xmlns:th="http://www.thymeleaf.org">
 <head>
-    #if ($baseUri)
-        <base href="$baseUri/">
-    #end
     <meta charset="utf-8">
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <link rel="stylesheet" href="static/styles/admin.css">
+    <link rel="stylesheet" th:href="${basePath + 'static/styles/admin.css'}">
 
     <title>Cantaloupe Image Server</title>
 </head>
 
 <body id="cl-landing">
 
-<input type="hidden" name="cl-admin-uri" value="$adminUri"/>
+<input type="hidden" name="cl-admin-uri" th:value="${adminUri}">
 
 <div class="container-fluid">
     <div class="clearfix">
         <header>
-            <img src="static/images/cantaloupe-320.png" alt="Cantaloupe icon"
+            <img th:src="${basePath + 'static/images/cantaloupe-320.png'}" alt="Cantaloupe icon"
                  width="154" height="82" style="float:left">
-            <h1>Cantaloupe Image Server <small>$version</small></h1>
+            <h1>Cantaloupe Image Server <small th:text="${version}"></small></h1>
         </header>
     </div>
 
@@ -106,23 +103,23 @@
                                 <table class="table table-striped">
                                     <tr>
                                         <td><var>X-Forwarded-Proto</var></td>
-                                        <td><var>$xForwardedProtoHeader</var></td>
+                                        <td><var th:text="${xForwardedProtoHeader}"></var></td>
                                     </tr>
                                     <tr>
                                         <td><var>X-Forwarded-Host</var></td>
-                                        <td><var>$xForwardedHostHeader</var></td>
+                                        <td><var th:text="${xForwardedHostHeader}"></var></td>
                                     </tr>
                                     <tr>
                                         <td><var>X-Forwarded-Port</var></td>
-                                        <td><var>$xForwardedPortHeader</var></td>
+                                        <td><var th:text="${xForwardedPortHeader}"></var></td>
                                     </tr>
                                     <tr>
                                         <td><var>X-Forwarded-Path</var></td>
-                                        <td><var>$xForwardedPathHeader</var></td>
+                                        <td><var th:text="${xForwardedPathHeader}"></var></td>
                                     </tr>
                                     <tr>
                                         <td><var>X-Forwarded-For</var></td>
-                                        <td><var>$xForwardedForHeader</var></td>
+                                        <td><var th:text="${xForwardedForHeader}"></var></td>
                                     </tr>
                                 </table>
                             </section>
@@ -151,19 +148,19 @@
                                 <table class="table table-striped">
                                     <tr>
                                         <td>Vendor</td>
-                                        <td>$vmVendor</td>
+                                        <td th:text="${vmVendor}"></td>
                                     </tr>
                                     <tr>
                                         <td>Name</td>
-                                        <td>$vmName</td>
+                                        <td th:text="${vmName}"></td>
                                     </tr>
                                     <tr>
                                         <td>Version</td>
-                                        <td>$vmVersion</td>
+                                        <td th:text="${vmVersion}"></td>
                                     </tr>
                                     <tr>
                                         <td>Java Version</td>
-                                        <td>$javaVersion</td>
+                                        <td th:text="${javaVersion}"></td>
                                     </tr>
                                     <tr>
                                         <td>Uptime</td>
@@ -189,7 +186,7 @@
 
                     <section>
                         <h2>VM Arguments</h2>
-                        <pre>#foreach ($arg in $vmArguments)$arg<br>#end</pre>
+                        <pre><span th:each="arg : ${vmArguments}"><span th:text="${arg}"></span><br></span></pre>
                     </section>
                 </div>
 
@@ -1181,26 +1178,21 @@
                                     </td>
                                     <td>
                                         <select class="form-control" name="meta_identifier.transformer">
-                                            #foreach ($metaIdentifierTransformer in $metaIdentifierTransformers)
-                                                #if ($metaIdentifierTransformer.equals($currentMetaIdentifierTransformer))
-                                                    <option selected>$metaIdentifierTransformer</option>
-                                                #else
-                                                    <option>$metaIdentifierTransformer</option>
-                                                #end
-                                            #end
+                                            <option th:each="metaIdentifierTransformer : ${metaIdentifierTransformers}"
+                                                    th:text="${metaIdentifierTransformer}"
+                                                    th:selected="${metaIdentifierTransformer.equals(currentMetaIdentifierTransformer)}">
+                                            </option>
                                         </select>
                                     </td>
                                 </tr>
                             </table>
 
                             <ul class="nav nav-pills" role="tablist">
-                                #foreach ($metaIdentifierTransformer in $metaIdentifierTransformers)
-                                    <li role="presentation">
-                                        <a href="#$metaIdentifierTransformer"
-                                           aria-controls="$metaIdentifierTransformer" role="tab"
-                                           data-toggle="tab">$metaIdentifierTransformer</a>
-                                    </li>
-                                #end
+                                <li th:each="metaIdentifierTransformer : ${metaIdentifierTransformers}" role="presentation">
+                                    <a th:href="'#' + ${metaIdentifierTransformer}"
+                                       th:attr="aria-controls=${metaIdentifierTransformer}" role="tab"
+                                       data-toggle="tab" th:text="${metaIdentifierTransformer}"></a>
+                                </li>
                             </ul>
 
                             <div class="tab-content">
@@ -1252,13 +1244,8 @@
                                     <td>
                                         <select class="form-control"
                                                 name="source.delegate">
-                                            #if ($sourceSelectionStrategy.toString().equals("STATIC"))
-                                                <option value="false" selected>Static</option>
-                                                <option value="true">Delegate Script</option>
-                                            #else
-                                                <option value="false">Static</option>
-                                                <option value="true" selected>Delegate Script</option>
-                                            #end
+                                            <option value="false" th:selected="${sourceSelectionStrategy.toString().equals('STATIC')}">Static</option>
+                                            <option value="true" th:selected="${!sourceSelectionStrategy.toString().equals('STATIC')}">Delegate Script</option>
                                         </select>
                                     </td>
                                 </tr>
@@ -1274,13 +1261,10 @@
                                     </td>
                                     <td>
                                         <select class="form-control" name="source.static">
-                                            #foreach ($source in $sources)
-                                                #if ($source.equals($currentSource))
-                                                    <option selected>$source.getName()</option>
-                                                #else
-                                                    <option>$source.getName()</option>
-                                                #end
-                                            #end
+                                            <option th:each="source : ${sources}"
+                                                    th:text="${source.getName()}"
+                                                    th:selected="${source.equals(currentSource)}">
+                                            </option>
                                         </select>
                                     </td>
                                 </tr>
@@ -1289,13 +1273,11 @@
 
                         <section>
                             <ul class="nav nav-pills" role="tablist">
-                                #foreach ($source in $sources)
-                                    <li role="presentation">
-                                        <a href="#$source.getName()"
-                                           aria-controls="$source.getName()" role="tab"
-                                           data-toggle="tab">$source.getName()</a>
-                                    </li>
-                                #end
+                                <li th:each="source : ${sources}" role="presentation">
+                                    <a th:href="'#' + ${source.getName()}"
+                                       th:attr="aria-controls=${source.getName()}" role="tab"
+                                       data-toggle="tab" th:text="${source.getName()}"></a>
+                                </li>
                             </ul>
 
                             <div class="tab-content">
@@ -1984,27 +1966,17 @@
                                 <table class="table">
                                     <tr>
                                         <th></th>
-                                        #foreach ($format in $imageSourceFormats)
-                                            <th class="text-center">$format.getName()</th>
-                                        #end
+                                        <th th:each="format : ${imageSourceFormats}" class="text-center" th:text="${format.getName()}"></th>
                                     </tr>
 
-                                    #foreach ($processor in $processors)
-                                        <tr>
-                                            <td>$processor.getName()</td>
-                                            #foreach ($format in $imageSourceFormats)
-                                                #if ($processor.supports($format))
-                                                    <td class="text-center success">
-                                                        <span class="text-success">&check;</span>
-                                                    </td>
-                                                #else
-                                                    <td class="text-center danger">
-                                                        <span class="text-danger">&#x2717;</span>
-                                                    </td>
-                                                #end
-                                            #end
-                                        </tr>
-                                    #end
+                                    <tr th:each="processor : ${processors}">
+                                        <td th:text="${processor.getName()}"></td>
+                                        <td th:each="format : ${imageSourceFormats}"
+                                            th:class="${processor.supports(format) ? 'text-center success' : 'text-center danger'}">
+                                            <span th:if="${processor.supports(format)}" class="text-success">&check;</span>
+                                            <span th:if="${!processor.supports(format)}" class="text-danger">&#x2717;</span>
+                                        </td>
+                                    </tr>
                                 </table>
                             </div>
 
@@ -2012,55 +1984,35 @@
                                 <table class="table">
                                     <tr>
                                         <th></th>
-                                        #foreach ($format in $videoSourceFormats)
-                                            <th class="text-center">$format.getName()</th>
-                                        #end
+                                        <th th:each="format : ${videoSourceFormats}" class="text-center" th:text="${format.getName()}"></th>
                                     </tr>
 
-                                    #foreach ($processor in $processors)
-                                        <tr>
-                                            <td>$processor.getName()</td>
-                                            #foreach ($format in $videoSourceFormats)
-                                                #if ($processor.supports($format))
-                                                    <td class="text-center success">
-                                                        <span class="text-success">&check;</span>
-                                                    </td>
-                                                #else
-                                                    <td class="text-center danger">
-                                                        <span class="text-danger">&#x2717;</span>
-                                                    </td>
-                                                #end
-                                            #end
-                                        </tr>
-                                    #end
+                                    <tr th:each="processor : ${processors}">
+                                        <td th:text="${processor.getName()}"></td>
+                                        <td th:each="format : ${videoSourceFormats}"
+                                            th:class="${processor.supports(format) ? 'text-center success' : 'text-center danger'}">
+                                            <span th:if="${processor.supports(format)}" class="text-success">&check;</span>
+                                            <span th:if="${!processor.supports(format)}" class="text-danger">&#x2717;</span>
+                                        </td>
+                                    </tr>
                                 </table>
                             </div>
                         </div>
                     </section>
 
-                    #if ($anyWarnings)
-                        <section id="cl-processor-warnings">
-                            <h2>Warnings</h2>
-                            <table class="table table-striped">
-                                #foreach ($processor in $processors)
-                                    #if ($processor.getWarnings().size() > 0)
-                                        <tr>
-                                            <td class="bg-warning">
-                                                $processor.getName()
-                                            </td>
-                                            <td class="bg-warning">
-                                                <ul>
-                                                    #foreach ($warning in $processor.getWarnings())
-                                                         <li>$warning</li>
-                                                    #end
-                                                </ul>
-                                            </td>
-                                        </tr>
-                                    #end
-                                #end
-                            </table>
-                        </section>
-                    #end
+                    <section th:if="${anyWarnings}" id="cl-processor-warnings">
+                        <h2>Warnings</h2>
+                        <table class="table table-striped">
+                            <tr th:each="processor : ${processors}" th:if="${processor.getWarnings().size() > 0}">
+                                <td class="bg-warning" th:text="${processor.getName()}"></td>
+                                <td class="bg-warning">
+                                    <ul>
+                                        <li th:each="warning : ${processor.getWarnings()}" th:text="${warning}"></li>
+                                    </ul>
+                                </td>
+                            </tr>
+                        </table>
+                    </section>
 
                     <form method="post">
                         <section>
@@ -2085,13 +2037,8 @@
                                         <select class="form-control"
                                                 name="processor.selection_strategy"
                                                 data-restart-required="false">
-                                            #if ($processorSelectionStrategy.toString().equals("AutomaticSelectionStrategy"))
-                                                <option value="AutomaticSelectionStrategy" selected>Automatic</option>
-                                                <option value="ManualSelectionStrategy">Manual</option>
-                                            #else
-                                                <option value="AutomaticSelectionStrategy">Automatic</option>
-                                                <option value="ManualSelectionStrategy" selected>Manual</option>
-                                            #end
+                                            <option value="AutomaticSelectionStrategy" th:selected="${processorSelectionStrategy.toString().equals('AutomaticSelectionStrategy')}">Automatic</option>
+                                            <option value="ManualSelectionStrategy" th:selected="${processorSelectionStrategy.toString().equals('ManualSelectionStrategy')}">Manual</option>
                                         </select>
                                     </td>
                                 </tr>
@@ -2117,65 +2064,41 @@
                             <div class="tab-content">
                                 <div role="tabpanel" class="tab-pane active" id="cl-image-assignments">
                                     <table class="table table-striped cl-source-format-assignments">
-                                        #foreach ($format in $sourceFormats)
-                                            #if ($format.isImage())
-                                                <tr>
-                                                    <td style="width:30%">$format.getName()</td>
-                                                    <td>
-                                                        <select class="form-control"
-                                                                name="processor.ManualSelectionStrategy.$format.toString()"
-                                                                data-restart-required="false">
-                                                            #if ($currentProcessors.get($format))
-                                                                <option value="">Use Fallback</option>
-                                                            #else
-                                                                <option value="" selected>Use Fallback</option>
-                                                            #end
-                                                            #foreach ($processor in $processors)
-                                                                #if ($processor.supports($format))
-                                                                    #if ($currentProcessors.get($format).equals($processor))
-                                                                        <option selected>$processor.getName()</option>
-                                                                    #else
-                                                                        <option>$processor.getName()</option>
-                                                                    #end
-                                                                #end
-                                                            #end
-                                                        </select>
-                                                    </td>
-                                                </tr>
-                                            #end
-                                        #end
+                                        <tr th:each="format : ${sourceFormats}" th:if="${format.isImage()}">
+                                            <td style="width:30%" th:text="${format.getName()}"></td>
+                                            <td>
+                                                <select class="form-control"
+                                                        th:name="'processor.ManualSelectionStrategy.' + ${format.toString()}"
+                                                        data-restart-required="false">
+                                                    <option value="" th:selected="${currentProcessors == null or not currentProcessors.containsKey(format)}">Use Fallback</option>
+                                                    <option th:each="processor : ${processors}"
+                                                            th:if="${processor.supports(format)}"
+                                                            th:text="${processor.getName()}"
+                                                            th:selected="${currentProcessors != null and currentProcessors.containsKey(format) and currentProcessors[format] == processor}">
+                                                    </option>
+                                                </select>
+                                            </td>
+                                        </tr>
                                     </table>
                                 </div>
 
                                 <div role="tabpanel" class="tab-pane" id="cl-video-assignments">
                                     <table class="table table-striped cl-source-format-assignments">
-                                        #foreach ($format in $sourceFormats)
-                                            #if ($format.isVideo())
-                                                <tr>
-                                                    <td style="width:30%">$format.getName()</td>
-                                                    <td>
-                                                        <select class="form-control"
-                                                                name="processor.ManualSelectionStrategy.$format.toString()"
-                                                                data-restart-required="false">
-                                                            #if ($currentProcessors.get($format))
-                                                                <option value="">Use Fallback</option>
-                                                            #else
-                                                                <option value="" selected>Use Fallback</option>
-                                                            #end
-                                                            #foreach ($processor in $processors)
-                                                                #if ($processor.supports($format))
-                                                                    #if ($currentProcessors.get($format).equals($processor))
-                                                                        <option selected>$processor.getName()</option>
-                                                                    #else
-                                                                        <option>$processor.getName()</option>
-                                                                    #end
-                                                                #end
-                                                            #end
-                                                        </select>
-                                                    </td>
-                                                </tr>
-                                            #end
-                                        #end
+                                        <tr th:each="format : ${sourceFormats}" th:if="${format.isVideo()}">
+                                            <td style="width:30%" th:text="${format.getName()}"></td>
+                                            <td>
+                                                <select class="form-control"
+                                                        th:name="'processor.ManualSelectionStrategy.' + ${format.toString()}"
+                                                        data-restart-required="false">
+                                                    <option value="" th:selected="${currentProcessors == null or not currentProcessors.containsKey(format)}">Use Fallback</option>
+                                                    <option th:each="processor : ${processors}"
+                                                            th:if="${processor.supports(format)}"
+                                                            th:text="${processor.getName()}"
+                                                            th:selected="${currentProcessors != null and currentProcessors.containsKey(format) and currentProcessors[format] == processor}">
+                                                    </option>
+                                                </select>
+                                            </td>
+                                        </tr>
                                     </table>
                                 </div>
 
@@ -2193,13 +2116,10 @@
                                             <select class="form-control"
                                                     name="processor.ManualSelectionStrategy.fallback"
                                                     data-restart-required="false">
-                                                #foreach ($processor in $processors)
-                                                    #if ($currentFallbackProcessor.equals($processor))
-                                                        <option selected>$processor.getName()</option>
-                                                    #else
-                                                        <option>$processor.getName()</option>
-                                                    #end
-                                                #end
+                                                <option th:each="processor : ${processors}"
+                                                        th:text="${processor.getName()}"
+                                                        th:selected="${currentFallbackProcessor != null and currentFallbackProcessor.equals(processor)}">
+                                                </option>
                                             </select>
                                         </td>
                                     </tr>
@@ -2329,9 +2249,10 @@
                                         <select class="form-control"
                                                 name="processor.downscale_filter"
                                                 data-requires-restart="false">
-                                            #foreach ($filter in $scaleFilters)
-                                                <option value="$filter.toString().toLowerCase()">$filter.getName()</option>
-                                            #end
+                                            <option th:each="filter : ${scaleFilters}"
+                                                    th:value="${filter.toString().toLowerCase()}"
+                                                    th:text="${filter.getName()}">
+                                            </option>
                                         </select>
                                     </td>
                                 </tr>
@@ -2348,9 +2269,10 @@
                                         <select class="form-control"
                                                 name="processor.upscale_filter"
                                                 data-requires-restart="false">
-                                            #foreach ($filter in $scaleFilters)
-                                                <option value="$filter.toString().toLowerCase()">$filter.getName()</option>
-                                            #end
+                                            <option th:each="filter : ${scaleFilters}"
+                                                    th:value="${filter.toString().toLowerCase()}"
+                                                    th:text="${filter.getName()}">
+                                            </option>
                                         </select>
                                     </td>
                                 </tr>
@@ -2454,13 +2376,11 @@
                             <h2>Processors</h2>
 
                             <ul class="nav nav-pills" role="tablist">
-                                #foreach ($processor in $processors)
-                                    <li role="presentation">
-                                        <a href="#$processor.getName()"
-                                           aria-controls="$processor.getName()" role="tab"
-                                           data-toggle="tab">$processor.getName()</a>
-                                    </li>
-                                #end
+                                <li th:each="processor : ${processors}" role="presentation">
+                                    <a th:href="'#' + ${processor.getName()}"
+                                       th:attr="aria-controls=${processor.getName()}" role="tab"
+                                       data-toggle="tab" th:text="${processor.getName()}"></a>
+                                </li>
                             </ul>
 
                             <div class="tab-content">
@@ -2513,7 +2433,7 @@
                                         </tr>
                                     </table>
                                 </div>
-                                
+
                                 <div role="tabpanel" class="tab-pane" id="GrokProcessor">
                                     <table class="table table-striped">
                                         <tr>
@@ -2532,7 +2452,7 @@
                                         </tr>
                                     </table>
                                 </div>
-                                
+
                                 <div role="tabpanel" class="tab-pane" id="PdfBoxProcessor">
                                     <table class="table table-striped">
                                         <tr>
@@ -2730,13 +2650,10 @@
                                     <td>
                                         <select class="form-control"
                                                 name="cache.server.source">
-                                            #foreach ($cache in $sourceCaches)
-                                                #if ($cache.equals($currentSourceCache))
-                                                    <option selected>$cache.getName()</option>
-                                                #else
-                                                    <option>$cache.getName()</option>
-                                                #end
-                                            #end
+                                            <option th:each="cache : ${sourceCaches}"
+                                                    th:text="${cache.getName()}"
+                                                    th:selected="${cache.equals(currentSourceCache)}">
+                                            </option>
                                         </select>
                                     </td>
                                 </tr>
@@ -2780,13 +2697,10 @@
                                     <td>
                                         <select class="form-control"
                                                 name="cache.server.derivative">
-                                            #foreach ($cache in $derivativeCaches)
-                                                #if ($cache.equals($currentDerivativeCache))
-                                                    <option selected>$cache.getName()</option>
-                                                #else
-                                                    <option>$cache.getName()</option>
-                                                #end
-                                            #end
+                                            <option th:each="cache : ${derivativeCaches}"
+                                                    th:text="${cache.getName()}"
+                                                    th:selected="${cache.equals(currentDerivativeCache)}">
+                                            </option>
                                         </select>
                                     </td>
                                 </tr>
@@ -2877,13 +2791,11 @@
                             <h2>Caches</h2>
 
                             <ul class="nav nav-pills" role="tablist">
-                                #foreach ($cache in $derivativeCaches)
-                                    <li role="presentation">
-                                        <a href="#$cache.getName()"
-                                           aria-controls="$cache.getName()" role="tab"
-                                           data-toggle="tab">$cache.getName()</a>
-                                    </li>
-                                #end
+                                <li th:each="cache : ${derivativeCaches}" role="presentation">
+                                    <a th:href="'#' + ${cache.getName()}"
+                                       th:attr="aria-controls=${cache.getName()}" role="tab"
+                                       data-toggle="tab" th:text="${cache.getName()}"></a>
+                                </li>
                             </ul>
 
                             <div class="tab-content">
@@ -3478,13 +3390,10 @@
                                         <select class="form-control"
                                                 name="overlays.BasicStrategy.string.font"
                                                 data-requires-restart="false">
-                                            #foreach ($font in $fonts)
-                                                #if ($font.equals($currentOverlayFont))
-                                                    <option selected>$font</option>
-                                                #else
-                                                    <option>$font</option>
-                                                #end
-                                            #end
+                                            <option th:each="font : ${fonts}"
+                                                    th:text="${font}"
+                                                    th:selected="${font.equals(currentOverlayFont)}">
+                                            </option>
                                         </select>
                                     </td>
                                 </tr>
@@ -3646,9 +3555,9 @@
 
 </div>
 
-<script type="text/javascript" src="static/scripts/jquery.min.js"></script>
-<script type="text/javascript" src="static/scripts/bootstrap.min.js"></script>
-<script type="text/javascript" src="static/scripts/admin.js"></script>
+<script src="static/scripts/jquery.min.js"></script>
+<script src="static/scripts/bootstrap.min.js"></script>
+<script src="static/scripts/admin.js"></script>
 
 </body>
 </html>

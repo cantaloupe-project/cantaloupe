@@ -227,7 +227,7 @@ HttpSource.chunking.cache.max_size = 5M
 # !! Endpoint URI. Only needed for non-AWS endpoints.
 S3Source.endpoint =
 
-# !! AWS region. Only needed for AWS endpoints.
+# !! AWS region. Must be set if using S3Source, even if not using an AWS endpoint.
 S3Source.region =
 
 # !! Credentials for your AWS account.

@@ -26,12 +26,14 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
   adduser \
   openjdk-21-jdk \
   libturbojpeg \
-  libturbojpeg-dev \ 
+  libturbojpeg-dev \
   maven \
   && rm -rf /var/lib/apt/lists/*
 
 # Install KakaduNativeProcessor dependencies
 COPY dist/deps/Linux-x86-64/lib/* /usr/lib/
+
+# JDK 21 is the default JDK for Ubuntu 24.04 (noble)
 
 # A non-root user is needed for some FilesystemSourceTest tests to work.
 ARG user=cantaloupe

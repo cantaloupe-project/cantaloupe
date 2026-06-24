@@ -205,7 +205,8 @@ public class StringOverlay extends Overlay implements Operation {
     public String toString() {
         // minSize is not included, as it is more of a potential property than
         // a property.
-        return String.format(new Locale("en", "UK"),
+        Locale locale = new Locale.Builder().setLanguage("en").setRegion("UK").build();
+        return String.format(locale,
                 "%s_%s_%d_%s_%d_%.1f_%.01f_%s_%s_%s_%.1f_%s",
                 StringUtils.md5(getString()),
                 getPosition(),

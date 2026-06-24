@@ -39,9 +39,7 @@ public class DirectoryDeserializer extends JsonDeserializer<Directory> {
 
         // Find the parent tag.
         int parentTag = 0;
-        Iterator<Map.Entry<String,JsonNode>> dirEntries = dirNode.fields();
-        while (dirEntries.hasNext()) {
-            Map.Entry<String, JsonNode> dirEntry = dirEntries.next();
+        for (Map.Entry<String, JsonNode> dirEntry : dirNode.properties()) {
             JsonNode rootValue = dirEntry.getValue();
             if ("parentTag".equals(dirEntry.getKey())) {
                 parentTag = rootValue.intValue();
@@ -57,9 +55,7 @@ public class DirectoryDeserializer extends JsonDeserializer<Directory> {
         }
 
         dir = new Directory(tagSet);
-        dirEntries = dirNode.fields();
-        while (dirEntries.hasNext()) {
-            Map.Entry<String, JsonNode> rootEntry = dirEntries.next();
+        for (Map.Entry<String, JsonNode> rootEntry : dirNode.properties()) {
             if (!"fields".equals(rootEntry.getKey())) {
                 continue;
             }
@@ -75,9 +71,7 @@ public class DirectoryDeserializer extends JsonDeserializer<Directory> {
                 JsonNode jsonValue = null;
                 Object value       = null;
 
-                Iterator<Map.Entry<String, JsonNode>> keysIter = field.fields();
-                while (keysIter.hasNext()) {
-                    Map.Entry<String, JsonNode> keyEntry = keysIter.next();
+                for (Map.Entry<String, JsonNode> keyEntry: field.properties()) {
                     switch (keyEntry.getKey()) {
                         case "tag":
                             tag = tagSet.getTag(keyEntry.getValue().intValue());
@@ -96,9 +90,7 @@ public class DirectoryDeserializer extends JsonDeserializer<Directory> {
                             "Field is missing data type");
                 }
 
-                keysIter = field.fields();
-                while (keysIter.hasNext()) {
-                    Map.Entry<String, JsonNode> keyEntry = keysIter.next();
+                for (Map.Entry<String, JsonNode> keyEntry : field.properties()) {
                     if ("value".equals(keyEntry.getKey())) {
                         jsonValue = keyEntry.getValue();
                         value = toJavaValue(dataType, jsonValue);
