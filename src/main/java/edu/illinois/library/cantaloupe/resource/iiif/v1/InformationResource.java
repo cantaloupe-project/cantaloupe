@@ -1,5 +1,18 @@
 package edu.illinois.library.cantaloupe.resource.iiif.v1;
 
+import edu.illinois.library.cantaloupe.http.Method;
+import edu.illinois.library.cantaloupe.http.Status;
+import edu.illinois.library.cantaloupe.image.Format;
+import edu.illinois.library.cantaloupe.image.Info;
+import edu.illinois.library.cantaloupe.resource.InformationRequestHandler;
+import edu.illinois.library.cantaloupe.resource.JacksonRepresentation;
+import edu.illinois.library.cantaloupe.resource.ResourceException;
+import edu.illinois.library.cantaloupe.resource.Route;
+import edu.illinois.library.cantaloupe.source.StatResult;
+import jakarta.servlet.http.HttpServletResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -7,20 +20,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
-
-import edu.illinois.library.cantaloupe.http.Method;
-import edu.illinois.library.cantaloupe.http.Status;
-import edu.illinois.library.cantaloupe.image.Format;
-import edu.illinois.library.cantaloupe.image.Info;
-import edu.illinois.library.cantaloupe.resource.JacksonRepresentation;
-import edu.illinois.library.cantaloupe.resource.ResourceException;
-import edu.illinois.library.cantaloupe.resource.Route;
-import edu.illinois.library.cantaloupe.resource.InformationRequestHandler;
-import edu.illinois.library.cantaloupe.source.StatResult;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import jakarta.servlet.http.HttpServletResponse;
 
 /**
  * Handles IIIF Image API 1.x information requests.
@@ -90,14 +89,13 @@ public class InformationResource extends IIIF1Resource {
             }
         }
 
-        try (InformationRequestHandler handler = InformationRequestHandler.builder()
-                .withIdentifier(getMetaIdentifier().getIdentifier())
-                .withBypassingCache(getRequest().isBypassingCache())
-                .withBypassingCacheRead(getRequest().isBypassingCacheRead())
-                .withDelegateProxy(getDelegateProxy())
-                .withRequestContext(getRequestContext())
-                .withCallback(new CustomCallback())
-                .build()) {
+        try (InformationRequestHandler handler = new InformationRequestHandler(
+                getMetaIdentifier().getIdentifier(),
+                getDelegateProxy(),
+                getRequestContext(),
+                new CustomCallback(),
+                getRequest().isBypassingCache(),
+                getRequest().isBypassingCacheRead())) {
             try {
                 Info info = handler.handle();
                 Information iiifInfo = new InformationFactory().newImageInfo(
