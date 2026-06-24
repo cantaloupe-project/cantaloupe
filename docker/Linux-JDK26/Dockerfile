@@ -28,6 +28,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
   adduser \
   libturbojpeg \
   libturbojpeg-dev \
+  maven \
   && rm -rf /var/lib/apt/lists/*
 
 # Install KakaduNativeProcessor dependencies
@@ -40,12 +41,7 @@ ENV LD_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu:${LD_LIBRARY_PATH}
 # Install OpenJDK
 RUN wget -q https://download.java.net/java/GA/jdk26/c3cc523845074aa0af4f5e1e1ed4151d/35/GPL/openjdk-26_linux-x64_bin.tar.gz \
   && tar xfz openjdk-26_linux-x64_bin.tar.gz \
-  && mv jdk-26 /opt/jdk \
-  # Install a newer Maven than the one in apt
-  && wget -q https://dlcdn.apache.org/maven/maven-3/3.9.15/binaries/apache-maven-3.9.15-bin.tar.gz \
-  && tar xfz apache-maven-3.9.15-bin.tar.gz \
-  && mv apache-maven-3.9.15 /opt/maven \
-  && rm apache-maven-3.9.15-bin.tar.gz
+  && mv jdk-26 /opt/jdk
 
 # A non-root user is needed for some FilesystemSourceTest tests to work.
 ARG user=cantaloupe
