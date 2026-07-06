@@ -816,6 +816,23 @@ class Java2DUtilTest extends BaseTest {
         assertEquals(1, outImage.getHeight());
     }
 
+    @Test
+    void scaleWithGrayAlphaImage() {
+        // Grayscale+alpha images (e.g. PNG color type 4) have two channels,
+        // which the resampler doesn't handle natively; without an up-front
+        // conversion this throws ArrayIndexOutOfBoundsException.
+        BufferedImage inImage = newGrayImage(100, 100, 8, true);
+
+        ScaleByPixels scale = new ScaleByPixels(
+                50, 50, ScaleByPixels.Mode.ASPECT_FIT_INSIDE);
+        ScaleConstraint sc = new ScaleConstraint(1, 1);
+        ReductionFactor rf = new ReductionFactor(1);
+
+        BufferedImage outImage = Java2DUtil.scale(inImage, scale, sc, rf, false);
+        assertEquals(50, outImage.getWidth());
+        assertEquals(50, outImage.getHeight());
+    }
+
     /* sharpen() */
 
     @Test
