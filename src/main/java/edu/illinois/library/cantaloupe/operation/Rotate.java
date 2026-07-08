@@ -29,6 +29,11 @@ public class Rotate implements Operation {
         setDegrees(degrees);
     }
 
+    @Override
+    public Rotate copy() {
+        return new Rotate(degrees);
+    }
+
     /**
      * @param degrees Degrees to add.
      * @throws IllegalStateException if the instance is frozen.

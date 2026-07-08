@@ -25,6 +25,11 @@ public class Sharpen implements Operation {
     }
 
     @Override
+    public Sharpen copy() {
+        return new Sharpen(amount);
+    }
+
+    @Override
     public void freeze() {
         isFrozen = true;
     }

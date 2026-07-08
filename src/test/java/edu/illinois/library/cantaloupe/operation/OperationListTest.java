@@ -1105,4 +1105,99 @@ class OperationListTest extends BaseTest {
                 () -> ops.validate(fullSize, Format.get("png")));
     }
 
+    @Test
+    void copyReturnsEqualInstance() {
+        OperationList opList = OperationList.builder()
+                .withIdentifier(new Identifier("cats"))
+                .withMetaIdentifier(new MetaIdentifier(new Identifier("cats")))
+                .withPageIndex(2)
+                .withOperations(
+                        new CropByPixels(0, 0, 70, 30),
+                        new Rotate(45),
+                        new Encode(Format.get("jpg")))
+                .withOptions(Map.of("key", "value"))
+                .build();
+
+        OperationList copy = opList.copy();
+
+        assertNotSame(opList, copy);
+        assertEquals(opList, copy);
+        assertEquals(opList.getIdentifier(), copy.getIdentifier());
+        assertEquals(opList.getMetaIdentifier(), copy.getMetaIdentifier());
+        assertEquals(opList.getPageIndex(), copy.getPageIndex());
+        assertEquals(opList.getOptions(), copy.getOptions());
+    }
+
+    @Test
+    void copyDeepCopiesOperations() {
+        OperationList opList = OperationList.builder()
+                .withIdentifier(new Identifier("cats"))
+                .withOperations(new Rotate(45))
+                .build();
+
+        OperationList copy = opList.copy();
+
+        Rotate original = (Rotate) opList.getFirst(Rotate.class);
+        Rotate copied   = (Rotate) copy.getFirst(Rotate.class);
+        assertNotSame(original, copied);
+
+        // Mutating the copy's operation must not affect the original's.
+        copied.addDegrees(90);
+        assertEquals(45, original.getDegrees(), DELTA);
+        assertEquals(135, copied.getDegrees(), DELTA);
+    }
+
+    @Test
+    void copyIsNotFrozen() {
+        OperationList opList = OperationList.builder()
+                .withIdentifier(new Identifier("cats"))
+                .withOperations(new Rotate(45))
+                .build();
+        opList.freeze();
+
+        OperationList copy = opList.copy();
+
+        // Neither the copy nor its operations should be frozen.
+        assertDoesNotThrow(() -> copy.add(new Sharpen(0.5)));
+        assertDoesNotThrow(() ->
+                ((Rotate) copy.getFirst(Rotate.class)).addDegrees(90));
+    }
+
+    /**
+     * Applying mutations to a copy (as the cache-lookup path does) followed by
+     * applying them again to the original must not double-apply in-place
+     * operation mutations such as {@link Rotate#addDegrees}.
+     */
+    @Test
+    void copyPreventsDoubleAppliedMutations() {
+        final Dimension fullSize = new Dimension(2000, 1000);
+        final Info info = Info.builder()
+                .withSize(fullSize)
+                .withMetadata(new Metadata() {
+                    @Override
+                    public Orientation getOrientation() {
+                        return Orientation.ROTATE_90;
+                    }
+                })
+                .build();
+        final OperationList opList = OperationList.builder()
+                .withIdentifier(new Identifier("cats"))
+                .withOperations(
+                        new Rotate(45),
+                        new Encode(Format.get("jpg")))
+                .build();
+
+        DelegateProxy proxy = TestUtil.newDelegateProxy();
+        proxy.getRequestContext().setOperationList(opList, fullSize);
+
+        // Apply mutations to a copy first (mirrors the cache-lookup path)...
+        opList.copy().applyNonEndpointMutations(info, proxy);
+        // ...then to the original.
+        opList.applyNonEndpointMutations(info, proxy);
+
+        Rotate expected = new Rotate(45);
+        expected.addDegrees(Orientation.ROTATE_90.getDegrees());
+        assertEquals(expected, opList.getFirst(Rotate.class));
+    }
+
 }

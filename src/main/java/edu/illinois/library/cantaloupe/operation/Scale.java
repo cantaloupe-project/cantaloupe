@@ -38,6 +38,14 @@ public abstract class Scale implements Operation {
         }
 
         /**
+         * @return The instance itself, as it is immutable.
+         */
+        @Override
+        public Operation copy() {
+            return this;
+        }
+
+        /**
          * Does nothing.
          */
         @Override

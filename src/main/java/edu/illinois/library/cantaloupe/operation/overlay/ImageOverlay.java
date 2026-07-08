@@ -38,6 +38,11 @@ public class ImageOverlay extends Overlay implements Operation {
         setURI(uri);
     }
 
+    @Override
+    public ImageOverlay copy() {
+        return new ImageOverlay(uri, getPosition(), getInset());
+    }
+
     /**
      * For reading the image, clients should use {@link #openStream()} instead.
      *

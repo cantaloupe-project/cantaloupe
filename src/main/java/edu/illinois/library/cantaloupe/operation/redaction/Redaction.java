@@ -30,6 +30,11 @@ public class Redaction implements Operation {
     }
 
     @Override
+    public Redaction copy() {
+        return new Redaction((region != null) ? new Rectangle(region) : null);
+    }
+
+    @Override
     public boolean equals(Object obj) {
         if (obj == this) {
             return true;

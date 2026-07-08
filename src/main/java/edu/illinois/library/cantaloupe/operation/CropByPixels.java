@@ -24,6 +24,13 @@ public class CropByPixels extends Crop implements Operation {
         setHeight(height);
     }
 
+    @Override
+    public CropByPixels copy() {
+        CropByPixels copy = new CropByPixels(x, y, width, height);
+        copy.orientation = orientation;
+        return copy;
+    }
+
     /**
      * @return The X origin of the operation, expressed in pixels.
      */

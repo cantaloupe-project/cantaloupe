@@ -61,6 +61,14 @@ public class ScaleByPixels extends Scale implements Operation {
     }
 
     @Override
+    public ScaleByPixels copy() {
+        ScaleByPixels copy = new ScaleByPixels(width, height, scaleMode);
+        copy.setFilter(getFilter());
+        copy.setLinear(isLinear());
+        return copy;
+    }
+
+    @Override
     public boolean equals(Object obj) {
         if (obj == this) {
             return true;
