@@ -221,8 +221,15 @@ public class ResampleOp extends AdvancedResizeOp {
                     " but must be at least 3x3.");
         }
 
+        // This resampler only supports 1- (gray), 3- (RGB), and 4-channel
+        // (ARGB) images. Two-channel gray+alpha images (e.g. PNG color type 4)
+        // and palette/binary images would otherwise cause the horizontal and
+        // vertical sampling loops to read three or four channels out of a
+        // narrower row, throwing ArrayIndexOutOfBoundsException. Convert them
+        // up front to a supported layout, preserving alpha when present.
         if (srcImage.getType() == BufferedImage.TYPE_BYTE_BINARY ||
-                srcImage.getType() == BufferedImage.TYPE_BYTE_INDEXED) {
+                srcImage.getType() == BufferedImage.TYPE_BYTE_INDEXED ||
+                srcImage.getSampleModel().getNumBands() == 2) {
             srcImage = ImageUtils.convert(srcImage, srcImage.getColorModel().hasAlpha() ?
                     BufferedImage.TYPE_4BYTE_ABGR : BufferedImage.TYPE_3BYTE_BGR);
         }
