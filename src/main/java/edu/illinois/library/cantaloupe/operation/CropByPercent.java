@@ -31,6 +31,13 @@ public class CropByPercent extends Crop implements Operation {
         setHeight(height);
     }
 
+    @Override
+    public CropByPercent copy() {
+        CropByPercent copy = new CropByPercent(x, y, width, height);
+        copy.orientation = orientation;
+        return copy;
+    }
+
     /**
      * @return The X origin of the operation, expressed in percent.
      */

@@ -7,6 +7,13 @@ import edu.illinois.library.cantaloupe.image.ScaleConstraint;
 public class CropToSquare extends Crop implements Operation {
 
     @Override
+    public CropToSquare copy() {
+        CropToSquare copy = new CropToSquare();
+        copy.orientation = orientation;
+        return copy;
+    }
+
+    @Override
     public Rectangle getRectangle(Dimension reducedSize,
                                   ReductionFactor reductionFactor,
                                   ScaleConstraint scaleConstraint) {

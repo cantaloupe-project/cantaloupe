@@ -828,8 +828,13 @@ public final class OperationList implements Iterable<Operation> {
     }
 
     /**
-     * Creates a shallow copy of this OperationList with the same operations,
-     * options, identifier, and page index.
+     * <p>Creates a deep copy of this instance with the same identifier, page
+     * index, options, and operations.</p>
+     *
+     * <p>Each {@link Operation} is itself {@link Operation#copy() copied}, so
+     * that mutating an operation in the copy (as {@link
+     * #applyNonEndpointMutations} does) does not affect the corresponding
+     * operation in this instance. The returned copy is never frozen.</p>
      *
      * @return A new OperationList with the same state as this instance.
      */
@@ -838,7 +843,9 @@ public final class OperationList implements Iterable<Operation> {
         copy.identifier = this.identifier;
         copy.metaIdentifier = this.metaIdentifier;
         copy.pageIndex = this.pageIndex;
-        copy.operations.addAll(this.operations);
+        for (Operation op : this.operations) {
+            copy.operations.add(op.copy());
+        }
         copy.options.putAll(this.options);
         return copy;
     }

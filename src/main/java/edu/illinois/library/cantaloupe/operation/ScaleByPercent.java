@@ -34,6 +34,14 @@ public class ScaleByPercent extends Scale implements Operation {
     }
 
     @Override
+    public ScaleByPercent copy() {
+        ScaleByPercent copy = new ScaleByPercent(percent);
+        copy.setFilter(getFilter());
+        copy.setLinear(isLinear());
+        return copy;
+    }
+
+    @Override
     public boolean equals(Object obj) {
         if (obj == this) {
             return true;

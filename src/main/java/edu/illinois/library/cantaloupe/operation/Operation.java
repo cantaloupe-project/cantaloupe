@@ -12,6 +12,17 @@ import java.util.Map;
 public interface Operation {
 
     /**
+     * <p>Returns a deep copy of the instance. The copy is never frozen, even
+     * if the instance it was copied from is, so that it can be safely
+     * mutated.</p>
+     *
+     * <p>Immutable operations (such as enums) may return themselves.</p>
+     *
+     * @return Deep copy of the instance.
+     */
+    Operation copy();
+
+    /**
      * Freezes the instance, making it immutable. When frozen, mutation methods
      * should throw an {@link IllegalStateException} and getters should return
      * immutable values, if possible. (But they should do that anyway.)
