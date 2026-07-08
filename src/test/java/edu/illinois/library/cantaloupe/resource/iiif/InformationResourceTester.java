@@ -9,8 +9,8 @@ import edu.illinois.library.cantaloupe.http.Client;
 import edu.illinois.library.cantaloupe.http.ResourceException;
 import edu.illinois.library.cantaloupe.http.Response;
 import edu.illinois.library.cantaloupe.image.Identifier;
-import edu.illinois.library.cantaloupe.resource.AbstractResource;
 import edu.illinois.library.cantaloupe.test.TestUtil;
+import edu.illinois.library.cantaloupe.resource.Request;
 
 import java.io.File;
 import java.net.URI;
@@ -400,7 +400,7 @@ public class InformationResourceTester extends ImageAPIResourceTester {
     public void testRedirectToInfoJSONWithDifferentPublicIdentifier(URI uri)
             throws Exception {
         Client client = newClient(uri);
-        client.getHeaders().set(AbstractResource.PUBLIC_IDENTIFIER_HEADER, "foxes");
+        client.getHeaders().set(Request.PUBLIC_IDENTIFIER_HEADER, "foxes");
         try {
             Response response = client.send();
             assertEquals(303, response.getStatus());

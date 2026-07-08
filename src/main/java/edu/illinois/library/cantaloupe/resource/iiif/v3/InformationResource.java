@@ -135,7 +135,7 @@ public class InformationResource extends IIIF3Resource {
      */
     private String getImageURI() {
         return getRequest().getPublicRootReference() + Route.IIIF_3_PATH + "/" +
-                getPublicIdentifier();
+                getRequest().getPublicIdentifier();
     }
 
     private String getNegotiatedContentType() {
