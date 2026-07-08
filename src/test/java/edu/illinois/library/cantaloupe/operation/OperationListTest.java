@@ -2,6 +2,7 @@ package edu.illinois.library.cantaloupe.operation;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
+import edu.illinois.library.cantaloupe.delegate.DelegateProxy;
 import edu.illinois.library.cantaloupe.image.Compression;
 import edu.illinois.library.cantaloupe.image.Dimension;
 import edu.illinois.library.cantaloupe.image.Format;
@@ -15,7 +16,6 @@ import edu.illinois.library.cantaloupe.image.ScaleConstraint;
 import edu.illinois.library.cantaloupe.operation.overlay.BasicStringOverlayServiceTest;
 import edu.illinois.library.cantaloupe.operation.overlay.Overlay;
 import edu.illinois.library.cantaloupe.operation.redaction.Redaction;
-import edu.illinois.library.cantaloupe.delegate.DelegateProxy;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.junit.jupiter.api.BeforeEach;
@@ -26,7 +26,13 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class OperationListTest extends BaseTest {
 
@@ -267,7 +273,7 @@ class OperationListTest extends BaseTest {
         DelegateProxy proxy = TestUtil.newDelegateProxy();
         proxy.getRequestContext().setOperationList(opList, fullSize);
 
-        opList.applyNonEndpointMutations(info, proxy);
+        opList.applyNonEndpointMutations(info, proxy, Configuration.getInstance());
 
         Scale expectedScale = new ScaleByPercent();
         Scale actualScale = (Scale) opList.getFirst(Scale.class);
@@ -296,7 +302,7 @@ class OperationListTest extends BaseTest {
         DelegateProxy proxy = TestUtil.newDelegateProxy();
         proxy.getRequestContext().setOperationList(opList, fullSize);
 
-        opList.applyNonEndpointMutations(info, proxy);
+        opList.applyNonEndpointMutations(info, proxy, Configuration.getInstance());
 
         Crop expectedCrop = new CropByPixels(0, 0, 70, 30);
         expectedCrop.setOrientation(Orientation.ROTATE_90);
@@ -327,7 +333,7 @@ class OperationListTest extends BaseTest {
         DelegateProxy proxy = TestUtil.newDelegateProxy();
         proxy.getRequestContext().setOperationList(opList, fullSize);
 
-        opList.applyNonEndpointMutations(info, proxy);
+        opList.applyNonEndpointMutations(info, proxy, Configuration.getInstance());
 
         Rotate expectedRotate = new Rotate(45);
         expectedRotate.addDegrees(Orientation.ROTATE_90.getDegrees());
@@ -350,7 +356,7 @@ class OperationListTest extends BaseTest {
         DelegateProxy proxy = TestUtil.newDelegateProxy();
         proxy.getRequestContext().setOperationList(opList, fullSize);
 
-        opList.applyNonEndpointMutations(info, proxy);
+        opList.applyNonEndpointMutations(info, proxy, Configuration.getInstance());
 
         Encode encode = (Encode) opList.getFirst(Encode.class);
         assertEquals(Color.fromString("#FFFFFF"), encode.getBackgroundColor());
@@ -372,7 +378,7 @@ class OperationListTest extends BaseTest {
         DelegateProxy proxy = TestUtil.newDelegateProxy();
         proxy.getRequestContext().setOperationList(opList, fullSize);
 
-        opList.applyNonEndpointMutations(info, proxy);
+        opList.applyNonEndpointMutations(info, proxy, Configuration.getInstance());
 
         Iterator<Operation> it = opList.iterator();
         assertTrue(it.next() instanceof Encode);
@@ -396,7 +402,7 @@ class OperationListTest extends BaseTest {
         DelegateProxy proxy = TestUtil.newDelegateProxy();
         proxy.getRequestContext().setOperationList(opList, fullSize);
 
-        opList.applyNonEndpointMutations(info, proxy);
+        opList.applyNonEndpointMutations(info, proxy, Configuration.getInstance());
 
         Overlay overlay = (Overlay) opList.getFirst(Overlay.class);
         assertEquals(10, overlay.getInset());
@@ -414,7 +420,7 @@ class OperationListTest extends BaseTest {
         DelegateProxy proxy = TestUtil.newDelegateProxy();
         proxy.getRequestContext().setOperationList(opList, fullSize);
 
-        opList.applyNonEndpointMutations(info, proxy);
+        opList.applyNonEndpointMutations(info, proxy, Configuration.getInstance());
 
         Redaction redaction = (Redaction) opList.getFirst(Redaction.class);
         assertEquals(new Rectangle(0, 10, 50, 70), redaction.getRegion());
@@ -437,7 +443,7 @@ class OperationListTest extends BaseTest {
         DelegateProxy proxy = TestUtil.newDelegateProxy();
         proxy.getRequestContext().setOperationList(opList, fullSize);
 
-        opList.applyNonEndpointMutations(info, proxy);
+        opList.applyNonEndpointMutations(info, proxy, Configuration.getInstance());
 
         Iterator<Operation> it = opList.iterator();
         assertTrue(((Scale) it.next()).isLinear());
@@ -460,7 +466,7 @@ class OperationListTest extends BaseTest {
         DelegateProxy proxy = TestUtil.newDelegateProxy();
         proxy.getRequestContext().setOperationList(opList, fullSize);
 
-        opList.applyNonEndpointMutations(info, proxy);
+        opList.applyNonEndpointMutations(info, proxy, Configuration.getInstance());
 
         Iterator<Operation> it = opList.iterator();
         assertEquals(Scale.Filter.BICUBIC, ((Scale) it.next()).getFilter());
@@ -483,7 +489,7 @@ class OperationListTest extends BaseTest {
         DelegateProxy proxy = TestUtil.newDelegateProxy();
         proxy.getRequestContext().setOperationList(opList, fullSize);
 
-        opList.applyNonEndpointMutations(info, proxy);
+        opList.applyNonEndpointMutations(info, proxy, Configuration.getInstance());
 
         Iterator<Operation> it = opList.iterator();
         assertEquals(Scale.Filter.TRIANGLE, ((Scale) it.next()).getFilter());
@@ -504,7 +510,7 @@ class OperationListTest extends BaseTest {
         DelegateProxy proxy = TestUtil.newDelegateProxy();
         proxy.getRequestContext().setOperationList(opList, fullSize);
 
-        opList.applyNonEndpointMutations(info, proxy);
+        opList.applyNonEndpointMutations(info, proxy, Configuration.getInstance());
 
         Iterator<Operation> it = opList.iterator();
         assertTrue(it.next() instanceof Sharpen);
@@ -528,7 +534,7 @@ class OperationListTest extends BaseTest {
         DelegateProxy proxy = TestUtil.newDelegateProxy();
         proxy.getRequestContext().setOperationList(opList, fullSize);
 
-        opList.applyNonEndpointMutations(info, proxy);
+        opList.applyNonEndpointMutations(info, proxy, Configuration.getInstance());
 
         Iterator<Operation> it = opList.iterator();
         assertTrue(it.next() instanceof Encode);
@@ -553,7 +559,7 @@ class OperationListTest extends BaseTest {
         DelegateProxy proxy = TestUtil.newDelegateProxy();
         proxy.getRequestContext().setOperationList(opList, fullSize);
 
-        opList.applyNonEndpointMutations(info, proxy);
+        opList.applyNonEndpointMutations(info, proxy, Configuration.getInstance());
 
         assertEquals("<rdf:RDF>derivative metadata</rdf:RDF>",
                 encode.getMetadata().getXMP().orElseThrow());
@@ -571,7 +577,7 @@ class OperationListTest extends BaseTest {
         DelegateProxy proxy = TestUtil.newDelegateProxy();
 
         assertThrows(IllegalStateException.class,
-                () -> opList.applyNonEndpointMutations(info, proxy));
+                () -> opList.applyNonEndpointMutations(info, proxy, Configuration.getInstance()));
     }
 
     @Test
@@ -954,7 +960,7 @@ class OperationListTest extends BaseTest {
                         new CropByPixels(0, 0, 100, 100),
                         new Encode(Format.get("jpg")))
                 .build();
-        ops.validate(fullSize, Format.get("png"));
+        ops.validate(fullSize, Format.get("png"), Configuration.getInstance());
     }
 
     @Test
@@ -966,7 +972,7 @@ class OperationListTest extends BaseTest {
                         new Encode(Format.get("jpg")))
                 .build();
         assertThrows(ValidationException.class,
-                () -> ops.validate(fullSize, Format.get("png")));
+                () -> ops.validate(fullSize, Format.get("png"), Configuration.getInstance()));
     }
 
     @Test
@@ -977,7 +983,7 @@ class OperationListTest extends BaseTest {
                 .withOperations(new CropByPixels(0, 0, 100, 100))
                 .build();
         assertThrows(ValidationException.class,
-                () -> ops.validate(fullSize, Format.get("png")));
+                () -> ops.validate(fullSize, Format.get("png"), Configuration.getInstance()));
     }
 
     @Test
@@ -989,7 +995,7 @@ class OperationListTest extends BaseTest {
                         new Encode(Format.get("jpg")))
                 .build();
         assertThrows(ValidationException.class,
-                () -> ops.validate(fullSize, Format.get("png")));
+                () -> ops.validate(fullSize, Format.get("png"), Configuration.getInstance()));
     }
 
     @Test
@@ -1003,7 +1009,7 @@ class OperationListTest extends BaseTest {
                         new Encode(Format.get("jpg")))
                 .build();
         assertThrows(ValidationException.class,
-                () -> ops.validate(fullSize, Format.get("png")));
+                () -> ops.validate(fullSize, Format.get("png"), Configuration.getInstance()));
     }
 
     @Test
@@ -1021,7 +1027,7 @@ class OperationListTest extends BaseTest {
                         new Encode(Format.get("jpg")))
                 .build();
         assertThrows(IllegalScaleException.class,
-                () -> ops.validate(fullSize, Format.get("png")));
+                () -> ops.validate(fullSize, Format.get("png"), Configuration.getInstance()));
     }
 
     @Test
@@ -1038,7 +1044,7 @@ class OperationListTest extends BaseTest {
                         new ScaleByPixels(100, 50, ScaleByPixels.Mode.NON_ASPECT_FILL),
                         new Encode(Format.get("png")))
                 .build();
-        ops.validate(fullSize, Format.get("png"));
+        ops.validate(fullSize, Format.get("png"), Configuration.getInstance());
     }
 
     @Test
@@ -1055,7 +1061,7 @@ class OperationListTest extends BaseTest {
                         new ScaleByPixels(1000, 500, ScaleByPixels.Mode.NON_ASPECT_FILL),
                         new Encode(Format.get("png")))
                 .build();
-        ops.validate(fullSize, Format.get("png"));
+        ops.validate(fullSize, Format.get("png"), Configuration.getInstance());
     }
 
     @Test
@@ -1072,7 +1078,7 @@ class OperationListTest extends BaseTest {
                         new ScaleByPixels(320, 172, ScaleByPixels.Mode.NON_ASPECT_FILL),
                         new Encode(Format.get("png")))
                 .build();
-        ops.validate(fullSize, Format.get("png"));
+        ops.validate(fullSize, Format.get("png"), Configuration.getInstance());
     }
 
     @Test
@@ -1090,7 +1096,7 @@ class OperationListTest extends BaseTest {
                         new Encode(Format.get("jpg")))
                 .build();
         assertThrows(IllegalScaleException.class,
-                () -> ops.validate(fullSize, Format.get("png")));
+                () -> ops.validate(fullSize, Format.get("png"), Configuration.getInstance()));
     }
 
     @Test
@@ -1102,7 +1108,7 @@ class OperationListTest extends BaseTest {
                 .withOperations(new Encode(Format.get("jpg")))
                 .build();
         assertThrows(IllegalSizeException.class,
-                () -> ops.validate(fullSize, Format.get("png")));
+                () -> ops.validate(fullSize, Format.get("png"), Configuration.getInstance()));
     }
 
     @Test

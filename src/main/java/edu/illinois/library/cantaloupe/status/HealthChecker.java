@@ -4,6 +4,7 @@ import edu.illinois.library.cantaloupe.async.ThreadPool;
 import edu.illinois.library.cantaloupe.cache.CacheFacade;
 import edu.illinois.library.cantaloupe.cache.DerivativeCache;
 import edu.illinois.library.cantaloupe.cache.SourceCache;
+import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.source.Source;
@@ -12,6 +13,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.imageio.stream.ImageInputStream;
+
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
@@ -141,7 +143,7 @@ public final class HealthChecker {
      * Checks the reading and writing functionality of the source cache.
      */
     private static synchronized void checkSourceCache(Health health) {
-        final CacheFacade cacheFacade = new CacheFacade();
+        final CacheFacade cacheFacade = new CacheFacade(Configuration.getInstance());
         final Optional<SourceCache> optSrcCache = cacheFacade.getSourceCache();
         if (optSrcCache.isPresent()) {
             final SourceCache srcCache = optSrcCache.get();
@@ -177,7 +179,7 @@ public final class HealthChecker {
      * Checks the reading and writing functionality of the source cache.
      */
     private static synchronized void checkDerivativeCache(Health health) {
-        final CacheFacade cacheFacade = new CacheFacade();
+        final CacheFacade cacheFacade = new CacheFacade(Configuration.getInstance());
         final Optional<DerivativeCache> optDerivativeCache =
                 cacheFacade.getDerivativeCache();
         if (optDerivativeCache.isPresent()) {

@@ -195,17 +195,22 @@ class RedisCache implements DerivativeCache {
     private static final String INFO_HASH_KEY =
             "edu.illinois.library.cantaloupe.info";
 
-    private static StatefulRedisConnection<String, byte[]> connection;
+    private StatefulRedisConnection<String, byte[]> connection;
 
-    private static synchronized StatefulRedisConnection<String, byte[]> getConnection() {
+    private Configuration configuration;
+
+    RedisCache(Configuration configuration) { 
+        this.configuration = configuration;
+    }
+
+    private synchronized StatefulRedisConnection<String, byte[]> getConnection() {
         if (connection == null) {
-            Configuration config = Configuration.getInstance();
             RedisURI redisUri =
-                    RedisURI.Builder.redis(config.getString(Key.REDISCACHE_HOST)).
-                            withPort(config.getInt(Key.REDISCACHE_PORT, 6379)).
-                            withSsl(config.getBoolean(Key.REDISCACHE_SSL, false)).
-                            withPassword(config.getString(Key.REDISCACHE_PASSWORD, "").toCharArray()).
-                            withDatabase(config.getInt(Key.REDISCACHE_DATABASE, 0)).
+                    RedisURI.Builder.redis(configuration.getString(Key.REDISCACHE_HOST)).
+                            withPort(configuration.getInt(Key.REDISCACHE_PORT, 6379)).
+                            withSsl(configuration.getBoolean(Key.REDISCACHE_SSL, false)).
+                            withPassword(configuration.getString(Key.REDISCACHE_PASSWORD, "").toCharArray()).
+                            withDatabase(configuration.getInt(Key.REDISCACHE_DATABASE, 0)).
                             build();
             RedisClient client = RedisClient.create(redisUri);
             connection = client.connect(new CustomRedisCodec());

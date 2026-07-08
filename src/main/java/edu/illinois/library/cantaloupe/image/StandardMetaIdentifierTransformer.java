@@ -3,6 +3,8 @@ package edu.illinois.library.cantaloupe.image;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.util.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -23,19 +25,41 @@ import java.util.regex.Pattern;
  * @since 5.0
  * @author Alex Dolski UIUC
  */
+@Component
 public final class StandardMetaIdentifierTransformer
         implements MetaIdentifierTransformer {
 
     private static final String DEFAULT_COMPONENT_DELIMITER = ";";
 
-    private static String getComponentDelimiter() {
-        Configuration config = Configuration.getInstance();
-        return config.getString(
-                Key.STANDARD_META_IDENTIFIER_TRANSFORMER_DELIMITER,
-                DEFAULT_COMPONENT_DELIMITER);
+    private final Configuration configuration;
+
+    /**
+     * Default constructor for non-Spring contexts (backward compatibility).
+     * Uses Configuration.getInstance() as fallback.
+     */
+    public StandardMetaIdentifierTransformer() {
+        this.configuration = Configuration.getInstance();
     }
 
-    private static Pattern getReverseMetaIdentifierPattern() {
+    /**
+     * Constructor for Spring dependency injection.
+     *
+     * @param configuration Injected configuration instance
+     */
+    @Autowired
+    public StandardMetaIdentifierTransformer(Configuration configuration) {
+        this.configuration = configuration;
+    }
+
+    private String getComponentDelimiter() {
+        String delimiter = configuration.getString(
+                Key.STANDARD_META_IDENTIFIER_TRANSFORMER_DELIMITER,
+                DEFAULT_COMPONENT_DELIMITER);
+        // Defensive null check - should not happen but ensures robustness
+        return delimiter != null ? delimiter : DEFAULT_COMPONENT_DELIMITER;
+    }
+
+    private Pattern getReverseMetaIdentifierPattern() {
         final String separator = StringUtils.reverse(getComponentDelimiter());
         return Pattern.compile("^((?<sc>\\d+:\\d+)" + separator +
                 ")?((?<page>\\d+)" + separator + ")?(?<id>.+)");

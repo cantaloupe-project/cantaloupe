@@ -146,7 +146,7 @@ class AzureStorageCache implements DerivativeCache {
 
     private static final String INFO_EXTENSION = ".json";
 
-    private static CloudBlobClient client;
+    private CloudBlobClient client;
 
     /**
      * Blob keys currently being written to Azure Storage from any thread.
@@ -154,14 +154,19 @@ class AzureStorageCache implements DerivativeCache {
     private static final Set<String> uploadingKeys =
             new ConcurrentSkipListSet<>();
 
-    static synchronized CloudBlobClient getClientInstance() {
+    private Configuration configuration;
+
+    AzureStorageCache(Configuration configuration) { 
+        this.configuration = configuration;
+    }
+
+    synchronized CloudBlobClient getClientInstance() {
         if (client == null) {
             try {
-                final Configuration config = Configuration.getInstance();
                 final String accountName =
-                        config.getString(Key.AZURESTORAGECACHE_ACCOUNT_NAME);
+                        configuration.getString(Key.AZURESTORAGECACHE_ACCOUNT_NAME);
                 final String accountKey =
-                        config.getString(Key.AZURESTORAGECACHE_ACCOUNT_KEY);
+                        configuration.getString(Key.AZURESTORAGECACHE_ACCOUNT_KEY);
 
                 final String connectionString = String.format(
                         "DefaultEndpointsProtocol=https;" +
@@ -183,15 +188,14 @@ class AzureStorageCache implements DerivativeCache {
         return client;
     }
 
-    static String getContainerName() {
+    String getContainerName() {
         // All letters in a container name must be lowercase.
-        return Configuration.getInstance().
+        return configuration.
                 getString(Key.AZURESTORAGECACHE_CONTAINER_NAME).toLowerCase();
     }
 
-    private static Instant getEarliestValidInstant() {
-        final Configuration config = Configuration.getInstance();
-        final long ttl = config.getLong(Key.DERIVATIVE_CACHE_TTL);
+    private Instant getEarliestValidInstant() {
+        final long ttl = configuration.getLong(Key.DERIVATIVE_CACHE_TTL);
         return (ttl > 0) ?
                 Instant.now().truncatedTo(ChronoUnit.SECONDS).minusSeconds(ttl) :
                 Instant.MIN;
@@ -324,7 +328,7 @@ class AzureStorageCache implements DerivativeCache {
      *         with trailing slash.
      */
     String getObjectKeyPrefix() {
-        String prefix = Configuration.getInstance().
+        String prefix = configuration.
                 getString(Key.AZURESTORAGECACHE_OBJECT_KEY_PREFIX);
         if (prefix.isEmpty() || prefix.equals("/")) {
             return "";

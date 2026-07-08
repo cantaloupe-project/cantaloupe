@@ -40,7 +40,7 @@ import java.util.Objects;
  *
  * <p>The input steps must be reversed for output. Note that requests can
  * supply a {@link
- * edu.illinois.library.cantaloupe.resource.Request#PUBLIC_IDENTIFIER_HEADER}
+ * edu.illinois.library.cantaloupe.resource.IIIFRequest#PUBLIC_IDENTIFIER_HEADER}
  * to suggest that the meta-identifier supplied in a URI is different from the
  * one the user agent is seeing and supplying to a reverse proxy.</p>
  *
@@ -48,7 +48,7 @@ import java.util.Objects;
  *
  * <ol>
  *     <li>Replace the URI meta-identifier with the one from {@link
- *     edu.illinois.library.cantaloupe.resource.Request#PUBLIC_IDENTIFIER_HEADER},
+ *     edu.illinois.library.cantaloupe.resource.IIIFRequest#PUBLIC_IDENTIFIER_HEADER},
  *     if present</li>
  *     <li>Encode slashes</li>
  *     <li>URI encoding</li>
@@ -141,7 +141,7 @@ public final class MetaIdentifier {
             return null;
         }
     }
-    
+
 
     /**
      * <p>Deserializes the given meta-identifier string using the {@link
@@ -156,7 +156,7 @@ public final class MetaIdentifier {
     public static MetaIdentifier fromString(String string,
                                             DelegateProxy delegateProxy) {
         final MetaIdentifierTransformer xformer =
-                new MetaIdentifierTransformerFactory().newInstance(delegateProxy);
+                MetaIdentifierTransformerFactory.newInstanceStatic(delegateProxy);
         return xformer.deserialize(string);
     }
 
@@ -302,7 +302,7 @@ public final class MetaIdentifier {
         final String deSlashedIdentifier = StringUtils.encodeSlashes(slashedIdentifier);
         final String encodedIdentifier = Reference.encode(deSlashedIdentifier);
         final MetaIdentifierTransformer xformer =
-                new MetaIdentifierTransformerFactory().newInstance(delegateProxy);
+                MetaIdentifierTransformerFactory.newInstanceStatic(delegateProxy);
         final String serializedMetaIdentifier;
 
         setIdentifier(new Identifier(encodedIdentifier));
@@ -318,7 +318,15 @@ public final class MetaIdentifier {
 
     @Override
     public String toString() {
-        return new StandardMetaIdentifierTransformer().serialize(this);
+        // Use factory to get properly configured transformer instance
+        try {
+            MetaIdentifierTransformer transformer =
+                MetaIdentifierTransformerFactory.newInstanceStatic(null);
+            return transformer.serialize(this);
+        } catch (Exception e) {
+            // Fallback to direct instantiation if factory fails
+            return new StandardMetaIdentifierTransformer().serialize(this);
+        }
     }
 
 }

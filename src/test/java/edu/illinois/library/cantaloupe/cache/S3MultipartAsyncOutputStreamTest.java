@@ -20,7 +20,8 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.security.SecureRandom;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class S3MultipartAsyncOutputStreamTest extends BaseTest {
 

@@ -1,13 +1,14 @@
 package edu.illinois.library.cantaloupe.processor;
 
+import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.image.Dimension;
+import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.image.MetaIdentifier;
 import edu.illinois.library.cantaloupe.image.Metadata;
 import edu.illinois.library.cantaloupe.operation.ColorTransform;
 import edu.illinois.library.cantaloupe.operation.Crop;
-import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.operation.CropByPercent;
 import edu.illinois.library.cantaloupe.operation.CropByPixels;
 import edu.illinois.library.cantaloupe.operation.CropToSquare;
@@ -26,6 +27,7 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import javax.imageio.ImageIO;
+
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -46,9 +48,13 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import static edu.illinois.library.cantaloupe.test.Assert.ImageAssert.*;
-import static org.junit.jupiter.api.Assertions.*;
-import static org.junit.jupiter.api.Assumptions.*;
+import static edu.illinois.library.cantaloupe.test.Assert.ImageAssert.assertBitonal;
+import static edu.illinois.library.cantaloupe.test.Assert.ImageAssert.assertGray;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 /**
  * <p>Contains tests common to all {@link Processor}s.</p>
@@ -810,7 +816,7 @@ abstract class AbstractProcessorTest extends BaseTest {
                 .build();
         try (Processor proc = newInstance()) {
             proc.setSourceFormat(getAnySupportedSourceFormat(proc));
-            proc.validate(ops, new Dimension(1000, 1000));
+            proc.validate(ops, new Dimension(1000, 1000), Configuration.getInstance());
         } catch (OutputFormatException e) {
             pass = true;
         }

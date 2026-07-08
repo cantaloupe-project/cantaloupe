@@ -2,6 +2,9 @@ package edu.illinois.library.cantaloupe.test;
 
 import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.cache.CacheFacade;
+import edu.illinois.library.cantaloupe.cache.CacheFactory;
+import edu.illinois.library.cantaloupe.cache.InfoService;
+import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
@@ -39,10 +42,15 @@ public abstract class BaseTest {
         // Purge the in-memory info cache. Do this AFTER the configuration has
         // been reset so that the derivative and source caches (which may not
         // have been set up properly) are not available.
-        new CacheFacade().purge();
+        new CacheFacade(Configuration.getInstance()).purge();
     }
 
     @AfterEach
-    public void tearDown() throws Exception {}
+    public void tearDown() throws Exception {
+        // Shut down static cache instances to prevent test interference
+        CacheFactory.shutdownCaches();
+        // Clear static InfoService instance to prevent configuration interference
+        InfoService.clearInstance();
+    }
 
 }

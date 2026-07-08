@@ -1,6 +1,20 @@
 # Change Log
 
 ## 6.0
+### Configuration
+* log_error_responses has been removed
+* http.enabled has been removed
+* https.enabled has been replaced by server.ssl.enabled
+* http.port / https.port have been replaced by server.port
+* http.host / https.host have been replaced by server.address
+* http.max_threads and http.min_threads have been replaced by server.jetty.threads.max and server.jetty.threads.min
+* http.accept_queue_limit has been replaced by server.jetty.threads.max-queue-capacity
+* https.key_store_password has been replaced by server.ssl.key-store-password
+* https.key_store_path has been replaced by server.ssl.key-store
+* https.key_password has been replaced by server.ssl.key-password
+* https.key_store_type has been replaced by server.ssl.key-store-type
+* Logging configuration now uses the Spring Boot defaults
+
 
 ### Endpoints
 

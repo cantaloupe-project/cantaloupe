@@ -2,6 +2,7 @@ package edu.illinois.library.cantaloupe.resource.iiif.v2;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
+import edu.illinois.library.cantaloupe.delegate.DelegateProxy;
 import edu.illinois.library.cantaloupe.image.Dimension;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Info;
@@ -10,11 +11,11 @@ import edu.illinois.library.cantaloupe.image.Orientation;
 import edu.illinois.library.cantaloupe.image.ScaleConstraint;
 import edu.illinois.library.cantaloupe.processor.Processor;
 import edu.illinois.library.cantaloupe.resource.iiif.ImageInfoUtil;
-import edu.illinois.library.cantaloupe.delegate.DelegateProxy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.script.ScriptException;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
@@ -27,7 +28,7 @@ import java.util.Set;
 /**
  * Builds new {@link Information} instances.
  */
-final class InformationFactory {
+public final class InformationFactory {
 
     private static final Logger LOGGER =
             LoggerFactory.getLogger(InformationFactory.class);
@@ -55,7 +56,7 @@ final class InformationFactory {
     private double maxScale;
     private int maxPixels, minSize, minTileSize;
 
-    InformationFactory() {
+    public InformationFactory() {
         var config  = Configuration.getInstance();
         maxPixels   = config.getInt(Key.MAX_PIXELS, 0);
         maxScale    = config.getDouble(Key.MAX_SCALE, Double.MAX_VALUE);
@@ -73,7 +74,7 @@ final class InformationFactory {
      *                               list.
      * @param scaleConstraint        May be {@code null}.
      */
-    Information<String,Object> newImageInfo(final Set<Format> processorOutputFormats,
+    public Information<String,Object> newImageInfo(final Set<Format> processorOutputFormats,
                                             final String imageURI,
                                             final Info info,
                                             final int infoImageIndex,
@@ -205,7 +206,7 @@ final class InformationFactory {
      * @param virtualSize Orientation-aware and {@link ScaleConstraint
      *                    scale-constrained} full size.
      */
-    List<Information.Size> getSizes(Dimension virtualSize) {
+    public List<Information.Size> getSizes(Dimension virtualSize) {
         // This will be a 2^n series that will work for both multi- and
         // monoresolution images.
         final List<Information.Size> sizes = new ArrayList<>();
@@ -239,7 +240,7 @@ final class InformationFactory {
         return (int) Math.min(fullSize.area() * maxScale, maxPixels);
     }
 
-    void setDelegateProxy(DelegateProxy proxy) {
+    public void setDelegateProxy(DelegateProxy proxy) {
         this.delegateProxy = proxy;
     }
 

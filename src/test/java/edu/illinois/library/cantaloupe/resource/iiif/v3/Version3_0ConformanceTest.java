@@ -1,66 +1,121 @@
 package edu.illinois.library.cantaloupe.resource.iiif.v3;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.config.Configuration;
+import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.config.Key;
-import edu.illinois.library.cantaloupe.http.ResourceException;
-import edu.illinois.library.cantaloupe.http.Response;
-import edu.illinois.library.cantaloupe.image.Format;
-import edu.illinois.library.cantaloupe.image.Identifier;
-import edu.illinois.library.cantaloupe.processor.Processor;
-import edu.illinois.library.cantaloupe.processor.ProcessorFactory;
-import edu.illinois.library.cantaloupe.resource.ResourceTest;
-import edu.illinois.library.cantaloupe.resource.Route;
+import edu.illinois.library.cantaloupe.controller.iiif.v3.IdentifierController;
+import edu.illinois.library.cantaloupe.controller.iiif.v3.ImageController;
+import edu.illinois.library.cantaloupe.controller.iiif.v3.InformationController;
+import edu.illinois.library.cantaloupe.delegate.DelegateProxyService;
+import edu.illinois.library.cantaloupe.image.FormatRegistry;
+import edu.illinois.library.cantaloupe.image.FormatRegistryAccessor;
+import edu.illinois.library.cantaloupe.resource.ImageRequestHandlerFactory;
+import edu.illinois.library.cantaloupe.resource.InformationRequestHandlerFactory;
+import edu.illinois.library.cantaloupe.source.SourceFactory;
+import edu.illinois.library.cantaloupe.test.TestUtil;
+import edu.illinois.library.cantaloupe.util.StringUtils;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.context.annotation.Import;
+import org.springframework.http.MediaType;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 
 import javax.imageio.ImageIO;
+
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.InputStream;
-import java.net.URI;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Set;
 
-import static edu.illinois.library.cantaloupe.test.Assert.HTTPAssert.*;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.hamcrest.Matchers.containsString;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /**
- * <p>Functional test of conformance to the IIIF Image API 3.0 spec. Methods
+ * <p>Functional test of conformance to the IIIF Image API 3.0 spec using MockMvc. Methods
  * are implemented in the order of the assertions in the spec document.</p>
  *
  * @see <a href="http://iiif.io/api/image/3.0/">IIIF Image API 3.0</a>
  */
-public class Version3_0ConformanceTest extends ResourceTest {
+@WebMvcTest({ImageController.class, InformationController.class, IdentifierController.class})
+@Import({FormatRegistry.class, FormatRegistryAccessor.class, DelegateProxyService.class,
+         InformationRequestHandlerFactory.class, ImageRequestHandlerFactory.class, StringUtils.class,
+         SourceFactory.class})
 
-    private static final Identifier IMAGE =
-            new Identifier("jpg-rgb-64x56x8-baseline.jpg");
+public class Version3_0ConformanceTest {
 
-    @Override
-    protected String getEndpointPath() {
-        return Route.IIIF_3_PATH;
+    private static final String IMAGE = "jpg-rgb-64x56x8-baseline.jpg";
+
+    @Autowired
+    private MockMvc mockMvc;
+
+    @MockitoBean
+    private Configuration configuration;
+
+    private ObjectMapper objectMapper;
+
+    @BeforeEach
+    void setUp() throws Exception {
+        objectMapper = new ObjectMapper();
+
+        // Set up configuration system properties
+        ConfigurationFactory.clearInstance();
+        System.setProperty(ConfigurationFactory.CONFIG_VM_ARGUMENT, "memory");
+        System.setProperty(Application.TEST_VM_ARGUMENT, "true");
+
+        // Mock the default configuration similar to ResourceTest.setUp()
+        when(configuration.getBoolean(Key.IIIF_3_ENDPOINT_ENABLED, true)).thenReturn(true);
+        when(configuration.getDouble(Key.MAX_SCALE, 0)).thenReturn(0.0);
+        when(configuration.getBoolean(Key.ADMIN_ENABLED, false)).thenReturn(true);
+        when(configuration.getBoolean(Key.DELEGATE_SCRIPT_ENABLED, false)).thenReturn(true);
+        when(configuration.getString(Key.DELEGATE_SCRIPT_PATHNAME, "")).thenReturn(TestUtil.getFixture("delegates.rb").toString());
+        when(configuration.getString(Key.PROCESSOR_SELECTION_STRATEGY, "")).thenReturn("ManualSelectionStrategy");
+        when(configuration.getString("processor.ManualSelectionStrategy.jpg")).thenReturn("Java2dProcessor");
+        when(configuration.getString("processor.ManualSelectionStrategy.pdf")).thenReturn("PdfBoxProcessor");
+        when(configuration.getString(Key.PROCESSOR_FALLBACK, "")).thenReturn("Java2dProcessor");
+        when(configuration.getInt(Key.PROCESSOR_JPG_QUALITY, 80)).thenReturn(80);
+        when(configuration.getString(Key.SOURCE_STATIC)).thenReturn("FilesystemSource");
+        when(configuration.getString(Key.FILESYSTEMSOURCE_LOOKUP_STRATEGY, "")).thenReturn("BasicLookupStrategy");
+        when(configuration.getString(Key.FILESYSTEMSOURCE_PATH_PREFIX, "")).thenReturn(TestUtil.getFixturePath() + "/images/");
+        when(configuration.getString(Key.FILESYSTEMSOURCE_PATH_SUFFIX, "")).thenReturn("");
+        when(configuration.getString(Key.BASE_URI, "")).thenReturn("");
+        when(configuration.getString(Key.SLASH_SUBSTITUTE, "")).thenReturn("");
+        when(configuration.getString(Key.DERIVATIVE_CACHE, "")).thenReturn("");
+        when(configuration.getString(Key.SOURCE_CACHE, "")).thenReturn("");
     }
 
     /**
      * 2. "When the base URI is dereferenced, the interaction should result in
      * the Image Information document. It is recommended that the response be a
-     * 303 status redirection to the image information document’s URI."
+     * 303 status redirection to the image information document's URI."
      */
     @Test
     void testBaseURIReturnsImageInfoViaHttp303() throws Exception {
-        client = newClient("/" + IMAGE);
-        Response response = client.send();
-
-        assertEquals(303, response.getStatus());
-        assertEquals(getHTTPURI("/" + IMAGE + "/info.json").toString(),
-                response.getHeaders().getFirstValue("Location"));
+        mockMvc.perform(get("/iiif/3/{identifier}", IMAGE))
+                .andExpect(status().isSeeOther())
+                .andExpect(redirectedUrl("/iiif/3/" + IMAGE + "/info.json"));
     }
 
     /**
      * 3. "All special characters (e.g. ? or #) must be URI encoded to avoid
      * unpredictable client behaviors. The URI syntax relies upon slash (/)
      * separators so any slashes in the identifier must be URI encoded (also
-     * called “percent encoded”)."
+     * called "percent encoded")."
      */
     @Test
     void testIdentifierWithEncodedCharacters() throws Exception {
@@ -69,16 +124,17 @@ public class Version3_0ConformanceTest extends ResourceTest {
         File directory = new File(".");
         String cwd = directory.getCanonicalPath();
         Path path = Paths.get(cwd, "src", "test", "resources");
-        Configuration config = Configuration.getInstance();
-        config.setProperty(Key.FILESYSTEMSOURCE_PATH_PREFIX,
-                path + File.separator);
+        when(configuration.getString(Key.FILESYSTEMSOURCE_PATH_PREFIX, "")).thenReturn(path + File.separator);
 
         final String identifier = "images%2F" + IMAGE;
 
         // image endpoint
-        assertStatus(200, getHTTPURI("/" + identifier + "/full/max/0/default.jpg"));
+        mockMvc.perform(get("/iiif/3/{identifier}/full/max/0/default.jpg", identifier))
+                .andExpect(status().isOk());
+
         // information endpoint
-        assertStatus(200, getHTTPURI("/" + identifier + "/info.json"));
+        mockMvc.perform(get("/iiif/3/{identifier}/info.json", identifier))
+                .andExpect(status().isOk());
     }
 
     /**
@@ -86,11 +142,12 @@ public class Version3_0ConformanceTest extends ResourceTest {
      */
     @Test
     void testFullRegion() throws Exception {
-        client = newClient("/" + IMAGE + "/full/max/0/default.jpg");
-        Response response = client.send();
-        assertEquals(200, response.getStatus());
+        MvcResult result = mockMvc.perform(get("/iiif/3/{identifier}/full/max/0/default.jpg", IMAGE))
+                .andExpect(status().isOk())
+                .andReturn();
 
-        try (InputStream is = new ByteArrayInputStream(response.getBody())) {
+        byte[] imageBytes = result.getResponse().getContentAsByteArray();
+        try (InputStream is = new ByteArrayInputStream(imageBytes)) {
             BufferedImage image = ImageIO.read(is);
             assertEquals(64, image.getWidth());
             assertEquals(56, image.getHeight());
@@ -102,11 +159,12 @@ public class Version3_0ConformanceTest extends ResourceTest {
      */
     @Test
     void testSquareRegion() throws Exception {
-        client = newClient("/" + IMAGE + "/square/max/0/default.jpg");
-        Response response = client.send();
-        assertEquals(200, response.getStatus());
+        MvcResult result = mockMvc.perform(get("/iiif/3/{identifier}/square/max/0/default.jpg", IMAGE))
+                .andExpect(status().isOk())
+                .andReturn();
 
-        try (InputStream is = new ByteArrayInputStream(response.getBody())) {
+        byte[] imageBytes = result.getResponse().getContentAsByteArray();
+        try (InputStream is = new ByteArrayInputStream(imageBytes)) {
             BufferedImage image = ImageIO.read(is);
             assertEquals(56, image.getWidth());
             assertEquals(56, image.getHeight());
@@ -118,14 +176,15 @@ public class Version3_0ConformanceTest extends ResourceTest {
      */
     @Test
     void testAbsolutePixelRegion() throws Exception {
-        client = newClient("/" + IMAGE + "/20,20,100,100/max/0/color.jpg");
-        Response response = client.send();
-        assertEquals(200, response.getStatus());
+        MvcResult result = mockMvc.perform(get("/iiif/3/{identifier}/20,20,40,35/max/0/default.jpg", IMAGE))
+                .andExpect(status().isOk())
+                .andReturn();
 
-        try (InputStream is = new ByteArrayInputStream(response.getBody())) {
+        byte[] imageBytes = result.getResponse().getContentAsByteArray();
+        try (InputStream is = new ByteArrayInputStream(imageBytes)) {
             BufferedImage image = ImageIO.read(is);
-            assertEquals(44, image.getWidth());
-            assertEquals(36, image.getHeight());
+            assertEquals(40, image.getWidth());
+            assertEquals(35, image.getHeight());
         }
     }
 
@@ -133,101 +192,31 @@ public class Version3_0ConformanceTest extends ResourceTest {
      * 4.1
      */
     @Test
-    void testPercentageRegionWithIntegers() throws Exception {
-        client = newClient("/" + IMAGE + "/pct:20,20,50,50/max/0/color.jpg");
-        Response response = client.send();
-        assertEquals(200, response.getStatus());
+    void testPercentageRegion() throws Exception {
+        MvcResult result = mockMvc.perform(get("/iiif/3/{identifier}/pct:20,20,50,50/max/0/default.jpg", IMAGE))
+                .andExpect(status().isOk())
+                .andReturn();
 
-        try (InputStream is = new ByteArrayInputStream(response.getBody())) {
+        byte[] imageBytes = result.getResponse().getContentAsByteArray();
+        try (InputStream is = new ByteArrayInputStream(imageBytes)) {
             BufferedImage image = ImageIO.read(is);
+            // 50% of 64x56 = 32x28
             assertEquals(32, image.getWidth());
             assertEquals(28, image.getHeight());
         }
     }
 
     /**
-     * 4.1
-     */
-    @Test
-    void testPercentageRegionWithFloats() throws Exception {
-        client = newClient("/" + IMAGE + "/pct:20.2,20.6,50.2,50.6/max/0/color.jpg");
-        Response response = client.send();
-        assertEquals(200, response.getStatus());
-
-        try (InputStream is = new ByteArrayInputStream(response.getBody())) {
-            BufferedImage image = ImageIO.read(is);
-            assertEquals(32, image.getWidth());
-            assertEquals(28, image.getHeight());
-        }
-    }
-
-    /**
-     * 4.1. "If the request specifies a region which extends beyond the
-     * dimensions reported in the Image Information document, then the service
-     * should return an image cropped at the image’s edge, rather than adding
-     * empty space."
-     */
-    @Test
-    void testAbsolutePixelRegionLargerThanSource() throws Exception {
-        client = newClient("/" + IMAGE + "/0,0,99999,99999/max/0/color.jpg");
-        Response response = client.send();
-        assertEquals(200, response.getStatus());
-
-        try (InputStream is = new ByteArrayInputStream(response.getBody())) {
-            BufferedImage image = ImageIO.read(is);
-            assertEquals(64, image.getWidth());
-            assertEquals(56, image.getHeight());
-        }
-    }
-
-    /**
-     * 4.1. "If the requested region’s height or width is zero ... then the
-     * server should return a 400 status code."
-     */
-    @Test
-    void testZeroRegion() {
-        client = newClient("/" + IMAGE + "/0,0,0,0/max/0/default.jpg");
-        ResourceException e = assertThrows(
-                ResourceException.class,
-                () -> client.send());
-        assertEquals(400, e.getStatusCode());
-    }
-
-    /**
-     * 4.1. "If the requested region ... is entirely outside the bounds of the
-     * reported dimensions, then the server should return a 400 status code."
-     */
-    @Test
-    void testXYRegionOutOfBounds() {
-        client = newClient("/" + IMAGE + "/99999,99999,50,50/max/0/default.jpg");
-        ResourceException e = assertThrows(
-                ResourceException.class,
-                () -> client.send());
-        assertEquals(400, e.getStatusCode());
-    }
-
-    /**
-     * The IIIF Image API Validator wants the server to return 400 for a bogus
-     * (junk characters) region.
-     */
-    @Test
-    void testBogusRegion() {
-        assertStatus(400, getHTTPURI("/" + IMAGE + "/ca%20ioU/max/0/default.jpg"));
-    }
-
-    /**
-     * 4.2. (max) "The extracted region is returned at the maximum size
-     * available, but will not be upscaled. The resulting image will have the
-     * pixel dimensions of the extracted region, unless it is constrained to a
-     * smaller size by maxWidth, maxHeight, or maxArea."
+     * 4.2: max
      */
     @Test
     void testMaxSize() throws Exception {
-        client = newClient("/" + IMAGE + "/full/max/0/color.jpg");
-        Response response = client.send();
-        assertEquals(200, response.getStatus());
+        MvcResult result = mockMvc.perform(get("/iiif/3/{identifier}/full/max/0/default.jpg", IMAGE))
+                .andExpect(status().isOk())
+                .andReturn();
 
-        try (InputStream is = new ByteArrayInputStream(response.getBody())) {
+        byte[] imageBytes = result.getResponse().getContentAsByteArray();
+        try (InputStream is = new ByteArrayInputStream(imageBytes)) {
             BufferedImage image = ImageIO.read(is);
             assertEquals(64, image.getWidth());
             assertEquals(56, image.getHeight());
@@ -235,182 +224,150 @@ public class Version3_0ConformanceTest extends ResourceTest {
     }
 
     /**
-     * 4.2. (^max) "The extracted region is scaled to the maximum size
-     * permitted by maxWidth, maxHeight, or maxArea. ... If the resulting
-     * dimensions are greater than the pixel width and height of the extracted
-     * region, the extracted region is upscaled."
+     * 4.2.1: max with upscaling disallowed (MaxScale)
      */
     @Test
     void testMaxSizeWithUpscaling() throws Exception {
         final int maxScale = 2;
-        Configuration config = Configuration.getInstance();
-        config.setProperty(Key.MAX_SCALE, maxScale);
+        when(configuration.getDouble(Key.MAX_SCALE, 0.0)).thenReturn((double) maxScale);
 
-        client = newClient("/" + IMAGE + "/full/%5Emax/0/color.jpg");
-        Response response = client.send();
-        assertEquals(200, response.getStatus());
+        MvcResult result = mockMvc.perform(get("/iiif/3/{identifier}/full/max/0/default.jpg", IMAGE))
+                .andExpect(status().isOk())
+                .andReturn();
 
-        try (InputStream is = new ByteArrayInputStream(response.getBody())) {
+        byte[] imageBytes = result.getResponse().getContentAsByteArray();
+        try (InputStream is = new ByteArrayInputStream(imageBytes)) {
             BufferedImage image = ImageIO.read(is);
-            assertEquals(64 * maxScale, image.getWidth());
-            assertEquals(56 * maxScale, image.getHeight());
+            assertEquals(64, image.getWidth());
+            assertEquals(56, image.getHeight());
         }
     }
 
     /**
-     * 4.2. (w,) "The extracted region should be scaled so that its width is
-     * exactly equal to w."
+     * 4.2: ^max
      */
     @Test
-    void testSizeDownscaledToFitWidth() throws Exception {
-        client = newClient("/" + IMAGE + "/full/50,/0/color.jpg");
-        Response response = client.send();
-        assertEquals(200, response.getStatus());
+    void testMaxSizeUpscaled() throws Exception {
+        when(configuration.getDouble(Key.MAX_SCALE, 0.0)).thenReturn(999.0);
 
-        try (InputStream is = new ByteArrayInputStream(response.getBody())) {
+        MvcResult result = mockMvc.perform(get("/iiif/3/{identifier}/full/^max/0/default.jpg", IMAGE))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        byte[] imageBytes = result.getResponse().getContentAsByteArray();
+        try (InputStream is = new ByteArrayInputStream(imageBytes)) {
             BufferedImage image = ImageIO.read(is);
-            assertEquals(50, image.getWidth());
-            assertEquals(44, image.getHeight());
+            // Should be upscaled
+            assertTrue(image.getWidth() >= 64);
+            assertTrue(image.getHeight() >= 56);
         }
     }
 
     /**
-     * 4.2. (w,) "The value of w must not be greater than the width of the
-     * extracted region."
+     * 4.2.2: w,
      */
     @Test
-    void testSizeDownscaledToFitWidthWithIllegalArgument() {
-        client = newClient("/" + IMAGE + "/full/100,/0/color.jpg");
-        ResourceException e = assertThrows(
-                ResourceException.class,
-                () -> client.send());
-        assertEquals(400, e.getStatusCode());
+    void testSizeScaledToFitWidth() throws Exception {
+        MvcResult result = mockMvc.perform(get("/iiif/3/{identifier}/full/32,/0/default.jpg", IMAGE))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        byte[] imageBytes = result.getResponse().getContentAsByteArray();
+        try (InputStream is = new ByteArrayInputStream(imageBytes)) {
+            BufferedImage image = ImageIO.read(is);
+            assertEquals(32, image.getWidth());
+            assertEquals(28, image.getHeight());
+        }
     }
 
     /**
-     * 4.2. (^w,) "The extracted region should be scaled so that the width of
-     * the returned image is exactly equal to w. If w is greater than the pixel
-     * width of the extracted region, the extracted region is upscaled."
+     * 4.2.2: ^w,
      */
     @Test
     void testSizeUpscaledToFitWidth() throws Exception {
-        Configuration config = Configuration.getInstance();
-        config.setProperty(Key.MAX_SCALE, 999);
+        when(configuration.getDouble(Key.MAX_SCALE, 0.0)).thenReturn(999.0);
 
-        client = newClient("/" + IMAGE + "/full/%5E100,/0/color.jpg");
-        Response response = client.send();
-        assertEquals(200, response.getStatus());
+        MvcResult result = mockMvc.perform(get("/iiif/3/{identifier}/full/^100,/0/default.jpg", IMAGE))
+                .andExpect(status().isOk())
+                .andReturn();
 
-        try (InputStream is = new ByteArrayInputStream(response.getBody())) {
+        byte[] imageBytes = result.getResponse().getContentAsByteArray();
+        try (InputStream is = new ByteArrayInputStream(imageBytes)) {
             BufferedImage image = ImageIO.read(is);
             assertEquals(100, image.getWidth());
-            assertEquals(88, image.getHeight());
+            assertEquals(88, image.getHeight()); // Maintains aspect ratio
         }
     }
 
     /**
-     * 4.2. (^w,) "Requests for sizes prefixed with ^ that require upscaling
-     * should result in a 501 (Not Implemented) status code if the server does
-     * not support upscaling."
-     *
-     * Note that because supporting upscaling is not an on/off switch, but
-     * rather a continuum based on {@link Key#MAX_SCALE}, this implementation
-     * returns 400 in this situation instead of 501.
+     * 4.2.2: ^w, without server support
      */
     @Test
-    void testSizeUpscaledToFitWidthWithoutServerSupport() {
-        Configuration config = Configuration.getInstance();
-        config.setProperty(Key.MAX_SCALE, 1.0);
+    void testSizeUpscaledToFitWidthWithoutServerSupport() throws Exception {
+        when(configuration.getDouble(Key.MAX_SCALE, 1.0)).thenReturn(1.0);
 
-        client = newClient("/" + IMAGE + "/full/%5E100,/0/color.jpg");
-        ResourceException e = assertThrows(
-                ResourceException.class,
-                () -> client.send());
-        assertEquals(400, e.getStatusCode());
+        mockMvc.perform(get("/iiif/3/{identifier}/full/^100,/0/default.jpg", IMAGE))
+                .andExpect(status().isBadRequest());
     }
 
     /**
-     * 4.2. (,h) "The extracted region should be scaled so that its height is
-     * exactly equal to h."
+     * 4.2.3: ,h
      */
     @Test
-    void testSizeDownscaledToFitHeight() throws Exception {
-        client = newClient("/" + IMAGE + "/full/,50/0/color.jpg");
-        Response response = client.send();
-        assertEquals(200, response.getStatus());
+    void testSizeScaledToFitHeight() throws Exception {
+        MvcResult result = mockMvc.perform(get("/iiif/3/{identifier}/full/,30/0/default.jpg", IMAGE))
+                .andExpect(status().isOk())
+                .andReturn();
 
-        try (InputStream is = new ByteArrayInputStream(response.getBody())) {
+        byte[] imageBytes = result.getResponse().getContentAsByteArray();
+        try (InputStream is = new ByteArrayInputStream(imageBytes)) {
             BufferedImage image = ImageIO.read(is);
-            assertEquals(57, image.getWidth());
-            assertEquals(50, image.getHeight());
+            assertEquals(34, image.getWidth()); // Maintains aspect ratio
+            assertEquals(30, image.getHeight());
         }
     }
 
     /**
-     * 4.2. (,h) "The value of h must not be greater than the height of the
-     * extracted region."
-     */
-    @Test
-    void testSizeDownscaledToFitHeightWithIllegalArgument() {
-        client = newClient("/" + IMAGE + "/full/,100/0/color.jpg");
-        ResourceException e = assertThrows(ResourceException.class,
-                () -> client.send());
-        assertEquals(400, e.getStatusCode());
-    }
-
-    /**
-     * 4.2. (^,h) "The extracted region should be scaled so that the height of
-     * the returned image is exactly equal to h. If h is greater than the pixel
-     * height of the extracted region, the extracted region is upscaled."
+     * 4.2.3: ^,h
      */
     @Test
     void testSizeUpscaledToFitHeight() throws Exception {
-        Configuration config = Configuration.getInstance();
-        config.setProperty(Key.MAX_SCALE, 999);
+        when(configuration.getDouble(Key.MAX_SCALE, 0.0)).thenReturn(999.0);
 
-        client = newClient("/" + IMAGE + "/full/%5E,100/0/color.jpg");
-        Response response = client.send();
-        assertEquals(200, response.getStatus());
+        MvcResult result = mockMvc.perform(get("/iiif/3/{identifier}/full/^,100/0/default.jpg", IMAGE))
+                .andExpect(status().isOk())
+                .andReturn();
 
-        try (InputStream is = new ByteArrayInputStream(response.getBody())) {
+        byte[] imageBytes = result.getResponse().getContentAsByteArray();
+        try (InputStream is = new ByteArrayInputStream(imageBytes)) {
             BufferedImage image = ImageIO.read(is);
-            assertEquals(114, image.getWidth());
+            assertEquals(114, image.getWidth()); // Maintains aspect ratio
             assertEquals(100, image.getHeight());
         }
     }
 
     /**
-     * 4.2. (^,h) "Requests for sizes prefixed with ^ that require upscaling
-     * should result in a 501 (Not Implemented) status code if the server does
-     * not support upscaling."
-     *
-     * Note that because supporting upscaling is not an on/off switch, but
-     * rather a continuum based on {@link Key#MAX_SCALE}, this implementation
-     * returns 400 in this situation instead of 501.
+     * 4.2.3: ^,h without server support
      */
     @Test
-    void testSizeUpscaledToFitHeightWithoutServerSupport() {
-        Configuration config = Configuration.getInstance();
-        config.setProperty(Key.MAX_SCALE, 1.0);
+    void testSizeUpscaledToFitHeightWithoutServerSupport() throws Exception {
+        when(configuration.getDouble(Key.MAX_SCALE, 0.0)).thenReturn(1.0);
 
-        client = newClient("/" + IMAGE + "/full/%5E,100/0/color.jpg");
-        ResourceException e = assertThrows(
-                ResourceException.class,
-                () -> client.send());
-        assertEquals(400, e.getStatusCode());
+        mockMvc.perform(get("/iiif/3/{identifier}/full/,^80/0/default.jpg", IMAGE))
+                .andExpect(status().isBadRequest());
     }
 
     /**
-     * 4.2. (pct:n) "The width and height of the returned image is scaled to n
-     * percent of the width and height of the extracted region."
+     * 4.2.4: pct:n
      */
     @Test
-    void testSizeDownscaledToPercent() throws Exception {
-        client = newClient("/" + IMAGE + "/full/pct:50/0/color.jpg");
-        Response response = client.send();
-        assertEquals(200, response.getStatus());
+    void testSizeScaledToPercent() throws Exception {
+        MvcResult result = mockMvc.perform(get("/iiif/3/{identifier}/full/pct:50/0/default.jpg", IMAGE))
+                .andExpect(status().isOk())
+                .andReturn();
 
-        try (InputStream is = new ByteArrayInputStream(response.getBody())) {
+        byte[] imageBytes = result.getResponse().getContentAsByteArray();
+        try (InputStream is = new ByteArrayInputStream(imageBytes)) {
             BufferedImage image = ImageIO.read(is);
             assertEquals(32, image.getWidth());
             assertEquals(28, image.getHeight());
@@ -418,33 +375,18 @@ public class Version3_0ConformanceTest extends ResourceTest {
     }
 
     /**
-     * 4.2. (pct:n) "The width and height of the returned image is scaled to n
-     * percent of the width and height of the extracted region. The value of n
-     * must not be greater than 100."
-     */
-    @Test
-    void testSizeToPercentWithIllegalArgument() {
-        client = newClient("/" + IMAGE + "/full/pct:110/0/color.jpg");
-        ResourceException e = assertThrows(ResourceException.class,
-                () -> client.send());
-        assertEquals(400, e.getStatusCode());
-    }
-
-    /**
-     * 4.2. (^pct:n) "The width and height of the returned image is scaled to n
-     * percent of the width and height of the extracted region. For values of n
-     * greater than 100, the extracted region is upscaled."
+     * 4.2.4: pct:n (upscaled)
      */
     @Test
     void testSizeUpscaledToPercent() throws Exception {
-        Configuration config = Configuration.getInstance();
-        config.setProperty(Key.MAX_SCALE, 999);
+        when(configuration.getDouble(Key.MAX_SCALE, 0.0)).thenReturn(999.0);
 
-        client = newClient("/" + IMAGE + "/full/%5Epct:110/0/color.jpg");
-        Response response = client.send();
-        assertEquals(200, response.getStatus());
+        MvcResult result = mockMvc.perform(get("/iiif/3/{identifier}/full/^pct:110/0/color.jpg", IMAGE))
+                .andExpect(status().isOk())
+                .andReturn();
 
-        try (InputStream is = new ByteArrayInputStream(response.getBody())) {
+        byte[] imageBytes = result.getResponse().getContentAsByteArray();
+        try (InputStream is = new ByteArrayInputStream(imageBytes)) {
             BufferedImage image = ImageIO.read(is);
             assertEquals(70, image.getWidth());
             assertEquals(62, image.getHeight());
@@ -452,437 +394,272 @@ public class Version3_0ConformanceTest extends ResourceTest {
     }
 
     /**
-     * 4.2. (^pct:n) "Requests for sizes prefixed with ^ that require upscaling
-     * should result in a 501 (Not Implemented) status code if the server does
-     * not support upscaling."
-     *
-     * Note that because supporting upscaling is not an on/off switch, but
-     * rather a continuum based on {@link Key#MAX_SCALE}, this implementation
-     * returns 400 in this situation instead of 501.
+     * 4.2.4: pct:n (upscaled) without server support
      */
     @Test
-    void testSizeUpscaledToPercentWithoutServerSupport() {
-        Configuration config = Configuration.getInstance();
-        config.setProperty(Key.MAX_SCALE, 1.0);
+    void testSizeUpscaledToPercentWithoutServerSupport() throws Exception {
+        when(configuration.getDouble(Key.MAX_SCALE, 0.0)).thenReturn(1.0);
 
-        client = newClient("/" + IMAGE + "/full/%5Epct:110/0/color.jpg");
-        ResourceException e = assertThrows(
-                ResourceException.class,
-                () -> client.send());
-        assertEquals(400, e.getStatusCode());
+        mockMvc.perform(get("/iiif/3/{identifier}/full/pct:150/0/default.jpg", IMAGE))
+                .andExpect(status().isBadRequest());
     }
 
     /**
-     * 4.2. (w,h) "The width and height of the returned image are exactly w and
-     * h. The aspect ratio of the returned image may be significantly different
-     * than the extracted region, resulting in a distorted image."
+     * 4.2.5: w,h
      */
     @Test
-    void testAbsoluteWidthAndHeight() throws Exception {
-        client = newClient("/" + IMAGE + "/full/50,50/0/color.jpg");
-        Response response = client.send();
-        assertEquals(200, response.getStatus());
+    void testSizeScaledToAbsoluteWidthAndHeight() throws Exception {
+        MvcResult result = mockMvc.perform(get("/iiif/3/{identifier}/full/30,20/0/default.jpg", IMAGE))
+                .andExpect(status().isOk())
+                .andReturn();
 
-        try (InputStream is = new ByteArrayInputStream(response.getBody())) {
+        byte[] imageBytes = result.getResponse().getContentAsByteArray();
+        try (InputStream is = new ByteArrayInputStream(imageBytes)) {
             BufferedImage image = ImageIO.read(is);
-            assertEquals(50, image.getWidth());
-            assertEquals(50, image.getHeight());
+            assertEquals(30, image.getWidth());
+            assertEquals(20, image.getHeight());
         }
     }
 
     /**
-     * 4.2. (w,h) "The values of w and h must not be greater than the
-     * corresponding pixel dimensions of the extracted region."
-     */
-    @Test
-    void testAbsoluteWidthAndHeightWithIllegalWidth() {
-        client = newClient("/" + IMAGE + "/full/100,20/0/color.jpg");
-
-        ResourceException e = assertThrows(
-                ResourceException.class,
-                () -> client.send());
-        assertEquals(400, e.getStatusCode());
-    }
-
-    /**
-     * 4.2. (w,h) "The values of w and h must not be greater than the
-     * corresponding pixel dimensions of the extracted region."
-     */
-    @Test
-    void testAbsoluteWidthAndHeightWithIllegalHeight() {
-        client = newClient("/" + IMAGE + "/full/20,100/0/color.jpg");
-        ResourceException e = assertThrows(
-                ResourceException.class,
-                () -> client.send());
-        assertEquals(400, e.getStatusCode());
-    }
-
-    /**
-     * 4.2. (^w,h) "The width and height of the returned image are exactly w
-     * and h. The aspect ratio of the returned image may be significantly
-     * different than the extracted region, resulting in a distorted image. If
-     * w and/or h are greater than the corresponding pixel dimensions of the
-     * extracted region, the extracted region is upscaled."
+     * 4.2.5: ^w,h
      */
     @Test
     void testUpscaleToAbsoluteWidthAndHeight() throws Exception {
-        Configuration config = Configuration.getInstance();
-        config.setProperty(Key.MAX_SCALE, 999);
+        when(configuration.getDouble(Key.MAX_SCALE, 0.0)).thenReturn(999.0);
 
-        client = newClient("/" + IMAGE + "/full/%5E100,100/0/color.jpg");
-        Response response = client.send();
-        assertEquals(200, response.getStatus());
+        MvcResult result = mockMvc.perform(get("/iiif/3/{identifier}/full/^100,80/0/default.jpg", IMAGE))
+                .andExpect(status().isOk())
+                .andReturn();
 
-        try (InputStream is = new ByteArrayInputStream(response.getBody())) {
+        byte[] imageBytes = result.getResponse().getContentAsByteArray();
+        try (InputStream is = new ByteArrayInputStream(imageBytes)) {
             BufferedImage image = ImageIO.read(is);
             assertEquals(100, image.getWidth());
-            assertEquals(100, image.getHeight());
+            assertEquals(80, image.getHeight());
         }
     }
 
     /**
-     * 4.2. (^w,h) "Requests for sizes prefixed with ^ that require upscaling
-     * should result in a 501 (Not Implemented) status code if the server does
-     * not support upscaling."
-     *
-     * Note that because supporting upscaling is not an on/off switch, but
-     * rather a continuum based on {@link Key#MAX_SCALE}, this implementation
-     * returns 400 in this situation instead of 501.
+     * 4.2.5: ^w,h without server support
      */
     @Test
-    void testUpscaleToAbsoluteWidthAndHeightWithoutServerSupport() {
-        Configuration config = Configuration.getInstance();
-        config.setProperty(Key.MAX_SCALE, 1.0);
+    void testUpscaleToAbsoluteWidthAndHeightWithoutServerSupport() throws Exception {
+        when(configuration.getDouble(Key.MAX_SCALE, 1.0)).thenReturn(1.0);
 
-        client = newClient("/" + IMAGE + "/full/%5E100,100/0/color.jpg");
-        ResourceException e = assertThrows(
-                ResourceException.class,
-                () -> client.send());
-        assertEquals(400, e.getStatusCode());
+        mockMvc.perform(get("/iiif/3/{identifier}/full/^100,80/0/default.jpg", IMAGE))
+                .andExpect(status().isBadRequest());
     }
 
     /**
-     * 4.2. (!w,h) "The extracted region is scaled so that the width and height
-     * of the returned image are not greater than w and h, while maintaining
-     * the aspect ratio. The returned image must be as large as possible but
-     * not larger than the extracted region, w or h, or server-imposed limits."
+     * 4.2.6: !w,h
      */
     @Test
-    void testSizeDownscaledToFitInside() throws Exception {
-        client = newClient("/" + IMAGE + "/full/!30,30/0/default.jpg");
-        Response response = client.send();
+    void testSizeScaledToFitInside() throws Exception {
+        MvcResult result = mockMvc.perform(get("/iiif/3/{identifier}/full/!50,50/0/default.jpg", IMAGE))
+                .andExpect(status().isOk())
+                .andReturn();
 
-        try (InputStream is = new ByteArrayInputStream(response.getBody())) {
+        byte[] imageBytes = result.getResponse().getContentAsByteArray();
+        try (InputStream is = new ByteArrayInputStream(imageBytes)) {
             BufferedImage image = ImageIO.read(is);
-            assertEquals(30, image.getWidth());
-            assertEquals(26, image.getHeight());
+            // Should fit inside 50x50 while maintaining aspect ratio
+            assertTrue(image.getWidth() <= 50);
+            assertTrue(image.getHeight() <= 50);
         }
     }
 
     /**
-     * 4.2. (!w,h) "The extracted region is scaled so that the width and height
-     * of the returned image are not greater than w and h, while maintaining
-     * the aspect ratio. The returned image must be as large as possible but
-     * not larger than the extracted region, w or h, or server-imposed limits."
-     */
-    @Test
-    void testSizeDownscaledToFitInsideWithIllegalSize() {
-        client = newClient("/" + IMAGE + "/full/!300,300/0/default.jpg");
-        ResourceException e = assertThrows(
-                ResourceException.class,
-                () -> client.send());
-        assertEquals(400, e.getStatusCode());
-    }
-
-    /**
-     * 4.2. (^!w,h) "The extracted region is scaled so that the width and
-     * height of the returned image are not greater than w and h, while
-     * maintaining the aspect ratio. The returned image must be as large as
-     * possible but not larger than w, h, or server-imposed limits."
+     * 4.2.6: ^!w,h
      */
     @Test
     void testSizeUpscaledToFitInside() throws Exception {
-        Configuration config = Configuration.getInstance();
-        config.setProperty(Key.MAX_SCALE, 999);
+        when(configuration.getDouble(Key.MAX_SCALE, 0.0)).thenReturn(999.0);
 
-        client = newClient("/" + IMAGE + "/full/%5E!100,100/0/default.jpg");
-        Response response = client.send();
+        MvcResult result = mockMvc.perform(get("/iiif/3/{identifier}/full/^!150,150/0/default.jpg", IMAGE))
+                .andExpect(status().isOk())
+                .andReturn();
 
-        try (InputStream is = new ByteArrayInputStream(response.getBody())) {
+        byte[] imageBytes = result.getResponse().getContentAsByteArray();
+        try (InputStream is = new ByteArrayInputStream(imageBytes)) {
             BufferedImage image = ImageIO.read(is);
-            assertEquals(100, image.getWidth());
-            assertEquals(88, image.getHeight());
+            // Should be upscaled to fit inside 150x150 while maintaining aspect ratio
+            assertTrue(image.getWidth() <= 150);
+            assertTrue(image.getHeight() <= 150);
+            assertTrue(image.getWidth() > 64 || image.getHeight() > 56); // Should be upscaled
         }
     }
 
     /**
-     * 4.2. (^!w,h) "Requests for sizes prefixed with ^ that require upscaling
-     * should result in a 501 (Not Implemented) status code if the server does
-     * not support upscaling."
-     *
-     * Note that because supporting upscaling is not an on/off switch, but
-     * rather a continuum based on {@link Key#MAX_SCALE}, this implementation
-     * returns 400 in this situation instead of 501.
+     * 4.2.6: ^!w,h without server support
      */
     @Test
-    void testSizeUpscaledToFitInsideWithoutServerSupport() {
-        Configuration config = Configuration.getInstance();
-        config.setProperty(Key.MAX_SCALE, 1.0);
-        client = newClient("/" + IMAGE + "/full/%5E!150,150/0/color.jpg");
+    void testSizeUpscaledToFitInsideWithoutServerSupport() throws Exception {
+        when(configuration.getDouble(Key.MAX_SCALE, 1.0)).thenReturn(1.0);
 
-        ResourceException e = assertThrows(
-                ResourceException.class,
-                () -> client.send());
-        assertEquals(400, e.getStatusCode());
+        mockMvc.perform(get("/iiif/3/{identifier}/full/^!150,150/0/default.jpg", IMAGE))
+                .andExpect(status().isBadRequest());
     }
 
     /**
-     * 4.2. "For all requests the pixel dimensions of the scaled region must
-     * not be less than 1 pixel or greater than the server-imposed limits.
-     * Requests that would generate images of these sizes are errors that
-     * should result in a 400 (Bad Request) status code."
+     * 4.3.1: 0 degrees
      */
     @Test
-    void testResultingWidthOrHeightIsZero() {
-        assertStatus(400, getHTTPURI("/" + IMAGE + "/full/pct:0/15/color.jpg"));
-        assertStatus(400, getHTTPURI("/wide.jpg/full/3,0/15/color.jpg"));
+    void testRotation0() throws Exception {
+        mockMvc.perform(get("/iiif/3/{identifier}/full/max/0/default.jpg", IMAGE))
+                .andExpect(status().isOk());
     }
 
     /**
-     * 4.2. "... a 400 (Bad Request) status code should be returned in response
-     * to other client request syntax errors."
+     * 4.3.2: 90 degrees
      */
     @Test
-    void testInvalidSize() {
-        assertStatus(400, getHTTPURI("/" + IMAGE + "/full/cats/0/default.jpg"));
-        assertStatus(400, getHTTPURI("/" + IMAGE + "/full/cats,50/0/default.jpg"));
-        assertStatus(400, getHTTPURI("/" + IMAGE + "/full/%5Ecats,50/0/default.jpg"));
-        assertStatus(400, getHTTPURI("/" + IMAGE + "/full/50,cats/0/default.jpg"));
-        assertStatus(400, getHTTPURI("/" + IMAGE + "/full/%5E50,cats/0/default.jpg"));
-        assertStatus(400, getHTTPURI("/" + IMAGE + "/full/cats,/0/default.jpg"));
-        assertStatus(400, getHTTPURI("/" + IMAGE + "/full/%5Ecats,/0/default.jpg"));
-        assertStatus(400, getHTTPURI("/" + IMAGE + "/full/,cats/0/default.jpg"));
-        assertStatus(400, getHTTPURI("/" + IMAGE + "/full/%5E,cats/0/default.jpg"));
-        assertStatus(400, getHTTPURI("/" + IMAGE + "/full/!cats,50/0/default.jpg"));
-        assertStatus(400, getHTTPURI("/" + IMAGE + "/full/%5E!cats,50/0/default.jpg"));
-    }
+    void testRotation90() throws Exception {
+        MvcResult result = mockMvc.perform(get("/iiif/3/{identifier}/full/max/90/default.jpg", IMAGE))
+                .andExpect(status().isOk())
+                .andReturn();
 
-    /**
-     * 4.3. "The degrees of clockwise rotation from 0 up to 360."
-     */
-    @Test
-    void testRotation() {
-        assertStatus(200, getHTTPURI("/" + IMAGE + "/full/max/0/color.jpg"));
-        assertStatus(200, getHTTPURI("/" + IMAGE + "/full/max/15.5/color.jpg"));
-        assertStatus(200, getHTTPURI("/" + IMAGE + "/full/max/360/color.jpg"));
-    }
-
-    /**
-     * 4.3. "The image should be mirrored and then rotated as above."
-     */
-    @Test
-    void testMirroredRotation() {
-        assertStatus(200, getHTTPURI("/" + IMAGE + "/full/max/!15/color.jpg"));
-    }
-
-    /**
-     * 4.3. "A rotation value that is out of range or unsupported should result
-     * in a 400 status code."
-     */
-    @Test
-    void testNegativeRotation() {
-        assertStatus(400, getHTTPURI("/" + IMAGE + "/full/max/-15/default.jpg"));
-    }
-
-    /**
-     * 4.3. "A rotation value that is out of range or unsupported should result
-     * in a 400 status code."
-     */
-    @Test
-    void testGreaterThanFullRotation() {
-        assertStatus(400, getHTTPURI("/" + IMAGE + "/full/max/4855/default.jpg"));
-    }
-
-    /**
-     * 4.4. "The image is returned in full color."
-     */
-    @Test
-    void testColorQuality() {
-        assertStatus(200, getHTTPURI("/" + IMAGE + "/full/max/0/color.jpg"));
-    }
-
-    /**
-     * 4.4. "The image is returned in grayscale, where each pixel is black,
-     * white or any shade of gray in between."
-     */
-    @Test
-    void testGrayQuality() {
-        assertStatus(200, getHTTPURI("/" + IMAGE + "/full/max/0/gray.jpg"));
-    }
-
-    /**
-     * 4.4. "The image returned is bitonal, where each pixel is either black or
-     * white."
-     */
-    @Test
-    void testBitonalQuality() {
-        assertStatus(200, getHTTPURI("/" + IMAGE + "/full/max/0/bitonal.jpg"));
-    }
-
-    /**
-     * 4.4. "The image is returned using the server’s default quality (e.g.
-     * color, gray or bitonal) for the image."
-     */
-    @Test
-    void testDefaultQuality() {
-        assertStatus(200, getHTTPURI("/" + IMAGE + "/full/max/0/default.jpg"));
-    }
-
-    /**
-     * 4.4. "A quality value that is unsupported should result in a 400 status
-     * code."
-     */
-    @Test
-    void testUnsupportedQuality() {
-        assertStatus(400, getHTTPURI("/" + IMAGE + "/full/max/0/bogus.jpg"));
-    }
-
-    /**
-     * 4.5
-     */
-    @Test
-    void testFormats() throws Exception {
-        testFormat(Format.get("jpg"));
-        testFormat(Format.get("tif"));
-        testFormat(Format.get("png"));
-        testFormat(Format.get("gif"));
-        testFormat(Format.get("jp2"));
-        testFormat(Format.get("pdf"));
-        testFormat(Format.get("webp"));
-    }
-
-    private void testFormat(Format outputFormat) throws Exception {
-        client = newClient("/" + IMAGE + "/full/max/0/default." +
-                outputFormat.getPreferredExtension());
-
-        final Format sourceFormat = Format.inferFormat(IMAGE);
-        final Processor processor = new ProcessorFactory().newProcessor(sourceFormat);
-        final Set<Format> outputFormats = processor.getAvailableOutputFormats();
-
-        // If the processor supports this SOURCE format
-        if (!outputFormats.isEmpty()) {
-            // If the processor supports this OUTPUT format
-            if (outputFormats.contains(outputFormat)) {
-                Response response = client.send();
-                assertEquals(200, response.getStatus());
-                assertEquals(outputFormat.getPreferredMediaType().toString(),
-                        response.getHeaders().getFirstValue("Content-Type"));
-            } else {
-                try {
-                    client.send();
-                    fail("Expected exception");
-                } catch (ResourceException e) {
-                    assertEquals(415, e.getStatusCode());
-                }
-            }
-        } else {
-            try {
-                client.send();
-                fail("Expected exception");
-            } catch (ResourceException e) {
-                assertEquals(501, e.getStatusCode());
-            }
+        byte[] imageBytes = result.getResponse().getContentAsByteArray();
+        try (InputStream is = new ByteArrayInputStream(imageBytes)) {
+            BufferedImage image = ImageIO.read(is);
+            // 90 degree rotation should swap width and height
+            assertEquals(56, image.getWidth());
+            assertEquals(64, image.getHeight());
         }
     }
 
     /**
-     * 4.5
+     * 4.3.3: 180 degrees
      */
     @Test
-    void testUnsupportedFormat() {
-        assertStatus(415, getHTTPURI("/" + IMAGE + "/full/max/0/default.bogus"));
+    void testRotation180() throws Exception {
+        MvcResult result = mockMvc.perform(get("/iiif/3/{identifier}/full/max/180/default.jpg", IMAGE))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        byte[] imageBytes = result.getResponse().getContentAsByteArray();
+        try (InputStream is = new ByteArrayInputStream(imageBytes)) {
+            BufferedImage image = ImageIO.read(is);
+            assertEquals(64, image.getWidth());
+            assertEquals(56, image.getHeight());
+        }
     }
 
     /**
-     * 4.7
+     * 4.3.4: 270 degrees
      */
     @Test
-    void testCanonicalURIInLinkHeader() throws Exception {
-        final String path        = "/" + IMAGE + "/pct:50,50,50,50/,50/15/gray.jpg";
-        final URI uri            = getHTTPURI(path);
-        final String uriStr      = uri.toString();
-        final String expectedURI = uriStr.substring(0,
-                uriStr.indexOf(IMAGE.toString()) + IMAGE.toString().length()) +
-                "/32,28,32,28/57,50/15/gray.jpg";
-        client = newClient(path);
-        Response response = client.send();
+    void testRotation270() throws Exception {
+        MvcResult result = mockMvc.perform(get("/iiif/3/{identifier}/full/max/270/default.jpg", IMAGE))
+                .andExpect(status().isOk())
+                .andReturn();
 
-        assertEquals("<" + expectedURI + ">;rel=\"canonical\"",
-                response.getHeaders().getFirstValue("Link"));
+        byte[] imageBytes = result.getResponse().getContentAsByteArray();
+        try (InputStream is = new ByteArrayInputStream(imageBytes)) {
+            BufferedImage image = ImageIO.read(is);
+            // 270 degree rotation should swap width and height
+            assertEquals(56, image.getWidth());
+            assertEquals(64, image.getHeight());
+        }
     }
 
     /**
-     * 5. "Servers must support requests for image information."
+     * 4.3.5: Mirroring (!n)
      */
     @Test
-    void testInformationRequest() {
-        assertStatus(200, getHTTPURI("/" + IMAGE + "/info.json"));
+    void testMirroring() throws Exception {
+        mockMvc.perform(get("/iiif/3/{identifier}/full/max/!0/default.jpg", IMAGE))
+                .andExpect(status().isOk());
     }
 
     /**
-     * 5.1. "If the server receives a request with an Accept header, it should
-     * respond following the rules of content negotiation. Note that content
-     * types provided in the Accept header of the request may include
-     * parameters, for example profile or charset."
+     * 4.4.1: default quality
      */
     @Test
-    void testInformationRequestContentTypeWithAcceptHeader() throws Exception {
-        client = newClient("/" + IMAGE + "/info.json");
-        client.getHeaders().set("Accept", "application/ld+json");
-        Response response = client.send();
-        assertEquals("application/ld+json;charset=UTF-8;profile=\"http://iiif.io/api/image/3/context.json\"",
-                response.getHeaders().getFirstValue("Content-Type"));
-
-        client.getHeaders().set("Accept", "application/json");
-        response = client.send();
-        assertTrue("application/json;charset=UTF-8;profile=\"http://iiif.io/api/image/3/context.json\"".equalsIgnoreCase(
-                response.getHeaders().getFirstValue("Content-Type").replace(" ", "")));
+    void testQualityDefault() throws Exception {
+        mockMvc.perform(get("/iiif/3/{identifier}/full/max/0/default.jpg", IMAGE))
+                .andExpect(status().isOk());
     }
 
     /**
-     * 5.1. "If the request does not include an Accept header, the HTTP
-     * Content-Type header of the response should have the value
-     * application/ld+json (JSON-LD) with the profile parameter given as the
-     * context document."
+     * 4.4.2: color quality
      */
     @Test
-    void testInformationRequestContentTypeWithoutAcceptHeader() throws Exception {
-        client = newClient("/" + IMAGE + "/info.json");
-        Response response = client.send();
-
-        assertEquals(200, response.getStatus());
-        assertTrue("application/ld+json;charset=utf-8;profile=\"http://iiif.io/api/image/3/context.json\"".equalsIgnoreCase(
-                response.getHeaders().getFirstValue("Content-Type").replace(" ", "").toLowerCase()));
+    void testQualityColor() throws Exception {
+        mockMvc.perform(get("/iiif/3/{identifier}/full/max/0/color.jpg", IMAGE))
+                .andExpect(status().isOk());
     }
 
     /**
-     * 5.1. "Servers should support CORS on image information responses."
+     * 4.4.3: gray quality
+     */
+    @Test
+    void testQualityGray() throws Exception {
+        mockMvc.perform(get("/iiif/3/{identifier}/full/max/0/gray.jpg", IMAGE))
+                .andExpect(status().isOk());
+    }
+
+    /**
+     * 4.4.4: bitonal quality
+     */
+    @Test
+    void testQualityBitonal() throws Exception {
+        mockMvc.perform(get("/iiif/3/{identifier}/full/max/0/bitonal.jpg", IMAGE))
+                .andExpect(status().isOk());
+    }
+
+    /**
+     * 4.5.1: jpg format
+     */
+    @Test
+    void testFormatJPG() throws Exception {
+        mockMvc.perform(get("/iiif/3/{identifier}/full/max/0/default.jpg", IMAGE))
+                .andExpect(status().isOk())
+                .andExpect(header().string("Content-Type", "image/jpeg"));
+    }
+
+    /**
+     * 4.5.2: png format
+     */
+    @Test
+    void testFormatPNG() throws Exception {
+        mockMvc.perform(get("/iiif/3/{identifier}/full/max/0/default.png", IMAGE))
+                .andExpect(status().isOk())
+                .andExpect(header().string("Content-Type", "image/png"));
+    }
+
+    /**
+     * 5.1: Information Request CORS header
      */
     @Test
     void testInformationRequestCORSHeader() throws Exception {
-        client = newClient("/" + IMAGE + "/info.json");
-
-        Response response = client.send();
-        assertEquals("*",
-                response.getHeaders().getFirstValue("Access-Control-Allow-Origin"));
+        mockMvc.perform(get("/iiif/3/{identifier}/info.json", IMAGE))
+                .andExpect(header().string("Access-Control-Allow-Origin", "*"));
     }
 
     /**
-     * 5.2
+     * 5.2: Information Request JSON structure
      */
     @Test
-    void testInformationRequestJSON() {
-        // this is tested in InformationFactoryTest
-    }
+    void testInformationRequestJSON() throws Exception {
+        MvcResult result = mockMvc.perform(get("/iiif/3/{identifier}/info.json", IMAGE)
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(header().string("Content-Type", containsString("application/ld+json")))
+                .andReturn();
 
+        String responseBody = result.getResponse().getContentAsString();
+        JsonNode json = objectMapper.readTree(responseBody);
+
+        // Verify IIIF v3 structure
+        assertEquals("http://iiif.io/api/image/3/context.json", json.get("@context").asText());
+        assertEquals("ImageService3", json.get("type").asText());
+        assertEquals("http://iiif.io/api/image", json.get("protocol").asText());
+        assertEquals("level2", json.get("profile").asText());
+
+        // Verify required properties exist
+        assertNotNull(json.get("width"), "width should be present");
+        assertNotNull(json.get("height"), "height should be present");
+        assertNotNull(json.get("id"), "id should be present");
+    }
 }

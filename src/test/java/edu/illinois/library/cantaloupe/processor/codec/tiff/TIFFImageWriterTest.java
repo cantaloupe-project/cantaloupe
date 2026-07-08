@@ -6,7 +6,6 @@ import edu.illinois.library.cantaloupe.image.Metadata;
 import edu.illinois.library.cantaloupe.operation.Encode;
 import edu.illinois.library.cantaloupe.processor.codec.AbstractImageWriterTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;
-import it.geosolutions.imageio.plugins.tiff.BaselineTIFFTagSet;
 import it.geosolutions.imageio.plugins.tiff.EXIFParentTIFFTagSet;
 import it.geosolutions.imageio.plugins.tiff.TIFFDirectory;
 import it.geosolutions.imageio.plugins.tiff.TIFFTag;
@@ -202,19 +201,6 @@ public class TIFFImageWriterTest extends AbstractImageWriterTest {
                 instance.write(image, os);
             }
             checkForXMPMetadata(os.toByteArray());
-        } finally {
-            reader.dispose();
-        }
-    }
-
-    private void checkForICCProfile(byte[] imageData) throws Exception {
-        final ImageReader reader = getIIOReader();
-        try (ImageInputStream iis = ImageIO.createImageInputStream(new ByteArrayInputStream(imageData))) {
-            reader.setInput(iis);
-            final IIOMetadata metadata = reader.getImageMetadata(0);
-            final TIFFDirectory dir = TIFFDirectory.createFromMetadata(metadata);
-            final TIFFTag tag = dir.getTag(BaselineTIFFTagSet.TAG_ICC_PROFILE);
-            assertNotNull(tag);
         } finally {
             reader.dispose();
         }
