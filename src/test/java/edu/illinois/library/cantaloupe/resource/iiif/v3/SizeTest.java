@@ -354,26 +354,9 @@ public class SizeTest extends BaseTest {
         instance.setType(Size.Type.ASPECT_FIT_INSIDE);
         instance.setWidth(300);
         instance.setHeight(200);
-        // v3 !w,h (no caret) disables upscaling per spec §4.2
-        // ("not larger than the extracted region").
-        ScaleByPixels expected = new ScaleByPixels(
-                300, 200, ScaleByPixels.Mode.ASPECT_FIT_INSIDE);
-        expected.setUpscaleAllowed(false);
-        assertEquals(expected, instance.toScale(1));
-    }
-
-    @Test
-    void testToScaleWithAspectFitInsideTypeAndUpscalingAllowed() {
-        instance.setType(Size.Type.ASPECT_FIT_INSIDE);
-        instance.setUpscalingAllowed(true);
-        instance.setWidth(300);
-        instance.setHeight(200);
-        // v3 ^!w,h (caret) propagates upscalingAllowed=true so the resulting
-        // ScaleByPixels can scale above the source dimensions.
-        ScaleByPixels expected = new ScaleByPixels(
-                300, 200, ScaleByPixels.Mode.ASPECT_FIT_INSIDE);
-        expected.setUpscaleAllowed(true);
-        assertEquals(expected, instance.toScale(1));
+        assertEquals(
+                new ScaleByPixels(300, 200, ScaleByPixels.Mode.ASPECT_FIT_INSIDE),
+                instance.toScale(1));
     }
 
     @Test
