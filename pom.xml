@@ -17,15 +17,44 @@
         <maven.compile.target>21</maven.compile.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <jetty.version>12.1.7</jetty.version>
+        <jetty.version>12.1.10</jetty.version>
         <aws-sdk.version>2.42.37</aws-sdk.version>
         <jackson.version>2.21.5</jackson.version>
-        <jruby.version>10.1.0.0</jruby.version>
+        <jruby.version>10.1.1.0</jruby.version>
         <surefire.version>3.5.3</surefire.version>
         <seleniumhq.version>4.43.0</seleniumhq.version>
-        <logback.version>1.5.33</logback.version> <!-- slf4j depends on specific versions of logback. -->
+        <logback.version>1.5.34</logback.version> <!-- slf4j depends on specific versions of logback. -->
         <slf4j.version>2.0.18</slf4j.version>
     </properties>
+    <!-- Pin transitive dependencies with published CVE fixes that the
+         direct dependency tree has not yet picked up. -->
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>io.netty</groupId>
+                <artifactId>netty-bom</artifactId>
+                <version>4.1.136.Final</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.commons</groupId>
+                <artifactId>commons-compress</artifactId>
+                <version>1.28.0</version>
+            </dependency>
+            <dependency>
+                <groupId>org.codehaus.plexus</groupId>
+                <artifactId>plexus-utils</artifactId>
+                <version>4.0.3</version>
+            </dependency>
+            <dependency>
+                <groupId>org.iq80.snappy</groupId>
+                <artifactId>snappy</artifactId>
+                <version>0.5</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
 
     <developers>
         <developer>
