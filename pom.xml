@@ -17,7 +17,7 @@
         <maven.compile.target>21</maven.compile.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <jetty.version>12.1.7</jetty.version>
+        <jetty.version>12.1.10</jetty.version>
         <aws-sdk.version>2.42.37</aws-sdk.version>
         <jackson.version>2.21.5</jackson.version>
         <jruby.version>10.1.0.0</jruby.version>
