@@ -27,9 +27,17 @@
         <slf4j.version>2.0.18</slf4j.version>
     </properties>
     <!-- Pin transitive dependencies with published CVE fixes that the
-         direct dependency tree has not yet picked up. -->
+         direct dependency tree has not yet picked up. Each pin notes the
+         direct dependency that pulls it in and the condition under which
+         the pin can be deleted. To re-check at any time: remove this block
+         and run `mvn dependency:tree -Dincludes=io.netty:*,org.apache.commons:commons-compress,org.codehaus.plexus:plexus-utils,org.iq80.snappy:snappy`;
+         if the natively resolved versions meet or exceed the pins, the
+         block is no longer needed. -->
     <dependencyManagement>
         <dependencies>
+            <!-- via lettuce-core 6.2.7.RELEASE (resolves netty 4.1.101) and
+                 awssdk netty-nio-client; remove once lettuce is upgraded to a
+                 release shipping netty >= 4.1.136. -->
             <dependency>
                 <groupId>io.netty</groupId>
                 <artifactId>netty-bom</artifactId>
@@ -37,16 +45,24 @@
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
+            <!-- via jena-core 4.10.0 -> jena-base (resolves 1.24.0); remove
+                 once Jena is upgraded past 4.10 (Jena 5.x ships >= 1.26;
+                 >= 1.28 covers the outstanding CVEs). -->
             <dependency>
                 <groupId>org.apache.commons</groupId>
                 <artifactId>commons-compress</artifactId>
                 <version>1.28.0</version>
             </dependency>
+            <!-- via maven-assembly-plugin 3.7.1, declared as a project
+                 dependency (resolves 4.0.0); remove once that plugin is
+                 upgraded to a version shipping plexus-utils >= 4.0.3. -->
             <dependency>
                 <groupId>org.codehaus.plexus</groupId>
                 <artifactId>plexus-utils</artifactId>
                 <version>4.0.3</version>
             </dependency>
+            <!-- via maven-assembly-plugin 3.7.1 -> plexus-archiver 4.9.2
+                 (resolves 0.4); remove once that chain ships snappy >= 0.5. -->
             <dependency>
                 <groupId>org.iq80.snappy</groupId>
                 <artifactId>snappy</artifactId>
