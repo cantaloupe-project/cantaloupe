@@ -586,12 +586,18 @@ public class Version3_0ConformanceTest extends ResourceTest {
      * not larger than the extracted region, w or h, or server-imposed limits."
      */
     @Test
-    void testSizeDownscaledToFitInsideWithIllegalSize() {
+    void testSizeDownscaledToFitInsideWhenBoxExceedsSource() throws Exception {
+        // !w,h carries "not larger than the extracted region" in its own
+        // definition, so a box larger than the source is clamped to source
+        // size rather than rejected.
         client = newClient("/" + IMAGE + "/full/!300,300/0/default.jpg");
-        ResourceException e = assertThrows(
-                ResourceException.class,
-                () -> client.send());
-        assertEquals(400, e.getStatusCode());
+        Response response = client.send();
+
+        try (InputStream is = new ByteArrayInputStream(response.getBody())) {
+            BufferedImage image = ImageIO.read(is);
+            assertEquals(64, image.getWidth());
+            assertEquals(56, image.getHeight());
+        }
     }
 
     /**
