@@ -18,7 +18,11 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 final class Util {
+    private static final Logger LOGGER =
+            LoggerFactory.getLogger(Util.class);
 
     /**
      * @param xmp XMP data with a root {@literal <rdf:RDF>} element.
@@ -130,7 +134,8 @@ final class Util {
                     model.read(reader, "http://example.com", "RDF/XML");
                 }    
             } else {
-                throw exception;
+                // Return empty model on parse failure.
+                LOGGER.warn(exception.getMessage(),exception);
             }
         }
         return model;
