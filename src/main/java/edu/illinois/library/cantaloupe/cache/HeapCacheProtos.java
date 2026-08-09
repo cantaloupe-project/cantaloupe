@@ -2264,7 +2264,6 @@ public final class HeapCacheProtos {
       }
 
       private void buildPartial0(edu.illinois.library.cantaloupe.cache.HeapCacheProtos.Cache result) {
-        int from_bitField0_ = bitField0_;
       }
 
       @java.lang.Override
