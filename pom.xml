@@ -148,7 +148,7 @@
         <dependency>
             <groupId>io.lettuce</groupId>
             <artifactId>lettuce-core</artifactId>
-            <version>6.2.7.RELEASE</version>
+            <version>7.6.0.RELEASE</version>
         </dependency>
         <!-- Enhanced ImageIO TIFF plugin supporting BigTIFF:
          https://github.com/geosolutions-it/imageio-ext/ -->
