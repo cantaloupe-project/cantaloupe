@@ -74,8 +74,31 @@ class ScaleValidatorTest extends BaseTest {
         scale.setUpscaleAllowed(true);
         MetaIdentifier metaId = new MetaIdentifier("test");
 
+        // BAD_REQUEST, not NOT_IMPLEMENTED: max_scale is 2.0 here, so the
+        // server does support upscaling and an over-ceiling caret request
+        // would be a client error. See v3.ImageResource#upscaleRejectionStatus.
         assertDoesNotThrow(() -> ScaleValidator.validateScale(
                 sourceSize, scale, Status.BAD_REQUEST, metaId));
+    }
+
+    /**
+     * The validator does not decide the status itself; it reports whatever the
+     * endpoint hands it. v3 passes {@link Status#NOT_IMPLEMENTED} when a caret
+     * size needs upscaling and {@code max_scale} is 1.0 or less.
+     */
+    @Test
+    void validateScalePropagatesTheGivenStatus() {
+        Dimension sourceSize = new Dimension(300, 300);
+        ScaleByPixels scale  = new ScaleByPixels(
+                600, 600, ScaleByPixels.Mode.ASPECT_FIT_INSIDE);
+        scale.setUpscaleAllowed(true);
+        MetaIdentifier metaId = new MetaIdentifier("test");
+
+        ScaleRestrictedException e = assertThrows(
+                ScaleRestrictedException.class,
+                () -> ScaleValidator.validateScale(
+                        sourceSize, scale, Status.NOT_IMPLEMENTED, metaId));
+        assertEquals(501, e.getStatus().getCode());
     }
 
     /**
