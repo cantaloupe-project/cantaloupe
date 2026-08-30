@@ -642,6 +642,45 @@ public class Version3_0ConformanceTest extends ResourceTest {
     }
 
     /**
+     * 4.2. (!w,h) The ceiling in the !w,h definition is "the extracted
+     * region," not the full image, so a box larger than a requested region is
+     * clamped to that region rather than to the full source. The source is
+     * 64&times;56 and the region is its top-left quarter.
+     */
+    @Test
+    void testSizeDownscaledToFitInsideWhenBoxExceedsRegion() throws Exception {
+        client = newClient("/" + IMAGE + "/0,0,32,28/!600,600/0/default.jpg");
+        Response response = client.send();
+
+        try (InputStream is = new ByteArrayInputStream(response.getBody())) {
+            BufferedImage image = ImageIO.read(is);
+            assertEquals(32, image.getWidth());
+            assertEquals(28, image.getHeight());
+        }
+    }
+
+    /**
+     * 4.2. (^!w,h) The caret form drops "the extracted region" from the
+     * ceiling, so the same region-scoped request upscales to the box instead
+     * of being clamped to the region. Aspect ratio is preserved, so a
+     * 32&times;28 region fills 600&times;525 rather than 600&times;600.
+     */
+    @Test
+    void testSizeUpscaledToFitInsideWhenBoxExceedsRegion() throws Exception {
+        Configuration config = Configuration.getInstance();
+        config.setProperty(Key.MAX_SCALE, 999);
+
+        client = newClient("/" + IMAGE + "/0,0,32,28/%5E!600,600/0/default.jpg");
+        Response response = client.send();
+
+        try (InputStream is = new ByteArrayInputStream(response.getBody())) {
+            BufferedImage image = ImageIO.read(is);
+            assertEquals(600, image.getWidth());
+            assertEquals(525, image.getHeight());
+        }
+    }
+
+    /**
      * 4.2. (^!w,h) "Requests for sizes prefixed with ^ that require upscaling
      * should result in a 501 (Not Implemented) status code if the server does
      * not support upscaling."
