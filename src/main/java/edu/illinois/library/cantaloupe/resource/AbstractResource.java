@@ -229,7 +229,7 @@ public abstract class AbstractResource {
      */
     protected MetaIdentifier getMetaIdentifier() {
         if (metaIdentifier == null) {
-            String pathComponent = getRequest().getIdentifierPathComponent();
+            String pathComponent = ((IIIFRequest) getRequest()).getIdentifierPathComponent();
             if (pathComponent != null) {
                 metaIdentifier = MetaIdentifier.fromURIPathComponent(
                         pathComponent, getDelegateProxy());
@@ -279,7 +279,7 @@ public abstract class AbstractResource {
     /**
      * @return Request being handled.
      */
-    protected final Request getRequest() {
+    protected Request getRequest() {
         return request;
     }
 
