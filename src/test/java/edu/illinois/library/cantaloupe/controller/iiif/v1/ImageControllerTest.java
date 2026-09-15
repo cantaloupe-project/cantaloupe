@@ -23,6 +23,8 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.startsWith;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.options;
@@ -54,6 +56,12 @@ class ImageControllerTest {
         ConfigurationFactory.clearInstance();
         System.setProperty(ConfigurationFactory.CONFIG_VM_ARGUMENT, "memory");
         System.setProperty(Application.TEST_VM_ARGUMENT, "true");
+
+        // Unstubbed mock methods return null, even when the caller
+        // supplies a fallback value, which NPEs in code like
+        // OverlayFactory.readStrategy() that relies on it.
+        when(configuration.getString(any(Key.class), anyString()))
+                .thenAnswer(invocation -> invocation.getArgument(1));
 
         // Default: endpoint is enabled
         when(configuration.getBoolean(Key.IIIF_1_ENDPOINT_ENABLED, true)).thenReturn(true);
