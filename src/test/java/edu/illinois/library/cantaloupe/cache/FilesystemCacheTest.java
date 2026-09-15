@@ -1,16 +1,16 @@
 package edu.illinois.library.cantaloupe.cache;
 
-import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.config.Configuration;
+import edu.illinois.library.cantaloupe.config.Key;
+import edu.illinois.library.cantaloupe.image.Format;
+import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.operation.ColorTransform;
 import edu.illinois.library.cantaloupe.operation.Crop;
-import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.operation.CropToSquare;
 import edu.illinois.library.cantaloupe.operation.Encode;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.operation.Rotate;
 import edu.illinois.library.cantaloupe.operation.Scale;
-import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.operation.ScaleByPercent;
 import edu.illinois.library.cantaloupe.test.ConcurrentReaderWriter;
 import edu.illinois.library.cantaloupe.test.TestUtil;
@@ -31,9 +31,11 @@ import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-import static edu.illinois.library.cantaloupe.cache.FilesystemCache.*;
 import static edu.illinois.library.cantaloupe.test.Assert.PathAssert.assertRecursiveFileCount;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assumptions.assumeFalse;
 
 public class FilesystemCacheTest extends AbstractCacheTest {
@@ -75,7 +77,7 @@ public class FilesystemCacheTest extends AbstractCacheTest {
         config.setProperty(Key.FILESYSTEMCACHE_PATHNAME,
                 fixturePath.toString());
 
-        return new FilesystemCache();
+        return new FilesystemCache(config);
     }
 
     private void createEmptyFile(Path path) throws IOException {
@@ -97,11 +99,11 @@ public class FilesystemCacheTest extends AbstractCacheTest {
         config.setProperty(Key.FILESYSTEMCACHE_DIRECTORY_NAME_LENGTH, 3);
         assertEquals(
                 String.format("083%s2c1", File.separator),
-                FilesystemCache.hashedPathFragment("cats"));
+                instance.hashedPathFragment("cats"));
 
         // depth = 0
         config.setProperty(Key.FILESYSTEMCACHE_DIRECTORY_DEPTH, 0);
-        assertEquals("", hashedPathFragment("cats"));
+        assertEquals("", instance.hashedPathFragment("cats"));
     }
 
     @Test
@@ -121,9 +123,9 @@ public class FilesystemCacheTest extends AbstractCacheTest {
         final Path expected = Paths.get(
                 pathname,
                 "image",
-                hashedPathFragment(identifier.toString()),
+                instance.hashedPathFragment(identifier.toString()),
                 ops.toFilename());
-        assertEquals(expected, derivativeImageFile(ops));
+        assertEquals(expected, instance.derivativeImageFile(ops));
     }
 
     @Test
@@ -146,9 +148,9 @@ public class FilesystemCacheTest extends AbstractCacheTest {
         final Path expected = Paths.get(
                 pathname,
                 "image",
-                FilesystemCache.hashedPathFragment(identifier.toString()),
+                instance.hashedPathFragment(identifier.toString()),
                 ops.toFilename() + FilesystemCache.tempFileSuffix());
-        assertEquals(expected, FilesystemCache.derivativeImageTempFile(ops));
+        assertEquals(expected, instance.derivativeImageTempFile(ops));
     }
 
     @Test
@@ -159,9 +161,9 @@ public class FilesystemCacheTest extends AbstractCacheTest {
         final Path expected = Paths.get(
                 pathname,
                 "info",
-                FilesystemCache.hashedPathFragment(identifier.toString()),
+                instance.hashedPathFragment(identifier.toString()),
                 StringUtils.md5(identifier.toString()) + ".json");
-        assertEquals(expected, infoFile(identifier));
+        assertEquals(expected, instance.infoFile(identifier));
     }
 
     @Test
@@ -172,10 +174,10 @@ public class FilesystemCacheTest extends AbstractCacheTest {
         final Path expected = Paths.get(
                 pathname,
                 "info",
-                FilesystemCache.hashedPathFragment(identifier.toString()),
+                instance.hashedPathFragment(identifier.toString()),
                 StringUtils.md5(identifier.toString()) + ".json"
                         + FilesystemCache.tempFileSuffix());
-        assertEquals(expected, infoTempFile(identifier));
+        assertEquals(expected, instance.infoTempFile(identifier));
     }
 
     @Test
@@ -186,9 +188,9 @@ public class FilesystemCacheTest extends AbstractCacheTest {
         final Path expected = Paths.get(
                 pathname,
                 "source",
-                FilesystemCache.hashedPathFragment(identifier.toString()),
+                instance.hashedPathFragment(identifier.toString()),
                 StringUtils.md5(identifier.toString()));
-        assertEquals(expected, sourceImageFile(identifier));
+        assertEquals(expected, instance.sourceImageFile(identifier));
     }
 
     @Test
@@ -199,10 +201,10 @@ public class FilesystemCacheTest extends AbstractCacheTest {
         final Path expected = Paths.get(
                 pathname,
                 "source",
-                FilesystemCache.hashedPathFragment(identifier.toString()),
+                instance.hashedPathFragment(identifier.toString()),
                 StringUtils.md5(identifier.toString())
                         + FilesystemCache.tempFileSuffix());
-        assertEquals(expected, sourceImageTempFile(identifier));
+        assertEquals(expected, instance.sourceImageTempFile(identifier));
     }
 
     @Test
@@ -218,43 +220,43 @@ public class FilesystemCacheTest extends AbstractCacheTest {
         OperationList ops = new OperationList(new Identifier("cats"));
 
         // create a new source image file
-        Path sourceImageFile = sourceImageFile(ops.getIdentifier());
+        Path sourceImageFile = instance.sourceImageFile(ops.getIdentifier());
         writeStringToFile(sourceImageFile, "not empty");
 
         // create a new derivative image file
-        Path derivativeImageFile = derivativeImageFile(ops);
+        Path derivativeImageFile = instance.derivativeImageFile(ops);
         Files.createDirectories(derivativeImageFile.getParent());
         writeStringToFile(derivativeImageFile, "not empty");
 
         // create a new info file
-        Path infoFile = infoFile(ops.getIdentifier());
+        Path infoFile = instance.infoFile(ops.getIdentifier());
         Files.createDirectories(infoFile.getParent());
         writeStringToFile(infoFile, "not empty");
 
         // create some temp files
-        Path sourceImageTempFile = sourceImageTempFile(ops.getIdentifier());
+        Path sourceImageTempFile = instance.sourceImageTempFile(ops.getIdentifier());
         writeStringToFile(sourceImageTempFile, "not empty");
 
-        Path derivativeImageTempFile = derivativeImageTempFile(ops);
+        Path derivativeImageTempFile = instance.derivativeImageTempFile(ops);
         writeStringToFile(derivativeImageTempFile, "not empty");
 
-        Path infoTempFile = infoTempFile(ops.getIdentifier());
+        Path infoTempFile = instance.infoTempFile(ops.getIdentifier());
         writeStringToFile(infoTempFile, "not empty");
 
         // create some empty files
-        Path root = FilesystemCache.rootSourceImagePath();
+        Path root = instance.rootSourceImagePath();
         Path subdir = root.resolve("bogus");
         Files.createDirectories(subdir);
         Files.createFile(subdir.resolve("empty"));
         Files.createFile(subdir.resolve("empty2"));
 
-        root = FilesystemCache.rootDerivativeImagePath();
+        root = instance.rootDerivativeImagePath();
         subdir = root.resolve("bogus");
         Files.createDirectories(subdir);
         Files.createFile(subdir.resolve("empty"));
         Files.createFile(subdir.resolve("empty2"));
 
-        root = FilesystemCache.rootInfoPath();
+        root = instance.rootInfoPath();
         subdir = root.resolve("bogus");
         Files.createDirectories(subdir);
         Files.createFile(subdir.resolve("empty"));
@@ -271,41 +273,41 @@ public class FilesystemCacheTest extends AbstractCacheTest {
         OperationList ops = new OperationList(new Identifier("cats"));
 
         // create a new source image file
-        Path sourceImageFile = sourceImageFile(ops.getIdentifier());
+        Path sourceImageFile = instance.sourceImageFile(ops.getIdentifier());
         writeStringToFile(sourceImageFile, "not empty");
 
         // create a new derivative image file
-        Path derivativeImageFile = derivativeImageFile(ops);
+        Path derivativeImageFile = instance.derivativeImageFile(ops);
         writeStringToFile(derivativeImageFile, "not empty");
 
         // create a new info file
-        Path infoFile = infoFile(ops.getIdentifier());
+        Path infoFile = instance.infoFile(ops.getIdentifier());
         writeStringToFile(infoFile, "not empty");
 
         // create some temp files
-        Path sourceImageTempFile = sourceImageTempFile(ops.getIdentifier());
+        Path sourceImageTempFile = instance.sourceImageTempFile(ops.getIdentifier());
         writeStringToFile(sourceImageTempFile, "not empty");
 
-        Path derivativeImageTempFile = derivativeImageTempFile(ops);
+        Path derivativeImageTempFile = instance.derivativeImageTempFile(ops);
         writeStringToFile(derivativeImageTempFile, "not empty");
 
-        Path infoTempFile = infoTempFile(ops.getIdentifier());
+        Path infoTempFile = instance.infoTempFile(ops.getIdentifier());
         writeStringToFile(infoTempFile, "not empty");
 
         // create some empty files
-        Path root = FilesystemCache.rootSourceImagePath();
+        Path root = instance.rootSourceImagePath();
         Path subdir = root.resolve("bogus");
         Files.createDirectories(subdir);
         Files.createFile(subdir.resolve("empty"));
         Files.createFile(subdir.resolve("empty2"));
 
-        root = FilesystemCache.rootDerivativeImagePath();
+        root = instance.rootDerivativeImagePath();
         subdir = root.resolve("bogus");
         Files.createDirectories(subdir);
         Files.createFile(subdir.resolve("empty"));
         Files.createFile(subdir.resolve("empty2"));
 
-        root = FilesystemCache.rootInfoPath();
+        root = instance.rootInfoPath();
         subdir = root.resolve("bogus");
         Files.createDirectories(subdir);
         Files.createFile(subdir.resolve("empty"));
@@ -325,15 +327,15 @@ public class FilesystemCacheTest extends AbstractCacheTest {
         Identifier identifier = new Identifier("dogs");
         OperationList ops = new OperationList(identifier);
 
-        Path imageFile = derivativeImageFile(ops);
+        Path imageFile = instance.derivativeImageFile(ops);
         createEmptyFile(imageFile);
 
         ops.add(new Rotate(15));
-        imageFile = derivativeImageFile(ops);
+        imageFile = instance.derivativeImageFile(ops);
         createEmptyFile(imageFile);
 
         ops.add(ColorTransform.GRAY);
-        imageFile = derivativeImageFile(ops);
+        imageFile = instance.derivativeImageFile(ops);
         createEmptyFile(imageFile);
 
         assertEquals(3, instance.getDerivativeImageFiles(identifier).size());
@@ -348,7 +350,7 @@ public class FilesystemCacheTest extends AbstractCacheTest {
         Identifier identifier = new Identifier("cats");
         assertFalse(instance.getSourceImageFile(identifier).isPresent());
 
-        Path imageFile = sourceImageFile(identifier);
+        Path imageFile = instance.sourceImageFile(identifier);
         Files.createDirectories(imageFile.getParent());
         Files.createFile(imageFile);
         assertTrue(instance.getSourceImageFile(identifier).isPresent());
@@ -359,7 +361,7 @@ public class FilesystemCacheTest extends AbstractCacheTest {
         Configuration.getInstance().setProperty(Key.SOURCE_CACHE_TTL, 1);
 
         Identifier identifier = new Identifier("cats");
-        Path cacheFile = sourceImageFile(identifier);
+        Path cacheFile = instance.sourceImageFile(identifier);
         Files.createDirectories(cacheFile.getParent());
         Files.createFile(cacheFile);
         assertNotNull(instance.getSourceImageFile(identifier));
@@ -431,15 +433,15 @@ public class FilesystemCacheTest extends AbstractCacheTest {
         OperationList ops = new OperationList(new Identifier("cats"));
 
         // create a new source image file
-        Path sourceImageFile = sourceImageFile(ops.getIdentifier());
+        Path sourceImageFile = instance.sourceImageFile(ops.getIdentifier());
         createEmptyFile(sourceImageFile);
 
         // create a new derivative image file
-        Path derivativeImageFile = derivativeImageFile(ops);
+        Path derivativeImageFile = instance.derivativeImageFile(ops);
         createEmptyFile(derivativeImageFile);
 
         // create a new info file
-        Path infoFile = infoFile(ops.getIdentifier());
+        Path infoFile = instance.infoFile(ops.getIdentifier());
         createEmptyFile(infoFile);
 
         // change the op list
@@ -447,7 +449,7 @@ public class FilesystemCacheTest extends AbstractCacheTest {
         ops.add(new Rotate(15));
 
         // create a new derivative image file based on the changed op list
-        derivativeImageFile = derivativeImageFile(ops);
+        derivativeImageFile = instance.derivativeImageFile(ops);
         createEmptyFile(derivativeImageFile);
 
         instance.purge();
@@ -467,28 +469,28 @@ public class FilesystemCacheTest extends AbstractCacheTest {
         ops.setIdentifier(id1);
 
         // create a new source image
-        Path sourceImageFile = sourceImageFile(ops.getIdentifier());
+        Path sourceImageFile = instance.sourceImageFile(ops.getIdentifier());
         createEmptyFile(sourceImageFile);
 
         // create a new derivative image
-        Path derivativeImageFile = derivativeImageFile(ops);
+        Path derivativeImageFile = instance.derivativeImageFile(ops);
         createEmptyFile(derivativeImageFile);
 
         // create a new info
-        Path infoFile = infoFile(ops.getIdentifier());
+        Path infoFile = instance.infoFile(ops.getIdentifier());
         createEmptyFile(infoFile);
 
         Identifier id2 = new Identifier("ferrets");
         ops.setIdentifier(id2);
         ops.add(new Rotate(15));
 
-        sourceImageFile = sourceImageFile(ops.getIdentifier());
+        sourceImageFile = instance.sourceImageFile(ops.getIdentifier());
         createEmptyFile(sourceImageFile);
 
-        derivativeImageFile = derivativeImageFile(ops);
+        derivativeImageFile = instance.derivativeImageFile(ops);
         createEmptyFile(derivativeImageFile);
 
-        infoFile = infoFile(ops.getIdentifier());
+        infoFile = instance.infoFile(ops.getIdentifier());
         createEmptyFile(infoFile);
 
         assertRecursiveFileCount(sourceImagePath, 2);
@@ -517,16 +519,16 @@ public class FilesystemCacheTest extends AbstractCacheTest {
         // add a source image
         Identifier id = new Identifier("cats");
         OperationList ops = new OperationList(id);
-        Path imageFile = sourceImageFile(ops.getIdentifier());
+        Path imageFile = instance.sourceImageFile(ops.getIdentifier());
         createEmptyFile(imageFile);
 
         // add a derivative image
         ops = new OperationList(id);
-        imageFile = derivativeImageFile(ops);
+        imageFile = instance.derivativeImageFile(ops);
         createEmptyFile(imageFile);
 
         // add an info
-        Path infoFile = infoFile(ops.getIdentifier());
+        Path infoFile = instance.infoFile(ops.getIdentifier());
         createEmptyFile(infoFile);
 
         // wait for them to expire
@@ -534,7 +536,7 @@ public class FilesystemCacheTest extends AbstractCacheTest {
 
         // add a changed derivative
         ops.setIdentifier(new Identifier("dogs"));
-        imageFile = derivativeImageFile(ops);
+        imageFile = instance.derivativeImageFile(ops);
         createEmptyFile(imageFile);
 
         instance.purgeInvalid();

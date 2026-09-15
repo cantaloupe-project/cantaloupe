@@ -71,10 +71,9 @@ class JdbcCache implements DerivativeCache {
 
             connection.setAutoCommit(false);
 
-            final Configuration config = Configuration.getInstance();
             final String sql = String.format(
                     "INSERT INTO %s (%s, %s, %s) VALUES (?, ?, ?)",
-                    config.getString(Key.JDBCCACHE_DERIVATIVE_IMAGE_TABLE),
+                    configuration.getString(Key.JDBCCACHE_DERIVATIVE_IMAGE_TABLE),
                     DERIVATIVE_IMAGE_TABLE_OPERATIONS_COLUMN,
                     DERIVATIVE_IMAGE_TABLE_IMAGE_COLUMN,
                     DERIVATIVE_IMAGE_TABLE_LAST_ACCESSED_COLUMN);
@@ -91,10 +90,9 @@ class JdbcCache implements DerivativeCache {
             try {
                 if (isComplete()) {
                     blobOutputStream.close();
-                    final Configuration config = Configuration.getInstance();
                     final String sql = String.format(
                             "INSERT INTO %s (%s, %s, %s) VALUES (?, ?, ?)",
-                                config.getString(Key.JDBCCACHE_DERIVATIVE_IMAGE_TABLE),
+                                configuration.getString(Key.JDBCCACHE_DERIVATIVE_IMAGE_TABLE),
                                 DERIVATIVE_IMAGE_TABLE_OPERATIONS_COLUMN,
                                 DERIVATIVE_IMAGE_TABLE_IMAGE_COLUMN,
                                 DERIVATIVE_IMAGE_TABLE_LAST_ACCESSED_COLUMN);
@@ -160,23 +158,27 @@ class JdbcCache implements DerivativeCache {
     static final String INFO_TABLE_INFO_COLUMN = "info";
     static final String INFO_TABLE_LAST_ACCESSED_COLUMN = "last_accessed";
 
-    private static HikariDataSource dataSource;
+    private HikariDataSource dataSource;
+    private Configuration configuration;
+
+    JdbcCache(Configuration configuration) { 
+        this.configuration = configuration;
+    }
 
     /**
      * @return Connection from the connection pool. Clients must call
      *         {@link Connection#close} when they are done with it.
      */
-    public static synchronized Connection getConnection() throws SQLException {
+    public synchronized Connection getConnection() throws SQLException {
         if (dataSource == null) {
-            final Configuration config = Configuration.getInstance();
-            final String connectionString = config.
+            final String connectionString = configuration.
                     getString(Key.JDBCCACHE_JDBC_URL, "");
             final int connectionTimeout = 1000 *
-                    config.getInt(Key.JDBCCACHE_CONNECTION_TIMEOUT, 10);
+                    configuration.getInt(Key.JDBCCACHE_CONNECTION_TIMEOUT, 10);
             final int maxPoolSize =
                     Runtime.getRuntime().availableProcessors() * 2 + 1;
-            final String user = config.getString(Key.JDBCCACHE_USER, "");
-            final String password = config.getString(Key.JDBCCACHE_PASSWORD, "");
+            final String user = configuration.getString(Key.JDBCCACHE_USER, "");
+            final String password = configuration.getString(Key.JDBCCACHE_PASSWORD, "");
 
             dataSource = new HikariDataSource();
             dataSource.setJdbcUrl(connectionString);
@@ -193,7 +195,7 @@ class JdbcCache implements DerivativeCache {
                 LOGGER.info("Using {} {}", metadata.getDriverName(),
                         metadata.getDriverVersion());
                 LOGGER.info("Connection URL: {}",
-                        config.getString(Key.JDBCCACHE_JDBC_URL));
+                        configuration.getString(Key.JDBCCACHE_JDBC_URL));
 
                 final String[] tableNames = { getDerivativeImageTableName(),
                         getInfoTableName() };
@@ -211,8 +213,8 @@ class JdbcCache implements DerivativeCache {
      * @return Name of the derivative image table.
      * @throws IllegalArgumentException If the image table name is not set.
      */
-    static String getDerivativeImageTableName() {
-        final String name = Configuration.getInstance().
+    String getDerivativeImageTableName() {
+        final String name = configuration.
                 getString(Key.JDBCCACHE_DERIVATIVE_IMAGE_TABLE);
         if (name == null) {
             throw new IllegalArgumentException(
@@ -225,8 +227,8 @@ class JdbcCache implements DerivativeCache {
      * @return Name of the image info table.
      * @throws IllegalArgumentException If the info table name is not set.
      */
-    static String getInfoTableName() {
-        final String name = Configuration.getInstance().
+    String getInfoTableName() {
+        final String name = configuration.
                 getString(Key.JDBCCACHE_INFO_TABLE);
         if (name == null) {
             throw new IllegalArgumentException(
@@ -317,7 +319,7 @@ class JdbcCache implements DerivativeCache {
     }
 
     Timestamp earliestValidDate() {
-        final long ttl = Configuration.getInstance().
+        final long ttl = configuration.
                 getLong(Key.DERIVATIVE_CACHE_TTL, 0);
         if (ttl > 0) {
             return new Timestamp(System.currentTimeMillis() - ttl * 1000);

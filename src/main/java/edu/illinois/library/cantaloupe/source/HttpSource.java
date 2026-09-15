@@ -3,11 +3,11 @@ package edu.illinois.library.cantaloupe.source;
 import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
+import edu.illinois.library.cantaloupe.delegate.DelegateMethod;
+import edu.illinois.library.cantaloupe.delegate.DelegateProxy;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.MediaType;
-import edu.illinois.library.cantaloupe.delegate.DelegateMethod;
-import edu.illinois.library.cantaloupe.delegate.DelegateProxy;
 import okhttp3.Headers;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -18,6 +18,7 @@ import org.slf4j.LoggerFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.X509TrustManager;
 import javax.script.ScriptException;
+
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.Proxy;
@@ -383,7 +384,7 @@ class HttpSource extends AbstractSource implements Source {
     private static final int DEFAULT_REQUEST_TIMEOUT = 30;
     private static final int RANGE_LENGTH            = 32;
 
-    private static OkHttpClient httpClient;
+    private OkHttpClient httpClient;
 
     /**
      * Cached by {@link #getRequestInfo()}.
@@ -397,13 +398,15 @@ class HttpSource extends AbstractSource implements Source {
      */
     private ResourceInfo resourceInfo;
 
+    private Configuration configuration;
+
     private final FormatIterator<Format> formatIterator =
             new FormatIterator<>();
 
     /**
      * @return Already-initialized instance shared by all threads.
      */
-    static synchronized OkHttpClient getHTTPClient() {
+    synchronized OkHttpClient getHTTPClient() {
         if (httpClient == null) {
             final OkHttpClient.Builder builder = new OkHttpClient.Builder()
                     .followRedirects(true)
@@ -470,7 +473,7 @@ class HttpSource extends AbstractSource implements Source {
     /**
      * @see #request(HTTPRequestInfo, String, Map)
      */
-    static Response request(HTTPRequestInfo requestInfo,
+    Response request(HTTPRequestInfo requestInfo,
                             String method) throws IOException {
         return request(requestInfo, method, Collections.emptyMap());
     }
@@ -485,7 +488,7 @@ class HttpSource extends AbstractSource implements Source {
      * @param extraHeaders Any additional headers to send.
      * @return Response.
      */
-    static Response request(HTTPRequestInfo requestInfo,
+    Response request(HTTPRequestInfo requestInfo,
                             String method,
                             Map<String,String> extraHeaders) throws IOException {
         Request.Builder builder = new Request.Builder()
@@ -518,6 +521,17 @@ class HttpSource extends AbstractSource implements Source {
                         ("authorization".equalsIgnoreCase(entry.getKey()) ?
                                 "********" : entry.getValue()))
                 .collect(Collectors.joining("; "));
+    }
+
+    /**
+     * Sets the Configuration instance for dependency injection.
+     * This method is called by SourceFactory to inject Configuration
+     * into sources created via reflection.
+     *
+     * @param configuration Configuration instance to inject
+     */
+    public void setConfiguration(Configuration configuration) {
+        this.configuration = configuration;
     }
 
     @Override
@@ -605,15 +619,14 @@ class HttpSource extends AbstractSource implements Source {
     }
 
     private HTTPRequestInfo newRequestInfoUsingBasicStrategy() {
-        final var config    = Configuration.getInstance();
-        final String prefix = config.getString(Key.HTTPSOURCE_URL_PREFIX, "");
-        final String suffix = config.getString(Key.HTTPSOURCE_URL_SUFFIX, "");
+        final String prefix = configuration.getString(Key.HTTPSOURCE_URL_PREFIX, "");
+        final String suffix = configuration.getString(Key.HTTPSOURCE_URL_SUFFIX, "");
 
         final HTTPRequestInfo info = new HTTPRequestInfo();
         info.setURI(prefix + identifier.toString() + suffix);
-        info.setUsername(config.getString(Key.HTTPSOURCE_BASIC_AUTH_USERNAME));
-        info.setSecret(config.getString(Key.HTTPSOURCE_BASIC_AUTH_SECRET));
-        info.setSendingHeadRequest(config.getBoolean(Key.HTTPSOURCE_SEND_HEAD_REQUESTS, true));
+        info.setUsername(configuration.getString(Key.HTTPSOURCE_BASIC_AUTH_USERNAME));
+        info.setSecret(configuration.getString(Key.HTTPSOURCE_BASIC_AUTH_SECRET));
+        info.setSendingHeadRequest(configuration.getBoolean(Key.HTTPSOURCE_SEND_HEAD_REQUESTS, true));
         return info;
     }
 
@@ -667,7 +680,8 @@ class HttpSource extends AbstractSource implements Source {
             return new HTTPStreamFactory(
                     info,
                     resourceInfo.contentLength(),
-                    resourceInfo.acceptsRanges());
+                    resourceInfo.acceptsRanges(),
+                    this);
         }
         return null;
     }

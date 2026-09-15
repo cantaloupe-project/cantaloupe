@@ -1,8 +1,8 @@
 package edu.illinois.library.cantaloupe.operation.overlay;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
+import edu.illinois.library.cantaloupe.config.ConfigurationException;
 import edu.illinois.library.cantaloupe.config.Key;
-import edu.illinois.library.cantaloupe.image.Dimension;
 import edu.illinois.library.cantaloupe.operation.Color;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import org.junit.jupiter.api.BeforeEach;
@@ -10,13 +10,13 @@ import org.junit.jupiter.api.Test;
 
 import java.awt.font.TextAttribute;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class BasicStringOverlayServiceTest extends BaseTest {
 
     private BasicStringOverlayService instance;
 
-    public static void setUpConfiguration() {
+    public static Configuration setUpConfiguration() {
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.OVERLAY_ENABLED, true);
         config.setProperty(Key.OVERLAY_STRATEGY, "BasicStrategy");
@@ -33,19 +33,18 @@ public class BasicStringOverlayServiceTest extends BaseTest {
         config.setProperty(Key.OVERLAY_STRING_STRING, "cats");
         config.setProperty(Key.OVERLAY_STRING_STROKE_COLOR, "orange");
         config.setProperty(Key.OVERLAY_STRING_STROKE_WIDTH, 3);
+        return config;
     }
 
     @BeforeEach
     public void setUp() throws Exception {
         super.setUp();
 
-        setUpConfiguration();
-
-        instance = new BasicStringOverlayService();
+        instance = new BasicStringOverlayService(setUpConfiguration());
     }
 
     @Test
-    void testGetOverlay() {
+    void testGetOverlay() throws ConfigurationException {
         final StringOverlay overlay = instance.newOverlay();
         assertEquals("cats", overlay.getString());
         assertEquals(new Color(12, 23, 34, 45), overlay.getBackgroundColor());
@@ -60,33 +59,4 @@ public class BasicStringOverlayServiceTest extends BaseTest {
         assertEquals(Color.ORANGE, overlay.getStrokeColor());
         assertEquals(3, overlay.getStrokeWidth(), 0.00001f);
     }
-
-    @Test
-    void testShouldApplyToImage() {
-        Configuration config = Configuration.getInstance();
-        config.clear();
-
-        final Dimension imageSize = new Dimension(100, 100);
-
-        // image width > width threshold, image height > height threshold
-        config.setProperty(Key.OVERLAY_OUTPUT_WIDTH_THRESHOLD, 50);
-        config.setProperty(Key.OVERLAY_OUTPUT_HEIGHT_THRESHOLD, 50);
-        assertTrue(BasicStringOverlayService.shouldApplyToImage(imageSize));
-
-        // image width < width threshold, image height < height threshold
-        config.setProperty(Key.OVERLAY_OUTPUT_WIDTH_THRESHOLD, 200);
-        config.setProperty(Key.OVERLAY_OUTPUT_HEIGHT_THRESHOLD, 200);
-        assertFalse(BasicStringOverlayService.shouldApplyToImage(imageSize));
-
-        // image width < width threshold, image height > height threshold
-        config.setProperty(Key.OVERLAY_OUTPUT_WIDTH_THRESHOLD, 200);
-        config.setProperty(Key.OVERLAY_OUTPUT_HEIGHT_THRESHOLD, 50);
-        assertFalse(BasicStringOverlayService.shouldApplyToImage(imageSize));
-
-        // image width > width threshold, image height < height threshold
-        config.setProperty(Key.OVERLAY_OUTPUT_WIDTH_THRESHOLD, 50);
-        config.setProperty(Key.OVERLAY_OUTPUT_HEIGHT_THRESHOLD, 200);
-        assertFalse(BasicStringOverlayService.shouldApplyToImage(imageSize));
-    }
-
 }

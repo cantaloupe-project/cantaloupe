@@ -3,6 +3,7 @@ package edu.illinois.library.cantaloupe.resource.iiif.v3;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Dimension;
+import edu.illinois.library.cantaloupe.operation.Scale;
 import edu.illinois.library.cantaloupe.operation.ScaleByPercent;
 import edu.illinois.library.cantaloupe.operation.ScaleByPixels;
 import edu.illinois.library.cantaloupe.resource.IllegalClientArgumentException;
@@ -10,7 +11,14 @@ import edu.illinois.library.cantaloupe.test.BaseTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 public class SizeTest extends BaseTest {
 
@@ -422,6 +430,28 @@ public class SizeTest extends BaseTest {
 
         s = Size.fromURI("^!50,40");
         assertEquals("50,40", s.toCanonicalString(fullSize));
+    }
+
+    @Test
+    void testToScaleWithConfigurationDependencyInjection() {
+        // Test that the new toScale method properly uses injected Configuration
+        Configuration mockConfig = mock(Configuration.class);
+        when(mockConfig.getLong(Key.MAX_PIXELS, 0)).thenReturn(1000000L);
+
+        instance.setType(Size.Type.MAX);
+        instance.setUpscalingAllowed(true);
+
+        // Call the new method with Configuration parameter
+        Scale actual = instance.toScale(0, mockConfig);
+
+        // Should use the mocked configuration value
+        assertTrue(actual instanceof ScaleByPixels);
+        ScaleByPixels scaleByPixels = (ScaleByPixels) actual;
+        assertEquals((int) Math.sqrt(1000000), scaleByPixels.getWidth());
+        assertEquals((int) Math.sqrt(1000000), scaleByPixels.getHeight());
+
+        // Verify the mock was called
+        verify(mockConfig).getLong(Key.MAX_PIXELS, 0);
     }
 
 }

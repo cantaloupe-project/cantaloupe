@@ -15,7 +15,7 @@ import edu.illinois.library.cantaloupe.util.StringUtils;
  * @see <a href="https://iiif.io/api/image/3.0/#42-size">IIIF Image API 3.0:
  * Size</a>
  */
-final class Size {
+public final class Size {
 
     /**
      * <p>Type of size specification, corresponding to the options available
@@ -26,7 +26,7 @@ final class Size {
      * "upscaling allowed;" that is handled by {@link #isUpscalingAllowed()}
      * which can work in conjunction with any of these.</p>
      */
-    enum Type {
+    public enum Type {
 
         /**
          * Represents a {@code max} size argument.
@@ -141,7 +141,7 @@ final class Size {
         return percent;
     }
 
-    Type getType() {
+    public Type getType() {
         return type;
     }
 
@@ -154,7 +154,7 @@ final class Size {
         return toString().hashCode();
     }
 
-    boolean isUpscalingAllowed() {
+    public boolean isUpscalingAllowed() {
         return isUpscalingAllowed;
     }
 
@@ -195,8 +195,9 @@ final class Size {
 
     /**
      * @param maxScale Maximum scale allowed by the application configuration.
+     * @param configuration Configuration instance for accessing application settings.
      */
-    Scale toScale(double maxScale) {
+    Scale toScale(double maxScale, Configuration configuration) {
         if (getPercent() != null) {
             return new ScaleByPercent(getPercent() / 100.0);
         }
@@ -205,8 +206,7 @@ final class Size {
                 if (maxScale > DELTA) {
                     return new ScaleByPercent(isUpscalingAllowed() ? maxScale : 1);
                 } else {
-                    Configuration config = Configuration.getInstance();
-                    final long maxPixels = config.getLong(Key.MAX_PIXELS, 0);
+                    final long maxPixels = configuration.getLong(Key.MAX_PIXELS, 0);
                     if (maxPixels > 0) {
                         // Using the square root of max_pixels is not optimal,
                         // but we don't yet know the source image dimensions in
@@ -233,6 +233,14 @@ final class Size {
                 throw new IllegalArgumentException(
                         "Unknown scale mode. This is probably a bug.");
         }
+    }
+
+    /**
+     * @param maxScale Maximum scale allowed by the application configuration.
+     * @deprecated Use {@link #toScale(double, Configuration)} instead for dependency injection.
+     */
+    Scale toScale(double maxScale) {
+        return toScale(maxScale, Configuration.getInstance());
     }
 
     /**

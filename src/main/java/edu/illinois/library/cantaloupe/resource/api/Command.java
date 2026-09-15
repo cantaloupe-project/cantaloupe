@@ -34,7 +34,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
                 name = "PurgeItemFromCache",
                 value = PurgeItemFromCacheCommand.class)
 })
-abstract class Command {
+public abstract class Command {
 
     abstract String getVerb();
 

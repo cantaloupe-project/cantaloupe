@@ -1,8 +1,9 @@
 package edu.illinois.library.cantaloupe.resource.admin;
 
+import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.config.Configuration;
+import edu.illinois.library.cantaloupe.config.ConfigurationFactory;
 import edu.illinois.library.cantaloupe.config.Key;
-import edu.illinois.library.cantaloupe.resource.Route;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -11,16 +12,35 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.htmlunit.HtmlUnitDriver;
 import org.openqa.selenium.support.ui.Select;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.web.server.LocalServerPort;
+import org.springframework.test.context.TestPropertySource;
 
 import java.net.URI;
 import java.net.URISyntaxException;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 /**
- * Functional test of the Control Panel using Selenium.
+ * Functional test of the Control Panel using Selenium with Spring Boot embedded server.
  */
-public class AdminResourceUITest extends AbstractAdminResourceTest {
+@SpringBootTest(classes = edu.illinois.library.cantaloupe.Cantaloupe.class, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@TestPropertySource(properties = {
+    "cantaloupe.config=memory"
+})
+public class AdminResourceUITest {
+
+    static {
+        // Set VM arguments before Spring context loads
+        System.setProperty(ConfigurationFactory.CONFIG_VM_ARGUMENT, "memory");
+        System.setProperty(Application.TEST_VM_ARGUMENT, "true");
+    }
+
+
 
     private static final double DELTA = 0.00000001;
     private static final int WAIT_AFTER_SUBMIT = 2000;
@@ -29,41 +49,45 @@ public class AdminResourceUITest extends AbstractAdminResourceTest {
 
     private static WebDriver webDriver;
 
-    @Override
+    @LocalServerPort
+    private int port;
+
+    @Autowired
+    private Configuration injectedConfiguration;
+
     @BeforeEach
     public void setUp() throws Exception {
-        super.setUp();
-        Configuration config = Configuration.getInstance();
-        config.setProperty(Key.ADMIN_USERNAME, USERNAME);
-        config.setProperty(Key.ADMIN_SECRET, SECRET);
-        config.setProperty(Key.SOURCE_STATIC, "FilesystemSource");
-        config.setProperty(Key.PROCESSOR_FALLBACK, "Java2dProcessor");
+        // Set up configuration properties for the test
+        injectedConfiguration.setProperty(Key.ADMIN_ENABLED, true);
+        injectedConfiguration.setProperty(Key.ADMIN_USERNAME, USERNAME);
+        injectedConfiguration.setProperty(Key.ADMIN_SECRET, SECRET);
+        injectedConfiguration.setProperty(Key.SOURCE_STATIC, "FilesystemSource");
+        injectedConfiguration.setProperty(Key.PROCESSOR_FALLBACK, "Java2dProcessor");
 
-        config.clearProperty(Key.FILESYSTEMSOURCE_PATH_PREFIX);
-        config.clearProperty(Key.DELEGATE_SCRIPT_PATHNAME);
+        // Clear any existing configuration properties that might interfere
+        injectedConfiguration.clearProperty(Key.FILESYSTEMSOURCE_PATH_PREFIX);
+        injectedConfiguration.clearProperty(Key.DELEGATE_SCRIPT_PATHNAME);
 
         webDriver = new HtmlUnitDriver(true);
         ((HtmlUnitDriver) webDriver).setJavascriptEnabled(true);
-        webDriver.get(getHTTPURI("").toString());
+
+        String url = getHTTPURI("").toString();
+        // System.out.println("Loading URL: " + url);
+        webDriver.get(url);
+        // System.out.println("Page title: " + webDriver.getTitle());
+        // System.out.println("Response status: " + ((HtmlUnitDriver) webDriver).getWebClient().getCurrentWindow().getEnclosedPage().getWebResponse().getStatusCode());
+        // System.out.println("Response headers: " + ((HtmlUnitDriver) webDriver).getWebClient().getCurrentWindow().getEnclosedPage().getWebResponse().getResponseHeaders());
+        // System.out.println("Page source: " + webDriver.getPageSource());
     }
 
-    @Override
     @AfterEach
     public void tearDown() throws Exception {
-        super.tearDown();
         webDriver.close();
     }
 
-    @Override
-    protected String getEndpointPath() {
-        return Route.ADMIN_PATH;
-    }
-
-    @Override
     protected URI getHTTPURI(String path) {
         try {
-            return new URI("http://admin:" + SECRET + "@localhost:" +
-                    appServer.getHTTPPort() + getEndpointPath() + path);
+            return new URI("http://admin:" + SECRET + "@localhost:" + port + "/admin" + path);
         } catch (URISyntaxException e) {
             fail(e.getMessage());
         }
@@ -105,48 +129,7 @@ public class AdminResourceUITest extends AbstractAdminResourceTest {
         inputNamed(Key.DELEGATE_SCRIPT_PATHNAME).sendKeys("file");
 
         // Application log
-        selectNamed(Key.APPLICATION_LOG_LEVEL).selectByValue("warn");
-        inputNamed(Key.APPLICATION_LOG_CONSOLEAPPENDER_ENABLED).click();
-        inputNamed(Key.APPLICATION_LOG_FILEAPPENDER_ENABLED).click();
-        inputNamed(Key.APPLICATION_LOG_FILEAPPENDER_PATHNAME).sendKeys("/path1");
-        inputNamed(Key.APPLICATION_LOG_ROLLINGFILEAPPENDER_ENABLED).click();
-        inputNamed(Key.APPLICATION_LOG_ROLLINGFILEAPPENDER_PATHNAME).
-                sendKeys("/path2");
-        inputNamed(Key.APPLICATION_LOG_ROLLINGFILEAPPENDER_FILENAME_PATTERN).
-                sendKeys("pattern");
-        inputNamed(Key.APPLICATION_LOG_ROLLINGFILEAPPENDER_MAX_HISTORY).
-                sendKeys("15");
-        inputNamed(Key.APPLICATION_LOG_SYSLOGAPPENDER_ENABLED).click();
-        inputNamed(Key.APPLICATION_LOG_SYSLOGAPPENDER_HOST).sendKeys("host");
-        inputNamed(Key.APPLICATION_LOG_SYSLOGAPPENDER_PORT).sendKeys("555");
-        inputNamed(Key.APPLICATION_LOG_SYSLOGAPPENDER_FACILITY).
-                sendKeys("cats");
-        // Error log
-        inputNamed(Key.ERROR_LOG_FILEAPPENDER_ENABLED).click();
-        inputNamed(Key.ERROR_LOG_FILEAPPENDER_PATHNAME).sendKeys("/path50");
-        inputNamed(Key.ERROR_LOG_ROLLINGFILEAPPENDER_ENABLED).click();
-        inputNamed(Key.ERROR_LOG_ROLLINGFILEAPPENDER_PATHNAME).
-                sendKeys("/path2");
-        inputNamed(Key.ERROR_LOG_ROLLINGFILEAPPENDER_FILENAME_PATTERN).
-                sendKeys("pattern2");
-        inputNamed(Key.ERROR_LOG_ROLLINGFILEAPPENDER_MAX_HISTORY).
-                sendKeys("20");
-        // Access log
-        inputNamed(Key.ACCESS_LOG_CONSOLEAPPENDER_ENABLED).click();
-        inputNamed(Key.ACCESS_LOG_FILEAPPENDER_ENABLED).click();
-        inputNamed(Key.ACCESS_LOG_FILEAPPENDER_PATHNAME).
-                sendKeys("/path3");
-        inputNamed(Key.ACCESS_LOG_ROLLINGFILEAPPENDER_ENABLED).click();
-        inputNamed(Key.ACCESS_LOG_ROLLINGFILEAPPENDER_PATHNAME).
-                sendKeys("/path4");
-        inputNamed(Key.ACCESS_LOG_ROLLINGFILEAPPENDER_FILENAME_PATTERN).
-                sendKeys("dogs");
-        inputNamed(Key.ACCESS_LOG_ROLLINGFILEAPPENDER_MAX_HISTORY).
-                sendKeys("531");
-        inputNamed(Key.ACCESS_LOG_SYSLOGAPPENDER_ENABLED).click();
-        inputNamed(Key.ACCESS_LOG_SYSLOGAPPENDER_HOST).sendKeys("host2");
-        inputNamed(Key.ACCESS_LOG_SYSLOGAPPENDER_PORT).sendKeys("251");
-        inputNamed(Key.ACCESS_LOG_SYSLOGAPPENDER_FACILITY).sendKeys("foxes");
+        selectNamed("logging.level.edu.illinois.library.cantaloupe").selectByValue("warn");
 
         // Submit the form
         css("#cl-application input[type=\"submit\"]").click();
@@ -154,7 +137,7 @@ public class AdminResourceUITest extends AbstractAdminResourceTest {
         Thread.sleep(WAIT_AFTER_SUBMIT);
 
         // Assert that the application configuration has been updated correctly
-        final Configuration config = Configuration.getInstance();
+        final Configuration config = injectedConfiguration;
 
         // Temporary Directory
         assertEquals("/bla/bla", config.getString(Key.TEMP_PATHNAME));
@@ -164,64 +147,7 @@ public class AdminResourceUITest extends AbstractAdminResourceTest {
         assertEquals("file", config.getString(Key.DELEGATE_SCRIPT_PATHNAME));
 
         // Application log
-        assertEquals("warn", config.getString(Key.APPLICATION_LOG_LEVEL));
-        assertTrue(config.getBoolean(Key.APPLICATION_LOG_CONSOLEAPPENDER_ENABLED));
-
-        assertTrue(config.getBoolean(Key.APPLICATION_LOG_FILEAPPENDER_ENABLED));
-        assertEquals("/path1",
-                config.getString(Key.APPLICATION_LOG_FILEAPPENDER_PATHNAME));
-
-        assertTrue(config.getBoolean(Key.APPLICATION_LOG_ROLLINGFILEAPPENDER_ENABLED));
-        assertEquals("/path2",
-                config.getString(Key.APPLICATION_LOG_ROLLINGFILEAPPENDER_PATHNAME));
-        assertEquals("pattern",
-                config.getString(Key.APPLICATION_LOG_ROLLINGFILEAPPENDER_FILENAME_PATTERN));
-        assertEquals("15",
-                config.getString(Key.APPLICATION_LOG_ROLLINGFILEAPPENDER_MAX_HISTORY));
-
-        assertTrue(config.getBoolean(Key.APPLICATION_LOG_SYSLOGAPPENDER_ENABLED));
-        assertEquals("host",
-                config.getString(Key.APPLICATION_LOG_SYSLOGAPPENDER_HOST));
-        assertEquals("555",
-                config.getString(Key.APPLICATION_LOG_SYSLOGAPPENDER_PORT));
-        assertEquals("cats",
-                config.getString(Key.APPLICATION_LOG_SYSLOGAPPENDER_FACILITY));
-
-        // Error log
-        assertTrue(config.getBoolean(Key.ERROR_LOG_FILEAPPENDER_ENABLED));
-        assertEquals("/path50",
-                config.getString(Key.ERROR_LOG_FILEAPPENDER_PATHNAME));
-
-        assertTrue(config.getBoolean(Key.ERROR_LOG_ROLLINGFILEAPPENDER_ENABLED));
-        assertEquals("/path2",
-                config.getString(Key.ERROR_LOG_ROLLINGFILEAPPENDER_PATHNAME));
-        assertEquals("pattern2",
-                config.getString(Key.ERROR_LOG_ROLLINGFILEAPPENDER_FILENAME_PATTERN));
-        assertEquals("20",
-                config.getString(Key.ERROR_LOG_ROLLINGFILEAPPENDER_MAX_HISTORY));
-
-        // Access log
-        assertTrue(config.getBoolean(Key.ACCESS_LOG_CONSOLEAPPENDER_ENABLED));
-
-        assertTrue(config.getBoolean(Key.ACCESS_LOG_FILEAPPENDER_ENABLED));
-        assertEquals("/path3",
-                config.getString(Key.ACCESS_LOG_FILEAPPENDER_PATHNAME));
-
-        assertTrue(config.getBoolean(Key.ACCESS_LOG_ROLLINGFILEAPPENDER_ENABLED));
-        assertEquals("/path4",
-                config.getString(Key.ACCESS_LOG_ROLLINGFILEAPPENDER_PATHNAME));
-        assertEquals("dogs",
-                config.getString(Key.ACCESS_LOG_ROLLINGFILEAPPENDER_FILENAME_PATTERN));
-        assertEquals("531",
-                config.getString(Key.ACCESS_LOG_ROLLINGFILEAPPENDER_MAX_HISTORY));
-
-        assertTrue(config.getBoolean(Key.ACCESS_LOG_SYSLOGAPPENDER_ENABLED));
-        assertEquals("host2",
-                config.getString(Key.ACCESS_LOG_SYSLOGAPPENDER_HOST));
-        assertEquals("251",
-                config.getString(Key.ACCESS_LOG_SYSLOGAPPENDER_PORT));
-        assertEquals("foxes",
-                config.getString(Key.ACCESS_LOG_SYSLOGAPPENDER_FACILITY));
+        assertEquals("warn", config.getString("logging.level.edu.illinois.library.cantaloupe"));
     }
 
     @Test
@@ -230,22 +156,17 @@ public class AdminResourceUITest extends AbstractAdminResourceTest {
         Thread.sleep(100); // give the tab time to render
 
         // Fill in the form
-        inputNamed(Key.HTTP_ENABLED).click();
-        inputNamed(Key.HTTP_HOST).sendKeys("1.2.3.4");
-        inputNamed(Key.HTTP_PORT).sendKeys("8989");
-        inputNamed(Key.HTTPS_ENABLED).click();
-        inputNamed(Key.HTTPS_HOST).sendKeys("2.3.4.5");
-        inputNamed(Key.HTTPS_PORT).sendKeys("8990");
-        selectNamed(Key.HTTPS_KEY_STORE_TYPE).selectByVisibleText("PKCS12");
-        inputNamed(Key.HTTPS_KEY_STORE_PATH).sendKeys("/something");
-        inputNamed(Key.HTTPS_KEY_STORE_PASSWORD).sendKeys("cats");
-        inputNamed(Key.HTTP_MIN_THREADS).sendKeys("35");
-        inputNamed(Key.HTTP_MAX_THREADS).sendKeys("38");
-        inputNamed(Key.HTTP_ACCEPT_QUEUE_LIMIT).sendKeys("50");
+        inputNamed("server.address").sendKeys("1.2.3.4");
+        inputNamed("server.port").sendKeys("8989");
+        inputNamed("server.ssl.enabled").click();
+        selectNamed("server.ssl.key-store-type").selectByVisibleText("PKCS12");
+        inputNamed("server.ssl.key-store").sendKeys("/something");
+        inputNamed("server.ssl.key-store-password").sendKeys("cats");
+        inputNamed("server.jetty.threads.min").sendKeys("35");
+        inputNamed("server.jetty.threads.max").sendKeys("38");
+        inputNamed("server.jetty.threads.max-queue-capacity").sendKeys("50");
         inputNamed(Key.BASE_URI).sendKeys("http://bla/bla/");
         inputNamed(Key.SLASH_SUBSTITUTE).sendKeys("^");
-        inputNamed(Key.LOG_ERROR_RESPONSES).click();
-        inputNamed(Key.PRINT_STACK_TRACE_ON_ERROR_PAGES).click();
 
         // Submit the form
         css("#cl-http input[type=\"submit\"]").click();
@@ -253,23 +174,18 @@ public class AdminResourceUITest extends AbstractAdminResourceTest {
         Thread.sleep(WAIT_AFTER_SUBMIT);
 
         // Assert that the application configuration has been updated correctly
-        final Configuration config = Configuration.getInstance();
-        assertTrue(config.getBoolean(Key.HTTP_ENABLED));
-        assertEquals("1.2.3.4", config.getString(Key.HTTP_HOST));
-        assertEquals(8989, config.getInt(Key.HTTP_PORT));
-        assertTrue(config.getBoolean(Key.HTTPS_ENABLED));
-        assertEquals("2.3.4.5", config.getString(Key.HTTPS_HOST));
-        assertEquals(8990, config.getInt(Key.HTTPS_PORT));
-        assertEquals("PKCS12", config.getString(Key.HTTPS_KEY_STORE_TYPE));
-        assertEquals("/something", config.getString(Key.HTTPS_KEY_STORE_PATH));
-        assertEquals("cats", config.getString(Key.HTTPS_KEY_STORE_PASSWORD));
-        assertEquals("35", config.getString(Key.HTTP_MIN_THREADS));
-        assertEquals("38", config.getString(Key.HTTP_MAX_THREADS));
-        assertEquals("50", config.getString(Key.HTTP_ACCEPT_QUEUE_LIMIT));
+        final Configuration config = injectedConfiguration;
+        assertEquals("1.2.3.4", config.getString("server.address"));
+        assertEquals(8989, config.getInt("server.port"));
+        assertTrue(config.getBoolean("server.ssl.enabled"));
+        assertEquals("PKCS12", config.getString("server.ssl.key-store-type"));
+        assertEquals("/something", config.getString("server.ssl.key-store"));
+        assertEquals("cats", config.getString("server.ssl.key-store-password"));
+        assertEquals("35", config.getString("server.jetty.threads.min"));
+        assertEquals("38", config.getString("server.jetty.threads.max"));
+        assertEquals("50", config.getString("server.jetty.threads.max-queue-capacity"));
         assertEquals("http://bla/bla/", config.getString(Key.BASE_URI));
         assertEquals("^", config.getString(Key.SLASH_SUBSTITUTE));
-        assertTrue(config.getBoolean(Key.LOG_ERROR_RESPONSES));
-        assertTrue(config.getBoolean(Key.PRINT_STACK_TRACE_ON_ERROR_PAGES));
     }
 
     @Test
@@ -301,7 +217,7 @@ public class AdminResourceUITest extends AbstractAdminResourceTest {
         Thread.sleep(WAIT_AFTER_SUBMIT);
 
         // Assert that the application configuration has been updated correctly
-        final Configuration config = Configuration.getInstance();
+        final Configuration config = injectedConfiguration;
         assertEquals(5000, config.getLong(Key.MAX_PIXELS));
         assertEquals(1.1, config.getDouble(Key.MAX_SCALE), DELTA);
         assertEquals(75, config.getInt(Key.IIIF_MIN_SIZE));
@@ -392,7 +308,7 @@ public class AdminResourceUITest extends AbstractAdminResourceTest {
         Thread.sleep(WAIT_AFTER_SUBMIT);
 
         // Assert that the application configuration has been updated correctly
-        final Configuration config = Configuration.getInstance();
+        final Configuration config = injectedConfiguration;
         assertFalse(config.getBoolean(Key.SOURCE_DELEGATE));
         assertEquals("FilesystemSource",
                 config.getString(Key.SOURCE_STATIC));
@@ -537,7 +453,7 @@ public class AdminResourceUITest extends AbstractAdminResourceTest {
         Thread.sleep(WAIT_AFTER_SUBMIT);
 
         // Assert that the application configuration has been updated correctly
-        final Configuration config = Configuration.getInstance();
+        final Configuration config = injectedConfiguration;
         assertEquals("ManualSelectionStrategy",
                 config.getString(Key.PROCESSOR_SELECTION_STRATEGY));
         assertEquals("Java2dProcessor",
@@ -647,7 +563,7 @@ public class AdminResourceUITest extends AbstractAdminResourceTest {
         Thread.sleep(WAIT_AFTER_SUBMIT);
 
         // Assert that the application configuration has been updated correctly
-        final Configuration config = Configuration.getInstance();
+        final Configuration config = injectedConfiguration;
         assertTrue(config.getBoolean(Key.CLIENT_CACHE_ENABLED));
         assertEquals("250", config.getString(Key.CLIENT_CACHE_MAX_AGE));
         assertEquals("220", config.getString(Key.CLIENT_CACHE_SHARED_MAX_AGE));
@@ -734,7 +650,7 @@ public class AdminResourceUITest extends AbstractAdminResourceTest {
         Thread.sleep(WAIT_AFTER_SUBMIT);
 
         // Assert that the application configuration has been updated correctly
-        final Configuration config = Configuration.getInstance();
+        final Configuration config = injectedConfiguration;
         assertTrue(config.getBoolean(Key.OVERLAY_ENABLED));
         assertEquals("BasicStrategy",
                 config.getString(Key.OVERLAY_STRATEGY));

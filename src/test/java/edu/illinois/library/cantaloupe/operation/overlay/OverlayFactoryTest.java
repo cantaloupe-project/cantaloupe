@@ -2,9 +2,10 @@ package edu.illinois.library.cantaloupe.operation.overlay;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
+import edu.illinois.library.cantaloupe.delegate.DelegateProxy;
+import edu.illinois.library.cantaloupe.image.Dimension;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.operation.Color;
-import edu.illinois.library.cantaloupe.delegate.DelegateProxy;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.apache.commons.lang3.SystemUtils;
@@ -14,7 +15,9 @@ import org.junit.jupiter.api.Test;
 import java.net.URI;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class OverlayFactoryTest extends BaseTest {
 
@@ -35,7 +38,7 @@ public class OverlayFactoryTest extends BaseTest {
         config.setProperty(Key.OVERLAY_POSITION, "top left");
         config.setProperty(Key.OVERLAY_IMAGE, "/dev/null");
 
-        instance = new OverlayFactory();
+        instance = new OverlayFactory(config);
     }
 
     @Test
@@ -62,7 +65,7 @@ public class OverlayFactoryTest extends BaseTest {
         config.setProperty(Key.OVERLAY_TYPE, "string");
         config.setProperty(Key.OVERLAY_STRING_STRING, "cats");
         config.setProperty(Key.OVERLAY_STRING_COLOR, "green");
-        instance = new OverlayFactory();
+        instance = new OverlayFactory(config);
 
         Optional<Overlay> result = instance.newOverlay(null);
         StringOverlay overlay = (StringOverlay) result.get();
@@ -117,4 +120,32 @@ public class OverlayFactoryTest extends BaseTest {
         assertFalse(result.isPresent());
     }
 
+
+    @Test
+    void testShouldApplyToImage() {
+        Configuration config = Configuration.getInstance();
+        config.clear();
+
+        final Dimension imageSize = new Dimension(100, 100);
+
+        // image width > width threshold, image height > height threshold
+        config.setProperty(Key.OVERLAY_OUTPUT_WIDTH_THRESHOLD, 50);
+        config.setProperty(Key.OVERLAY_OUTPUT_HEIGHT_THRESHOLD, 50);
+        assertTrue(instance.shouldApplyToImage(imageSize));
+
+        // image width < width threshold, image height < height threshold
+        config.setProperty(Key.OVERLAY_OUTPUT_WIDTH_THRESHOLD, 200);
+        config.setProperty(Key.OVERLAY_OUTPUT_HEIGHT_THRESHOLD, 200);
+        assertFalse(instance.shouldApplyToImage(imageSize));
+
+        // image width < width threshold, image height > height threshold
+        config.setProperty(Key.OVERLAY_OUTPUT_WIDTH_THRESHOLD, 200);
+        config.setProperty(Key.OVERLAY_OUTPUT_HEIGHT_THRESHOLD, 50);
+        assertFalse(instance.shouldApplyToImage(imageSize));
+
+        // image width > width threshold, image height < height threshold
+        config.setProperty(Key.OVERLAY_OUTPUT_WIDTH_THRESHOLD, 50);
+        config.setProperty(Key.OVERLAY_OUTPUT_HEIGHT_THRESHOLD, 200);
+        assertFalse(instance.shouldApplyToImage(imageSize));
+    }
 }

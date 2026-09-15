@@ -8,34 +8,34 @@
 #
 # Most changes will take effect without restarting. Those that won't are
 # marked with "!!".
+#
+# See https://docs.spring.io/spring-boot/appendix/application-properties/index.html#appendix.application-properties.server
 ###########################################################################
+
+# Server configuration
+server.port=8182
+server.address=0.0.0.0
+server.ssl.enabled=false
+# Use Jetty as the embedded server (already configured via starter)
+server.servlet.context-path=/
 
 # !! Leave blank to use the JVM default temporary directory.
 temp_pathname =
 
-# !! Configures the HTTP server. (Standalone mode only.)
-http.enabled = true
-http.host = 0.0.0.0
-http.port = 8182
-
-# !! Configures the HTTPS server. (Standalone mode only.)
-https.enabled = false
-https.host = 0.0.0.0
-https.port = 8183
-
 # !! Available values are `JKS` and `PKCS12`. (Standalone mode only.)
-https.key_store_type = JKS
-https.key_store_password = myPassword
-https.key_store_path = /path/to/keystore.jks
-https.key_password = myPassword
+server.ssl.key-store-type = JKS
+server.ssl.key-store-password = myPassword
+server.ssl.key-store = /path/to/keystore.jks
+server.ssl.key-password = myPassword
 
 # !! Constrains the size of the web server's thread pool. Leave blank to
 # use the defaults (min_threads: 8, max_threads: 150).
-http.min_threads =
-http.max_threads =
+# Was http.min_threads, http.max_threads
+server.jetty.threads.min =
+server.jetty.threads.max =
 
 # !! Maximum size of the request queue. Leave blank to use the default.
-http.accept_queue_limit =
+server.jetty.threads.max-queue-capacity =
 
 # Base URI to use for internal links, such as Link headers and JSON-LD
 # @id values, in a reverse-proxy context. This should only be used when
@@ -69,13 +69,6 @@ meta_identifier.transformer = StandardMetaIdentifierTransformer
 # Character sequence that separates the components of a meta-identifier in
 # the identifier portion of a URI.
 meta_identifier.transformer.StandardMetaIdentifierTransformer.delimiter = ;
-
-# If true, HTTP >= 400-level responses are logged at WARN and ERROR level.
-# This may result in multiple log statements for the same error, but it may
-# also help diagnose errors that have evaded logging.
-log_error_responses = false
-
-print_stack_trace_on_error_pages = true
 
 # If true, display the x-powered-by header. You may choose to disable this behavior
 # to prevent attackers from fingerprinting the server. Default value is true.
@@ -704,75 +697,50 @@ overlays.BasicStrategy.output_height_threshold = 300
 # LOGGING
 ###########################################################################
 
-#----------------------------------------
-# Application Log
-#----------------------------------------
+# Logging configuration - use Spring Boot defaults
+# See https://docs.spring.io/spring-boot/reference/features/logging.html for configuration options
+logging.level.root=INFO
+logging.level.edu.illinois.library.cantaloupe=INFO
+logging.pattern.console=%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n
+print_stack_trace_on_error_pages=false
 
-# `trace`, `debug`, `info`, `warn`, `error`, `all`, or `off`
-log.application.level = debug
+###########################################################################
+# HTTP Access Logging
+###########################################################################
 
-log.application.ConsoleAppender.enabled = true
-log.application.ConsoleAppender.logstash.enabled = false
+# !! Enable HTTP access logging to stdout
+http.access_log.enabled = false
 
-# N.B.: Don't enable FileAppender and RollingFileAppender simultaneously!
-log.application.FileAppender.enabled = false
-log.application.FileAppender.logstash.enabled = false
-log.application.FileAppender.pathname = /path/to/logs/application.log
+# !! Access log format options:
+# - "common" for Common Log Format
+# - "combined" for Combined Log Format (default)
+# - "json" for structured JSON logging
+http.access_log.format = combined
 
-log.application.RollingFileAppender.enabled = false
-log.application.RollingFileAppender.logstash.enabled = false
-log.application.RollingFileAppender.pathname = /path/to/logs/application.log
-log.application.RollingFileAppender.policy = TimeBasedRollingPolicy
-log.application.RollingFileAppender.TimeBasedRollingPolicy.filename_pattern = /path/to/logs/application-%d{yyyy-MM-dd}.log
-log.application.RollingFileAppender.TimeBasedRollingPolicy.max_history = 30
+# Disable Spring Boot banner
+spring.main.banner-mode=off
 
-# See the "SyslogAppender" section for a list of facilities:
-# http://logback.qos.ch/manual/appenders.html
-log.application.SyslogAppender.enabled = false
-log.application.SyslogAppender.host =
-log.application.SyslogAppender.port = 514
-log.application.SyslogAppender.facility = LOCAL0
+# Thymeleaf configuration
+spring.thymeleaf.prefix=classpath:/templates/
+spring.thymeleaf.suffix=.html
+spring.thymeleaf.cache=true
 
-#----------------------------------------
-# Error Log
-#----------------------------------------
+# Jackson configuration
+spring.jackson.serialization.write-dates-as-timestamps=true
+spring.jackson.serialization.indent-output=false
 
-# Application log messages with a severity of WARN or greater can be copied
-# into a dedicated error log, which may make them easier to spot.
+# Actuator endpoints (optional - for health checks, metrics, etc.)
+management.endpoints.web.exposure.include=health,info
+management.endpoint.health.show-details=when-authorized
 
-# N.B.: Don't enable FileAppender and RollingFileAppender simultaneously!
-log.error.FileAppender.enabled = false
-log.error.FileAppender.logstash.enabled = false
-log.error.FileAppender.pathname = /path/to/logs/error.log
+# Static resources configuration
+spring.web.resources.static-locations=classpath:/static/
+spring.web.resources.cache.period=31536000
 
-log.error.RollingFileAppender.enabled = false
-log.error.RollingFileAppender.logstash.enabled = false
-log.error.RollingFileAppender.pathname = /path/to/logs/error.log
-log.error.RollingFileAppender.policy = TimeBasedRollingPolicy
-log.error.RollingFileAppender.TimeBasedRollingPolicy.filename_pattern = /path/to/logs/error-%d{yyyy-MM-dd}.log
-log.error.RollingFileAppender.TimeBasedRollingPolicy.max_history = 30
+# Multipart configuration (for file uploads in admin interface)
+spring.servlet.multipart.max-file-size=100MB
+spring.servlet.multipart.max-request-size=100MB
 
-#----------------------------------------
-# Access Log
-#----------------------------------------
-
-log.access.ConsoleAppender.enabled = false
-
-# N.B.: Don't enable FileAppender and RollingFileAppender simultaneously!
-log.access.FileAppender.enabled = false
-log.access.FileAppender.pathname = /path/to/logs/access.log
-
-# RollingFileAppender is an alternative to using something like
-# FileAppender + logrotate.
-log.access.RollingFileAppender.enabled = false
-log.access.RollingFileAppender.pathname = /path/to/logs/access.log
-log.access.RollingFileAppender.policy = TimeBasedRollingPolicy
-log.access.RollingFileAppender.TimeBasedRollingPolicy.filename_pattern = /path/to/logs/access-%d{yyyy-MM-dd}.log
-log.access.RollingFileAppender.TimeBasedRollingPolicy.max_history = 30
-
-# See the "SyslogAppender" section for a list of facilities:
-# http://logback.qos.ch/manual/appenders.html
-log.access.SyslogAppender.enabled = false
-log.access.SyslogAppender.host =
-log.access.SyslogAppender.port = 514
-log.access.SyslogAppender.facility = LOCAL0
+# Error handling
+server.error.include-stacktrace=never
+server.error.include-message=always

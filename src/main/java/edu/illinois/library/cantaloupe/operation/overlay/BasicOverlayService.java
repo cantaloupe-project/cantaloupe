@@ -3,28 +3,18 @@ package edu.illinois.library.cantaloupe.operation.overlay;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationException;
 import edu.illinois.library.cantaloupe.config.Key;
-import edu.illinois.library.cantaloupe.image.Dimension;
 
 abstract class BasicOverlayService {
 
     private int inset;
     private Position position;
+    protected Configuration configuration;
 
-    /**
-     * @return Whether an overlay should be applied to an output image with
-     * the given dimensions.
-     */
-    static boolean shouldApplyToImage(Dimension outputImageSize) {
-        final Configuration config = Configuration.getInstance();
-        final int minOutputWidth =
-                config.getInt(Key.OVERLAY_OUTPUT_WIDTH_THRESHOLD, 0);
-        final int minOutputHeight =
-                config.getInt(Key.OVERLAY_OUTPUT_HEIGHT_THRESHOLD, 0);
-        return (outputImageSize.width() >= minOutputWidth &&
-                outputImageSize.height() >= minOutputHeight);
+    BasicOverlayService(Configuration configuration) {
+        this.configuration = configuration;
     }
 
-    BasicOverlayService() throws ConfigurationException {
+    protected void readConfig() throws ConfigurationException {
         readPosition();
         readInset();
     }
@@ -44,17 +34,15 @@ abstract class BasicOverlayService {
     }
 
     public boolean isAvailable() {
-        return Configuration.getInstance().
-                getBoolean(Key.OVERLAY_ENABLED, false);
+        return configuration.getBoolean(Key.OVERLAY_ENABLED, false);
     }
 
-    private void readInset() {
-        inset = Configuration.getInstance().getInt(Key.OVERLAY_INSET, 0);
+    protected void readInset() {
+        inset = configuration.getInt(Key.OVERLAY_INSET, 0);
     }
 
-    private void readPosition() throws ConfigurationException {
-        final Configuration config = Configuration.getInstance();
-        final String configValue = config.getString(Key.OVERLAY_POSITION, "");
+    protected void readPosition() throws ConfigurationException {
+        final String configValue = configuration.getString(Key.OVERLAY_POSITION, "");
         if (!configValue.isEmpty()) {
             try {
                 position = Position.fromString(configValue);

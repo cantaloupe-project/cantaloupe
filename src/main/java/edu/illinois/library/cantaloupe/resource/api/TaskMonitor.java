@@ -32,7 +32,7 @@ public final class TaskMonitor {
 
     private TaskMonitor() {}
 
-    void add(APITask<?> task) {
+    public void add(APITask<?> task) {
         tasks.add(task);
     }
 

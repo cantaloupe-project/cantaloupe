@@ -7,6 +7,7 @@ import edu.illinois.library.cantaloupe.cache.MockBrokenDerivativeOutputStreamCac
 import edu.illinois.library.cantaloupe.cache.SourceCache;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
+import edu.illinois.library.cantaloupe.delegate.DelegateProxy;
 import edu.illinois.library.cantaloupe.http.Client;
 import edu.illinois.library.cantaloupe.http.ResourceException;
 import edu.illinois.library.cantaloupe.http.Response;
@@ -18,7 +19,6 @@ import edu.illinois.library.cantaloupe.source.PathStreamFactory;
 import edu.illinois.library.cantaloupe.source.Source;
 import edu.illinois.library.cantaloupe.source.StatResult;
 import edu.illinois.library.cantaloupe.source.StreamFactory;
-import edu.illinois.library.cantaloupe.delegate.DelegateProxy;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 
 import java.io.IOException;
@@ -37,9 +37,12 @@ import java.time.temporal.TemporalAccessor;
 import java.util.Iterator;
 import java.util.Locale;
 
-import static edu.illinois.library.cantaloupe.test.Assert.HTTPAssert.*;
-import static edu.illinois.library.cantaloupe.test.Assert.PathAssert.*;
-import static org.junit.jupiter.api.Assertions.*;
+import static edu.illinois.library.cantaloupe.test.Assert.HTTPAssert.assertStatus;
+import static edu.illinois.library.cantaloupe.test.Assert.PathAssert.assertRecursiveFileCount;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 /**
  * Collection of tests common across major versions of IIIF Image and
@@ -174,7 +177,7 @@ public class ImageAPIResourceTester {
             assertRecursiveFileCount(cacheDir, 0);
 
             // assert that the info does NOT exist in the info cache
-            assertEquals(0, InfoService.getInstance().getInfoCache().size());
+            assertEquals(0, InfoService.getInstance(config).getInfoCache().size());
         } finally {
             client.stop();
         }
@@ -411,7 +414,8 @@ public class ImageAPIResourceTester {
 
         // Put an image in the source cache.
         Path image = TestUtil.getImage("jpg");
-        SourceCache sourceCache = CacheFactory.getSourceCache().get();
+        CacheFactory cacheFactory = new CacheFactory(config);
+        SourceCache sourceCache = cacheFactory.getSourceCache().get();
 
         try (OutputStream os = sourceCache.newSourceImageOutputStream(identifier)) {
             Files.copy(image, os);
@@ -486,7 +490,8 @@ public class ImageAPIResourceTester {
 
         // Put an image in the source cache.
         Path image = TestUtil.getImage("jpg");
-        SourceCache sourceCache = CacheFactory.getSourceCache().get();
+        CacheFactory cacheFactory = new CacheFactory(config);
+        SourceCache sourceCache = cacheFactory.getSourceCache().get();
 
         try (OutputStream os = sourceCache.newSourceImageOutputStream(identifier)) {
             Files.copy(image, os);

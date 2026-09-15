@@ -3,10 +3,12 @@ package edu.illinois.library.cantaloupe.operation.overlay;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationException;
 import edu.illinois.library.cantaloupe.config.Key;
-import edu.illinois.library.cantaloupe.image.Dimension;
 import edu.illinois.library.cantaloupe.delegate.DelegateProxy;
+import edu.illinois.library.cantaloupe.image.Dimension;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.script.ScriptException;
 
 import java.util.Optional;
 
@@ -34,28 +36,28 @@ public final class OverlayFactory {
             LoggerFactory.getLogger(OverlayFactory.class);
 
     private Strategy strategy;
+    private Configuration configuration;
 
-    public OverlayFactory() throws ConfigurationException {
+    public OverlayFactory(Configuration configuration) throws ConfigurationException {
+        this.configuration = configuration;
         readStrategy();
     }
 
-    private OverlayService newOverlayService(DelegateProxy delegateProxy)
-            throws ConfigurationException {
-        final Configuration config = Configuration.getInstance();
+    private OverlayService newOverlayService(DelegateProxy delegateProxy) {
         OverlayService instance = null;
         switch (getStrategy()) {
             case BASIC:
-                switch (config.getString(Key.OVERLAY_TYPE, "")) {
+                switch (configuration.getString(Key.OVERLAY_TYPE, "")) {
                     case "image":
-                        instance = new BasicImageOverlayService();
+                        instance = new BasicImageOverlayService(configuration);
                         break;
                     case "string":
-                        instance = new BasicStringOverlayService();
+                        instance = new BasicStringOverlayService(configuration);
                         break;
                 }
                 break;
             case DELEGATE_METHOD:
-                instance = new DelegateOverlayService(delegateProxy);
+                instance = new DelegateOverlayService(delegateProxy, configuration);
                 break;
         }
         if (instance != null) {
@@ -78,8 +80,7 @@ public final class OverlayFactory {
      * @return              Instance respecting the overlay strategy and given
      *                      arguments.
      */
-    public Optional<Overlay> newOverlay(DelegateProxy delegateProxy)
-            throws Exception {
+    public Optional<Overlay> newOverlay(DelegateProxy delegateProxy) throws ConfigurationException, ScriptException {
         OverlayService service = newOverlayService(delegateProxy);
         if (service != null && service.isAvailable()) {
             return Optional.ofNullable(service.newOverlay());
@@ -92,9 +93,7 @@ public final class OverlayFactory {
     }
 
     private void readStrategy() throws ConfigurationException {
-        final Configuration config = Configuration.getInstance();
-        final String configValue = config.getString(
-                Key.OVERLAY_STRATEGY, "BasicStrategy");
+        final String configValue = configuration.getString(Key.OVERLAY_STRATEGY, "BasicStrategy");
         switch (configValue) {
             case "ScriptStrategy":
                 setStrategy(Strategy.DELEGATE_METHOD);
@@ -123,11 +122,24 @@ public final class OverlayFactory {
     public boolean shouldApplyToImage(Dimension outputImageSize) {
         switch (strategy) {
             case BASIC:
-                return BasicOverlayService.shouldApplyToImage(outputImageSize);
+                return shouldBasicApplyToImage(outputImageSize);
             default:
                 // The delegate method will decide.
                 return true;
         }
+    }
+
+    /**
+     * @return Whether an overlay should be applied to an output image with
+     * the given dimensions.
+     */
+    private boolean shouldBasicApplyToImage(Dimension outputImageSize) {
+        final int minOutputWidth =
+                configuration.getInt(Key.OVERLAY_OUTPUT_WIDTH_THRESHOLD, 0);
+        final int minOutputHeight =
+                configuration.getInt(Key.OVERLAY_OUTPUT_HEIGHT_THRESHOLD, 0);
+        return (outputImageSize.width() >= minOutputWidth &&
+                outputImageSize.height() >= minOutputHeight);
     }
 
 }

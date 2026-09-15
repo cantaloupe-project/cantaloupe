@@ -11,8 +11,8 @@ import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.operation.ValidationException;
 import edu.illinois.library.cantaloupe.processor.codec.ImageReader;
 import edu.illinois.library.cantaloupe.processor.codec.ImageReaderFactory;
-import edu.illinois.library.cantaloupe.processor.codec.ImageWriterFactory;
 import edu.illinois.library.cantaloupe.processor.codec.ImageWriterFacade;
+import edu.illinois.library.cantaloupe.processor.codec.ImageWriterFactory;
 import edu.illinois.library.cantaloupe.util.CommandLocator;
 import edu.illinois.library.cantaloupe.util.TimeUtils;
 import org.slf4j.Logger;
@@ -293,9 +293,9 @@ class FfmpegProcessor extends AbstractProcessor implements FileProcessor {
     }
 
     @Override
-    public void validate(OperationList opList, Dimension fullSize)
+    public void validate(OperationList opList, Dimension fullSize, Configuration configuration)
             throws ValidationException, ProcessorException, OutputFormatException {
-        FileProcessor.super.validate(opList, fullSize);
+        FileProcessor.super.validate(opList, fullSize, configuration);
 
         if (durationSec < 1) {
             try {
