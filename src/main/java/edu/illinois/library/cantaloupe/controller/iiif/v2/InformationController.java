@@ -1,13 +1,10 @@
 package edu.illinois.library.cantaloupe.controller.iiif.v2;
 
-import java.time.ZoneOffset;
-import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
@@ -247,14 +244,11 @@ public class InformationController extends AbstractIIIFController {
     }
 
     private void setLastModifiedHeader(HttpHeaders headers, java.time.Instant timestamp) {
-                // Format the instant to RFC 1123 date-time format
-        DateTimeFormatter formatter = DateTimeFormatter
-                .ofPattern("EEE, dd MMM yyyy HH:mm:ss 'GMT'")
-                .withLocale(Locale.UK)
-                .withZone(ZoneOffset.UTC);
-
-        String formattedDate = formatter.format(timestamp);
-        headers.add("Last-Modified", formattedDate);
+        // Let Spring format the instant. Spring re-parses this header in
+        // HttpEntityMethodProcessor and drops it if it can't, and a
+        // hand-rolled formatter is easy to get wrong: a non-US locale can
+        // render September as "Sept", which Spring's RFC 1123 parser rejects.
+        headers.setLastModified(timestamp);
     }
 
     private void setContentTypeAndLastModified(HttpServletRequest request, HttpHeaders headers, Info info) {
