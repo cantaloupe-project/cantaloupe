@@ -26,7 +26,13 @@
         <maven.compile.target>21</maven.compile.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <jetty.version>12.1.10</jetty.version>
+        <!-- Jetty is managed by spring-boot-starter-parent (12.0.x). Spring
+             Boot 3.5's JettyServletWebServerFactory references
+             MimeTypes.Wrapper, which was removed in Jetty 12.1, so this must
+             not be overridden until Spring Boot 4. -->
+        <!-- Lettuce 7.x requires Netty 4.2, which is newer than the version
+             managed by spring-boot-starter-parent. -->
+        <netty.version>4.2.13.Final</netty.version>
         <aws-sdk.version>2.42.37</aws-sdk.version>
         <jackson.version>2.21.5</jackson.version>
         <jena.version>6.2.0</jena.version>
