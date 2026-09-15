@@ -8,7 +8,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.5.6</version>
+        <version>4.1.1</version>
         <relativePath />
     </parent>
 
@@ -26,18 +26,11 @@
         <maven.compile.target>21</maven.compile.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <!-- Jetty is managed by spring-boot-starter-parent (12.0.x). Spring
-             Boot 3.5's JettyServletWebServerFactory references
-             MimeTypes.Wrapper, which was removed in Jetty 12.1, so this must
-             not be overridden until Spring Boot 4. -->
-        <!-- Lettuce 7.x requires Netty 4.2, which is newer than the version
-             managed by spring-boot-starter-parent. -->
-        <netty.version>4.2.13.Final</netty.version>
         <aws-sdk.version>2.42.37</aws-sdk.version>
         <jackson.version>2.21.5</jackson.version>
         <jena.version>6.2.0</jena.version>
         <jruby.version>10.1.1.0</jruby.version>
-        <surefire.version>3.5.3</surefire.version>
+        <surefire.version>3.5.6</surefire.version>
         <seleniumhq.version>4.43.0</seleniumhq.version>
     </properties>
 
@@ -99,6 +92,11 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-webmvc-test</artifactId>
             <scope>test</scope>
         </dependency>
         <!-- Heap-based object cache: https://github.com/ben-manes/caffeine-->
@@ -287,6 +285,13 @@
         <dependency>
             <groupId>com.fasterxml.jackson.dataformat</groupId>
             <artifactId>jackson-dataformat-yaml</artifactId>
+            <version>${jackson.version}</version>
+        </dependency>
+        <!-- Provides the Jdk8Module that Info uses to serialize Optionals -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.datatype</groupId>
+            <artifactId>jackson-datatype-jdk8</artifactId>
+            <version>${jackson.version}</version>
         </dependency>
 
         <!-- Selenium is used to test the control panel, using a headless HtmlUnit

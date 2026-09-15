@@ -134,6 +134,10 @@ public class MockHttpServletResponse implements HttpServletResponse {
     }
 
     @Override
+    public void sendRedirect(String s, int i, boolean b) {
+    }
+
+    @Override
     public void setBufferSize(int i) {
     }
 

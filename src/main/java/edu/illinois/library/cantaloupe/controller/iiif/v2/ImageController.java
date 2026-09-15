@@ -216,7 +216,7 @@ public class ImageController extends AbstractIIIFController {
     }
 
     private void sendHeaders(HttpHeaders queuedHeaders, HttpServletResponse response, IIIFRequest iiifrequest) {
-        for (String headerName : queuedHeaders.keySet()) {
+        for (String headerName : queuedHeaders.headerNames()) {
             List<String> headerValues = queuedHeaders.get(headerName);
             for (String headerValue : headerValues) {
                 response.addHeader(headerName, headerValue);
