@@ -118,7 +118,7 @@ public class JdbcCacheTest extends AbstractCacheTest {
         String sql = String.format("CREATE TABLE IF NOT EXISTS %s (" +
                 "%s VARCHAR(4096) NOT NULL, " +
                 "%s BLOB, " +
-                "%s DATETIME);",
+                "%s TIMESTAMP);",
                 JdbcCache.getDerivativeImageTableName(),
                 JdbcCache.DERIVATIVE_IMAGE_TABLE_OPERATIONS_COLUMN,
                 JdbcCache.DERIVATIVE_IMAGE_TABLE_IMAGE_COLUMN,
@@ -131,7 +131,7 @@ public class JdbcCacheTest extends AbstractCacheTest {
                 "CREATE TABLE IF NOT EXISTS %s (" +
                         "%s VARCHAR(4096) NOT NULL, " +
                         "%s VARCHAR(8192) NOT NULL, " +
-                        "%s DATETIME);",
+                        "%s TIMESTAMP);",
                 JdbcCache.getInfoTableName(),
                 JdbcCache.INFO_TABLE_IDENTIFIER_COLUMN,
                 JdbcCache.INFO_TABLE_INFO_COLUMN,
