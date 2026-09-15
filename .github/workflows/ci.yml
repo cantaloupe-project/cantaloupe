@@ -11,14 +11,14 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest, ubuntu-24.04, ubuntu-22.04]
-        java: [jdk21, jdk25, jdk26, graalvm]
+        java: [jdk21, jdk25, jdk27, graalvm]
       fail-fast: false
     steps:
       - name: Check out the repository
         uses: actions/checkout@v6
-      - name: Test in Linux JDK 26 (non-LTS)
-        if: matrix.os == 'ubuntu-24.04' && matrix.java == 'jdk26'
-        run: docker compose -f docker/Linux-JDK26/compose.yaml up --build --exit-code-from cantaloupe
+      - name: Test in Linux JDK 27 (non-LTS)
+        if: matrix.os == 'ubuntu-24.04' && matrix.java == 'jdk27'
+        run: docker compose -f docker/Linux-JDK27/compose.yaml up --build --exit-code-from cantaloupe
       - name: Test in Linux JDK 25 (LTS)
         if: matrix.os == 'ubuntu-latest' && matrix.java == 'jdk25'
         run: docker compose -f docker/Linux-JDK25/compose.yaml up --build --exit-code-from cantaloupe

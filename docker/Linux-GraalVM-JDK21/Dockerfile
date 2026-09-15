@@ -2,7 +2,7 @@ FROM ubuntu:noble
 
 ENV JAVA_HOME=/opt/graalvm-community-openjdk-21.0.2+13.1
 ENV GRAALVM_HOME=/opt/graalvm-community-openjdk-21.0.2+13.1
-ENV PATH=$PATH:/opt/graalvm-community-openjdk-21.0.2+13.1/bin
+ENV PATH=/opt/graalvm-community-openjdk-21.0.2+13.1/bin:$PATH
 
 ARG DEBIAN_FRONTEND=noninteractive
 
