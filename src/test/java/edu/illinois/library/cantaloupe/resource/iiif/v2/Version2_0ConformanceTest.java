@@ -41,6 +41,8 @@ import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
@@ -79,6 +81,12 @@ public class Version2_0ConformanceTest {
         ConfigurationFactory.clearInstance();
         System.setProperty(ConfigurationFactory.CONFIG_VM_ARGUMENT, "memory");
         System.setProperty(Application.TEST_VM_ARGUMENT, "true");
+
+        // Unstubbed mock methods return null, even when the caller
+        // supplies a fallback value, which NPEs in code like
+        // OverlayFactory.readStrategy() that relies on it.
+        when(configuration.getString(any(Key.class), anyString()))
+                .thenAnswer(invocation -> invocation.getArgument(1));
 
         // Mock the default configuration similar to ResourceTest.setUp()
         when(configuration.getBoolean(Key.IIIF_2_ENDPOINT_ENABLED, true)).thenReturn(true);
