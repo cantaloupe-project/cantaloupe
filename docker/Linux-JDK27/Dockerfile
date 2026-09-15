@@ -1,7 +1,7 @@
 FROM ubuntu:noble
 
 ENV JAVA_HOME=/opt/jdk
-ENV PATH=$PATH:/opt/jdk/bin:/opt/maven/bin
+ENV PATH=/opt/jdk/bin:/opt/maven/bin:$PATH
 ARG DEBIAN_FRONTEND=noninteractive
 
 # Install various dependencies:
@@ -39,9 +39,9 @@ ENV LD_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu:${LD_LIBRARY_PATH}
 
 # Install various other dependencies that aren't in apt
 # Install OpenJDK
-RUN wget -q https://download.java.net/java/GA/jdk26/c3cc523845074aa0af4f5e1e1ed4151d/35/GPL/openjdk-26_linux-x64_bin.tar.gz \
-  && tar xfz openjdk-26_linux-x64_bin.tar.gz \
-  && mv jdk-26 /opt/jdk
+RUN wget -q https://download.java.net/java/GA/jdk27/55ce5470a6294008af0057ff4626d0e5/35/GPL/openjdk-27_linux-x64_bin.tar.gz \
+  && tar xfz openjdk-27_linux-x64_bin.tar.gz \
+  && mv jdk-27 /opt/jdk
 
 # A non-root user is needed for some FilesystemSourceTest tests to work.
 ARG user=cantaloupe
