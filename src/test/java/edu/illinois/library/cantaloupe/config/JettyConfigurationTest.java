@@ -3,7 +3,7 @@ package edu.illinois.library.cantaloupe.config;
 import org.eclipse.jetty.http.UriCompliance;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.web.embedded.jetty.JettyServletWebServerFactory;
+import org.springframework.boot.jetty.servlet.JettyServletWebServerFactory;
 import org.springframework.boot.web.server.WebServerFactoryCustomizer;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
