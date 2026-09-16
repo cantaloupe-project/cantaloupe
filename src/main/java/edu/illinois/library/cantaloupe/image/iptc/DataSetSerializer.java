@@ -1,26 +1,24 @@
 package edu.illinois.library.cantaloupe.image.iptc;
 
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.databind.JsonSerializer;
-import com.fasterxml.jackson.databind.SerializerProvider;
-
-import java.io.IOException;
+import tools.jackson.core.JsonGenerator;
+import tools.jackson.databind.ValueSerializer;
+import tools.jackson.databind.SerializationContext;
 
 /**
  * Serializes a {@link DataSet} as JSON.
  */
-public class DataSetSerializer extends JsonSerializer<DataSet> {
+public class DataSetSerializer extends ValueSerializer<DataSet> {
 
     @Override
     public void serialize(DataSet dataSet,
                           JsonGenerator generator,
-                          SerializerProvider serializerProvider) throws IOException {
+                          SerializationContext serializationContext) {
         generator.writeStartObject();
-        generator.writeFieldName("record");
+        generator.writeName("record");
         generator.writeNumber(dataSet.getTag().getRecord().getRecordNum());
-        generator.writeFieldName("tag");
+        generator.writeName("tag");
         generator.writeNumber(dataSet.getTag().getDataSetNum());
-        generator.writeFieldName("dataField");
+        generator.writeName("dataField");
         generator.writeBinary(dataSet.getDataField());
         generator.writeEndObject();
     }

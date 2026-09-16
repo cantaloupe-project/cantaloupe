@@ -1,20 +1,18 @@
 package edu.illinois.library.cantaloupe.image;
 
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.databind.JsonSerializer;
-import com.fasterxml.jackson.databind.SerializerProvider;
-
-import java.io.IOException;
+import tools.jackson.core.JsonGenerator;
+import tools.jackson.databind.ValueSerializer;
+import tools.jackson.databind.SerializationContext;
 
 /**
  * Serializes an {@link Orientation} as an EXIF orientation integer.
  */
-final class OrientationSerializer extends JsonSerializer<Orientation> {
+final class OrientationSerializer extends ValueSerializer<Orientation> {
 
     @Override
     public void serialize(Orientation orientation,
                           JsonGenerator generator,
-                          SerializerProvider serializerProvider) throws IOException {
+                          SerializationContext serializationContext) {
         generator.writeNumber(orientation.getEXIFValue());
     }
 
