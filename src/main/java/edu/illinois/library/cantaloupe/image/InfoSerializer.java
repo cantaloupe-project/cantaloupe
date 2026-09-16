@@ -1,12 +1,10 @@
 package edu.illinois.library.cantaloupe.image;
 
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.databind.JsonSerializer;
-import com.fasterxml.jackson.databind.SerializerProvider;
+import tools.jackson.core.JsonGenerator;
+import tools.jackson.databind.ValueSerializer;
+import tools.jackson.databind.SerializationContext;
 import edu.illinois.library.cantaloupe.Application;
 
-import java.io.IOException;
-import java.io.UncheckedIOException;
 import java.time.Instant;
 
 /**
@@ -14,7 +12,7 @@ import java.time.Instant;
  *
  * @since 5.0
  */
-final class InfoSerializer extends JsonSerializer<Info> {
+final class InfoSerializer extends ValueSerializer<Info> {
 
     static final String APPLICATION_VERSION_KEY     = "applicationVersion";
     static final String IDENTIFIER_KEY              = "identifier";
@@ -28,42 +26,36 @@ final class InfoSerializer extends JsonSerializer<Info> {
     @Override
     public void serialize(Info info,
                           JsonGenerator generator,
-                          SerializerProvider serializerProvider) throws IOException {
+                          SerializationContext serializationContext) {
         generator.writeStartObject();
         // application version
-        generator.writeStringField(APPLICATION_VERSION_KEY,
+        generator.writeStringProperty(APPLICATION_VERSION_KEY,
                 Application.getVersion());
         // serialization version
-        generator.writeNumberField(SERIALIZATION_VERSION_KEY,
+        generator.writeNumberProperty(SERIALIZATION_VERSION_KEY,
                 Info.Serialization.CURRENT.getVersion());
         // serialization timestamp
-        generator.writeStringField(SERIALIZATION_TIMESTAMP_KEY,
+        generator.writeStringProperty(SERIALIZATION_TIMESTAMP_KEY,
                 Instant.now().toString());
         // identifier
         if (info.getIdentifier() != null) {
-            generator.writeStringField(IDENTIFIER_KEY,
+            generator.writeStringProperty(IDENTIFIER_KEY,
                     info.getIdentifier().toString());
         }
         // mediaType
         if (info.getMediaType() != null) {
-            generator.writeStringField(MEDIA_TYPE_KEY,
+            generator.writeStringProperty(MEDIA_TYPE_KEY,
                     info.getMediaType().toString());
         }
         // numResolutions
-        generator.writeNumberField(NUM_RESOLUTIONS_KEY,
+        generator.writeNumberProperty(NUM_RESOLUTIONS_KEY,
                 info.getNumResolutions());
         // images
-        generator.writeArrayFieldStart(IMAGES_KEY);
-        info.getImages().forEach(image -> {
-            try {
-                generator.writeObject(image);
-            } catch (IOException e) {
-                throw new UncheckedIOException(e);
-            }
-        });
+        generator.writeArrayPropertyStart(IMAGES_KEY);
+        info.getImages().forEach(generator::writePOJO);
         generator.writeEndArray();
         // metadata
-        generator.writeObjectField(METADATA_KEY, info.getMetadata());
+        generator.writePOJOProperty(METADATA_KEY, info.getMetadata());
         generator.writeEndObject();
     }
 

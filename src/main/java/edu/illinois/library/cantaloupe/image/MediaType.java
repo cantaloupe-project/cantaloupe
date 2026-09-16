@@ -1,13 +1,13 @@
 package edu.illinois.library.cantaloupe.image;
 
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.databind.DeserializationContext;
-import com.fasterxml.jackson.databind.JsonDeserializer;
-import com.fasterxml.jackson.databind.JsonSerializer;
-import com.fasterxml.jackson.databind.SerializerProvider;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import tools.jackson.core.JsonGenerator;
+import tools.jackson.core.JsonParser;
+import tools.jackson.databind.DeserializationContext;
+import tools.jackson.databind.ValueDeserializer;
+import tools.jackson.databind.ValueSerializer;
+import tools.jackson.databind.SerializationContext;
+import tools.jackson.databind.annotation.JsonDeserialize;
+import tools.jackson.databind.annotation.JsonSerialize;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.tika.detect.Detector;
 import org.apache.tika.io.TikaInputStream;
@@ -33,10 +33,10 @@ public final class MediaType {
     /**
      * Deserializes a type/subtype string into a {@link MediaType}.
      */
-    static class MediaTypeDeserializer extends JsonDeserializer<MediaType> {
+    static class MediaTypeDeserializer extends ValueDeserializer<MediaType> {
         @Override
         public MediaType deserialize(JsonParser jsonParser,
-                             DeserializationContext deserializationContext) throws IOException {
+                                     DeserializationContext deserializationContext) {
             return new MediaType(jsonParser.getValueAsString());
         }
     }
@@ -44,11 +44,11 @@ public final class MediaType {
     /**
      * Serializes a {@link MediaType} as a type/subtype string.
      */
-    static class MediaTypeSerializer extends JsonSerializer<MediaType> {
+    static class MediaTypeSerializer extends ValueSerializer<MediaType> {
         @Override
         public void serialize(MediaType mediaType,
                               JsonGenerator jsonGenerator,
-                              SerializerProvider serializerProvider) throws IOException {
+                              SerializationContext serializationContext) {
             jsonGenerator.writeString(mediaType.toString());
         }
     }

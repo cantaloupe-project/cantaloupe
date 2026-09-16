@@ -1,8 +1,8 @@
 package edu.illinois.library.cantaloupe.resource.api;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectReader;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectReader;
 import edu.illinois.library.cantaloupe.async.TaskQueue;
 import edu.illinois.library.cantaloupe.http.Method;
 import edu.illinois.library.cantaloupe.http.Status;
@@ -69,7 +69,7 @@ public class TasksResource extends AbstractAPIResource {
             final String taskURI = getRequest().getPublicRootReference() +
                     Route.TASKS_PATH + "/" + task.getUUID().toString();
             getResponse().setHeader("Location", taskURI);
-        } catch (NullPointerException | JsonProcessingException e) {
+        } catch (NullPointerException | JacksonException e) {
             throw new IllegalClientArgumentException(e.getMessage(), e);
         }
     }

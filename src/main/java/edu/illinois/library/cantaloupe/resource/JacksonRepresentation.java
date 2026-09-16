@@ -1,9 +1,9 @@
 package edu.illinois.library.cantaloupe.resource;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.cfg.DateTimeFeature;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -24,20 +24,16 @@ public class JacksonRepresentation implements Representation {
     @Override
     public void write(OutputStream outputStream) throws IOException {
         // Serialize dates as ISO-8601 strings rather than timestamps.
-        Map<SerializationFeature,Boolean> features = new HashMap<>();
-        features.put(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
+        Map<DateTimeFeature,Boolean> features = new HashMap<>();
+        features.put(DateTimeFeature.WRITE_DATES_AS_TIMESTAMPS, false);
 
         write(outputStream, features);
     }
 
     public void write(OutputStream outputStream,
-                      Map<SerializationFeature,Boolean> serializationFeatures) throws IOException {
-        ObjectMapper mapper = new ObjectMapper();
-        // Make ObjectMapper aware of JDK8 date/time objects
-        // See: https://github.com/FasterXML/jackson-modules-java8
-        mapper.registerModule(new JavaTimeModule());
-
-        serializationFeatures.forEach(mapper::configure);
+                      Map<DateTimeFeature,Boolean> serializationFeatures) throws IOException {
+        var mapperBuilder = JsonMapper.builder();
+        serializationFeatures.forEach(mapperBuilder::configure);
 
         // Add a config override to omit keys with empty or null values.
         //
@@ -52,8 +48,10 @@ public class JacksonRepresentation implements Representation {
         // beyond those specified in the referenced compliance level, then
         // the property should be omitted from the response rather than being
         // present with an empty list."
-        mapper.configOverride(Object.class).setInclude(
-                JsonInclude.Value.construct(JsonInclude.Include.NON_EMPTY, null));
+        mapperBuilder.withConfigOverride(Object.class, override ->
+                override.setInclude(JsonInclude.Value.construct(
+                        JsonInclude.Include.NON_EMPTY, null)));
+        ObjectMapper mapper = mapperBuilder.build();
         mapper.writer().writeValue(outputStream, toWrite);
     }
 
