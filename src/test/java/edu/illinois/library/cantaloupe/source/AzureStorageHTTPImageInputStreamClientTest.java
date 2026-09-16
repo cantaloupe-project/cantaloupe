@@ -1,6 +1,6 @@
 package edu.illinois.library.cantaloupe.source;
 
-import com.microsoft.azure.storage.blob.CloudBlockBlob;
+import com.azure.storage.blob.BlobClient;
 import edu.illinois.library.cantaloupe.http.Range;
 import edu.illinois.library.cantaloupe.http.Response;
 import edu.illinois.library.cantaloupe.test.AzureStorageTestUtil;
@@ -33,9 +33,9 @@ public class AzureStorageHTTPImageInputStreamClientTest extends BaseTest {
     public void setUp() throws Exception {
         super.setUp();
 
-        CloudBlockBlob blob = AzureStorageTestUtil.client()
-                .getContainerReference(AzureStorageTestUtil.getContainer())
-                .getBlockBlobReference("jpg");
+        BlobClient blob = AzureStorageTestUtil.client()
+                .getBlobContainerClient(AzureStorageTestUtil.getContainer())
+                .getBlobClient("jpg");
         instance = new AzureStorageHTTPImageInputStreamClient(blob);
     }
 
