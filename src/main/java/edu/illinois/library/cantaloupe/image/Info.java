@@ -4,11 +4,10 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.annotation.JsonDeserialize;
+import tools.jackson.databind.annotation.JsonSerialize;
 import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.cache.DerivativeCache;
 import edu.illinois.library.cantaloupe.processor.Processor;
@@ -268,9 +267,6 @@ public final class Info {
 
     private static ObjectMapper newMapper() {
         ObjectMapper mapper = new ObjectMapper();
-        // This module obscures Optionals from the serialization (e.g.
-        // Optional.empty() maps to null rather than { isPresent: false })
-        mapper.registerModule(new Jdk8Module());
         return mapper;
     }
 
@@ -564,7 +560,7 @@ public final class Info {
     /**
      * @return JSON representation of the instance.
      */
-    public String toJSON() throws JsonProcessingException {
+    public String toJSON() throws JacksonException {
         return newMapper().writer().writeValueAsString(this);
     }
 
@@ -572,7 +568,7 @@ public final class Info {
     public String toString() {
         try {
             return toJSON();
-        } catch (JsonProcessingException e) { // this should never happen
+        } catch (JacksonException e) { // this should never happen
             return super.toString();
         }
     }

@@ -1,13 +1,11 @@
 package edu.illinois.library.cantaloupe.image;
 
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.databind.DeserializationContext;
-import com.fasterxml.jackson.databind.JsonDeserializer;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.core.JsonParser;
+import tools.jackson.databind.DeserializationContext;
+import tools.jackson.databind.ValueDeserializer;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
 
-import java.io.IOException;
-import java.io.UncheckedIOException;
 import java.time.Instant;
 
 import static edu.illinois.library.cantaloupe.image.InfoSerializer.APPLICATION_VERSION_KEY;
@@ -24,16 +22,16 @@ import static edu.illinois.library.cantaloupe.image.InfoSerializer.SERIALIZATION
  *
  * @since 5.0
  */
-final class InfoDeserializer extends JsonDeserializer<Info> {
+final class InfoDeserializer extends ValueDeserializer<Info> {
 
     @Override
     public Info deserialize(JsonParser parser,
-                            DeserializationContext deserializationContext) throws IOException {
+                            DeserializationContext deserializationContext) {
         // N.B.: keys may or may not exist in different serializations,
         // documented inline. Even keys that are supposed to always exist may
         // not exist in tests, so we have to check for them anyway.
         final Info info     = new Info();
-        final JsonNode node = parser.getCodec().readTree(parser);
+        final JsonNode node = deserializationContext.readTree(parser);
         { // serializationTimestamp (does not exist in < 6.0 serializations)
             JsonNode timestampNode = node.get(SERIALIZATION_TIMESTAMP_KEY);
             if (timestampNode != null) {
@@ -72,14 +70,10 @@ final class InfoDeserializer extends JsonDeserializer<Info> {
         }
         { // images (>= 1 exist in all serializations)
             info.getImages().clear();
-            node.get(IMAGES_KEY).elements().forEachRemaining(imageNode -> {
-                try {
-                    Info.Image image = new ObjectMapper().readValue(
-                            imageNode.toString(), Info.Image.class);
-                    info.getImages().add(image);
-                } catch (IOException e) {
-                    throw new UncheckedIOException(e);
-                }
+            node.get(IMAGES_KEY).iterator().forEachRemaining(imageNode -> {
+                Info.Image image = new ObjectMapper().readValue(
+                        imageNode.toString(), Info.Image.class);
+                info.getImages().add(image);
             });
         }
         {   // metadata (does not exist in < 5.0 serializations)

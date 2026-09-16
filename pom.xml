@@ -19,12 +19,14 @@
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <jetty.version>12.1.10</jetty.version>
         <aws-sdk.version>2.42.37</aws-sdk.version>
-        <jackson.version>2.21.5</jackson.version>
+        <jackson.version>3.2.2</jackson.version>
+        <jackson2.version>2.22.0</jackson2.version>
         <jena.version>6.2.0</jena.version>
         <jruby.version>10.1.1.0</jruby.version>
         <surefire.version>3.5.3</surefire.version>
         <seleniumhq.version>4.43.0</seleniumhq.version>
         <logback.version>1.5.34</logback.version> <!-- slf4j depends on specific versions of logback. -->
+        <logstash-logback-encoder.version>9.0</logstash-logback-encoder.version>
         <slf4j.version>2.0.18</slf4j.version>
     </properties>
 
@@ -47,6 +49,27 @@
             <timezone>-6</timezone>
         </developer>
     </developers>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>tools.jackson</groupId>
+                <artifactId>jackson-bom</artifactId>
+                <version>${jackson.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <!-- Manages the Jackson 2 dependencies used by the legacy Azure
+                 Storage SDK and the annotations artifact. -->
+            <dependency>
+                <groupId>com.fasterxml.jackson</groupId>
+                <artifactId>jackson-bom</artifactId>
+                <version>${jackson2.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
 
     <scm>
         <connection>scm:git:git://github.com/cantaloupe-project/cantaloupe</connection>
@@ -75,7 +98,7 @@
         <dependency>
             <groupId>net.logstash.logback</groupId>
             <artifactId>logstash-logback-encoder</artifactId>
-            <version>7.3</version>
+            <version>${logstash-logback-encoder.version}</version>
         </dependency>
         <!-- Heap-based object cache: https://github.com/ben-manes/caffeine-->
         <dependency>
@@ -304,37 +327,21 @@
         </dependency>
         <!-- Jackson for data serialization -->
         <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
+            <groupId>tools.jackson.core</groupId>
             <artifactId>jackson-core</artifactId>
-            <version>${jackson.version}</version>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-annotations</artifactId>
-            <version>2.21</version>
         </dependency>
         <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
+            <groupId>tools.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
-            <version>${jackson.version}</version>
         </dependency>
         <!-- Enables reading the formats.yml file -->
         <dependency>
-            <groupId>com.fasterxml.jackson.dataformat</groupId>
+            <groupId>tools.jackson.dataformat</groupId>
             <artifactId>jackson-dataformat-yaml</artifactId>
-            <version>${jackson.version}</version>
-        </dependency>
-        <!-- Makes Jackson aware of JDK8 date/time objects -->
-        <dependency>
-            <groupId>com.fasterxml.jackson.datatype</groupId>
-            <artifactId>jackson-datatype-jsr310</artifactId>
-            <version>${jackson.version}</version>
-        </dependency>
-        <!-- Enables Jackson to handle Optionals -->
-        <dependency>
-            <groupId>com.fasterxml.jackson.datatype</groupId>
-            <artifactId>jackson-datatype-jdk8</artifactId>
-            <version>${jackson.version}</version>
         </dependency>
         <!-- Provides Thymeleaf for the landing and error page templates -->
         <dependency>
