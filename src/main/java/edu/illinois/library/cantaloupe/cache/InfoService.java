@@ -1,6 +1,6 @@
 package edu.illinois.library.cantaloupe.cache;
 
-import com.fasterxml.jackson.core.JsonParseException;
+import tools.jackson.core.exc.StreamReadException;
 import edu.illinois.library.cantaloupe.async.TaskQueue;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
@@ -95,7 +95,7 @@ public final class InfoService {
                     putInObjectCache(identifier, optInfo.get());
                 }
                 return optInfo;
-            } catch (JsonParseException e) {
+            } catch (StreamReadException e) {
                 LOGGER.warn("getInfo(): {}", e.getMessage());
             }
         }
