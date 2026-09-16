@@ -19,6 +19,8 @@
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <jetty.version>12.1.10</jetty.version>
         <aws-sdk.version>2.42.37</aws-sdk.version>
+        <azure-core-http-jdk-httpclient.version>1.1.5</azure-core-http-jdk-httpclient.version>
+        <azure-storage-blob.version>12.35.1</azure-storage-blob.version>
         <jackson.version>2.21.5</jackson.version>
         <jena.version>6.2.0</jena.version>
         <jruby.version>10.1.1.0</jruby.version>
@@ -104,9 +106,23 @@
         </dependency>
         <!-- Used by AzureStorageSource and AzureStorageCache-->
         <dependency>
-            <groupId>com.microsoft.azure</groupId>
-            <artifactId>azure-storage</artifactId>
-            <version>8.6.6</version>
+            <groupId>com.azure</groupId>
+            <artifactId>azure-storage-blob</artifactId>
+            <version>${azure-storage-blob.version}</version>
+            <exclusions>
+                <!-- Lettuce 7 uses Netty 4.2, which is incompatible with the
+                Netty 4.1 transport used by Azure. Use Azure's JDK transport
+                instead. -->
+                <exclusion>
+                    <groupId>com.azure</groupId>
+                    <artifactId>azure-core-http-netty</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>com.azure</groupId>
+            <artifactId>azure-core-http-jdk-httpclient</artifactId>
+            <version>${azure-core-http-jdk-httpclient.version}</version>
         </dependency>
         <!-- HTTP client used by HttpSource -->
         <dependency>
@@ -392,6 +408,13 @@
             <groupId>software.amazon.awssdk</groupId>
             <artifactId>s3</artifactId>
             <version>${aws-sdk.version}</version>
+            <exclusions>
+                <!-- S3AsyncClientBuilder uses aws-crt-client explicitly. -->
+                <exclusion>
+                    <groupId>software.amazon.awssdk</groupId>
+                    <artifactId>netty-nio-client</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <!--
         <dependency>

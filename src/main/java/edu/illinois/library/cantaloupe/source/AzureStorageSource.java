@@ -1,10 +1,11 @@
 package edu.illinois.library.cantaloupe.source;
 
-import com.microsoft.azure.storage.CloudStorageAccount;
-import com.microsoft.azure.storage.StorageException;
-import com.microsoft.azure.storage.blob.CloudBlobClient;
-import com.microsoft.azure.storage.blob.CloudBlobContainer;
-import com.microsoft.azure.storage.blob.CloudBlockBlob;
+import com.azure.storage.blob.BlobClient;
+import com.azure.storage.blob.BlobClientBuilder;
+import com.azure.storage.blob.BlobContainerClient;
+import com.azure.storage.blob.BlobServiceClient;
+import com.azure.storage.blob.BlobServiceClientBuilder;
+import com.azure.storage.blob.models.BlobRange;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Format;
@@ -18,10 +19,7 @@ import javax.script.ScriptException;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.nio.file.NoSuchFileException;
-import java.security.InvalidKeyException;
 import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -73,7 +71,7 @@ import java.util.NoSuchElementException;
  *     </li>
  * </ol>
  *
- * @see <a href="https://github.com/azure/azure-storage-java">
+ * @see <a href="https://github.com/Azure/azure-sdk-for-java">
  *     Microsoft Azure Storage SDK for Java</a>
  */
 final class AzureStorageSource extends AbstractSource implements Source {
@@ -105,8 +103,9 @@ final class AzureStorageSource extends AbstractSource implements Source {
         private class ContentTypeHeaderChecker implements FormatChecker {
             @Override
             public Format check() throws IOException {
-                final CloudBlockBlob blob = fetchBlob();
-                final String contentType  = blob.getProperties().getContentType();
+                final BlobClient blob = fetchBlob();
+                final String contentType =
+                        blob.getProperties().getContentType();
                 if (contentType != null && !contentType.isEmpty()) {
                     return new MediaType(contentType).toFormat();
                 }
@@ -120,19 +119,18 @@ final class AzureStorageSource extends AbstractSource implements Source {
         private class ByteChecker implements FormatChecker {
             @Override
             public Format check() throws IOException {
-                try {
-                    byte[] bytes = new byte[FORMAT_INFERENCE_RANGE_LENGTH];
-                    fetchBlob().downloadRangeToByteArray(
-                            0, (long) FORMAT_INFERENCE_RANGE_LENGTH, bytes, 0);
+                byte[] bytes;
+                try (InputStream blobStream = fetchBlob().openInputStream(
+                        new BlobRange(0, (long) FORMAT_INFERENCE_RANGE_LENGTH),
+                        null)) {
+                    bytes = blobStream.readNBytes(FORMAT_INFERENCE_RANGE_LENGTH);
+                }
 
-                    try (InputStream is = new ByteArrayInputStream(bytes)) {
-                        List<MediaType> types = MediaType.detectMediaTypes(is);
-                        if (!types.isEmpty()) {
-                            return types.get(0).toFormat();
-                        }
+                try (InputStream is = new ByteArrayInputStream(bytes)) {
+                    List<MediaType> types = MediaType.detectMediaTypes(is);
+                    if (!types.isEmpty()) {
+                        return types.get(0).toFormat();
                     }
-                } catch (StorageException e) {
-                    throw new IOException(e);
                 }
                 return Format.UNKNOWN;
             }
@@ -186,16 +184,15 @@ final class AzureStorageSource extends AbstractSource implements Source {
      */
     private static final int FORMAT_INFERENCE_RANGE_LENGTH = 32;
 
-    private static CloudStorageAccount account;
-    private static CloudBlobClient client;
+    private static BlobServiceClient account;
 
-    private CloudBlockBlob cachedBlob;
+    private BlobClient cachedBlob;
     private IOException cachedBlobException;
     private String objectKey;
 
     private FormatIterator<Format> formatIterator = new FormatIterator<>();
 
-    static synchronized CloudStorageAccount getAccount() {
+    static synchronized BlobServiceClient getAccount() {
         if (account == null) {
             try {
                 final Configuration config = Configuration.getInstance();
@@ -208,32 +205,30 @@ final class AzureStorageSource extends AbstractSource implements Source {
                         "DefaultEndpointsProtocol=https;" +
                                 "AccountName=%s;" +
                                 "AccountKey=%s", accountName, accountKey);
-                account = CloudStorageAccount.parse(connectionString);
+                account = new BlobServiceClientBuilder().
+                        connectionString(connectionString).buildClient();
 
                 LOGGER.info("Using account: {}", accountName);
-            } catch (URISyntaxException | InvalidKeyException e) {
+            } catch (RuntimeException e) {
                 LOGGER.error(e.getMessage());
             }
         }
         return account;
     }
 
-    private static synchronized CloudBlobClient getClientInstance() {
-        if (client == null) {
-            client = getAccount().createCloudBlobClient();
-        }
-        return client;
+    private static synchronized BlobServiceClient getClientInstance() {
+        return getAccount();
     }
 
     @Override
     public StatResult stat() throws IOException {
-        CloudBlockBlob blob = fetchBlob();
+        BlobClient blob = fetchBlob();
         StatResult result = new StatResult();
         result.setLastModified(blob.getProperties().getLastModified().toInstant());
         return result;
     }
 
-    private CloudBlockBlob fetchBlob() throws IOException {
+    private BlobClient fetchBlob() throws IOException {
         if (cachedBlobException != null) {
             throw cachedBlobException;
         } else if (cachedBlob == null) {
@@ -241,30 +236,30 @@ final class AzureStorageSource extends AbstractSource implements Source {
                 final String containerName = getContainerName();
                 LOGGER.debug("Using container: {}", containerName);
 
-                final CloudBlockBlob blob;
+                final BlobClient blob;
                 final String objectKey = getBlobKey();
                 // Supports direct URI references:
                 // https://docs.microsoft.com/en-us/rest/api/storageservices/naming-and-referencing-containers--blobs--and-metadata#resource-uri-syntax
                 // Supports SAS Token Authentication:
                 // https://docs.microsoft.com/en-us/azure/storage/common/storage-dotnet-shared-access-signature-part-1#how-a-shared-access-signature-works
                 if (containerName.isEmpty()) { // use URI with sas token + container + path directly
-                    final URI uri = URI.create(objectKey);
-                    LOGGER.debug("Requesting {} from {}", objectKey, uri);
-                    blob = new CloudBlockBlob(uri);
+                    LOGGER.debug("Requesting {} directly", objectKey);
+                    blob = new BlobClientBuilder().endpoint(objectKey).
+                            buildClient();
                 } else { // use a fixed storage account with fixed container.
-                    final CloudBlobClient client = getClientInstance();
-                    final CloudBlobContainer container =
-                            client.getContainerReference(containerName);
+                    final BlobServiceClient client = getClientInstance();
+                    final BlobContainerClient container =
+                            client.getBlobContainerClient(containerName);
                     LOGGER.debug("Requesting {} from fixed container {}",
                             objectKey, containerName);
-                    blob = container.getBlockBlobReference(objectKey);
+                    blob = container.getBlobClient(objectKey);
                 }
 
                 if (!blob.exists()) {
                     throw new NoSuchFileException("Not found: " + objectKey);
                 }
                 cachedBlob = blob;
-            } catch (URISyntaxException | StorageException e) {
+            } catch (RuntimeException e) {
                 throw new IOException(e);
             } catch (IOException e) {
                 cachedBlobException = e;
