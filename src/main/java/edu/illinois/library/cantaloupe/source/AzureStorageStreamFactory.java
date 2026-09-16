@@ -1,7 +1,6 @@
 package edu.illinois.library.cantaloupe.source;
 
-import com.microsoft.azure.storage.StorageException;
-import com.microsoft.azure.storage.blob.CloudBlockBlob;
+import com.azure.storage.blob.BlobClient;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.source.stream.HTTPImageInputStream;
@@ -25,9 +24,9 @@ class AzureStorageStreamFactory implements StreamFactory {
     private static final int DEFAULT_CHUNK_SIZE       = 1024 * 512;
     private static final int DEFAULT_CHUNK_CACHE_SIZE = 1024 * 1024 * 10;
 
-    private final CloudBlockBlob blob;
+    private final BlobClient blob;
 
-    AzureStorageStreamFactory(CloudBlockBlob blob) {
+    AzureStorageStreamFactory(BlobClient blob) {
         this.blob = blob;
     }
 
@@ -35,7 +34,7 @@ class AzureStorageStreamFactory implements StreamFactory {
     public InputStream newInputStream() throws IOException {
         try {
             return blob.openInputStream();
-        } catch (StorageException e) {
+        } catch (RuntimeException e) {
             throw new IOException(e.getMessage(), e);
         }
     }
@@ -50,15 +49,8 @@ class AzureStorageStreamFactory implements StreamFactory {
             final AzureStorageHTTPImageInputStreamClient client =
                     new AzureStorageHTTPImageInputStreamClient(blob);
 
-            try {
-                // Populate the blob's properties, if they haven't been already.
-                blob.exists();
-            } catch (StorageException e) {
-                LOGGER.warn("newSeekableStream(): {}", e.getMessage());
-            }
-
             HTTPImageInputStream stream = new HTTPImageInputStream(
-                    client, blob.getProperties().getLength());
+                    client, blob.getProperties().getBlobSize());
             try {
                 stream.setWindowSize(chunkSize);
                 if (isChunkCacheEnabled()) {
