@@ -86,7 +86,7 @@ public class Metadata {
     /**
      * @return EXIF data.
      */
-    @JsonProperty
+    @JsonProperty("exif")
     public Optional<Directory> getEXIF() {
         return Optional.ofNullable(exif);
     }
@@ -94,7 +94,7 @@ public class Metadata {
     /**
      * @return List of IPTC IIM data sets.
      */
-    @JsonProperty
+    @JsonProperty("iptc")
     public Optional<List<DataSet>> getIPTC() {
         return Optional.ofNullable(iptcDataSets);
     }
@@ -178,7 +178,7 @@ public class Metadata {
      * @return RDF/XML string in UTF-8 encoding. The root element is {@literal
      *         rdf:RDF}, and there is no packet wrapper.
      */
-    @JsonProperty
+    @JsonProperty("xmp")
     public Optional<String> getXMP() {
         return Optional.ofNullable(xmp);
     }
@@ -266,6 +266,7 @@ public class Metadata {
     /**
      * @param exif EXIF directory (IFD0). May be {@literal null}.
      */
+    @JsonProperty("exif")
     public void setEXIF(Directory exif) {
         if (exif != null) {
             this.exif = exif;
@@ -278,6 +279,7 @@ public class Metadata {
     /**
      * @param dataSets IPTC IIM data sets. May be {@literal null}.
      */
+    @JsonProperty("iptc")
     public void setIPTC(List<DataSet> dataSets) {
         this.iptcDataSets = dataSets;
     }
@@ -309,6 +311,7 @@ public class Metadata {
     /**
      * @param xmp UTF-8 string. May be {@literal null}.
      */
+    @JsonProperty("xmp")
     public void setXMP(String xmp) {
         if (xmp != null) {
             this.xmp = Utils.trimXMP(xmp);
