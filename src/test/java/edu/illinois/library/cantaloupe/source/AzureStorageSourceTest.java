@@ -1,11 +1,10 @@
 package edu.illinois.library.cantaloupe.source;
 
-import com.microsoft.azure.storage.SharedAccessAccountPermissions;
-import com.microsoft.azure.storage.SharedAccessAccountPolicy;
-import com.microsoft.azure.storage.SharedAccessAccountResourceType;
-import com.microsoft.azure.storage.SharedAccessAccountService;
-import com.microsoft.azure.storage.SharedAccessProtocols;
-import com.microsoft.azure.storage.StorageException;
+import com.azure.storage.common.sas.AccountSasPermission;
+import com.azure.storage.common.sas.AccountSasResourceType;
+import com.azure.storage.common.sas.AccountSasService;
+import com.azure.storage.common.sas.AccountSasSignatureValues;
+import com.azure.storage.common.sas.SasProtocol;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Format;
@@ -21,10 +20,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.nio.file.NoSuchFileException;
-import java.security.InvalidKeyException;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.EnumSet;
+import java.time.OffsetDateTime;
 import java.util.NoSuchElementException;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -57,28 +53,23 @@ public class AzureStorageSourceTest extends AbstractSourceTest {
         config.setProperty(Key.AZURESTORAGESOURCE_ENDPOINT, "");
     }
 
-    private static String generateSAS()
-            throws StorageException, InvalidKeyException {
-        SharedAccessAccountPolicy policy = new SharedAccessAccountPolicy();
-        policy.setPermissions(EnumSet.of(
-                SharedAccessAccountPermissions.READ,
-                SharedAccessAccountPermissions.WRITE,
-                SharedAccessAccountPermissions.LIST));
-        policy.setServices(EnumSet.of(
-                SharedAccessAccountService.BLOB,
-                SharedAccessAccountService.FILE));
-        policy.setResourceTypes(EnumSet.of(
-                SharedAccessAccountResourceType.OBJECT));
+    private static String generateSAS() {
+        AccountSasPermission permissions = new AccountSasPermission().
+                setReadPermission(true).
+                setWritePermission(true).
+                setListPermission(true);
+        AccountSasService services = new AccountSasService().
+                setBlobAccess(true).
+                setFileAccess(true);
+        AccountSasResourceType resourceTypes = new AccountSasResourceType().
+                setObject(true);
+        AccountSasSignatureValues values = new AccountSasSignatureValues(
+                OffsetDateTime.now().plusYears(100), permissions, services,
+                resourceTypes).
+                // HTTP is allowed so that this works with an emulator like Azurite.
+                setProtocol(SasProtocol.HTTPS_HTTP);
 
-        Calendar c = Calendar.getInstance();
-        c.setTime(new Date());
-        c.add(Calendar.DATE, 365 * 100);
-        policy.setSharedAccessExpiryTime(c.getTime());
-        // HTTP is allowed so that this works with an emulator like Azurite.
-        policy.setProtocols(SharedAccessProtocols.HTTPS_HTTP);
-
-        return AzureStorageSource.getAccount()
-                .generateSharedAccessSignature(policy);
+        return AzureStorageSource.getAccount().generateAccountSas(values);
     }
 
     private static String getAccountName() {
@@ -99,10 +90,9 @@ public class AzureStorageSourceTest extends AbstractSourceTest {
         return testConfig.getString(ConfigurationConstants.AZURE_CONTAINER.getKey());
     }
 
-    private static String getSASURI()
-            throws StorageException, InvalidKeyException {
+    private static String getSASURI() {
         return String.format("%s/%s/%s?%s",
-                AzureStorageSource.getAccount().getBlobEndpoint(),
+                AzureStorageSource.getAccount().getAccountUrl(),
                 AzureStorageTestUtil.getContainer(),
                 AzureStorageTestUtil.OBJECT_KEY_WITH_CONTENT_TYPE_AND_RECOGNIZED_EXTENSION,
                 generateSAS());
