@@ -90,7 +90,7 @@ public class ConfigurationResourceTest extends AbstractAdminResourceTest {
 
         Headers headers = response.getHeaders();
         List<String> methods =
-                List.of(StringUtils.split(headers.getFirstValue("Allow"), ", "));
+                List.of(StringUtils.split(headers.getFirstValue("Access-Control-Allow-Methods"), ", "));
         assertEquals(3, methods.size());
         assertTrue(methods.contains("GET"));
         assertTrue(methods.contains("PUT"));
