@@ -62,8 +62,7 @@ class PropertiesDocument {
     static class KeyValuePair extends Item {
         /** a.k.a. left indent */
         private int offset;
-        private String key, normalizedKey,
-                pairSeparator = PAIR_SEPARATOR_1, value;
+        private String key, pairSeparator = PAIR_SEPARATOR_1, value;
 
         KeyValuePair() {}
 
