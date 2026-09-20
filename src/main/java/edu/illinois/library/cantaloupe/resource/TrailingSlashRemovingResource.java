@@ -30,10 +30,9 @@ public class TrailingSlashRemovingResource extends AbstractResource {
     public void doGET() {
         final Reference newRef = new Reference(getRequest().getPublicReference());
         final String path = newRef.getPath();
-        newRef.setPath(path.substring(0, path.length() - 1));
 
         getResponse().setStatus(Status.MOVED_PERMANENTLY.getCode());
-        getResponse().setHeader("Location", newRef.toString());
+        getResponse().setHeader("Location", path.substring(0, path.length() - 1));
     }
 
 }
