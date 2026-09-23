@@ -6,7 +6,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 /**
  * Abstract RPC command superclass.
- * {@link com.fasterxml.jackson.databind.ObjectMapper} will deserialize JSON
+ * {@link tools.jackson.databind.ObjectMapper} will deserialize JSON
  * objects into subclass instances based on their {@literal verb} property.
  */
 @JsonIgnoreProperties(ignoreUnknown = true)

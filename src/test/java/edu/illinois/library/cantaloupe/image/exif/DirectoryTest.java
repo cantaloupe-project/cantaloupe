@@ -1,6 +1,6 @@
 package edu.illinois.library.cantaloupe.image.exif;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import it.geosolutions.imageio.plugins.tiff.TIFFDirectory;
