@@ -65,32 +65,99 @@ Unless otherwise specified in the Order Form, the License Fee is the single paym
 
 ## Linux
 
-The Linux binaries were compiled on CentOS 7 x86 64-bit with gcc 4.8.5.
+Github action using `ubuntu-latest`
 
 ```
-export JAVA_HOME=/usr/lib/jvm/java
-cd coresys/make
-make -f Makefile-Linux-x86-64-gcc
-cd ../../managed/make
-make -f Makefile-Linux-x86-64-gcc
-cd ../../lib/Linux-x86-64-gcc
+- name: Set up Java
+  uses: actions/setup-java@v3
+  with:
+    java-version: '17'
+    distribution: 'temurin'  
+
+- name: Make coresys
+  run: |
+    cd coresys/make
+    make -f Makefile-Linux-x86-64-gcc
+
+- name: Make managed
+  run: | 
+    cd managed/make
+    make -f Makefile-Linux-x86-64-gcc
 
 # Builds `libkdu_vNXX.so` & `libkdu_jni.so`
 # Java class files are in `../../../java/kdu_jni`
 ```
 
-## macOS
+## Linux Jammy
 
-The macOS binaries were compiled on macOS 10.13.4 with xcodebuild and
-clang 902.0.39.1, for target `x86_64-apple-darwin17.5.0`.
+Github action using `ubuntu-22.04`
 
 ```
-cd managed
-xcodebuild -project managed.xcodeproj -target kdu_jni -configuration Release clean
-xcodebuild -project managed.xcodeproj -target kdu_jni -configuration Release
+- name: Set up Java
+  uses: actions/setup-java@v3
+  with:
+    java-version: '17'
+    distribution: 'temurin'  
 
-# Resulting binaries are in ../../bin
-# Java class files are in ../../java/kdu_jni
+- name: Make coresys
+  run: |
+    cd coresys/make
+    make -f Makefile-Linux-x86-64-gcc
+
+- name: Make managed
+  run: | 
+    cd managed/make
+    make -f Makefile-Linux-x86-64-gcc
+```
+
+## macOS
+
+The macOS binaries were compiled using Github actions on `macos-latest`
+
+```
+- name: Patch jni_builder.cpp to use standard jni.h
+run: |
+    sed -i.bak 's|# include <JavaVM/jni\.h>|# include <jni.h>|' apps/kdu_hyperdoc/jni_builder.cpp
+    rm apps/kdu_hyperdoc/jni_builder.cpp.bak  
+    grep jni.h apps/kdu_hyperdoc/jni_builder.cpp
+
+- name: Build kdu_hyperdoc tool
+run: |
+    # This needs to be run first so the files are available for the last step
+    xcodebuild -project managed/managed.xcodeproj -target kdu_hyperdoc -configuration Release \
+    MACOSX_DEPLOYMENT_TARGET=12.0
+
+- name: Run kdu_hyperdoc to generate sources (errors NOT swallowed)
+working-directory: documentation
+run: |
+    set -e  # fail the step on any error, unlike the original script's `|| echo warning`
+
+    BUILD_DIR=/Users/runner/work/kakadu/bin
+    TARGET_NAME=kdu_hyperdoc
+
+    # Ensure the java output directory exists -- this path resolves to
+    # a sibling of the repo checkout, which likely doesn't exist yet on a
+    # fresh CI runner (unlike a full local SDK extraction).
+    mkdir -p ../../java/kdu_jni
+
+    "${BUILD_DIR}/${TARGET_NAME}" -o html_pages -s hyperdoc.src \
+    -java ../../java/kdu_jni ../managed/kdu_jni ../managed/kdu_aux ../managed/all_includes
+
+- name: Verify generated files exist
+run: |
+    test -f managed/kdu_jni/kdu_jni.h
+    test -f managed/kdu_jni/kdu_jni.cpp
+    test -f managed/kdu_aux/kdu_aux.cpp
+    echo "All generated files present."
+
+- name: Build kdu_jni
+run: |
+    set -o pipefail
+    xcodebuild -project managed/managed.xcodeproj -target kdu_jni -configuration Release \
+    MACOSX_DEPLOYMENT_TARGET=12.0 \
+    HEADER_SEARCH_PATHS='$(inherited) '"$JAVA_HOME"'/include '"$JAVA_HOME"'/include/darwin' \
+    2>&1 | tee build.log
+    grep -B 2 -A 6 "error:" build.log || true   
 ```
 
 (Future note: for Catalina, add `-UseModernBuildSystem=NO` to the `xcodebuild`
@@ -98,29 +165,27 @@ commands.)
 
 ## Windows
 
-The Windows binaries were compiled on Windows 7 SP1 64-bit with Visual
-Studio Community 2015.
+Using Windows Github action `windows-latest`
 
-### Build Steps
+```
+   # Setup Java
+- name: Set up Java
+uses: actions/setup-java@v3
+with:
+    java-version: '17'
+    distribution: 'temurin'
 
-1. Install the JDK
-2. Install Visual Studio with the Microsoft Foundation Classes for C++
-   component
-3. Build `coresys`
-    1. Open `coresys\coresys_2015`
-    2. Retarget solution to the 8.1 platform version
-    3. Build with Release configuration & x64 platform
-4. Build `kdu_jni`
-    1. Open `managed\kdu_managed_2015`
-    2. Add the JDK headers to the include path
-        1. Right-click on the `kdu_jni` solution
-        2. Go to Properties -> VC++ Directories -> Include Directories
-        3. Add `jdk-x.x.x\include` and `jdk-x.x.x\include\win32` paths to JDK
-           headers
-    3. Retarget solution to the 8.1 platform version
-    4. Build with Release configuration & x64 platform
+- name: Add msbuild to PATH
+uses: microsoft/setup-msbuild@v2      
 
-The resulting files are in `..\..\bin_x64`:
-  * `kdu_v80R.dll`
-  * `kdu_a80R.dll`
-  * `kdu_jni.dll`
+- name: see install versions
+run: Get-ChildItem "C:\Program Files (x86)\Windows Kits\10\Include"  
+
+- name: Make coresys
+run: |
+    msbuild coresys/coresys_2022.sln /p:Configuration=Release /property:Platform=x64
+
+- name: Make managed
+run: |
+    msbuild managed/kdu_managed_2022.sln /p:Configuration=Release /property:Platform=x64  
+```
