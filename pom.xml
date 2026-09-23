@@ -17,15 +17,15 @@
         <maven.compile.target>21</maven.compile.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <jetty.version>12.1.10</jetty.version>
-        <aws-sdk.version>2.42.37</aws-sdk.version>
-        <jackson.version>2.21.5</jackson.version>
+        <jetty.version>12.1.13</jetty.version>
+        <aws-sdk.version>2.54.18</aws-sdk.version>
+        <jackson.version>2.22.2</jackson.version>
         <jena.version>6.2.0</jena.version>
         <jruby.version>10.1.1.0</jruby.version>
         <surefire.version>3.5.3</surefire.version>
-        <seleniumhq.version>4.43.0</seleniumhq.version>
-        <logback.version>1.5.34</logback.version> <!-- slf4j depends on specific versions of logback. -->
-        <slf4j.version>2.0.18</slf4j.version>
+        <seleniumhq.version>4.49.0</seleniumhq.version>
+        <logback.version>1.6.3</logback.version> <!-- slf4j depends on specific versions of logback. -->
+        <slf4j.version>2.0.19</slf4j.version>
     </properties>
 
     <developers>
@@ -75,19 +75,19 @@
         <dependency>
             <groupId>net.logstash.logback</groupId>
             <artifactId>logstash-logback-encoder</artifactId>
-            <version>7.3</version>
+            <version>9.0</version>
         </dependency>
         <!-- Heap-based object cache: https://github.com/ben-manes/caffeine-->
         <dependency>
             <groupId>com.github.ben-manes.caffeine</groupId>
             <artifactId>caffeine</artifactId>
-            <version>3.2.3</version>
+            <version>3.2.4</version>
         </dependency>
         <!-- Used by HeapCache -->
         <dependency>
             <groupId>com.google.protobuf</groupId>
             <artifactId>protobuf-java</artifactId>
-            <version>4.29.3</version>
+            <version>4.36.1</version>
         </dependency>
         <!-- Used by JdbcSourceTest and JdbcCacheTest -->
         <dependency>
@@ -118,13 +118,13 @@
         <dependency>
             <groupId>com.zaxxer</groupId>
             <artifactId>HikariCP</artifactId>
-            <version>7.0.2</version> <!-- https://github.com/brettwooldridge/HikariCP#artifacts -->
+            <version>7.1.0</version> <!-- https://github.com/brettwooldridge/HikariCP#artifacts -->
         </dependency>
         <!-- Manages the test configuration. -->
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-configuration2</artifactId>
-            <version>2.15.0</version>
+            <version>2.15.1</version>
             <scope>test</scope>
         </dependency>
         <!-- Required at runtime by commons-configuration2's builder API -->
@@ -149,7 +149,7 @@
         <dependency>
             <groupId>io.lettuce</groupId>
             <artifactId>lettuce-core</artifactId>
-            <version>7.6.0.RELEASE</version>
+            <version>7.7.0.RELEASE</version>
         </dependency>
         <!-- Enhanced ImageIO TIFF plugin supporting BigTIFF:
          https://github.com/geosolutions-it/imageio-ext/ -->
@@ -171,7 +171,7 @@
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
-            <version>3.18.0</version>
+            <version>3.20.0</version>
         </dependency>
         <!-- Provides PDFBox for PdfBoxProcessor. Note that there are also some
         other dependencies in this POM used only by PDFBox. -->
@@ -184,26 +184,26 @@
         <dependency>
             <groupId>org.apache.pdfbox</groupId>
             <artifactId>jbig2-imageio</artifactId>
-            <version>3.0.4</version>
+            <version>3.0.5</version>
         </dependency>
         <!-- JUnit for unit tests. -->
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-engine</artifactId>
-            <version>5.13.4</version>
+            <version>6.1.3</version>
             <scope>test</scope>
         </dependency>
         <!-- Performance tests -->
         <dependency>
             <groupId>org.openjdk.jmh</groupId>
             <artifactId>jmh-core</artifactId>
-            <version>1.36</version>
+            <version>1.37</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.openjdk.jmh</groupId>
             <artifactId>jmh-generator-annprocess</artifactId>
-            <version>1.36</version>
+            <version>1.37</version>
             <scope>test</scope>
         </dependency>
         <!-- Assists in parsing XMP metadata in RDF/XML. Also part of the de
@@ -229,13 +229,13 @@
         <dependency>
             <groupId>org.bouncycastle</groupId>
             <artifactId>bcprov-jdk18on</artifactId>
-            <version>1.84</version>
+            <version>1.86</version>
         </dependency>
         <!-- Supports <if> expressions in logback.xml -->
         <dependency>
             <groupId>org.codehaus.janino</groupId>
             <artifactId>janino</artifactId>
-            <version>3.1.10</version>
+            <version>3.1.12</version>
         </dependency>
         <!-- Provides HTTP/2 support in the Jetty server.
         N.B.: ALPN support is in a different module. -->
@@ -311,7 +311,7 @@
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-annotations</artifactId>
-            <version>2.21</version>
+            <version>2.22</version>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
@@ -347,7 +347,7 @@
         <dependency>
             <groupId>org.seleniumhq.selenium</groupId>
             <artifactId>htmlunit3-driver</artifactId>
-            <version>4.43.0</version>
+            <version>4.48.0</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -445,13 +445,13 @@
             <plugin>
                 <groupId>com.github.spotbugs</groupId>
                 <artifactId>spotbugs-maven-plugin</artifactId>
-                <version>4.8.3.0</version>
+                <version>4.10.4.1</version>
                 <dependencies>
                     <!-- overwrite dependency on spotbugs if you want to specify the version of spotbugs -->
                     <dependency>
                         <groupId>com.github.spotbugs</groupId>
                         <artifactId>spotbugs</artifactId>
-                        <version>4.8.3</version>
+                        <version>4.10.4</version>
                     </dependency>
                 </dependencies>
                 <configuration>
