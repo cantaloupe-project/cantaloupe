@@ -129,7 +129,10 @@ public class ImageResource extends IIIF3Resource {
                 final Dimension virtualSize   = orientation.adjustedSize(info.getSize(pageIndex));
                 final Dimension resultingSize = ops.getResultingSize(info.getSize(pageIndex));
                 validateScale(virtualSize, scale, params.getSize().isUpscalingAllowed());
-                ScaleValidator.validateScale(virtualSize, scale, Status.BAD_REQUEST, getMetaIdentifier());
+                ScaleValidator.validateScale(virtualSize, scale,
+                        upscaleRejectionStatus(virtualSize, scale,
+                                params.getSize().isUpscalingAllowed()),
+                        getMetaIdentifier());
                 validateSize(virtualSize, resultingSize);
                 sendHeaders();
             }
@@ -175,6 +178,56 @@ public class ImageResource extends IIIF3Resource {
         return Configuration.getInstance().getDouble(Key.MAX_SCALE, 1);
     }
 
+    /**
+     * <p>Chooses the status code for a scale that {@link ScaleValidator}
+     * rejects for exceeding {@link Key#MAX_SCALE}.</p>
+     *
+     * <p>Image API 3.0 &sect;4.2 asks for 501 (Not Implemented) when a {@code
+     * ^}-prefixed size requires upscaling and the server does not support
+     * upscaling. A {@link Key#MAX_SCALE} of 1.0 or less is what "does not
+     * support upscaling" means here: it is the same boundary that decides
+     * whether {@link InformationFactory} advertises the {@code sizeUpscaling}
+     * feature of &sect;5.7. Above 1.0, upscaling is supported and advertised,
+     * so a request that merely overshoots the ceiling is a client error and
+     * stays 400.</p>
+     *
+     * <p>All three conditions must hold for 501. Sizes without a caret are not
+     * upscaling requests in the &sect;4.2 sense, and a ceiling below 1.0 can
+     * reject a caret size that would not have upscaled anyway; both of those
+     * are ordinary client errors.</p>
+     *
+     * @param virtualSize        Source image size post-rotation and post-scale
+     *                           constraint.
+     * @param scale              May be {@code null}.
+     * @param isUpscalingAllowed Whether the {@code size} URI path component
+     *                           begins with {@code ^}.
+     */
+    private Status upscaleRejectionStatus(Dimension virtualSize,
+                                          Scale scale,
+                                          boolean isUpscalingAllowed) {
+        if (!isUpscalingAllowed || scale == null) {
+            return Status.BAD_REQUEST;
+        }
+        final double maxScale = getMaxScale();
+        // A ceiling of 0 means "no ceiling," in which case ScaleValidator does
+        // not reject at all and this return value goes unused.
+        final boolean isUpscalingSupported =
+                (maxScale <= 0.0001 || maxScale > 1.0);
+        if (isUpscalingSupported) {
+            return Status.BAD_REQUEST;
+        }
+        final ScaleConstraint constraint = getEffectiveScaleConstraint();
+        return (scale.isWidthUp(virtualSize, constraint) ||
+                scale.isHeightUp(virtualSize, constraint)) ?
+                Status.NOT_IMPLEMENTED : Status.BAD_REQUEST;
+    }
+
+    private ScaleConstraint getEffectiveScaleConstraint() {
+        return (getMetaIdentifier().getScaleConstraint() != null) ?
+                getMetaIdentifier().getScaleConstraint() :
+                new ScaleConstraint(1, 1);
+    }
+
     private void sendHeaders() {
         queuedHeaders.forEach((k, v) -> getResponse().setHeader(k, v));
     }
@@ -193,10 +246,7 @@ public class ImageResource extends IIIF3Resource {
                                Scale scale,
                                boolean isUpscalingAllowed) throws ScaleRestrictedException {
         if (!isUpscalingAllowed && scale != null) {
-            final ScaleConstraint constraint =
-                    (getMetaIdentifier().getScaleConstraint() != null) ?
-                            getMetaIdentifier().getScaleConstraint() :
-                            new ScaleConstraint(1, 1);
+            final ScaleConstraint constraint = getEffectiveScaleConstraint();
             if (scale.isWidthUp(virtualSize, constraint) ||
                     scale.isHeightUp(virtualSize, constraint)) {
                 throw new ScaleRestrictedException("Requests for scales in " +
