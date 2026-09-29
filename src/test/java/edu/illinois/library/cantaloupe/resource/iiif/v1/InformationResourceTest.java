@@ -11,7 +11,7 @@ import edu.illinois.library.cantaloupe.http.Response;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.MetaIdentifier;
 import edu.illinois.library.cantaloupe.image.StandardMetaIdentifierTransformer;
-import edu.illinois.library.cantaloupe.resource.Request;
+import edu.illinois.library.cantaloupe.resource.IIIFRequest;
 import edu.illinois.library.cantaloupe.resource.ResourceTest;
 import edu.illinois.library.cantaloupe.resource.Route;
 import edu.illinois.library.cantaloupe.resource.iiif.InformationResourceTester;
@@ -511,7 +511,7 @@ public class InformationResourceTest extends ResourceTest {
         client.getHeaders().set("X-Forwarded-Port", "8080");
         client.getHeaders().set("X-Forwarded-Path", "/cats");
         client.getHeaders().set(
-                Request.PUBLIC_IDENTIFIER_HEADER, "originalID");
+                IIIFRequest.PUBLIC_IDENTIFIER_HEADER, "originalID");
         Response response = client.send();
 
         String json = response.getBodyAsString();

@@ -8,7 +8,7 @@ services:
     platform: linux/amd64
     build:
       context: ../../
-      dockerfile: $PWD/docker/Linux-JDK26/Dockerfile
+      dockerfile: $PWD/docker/Linux-JDK27/Dockerfile
   seaweedfs:
     image: chrislusf/seaweedfs
     environment:

@@ -41,7 +41,7 @@ RUN cmake -B /grok-build -S /grok-src \
 FROM ubuntu:resolute
 
 ENV JAVA_HOME=/opt/jdk
-ENV PATH=$PATH:/opt/jdk/bin:/opt/maven/bin
+ENV PATH=/opt/jdk/bin:/opt/maven/bin:$PATH
 ARG DEBIAN_FRONTEND=noninteractive
 
 # Install various dependencies:

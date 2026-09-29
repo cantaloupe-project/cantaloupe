@@ -20,7 +20,8 @@
         <jetty.version>12.1.10</jetty.version>
         <aws-sdk.version>2.42.37</aws-sdk.version>
         <jackson.version>2.21.5</jackson.version>
-        <jruby.version>10.1.0.0</jruby.version>
+        <jena.version>6.2.0</jena.version>
+        <jruby.version>10.1.1.0</jruby.version>
         <surefire.version>3.5.3</surefire.version>
         <seleniumhq.version>4.43.0</seleniumhq.version>
         <logback.version>1.5.34</logback.version> <!-- slf4j depends on specific versions of logback. -->
@@ -148,7 +149,7 @@
         <dependency>
             <groupId>io.lettuce</groupId>
             <artifactId>lettuce-core</artifactId>
-            <version>6.2.7.RELEASE</version>
+            <version>7.6.0.RELEASE</version>
         </dependency>
         <!-- Enhanced ImageIO TIFF plugin supporting BigTIFF:
          https://github.com/geosolutions-it/imageio-ext/ -->
@@ -211,12 +212,12 @@
         <dependency>
             <groupId>org.apache.jena</groupId>
             <artifactId>jena-core</artifactId>
-            <version>4.10.0</version>
+            <version>${jena.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.jena</groupId>
             <artifactId>jena-arq</artifactId>
-            <version>4.10.0</version>
+            <version>${jena.version}</version>
         </dependency>
         <!-- Used for media type detection -->
         <dependency>
@@ -377,7 +378,7 @@
         <dependency>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-assembly-plugin</artifactId>
-            <version>3.7.1</version>
+            <version>3.8.0</version>
             <type>maven-plugin</type>
         </dependency>
         <!-- Used by S3Source & S3Cache -->
@@ -514,7 +515,7 @@
             <!-- Assemble the JAR into a release package. -->
             <plugin>
                 <artifactId>maven-assembly-plugin</artifactId>
-                <version>3.7.1</version>
+                <version>3.8.0</version>
                 <executions>
                     <execution>
                         <phase>package</phase>

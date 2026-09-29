@@ -1,7 +1,7 @@
 FROM ubuntu:jammy
 
 ENV JAVA_HOME=/usr/lib/jvm/java-21-openjdk-amd64
-ENV PATH=$PATH:${JAVA_HOME}bin:/opt/maven/bin
+ENV PATH=${JAVA_HOME}/bin:/opt/maven/bin:$PATH
 ENV LD_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu
 ARG DEBIAN_FRONTEND=noninteractive
 

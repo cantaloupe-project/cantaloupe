@@ -9,6 +9,7 @@ import edu.illinois.library.cantaloupe.http.Reference;
 import edu.illinois.library.cantaloupe.http.Status;
 import edu.illinois.library.cantaloupe.image.MetaIdentifier;
 import edu.illinois.library.cantaloupe.resource.AbstractResource;
+import edu.illinois.library.cantaloupe.resource.IIIFRequest;
 import edu.illinois.library.cantaloupe.resource.RequestContextDecorator;
 import edu.illinois.library.cantaloupe.resource.ResourceException;
 import edu.illinois.library.cantaloupe.resource.StringRepresentation;
@@ -36,6 +37,11 @@ public abstract class IIIFResource extends AbstractResource {
                             getRequest().getPublicReference(),
                             getRequest());
         addHeaders();
+    }
+
+    @Override
+    protected IIIFRequest getRequest() {
+        return (IIIFRequest) super.getRequest();
     }
 
     private void addHeaders() {
