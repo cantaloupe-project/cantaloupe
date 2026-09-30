@@ -32,7 +32,7 @@ public abstract class IIIFResource extends AbstractResource {
     public void doInit() throws Exception {
         super.doInit();
         RequestContextDecorator.decorateRequestContext(
-                            getRequestContext(),
+                            getRequest().getRequestContext(),
                             getMetaIdentifier(),
                             getRequest().getPublicReference(),
                             getRequest());
