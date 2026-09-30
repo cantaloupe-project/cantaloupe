@@ -99,7 +99,5 @@ public class Kdu_multi_synthesis {
     Kdu_thread_env env = null;
     return Get_line(_comp_idx,env);
   }
-  public native boolean Is_line_precise(int _comp_idx) throws KduException;
-  public native boolean Is_line_absolute(int _comp_idx) throws KduException;
   public native byte Get_line_flags(int _comp_idx) throws KduException;
 }

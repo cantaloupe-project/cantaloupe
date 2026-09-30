@@ -38,24 +38,24 @@ public class Kdu_tile {
   {
     Set_components_of_interest(_num_components_of_interest,null);
   }
-  public native boolean Get_mct_block_info(int _stage_idx, int _block_idx, int[] _num_stage_inputs, int[] _num_stage_outputs, int[] _num_block_inputs, int[] _num_block_outputs, int[] _block_input_indices, int[] _block_output_indices, float[] _irrev_block_offsets, int[] _rev_block_offsets, int[] _stage_input_indices) throws KduException;
+  public native boolean Get_mct_block_info(int _stage_idx, int _block_idx, int[] _num_stage_inputs, int[] _num_stage_outputs, int[] _num_block_inputs, int[] _num_block_outputs, int[] _block_input_indices, int[] _block_output_indices, float[] _irrev_block_offsets, long _rev_block_offsets, int[] _stage_input_indices) throws KduException;
   public boolean Get_mct_block_info(int _stage_idx, int _block_idx, int[] _num_stage_inputs, int[] _num_stage_outputs, int[] _num_block_inputs, int[] _num_block_outputs) throws KduException
   {
-    return Get_mct_block_info(_stage_idx,_block_idx,_num_stage_inputs,_num_stage_outputs,_num_block_inputs,_num_block_outputs,null,null,null,null,null);
+    return Get_mct_block_info(_stage_idx,_block_idx,_num_stage_inputs,_num_stage_outputs,_num_block_inputs,_num_block_outputs,null,null,null,0,null);
   }
   public boolean Get_mct_block_info(int _stage_idx, int _block_idx, int[] _num_stage_inputs, int[] _num_stage_outputs, int[] _num_block_inputs, int[] _num_block_outputs, int[] _block_input_indices) throws KduException
   {
-    return Get_mct_block_info(_stage_idx,_block_idx,_num_stage_inputs,_num_stage_outputs,_num_block_inputs,_num_block_outputs,_block_input_indices,null,null,null,null);
+    return Get_mct_block_info(_stage_idx,_block_idx,_num_stage_inputs,_num_stage_outputs,_num_block_inputs,_num_block_outputs,_block_input_indices,null,null,0,null);
   }
   public boolean Get_mct_block_info(int _stage_idx, int _block_idx, int[] _num_stage_inputs, int[] _num_stage_outputs, int[] _num_block_inputs, int[] _num_block_outputs, int[] _block_input_indices, int[] _block_output_indices) throws KduException
   {
-    return Get_mct_block_info(_stage_idx,_block_idx,_num_stage_inputs,_num_stage_outputs,_num_block_inputs,_num_block_outputs,_block_input_indices,_block_output_indices,null,null,null);
+    return Get_mct_block_info(_stage_idx,_block_idx,_num_stage_inputs,_num_stage_outputs,_num_block_inputs,_num_block_outputs,_block_input_indices,_block_output_indices,null,0,null);
   }
   public boolean Get_mct_block_info(int _stage_idx, int _block_idx, int[] _num_stage_inputs, int[] _num_stage_outputs, int[] _num_block_inputs, int[] _num_block_outputs, int[] _block_input_indices, int[] _block_output_indices, float[] _irrev_block_offsets) throws KduException
   {
-    return Get_mct_block_info(_stage_idx,_block_idx,_num_stage_inputs,_num_stage_outputs,_num_block_inputs,_num_block_outputs,_block_input_indices,_block_output_indices,_irrev_block_offsets,null,null);
+    return Get_mct_block_info(_stage_idx,_block_idx,_num_stage_inputs,_num_stage_outputs,_num_block_inputs,_num_block_outputs,_block_input_indices,_block_output_indices,_irrev_block_offsets,0,null);
   }
-  public boolean Get_mct_block_info(int _stage_idx, int _block_idx, int[] _num_stage_inputs, int[] _num_stage_outputs, int[] _num_block_inputs, int[] _num_block_outputs, int[] _block_input_indices, int[] _block_output_indices, float[] _irrev_block_offsets, int[] _rev_block_offsets) throws KduException
+  public boolean Get_mct_block_info(int _stage_idx, int _block_idx, int[] _num_stage_inputs, int[] _num_stage_outputs, int[] _num_block_inputs, int[] _num_block_outputs, int[] _block_input_indices, int[] _block_output_indices, float[] _irrev_block_offsets, long _rev_block_offsets) throws KduException
   {
     return Get_mct_block_info(_stage_idx,_block_idx,_num_stage_inputs,_num_stage_outputs,_num_block_inputs,_num_block_outputs,_block_input_indices,_block_output_indices,_irrev_block_offsets,_rev_block_offsets,null);
   }

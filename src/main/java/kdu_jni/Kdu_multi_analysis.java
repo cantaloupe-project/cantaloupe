@@ -103,7 +103,5 @@ public class Kdu_multi_analysis {
     Kdu_thread_env env = null;
     return Exchange_line(_comp_idx,_written,env);
   }
-  public native boolean Is_line_precise(int _comp_idx) throws KduException;
-  public native boolean Is_line_absolute(int _comp_idx) throws KduException;
   public native byte Get_line_flags(int _comp_idx) throws KduException;
 }
