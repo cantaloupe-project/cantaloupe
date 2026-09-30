@@ -23,6 +23,8 @@ public class Kdu_block {
     Set_max_bytes(_new_bytes,(boolean) true);
   }
   public native void Set_max_samples(int _new_samples) throws KduException;
+  public native void Hide_sample_buffer() throws KduException;
+  public native void Set_max_samples64(int _new_samples64) throws KduException;
   public native void Set_max_contexts(int _new_contexts) throws KduException;
   public native void Set_max_ictxts(int _new_ictxts) throws KduException;
   public native int Map_storage(int _contexts, int _samples, int _retained_state, boolean _pre_write_required) throws KduException;

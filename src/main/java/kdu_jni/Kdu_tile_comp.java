@@ -26,6 +26,7 @@ public class Kdu_tile_comp {
   public native boolean Get_signed() throws KduException;
   public native int Get_num_layers() throws KduException;
   public native int Get_num_resolutions() throws KduException;
+  public native int Get_full_decomp_levels() throws KduException;
   public native Kdu_resolution Access_resolution(int _res_level) throws KduException;
   public native Kdu_resolution Access_resolution() throws KduException;
   public native int Get_global_attributes(long[] _dwt_hash, int[] _guard_bits, int[] _reversible_precision, int[] _roi_shift) throws KduException;

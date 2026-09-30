@@ -19,7 +19,7 @@ public class Kdu_global {
   {
     Kdu_convert_ycc_to_rgb(_c1,_c2,_c3,(int) -1);
   }
-  public native static boolean Kdu_core_sample_alignment_checker(int _overread_bytes, int _prealign_bytes, int _align_samples16, int _align_samples32, boolean _return_on_fail, boolean _strict) throws KduException;
+  public native static boolean Kdu_core_sample_alignment_checker(int _overread_bytes, int _prealign_bytes, int _align_samples16, int _align_samples32, int _align_samples64, boolean _return_on_fail, boolean _strict) throws KduException;
   public native static void Kdu_customize_errors(Kdu_message _handler) throws KduException;
   public native static void Kdu_customize_text(String _context, long _id, String _lead_in, String _text) throws KduException;
   public native static void Kdu_customize_text(String _context, long _id, int[] _lead_in, int[] _text) throws KduException;
@@ -58,25 +58,30 @@ public class Kdu_global {
   public static final int KDU_NULL_EXCEPTION = (int) 0;
   public static final int KDU_ERROR_EXCEPTION = (int) 0x6b647545;
   public static final int KDU_MEMORY_EXCEPTION = (int) 0x6b64754d;
+  public static final int KDU_TARGET_WRITE_EXCEPTION = (int) 0x6b647577;
   public static final int KDU_CONVERTED_EXCEPTION = (int) 0x6b647543;
   public static final int LL_BAND = (int) 0;
   public static final int HL_BAND = (int) 1;
   public static final int LH_BAND = (int) 2;
   public static final int HH_BAND = (int) 3;
   public static final int KDU_FIX_POINT = (int) 13;
+  public static final byte KDU_SAMPLE_PREC16 = (byte) 0x01;
+  public static final byte KDU_SAMPLE_PREC32 = (byte) 0;
+  public static final byte KDU_SAMPLE_PREC64 = (byte) 0x02;
   public static final int KDU_SAMPLE_ALLOCATOR_MIN_FRAG_BITS = (int) 18;
   public static final int KDU_SAMPLE_ALLOCATOR_MAX_FRAG_BITS = (int) 28;
   public static final int KDU_SAMPLE_ALLOCATOR_DEF_FRAG_BITS = (int) 26;
-  public static final byte KDU_LINE_BUF_ABSOLUTE = (byte) 0x01;
-  public static final byte KDU_LINE_BUF_SHORTS = (byte) 0x02;
-  public static final byte KDU_LINE_BUF_EXCHANGEABLE = (byte) 0x04;
+  public static final byte KDU_LINE_BUF_ABSOLUTE = (byte) 0x04;
+  public static final byte KDU_LINE_BUF_EXCHANGEABLE = (byte) 0x08;
+  public static final byte KDU_LINE_BUF_PREC_MASK = (byte) 0x03;
   public static final int KDU_LINE_WILL_BE_EXTENDED = (int) 0x00000001;
   public static final int KDU_LINE_EXTRA_WIDTH_MASK = (int) 0x00FFFF00;
   public static final int KDU_LINE_EXTRA_WIDTH_POS = (int) 8;
   public static final int KDU_LINE_EXTRA_WIDTH_MAX = (int) 65535;
   public static final int KDU_MULTI_XFORM_PRECISE = (int) 0x00000001;
-  public static final int KDU_MULTI_XFORM_FAST = (int) 0x00000002;
-  public static final int KDU_MULTI_XFORM_SKIPYCC = (int) 0x00000004;
+  public static final int KDU_MULTI_XFORM_VPRECISE = (int) 0x00000002;
+  public static final int KDU_MULTI_XFORM_FAST = (int) 0x00000004;
+  public static final int KDU_MULTI_XFORM_SKIPYCC = (int) 0x00000008;
   public static final int KDU_MULTI_XFORM_DBUF = (int) 0x00000100;
   public static final int KDU_MULTI_XFORM_MT_DWT = (int) 0x00000100;
   public static final int KDU_MULTI_XFORM_DELAYED_START = (int) 0x00000400;
@@ -84,7 +89,7 @@ public class Kdu_global {
   public static final int KDU_BLOCK_CODER_CAP_J2K1_SPK64 = (int) 0x010;
   public static final int KDU_BLOCK_CODER_CAP_HT = (int) 0x100;
   public static final int KDU_BLOCK_CODER_CAP_HTOPT = (int) 0x200;
-  public static final String KDU_CORE_VERSION = (String) "v8.4.1";
+  public static final String KDU_CORE_VERSION = (String) "v8.7";
   public static final int KDU_SOC = (int) 0xFF4F;
   public static final int KDU_SOT = (int) 0xFF90;
   public static final int KDU_SOD = (int) 0xFF93;
@@ -147,6 +152,9 @@ public class Kdu_global {
   public static final int KDU_TARGET_CAP_SEQUENTIAL = (int) 0x0100;
   public static final int KDU_TARGET_CAP_CACHED = (int) 0x0400;
   public static final byte KDU_CPLEX_REC_MORE_SETS = (byte) 1;
+  public static final int KDU_WRITE_FAIL_POLICY_IGNORE = (int) 0;
+  public static final int KDU_WRITE_FAIL_POLICY_ERROR = (int) 1;
+  public static final int KDU_WRITE_FAIL_POLICY_THROW = (int) 2;
   public static final int KDU_CS_RESTRICT_COMPONENTS = (int) 1;
   public static final int KDU_CS_RESTRICT_LEVELS = (int) 2;
   public static final int KDU_CS_RESTRICT_LAYERS = (int) 4;
@@ -179,6 +187,7 @@ public class Kdu_global {
   public static final String Sprofile = (String) "Sprofile";
   public static final String Scpf_profile = (String) "Scpf_profile";
   public static final String Sconf_profile = (String) "Sconf_profile";
+  public static final String Seprofile = (String) "Seprofile";
   public static final String Sbroadcast = (String) "Sbroadcast";
   public static final String Simf = (String) "Simf";
   public static final String Sprf_num = (String) "Sprf_num";
@@ -228,6 +237,7 @@ public class Kdu_global {
   public static final int Sprofile_CINEMA4S = (int) 8;
   public static final int Sprofile_CINEMASS = (int) 9;
   public static final int Sprofile_IMF = (int) 10;
+  public static final int Seprofile_IMFHT = (int) 0;
   public static final int Sextensions_DC = (int) 1;
   public static final int Sextensions_VARQ = (int) 2;
   public static final int Sextensions_TCQ = (int) 4;
@@ -281,7 +291,8 @@ public class Kdu_global {
   public static final int Srequired_CBto6 = (int) 8192;
   public static final int Srequired_CBsq56 = (int) 16384;
   public static final int SCP2_caps_EXTENDED_COD = (int) 32768;
-  public static final int SCP2_caps_ALL = (int) 0x8000;
+  public static final int SCP2_caps_EXTENDED_PROGRESSION = (int) 16384;
+  public static final int SCP2_caps_ALL = (int) 0xC000;
   public static final int SCP15_caps_ORIG = (int) 32768;
   public static final int SCP15_caps_MIX = (int) 16384;
   public static final int SCP15_caps_SETS = (int) 8192;
@@ -369,6 +380,10 @@ public class Kdu_global {
   public static final int Ctype_Cb = (int) 2;
   public static final int Ctype_Cr = (int) 3;
   public static final int Ctype_C = (int) 4;
+  public static final int Ctype_IY = (int) 9;
+  public static final int Ctype_ICb = (int) 10;
+  public static final int Ctype_ICr = (int) 11;
+  public static final int Ctype_IC = (int) 12;
   public static final int Qfix16_FREE = (int) 0;
   public static final int Qfix16_LIMIT = (int) 1;
   public static final String COD_params = (String) "COD";
@@ -397,6 +412,7 @@ public class Kdu_global {
   public static final int Corder_RPCL = (int) 2;
   public static final int Corder_PCRL = (int) 3;
   public static final int Corder_CPRL = (int) 4;
+  public static final int Corder_PRCL = (int) 5;
   public static final int Ckernels_W9X7 = (int) 0;
   public static final int Ckernels_W5X3 = (int) 1;
   public static final int Ckernels_ATK = (int) -1;
@@ -410,7 +426,8 @@ public class Kdu_global {
   public static final int Cmodes_HTMIX = (int) 128;
   public static final int Cmodes_BYPASS_E1 = (int) 256;
   public static final int Cmodes_BYPASS_E2 = (int) 512;
-  public static final int Cmodes_ALL = (int) 1023;
+  public static final int Cmodes_HTPHLD = (int) 1024;
+  public static final int Cmodes_ALL = (int) 2047;
   public static final String ADS_params = (String) "ADS";
   public static final String Ddecomp = (String) "Ddecomp";
   public static final String DOads = (String) "DOads";
