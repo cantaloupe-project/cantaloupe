@@ -34,13 +34,13 @@ import java.util.Optional;
  * <pre>CREATE TABLE IF NOT EXISTS {JdbcCache.derivative_image_table} (
  *     operations VARCHAR(4096) NOT NULL,
  *     image BLOB,
- *     last_accessed DATETIME
+ *     last_accessed TIMESTAMP
  * );
  *
  * CREATE TABLE IF NOT EXISTS {JdbcCache.info_table} (
  *     identifier VARCHAR(4096) NOT NULL,
  *     info VARCHAR(8192) NOT NULL,
- *     last_accessed DATETIME
+ *     last_accessed TIMESTAMP
  * );</pre>
  */
 class JdbcCache implements DerivativeCache {
