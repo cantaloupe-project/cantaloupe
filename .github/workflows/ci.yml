@@ -16,6 +16,18 @@ jobs:
     steps:
       - name: Check out the repository
         uses: actions/checkout@v6
+      # Work around https://github.com/actions/runner-images/issues/13729. The
+      # Docker service can fail during Windows runner startup; starting it again
+      # after boot reliably recreates the missing named pipe.
+      - name: Ensure Docker is running on Windows
+        if: runner.os == 'Windows' && (matrix.java == 'jdk21' || matrix.java == 'jdk25')
+        shell: pwsh
+        run: |
+          $dockerService = Get-Service -Name docker
+          if ($dockerService.Status -ne 'Running') {
+            Start-Service -Name docker
+          }
+          docker info
       - name: Test in Linux JDK 27 (non-LTS)
         if: matrix.os == 'ubuntu-24.04' && matrix.java == 'jdk27'
         run: docker compose -f docker/Linux-JDK27/compose.yaml up --build --exit-code-from cantaloupe
