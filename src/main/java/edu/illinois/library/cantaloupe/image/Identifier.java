@@ -1,20 +1,18 @@
 package edu.illinois.library.cantaloupe.image;
 
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.databind.DeserializationContext;
-import com.fasterxml.jackson.databind.JsonDeserializer;
-import com.fasterxml.jackson.databind.JsonSerializer;
-import com.fasterxml.jackson.databind.SerializerProvider;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import tools.jackson.core.JsonGenerator;
+import tools.jackson.core.JsonParser;
+import tools.jackson.databind.DeserializationContext;
+import tools.jackson.databind.ValueDeserializer;
+import tools.jackson.databind.ValueSerializer;
+import tools.jackson.databind.SerializationContext;
+import tools.jackson.databind.annotation.JsonDeserialize;
+import tools.jackson.databind.annotation.JsonSerialize;
 import edu.illinois.library.cantaloupe.delegate.DelegateProxy;
 import edu.illinois.library.cantaloupe.http.Reference;
 import edu.illinois.library.cantaloupe.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.IOException;
 
 /**
  * <p>Immutable application-unique source image file/object identifier.</p>
@@ -64,10 +62,10 @@ public final class Identifier implements Comparable<Identifier> {
     /**
      * Deserializes a type/subtype string into an {@link Identifier}.
      */
-    static class IdentifierDeserializer extends JsonDeserializer<Identifier> {
+    static class IdentifierDeserializer extends ValueDeserializer<Identifier> {
         @Override
         public Identifier deserialize(JsonParser jsonParser,
-                                      DeserializationContext deserializationContext) throws IOException {
+                                      DeserializationContext deserializationContext) {
             return new Identifier(jsonParser.getValueAsString());
         }
     }
@@ -75,11 +73,11 @@ public final class Identifier implements Comparable<Identifier> {
     /**
      * Serializes an {@link Identifier} as a string.
      */
-    static class IdentifierSerializer extends JsonSerializer<Identifier> {
+    static class IdentifierSerializer extends ValueSerializer<Identifier> {
         @Override
         public void serialize(Identifier identifier,
                               JsonGenerator jsonGenerator,
-                              SerializerProvider serializerProvider) throws IOException {
+                              SerializationContext serializationContext) {
             jsonGenerator.writeString(identifier.toString());
         }
     }

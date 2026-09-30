@@ -1,6 +1,6 @@
 package edu.illinois.library.cantaloupe.cache;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
+import tools.jackson.core.JacksonException;
 import com.zaxxer.hikari.HikariDataSource;
 import edu.illinois.library.cantaloupe.async.TaskQueue;
 import edu.illinois.library.cantaloupe.config.Configuration;
@@ -633,7 +633,7 @@ class JdbcCache implements DerivativeCache {
         LOGGER.debug("put(): {}", identifier);
         try {
             put(identifier, info.toJSON());
-        } catch (JsonProcessingException e) {
+        } catch (JacksonException e) {
             throw new IOException(e.getMessage(), e);
         }
     }

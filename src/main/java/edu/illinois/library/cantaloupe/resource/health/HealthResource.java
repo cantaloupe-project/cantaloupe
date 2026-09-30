@@ -1,6 +1,6 @@
 package edu.illinois.library.cantaloupe.resource.health;
 
-import com.fasterxml.jackson.databind.SerializationFeature;
+import tools.jackson.databind.cfg.DateTimeFeature;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.http.Method;
@@ -26,8 +26,8 @@ public class HealthResource extends AbstractResource {
     private static final Method[] SUPPORTED_METHODS =
             new Method[] { Method.GET, Method.OPTIONS };
 
-    private static final Map<SerializationFeature, Boolean> SERIALIZATION_FEATURES =
-            Map.of(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, true);
+    private static final Map<DateTimeFeature, Boolean> SERIALIZATION_FEATURES =
+            Map.of(DateTimeFeature.WRITE_DATES_AS_TIMESTAMPS, true);
 
     @Override
     public void doInit() throws Exception {

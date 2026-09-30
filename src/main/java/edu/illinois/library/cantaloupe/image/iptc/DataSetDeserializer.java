@@ -1,19 +1,18 @@
 package edu.illinois.library.cantaloupe.image.iptc;
 
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.databind.DeserializationContext;
-import com.fasterxml.jackson.databind.JsonDeserializer;
-import com.fasterxml.jackson.databind.JsonNode;
+import tools.jackson.core.JsonParser;
+import tools.jackson.databind.DeserializationContext;
+import tools.jackson.databind.ValueDeserializer;
+import tools.jackson.databind.JsonNode;
 
-import java.io.IOException;
 import java.util.Arrays;
 
-public class DataSetDeserializer extends JsonDeserializer<DataSet> {
+public class DataSetDeserializer extends ValueDeserializer<DataSet> {
 
     @Override
     public DataSet deserialize(final JsonParser parser,
-                               final DeserializationContext deserializationContext) throws IOException {
-        final JsonNode rootNode = parser.getCodec().readTree(parser);
+                               final DeserializationContext deserializationContext) {
+        final JsonNode rootNode = deserializationContext.readTree(parser);
         final int record        = rootNode.get("record").intValue();
         final int tagNum        = rootNode.get("tag").intValue();
         final byte[] dataField  = rootNode.get("dataField").binaryValue();

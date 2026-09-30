@@ -1,6 +1,6 @@
 package edu.illinois.library.cantaloupe.resource.api;
 
-import com.fasterxml.jackson.databind.SerializationFeature;
+import tools.jackson.databind.cfg.DateTimeFeature;
 import edu.illinois.library.cantaloupe.status.ApplicationStatus;
 import edu.illinois.library.cantaloupe.http.Method;
 import edu.illinois.library.cantaloupe.resource.JacksonRepresentation;
@@ -34,8 +34,8 @@ public class StatusResource extends AbstractAPIResource {
 
     @Override
     public void doGET() throws IOException {
-        Map<SerializationFeature, Boolean> features = new HashMap<>();
-        features.put(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, true);
+        Map<DateTimeFeature, Boolean> features = new HashMap<>();
+        features.put(DateTimeFeature.WRITE_DATES_AS_TIMESTAMPS, true);
 
         getResponse().setHeader("Content-Type",
                 "application/json;charset=UTF-8");
