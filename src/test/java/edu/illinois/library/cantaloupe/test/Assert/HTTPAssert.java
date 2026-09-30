@@ -28,11 +28,15 @@ public final class HTTPAssert {
     }
 
     public static void assertRedirect(URI fromURI, URI toURI, int status) {
+        assertRedirect(fromURI, toURI.toString(), status);
+    }
+
+    public static void assertRedirect(URI fromURI, String toLocation, int status) {
         Client client = newClient();
         try {
             client.setURI(fromURI);
             Response response = client.send();
-            assertEquals(toURI.toString(),
+            assertEquals(toLocation,
                     response.getHeaders().getFirstValue("Location"));
             assertEquals(status, response.getStatus());
         } catch (Exception e) {

@@ -45,8 +45,7 @@ public class LandingResourceTest extends ResourceTest {
 
     @Test
     void testGETWithTrailingSlashRedirectsToWithout() throws Exception {
-        final URI uri = getHTTPURI("");
-        assertRedirect(new URI(uri + "/"), uri, 301);
+        assertRedirect(getHTTPURI("/"), Route.IIIF_2_PATH, 301);
     }
 
     @Test
