@@ -14,6 +14,7 @@ import org.apache.tika.io.TikaInputStream;
 import org.apache.tika.metadata.Metadata;
 import org.apache.tika.metadata.TikaCoreProperties;
 import org.apache.tika.parser.AutoDetectParser;
+import org.apache.tika.parser.ParseContext;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -77,7 +78,8 @@ public final class MediaType {
             AutoDetectParser parser = new AutoDetectParser();
             Detector detector = parser.getDetector();
             Metadata md = new Metadata();
-            org.apache.tika.mime.MediaType mediaType = detector.detect(is, md);
+            org.apache.tika.mime.MediaType mediaType = detector.detect(
+                    is, md, new ParseContext());
             types.add(new MediaType(mediaType.toString()));
         }
         return types;
@@ -101,7 +103,8 @@ public final class MediaType {
             Detector detector = parser.getDetector();
             Metadata md = new Metadata();
             md.add(TikaCoreProperties.RESOURCE_NAME_KEY, path.toString());
-            org.apache.tika.mime.MediaType mediaType = detector.detect(is, md);
+            org.apache.tika.mime.MediaType mediaType = detector.detect(
+                    is, md, new ParseContext());
             types.add(new MediaType(mediaType.toString()));
         }
         return types;
@@ -124,9 +127,12 @@ public final class MediaType {
         AutoDetectParser parser = new AutoDetectParser();
         Detector detector = parser.getDetector();
 
-        org.apache.tika.mime.MediaType mediaType = detector.detect(
-                inputStream, new Metadata());
-        types.add(new MediaType(mediaType.toString()));
+        try (TikaInputStream is = TikaInputStream.get(inputStream)) {
+            is.setCloseShield();
+            org.apache.tika.mime.MediaType mediaType = detector.detect(
+                    is, new Metadata(), new ParseContext());
+            types.add(new MediaType(mediaType.toString()));
+        }
 
         return types;
     }
