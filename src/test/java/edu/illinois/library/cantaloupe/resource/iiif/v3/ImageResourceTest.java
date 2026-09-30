@@ -351,8 +351,10 @@ public class ImageResourceTest extends ResourceTest {
 
     @Test
     void testGETGreaterThanMaxScale() {
+        // testGreaterThanMaxScale() sets max_scale to 1.0, i.e. the server
+        // does not support upscaling, so a caret size gets 501 rather than 400.
         URI uri = getHTTPURI("/" + IMAGE + "/full/%5Epct:101/0/color.png");
-        tester.testGreaterThanMaxScale(uri, 400);
+        tester.testGreaterThanMaxScale(uri, 501);
     }
 
     @Test

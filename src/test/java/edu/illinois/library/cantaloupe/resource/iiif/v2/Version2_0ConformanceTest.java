@@ -323,6 +323,36 @@ public class Version2_0ConformanceTest extends ResourceTest {
     }
 
     /**
+     * 4.2. (!w,h) "The image content is scaled for the best fit such that the
+     * resulting width and height are less than or equal to the requested
+     * width and height. The exact scaling may be determined by the service
+     * provider, based on characteristics including image quality and system
+     * performance. The dimensions of the returned image content are
+     * calculated to maintain the aspect ratio of the extracted region."
+     */
+    @Test
+    void testSizeScaledToFitInsideWhenBoxExceedsSource() throws Exception {
+        // ResourceTest.setUp() leaves max_scale at 0 (no ceiling), which does
+        // not reproduce #953. The reporter ran with max_scale = 1.0, the
+        // cantaloupe.properties.sample default, so set it here: source size is
+        // "less than or equal to" the requested box and must be returned as
+        // is rather than rejected with a ScaleRestrictedException.
+        Configuration config = Configuration.getInstance();
+        config.setProperty(Key.MAX_SCALE, 1.0);
+
+        client = newClient("/" + IMAGE + "/full/!300,300/0/default.jpg");
+        Response response = client.send();
+
+        assertEquals(200, response.getStatus());
+
+        try (InputStream is = new ByteArrayInputStream(response.getBody())) {
+            BufferedImage image = ImageIO.read(is);
+            assertEquals(64, image.getWidth());
+            assertEquals(56, image.getHeight());
+        }
+    }
+
+    /**
      * 4.2. "If the resulting height or width is zero, then the server should
      * return a 400 (bad request) status code."
      */

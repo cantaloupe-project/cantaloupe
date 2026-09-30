@@ -313,9 +313,14 @@ public class Version3_0ConformanceTest extends ResourceTest {
      * should result in a 501 (Not Implemented) status code if the server does
      * not support upscaling."
      *
-     * Note that because supporting upscaling is not an on/off switch, but
-     * rather a continuum based on {@link Key#MAX_SCALE}, this implementation
-     * returns 400 in this situation instead of 501.
+     * Implementation note: {@link Key#MAX_SCALE} is what this implementation
+     * reads as "does not support upscaling." A ceiling of 1.0 or lower means
+     * no upscaling is on offer, so a caret size that needs upscaling gets 501;
+     * a ceiling of 0 means no ceiling, and nothing is rejected here at all.
+     * Above 1.0, upscaling is supported and advertised through the {@code
+     * sizeUpscaling} feature of 5.7, and a caret size that merely overshoots
+     * the ceiling is an ordinary client error, so it gets 400 instead; see
+     * {@link #testUpscaledSizesOverCeilingWhenServerSupportsUpscaling()}.
      */
     @Test
     void testSizeUpscaledToFitWidthWithoutServerSupport() {
@@ -326,7 +331,7 @@ public class Version3_0ConformanceTest extends ResourceTest {
         ResourceException e = assertThrows(
                 ResourceException.class,
                 () -> client.send());
-        assertEquals(400, e.getStatusCode());
+        assertEquals(501, e.getStatusCode());
     }
 
     /**
@@ -384,9 +389,14 @@ public class Version3_0ConformanceTest extends ResourceTest {
      * should result in a 501 (Not Implemented) status code if the server does
      * not support upscaling."
      *
-     * Note that because supporting upscaling is not an on/off switch, but
-     * rather a continuum based on {@link Key#MAX_SCALE}, this implementation
-     * returns 400 in this situation instead of 501.
+     * Implementation note: {@link Key#MAX_SCALE} is what this implementation
+     * reads as "does not support upscaling." A ceiling of 1.0 or lower means
+     * no upscaling is on offer, so a caret size that needs upscaling gets 501;
+     * a ceiling of 0 means no ceiling, and nothing is rejected here at all.
+     * Above 1.0, upscaling is supported and advertised through the {@code
+     * sizeUpscaling} feature of 5.7, and a caret size that merely overshoots
+     * the ceiling is an ordinary client error, so it gets 400 instead; see
+     * {@link #testUpscaledSizesOverCeilingWhenServerSupportsUpscaling()}.
      */
     @Test
     void testSizeUpscaledToFitHeightWithoutServerSupport() {
@@ -397,7 +407,7 @@ public class Version3_0ConformanceTest extends ResourceTest {
         ResourceException e = assertThrows(
                 ResourceException.class,
                 () -> client.send());
-        assertEquals(400, e.getStatusCode());
+        assertEquals(501, e.getStatusCode());
     }
 
     /**
@@ -456,9 +466,14 @@ public class Version3_0ConformanceTest extends ResourceTest {
      * should result in a 501 (Not Implemented) status code if the server does
      * not support upscaling."
      *
-     * Note that because supporting upscaling is not an on/off switch, but
-     * rather a continuum based on {@link Key#MAX_SCALE}, this implementation
-     * returns 400 in this situation instead of 501.
+     * Implementation note: {@link Key#MAX_SCALE} is what this implementation
+     * reads as "does not support upscaling." A ceiling of 1.0 or lower means
+     * no upscaling is on offer, so a caret size that needs upscaling gets 501;
+     * a ceiling of 0 means no ceiling, and nothing is rejected here at all.
+     * Above 1.0, upscaling is supported and advertised through the {@code
+     * sizeUpscaling} feature of 5.7, and a caret size that merely overshoots
+     * the ceiling is an ordinary client error, so it gets 400 instead; see
+     * {@link #testUpscaledSizesOverCeilingWhenServerSupportsUpscaling()}.
      */
     @Test
     void testSizeUpscaledToPercentWithoutServerSupport() {
@@ -469,7 +484,7 @@ public class Version3_0ConformanceTest extends ResourceTest {
         ResourceException e = assertThrows(
                 ResourceException.class,
                 () -> client.send());
-        assertEquals(400, e.getStatusCode());
+        assertEquals(501, e.getStatusCode());
     }
 
     /**
@@ -545,9 +560,14 @@ public class Version3_0ConformanceTest extends ResourceTest {
      * should result in a 501 (Not Implemented) status code if the server does
      * not support upscaling."
      *
-     * Note that because supporting upscaling is not an on/off switch, but
-     * rather a continuum based on {@link Key#MAX_SCALE}, this implementation
-     * returns 400 in this situation instead of 501.
+     * Implementation note: {@link Key#MAX_SCALE} is what this implementation
+     * reads as "does not support upscaling." A ceiling of 1.0 or lower means
+     * no upscaling is on offer, so a caret size that needs upscaling gets 501;
+     * a ceiling of 0 means no ceiling, and nothing is rejected here at all.
+     * Above 1.0, upscaling is supported and advertised through the {@code
+     * sizeUpscaling} feature of 5.7, and a caret size that merely overshoots
+     * the ceiling is an ordinary client error, so it gets 400 instead; see
+     * {@link #testUpscaledSizesOverCeilingWhenServerSupportsUpscaling()}.
      */
     @Test
     void testUpscaleToAbsoluteWidthAndHeightWithoutServerSupport() {
@@ -558,7 +578,7 @@ public class Version3_0ConformanceTest extends ResourceTest {
         ResourceException e = assertThrows(
                 ResourceException.class,
                 () -> client.send());
-        assertEquals(400, e.getStatusCode());
+        assertEquals(501, e.getStatusCode());
     }
 
     /**
@@ -586,12 +606,18 @@ public class Version3_0ConformanceTest extends ResourceTest {
      * not larger than the extracted region, w or h, or server-imposed limits."
      */
     @Test
-    void testSizeDownscaledToFitInsideWithIllegalSize() {
+    void testSizeDownscaledToFitInsideWhenBoxExceedsSource() throws Exception {
+        // !w,h carries "not larger than the extracted region" in its own
+        // definition, so a box larger than the source is clamped to source
+        // size rather than rejected.
         client = newClient("/" + IMAGE + "/full/!300,300/0/default.jpg");
-        ResourceException e = assertThrows(
-                ResourceException.class,
-                () -> client.send());
-        assertEquals(400, e.getStatusCode());
+        Response response = client.send();
+
+        try (InputStream is = new ByteArrayInputStream(response.getBody())) {
+            BufferedImage image = ImageIO.read(is);
+            assertEquals(64, image.getWidth());
+            assertEquals(56, image.getHeight());
+        }
     }
 
     /**
@@ -616,13 +642,57 @@ public class Version3_0ConformanceTest extends ResourceTest {
     }
 
     /**
+     * 4.2. (!w,h) The ceiling in the !w,h definition is "the extracted
+     * region," not the full image, so a box larger than a requested region is
+     * clamped to that region rather than to the full source. The source is
+     * 64&times;56 and the region is its top-left quarter.
+     */
+    @Test
+    void testSizeDownscaledToFitInsideWhenBoxExceedsRegion() throws Exception {
+        client = newClient("/" + IMAGE + "/0,0,32,28/!600,600/0/default.jpg");
+        Response response = client.send();
+
+        try (InputStream is = new ByteArrayInputStream(response.getBody())) {
+            BufferedImage image = ImageIO.read(is);
+            assertEquals(32, image.getWidth());
+            assertEquals(28, image.getHeight());
+        }
+    }
+
+    /**
+     * 4.2. (^!w,h) The caret form drops "the extracted region" from the
+     * ceiling, so the same region-scoped request upscales to the box instead
+     * of being clamped to the region. Aspect ratio is preserved, so a
+     * 32&times;28 region fills 600&times;525 rather than 600&times;600.
+     */
+    @Test
+    void testSizeUpscaledToFitInsideWhenBoxExceedsRegion() throws Exception {
+        Configuration config = Configuration.getInstance();
+        config.setProperty(Key.MAX_SCALE, 999);
+
+        client = newClient("/" + IMAGE + "/0,0,32,28/%5E!600,600/0/default.jpg");
+        Response response = client.send();
+
+        try (InputStream is = new ByteArrayInputStream(response.getBody())) {
+            BufferedImage image = ImageIO.read(is);
+            assertEquals(600, image.getWidth());
+            assertEquals(525, image.getHeight());
+        }
+    }
+
+    /**
      * 4.2. (^!w,h) "Requests for sizes prefixed with ^ that require upscaling
      * should result in a 501 (Not Implemented) status code if the server does
      * not support upscaling."
      *
-     * Note that because supporting upscaling is not an on/off switch, but
-     * rather a continuum based on {@link Key#MAX_SCALE}, this implementation
-     * returns 400 in this situation instead of 501.
+     * Implementation note: {@link Key#MAX_SCALE} is what this implementation
+     * reads as "does not support upscaling." A ceiling of 1.0 or lower means
+     * no upscaling is on offer, so a caret size that needs upscaling gets 501;
+     * a ceiling of 0 means no ceiling, and nothing is rejected here at all.
+     * Above 1.0, upscaling is supported and advertised through the {@code
+     * sizeUpscaling} feature of 5.7, and a caret size that merely overshoots
+     * the ceiling is an ordinary client error, so it gets 400 instead; see
+     * {@link #testUpscaledSizesOverCeilingWhenServerSupportsUpscaling()}.
      */
     @Test
     void testSizeUpscaledToFitInsideWithoutServerSupport() {
@@ -633,7 +703,42 @@ public class Version3_0ConformanceTest extends ResourceTest {
         ResourceException e = assertThrows(
                 ResourceException.class,
                 () -> client.send());
-        assertEquals(400, e.getStatusCode());
+        assertEquals(501, e.getStatusCode());
+    }
+
+    /**
+     * The other side of the 501 boundary drawn by the {@code
+     * WithoutServerSupport} tests above. With {@link Key#MAX_SCALE} above 1.0
+     * the server does support upscaling and says so via {@code sizeUpscaling}
+     * in the information response, so a caret size that asks for more than the
+     * ceiling allows is a client error rather than an unimplemented feature.
+     * The source is 64&times;56 and every size here asks for 2&times;, which
+     * overshoots a ceiling of 1.5.
+     */
+    @Test
+    void testUpscaledSizesOverCeilingWhenServerSupportsUpscaling() {
+        Configuration config = Configuration.getInstance();
+        config.setProperty(Key.MAX_SCALE, 1.5);
+
+        assertStatus(400, getHTTPURI("/" + IMAGE + "/full/%5E128,/0/color.jpg"));
+        assertStatus(400, getHTTPURI("/" + IMAGE + "/full/%5E,112/0/color.jpg"));
+        assertStatus(400, getHTTPURI("/" + IMAGE + "/full/%5Epct:200/0/color.jpg"));
+        assertStatus(400, getHTTPURI("/" + IMAGE + "/full/%5E128,112/0/color.jpg"));
+        assertStatus(400, getHTTPURI("/" + IMAGE + "/full/%5E!128,112/0/color.jpg"));
+    }
+
+    /**
+     * A {@link Key#MAX_SCALE} below 1.0 can reject a caret size that would not
+     * have upscaled anything. Nothing about upscaling is unimplemented in that
+     * case, so it is a 400 rather than a 501. The source is 64&times;56 and
+     * {@code ^pct:60} is a downscale, but it still overshoots a 0.5 ceiling.
+     */
+    @Test
+    void testUpscaledSizeOverCeilingBelowFullScaleWithoutUpscaling() {
+        Configuration config = Configuration.getInstance();
+        config.setProperty(Key.MAX_SCALE, 0.5);
+
+        assertStatus(400, getHTTPURI("/" + IMAGE + "/full/%5Epct:60/0/color.jpg"));
     }
 
     /**
