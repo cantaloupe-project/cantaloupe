@@ -1,6 +1,6 @@
 package edu.illinois.library.cantaloupe.source;
 
-import com.microsoft.azure.storage.blob.CloudBlockBlob;
+import com.azure.storage.blob.BlobClient;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.source.stream.ClosingMemoryCacheImageInputStream;
@@ -38,9 +38,9 @@ public class AzureStorageStreamFactoryTest extends BaseTest {
     public void setUp() throws Exception {
         super.setUp();
 
-        CloudBlockBlob blob = AzureStorageTestUtil.client()
-                .getContainerReference(AzureStorageTestUtil.getContainer())
-                .getBlockBlobReference("jpg");
+        BlobClient blob = AzureStorageTestUtil.client()
+                .getBlobContainerClient(AzureStorageTestUtil.getContainer())
+                .getBlobClient("jpg");
         instance = new AzureStorageStreamFactory(blob);
     }
 

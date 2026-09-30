@@ -1,11 +1,12 @@
 package edu.illinois.library.cantaloupe.test;
 
-import com.microsoft.azure.storage.CloudStorageAccount;
-import com.microsoft.azure.storage.blob.CloudBlob;
-import com.microsoft.azure.storage.blob.CloudBlobClient;
-import com.microsoft.azure.storage.blob.CloudBlobContainer;
-import com.microsoft.azure.storage.blob.CloudBlockBlob;
-import com.microsoft.azure.storage.blob.ListBlobItem;
+import com.azure.storage.blob.BlobClient;
+import com.azure.storage.blob.BlobContainerClient;
+import com.azure.storage.blob.BlobServiceClient;
+import com.azure.storage.blob.BlobServiceClientBuilder;
+import com.azure.storage.blob.models.BlobHttpHeaders;
+import com.azure.storage.blob.models.BlobItem;
+import com.azure.storage.blob.options.BlockBlobOutputStreamOptions;
 
 import java.io.OutputStream;
 import java.nio.file.Files;
@@ -23,9 +24,9 @@ public final class AzureStorageTestUtil {
     public static final String NON_IMAGE_KEY                                              = "NotAnImage";
 
     public static void uploadFixtures() throws Exception {
-        final CloudBlobClient client = client();
-        final CloudBlobContainer container =
-                client.getContainerReference(getContainer());
+        final BlobServiceClient client = client();
+        final BlobContainerClient container =
+                client.getBlobContainerClient(getContainer());
         container.createIfNotExists();
 
         Path fixture = TestUtil.getImage("jpg");
@@ -38,41 +39,41 @@ public final class AzureStorageTestUtil {
                 OBJECT_KEY_WITH_NO_CONTENT_TYPE_AND_UNRECOGNIZED_EXTENSION,
                 OBJECT_KEY_WITH_NO_CONTENT_TYPE_AND_INCORRECT_EXTENSION,
                 OBJECT_KEY_WITH_NO_CONTENT_TYPE_OR_EXTENSION}) {
-            final CloudBlockBlob blob = container.getBlockBlobReference(key);
+            final BlobClient blob = container.getBlobClient(key);
+            BlobHttpHeaders headers = null;
 
             if (!OBJECT_KEY_WITH_NO_CONTENT_TYPE_AND_RECOGNIZED_EXTENSION.equals(key) &&
                     !OBJECT_KEY_WITH_NO_CONTENT_TYPE_AND_UNRECOGNIZED_EXTENSION.equals(key) &&
                     !OBJECT_KEY_WITH_NO_CONTENT_TYPE_AND_INCORRECT_EXTENSION.equals(key) &&
                     !OBJECT_KEY_WITH_NO_CONTENT_TYPE_OR_EXTENSION.equals(key)) {
-                blob.getProperties().setContentType("image/jpeg");
+                headers = new BlobHttpHeaders().setContentType("image/jpeg");
             }
 
-            try (OutputStream os = blob.openOutputStream()) {
+            try (OutputStream os = blob.getBlockBlobClient().getBlobOutputStream(
+                    new BlockBlobOutputStreamOptions().setHeaders(headers))) {
                 Files.copy(fixture, os);
             }
         }
 
         // Add a non-image
         fixture = TestUtil.getImage("text.txt");
-        final CloudBlockBlob blob = container.getBlockBlobReference(NON_IMAGE_KEY);
-        try (OutputStream os = blob.openOutputStream()) {
+        final BlobClient blob = container.getBlobClient(NON_IMAGE_KEY);
+        try (OutputStream os = blob.getBlockBlobClient().getBlobOutputStream()) {
             Files.copy(fixture, os);
         }
     }
 
     public static void deleteFixtures() throws Exception {
-        final CloudBlobClient client = client();
-        final CloudBlobContainer container =
-                client.getContainerReference(getContainer());
+        final BlobServiceClient client = client();
+        final BlobContainerClient container =
+                client.getBlobContainerClient(getContainer());
 
-        for (ListBlobItem item : container.listBlobs()) {
-            if (item instanceof CloudBlob) {
-                ((CloudBlob) item).deleteIfExists();
-            }
+        for (BlobItem item : container.listBlobs()) {
+            container.getBlobClient(item.getName()).deleteIfExists();
         }
     }
 
-    public static CloudBlobClient client() throws Exception {
+    public static BlobServiceClient client() {
         final String accountName = getAccountName();
         final String accountKey  = getAccountKey();
 
@@ -80,10 +81,9 @@ public final class AzureStorageTestUtil {
                 "DefaultEndpointsProtocol=https;" +
                         "AccountName=%s;" +
                         "AccountKey=%s", accountName, accountKey);
-        final CloudStorageAccount account =
-                CloudStorageAccount.parse(connectionString);
-        CloudBlobClient client = account.createCloudBlobClient();
-        client.getContainerReference(getContainer()).createIfNotExists();
+        BlobServiceClient client = new BlobServiceClientBuilder().
+                connectionString(connectionString).buildClient();
+        client.getBlobContainerClient(getContainer()).createIfNotExists();
         return client;
     }
 
