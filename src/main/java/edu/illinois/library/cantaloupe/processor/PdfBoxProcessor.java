@@ -19,8 +19,11 @@ import edu.illinois.library.cantaloupe.processor.codec.ImageWriterFacade;
 import edu.illinois.library.cantaloupe.source.StreamFactory;
 import edu.illinois.library.cantaloupe.util.Stopwatch;
 import org.apache.commons.io.IOUtils;
+import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.cos.COSObject;
 import org.apache.pdfbox.io.MemoryUsageSetting;
+import org.apache.pdfbox.io.RandomAccessReadBuffer;
+import org.apache.pdfbox.io.RandomAccessStreamCache.StreamCacheCreateFunction;
 import org.apache.pdfbox.pdmodel.DefaultResourceCache;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDDocumentInformation;
@@ -142,14 +145,13 @@ class PdfBoxProcessor extends AbstractProcessor
     private void readDocument() throws IOException {
         if (doc == null) {
             final Stopwatch watch = new Stopwatch();
-            // For PDF Box v3 this would need to change to a loader:
-            // https://pdfbox.apache.org/3.0/migration.html#use-loader-to-get-a-pdf-document
             if (sourceFile != null) {
-                doc = PDDocument.load(sourceFile.toFile(),
-                        getMemoryUsageSetting());
+                doc = Loader.loadPDF(sourceFile.toFile(),
+                        getStreamCache());
             } else {
                 try (InputStream is = streamFactory.newInputStream()) {
-                    doc = PDDocument.load(is, getMemoryUsageSetting());
+                    doc = Loader.loadPDF(new RandomAccessReadBuffer(is),
+                            getStreamCache());
                 } catch (IOException e) {
                     throw new SourceFormatException();
                 }
@@ -192,7 +194,7 @@ class PdfBoxProcessor extends AbstractProcessor
         }
     }
 
-    private MemoryUsageSetting getMemoryUsageSetting() {
+    private StreamCacheCreateFunction getStreamCache() {
         final Configuration config = Configuration.getInstance();
         if (config.getBoolean(Key.PROCESSOR_PDF_SCRATCH_FILE_ENABLED, false)) {
             final long maxMainMemoryBytes =
@@ -200,9 +202,10 @@ class PdfBoxProcessor extends AbstractProcessor
             final String scratchFileLocation = Application.getTempPath().toString();
             File filePath = new File(scratchFileLocation);
             return MemoryUsageSetting.setupMixed(maxMainMemoryBytes, -1)
-                    .setTempDir(filePath);
+                    .setTempDir(filePath)
+                    .streamCache;
         } else {
-            return MemoryUsageSetting.setupMainMemoryOnly(-1);
+            return MemoryUsageSetting.setupMainMemoryOnly(-1).streamCache;
         }
     }
 
