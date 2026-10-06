@@ -18,3 +18,7 @@ services:
   redis:
     image: redis:alpine
     hostname: redis
+  azurite:
+    image: mcr.microsoft.com/azure-storage/azurite
+    hostname: azurite
+    command: azurite-blob --blobHost 0.0.0.0 --loose

@@ -5,6 +5,7 @@ public enum ConfigurationConstants {
     AZURE_ACCOUNT_KEY("azurestorage.account_key"),
     AZURE_ACCOUNT_NAME("azurestorage.account_name"),
     AZURE_CONTAINER("azurestorage.container"),
+    AZURE_ENDPOINT("azurestorage.endpoint"),
     GECKO_WEBDRIVER("webdriver.gecko"),
     REDIS_DATABASE("redis.database"),
     REDIS_HOST("redis.host"),

@@ -60,6 +60,6 @@ COPY --chown=cantaloupe ./src src
 #ENTRYPOINT java -Dcantaloupe.config=./cantaloupe.properties  -Xmx2g -jar target/cantaloupe-6.0-SNAPSHOT.jar
 
 # Use this for automated testing:
-ENTRYPOINT mvn --batch-mode test -Pfreedeps -Dtest="!GrokProcessorTest,!Azure*Test"
+ENTRYPOINT mvn --batch-mode test -Pfreedeps -Dtest="!GrokProcessorTest"
 
 #ENTRYPOINT mvn test -e -Dtest=edu.illinois.library.cantaloupe.perf.processor.codec.bmp.BMPImageReaderPerformance

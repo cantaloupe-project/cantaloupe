@@ -203,11 +203,16 @@ final class AzureStorageSource extends AbstractSource implements Source {
                         config.getString(Key.AZURESTORAGESOURCE_ACCOUNT_NAME);
                 final String accountKey =
                         config.getString(Key.AZURESTORAGESOURCE_ACCOUNT_KEY);
+                final String endpoint =
+                        config.getString(Key.AZURESTORAGESOURCE_ENDPOINT, "");
 
-                final String connectionString = String.format(
+                String connectionString = String.format(
                         "DefaultEndpointsProtocol=https;" +
                                 "AccountName=%s;" +
                                 "AccountKey=%s", accountName, accountKey);
+                if (!endpoint.isBlank()) {
+                    connectionString += ";BlobEndpoint=" + endpoint;
+                }
                 account = CloudStorageAccount.parse(connectionString);
 
                 LOGGER.info("Using account: {}", accountName);
