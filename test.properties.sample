@@ -12,10 +12,19 @@ s3.bucket = cantaloupe-test
 
 # Used by AzureStorageSourceTest and AzureStorageCacheTest.
 # Note: leave blank to test SAS and container specified in a URL to the object
-# key.
+# key. The endpoint may be left blank to use the default Azure endpoint. To
+# use Azurite (the Azure Storage emulator), e.g.
+# `docker run -p 10000:10000 mcr.microsoft.com/azure-storage/azurite azurite-blob --blobHost 0.0.0.0`,
+# use its well-known development account:
+#
+# azurestorage.account_name = devstoreaccount1
+# azurestorage.account_key = Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==
+# azurestorage.container = cantaloupe-test
+# azurestorage.endpoint = http://localhost:10000/devstoreaccount1
 azurestorage.account_name =
 azurestorage.account_key =
 azurestorage.container =
+azurestorage.endpoint =
 
 # Used by RedisCacheTest.
 redis.host = localhost

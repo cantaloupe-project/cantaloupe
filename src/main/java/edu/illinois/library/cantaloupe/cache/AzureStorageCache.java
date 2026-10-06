@@ -162,11 +162,16 @@ class AzureStorageCache implements DerivativeCache {
                         config.getString(Key.AZURESTORAGECACHE_ACCOUNT_NAME);
                 final String accountKey =
                         config.getString(Key.AZURESTORAGECACHE_ACCOUNT_KEY);
+                final String endpoint =
+                        config.getString(Key.AZURESTORAGECACHE_ENDPOINT, "");
 
-                final String connectionString = String.format(
+                String connectionString = String.format(
                         "DefaultEndpointsProtocol=https;" +
                                 "AccountName=%s;" +
                                 "AccountKey=%s", accountName, accountKey);
+                if (!endpoint.isBlank()) {
+                    connectionString += ";BlobEndpoint=" + endpoint;
+                }
                 final CloudStorageAccount account =
                         CloudStorageAccount.parse(connectionString);
 

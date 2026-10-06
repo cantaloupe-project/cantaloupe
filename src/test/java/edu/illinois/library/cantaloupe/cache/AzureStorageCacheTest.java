@@ -4,6 +4,7 @@ import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.operation.OperationList;
+import edu.illinois.library.cantaloupe.test.AzureStorageTestUtil;
 import edu.illinois.library.cantaloupe.test.ConfigurationConstants;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.junit.jupiter.api.AfterEach;
@@ -56,6 +57,8 @@ public class AzureStorageCacheTest extends AbstractCacheTest {
         config.setProperty(Key.AZURESTORAGECACHE_ACCOUNT_NAME, getAccountName());
         config.setProperty(Key.AZURESTORAGECACHE_ACCOUNT_KEY, getAccountKey());
         config.setProperty(Key.AZURESTORAGECACHE_CONTAINER_NAME, getContainer());
+        config.setProperty(Key.AZURESTORAGECACHE_ENDPOINT,
+                AzureStorageTestUtil.getEndpoint());
 
         return new AzureStorageCache();
     }

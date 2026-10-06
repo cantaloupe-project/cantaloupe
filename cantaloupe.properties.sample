@@ -282,6 +282,11 @@ AzureStorageSource.account_key =
 # Leave blank if using URI with the container in your object key.
 AzureStorageSource.container_name =
 
+# Blob service endpoint URL. Leave blank to use the default Azure endpoint
+# (https://<account_name>.blob.core.windows.net). This can be set to use an
+# emulator like Azurite, e.g. http://127.0.0.1:10000/devstoreaccount1.
+AzureStorageSource.endpoint =
+
 # Tells AzureStorageSource how to look up objects. Allowed values are
 # `BasicLookupStrategy` and `ScriptLookupStrategy`. ScriptLookupStrategy
 # uses a delegate method for dynamic lookups; see the user manual.
@@ -617,6 +622,10 @@ AzureStorageCache.account_key =
 
 # !! Name of the container containing cached images.
 AzureStorageCache.container_name =
+
+# Blob service endpoint URL. Leave blank to use the default Azure endpoint
+# (https://<account_name>.blob.core.windows.net).
+AzureStorageCache.endpoint =
 
 # !! String that will be prefixed to object keys.
 AzureStorageCache.object_key_prefix =
