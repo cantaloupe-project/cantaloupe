@@ -606,9 +606,6 @@
                             <reuseForks>false</reuseForks>
                             <!-- JAI requires this in JDK 16+. It should be removed when JAI is. -->
                             <argLine>--add-opens java.desktop/sun.awt.image=ALL-UNNAMED</argLine>
-                            <excludes>
-                                <exclude>Azure*Test</exclude>
-                            </excludes>
                         </configuration>
                     </plugin>
                 </plugins>

@@ -20,11 +20,15 @@
   request, enabling it to work with pre-signed URLs that do not allow HEAD
   requests.
 * S3Source supports multiple endpoints when using ScriptLookupStrategy.
+* AzureStorageSource supports a custom blob service endpoint via
+  `AzureStorageSource.endpoint`, enabling use with emulators like Azurite.
 
 ### Caches
 
 * S3Cache uses multipart uploads, which reduces memory usage when caching
   derivatives larger than 5 MB.
+* AzureStorageCache supports a custom blob service endpoint via
+  `AzureStorageCache.endpoint`.
 
 ### Delegate Script
 
