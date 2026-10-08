@@ -935,8 +935,12 @@ public final class Java2DUtil {
             final int numComponents = inImage.getColorModel().getNumComponents();
 
             // AffineTransformOp should be faster, but the G2D drawing method
-            // is more compatible.
-            if (compSize > 8 || numComponents < 3) {
+            // is more compatible. In particular, AffineTransformOp swaps the
+            // red and blue channels of images with a custom pixel layout,
+            // such as the RGBA-ordered images the TIFF reader returns, when
+            // it draws them into a TYPE_INT_ARGB image.
+            if (compSize > 8 || numComponents < 3 ||
+                    inImage.getType() == BufferedImage.TYPE_CUSTOM) {
                 if (compSize > 8) {
                     outImage = newImage(canvasWidth, canvasHeight,
                             inImage.getColorModel(), true);
