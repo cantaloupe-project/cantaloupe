@@ -75,11 +75,15 @@ public final class AzureStorageTestUtil {
     public static CloudBlobClient client() throws Exception {
         final String accountName = getAccountName();
         final String accountKey  = getAccountKey();
+        final String endpoint    = getEndpoint();
 
-        final String connectionString = String.format(
+        String connectionString = String.format(
                 "DefaultEndpointsProtocol=https;" +
                         "AccountName=%s;" +
                         "AccountKey=%s", accountName, accountKey);
+        if (!endpoint.isBlank()) {
+            connectionString += ";BlobEndpoint=" + endpoint;
+        }
         final CloudStorageAccount account =
                 CloudStorageAccount.parse(connectionString);
         CloudBlobClient client = account.createCloudBlobClient();
@@ -103,6 +107,16 @@ public final class AzureStorageTestUtil {
         org.apache.commons.configuration2.Configuration testConfig =
                 TestUtil.getTestConfig();
         return testConfig.getString(ConfigurationConstants.AZURE_CONTAINER.getKey());
+    }
+
+    /**
+     * @return Blob service endpoint URL, e.g. of an Azurite instance, or an
+     *         empty string to use the default Azure endpoint.
+     */
+    public static String getEndpoint() {
+        org.apache.commons.configuration2.Configuration testConfig =
+                TestUtil.getTestConfig();
+        return testConfig.getString(ConfigurationConstants.AZURE_ENDPOINT.getKey(), "");
     }
 
     private AzureStorageTestUtil() {}

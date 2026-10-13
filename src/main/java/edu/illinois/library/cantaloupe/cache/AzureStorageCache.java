@@ -1,6 +1,7 @@
 package edu.illinois.library.cantaloupe.cache;
 
 import com.microsoft.azure.storage.CloudStorageAccount;
+import com.microsoft.azure.storage.StorageErrorCodeStrings;
 import com.microsoft.azure.storage.StorageException;
 import com.microsoft.azure.storage.blob.BlobOutputStream;
 import com.microsoft.azure.storage.blob.CloudBlob;
@@ -23,6 +24,7 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStreamWriter;
+import java.io.PushbackInputStream;
 import java.net.URISyntaxException;
 import java.security.InvalidKeyException;
 import java.time.Instant;
@@ -146,6 +148,12 @@ class AzureStorageCache implements DerivativeCache {
 
     private static final String INFO_EXTENSION = ".json";
 
+    /**
+     * Number of times {@link #openInputStream(CloudBlob)} will try to open a
+     * blob that is being concurrently overwritten.
+     */
+    private static final int MAX_OPEN_ATTEMPTS = 10;
+
     private static CloudBlobClient client;
 
     /**
@@ -162,11 +170,16 @@ class AzureStorageCache implements DerivativeCache {
                         config.getString(Key.AZURESTORAGECACHE_ACCOUNT_NAME);
                 final String accountKey =
                         config.getString(Key.AZURESTORAGECACHE_ACCOUNT_KEY);
+                final String endpoint =
+                        config.getString(Key.AZURESTORAGECACHE_ENDPOINT, "");
 
-                final String connectionString = String.format(
+                String connectionString = String.format(
                         "DefaultEndpointsProtocol=https;" +
                                 "AccountName=%s;" +
                                 "AccountKey=%s", accountName, accountKey);
+                if (!endpoint.isBlank()) {
+                    connectionString += ";BlobEndpoint=" + endpoint;
+                }
                 final CloudStorageAccount account =
                         CloudStorageAccount.parse(connectionString);
 
@@ -211,7 +224,7 @@ class AzureStorageCache implements DerivativeCache {
             final CloudBlockBlob blob = container.getBlockBlobReference(objectKey);
             if (blob.exists()) {
                 if (isValid(blob)) {
-                    try (InputStream is = blob.openInputStream()) {
+                    try (InputStream is = openInputStream(blob)) {
                         Info info = Info.fromJSON(is);
                         // Populate the serialization timestamp if it is not
                         // already, as suggested by the method contract.
@@ -252,7 +265,7 @@ class AzureStorageCache implements DerivativeCache {
             final CloudBlockBlob blob = container.getBlockBlobReference(objectKey);
             if (blob.exists()) {
                 if (isValid(blob)) {
-                    return blob.openInputStream();
+                    return openInputStream(blob);
                 } else {
                     LOGGER.debug("newDerivativeImageInputStream(): " +
                                     "deleting invalid item asynchronously: " +
@@ -271,8 +284,8 @@ class AzureStorageCache implements DerivativeCache {
     public CompletableOutputStream
     newDerivativeImageOutputStream(OperationList opList) throws IOException {
         final String objectKey = getObjectKey(opList);
-        if (!uploadingKeys.contains(objectKey)) {
-            uploadingKeys.add(objectKey);
+        // add() is atomic, unlike a contains() check followed by add().
+        if (uploadingKeys.add(objectKey)) {
             final String containerName   = getContainerName();
             final String tempObjectKey   = getTempObjectKey(opList);
             final CloudBlobClient client = getClientInstance();
@@ -338,6 +351,43 @@ class AzureStorageCache implements DerivativeCache {
 
     private String getTempObjectKeySuffix() {
         return "_" + Thread.currentThread().getName() + ".tmp";
+    }
+
+    /**
+     * <p>Opens a stream for reading the given blob.</p>
+     *
+     * <p>{@link CloudBlob#openInputStream()} locks the stream to the blob's
+     * ETag at the time it was opened, so if another thread or process
+     * overwrites the blob before the data is downloaded, reading fails with
+     * HTTP 412 (condition not met). To narrow that window, the first chunk
+     * (which, for most blobs, is the whole blob) is read eagerly, and the
+     * stream is reopened if the blob changed in the meantime.</p>
+     */
+    private static InputStream openInputStream(CloudBlob blob)
+            throws StorageException, IOException {
+        for (int attempt = 1; ; attempt++) {
+            final InputStream blobStream = blob.openInputStream();
+            final PushbackInputStream is = new PushbackInputStream(blobStream);
+            try {
+                int b = is.read();
+                if (b != -1) {
+                    is.unread(b);
+                }
+                return is;
+            } catch (IOException e) {
+                is.close();
+                if (attempt >= MAX_OPEN_ATTEMPTS || !isConditionNotMet(e)) {
+                    throw e;
+                }
+                LOGGER.debug("openInputStream(): {} changed while opening; " +
+                        "retrying (attempt {})", blob.getName(), attempt);
+            }
+        }
+    }
+
+    private static boolean isConditionNotMet(IOException e) {
+        return e.getCause() instanceof StorageException se &&
+                StorageErrorCodeStrings.CONDITION_NOT_MET.equals(se.getErrorCode());
     }
 
     private boolean isValid(CloudBlob blob) {
@@ -494,8 +544,8 @@ class AzureStorageCache implements DerivativeCache {
         }
         LOGGER.debug("put(): caching info for {}", identifier);
         final String objectKey = getObjectKey(identifier);
-        if (!uploadingKeys.contains(objectKey)) {
-            uploadingKeys.add(objectKey);
+        // add() is atomic, unlike a contains() check followed by add().
+        if (uploadingKeys.add(objectKey)) {
             try {
                 final String containerName = getContainerName();
                 final CloudBlobClient client = getClientInstance();
@@ -519,8 +569,8 @@ class AzureStorageCache implements DerivativeCache {
     public void put(Identifier identifier, String info) throws IOException {
         LOGGER.debug("put(): caching info for {}", identifier);
         final String objectKey = getObjectKey(identifier);
-        if (!uploadingKeys.contains(objectKey)) {
-            uploadingKeys.add(objectKey);
+        // add() is atomic, unlike a contains() check followed by add().
+        if (uploadingKeys.add(objectKey)) {
             try {
                 final String containerName = getContainerName();
                 final CloudBlobClient client = getClientInstance();
