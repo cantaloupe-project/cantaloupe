@@ -23,5 +23,6 @@ public class Enc_params extends Kdu_params {
   public native boolean Is_visual_ctype(int _ctp) throws KduException;
   public native boolean Is_chroma_ctype(int _ctp) throws KduException;
   public native boolean Is_luma_ctype(int _ctp) throws KduException;
+  public native boolean Is_interlaced_ctype(int _ctp) throws KduException;
   public native float Modulation_for_qfactor(float _qf) throws KduException;
 }

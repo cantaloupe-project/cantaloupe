@@ -34,6 +34,7 @@ import java.awt.image.BufferedImage;
 import java.awt.image.ColorModel;
 import java.awt.image.ComponentColorModel;
 import java.awt.image.DataBuffer;
+import java.awt.image.Raster;
 import java.awt.image.WritableRaster;
 import java.io.IOException;
 import java.net.URI;
@@ -73,6 +74,36 @@ class Java2DUtilTest extends BaseTest {
         final WritableRaster raster =
                 colorModel.createCompatibleWritableRaster(width, height);
         return new BufferedImage(colorModel, raster, isAlphaPremultiplied, null);
+    }
+
+    /**
+     * @return An 8-bit sRGB image whose left half is blue and right half
+     *         orange, with pixel-interleaved bands in R, G, B[, A] order, like
+     *         the TIFF reader returns. Unlike {@code TYPE_3BYTE_BGR}, it is
+     *         {@link BufferedImage#TYPE_CUSTOM}.
+     */
+    private static BufferedImage newInterleavedRGBImage(int width,
+                                                        int height,
+                                                        boolean hasAlpha) {
+        final int numBands = hasAlpha ? 4 : 3;
+        final int[] bandOffsets = hasAlpha ?
+                new int[] { 0, 1, 2, 3 } : new int[] { 0, 1, 2 };
+        final ColorModel colorModel = new ComponentColorModel(
+                ColorSpace.getInstance(ColorSpace.CS_sRGB), hasAlpha, false,
+                hasAlpha ? Transparency.TRANSLUCENT : Transparency.OPAQUE,
+                DataBuffer.TYPE_BYTE);
+        final WritableRaster raster = Raster.createInterleavedRaster(
+                DataBuffer.TYPE_BYTE, width, height, width * numBands,
+                numBands, bandOffsets, null);
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+                final boolean left = x < width / 2;
+                raster.setPixel(x, y, hasAlpha ?
+                        new int[] { left ? 0 : 255, left ? 0 : 128, left ? 255 : 0, 255 } :
+                        new int[] { left ? 0 : 255, left ? 0 : 128, left ? 255 : 0 });
+            }
+        }
+        return new BufferedImage(colorModel, raster, false, null);
     }
 
     private static BufferedImage newGrayImage(int componentSize,
@@ -671,6 +702,31 @@ class Java2DUtilTest extends BaseTest {
         assertEquals(BufferedImage.TYPE_INT_ARGB, outImage.getType());
     }
 
+    /**
+     * Rotating must not swap the red and blue channels of an image whose
+     * pixel layout is not one of the standard {@link BufferedImage} types,
+     * like the RGBA images the TIFF reader returns.
+     */
+    @Test
+    void rotate2KeepsColorsOfInterleavedRGBImage() {
+        for (boolean hasAlpha : new boolean[] { false, true }) {
+            BufferedImage inImage = newInterleavedRGBImage(40, 20, hasAlpha);
+            assertEquals(BufferedImage.TYPE_CUSTOM, inImage.getType());
+
+            // 90 degrees clockwise: the blue left half is now the top half.
+            BufferedImage outImage = Java2DUtil.rotate(inImage, new Rotate(90));
+            assertEquals(20, outImage.getWidth());
+            assertEquals(40, outImage.getHeight());
+            assertEquals(0xFF0000FF, outImage.getRGB(10, 10), "alpha=" + hasAlpha);
+            assertEquals(0xFFFF8000, outImage.getRGB(10, 30), "alpha=" + hasAlpha);
+
+            // 180 degrees: the halves trade places.
+            outImage = Java2DUtil.rotate(inImage, new Rotate(180));
+            assertEquals(0xFFFF8000, outImage.getRGB(10, 10), "alpha=" + hasAlpha);
+            assertEquals(0xFF0000FF, outImage.getRGB(30, 10), "alpha=" + hasAlpha);
+        }
+    }
+
     @Test
     void rotate2With16BitGray() {
         BufferedImage inImage = newGrayImage(16, false);
@@ -814,6 +870,23 @@ class Java2DUtilTest extends BaseTest {
         BufferedImage outImage = Java2DUtil.scale(inImage, scale, sc, rf, true);
         assertEquals(2, outImage.getWidth());
         assertEquals(1, outImage.getHeight());
+    }
+
+    @Test
+    void scaleWithGrayAlphaImage() {
+        // Grayscale+alpha images (e.g. PNG color type 4) have two channels,
+        // which the resampler doesn't handle natively; without an up-front
+        // conversion this throws ArrayIndexOutOfBoundsException.
+        BufferedImage inImage = newGrayImage(100, 100, 8, true);
+
+        ScaleByPixels scale = new ScaleByPixels(
+                50, 50, ScaleByPixels.Mode.ASPECT_FIT_INSIDE);
+        ScaleConstraint sc = new ScaleConstraint(1, 1);
+        ReductionFactor rf = new ReductionFactor(1);
+
+        BufferedImage outImage = Java2DUtil.scale(inImage, scale, sc, rf, false);
+        assertEquals(50, outImage.getWidth());
+        assertEquals(50, outImage.getHeight());
     }
 
     /* sharpen() */

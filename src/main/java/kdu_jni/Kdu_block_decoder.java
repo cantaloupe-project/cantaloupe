@@ -23,6 +23,6 @@ public class Kdu_block_decoder extends Kdu_block_decoder_base {
   public native void Init(boolean _allow_optimizations) throws KduException;
   public native void Speedpack_config(Kdu_coords _nominal_block_size, int _K_max_prime) throws KduException;
   public native String Get_capabilities(int[] _cap_flags) throws KduException;
-  public native void Decode(Kdu_block _block) throws KduException;
+  public native boolean Decode(Kdu_block _block, boolean _reversible) throws KduException;
   public native long Decode16(Kdu_block _block, int[] _stride) throws KduException;
 }

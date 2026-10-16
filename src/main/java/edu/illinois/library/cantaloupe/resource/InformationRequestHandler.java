@@ -46,90 +46,7 @@ import java.util.concurrent.Future;
 public class InformationRequestHandler extends AbstractRequestHandler
         implements AutoCloseable {
 
-    /**
-     * Builds {@link InformationRequestHandler} instances.
-     */
-    public static final class Builder {
 
-        private final InformationRequestHandler handler;
-
-        private Builder(InformationRequestHandler handler) {
-            this.handler = handler;
-        }
-
-        /**
-         * @param isBypassingCache Supply {@code true} to bypass cache reads
-         *                         and writes.
-         */
-        public Builder withBypassingCache(boolean isBypassingCache) {
-            handler.isBypassingCache = isBypassingCache;
-            return this;
-        }
-
-        /**
-         * @param isBypassingCacheRead Supply {@code true} to bypass cache
-         *                             reads only.
-         */
-        public Builder withBypassingCacheRead(boolean isBypassingCacheRead) {
-            handler.isBypassingCacheRead = isBypassingCacheRead;
-            return this;
-        }
-
-        /**
-         * @param callback Callback to receive events during request handling.
-         */
-        public Builder withCallback(InformationRequestHandler.Callback callback) {
-            handler.callback = callback;
-            return this;
-        }
-
-        /**
-         * @param delegateProxy Delegate proxy. If set to a non-{@code null}
-         *                      value, a {@link
-         *                      #withRequestContext(RequestContext) request
-         *                      context must also be set}.
-         */
-        public Builder withDelegateProxy(DelegateProxy delegateProxy) {
-            handler.delegateProxy = delegateProxy;
-            return this;
-        }
-
-        public Builder withIdentifier(Identifier identifier) {
-            handler.identifier = identifier;
-            return this;
-        }
-
-        /**
-         * @param requestContext Request context. If set to a non-{@code null}
-         *                       value, a {@link
-         *                       #withDelegateProxy(DelegateProxy) delegate
-         *                       proxy must also be set}.
-         */
-        public Builder withRequestContext(RequestContext requestContext) {
-            handler.requestContext = requestContext;
-            return this;
-        }
-
-        /**
-         * @return New instance.
-         * @throws IllegalArgumentException if any of the required builder
-         *         methods have not been called.
-         */
-        public InformationRequestHandler build() {
-            if (handler.identifier == null) {
-                throw new IllegalArgumentException("Identifier cannot be null.");
-            } else if (handler.delegateProxy != null &&
-                    handler.requestContext == null) {
-                throw new IllegalArgumentException("If a delegate proxy is " +
-                        "set, a request context must also be set.");
-            }
-            if (handler.requestContext == null) {
-                handler.requestContext = new RequestContext();
-            }
-            return handler;
-        }
-
-    }
 
     /**
      * Callback for various events that occur during a call to {@link
@@ -182,16 +99,33 @@ public class InformationRequestHandler extends AbstractRequestHandler
         public void knowAvailableOutputFormats(Set<Format> availableOutputFormats) {
         }
     };
-    private DelegateProxy delegateProxy;
     private Identifier identifier;
-    private RequestContext requestContext;
     private Future<Path> tempFileFuture;
 
-    public static Builder builder() {
-        return new Builder(new InformationRequestHandler());
-    }
+    /**
+     * Creates a new InformationRequestHandler with full configuration options.
+     *
+     * @param identifier           Identifier of the image.
+     * @param delegateProxy        Delegate proxy. If null, requestContext must also be null.
+     * @param requestContext       Request context. If null, delegateProxy must also be null.
+     * @param callback             Callback to receive events during request handling.
+     * @param isBypassingCache     True to bypass cache reads and writes.
+     * @param isBypassingCacheRead True to bypass cache reads only.
+     */
+    public InformationRequestHandler(Identifier identifier,
+                                     DelegateProxy delegateProxy,
+                                     RequestContext requestContext,
+                                     Callback callback,
+                                     boolean isBypassingCache,
+                                     boolean isBypassingCacheRead) {
 
-    protected InformationRequestHandler() {}
+        this.identifier = identifier;
+        this.delegateProxy = delegateProxy;
+        this.requestContext = requestContext;
+        this.callback = callback;
+        this.isBypassingCache = isBypassingCache;
+        this.isBypassingCacheRead = isBypassingCacheRead;
+    }
 
     /**
      * Closes the instance.

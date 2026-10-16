@@ -49,6 +49,13 @@ public class StringOverlay extends Overlay implements Operation {
         this.setWordWrap(wordWrap);
     }
 
+    @Override
+    public StringOverlay copy() {
+        return new StringOverlay(string, getPosition(), getInset(), font,
+                minSize, color, backgroundColor, strokeColor, strokeWidth,
+                wordWrap);
+    }
+
     public Color getBackgroundColor() {
         return backgroundColor;
     }

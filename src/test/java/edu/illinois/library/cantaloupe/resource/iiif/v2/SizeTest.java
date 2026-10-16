@@ -284,9 +284,12 @@ public class SizeTest extends BaseTest {
         instance.setScaleMode(Size.ScaleMode.ASPECT_FIT_INSIDE);
         instance.setWidth(300);
         instance.setHeight(200);
-        assertEquals(
-                new ScaleByPixels(300, 200, ScaleByPixels.Mode.ASPECT_FIT_INSIDE),
-                instance.toScale());
+        // v2 !w,h disables upscaling per spec §4.2 ("less than or equal to"
+        // the requested w,h, source-size returned when source already fits).
+        ScaleByPixels expected = new ScaleByPixels(
+                300, 200, ScaleByPixels.Mode.ASPECT_FIT_INSIDE);
+        expected.setUpscaleAllowed(false);
+        assertEquals(expected, instance.toScale());
     }
 
     @Test

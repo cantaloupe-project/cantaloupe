@@ -36,6 +36,20 @@ public class Encode implements Operation {
     }
 
     @Override
+    public Encode copy() {
+        Encode copy = new Encode(format);
+        copy.setBackgroundColor(backgroundColor);
+        copy.setCompression(compression);
+        copy.setInterlacing(interlace);
+        copy.setMaxComponentSize(maxComponentSize);
+        copy.setQuality(quality);
+        // Metadata is only ever replaced wholesale (never mutated in place) by
+        // the operation pipeline, so sharing the reference is safe.
+        copy.setMetadata(metadata);
+        return copy;
+    }
+
+    @Override
     public void freeze() {
         isFrozen = true;
     }

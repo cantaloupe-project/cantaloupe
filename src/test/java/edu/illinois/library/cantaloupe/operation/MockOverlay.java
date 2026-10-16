@@ -15,6 +15,11 @@ public class MockOverlay extends Overlay {
     }
 
     @Override
+    public MockOverlay copy() {
+        return new MockOverlay();
+    }
+
+    @Override
     public Map<String, Object> toMap(Dimension fullSize,
                                      ScaleConstraint scaleConstraint) {
         return new HashMap<>();
