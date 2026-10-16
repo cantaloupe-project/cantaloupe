@@ -1106,6 +1106,44 @@ class OperationListTest extends BaseTest {
     }
 
     @Test
+    void validateWithJPEGDimensionGreaterThanMaxAllowed() {
+        // Mirrors /51,2406,3924,527274/pct:20.0/270.0/default.jpg
+        Dimension fullSize = new Dimension(10000, 600000);
+        OperationList ops = OperationList.builder()
+                .withIdentifier(new Identifier("cats"))
+                .withOperations(
+                        new CropByPixels(51, 2406, 3924, 527274),
+                        new ScaleByPercent(0.2),
+                        new Rotate(270),
+                        new Encode(Format.get("jpg")))
+                .build();
+        ValidationException e = assertThrows(ValidationException.class,
+                () -> ops.validate(fullSize, Format.get("tif")));
+        assertTrue(e.getMessage().contains("105455x785"));
+    }
+
+    @Test
+    void validateWithJPEGDimensionEqualToMaxAllowed() throws Exception {
+        Dimension fullSize = new Dimension(
+                OperationList.MAX_JPEG_DIMENSION, 100);
+        OperationList ops = OperationList.builder()
+                .withIdentifier(new Identifier("cats"))
+                .withOperations(new Encode(Format.get("jpg")))
+                .build();
+        ops.validate(fullSize, Format.get("tif"));
+    }
+
+    @Test
+    void validateWithNonJPEGDimensionGreaterThanJPEGMax() throws Exception {
+        Dimension fullSize = new Dimension(100000, 100);
+        OperationList ops = OperationList.builder()
+                .withIdentifier(new Identifier("cats"))
+                .withOperations(new Encode(Format.get("png")))
+                .build();
+        ops.validate(fullSize, Format.get("tif"));
+    }
+
+    @Test
     void copyReturnsEqualInstance() {
         OperationList opList = OperationList.builder()
                 .withIdentifier(new Identifier("cats"))
