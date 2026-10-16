@@ -401,12 +401,7 @@ class GrokProcessor  extends AbstractProcessor implements FileProcessor {
             LOGGER.debug(msg, e);
             throw new ProcessorException(msg, e);
         } catch (IOException | InterruptedException e) {
-            final String errorStr = toString(errorBucket);
-            //if (errorStr.contains("does not contain a JPEG 2000 code stream")) {
-                throw new SourceFormatException(getSourceFormat());
-            //}
-            //throw new ProcessorException(
-            //        e.getMessage() + " (command output: " + errorStr + ")", e);
+            throw new SourceFormatException(getSourceFormat());
         }
     }
 
