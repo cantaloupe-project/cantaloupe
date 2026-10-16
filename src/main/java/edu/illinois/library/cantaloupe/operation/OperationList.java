@@ -109,6 +109,13 @@ public final class OperationList implements Iterable<Operation> {
     private static final Logger LOGGER =
             LoggerFactory.getLogger(OperationList.class);
 
+    /**
+     * Maximum width or height of a JPEG image. The format allows 65535, but
+     * libjpeg (used by both ImageIO and TurboJPEG) caps it at 65500 ({@code
+     * JPEG_MAX_DIMENSION}).
+     */
+    static final int MAX_JPEG_DIMENSION = 65500;
+
     private boolean isFrozen;
     private Identifier identifier;
     private MetaIdentifier metaIdentifier;
@@ -761,6 +768,8 @@ public final class OperationList implements Iterable<Operation> {
      *     the {@link #getScaleConstraint() scale constraint}</li>
      *     <li>Checks that the resulting pixel area is greater than zero and
      *     less than or equal to {@link Key#MAX_PIXELS} (if set)</li>
+     *     <li>Checks that neither resulting dimension exceeds {@link
+     *     #MAX_JPEG_DIMENSION} when the output format is JPEG</li>
      * </ol>
      *
      * These are all general validations that are not endpoint-specific.
@@ -815,6 +824,17 @@ public final class OperationList implements Iterable<Operation> {
         // Ensure that the resulting pixel area is positive.
         if (resultingSize.isEmpty()) {
             throw new ValidationException("Resulting pixel area is empty.");
+        }
+
+        // Ensure that the resulting dimensions can be encoded as JPEG.
+        if (Format.get("jpg").equals(getOutputFormat()) &&
+                Math.max(resultingSize.intWidth(), resultingSize.intHeight()) >
+                        MAX_JPEG_DIMENSION) {
+            throw new ValidationException(String.format(
+                    "The resulting image (%dx%d) exceeds the maximum " +
+                            "dimension of %d pixels supported by JPEG.",
+                    resultingSize.intWidth(), resultingSize.intHeight(),
+                    MAX_JPEG_DIMENSION));
         }
 
         // Ensure that the resulting pixel area is less than or equal to the
