@@ -727,6 +727,88 @@ class Java2DUtilTest extends BaseTest {
         }
     }
 
+    /**
+     * Fills every sample of an image with a distinct value so that a
+     * misplaced pixel or band is detectable.
+     */
+    private static void fillWithDistinctSamples(BufferedImage image) {
+        final WritableRaster raster = image.getRaster();
+        final int bands = raster.getNumBands();
+        int value = 1;
+        for (int y = 0; y < image.getHeight(); y++) {
+            for (int x = 0; x < image.getWidth(); x++) {
+                for (int b = 0; b < bands; b++) {
+                    final int bits = raster.getSampleModel().getSampleSize(b);
+                    final int max  = (bits >= 31) ? Integer.MAX_VALUE : (1 << bits) - 1;
+                    raster.setSample(x, y, b, value++ % (max + 1));
+                }
+            }
+        }
+    }
+
+    /**
+     * Asserts that every pixel of {@literal inImage} rotated clockwise by
+     * {@literal degrees} lands at its expected position in {@literal outImage}
+     * with all of its samples intact.
+     */
+    private static void assertRotatedLosslessly(BufferedImage inImage,
+                                                BufferedImage outImage,
+                                                int degrees) {
+        final int w = inImage.getWidth(), h = inImage.getHeight();
+        final boolean swap = (degrees == 90 || degrees == 270);
+        assertEquals(swap ? h : w, outImage.getWidth());
+        assertEquals(swap ? w : h, outImage.getHeight());
+        assertSame(inImage.getColorModel(), outImage.getColorModel());
+        assertEquals(inImage.getType(), outImage.getType());
+
+        final Raster in = inImage.getRaster(), out = outImage.getRaster();
+        for (int y = 0; y < h; y++) {
+            for (int x = 0; x < w; x++) {
+                final int ox, oy;
+                switch (degrees) {
+                    case 90:  ox = h - 1 - y; oy = x;         break;
+                    case 180: ox = w - 1 - x; oy = h - 1 - y; break;
+                    default:  ox = y;         oy = w - 1 - x; break;
+                }
+                assertArrayEquals(in.getPixel(x, y, (int[]) null),
+                        out.getPixel(ox, oy, (int[]) null),
+                        degrees + "° at " + x + "," + y);
+            }
+        }
+    }
+
+    @Test
+    void rotate2WithRightAnglesIsLossless() {
+        final BufferedImage[] images = {
+                new BufferedImage(7, 5, BufferedImage.TYPE_INT_RGB),
+                new BufferedImage(7, 5, BufferedImage.TYPE_INT_ARGB),
+                new BufferedImage(7, 5, BufferedImage.TYPE_3BYTE_BGR),
+                new BufferedImage(7, 5, BufferedImage.TYPE_4BYTE_ABGR),
+                new BufferedImage(7, 5, BufferedImage.TYPE_BYTE_GRAY),
+                new BufferedImage(7, 5, BufferedImage.TYPE_USHORT_GRAY),
+                new BufferedImage(7, 5, BufferedImage.TYPE_BYTE_BINARY),
+                newColorImage(7, 5, 16, true),
+                newGrayImage(7, 5, 16, true),
+                newInterleavedRGBImage(7, 5, true),
+                newInterleavedRGBImage(7, 5, false)
+        };
+        for (BufferedImage inImage : images) {
+            fillWithDistinctSamples(inImage);
+            for (int degrees : new int[] { 90, 180, 270 }) {
+                BufferedImage outImage =
+                        Java2DUtil.rotate(inImage, new Rotate(degrees));
+                assertRotatedLosslessly(inImage, outImage, degrees);
+            }
+        }
+    }
+
+    @Test
+    void rotate2WithRightAngleDoesNotAddAlpha() {
+        BufferedImage inImage = newColorImage(8, false);
+        BufferedImage outImage = Java2DUtil.rotate(inImage, new Rotate(90));
+        assertFalse(outImage.getColorModel().hasAlpha());
+    }
+
     @Test
     void rotate2With16BitGray() {
         BufferedImage inImage = newGrayImage(16, false);
