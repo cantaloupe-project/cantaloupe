@@ -114,6 +114,18 @@ public class RotationTest extends BaseTest {
     }
 
     @Test
+    void testGetDegreesWith360Degrees() {
+        instance.setDegrees(360);
+        assertEquals(0f, instance.getDegrees(), DELTA);
+    }
+
+    @Test
+    void testToRotateWith360Degrees() {
+        instance.setDegrees(360);
+        assertEquals(0, instance.toRotate().getDegrees(), 0.00000001);
+    }
+
+    @Test
     void testToTranspose() {
         instance.setMirror(false);
         assertNull(instance.toTranspose());
