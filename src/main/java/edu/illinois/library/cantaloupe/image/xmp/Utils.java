@@ -30,13 +30,21 @@ public final class Utils {
 
     /**
      * Strips any enclosing tags or other content around the {@literal rdf:RDF}
-     * element within an RDF/XML XMP string.
+     * element within an RDF/XML XMP string. The element may be self-closing
+     * (i.e. {@literal <rdf:RDF .../>}).
      */
     public static String trimXMP(String xmp) {
         final int start = xmp.indexOf("<rdf:RDF");
+        if (start < 0) {
+            return xmp;
+        }
         final int end = xmp.indexOf("</rdf:RDF");
-        if (start > -1 && end > -1) {
-            xmp = xmp.substring(start, end + 10);
+        if (end > -1) {
+            return xmp.substring(start, end + 10);
+        }
+        final int startTagEnd = xmp.indexOf('>', start);
+        if (startTagEnd > 0 && xmp.charAt(startTagEnd - 1) == '/') {
+            return xmp.substring(start, startTagEnd + 1);
         }
         return xmp;
     }
