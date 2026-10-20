@@ -69,7 +69,8 @@ class Rotation implements Comparable<Object> {
     }
 
     public float getDegrees() {
-        return degrees;
+        // 360 is a valid IIIF rotation but is equivalent to 0.
+        return degrees % 360;
     }
 
     @Override
