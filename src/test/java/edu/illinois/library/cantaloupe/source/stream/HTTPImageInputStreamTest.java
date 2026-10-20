@@ -18,6 +18,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Arrays;
 import java.util.Iterator;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -154,6 +155,28 @@ public class HTTPImageInputStreamTest extends BaseTest {
             instance.read(actualBytes, 0, fixtureLength);
         }
         assertArrayEquals(expectedBytes, actualBytes);
+    }
+
+    @Test
+    void testReadWithTruncatedResponseBody() throws Exception {
+        final Path fixture = TestUtil.getImage("tif");
+        final URI uri = webServer.getHTTPURI().resolve("/" + fixture.getFileName());
+        final HTTPImageInputStreamClient client =
+                new MockHTTPImageInputStreamClient(uri) {
+                    @Override
+                    public Response sendGETRequest(Range range) throws IOException {
+                        Response response = super.sendGETRequest(range);
+                        byte[] body = response.getBody();
+                        response.setBody(Arrays.copyOf(body, body.length / 2));
+                        return response;
+                    }
+                };
+
+        try (HTTPImageInputStream instance =
+                     new HTTPImageInputStream(client, Files.size(fixture))) {
+            instance.setWindowSize(1024);
+            assertThrows(IOException.class, instance::read);
+        }
     }
 
     @Test

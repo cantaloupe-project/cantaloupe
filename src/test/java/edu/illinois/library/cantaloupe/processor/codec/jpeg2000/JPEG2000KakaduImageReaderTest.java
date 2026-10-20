@@ -14,7 +14,10 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import javax.imageio.stream.FileImageInputStream;
+import javax.imageio.stream.ImageInputStream;
 import java.awt.image.BufferedImage;
+import java.io.IOException;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -121,6 +124,36 @@ public class JPEG2000KakaduImageReaderTest extends BaseTest {
     public void testGetWidthWithInvalidImage() {
         instance.setSource(TestUtil.getImage("unknown"));
         assertThrows(SourceFormatException.class, () -> instance.getWidth());
+    }
+
+    @Test
+    public void testGetWidthWithStreamSource() throws Exception {
+        try (ImageInputStream is = new FileImageInputStream(
+                TestUtil.getImage("jp2").toFile())) {
+            instance.close();
+            instance = new JPEG2000KakaduImageReader();
+            instance.setSource(is);
+            assertEquals(64, instance.getWidth());
+        }
+    }
+
+    @Test
+    public void testGetWidthWithUnreadableStreamSource() throws Exception {
+        final IOException readException = new IOException("Connection reset");
+        try (ImageInputStream is = new FileImageInputStream(
+                TestUtil.getImage("jp2").toFile()) {
+            @Override
+            public int read(byte[] b, int off, int len) throws IOException {
+                throw readException;
+            }
+        }) {
+            instance.close();
+            instance = new JPEG2000KakaduImageReader();
+            instance.setSource(is);
+            IOException e = assertThrows(IOException.class,
+                    () -> instance.getWidth());
+            assertSame(readException, e);
+        }
     }
 
     @Test
