@@ -76,8 +76,20 @@ public final class JPEG2000KakaduImageReader implements AutoCloseable {
 
         private final ImageInputStream inputStream;
 
+        /**
+         * The first exception thrown while reading from {@link #inputStream}
+         * in {@link #Post_read(int)}. It can't propagate through Kakadu, which
+         * will instead see a short read and fail with a generic error, so it
+         * is retained here for the reader to rethrow.
+         */
+        private IOException readException;
+
         KduImageInputStreamSource(ImageInputStream inputStream) {
             this.inputStream = inputStream;
+        }
+
+        IOException getReadException() {
+            return readException;
         }
 
         @Override
@@ -109,8 +121,16 @@ public final class JPEG2000KakaduImageReader implements AutoCloseable {
                     numBytesRead += numSupplied;
                 }
                 Push_data(buffer, 0, numBytesRead);
-            } catch (KduException | IOException e) {
+            } catch (IOException e) {
                 LOGGER.error(e.getMessage());
+                if (readException == null) {
+                    readException = e;
+                }
+                // No data was pushed.
+                return 0;
+            } catch (KduException e) {
+                LOGGER.error(e.getMessage());
+                return 0;
             }
             return numBytesRead;
         }
@@ -489,6 +509,10 @@ public final class JPEG2000KakaduImageReader implements AutoCloseable {
                 codestreamSrc = jpxSrc.Access_codestream(layerSrc.Get_codestream_id(0));
                 compSrc       = codestreamSrc.Open_stream();
             } else {
+                // If opening failed because the stream couldn't be read, the
+                // fallback below would fail too, misleadingly, with "Code-
+                // stream must start with an SOC marker."
+                rethrowReadException(familySrcStreamSource);
                 // Must open as raw codestream.
                 familySrc.Close();
                 jpxSrc.Close();
@@ -524,11 +548,25 @@ public final class JPEG2000KakaduImageReader implements AutoCloseable {
             }
         } catch (KduException e) {
             handle(e);
+            // A read failure surfaces from Kakadu as a generic error that is
+            // indistinguishable from an invalid source, so check for one
+            // before blaming the format.
+            rethrowReadException(familySrcStreamSource);
+            if (compSrc instanceof KduImageInputStreamSource src) {
+                rethrowReadException(src);
+            }
             if (e.Get_kdu_exception_code() == 1801745731) {
                 throw new SourceFormatException();
             } else {
                 throw new IOException(e);
             }
+        }
+    }
+
+    private static void rethrowReadException(KduImageInputStreamSource src)
+            throws IOException {
+        if (src != null && src.getReadException() != null) {
+            throw src.getReadException();
         }
     }
 
