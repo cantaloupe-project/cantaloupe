@@ -6,6 +6,7 @@ import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.rdf.model.StmtIterator;
+import org.apache.jena.sys.JenaSystem;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -18,6 +19,13 @@ import java.util.List;
 import java.util.Set;
 
 final class Util {
+
+    static {
+        // Normally already done by ApplicationContextListener. The JVM's
+        // class initialization lock makes other threads wait here until Jena
+        // (including RIOT's RDF/XML reader) is fully initialized.
+        JenaSystem.init();
+    }
 
     /**
      * @param xmp XMP data with a root {@literal <rdf:RDF>} element.
