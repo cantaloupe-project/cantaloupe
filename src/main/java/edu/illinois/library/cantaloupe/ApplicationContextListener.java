@@ -11,6 +11,7 @@ import edu.illinois.library.cantaloupe.resource.PoweredByHeader;
 import edu.illinois.library.cantaloupe.source.Source;
 import edu.illinois.library.cantaloupe.source.SourceFactory;
 import edu.illinois.library.cantaloupe.delegate.DelegateProxyService;
+import org.apache.jena.sys.JenaSystem;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -43,6 +44,12 @@ public class ApplicationContextListener implements ServletContextListener {
         LoggerUtil.reloadConfiguration();
 
         logSystemInfo();
+
+        // Jena's lazy initialization is not thread-safe: a request thread can
+        // see it as already initialized while another thread is still wiring
+        // in RIOT, which makes RDF/XML parsing fail with "Reader not found:
+        // RDF/XML". Initialize it here, before any requests are handled.
+        JenaSystem.init();
 
         // Start watching configuration files.
         ConfigurationFileWatcher.startWatching();
