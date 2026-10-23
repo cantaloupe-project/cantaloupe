@@ -172,6 +172,7 @@ public class MediaTypeTest extends BaseTest {
         assertEquals(Format.get("bmp"), new MediaType("image/bmp").toFormat());
         assertEquals(Format.get("gif"), new MediaType("image/gif").toFormat());
         assertEquals(Format.get("jp2"), new MediaType("image/jp2").toFormat());
+        assertEquals(Format.get("jp2"), new MediaType("image/jpx").toFormat());
         assertEquals(Format.get("jpg"), new MediaType("image/jpeg").toFormat());
         assertEquals(Format.get("mov"), new MediaType("video/quicktime").toFormat());
         assertEquals(Format.get("mp4"), new MediaType("video/mp4").toFormat());
