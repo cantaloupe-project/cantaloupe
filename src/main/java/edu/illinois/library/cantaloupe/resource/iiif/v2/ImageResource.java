@@ -13,8 +13,10 @@ import edu.illinois.library.cantaloupe.operation.Scale;
 import edu.illinois.library.cantaloupe.operation.ValidationException;
 import edu.illinois.library.cantaloupe.processor.Processor;
 import edu.illinois.library.cantaloupe.resource.IllegalClientArgumentException;
-import edu.illinois.library.cantaloupe.resource.Route;
 import edu.illinois.library.cantaloupe.resource.ImageRequestHandler;
+import edu.illinois.library.cantaloupe.resource.Route;
+import edu.illinois.library.cantaloupe.resource.iiif.ScaleValidator;
+import edu.illinois.library.cantaloupe.resource.iiif.SizeConstrainer;
 import edu.illinois.library.cantaloupe.resource.iiif.SizeRestrictedException;
 import edu.illinois.library.cantaloupe.source.StatResult;
 import org.slf4j.Logger;
@@ -63,9 +65,9 @@ public class ImageResource extends IIIF2Resource {
         }
 
         // Assemble the URI path segments into a Parameters object.
-        final List<String> args = getPathArguments();
+        final List<String> args = getRequest().getPathArguments();
         final Parameters params = new Parameters(
-                getIdentifier().toString(), args.get(1), args.get(2),
+                getRequest().getIdentifier().toString(), args.get(1), args.get(2),
                 args.get(3), args.get(4), args.get(5));
         // Convert it into an OperationList.
         final OperationList ops = params.toOperationList(getDelegateProxy());
@@ -97,7 +99,7 @@ public class ImageResource extends IIIF2Resource {
             public void infoAvailable(Info info) {
                 if (Size.ScaleMode.MAX.equals(params.getSize().getScaleMode())) {
                     try {
-                        constrainSizeToMaxPixels(info.getSize(), ops);
+                        SizeConstrainer.constrainSizeToMaxPixels(info.getSize(), ops);
                     } catch (ValidationException e) {
                         throw new IllegalClientArgumentException(e.getMessage(), e);
                     }
@@ -122,22 +124,24 @@ public class ImageResource extends IIIF2Resource {
                         metadata.getOrientation() : Orientation.ROTATE_0;
                 final Dimension virtualSize   = orientation.adjustedSize(info.getSize(pageIndex));
                 final Dimension resultingSize = ops.getResultingSize(info.getSize());
-                validateScale(
+                ScaleValidator.validateScale(
                         virtualSize,
                         (Scale) ops.getFirst(Scale.class),
-                        Status.FORBIDDEN);
+                        Status.FORBIDDEN,
+                        getMetaIdentifier());
+                
                 validateSize(resultingSize, virtualSize);
                 sendHeaders();
             }
         }
 
-        try (ImageRequestHandler handler = ImageRequestHandler.builder()
-                .withOperationList(ops)
-                .withBypassingCache(isBypassingCache())
-                .withBypassingCacheRead(isBypassingCacheRead())
-                .optionallyWithDelegateProxy(getDelegateProxy(), getRequestContext())
-                .withCallback(new CustomCallback())
-                .build()) {
+        try (ImageRequestHandler handler = new ImageRequestHandler(
+                ops,
+                getDelegateProxy(),
+                getRequestContext(),
+                new CustomCallback(),
+                getRequest().isBypassingCache(),
+                getRequest().isBypassingCacheRead())) {
             handler.handle(getResponse().getOutputStream());
         }
     }
@@ -158,11 +162,11 @@ public class ImageResource extends IIIF2Resource {
                 params.getOutputFormat().toFormat().getPreferredMediaType().toString());
         // Link
         Parameters paramsCopy = new Parameters(params);
-        paramsCopy.setIdentifier(getPublicIdentifier());
+        paramsCopy.setIdentifier(getRequest().getPublicIdentifier());
         String paramsStr = paramsCopy.toCanonicalString(fullSize);
         queuedHeaders.put("Link",
                 String.format("<%s%s/%s>;rel=\"canonical\"",
-                        getPublicRootReference(),
+                        getRequest().getPublicRootReference(),
                         Route.IIIF_2_PATH,
                         paramsStr));
     }

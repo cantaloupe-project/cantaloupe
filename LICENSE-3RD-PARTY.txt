@@ -6,7 +6,7 @@ This license applies to the following modules:
 
 Apache Jena            Copyright © 2011–2018 The Apache Software Foundation
 Apache Tika            Copyright © 2018 The Apache Software Foundation
-Apache Velocity        Copyright © 2016 The Apache Software Foundation
+Thymeleaf              Copyright © 2011-2023 The Thymeleaf Team
 AWS SDK for Java       Copyright © Amazon Web Services
 Caffeine               Copyright © Ben Manes
 Commons Collections    Copyright © 2001-2018 The Apache Software Foundation

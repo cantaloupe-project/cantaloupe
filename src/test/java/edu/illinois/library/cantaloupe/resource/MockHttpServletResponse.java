@@ -13,7 +13,6 @@ import java.util.stream.Collectors;
 public class MockHttpServletResponse implements HttpServletResponse {
 
     private int status;
-    private String description;
     private final Headers headers = new Headers();
     private final ByteArrayServletOutputStream outputStream =
             new ByteArrayServletOutputStream();
@@ -42,17 +41,7 @@ public class MockHttpServletResponse implements HttpServletResponse {
     }
 
     @Override
-    public String encodeRedirectUrl(String s) {
-        return null;
-    }
-
-    @Override
     public String encodeRedirectURL(String s) {
-        return null;
-    }
-
-    @Override
-    public String encodeUrl(String s) {
         return null;
     }
 
@@ -186,11 +175,4 @@ public class MockHttpServletResponse implements HttpServletResponse {
     public void setStatus(int status) {
         this.status = status;
     }
-
-    @Override
-    public void setStatus(int status, String description) {
-        setStatus(status);
-        this.description = description;
-    }
-
 }

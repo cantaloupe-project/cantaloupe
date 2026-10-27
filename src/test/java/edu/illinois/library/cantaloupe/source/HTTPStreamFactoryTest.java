@@ -9,7 +9,9 @@ import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.WebServer;
 import edu.illinois.library.cantaloupe.util.SocketUtils;
 import org.eclipse.jetty.server.Request;
+import org.eclipse.jetty.server.Response;
 import org.eclipse.jetty.server.handler.DefaultHandler;
+import org.eclipse.jetty.util.Callback;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
@@ -99,12 +101,12 @@ public class HTTPStreamFactoryTest extends BaseTest {
     void newInputStreamSendsCustomHeaders() throws Exception {
         server.setHandler(new DefaultHandler() {
             @Override
-            public void handle(String target,
-                               Request baseRequest,
-                               HttpServletRequest request,
-                               HttpServletResponse response) {
-                assertEquals("yes", request.getHeader("X-Custom"));
-                baseRequest.setHandled(true);
+            public boolean handle(Request request,
+                Response response,
+                Callback callback) {
+                assertEquals("yes", request.getHeaders().get("X-Custom"));
+                callback.succeeded();
+                return true;
             }
         });
         server.start();
@@ -188,12 +190,12 @@ public class HTTPStreamFactoryTest extends BaseTest {
     void newSeekableStreamSendsCustomHeaders() throws Exception {
         server.setHandler(new DefaultHandler() {
             @Override
-            public void handle(String target,
-                               Request baseRequest,
-                               HttpServletRequest request,
-                               HttpServletResponse response) {
-                assertEquals("yes", request.getHeader("X-Custom"));
-                baseRequest.setHandled(true);
+            public boolean handle(Request request,
+                Response response,
+                Callback callback) {
+                assertEquals("yes", request.getHeaders().get("X-Custom"));
+                callback.succeeded();
+                return true;
             }
         });
         server.start();

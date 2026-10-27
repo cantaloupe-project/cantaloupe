@@ -53,7 +53,12 @@ abstract class AbstractRequestHandler {
         return info;
     }
 
-    boolean isResolvingFirst() {
+    /*
+     * If true, we must confirm the source image exists before a cached copy
+     * is returned. If false, the cached copy will be returned without checking.
+     * Resolving first is safer but slower.
+     */
+    boolean verifyExistenceBeforeReturningCachedValue() {
         return Configuration.getInstance().
                 getBoolean(Key.CACHE_SERVER_RESOLVE_FIRST, true);
     }

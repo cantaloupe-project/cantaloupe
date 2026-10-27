@@ -222,6 +222,20 @@ public final class JPEG2000KakaduImageReader implements AutoCloseable {
      */
     private ImageInputStream inputStream;
 
+    /**
+     * The {@link KduImageInputStreamSource} created from {@link #inputStream}
+     * and passed to {@link #familySrc} in {@link #openImage()}. Tracked
+     * separately from {@link #compSrc} because in the success path,
+     * {@code compSrc} is overwritten with the result of
+     * {@code codestreamSrc.Open_stream()}, orphaning the original instance.
+     * Without explicit tracking, the orphaned instance's {@code finalize()}
+     * method (which calls {@code Native_destroy()}, a slow JNI call) keeps
+     * both the {@link KduImageInputStreamSource} and its wrapped
+     * {@link #inputStream} alive in the JVM finalizer queue indefinitely,
+     * causing a severe heap buildup under load.
+     */
+    private KduImageInputStreamSource familySrcStreamSource;
+
     private boolean isOpenAttempted, haveReadInfo, haveReadMetadata,
             isDecompressing;
 
@@ -307,6 +321,33 @@ public final class JPEG2000KakaduImageReader implements AutoCloseable {
         jpxSrc.Native_destroy();
         familySrc.Native_destroy();
 
+        // Explicitly destroy the KduImageInputStreamSource that was passed to
+        // familySrc.Open() if it was superseded as compSrc. This happens in
+        // two paths inside openImage():
+        //   1. JP2/JPX success path: compSrc is overwritten with the result of
+        //      codestreamSrc.Open_stream(), orphaning the original instance.
+        //   2. Raw-codestream fallback path: compSrc is replaced with a new
+        //      KduImageInputStreamSource after familySrc.Close().
+        // Without this, the orphaned KduImageInputStreamSource sits in the JVM
+        // finalizer queue (its finalize() calls Native_destroy(), a slow JNI
+        // call) holding a strong reference to the wrapped HTTPImageInputStream,
+        // preventing both objects from being garbage-collected.
+        // It is safe to call Native_destroy() here because familySrc has
+        // already been destroyed above and no longer holds a native reference
+        // to this object's C++ peer.
+        if (familySrcStreamSource != null && familySrcStreamSource != compSrc) {
+            try {
+                familySrcStreamSource.Close();
+            } catch (KduException e) {
+                LOGGER.warn("Failed to close the stream source: {} (code: {})",
+                        e.getMessage(),
+                        Integer.toHexString(e.Get_kdu_exception_code()));
+            } finally {
+                familySrcStreamSource.Native_destroy();
+                familySrcStreamSource = null;
+            }
+        }
+
         try {
             threadEnv.Destroy();
         } catch (KduException e) {
@@ -334,13 +375,14 @@ public final class JPEG2000KakaduImageReader implements AutoCloseable {
     }
 
     private void init() {
-        jpxSrc       = new Jpx_source();
-        familySrc    = new Jp2_threadsafe_family_src();
-        codestream   = new Kdu_codestream();
-        channels     = new Kdu_channel_mapping();
-        decompressor = new Kdu_region_decompressor();
-        threadEnv    = new Kdu_thread_env();
-        limiter      = new Kdu_quality_limiter(1 / 256f, false);
+        jpxSrc                = new Jpx_source();
+        familySrc             = new Jp2_threadsafe_family_src();
+        codestream            = new Kdu_codestream();
+        channels              = new Kdu_channel_mapping();
+        decompressor          = new Kdu_region_decompressor();
+        threadEnv             = new Kdu_thread_env();
+        limiter               = new Kdu_quality_limiter(1 / 256f, false);
+        familySrcStreamSource = null;
     }
 
     /**
@@ -433,7 +475,8 @@ public final class JPEG2000KakaduImageReader implements AutoCloseable {
             if (sourceFile != null) {
                 familySrc.Open(sourceFile.toString());
             } else {
-                compSrc = new KduImageInputStreamSource(inputStream);
+                familySrcStreamSource = new KduImageInputStreamSource(inputStream);
+                compSrc = familySrcStreamSource;
                 familySrc.Open(compSrc);
             }
 

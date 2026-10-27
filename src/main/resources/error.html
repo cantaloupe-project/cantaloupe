@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+    <head>
+        <th:block th:insert="~{head_common :: head}"></th:block>
+        <title th:text="${pageTitle}">Error</title>
+    </head>
+
+    <body id="cl-error">
+        <div class="container-fluid">
+            <h1 th:text="${pageTitle}">Error</h1>
+
+            <p th:if="${message}" th:text="${message}"></p>
+
+            <pre th:if="${stackTrace}" th:text="${stackTrace}"></pre>
+
+        </div>
+    </body>
+</html>

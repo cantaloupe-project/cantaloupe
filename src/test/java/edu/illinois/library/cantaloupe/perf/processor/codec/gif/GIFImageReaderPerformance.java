@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
 import edu.illinois.library.cantaloupe.processor.codec.gif.GIFImageReaderTest;
+
+import org.junit.jupiter.api.BeforeEach;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.BenchmarkMode;
 import org.openjdk.jmh.annotations.Fork;
@@ -30,6 +32,7 @@ public class GIFImageReaderPerformance extends GIFImageReaderTest {
 
     @Setup
     @Override
+    @BeforeEach
     public void setUp() throws Exception {
         super.setUp();
     }

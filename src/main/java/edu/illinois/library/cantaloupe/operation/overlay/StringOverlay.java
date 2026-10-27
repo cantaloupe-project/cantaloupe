@@ -8,6 +8,7 @@ import edu.illinois.library.cantaloupe.util.StringUtils;
 
 import java.awt.Font;
 import java.awt.font.TextAttribute;
+import java.util.Locale;
 import java.util.Map;
 
 /**
@@ -46,6 +47,13 @@ public class StringOverlay extends Overlay implements Operation {
         this.setStrokeColor(strokeColor);
         this.setStrokeWidth(strokeWidth);
         this.setWordWrap(wordWrap);
+    }
+
+    @Override
+    public StringOverlay copy() {
+        return new StringOverlay(string, getPosition(), getInset(), font,
+                minSize, color, backgroundColor, strokeColor, strokeWidth,
+                wordWrap);
     }
 
     public Color getBackgroundColor() {
@@ -204,7 +212,9 @@ public class StringOverlay extends Overlay implements Operation {
     public String toString() {
         // minSize is not included, as it is more of a potential property than
         // a property.
-        return String.format("%s_%s_%d_%s_%d_%.1f_%.01f_%s_%s_%s_%.1f_%s",
+        Locale locale = new Locale.Builder().setLanguage("en").setRegion("UK").build();
+        return String.format(locale,
+                "%s_%s_%d_%s_%d_%.1f_%.01f_%s_%s_%s_%.1f_%s",
                 StringUtils.md5(getString()),
                 getPosition(),
                 getInset(),

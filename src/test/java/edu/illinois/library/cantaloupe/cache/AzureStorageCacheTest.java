@@ -19,19 +19,19 @@ public class AzureStorageCacheTest extends AbstractCacheTest {
     private OperationList opList = new OperationList();
 
     private static String getAccountName() {
-        org.apache.commons.configuration.Configuration testConfig =
+        org.apache.commons.configuration2.Configuration testConfig =
                 TestUtil.getTestConfig();
         return testConfig.getString(ConfigurationConstants.AZURE_ACCOUNT_NAME.getKey());
     }
 
     private static String getAccountKey() {
-        org.apache.commons.configuration.Configuration testConfig =
+        org.apache.commons.configuration2.Configuration testConfig =
                 TestUtil.getTestConfig();
         return testConfig.getString(ConfigurationConstants.AZURE_ACCOUNT_KEY.getKey());
     }
 
     private static String getContainer() {
-        org.apache.commons.configuration.Configuration testConfig =
+        org.apache.commons.configuration2.Configuration testConfig =
                 TestUtil.getTestConfig();
         return testConfig.getString(ConfigurationConstants.AZURE_CONTAINER.getKey());
     }

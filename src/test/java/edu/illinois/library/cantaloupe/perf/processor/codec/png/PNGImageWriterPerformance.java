@@ -2,6 +2,7 @@ package edu.illinois.library.cantaloupe.perf.processor.codec.png;
 
 import java.util.concurrent.TimeUnit;
 
+import org.junit.jupiter.api.BeforeEach;
 import edu.illinois.library.cantaloupe.processor.codec.png.PNGImageWriterTest;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.BenchmarkMode;
@@ -29,6 +30,7 @@ public class PNGImageWriterPerformance extends PNGImageWriterTest {
 
     @Setup
     @Override
+    @BeforeEach
     public void setUp() throws Exception {
         super.setUp();
     }

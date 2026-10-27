@@ -1,0 +1,45 @@
+FROM mcr.microsoft.com/windows/servercore:ltsc2022
+
+ENV chocolateyUseWindowsCompression false
+
+# Install the Chocolatey package manager, which makes it easier to install
+# dependencies.
+RUN powershell -Command \
+  iex ((new-object net.webclient).DownloadString('https://chocolatey.org/install.ps1')); \
+  choco feature disable --name showDownloadProgress
+
+# Install various dependencies
+# TODO: openjpeg
+# Java needs to be first or maven instal complains
+
+# Install OpenJDK 24
+# RUN powershell -Command \
+#   $url = 'https://download.java.net/java/GA/jdk24.0.2/fdc5d0102fe0414db21410ad5834341f/12/GPL/openjdk-24.0.2_windows-x64_bin.zip'; \
+#   $output = 'C:\openjdk.zip'; \
+#   Invoke-WebRequest -Uri $url -OutFile $output; \
+#   Expand-Archive -Path $output -DestinationPath 'C:\'; \
+#   Move-Item -Path 'C:\jdk-24.0.2' -Destination 'C:\openjdk'; \
+#   Remove-Item -Path $output; \
+#   [Environment]::SetEnvironmentVariable('JAVA_HOME', 'C:\openjdk', [EnvironmentVariableTarget]::Machine); \
+#   [Environment]::SetEnvironmentVariable('PATH', $env:PATH + ';C:\openjdk\bin', [EnvironmentVariableTarget]::Machine)
+
+
+RUN choco install -y openjdk --version=25.0.0.1
+RUN choco install -y maven ffmpeg
+
+
+
+# Install TurboJpegProcessor dependencies TODO: libjpeg-turbo
+#RUN mkdir -p /opt/libjpeg-turbo/lib
+#COPY docker/Windows10-JDK11/image_files/libjpeg-turbo/lib64 c:\windows\system32
+
+# Install KakaduNativeProcessor dependencies
+COPY dist/deps/Windows-x86-64/lib/* c:/Windows/System32/
+
+# Install application dependencies
+COPY pom.xml pom.xml
+RUN mvn dependency:resolve
+
+# Copy the code
+COPY docker/image_files/test.properties test.properties
+COPY src src

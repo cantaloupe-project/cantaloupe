@@ -10,16 +10,17 @@ import edu.illinois.library.cantaloupe.image.MediaType;
 import edu.illinois.library.cantaloupe.operation.Encode;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.image.Info;
-import edu.illinois.library.cantaloupe.util.S3ClientBuilder;
+import edu.illinois.library.cantaloupe.util.S3AsyncClientBuilder;
 import edu.illinois.library.cantaloupe.util.S3Utils;
 import edu.illinois.library.cantaloupe.util.Stopwatch;
 import edu.illinois.library.cantaloupe.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import software.amazon.awssdk.core.ResponseInputStream;
+import software.amazon.awssdk.core.async.AsyncRequestBody;
+import software.amazon.awssdk.core.async.AsyncResponseTransformer;
 import software.amazon.awssdk.core.exception.SdkException;
-import software.amazon.awssdk.core.sync.RequestBody;
-import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.S3AsyncClient;
 import software.amazon.awssdk.services.s3.model.CopyObjectRequest;
 import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
@@ -29,9 +30,9 @@ import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import software.amazon.awssdk.services.s3.model.S3Exception;
 import software.amazon.awssdk.services.s3.model.S3Object;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.concurrent.CompletionException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
@@ -72,9 +73,9 @@ class S3Cache implements DerivativeCache {
     /**
      * Lazy-initialized by {@link #getClientInstance}.
      */
-    private static S3Client client;
+    private static S3AsyncClient client;
 
-    static synchronized S3Client getClientInstance() {
+    static synchronized S3AsyncClient getClientInstance() {
         if (client == null) {
             final Configuration config = Configuration.getInstance();
             final String endpointStr = config.getString(Key.S3CACHE_ENDPOINT);
@@ -87,7 +88,7 @@ class S3Cache implements DerivativeCache {
                             Key.S3CACHE_ENDPOINT, e.getMessage());
                 }
             }
-            client = new S3ClientBuilder()
+            client = new S3AsyncClientBuilder()
                     .accessKeyID(config.getString(Key.S3CACHE_ACCESS_KEY_ID))
                     .secretAccessKey(config.getString(Key.S3CACHE_SECRET_KEY))
                     .endpointURI(endpointURI)
@@ -121,9 +122,9 @@ class S3Cache implements DerivativeCache {
 
     @Override
     public Optional<Info> getInfo(Identifier identifier) throws IOException {
-        final S3Client client   = getClientInstance();
-        final String bucketName = getBucketName();
-        final String objectKey  = getObjectKey(identifier);
+        final S3AsyncClient client = getClientInstance();
+        final String bucketName    = getBucketName();
+        final String objectKey     = getObjectKey(identifier);
 
         GetObjectRequest request = GetObjectRequest.builder()
                 .bucket(bucketName)
@@ -131,7 +132,8 @@ class S3Cache implements DerivativeCache {
                 .ifModifiedSince(earliestValidInstant())
                 .build();
         final Stopwatch watch = new Stopwatch();
-        try (ResponseInputStream<GetObjectResponse> is = client.getObject(request)) {
+        try (ResponseInputStream<GetObjectResponse> is =
+                     client.getObject(request, AsyncResponseTransformer.toBlockingInputStream()).join()) {
             // This extra validity check may be needed with minio server
             if (is != null && is.response().lastModified().isAfter(earliestValidInstant())) {
                 final Info info = Info.fromJSON(is);
@@ -150,12 +152,17 @@ class S3Cache implements DerivativeCache {
                         objectKey, bucketName);
                 purgeAsync(bucketName, objectKey);
             }
-        } catch (S3Exception e) {
-            if (e.statusCode() != 304 && e.statusCode() != 404) {
+        } catch (CompletionException e) {
+            final Throwable cause = e.getCause();
+            if (cause instanceof S3Exception s3e) {
+                if (s3e.statusCode() != 304 && s3e.statusCode() != 404) {
+                    throw new IOException(s3e);
+                }
+            } else if (cause instanceof SdkException sdke) {
+                throw new IOException(sdke);
+            } else {
                 throw new IOException(e);
             }
-        } catch (SdkException e) {
-            throw new IOException(e);
         }
         return Optional.empty();
     }
@@ -163,9 +170,9 @@ class S3Cache implements DerivativeCache {
     @Override
     public InputStream newDerivativeImageInputStream(OperationList opList)
             throws IOException {
-        final S3Client client   = getClientInstance();
-        final String bucketName = getBucketName();
-        final String objectKey  = getObjectKey(opList);
+        final S3AsyncClient client = getClientInstance();
+        final String bucketName    = getBucketName();
+        final String objectKey     = getObjectKey(opList);
         LOGGER.debug("newDerivativeImageInputStream(): bucket: {}; key: {}",
                 bucketName, objectKey);
         GetObjectRequest request = GetObjectRequest.builder()
@@ -174,7 +181,8 @@ class S3Cache implements DerivativeCache {
                 .ifModifiedSince(earliestValidInstant())
                 .build();
         try {
-            ResponseInputStream<GetObjectResponse> is = client.getObject(request);
+            ResponseInputStream<GetObjectResponse> is =
+                    client.getObject(request, AsyncResponseTransformer.toBlockingInputStream()).join();
             // This extra validity check may be needed with minio server
             if (is != null && is.response().lastModified().isAfter(earliestValidInstant())) {
                 touchAsync(objectKey);
@@ -185,12 +193,17 @@ class S3Cache implements DerivativeCache {
                         objectKey, bucketName);
                 purgeAsync(bucketName, objectKey);
             }
-        } catch (S3Exception e) {
-            if (e.statusCode() != 304 && e.statusCode() != 404) {
+        } catch (CompletionException e) {
+            final Throwable cause = e.getCause();
+            if (cause instanceof S3Exception s3e) {
+                if (s3e.statusCode() != 304 && s3e.statusCode() != 404) {
+                    throw new IOException(s3e);
+                }
+            } else if (cause instanceof SdkException sdke) {
+                throw new IOException(sdke);
+            } else {
                 throw new IOException(e);
             }
-        } catch (SdkException e) {
-            throw new IOException(e);
         }
         return null;
     }
@@ -198,9 +211,9 @@ class S3Cache implements DerivativeCache {
     @Override
     public CompletableOutputStream
     newDerivativeImageOutputStream(OperationList opList) {
-        final String objectKey  = getObjectKey(opList);
-        final String bucketName = getBucketName();
-        final S3Client client   = getClientInstance();
+        final String objectKey     = getObjectKey(opList);
+        final String bucketName    = getBucketName();
+        final S3AsyncClient client = getClientInstance();
         return new S3MultipartAsyncOutputStream(client, bucketName, objectKey,
                 opList.getOutputFormat().getPreferredMediaType().toString());
     }
@@ -246,7 +259,7 @@ class S3Cache implements DerivativeCache {
 
     @Override
     public void purge() {
-        final S3Client client       = getClientInstance();
+        final S3AsyncClient client  = getClientInstance();
         final String bucketName     = getBucketName();
         final AtomicInteger counter = new AtomicInteger();
 
@@ -255,9 +268,9 @@ class S3Cache implements DerivativeCache {
                 client.deleteObject(DeleteObjectRequest.builder()
                         .bucket(bucketName)
                         .key(object.key())
-                        .build());
+                        .build()).join();
                 counter.incrementAndGet();
-            } catch (S3Exception e) {
+            } catch (CompletionException e) {
                 LOGGER.warn("purge(): {}", e.getMessage());
             }
         });
@@ -270,7 +283,7 @@ class S3Cache implements DerivativeCache {
         purge(getObjectKey(identifier));
 
         // purge images
-        final S3Client client       = getClientInstance();
+        final S3AsyncClient client  = getClientInstance();
         final String bucketName     = getBucketName();
         final String prefix         = getObjectKeyPrefix() + IMAGE_KEY_PREFIX +
                 StringUtils.md5(identifier.toString());
@@ -281,7 +294,7 @@ class S3Cache implements DerivativeCache {
             client.deleteObject(DeleteObjectRequest.builder()
                     .bucket(bucketName)
                     .key(object.key())
-                    .build());
+                    .build()).join();
             counter.incrementAndGet();
         });
         LOGGER.debug("purge(Identifier): deleted {} items", counter.get());
@@ -293,29 +306,29 @@ class S3Cache implements DerivativeCache {
     }
 
     private void purge(final String objectKey) {
-        final S3Client client = getClientInstance();
+        final S3AsyncClient client = getClientInstance();
         client.deleteObject(DeleteObjectRequest.builder()
                 .bucket(getBucketName())
                 .key(objectKey)
-                .build());
+                .build()).join();
     }
 
     private void purgeAsync(final String bucketName, final String key) {
         TaskQueue.getInstance().submit(() -> {
-            final S3Client client = getClientInstance();
+            final S3AsyncClient client = getClientInstance();
             LOGGER.debug("purgeAsync(): deleting {} from bucket {}",
                     key, bucketName);
             client.deleteObject(DeleteObjectRequest.builder()
                     .bucket(bucketName)
                     .key(key)
-                    .build());
+                    .build()).join();
             return null;
         });
     }
 
     @Override
     public void purgeInfos() {
-        final S3Client client       = getClientInstance();
+        final S3AsyncClient client  = getClientInstance();
         final String bucketName     = getBucketName();
         final String prefix         = getObjectKeyPrefix() + INFO_KEY_PREFIX;
         final AtomicInteger counter = new AtomicInteger();
@@ -325,7 +338,7 @@ class S3Cache implements DerivativeCache {
             client.deleteObject(DeleteObjectRequest.builder()
                     .bucket(bucketName)
                     .key(object.key())
-                    .build());
+                    .build()).join();
             counter.incrementAndGet();
         });
         LOGGER.debug("purgeInfos(): deleted {} items", counter.get());
@@ -333,7 +346,7 @@ class S3Cache implements DerivativeCache {
 
     @Override
     public void purgeInvalid() {
-        final S3Client client              = getClientInstance();
+        final S3AsyncClient client         = getClientInstance();
         final String bucketName            = getBucketName();
         final AtomicInteger counter        = new AtomicInteger();
         final AtomicInteger deletedCounter = new AtomicInteger();
@@ -345,9 +358,9 @@ class S3Cache implements DerivativeCache {
                     client.deleteObject(DeleteObjectRequest.builder()
                             .bucket(bucketName)
                             .key(object.key())
-                            .build());
+                            .build()).join();
                     deletedCounter.incrementAndGet();
-                } catch (S3Exception e) {
+                } catch (CompletionException e) {
                     LOGGER.warn("purgeInvalid(): {}", e.getMessage());
                 }
             }
@@ -393,10 +406,9 @@ class S3Cache implements DerivativeCache {
         LOGGER.trace("put(): uploading {} bytes to {} in bucket {}",
                 data.length, request.key(), request.bucket());
 
-        try (ByteArrayInputStream is = new ByteArrayInputStream(data)) {
-            getClientInstance().putObject(request,
-                    RequestBody.fromInputStream(is, data.length));
-        } catch (IOException e) {
+        try {
+            getClientInstance().putObject(request, AsyncRequestBody.fromBytes(data)).join();
+        } catch (CompletionException e) {
             LOGGER.warn(e.getMessage(), e);
         }
 
@@ -435,8 +447,8 @@ class S3Cache implements DerivativeCache {
      * time.
      */
     private void touchAsync(String objectKey) {
-        final S3Client client   = getClientInstance();
-        final String bucketName = getBucketName();
+        final S3AsyncClient client = getClientInstance();
+        final String bucketName    = getBucketName();
         ThreadPool.getInstance().submit(() -> {
             LOGGER.debug("touchAsync(): {}", objectKey);
             client.copyObject(CopyObjectRequest.builder()
@@ -450,7 +462,7 @@ class S3Cache implements DerivativeCache {
                     .metadata(Map.of("x-amz-meta-last-accessed",
                             String.valueOf(Instant.now().toEpochMilli())))
                     .metadataDirective(MetadataDirective.REPLACE)
-                    .build());
+                    .build()).join();
         }, ThreadPool.Priority.LOW);
     }
 

@@ -28,7 +28,7 @@ public class TrailingSlashRemovingResource extends AbstractResource {
 
     @Override
     public void doGET() {
-        final Reference newRef = new Reference(getPublicReference());
+        final Reference newRef = new Reference(getRequest().getPublicReference());
         final String path = newRef.getPath();
         newRef.setPath(path.substring(0, path.length() - 1));
 

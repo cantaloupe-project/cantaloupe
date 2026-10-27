@@ -1,6 +1,7 @@
 package edu.illinois.library.cantaloupe.resource.iiif.v1;
 
 import edu.illinois.library.cantaloupe.config.Key;
+import edu.illinois.library.cantaloupe.http.ContentTypeNegotiator;
 import edu.illinois.library.cantaloupe.http.Method;
 import edu.illinois.library.cantaloupe.http.Status;
 import edu.illinois.library.cantaloupe.image.Dimension;
@@ -12,6 +13,7 @@ import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.operation.Scale;
 import edu.illinois.library.cantaloupe.processor.Processor;
 import edu.illinois.library.cantaloupe.resource.ImageRequestHandler;
+import edu.illinois.library.cantaloupe.resource.iiif.ScaleValidator;
 import edu.illinois.library.cantaloupe.source.StatResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -97,9 +99,10 @@ public class ImageResource extends IIIF1Resource {
             public void willProcessImage(Processor processor,
                                          Info info) throws Exception {
                 final Dimension fullSize = info.getSize(getPageIndex());
-                validateScale(info.getMetadata().getOrientation().adjustedSize(fullSize),
+                ScaleValidator.validateScale(info.getMetadata().getOrientation().adjustedSize(fullSize),
                         (Scale) opList.getFirst(Scale.class),
-                        Status.FORBIDDEN);
+                        Status.FORBIDDEN,
+                        getMetaIdentifier());
 
                 final String disposition = getRepresentationDisposition(
                         getMetaIdentifier().toString(),
@@ -109,13 +112,13 @@ public class ImageResource extends IIIF1Resource {
             }
         }
 
-        try (ImageRequestHandler handler = ImageRequestHandler.builder()
-                .withOperationList(opList)
-                .withBypassingCache(isBypassingCache())
-                .withBypassingCacheRead(isBypassingCacheRead())
-                .optionallyWithDelegateProxy(getDelegateProxy(), getRequestContext())
-                .withCallback(new CustomCallback())
-                .build()) {
+        try (ImageRequestHandler handler = new ImageRequestHandler(
+                opList,
+                getDelegateProxy(),
+                getRequestContext(),
+                new CustomCallback(),
+                getRequest().isBypassingCache(),
+                getRequest().isBypassingCacheRead())) {
             handler.handle(getResponse().getOutputStream());
         }
     }
@@ -136,7 +139,7 @@ public class ImageResource extends IIIF1Resource {
     }
 
     private OperationList getOperationList() {
-        final List<String> args = getPathArguments();
+        final List<String> args = getRequest().getPathArguments();
 
         // If the URI path contains a format extension, try to use that.
         // Otherwise, negotiate it based on the Accept header per Image API 1.1
@@ -178,7 +181,8 @@ public class ImageResource extends IIIF1Resource {
         }
 
         if (format == null) { // if none, check the Accept header.
-            String contentType = negotiateContentType(AVAILABLE_OUTPUT_MEDIA_TYPES);
+            ContentTypeNegotiator negotiator = new ContentTypeNegotiator(getRequest().getHeaders());
+            String contentType = negotiator.negotiateContentType(AVAILABLE_OUTPUT_MEDIA_TYPES);
             if (contentType != null) {
                 format = new MediaType(contentType).toFormat();
             } else {

@@ -66,7 +66,7 @@ public class TasksResource extends AbstractAPIResource {
             // URI.
             getResponse().setStatus(Status.ACCEPTED.getCode());
 
-            final String taskURI = getPublicRootReference() +
+            final String taskURI = getRequest().getPublicRootReference() +
                     Route.TASKS_PATH + "/" + task.getUUID().toString();
             getResponse().setHeader("Location", taskURI);
         } catch (NullPointerException | JsonProcessingException e) {

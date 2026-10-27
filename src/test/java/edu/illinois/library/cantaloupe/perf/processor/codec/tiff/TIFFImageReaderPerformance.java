@@ -3,6 +3,8 @@ package edu.illinois.library.cantaloupe.perf.processor.codec.tiff;
 import java.util.concurrent.TimeUnit;
 
 import edu.illinois.library.cantaloupe.processor.codec.tiff.TIFFImageReaderTest;
+
+import org.junit.jupiter.api.BeforeEach;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.BenchmarkMode;
 import org.openjdk.jmh.annotations.Fork;
@@ -32,6 +34,7 @@ public class TIFFImageReaderPerformance extends TIFFImageReaderTest {
 
     @Setup
     @Override
+    @BeforeEach
     public void setUp() throws Exception {
         super.setUp();
     }

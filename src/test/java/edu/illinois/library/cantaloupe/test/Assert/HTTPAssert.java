@@ -110,6 +110,7 @@ public final class HTTPAssert {
         } catch (ResourceException e) {
             assertEquals(expectedCode, e.getStatusCode());
         } catch (Exception e) {
+            e.printStackTrace();
             fail(e.getMessage());
         } finally {
             stopQuietly(client);

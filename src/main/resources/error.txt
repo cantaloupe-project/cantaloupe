@@ -1,0 +1,10 @@
+[(${pageTitle})]
+
+[# th:if="${message}"]
+[(${message})]
+[/]
+
+
+[# th:if="${stackTrace}"]
+[(${stackTrace})]
+[/]

@@ -209,6 +209,24 @@ public final class Java2DUtil {
         return outImage;
     }
 
+
+    /**
+     * @param inImage Image to convert.
+     * @return New image of type {@link BufferedImage#TYPE_INT_ARGB}, or the
+     *         input image if it is not Grayscale.
+     */
+    static BufferedImage convertGrayToARGB(BufferedImage inImage) {
+        BufferedImage outImage = inImage;
+        if (inImage.getType() == BufferedImage.TYPE_BYTE_GRAY) {
+            final Stopwatch watch = new Stopwatch();
+            outImage = new BufferedImage(inImage.getWidth(), inImage.getHeight(), BufferedImage.TYPE_INT_ARGB);
+            ColorConvertOp convert = new ColorConvertOp(null);
+            convert.filter(inImage, outImage);
+            LOGGER.trace("convertGrayToARGB(): executed in {}", watch);
+        }
+        return outImage;
+    }
+
     /**
      * @param inImage Image to convert.
      * @return        New image with a linear RGB color space, or the input
@@ -1124,6 +1142,7 @@ public final class Java2DUtil {
                 break;
             case BITONAL:
                 outImage = convertIndexedToARGB(outImage);
+                outImage = convertGrayToARGB(outImage);
                 binarize(outImage);
                 break;
         }
@@ -1138,8 +1157,9 @@ public final class Java2DUtil {
      * Grayscales the given image's pixels.
      */
     private static void grayscale(BufferedImage image) {
-        for (int y = 0; y < image.getHeight(); y++) {
-            for (int x = 0; x < image.getWidth(); x++) {
+        if (image.getType() != BufferedImage.TYPE_BYTE_GRAY) {
+            for (int y = 0; y < image.getHeight(); y++) {
+                for (int x = 0; x < image.getWidth(); x++) {
                 int argb  = image.getRGB(x, y);
                 int alpha = (argb >> 24) & 0xff;
                 int red   = (argb >> 16) & 0xff;
@@ -1148,6 +1168,7 @@ public final class Java2DUtil {
                 int luma  = (int) (0.21 * red + 0.71 * green + 0.07 * blue);
                 argb      = (alpha << 24) | (luma << 16) | (luma << 8) | luma;
                 image.setRGB(x, y, argb);
+                }
             }
         }
     }

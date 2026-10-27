@@ -5,6 +5,7 @@ import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.resource.AbstractResource;
 import edu.illinois.library.cantaloupe.resource.EndpointDisabledException;
+import edu.illinois.library.cantaloupe.auth.BasicAuth;
 
 abstract class AbstractAdminResource extends AbstractResource {
 
@@ -22,13 +23,13 @@ abstract class AbstractAdminResource extends AbstractResource {
             throw new EndpointDisabledException();
         }
 
-        authenticateUsingBasic(BASIC_REALM, user -> {
+        BasicAuth.authenticateUsingBasic(BASIC_REALM, user -> {
             final String configUser = config.getString(Key.ADMIN_USERNAME, "");
             if (!configUser.isEmpty() && configUser.equals(user)) {
                 return config.getString(Key.ADMIN_SECRET);
             }
             return null;
-        });
+        }, getRequest().getServletRequest(), getResponse());
     }
 
 }

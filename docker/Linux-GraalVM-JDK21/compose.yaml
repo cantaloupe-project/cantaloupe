@@ -5,16 +5,16 @@
 #
 services:
   cantaloupe:
+    platform: linux/amd64
     build:
       context: ../../
       dockerfile: $PWD/docker/Linux-GraalVM-JDK21/Dockerfile
-  minio:
-    image: minio/minio
+  seaweedfs:
+    image: chrislusf/seaweedfs
     environment:
-      MINIO_ACCESS_KEY: MinioUser
-      MINIO_SECRET_KEY: OpenSesame
-    hostname: minio
-    command: server /data
+      AWS_ACCESS_KEY_ID: SeaweedUser
+      AWS_SECRET_ACCESS_KEY: OpenSesame
+    command: mini -dir=/data
   redis:
     image: redis:alpine
     hostname: redis

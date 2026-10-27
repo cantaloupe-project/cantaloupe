@@ -2,6 +2,8 @@
 
 *High-performance dynamic image server in Java*
 
+Cantaloupe is tested to work on the two most recent LTS versions of Java (currently 21 and 25) and latest non-LTS (currently 27).
+
 # Users
 
 **[Get started with a release build.](https://github.com/cantaloupe-project/cantaloupe/releases)**

@@ -14,9 +14,11 @@ import edu.illinois.library.cantaloupe.operation.Scale;
 import edu.illinois.library.cantaloupe.operation.ValidationException;
 import edu.illinois.library.cantaloupe.processor.Processor;
 import edu.illinois.library.cantaloupe.resource.IllegalClientArgumentException;
+import edu.illinois.library.cantaloupe.resource.ImageRequestHandler;
 import edu.illinois.library.cantaloupe.resource.Route;
 import edu.illinois.library.cantaloupe.resource.ScaleRestrictedException;
-import edu.illinois.library.cantaloupe.resource.ImageRequestHandler;
+import edu.illinois.library.cantaloupe.resource.iiif.ScaleValidator;
+import edu.illinois.library.cantaloupe.resource.iiif.SizeConstrainer;
 import edu.illinois.library.cantaloupe.resource.iiif.SizeRestrictedException;
 import edu.illinois.library.cantaloupe.source.StatResult;
 import org.slf4j.Logger;
@@ -65,9 +67,9 @@ public class ImageResource extends IIIF3Resource {
         }
 
         // Assemble the URI path segments into a Parameters object.
-        final List<String> args = getPathArguments();
+        final List<String> args = getRequest().getPathArguments();
         final Parameters params = new Parameters(
-                getIdentifier().toString(), args.get(1), args.get(2),
+                getRequest().getIdentifier().toString(), args.get(1), args.get(2),
                 args.get(3), args.get(4), args.get(5));
         // Convert it into an OperationList.
         final OperationList ops = params.toOperationList(
@@ -100,7 +102,7 @@ public class ImageResource extends IIIF3Resource {
             public void infoAvailable(Info info) {
                 if (Size.Type.MAX.equals(params.getSize().getType())) {
                     try {
-                        constrainSizeToMaxPixels(info.getSize(), ops);
+                        SizeConstrainer.constrainSizeToMaxPixels(info.getSize(), ops);
                     } catch (ValidationException e) {
                         throw new IllegalClientArgumentException(e.getMessage(), e);
                     }
@@ -125,21 +127,24 @@ public class ImageResource extends IIIF3Resource {
                         metadata.getOrientation() : Orientation.ROTATE_0;
                 final Scale scale             = (Scale) ops.getFirst(Scale.class);
                 final Dimension virtualSize   = orientation.adjustedSize(info.getSize(pageIndex));
-                final Dimension resultingSize = ops.getResultingSize(info.getSize());
+                final Dimension resultingSize = ops.getResultingSize(info.getSize(pageIndex));
                 validateScale(virtualSize, scale, params.getSize().isUpscalingAllowed());
-                validateScale(virtualSize, scale, Status.BAD_REQUEST);
+                ScaleValidator.validateScale(virtualSize, scale,
+                        upscaleRejectionStatus(virtualSize, scale,
+                                params.getSize().isUpscalingAllowed()),
+                        getMetaIdentifier());
                 validateSize(virtualSize, resultingSize);
                 sendHeaders();
             }
         }
 
-        try (ImageRequestHandler handler = ImageRequestHandler.builder()
-                .withOperationList(ops)
-                .withBypassingCache(isBypassingCache())
-                .withBypassingCacheRead(isBypassingCacheRead())
-                .optionallyWithDelegateProxy(getDelegateProxy(), getRequestContext())
-                .withCallback(new CustomCallback())
-                .build()) {
+        try (ImageRequestHandler handler = new ImageRequestHandler(
+                ops,
+                getDelegateProxy(),
+                getRequestContext(),
+                new CustomCallback(),
+                getRequest().isBypassingCache(),
+                getRequest().isBypassingCacheRead())) {
             handler.handle(getResponse().getOutputStream());
         }
     }
@@ -160,17 +165,67 @@ public class ImageResource extends IIIF3Resource {
                 params.getOutputFormat().toFormat().getPreferredMediaType().toString());
         // Link
         Parameters paramsCopy = new Parameters(params);
-        paramsCopy.setIdentifier(getPublicIdentifier());
+        paramsCopy.setIdentifier(getRequest().getPublicIdentifier());
         String paramsStr = paramsCopy.toCanonicalString(fullSize);
         queuedHeaders.put("Link",
                 String.format("<%s%s/%s>;rel=\"canonical\"",
-                        getPublicRootReference(),
+                        getRequest().getPublicRootReference(),
                         Route.IIIF_3_PATH,
                         paramsStr));
     }
 
     private static double getMaxScale() {
         return Configuration.getInstance().getDouble(Key.MAX_SCALE, 1);
+    }
+
+    /**
+     * <p>Chooses the status code for a scale that {@link ScaleValidator}
+     * rejects for exceeding {@link Key#MAX_SCALE}.</p>
+     *
+     * <p>Image API 3.0 &sect;4.2 asks for 501 (Not Implemented) when a {@code
+     * ^}-prefixed size requires upscaling and the server does not support
+     * upscaling. A {@link Key#MAX_SCALE} of 1.0 or less is what "does not
+     * support upscaling" means here: it is the same boundary that decides
+     * whether {@link InformationFactory} advertises the {@code sizeUpscaling}
+     * feature of &sect;5.7. Above 1.0, upscaling is supported and advertised,
+     * so a request that merely overshoots the ceiling is a client error and
+     * stays 400.</p>
+     *
+     * <p>All three conditions must hold for 501. Sizes without a caret are not
+     * upscaling requests in the &sect;4.2 sense, and a ceiling below 1.0 can
+     * reject a caret size that would not have upscaled anyway; both of those
+     * are ordinary client errors.</p>
+     *
+     * @param virtualSize        Source image size post-rotation and post-scale
+     *                           constraint.
+     * @param scale              May be {@code null}.
+     * @param isUpscalingAllowed Whether the {@code size} URI path component
+     *                           begins with {@code ^}.
+     */
+    private Status upscaleRejectionStatus(Dimension virtualSize,
+                                          Scale scale,
+                                          boolean isUpscalingAllowed) {
+        if (!isUpscalingAllowed || scale == null) {
+            return Status.BAD_REQUEST;
+        }
+        final double maxScale = getMaxScale();
+        // A ceiling of 0 means "no ceiling," in which case ScaleValidator does
+        // not reject at all and this return value goes unused.
+        final boolean isUpscalingSupported =
+                (maxScale <= 0.0001 || maxScale > 1.0);
+        if (isUpscalingSupported) {
+            return Status.BAD_REQUEST;
+        }
+        final ScaleConstraint constraint = getEffectiveScaleConstraint();
+        return (scale.isWidthUp(virtualSize, constraint) ||
+                scale.isHeightUp(virtualSize, constraint)) ?
+                Status.NOT_IMPLEMENTED : Status.BAD_REQUEST;
+    }
+
+    private ScaleConstraint getEffectiveScaleConstraint() {
+        return (getMetaIdentifier().getScaleConstraint() != null) ?
+                getMetaIdentifier().getScaleConstraint() :
+                new ScaleConstraint(1, 1);
     }
 
     private void sendHeaders() {
@@ -191,10 +246,7 @@ public class ImageResource extends IIIF3Resource {
                                Scale scale,
                                boolean isUpscalingAllowed) throws ScaleRestrictedException {
         if (!isUpscalingAllowed && scale != null) {
-            final ScaleConstraint constraint =
-                    (getMetaIdentifier().getScaleConstraint() != null) ?
-                            getMetaIdentifier().getScaleConstraint() :
-                            new ScaleConstraint(1, 1);
+            final ScaleConstraint constraint = getEffectiveScaleConstraint();
             if (scale.isWidthUp(virtualSize, constraint) ||
                     scale.isHeightUp(virtualSize, constraint)) {
                 throw new ScaleRestrictedException("Requests for scales in " +

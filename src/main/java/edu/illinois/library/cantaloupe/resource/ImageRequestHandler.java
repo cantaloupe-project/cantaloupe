@@ -4,6 +4,7 @@ import edu.illinois.library.cantaloupe.async.TaskQueue;
 import edu.illinois.library.cantaloupe.cache.CacheFacade;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
+import edu.illinois.library.cantaloupe.delegate.DelegateProxy;
 import edu.illinois.library.cantaloupe.image.Dimension;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
@@ -14,11 +15,10 @@ import edu.illinois.library.cantaloupe.processor.Processor;
 import edu.illinois.library.cantaloupe.processor.ProcessorConnector;
 import edu.illinois.library.cantaloupe.processor.ProcessorFactory;
 import edu.illinois.library.cantaloupe.processor.SourceFormatException;
-import edu.illinois.library.cantaloupe.delegate.DelegateProxy;
-import edu.illinois.library.cantaloupe.source.StatResult;
-import edu.illinois.library.cantaloupe.status.HealthChecker;
 import edu.illinois.library.cantaloupe.source.Source;
 import edu.illinois.library.cantaloupe.source.SourceFactory;
+import edu.illinois.library.cantaloupe.source.StatResult;
+import edu.illinois.library.cantaloupe.status.HealthChecker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -51,110 +51,6 @@ import java.util.concurrent.Future;
  */
 public class ImageRequestHandler extends AbstractRequestHandler
         implements AutoCloseable {
-
-    /**
-     * Builds {@link ImageRequestHandler} instances.
-     */
-    public static final class Builder {
-
-        private final ImageRequestHandler handler;
-
-        private Builder(ImageRequestHandler handler) {
-            this.handler = handler;
-        }
-
-        /**
-         * Variant of {@link #withDelegateProxy(DelegateProxy, RequestContext)}
-         * that does nothing if either argument is {@code null}.
-         *
-         * @param delegateProxy  Delegate proxy. If {@code null}, both it and
-         *                       {@code requestContext} are set to {@code null}.
-         * @param requestContext Request context. If {@code null}, both it and
-         *                       {@code delegateProxy} are set to {@code null}.
-         * @see #withDelegateProxy(DelegateProxy, RequestContext)
-         */
-        public Builder optionallyWithDelegateProxy(DelegateProxy delegateProxy,
-                                                   RequestContext requestContext) {
-            if (delegateProxy != null && requestContext != null) {
-                handler.delegateProxy  = delegateProxy;
-                handler.requestContext = requestContext;
-            } else {
-                handler.delegateProxy  = null;
-                handler.requestContext = null;
-            }
-            return this;
-        }
-
-        /**
-         * @param isBypassingCache Supply {@code true} to bypass cache reads
-         *                         and writes.
-         */
-        public Builder withBypassingCache(boolean isBypassingCache) {
-            handler.isBypassingCache = isBypassingCache;
-            return this;
-        }
-
-        /**
-         * @param isBypassingCacheRead Supply {@code true} to bypass cache
-         *                             reads only.
-         */
-        public Builder withBypassingCacheRead(boolean isBypassingCacheRead) {
-            handler.isBypassingCacheRead = isBypassingCacheRead;
-            return this;
-        }
-
-        /**
-         * @param callback Callback to receive events during request handling.
-         */
-        public Builder withCallback(Callback callback) {
-            handler.callback = callback;
-            return this;
-        }
-
-        /**
-         * Variant of {@link #optionallyWithDelegateProxy(DelegateProxy,
-         * RequestContext)} for which both arguments must be either {@code
-         * null} or not-{@code null}.
-         *
-         * @see #optionallyWithDelegateProxy(DelegateProxy, RequestContext)
-         */
-        public Builder withDelegateProxy(DelegateProxy delegateProxy,
-                                         RequestContext requestContext) {
-            if (delegateProxy != null && requestContext == null) {
-                throw new IllegalArgumentException("If a delegate proxy is " +
-                        "set, a request context must also be set.");
-            } else if (delegateProxy == null && requestContext != null) {
-                throw new IllegalArgumentException("If a request context is " +
-                        "set, a delegate proxy must also be set.");
-            }
-            handler.delegateProxy  = delegateProxy;
-            handler.requestContext = requestContext;
-            return this;
-        }
-
-        public Builder withOperationList(OperationList opList) {
-            handler.operationList = opList;
-            return this;
-        }
-
-        /**
-         * @return New instance.
-         * @throws NullPointerException if any of the required builder methods
-         *                              have not been called.
-         */
-        public ImageRequestHandler build() {
-            if (handler.operationList == null) {
-                throw new NullPointerException("Operation list cannot be null.");
-            }
-            if (handler.requestContext == null) {
-                // Set the requestContext to an unused object that will prevent
-                // having to do null checks.
-                handler.requestContext = new RequestContext();
-            }
-            return handler;
-        }
-
-    }
 
     /**
      * Callback for various events that occur during a call to {@link
@@ -229,37 +125,34 @@ public class ImageRequestHandler extends AbstractRequestHandler
     private static final Logger LOGGER =
             LoggerFactory.getLogger(ImageRequestHandler.class);
 
-    // No-op callback to avoid having to check for one.
-    private Callback callback = new Callback() {
-        @Override
-        public boolean preAuthorize() {
-            return true;
-        }
-        @Override
-        public boolean authorize() {
-            return true;
-        }
-        @Override
-        public void sourceAccessed(StatResult result) {
-        }
-        @Override
-        public void willStreamImageFromDerivativeCache() {
-        }
-        @Override
-        public void infoAvailable(Info info) {
-        }
-        @Override
-        public void willProcessImage(Processor processor, Info info) {
-        }
-    };
+    private Callback callback;
     private OperationList operationList;
     private Future<Path> tempFileFuture;
 
-    public static Builder builder() {
-        return new Builder(new ImageRequestHandler());
-    }
 
-    protected ImageRequestHandler() {}
+    /**
+     * Creates a new ImageRequestHandler with full configuration options.
+     *
+     * @param operationList        Operation list to process.
+     * @param delegateProxy        Delegate proxy.
+     * @param requestContext       Request context.
+     * @param callback             Callback to receive events during request handling.
+     * @param isBypassingCache     True to bypass cache reads and writes.
+     * @param isBypassingCacheRead True to bypass cache reads only.
+     */
+    public ImageRequestHandler(OperationList operationList,
+                               DelegateProxy delegateProxy,
+                               RequestContext requestContext,
+                               Callback callback,
+                               boolean isBypassingCache,
+                               boolean isBypassingCacheRead) {
+        this.operationList = operationList;
+        this.delegateProxy = delegateProxy;
+        this.requestContext = requestContext;
+        this.callback = callback;
+        this.isBypassingCache = isBypassingCache;
+        this.isBypassingCacheRead = isBypassingCacheRead;
+    }
 
     /**
      * Closes the instance. N.B.: this does not close the {@link OutputStream}
@@ -304,20 +197,23 @@ public class ImageRequestHandler extends AbstractRequestHandler
         Iterator<Format> formatIterator = Collections.emptyIterator();
         boolean isFormatKnownYet = false;
 
-        // If we are using a cache, and don't need to resolve first:
+        // If we are using a cache, and don't need to verify the existence of the source image:
         // 1. If the cache contains an image matching the request, skip all the
         //    setup and just return the cached image.
         // 2. Otherwise, if the cache contains a relevant info, get it to avoid
         //    having to get it from a source later.
-        if (!isBypassingCache && !isBypassingCacheRead && !isResolvingFirst()) {
+        if (!isBypassingCache && !isBypassingCacheRead && !verifyExistenceBeforeReturningCachedValue()) {
             final Optional<Info> optInfo = cacheFacade.getInfo(identifier);
             if (optInfo.isPresent()) {
                 Info info = optInfo.get();
-                operationList.applyNonEndpointMutations(info, delegateProxy);
+                // Use a copy of operationList for cache lookup to avoid mutations
+                // persisting if no cached image is found.
+                OperationList cacheOpList = operationList.copy();
+                cacheOpList.applyNonEndpointMutations(info, delegateProxy);
 
                 InputStream cacheStream = null;
                 try {
-                    cacheStream = cacheFacade.newDerivativeImageInputStream(operationList);
+                    cacheStream = cacheFacade.newDerivativeImageInputStream(cacheOpList);
                 } catch (IOException e) {
                     // Don't rethrow -- it's still possible to service the
                     // request.
@@ -346,7 +242,7 @@ public class ImageRequestHandler extends AbstractRequestHandler
         // the source cache (if enabled), check access to it in preparation for
         // retrieval.
         final Optional<Path> sourceImage = cacheFacade.getSourceCacheFile(identifier);
-        if (sourceImage.isEmpty() || isResolvingFirst()) {
+        if (sourceImage.isEmpty() || verifyExistenceBeforeReturningCachedValue()) {
             try {
                 StatResult result = source.stat();
                 callback.sourceAccessed(result);
@@ -364,7 +260,7 @@ public class ImageRequestHandler extends AbstractRequestHandler
             // cache, read the format from the source-cached-file, as we expect
             // source cache access to be more efficient.
             // Otherwise, read it from the source.
-            if (!isResolvingFirst() && sourceImage.isPresent()) {
+            if (!verifyExistenceBeforeReturningCachedValue() && sourceImage.isPresent()) {
                 List<MediaType> mediaTypes =
                         MediaType.detectMediaTypes(sourceImage.get());
                 if (!mediaTypes.isEmpty()) {

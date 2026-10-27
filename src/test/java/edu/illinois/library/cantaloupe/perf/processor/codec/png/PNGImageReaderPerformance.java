@@ -3,6 +3,8 @@ package edu.illinois.library.cantaloupe.perf.processor.codec.png;
 import java.util.concurrent.TimeUnit;
 
 import edu.illinois.library.cantaloupe.processor.codec.png.PNGImageReaderTest;
+
+import org.junit.jupiter.api.BeforeEach;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.BenchmarkMode;
 import org.openjdk.jmh.annotations.Fork;
@@ -29,6 +31,7 @@ public class PNGImageReaderPerformance extends PNGImageReaderTest {
 
     @Setup
     @Override
+    @BeforeEach
     public void setUp() throws Exception {
         super.setUp();
     }

@@ -25,15 +25,15 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
   grokj2k-tools \
   adduser \
   openjdk-21-jdk \
+  libturbojpeg \
+  libturbojpeg-dev \
   maven \
   && rm -rf /var/lib/apt/lists/*
 
-# Install TurboJpegProcessor dependencies
-RUN mkdir -p /opt/libjpeg-turbo/lib
-COPY docker/image_files/libjpeg-turbo/lib64 /opt/libjpeg-turbo/lib
-
 # Install KakaduNativeProcessor dependencies
 COPY dist/deps/Linux-x86-64/lib/* /usr/lib/
+
+# JDK 21 is the default JDK for Ubuntu 24.04 (noble)
 
 # A non-root user is needed for some FilesystemSourceTest tests to work.
 ARG user=cantaloupe

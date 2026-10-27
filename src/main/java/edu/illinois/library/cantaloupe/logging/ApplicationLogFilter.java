@@ -32,8 +32,8 @@ public class ApplicationLogFilter extends Filter<ILoggingEvent> {
         else if (org.eclipse.jetty.server.RequestLog.class.getName().equals(event.getLoggerName())) {
             return FilterReply.DENY;
         }
-        // Reject Velocity debug messages.
-        else if (event.getLoggerName().startsWith("org.apache.velocity") &&
+        // Reject Thymeleaf debug messages.
+        else if (event.getLoggerName().startsWith("org.thymeleaf") &&
                 Level.DEBUG.isGreaterOrEqual(event.getLevel())) {
             return FilterReply.DENY;
         }

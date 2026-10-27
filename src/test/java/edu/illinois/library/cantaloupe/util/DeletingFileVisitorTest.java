@@ -91,55 +91,6 @@ public class DeletingFileVisitorTest extends BaseTest {
         assertTrue(Files.exists(tempPath));
     }
 
-    private BasicFileAttributes fileAttributesForDirectory() {
-        return new BasicFileAttributes() {
-            @Override
-            public FileTime lastModifiedTime() {
-                return null;
-            }
-
-            @Override
-            public FileTime lastAccessTime() {
-                return null;
-            }
-
-            @Override
-            public FileTime creationTime() {
-                return null;
-            }
-
-            @Override
-            public boolean isRegularFile() {
-                return false;
-            }
-
-            @Override
-            public boolean isDirectory() {
-                return true;
-            }
-
-            @Override
-            public boolean isSymbolicLink() {
-                return false;
-            }
-
-            @Override
-            public boolean isOther() {
-                return false;
-            }
-
-            @Override
-            public long size() {
-                return 0;
-            }
-
-            @Override
-            public Object fileKey() {
-                return null;
-            }
-        };
-    }
-
     private BasicFileAttributes fileAttributesForFile() {
         return new BasicFileAttributes() {
             @Override
