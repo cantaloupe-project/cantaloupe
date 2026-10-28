@@ -26,16 +26,6 @@ public class Jp2_target extends Jp2_output_box {
     Kdu_membroker membroker = null;
     Open(_tgt,membroker);
   }
-  public native void Open(Jp2_family_tgt _tgt, long _box_type, boolean _rubber_length) throws KduException;
-  public void Open(Jp2_family_tgt _tgt, long _box_type) throws KduException
-  {
-    Open(_tgt,_box_type,(boolean) false);
-  }
-  public native void Open(Jp2_output_box _super_box, long _box_type, boolean _rubber_length) throws KduException;
-  public void Open(Jp2_output_box _super_box, long _box_type) throws KduException
-  {
-    Open(_super_box,_box_type,(boolean) false);
-  }
   public native boolean Close_box() throws KduException;
   public native long Get_brand() throws KduException;
   public native void Write_header() throws KduException;

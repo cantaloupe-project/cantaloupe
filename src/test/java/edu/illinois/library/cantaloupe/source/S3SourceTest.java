@@ -231,6 +231,15 @@ public class S3SourceTest extends AbstractSourceTest {
         assertSame(client1, client2);
     }
 
+    @Test
+    void getClientInstanceCachesDefaultClientWhenEndpointIsConfigured() {
+        Configuration.getInstance().setProperty(Key.S3SOURCE_ENDPOINT,
+                "http://example.org/configured-endpoint");
+        S3AsyncClient client1 = S3Source.getClientInstance(new S3ObjectInfo());
+        S3AsyncClient client2 = S3Source.getClientInstance(new S3ObjectInfo());
+        assertSame(client1, client2);
+    }
+
     /* checkAccess() */
 
     @Test

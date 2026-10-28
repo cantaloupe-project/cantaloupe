@@ -30,6 +30,11 @@
 * AzureStorageCache supports a custom blob service endpoint via
   `AzureStorageCache.endpoint`.
 
+### Processors
+
+* Java2dProcessor no longer swaps the red and blue channels of images with a
+  custom pixel layout, such as TIFFs with an alpha channel, when rotating them.
+
 ### Delegate Script
 
 * The delegate script pathname can be set using the

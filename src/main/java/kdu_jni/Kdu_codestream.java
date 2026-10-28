@@ -81,6 +81,7 @@ public class Kdu_codestream {
   public native void Configure_simultaneous_processing_fragments(int _ideal_frag_width, int _max_frag_depth, int _max_fragments) throws KduException;
   public native void Configure_simultaneous_processing_fragments(Kdu_codestream _src) throws KduException;
   public native void Set_persistent() throws KduException;
+  public native void Set_write_fail_policy(int _policy) throws KduException;
   public native boolean Install_input_monitor(Kdu_input_codestream_monitor _monitor, Kdu_thread_env _env) throws KduException;
   public native long Augment_cache_threshold(int _extra_bytes) throws KduException;
   public native int Set_tile_unloading_threshold(int _max_tiles_on_list, Kdu_thread_env _env) throws KduException;
@@ -195,6 +196,8 @@ public class Kdu_codestream {
   public native void Set_fussy() throws KduException;
   public native void Set_fast() throws KduException;
   public native void Set_allow_parsing_errors(boolean _allow) throws KduException;
+  public native void Set_synth_overshoot_limit(float _max_overshoot, boolean _generate_errors) throws KduException;
+  public native boolean Report_synth_overshoot(int _comp_idx, float[] _max_overshoot) throws KduException;
   public native void Apply_input_restrictions(int _first_component, int _max_components, int _discard_levels, int _max_layers, Kdu_dims _region_of_interest, int _access_mode, Kdu_thread_env _env, Kdu_quality_limiter _limiter) throws KduException;
   public void Apply_input_restrictions(int _first_component, int _max_components, int _discard_levels, int _max_layers, Kdu_dims _region_of_interest, int _access_mode) throws KduException
   {
