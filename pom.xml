@@ -231,12 +231,6 @@
             <artifactId>bcprov-jdk18on</artifactId>
             <version>1.86</version>
         </dependency>
-        <!-- Supports <if> expressions in logback.xml -->
-        <dependency>
-            <groupId>org.codehaus.janino</groupId>
-            <artifactId>janino</artifactId>
-            <version>3.1.12</version>
-        </dependency>
         <!-- Provides HTTP/2 support in the Jetty server.
         N.B.: ALPN support is in a different module. -->
         <dependency>
