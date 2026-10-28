@@ -34,6 +34,9 @@
 
 * Java2dProcessor no longer swaps the red and blue channels of images with a
   custom pixel layout, such as TIFFs with an alpha channel, when rotating them.
+* Rotations by multiples of 90 degrees (including EXIF orientation
+  corrections) copy pixels directly rather than resampling, which is lossless,
+  faster, and preserves the source image's color model and bit depth.
 
 ### Delegate Script
 
