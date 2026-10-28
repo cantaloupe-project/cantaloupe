@@ -32,6 +32,17 @@ class UtilsTest extends BaseTest {
     }
 
     @Test
+    void testTrimXMPWithSelfClosingRDFElement() {
+        String xmp = "<?xpacket id=\"cats\"?>" +
+                "<x:xmpmeta bla=\"dogs\">" +
+                "<rdf:RDF xmlns:rdf=\"http://www.w3.org/1999/02/22-rdf-syntax-ns#\"/>" +
+                "</x:xmpmeta>";
+        String result = Utils.trimXMP(xmp);
+        assertEquals("<rdf:RDF xmlns:rdf=\"http://www.w3.org/1999/02/22-rdf-syntax-ns#\"/>",
+                result);
+    }
+
+    @Test
     void testTrimXMPWithNonTrimmableXMP() {
         String xmp = "<rdf:RDF foxes=\"bugs\">" +
                 "</rdf:RDF>";

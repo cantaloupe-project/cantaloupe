@@ -1,5 +1,6 @@
 package edu.illinois.library.cantaloupe.processor.codec.jpeg2000;
 
+import edu.illinois.library.cantaloupe.image.xmp.Utils;
 import edu.illinois.library.cantaloupe.processor.SourceFormatException;
 import edu.illinois.library.cantaloupe.util.Stopwatch;
 import org.apache.commons.io.IOUtils;
@@ -332,8 +333,7 @@ public final class JPEG2000MetadataReader implements AutoCloseable {
             byte[] data = new byte[(int)dataLength  - 16];
             inputStream.readFully(data,  0, (int) dataLength - 16);
             xmp = new String(data, StandardCharsets.UTF_8);
-            xmp = xmp.substring(xmp.indexOf("<rdf:RDF "),
-                    xmp.indexOf("</rdf:RDF>") + 10);
+            xmp = Utils.trimXMP(xmp);
         } else if (Arrays.equals(uuid, IPTC_BOX_UUID)) {
             iptc = read((int) dataLength - 16);
         } else {
