@@ -30,8 +30,8 @@ import java.util.NoSuchElementException;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * Tests AzureStorageSource against Azure Storage. (Requires an Azure
- * account.)
+ * Tests AzureStorageSource against Azure Storage or an emulator like
+ * Azurite.
  */
 public class AzureStorageSourceTest extends AbstractSourceTest {
 
@@ -54,6 +54,7 @@ public class AzureStorageSourceTest extends AbstractSourceTest {
         config.setProperty(Key.AZURESTORAGESOURCE_CONTAINER_NAME, "");
         config.setProperty(Key.AZURESTORAGESOURCE_ACCOUNT_NAME, "");
         config.setProperty(Key.AZURESTORAGESOURCE_ACCOUNT_KEY, "");
+        config.setProperty(Key.AZURESTORAGESOURCE_ENDPOINT, "");
     }
 
     private static String generateSAS()
@@ -73,7 +74,8 @@ public class AzureStorageSourceTest extends AbstractSourceTest {
         c.setTime(new Date());
         c.add(Calendar.DATE, 365 * 100);
         policy.setSharedAccessExpiryTime(c.getTime());
-        policy.setProtocols(SharedAccessProtocols.HTTPS_ONLY);
+        // HTTP is allowed so that this works with an emulator like Azurite.
+        policy.setProtocols(SharedAccessProtocols.HTTPS_HTTP);
 
         return AzureStorageSource.getAccount()
                 .generateSharedAccessSignature(policy);
@@ -99,8 +101,8 @@ public class AzureStorageSourceTest extends AbstractSourceTest {
 
     private static String getSASURI()
             throws StorageException, InvalidKeyException {
-        return String.format("https://%s.blob.core.windows.net/%s/%s?%s",
-                AzureStorageTestUtil.getAccountName(),
+        return String.format("%s/%s/%s?%s",
+                AzureStorageSource.getAccount().getBlobEndpoint(),
                 AzureStorageTestUtil.getContainer(),
                 AzureStorageTestUtil.OBJECT_KEY_WITH_CONTENT_TYPE_AND_RECOGNIZED_EXTENSION,
                 generateSAS());
@@ -138,6 +140,8 @@ public class AzureStorageSourceTest extends AbstractSourceTest {
                 getAccountName());
         config.setProperty(Key.AZURESTORAGESOURCE_ACCOUNT_KEY,
                 getAccountKey());
+        config.setProperty(Key.AZURESTORAGESOURCE_ENDPOINT,
+                AzureStorageTestUtil.getEndpoint());
         config.setProperty(Key.AZURESTORAGESOURCE_LOOKUP_STRATEGY,
                 "BasicLookupStrategy");
     }
