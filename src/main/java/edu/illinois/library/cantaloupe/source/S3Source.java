@@ -216,8 +216,11 @@ final class S3Source extends AbstractSource implements Source {
     private FormatIterator<Format> formatIterator = new FormatIterator<>();
 
     static synchronized S3AsyncClient getClientInstance(S3ObjectInfo info) {
-        String endpoint = info.getEndpoint();
-        S3AsyncClient client = CLIENTS.get(endpoint);
+        // The client is cached under the endpoint of the object info, which
+        // may be null; the endpoint variable is reassigned below.
+        final String key = info.getEndpoint();
+        String endpoint = key;
+        S3AsyncClient client = CLIENTS.get(key);
         if (client == null) {
             final Configuration config = Configuration.getInstance();
             if (endpoint == null) {
@@ -252,7 +255,7 @@ final class S3Source extends AbstractSource implements Source {
                     .endpointURI(endpointURI)
                     .region(region)
                     .build();
-            CLIENTS.put(endpoint, client);
+            CLIENTS.put(key, client);
         }
         return client;
     }

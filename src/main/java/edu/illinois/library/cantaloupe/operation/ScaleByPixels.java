@@ -41,6 +41,16 @@ public class ScaleByPixels extends Scale implements Operation {
     private Mode scaleMode;
 
     /**
+     * Whether the operation is permitted to scale the source above its
+     * original dimensions. Defaults to {@code true} for backward compatibility
+     * with direct API callers. IIIF callers set this from the URI: v2 {@code !w,h}
+     * is always {@code false}; v3 {@code !w,h} is {@code false}, {@code ^!w,h}
+     * is {@code true}. When {@code false}, {@link Mode#ASPECT_FIT_INSIDE}
+     * clamps its resulting scale to 1.0 so the source is never upscaled.
+     */
+    private boolean upscaleAllowed = true;
+
+    /**
      * No-op constructor.
      */
     public ScaleByPixels() {
@@ -77,7 +87,8 @@ public class ScaleByPixels extends Scale implements Operation {
             return Objects.equals(other.getWidth(), getWidth()) &&
                     Objects.equals(other.getHeight(), getHeight()) &&
                     Objects.equals(other.getMode(), getMode()) &&
-                    Objects.equals(other.getFilter(), getFilter());
+                    Objects.equals(other.getFilter(), getFilter()) &&
+                    other.isUpscaleAllowed() == isUpscaleAllowed();
         }
         return super.equals(obj);
     }
@@ -95,6 +106,28 @@ public class ScaleByPixels extends Scale implements Operation {
 
     public Mode getMode() {
         return scaleMode;
+    }
+
+    /**
+     * @return Whether the instance is permitted to scale above the source
+     *         dimensions when in {@link Mode#ASPECT_FIT_INSIDE} mode.
+     *         Defaults to {@code true} unless explicitly disabled.
+     */
+    public boolean isUpscaleAllowed() {
+        return upscaleAllowed;
+    }
+
+    /**
+     * @param upscaleAllowed Whether the instance may scale above source
+     *                       dimensions. IIIF v2 {@code !w,h} and IIIF v3
+     *                       {@code !w,h} (no caret) must set this to
+     *                       {@code false}; v3 {@code ^!w,h} sets it to
+     *                       {@code true}.
+     * @throws IllegalStateException if the instance is frozen.
+     */
+    public void setUpscaleAllowed(boolean upscaleAllowed) {
+        checkFrozen();
+        this.upscaleAllowed = upscaleAllowed;
     }
 
     /**
@@ -119,6 +152,9 @@ public class ScaleByPixels extends Scale implements Operation {
                 double xScale = getWidth() / reducedSize.width();
                 double yScale = getHeight() / reducedSize.height();
                 rfScale       = Math.min(xScale, yScale);
+                if (!upscaleAllowed) {
+                    rfScale = Math.min(rfScale, 1.0);
+                }
                 break;
         }
         ReductionFactor rf = ReductionFactor.forScale(rfScale);
@@ -141,9 +177,13 @@ public class ScaleByPixels extends Scale implements Operation {
                 result[0] = result[1] = getWidth() / fullSize.width();
                 break;
             case ASPECT_FIT_INSIDE:
-                result[0] = result[1] = Math.min(
+                double insideScale = Math.min(
                         getWidth() / fullSize.width(),
                         getHeight() / fullSize.height());
+                if (!upscaleAllowed) {
+                    insideScale = Math.min(insideScale, 1.0);
+                }
+                result[0] = result[1] = insideScale;
                 break;
             default:
                 result[0] = getWidth() / fullSize.width();
@@ -184,6 +224,9 @@ public class ScaleByPixels extends Scale implements Operation {
                 scalePct = Math.min(
                         getWidth() / size.width(),
                         getHeight() / size.height());
+                if (!upscaleAllowed) {
+                    scalePct = Math.min(scalePct, 1.0);
+                }
                 size.setWidth(size.width() * scalePct);
                 size.setHeight(size.height() * scalePct);
                 break;
@@ -238,11 +281,12 @@ public class ScaleByPixels extends Scale implements Operation {
 
     @Override
     public int hashCode() {
-        int[] codes = new int[4];
+        int[] codes = new int[5];
         codes[0] = getWidth();
         codes[1] = getHeight();
         codes[2] = (getMode() != null) ? getMode().hashCode() : 0;
         codes[3] = (getFilter() != null) ? getFilter().hashCode() : 0;
+        codes[4] = Boolean.hashCode(isUpscaleAllowed());
         return Arrays.hashCode(codes);
     }
 
