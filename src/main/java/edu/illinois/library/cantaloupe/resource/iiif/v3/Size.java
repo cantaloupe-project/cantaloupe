@@ -224,8 +224,15 @@ final class Size {
                 return new ScaleByPixels(
                         null, getHeight(), ScaleByPixels.Mode.ASPECT_FIT_HEIGHT);
             case ASPECT_FIT_INSIDE:
-                return new ScaleByPixels(
+                ScaleByPixels insideScale = new ScaleByPixels(
                         getWidth(), getHeight(), ScaleByPixels.Mode.ASPECT_FIT_INSIDE);
+                // IIIF Image API v3 §4.2: plain !w,h "must be as large as
+                // possible but not larger than the extracted region";
+                // ^!w,h allows upscaling. Propagate the caret-derived flag
+                // so a source already fitting the box is returned unchanged
+                // for !w,h (#953), while ^!w,h continues to permit upscaling.
+                insideScale.setUpscaleAllowed(isUpscalingAllowed());
+                return insideScale;
             case NON_ASPECT_FILL:
                 return new ScaleByPixels(
                         getWidth(), getHeight(), ScaleByPixels.Mode.NON_ASPECT_FILL);
