@@ -76,6 +76,7 @@ jp2:
     - jpf
   mediaTypes:
     - image/jp2
+    - image/jpx
   raster: true
   video: false
   supportsTransparency: true
