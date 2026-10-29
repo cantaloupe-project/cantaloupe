@@ -582,8 +582,6 @@ public class TJCompressor implements Closeable {
     try {
       close();
     } catch (TJException e) {
-    } finally {
-      super.finalize();
     }
   };
 
