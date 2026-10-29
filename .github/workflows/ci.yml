@@ -6,6 +6,19 @@ on:
       - release/*
   pull_request:
 jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v6
+      - name: Set up JDK
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: 21
+          cache: maven
+      - name: Check import order
+        run: mvn --batch-mode spotless:check
   build:
     runs-on: ${{ matrix.os }}
     strategy:
