@@ -16,8 +16,8 @@ import javax.imageio.ImageWriteParam;
 import javax.imageio.metadata.IIOMetadata;
 import javax.imageio.metadata.IIOMetadataNode;
 import javax.imageio.stream.ImageOutputStream;
-import javax.media.jai.JAI;
-import javax.media.jai.PlanarImage;
+import org.eclipse.imagen.ImageN;
+import org.eclipse.imagen.PlanarImage;
 import java.awt.image.BufferedImage;
 import java.awt.image.RenderedImage;
 import java.awt.image.renderable.ParameterBlock;
@@ -27,7 +27,7 @@ import java.nio.charset.StandardCharsets;
 
 /**
  * GIF image writer wrapping an Image I/O GIF plugin, capable of writing both
- * Java 2D {@link BufferedImage}s and JAI {@link PlanarImage}s as GIFs.
+ * Java 2D {@link BufferedImage}s and ImageN {@link PlanarImage}s as GIFs.
  *
  * @see <a href="http://docs.oracle.com/javase/7/docs/api/javax/imageio/package-summary.html#gif_plugin_notes">
  *     Writing GIF Images</a>
@@ -179,7 +179,7 @@ public final class GIFImageWriter extends AbstractIIOImageWriter
             pb.addSource(image);
             pb.add((float) -image.getMinX());
             pb.add((float) -image.getMinY());
-            image = JAI.create("translate", pb);
+            image = ImageN.create("translate", pb);
         }
 
         final ImageWriteParam writeParam = iioWriter.getDefaultWriteParam();

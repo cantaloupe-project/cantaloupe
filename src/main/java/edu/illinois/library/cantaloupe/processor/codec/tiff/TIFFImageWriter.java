@@ -18,7 +18,7 @@ import javax.imageio.ImageWriteParam;
 import javax.imageio.metadata.IIOMetadata;
 import javax.imageio.metadata.IIOMetadataNode;
 import javax.imageio.stream.ImageOutputStream;
-import javax.media.jai.PlanarImage;
+import org.eclipse.imagen.PlanarImage;
 import java.awt.image.BufferedImage;
 import java.awt.image.RenderedImage;
 import java.io.IOException;
@@ -28,7 +28,7 @@ import java.util.Optional;
 
 /**
  * TIFF image writer using ImageIO, capable of taking both Java 2D
- * {@link BufferedImage}s and JAI {@link PlanarImage}s and writing them as
+ * {@link BufferedImage}s and ImageN {@link PlanarImage}s and writing them as
  * TIFFs.
  *
  * @see <a href="http://download.java.net/media/jai-imageio/javadoc/1.1/com/sun/media/imageio/plugins/tiff/package-summary.html">

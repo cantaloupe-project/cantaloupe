@@ -16,12 +16,12 @@ import edu.illinois.library.cantaloupe.operation.Transpose;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.media.jai.Interpolation;
-import javax.media.jai.JAI;
-import javax.media.jai.OpImage;
-import javax.media.jai.PlanarImage;
-import javax.media.jai.RenderedOp;
-import javax.media.jai.operator.TransposeDescriptor;
+import org.eclipse.imagen.Interpolation;
+import org.eclipse.imagen.ImageN;
+import org.eclipse.imagen.OpImage;
+import org.eclipse.imagen.PlanarImage;
+import org.eclipse.imagen.RenderedOp;
+import org.eclipse.imagen.operator.TransposeDescriptor;
 import java.awt.RenderingHints;
 import java.awt.color.ColorSpace;
 import java.awt.image.ColorModel;
@@ -34,9 +34,9 @@ import java.awt.image.renderable.ParameterBlock;
  * @deprecated Since version 4.0.
  */
 @Deprecated
-final class JAIUtil {
+final class ImageNUtil {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(JAIUtil.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(ImageNUtil.class);
 
     /**
      * @param inImage    Image to convert.
@@ -56,7 +56,7 @@ final class JAIUtil {
             ParameterBlock pb = new ParameterBlock();
             pb.addSource(inImage);
             pb.add(model);
-            inImage = JAI.create("ColorConvert", pb);
+            inImage = ImageN.create("ColorConvert", pb);
         }
         return inImage;
     }
@@ -108,7 +108,7 @@ final class JAIUtil {
             pb.add((float) cropRegion.y());
             pb.add((float) cropRegion.width());
             pb.add((float) cropRegion.height());
-            inImage = JAI.create("crop", pb);
+            inImage = ImageN.create("crop", pb);
         }
         return inImage;
     }
@@ -120,7 +120,7 @@ final class JAIUtil {
     static RenderedOp getAsRenderedOp(PlanarImage inImage) {
         final ParameterBlock pb = new ParameterBlock();
         pb.addSource(inImage);
-        return JAI.create("null", pb);
+        return ImageN.create("null", pb);
     }
 
     /**
@@ -144,7 +144,7 @@ final class JAIUtil {
 
             // See Programming in Java Advanced Imaging sec. 4.5 for an
             // explanation of the Format operation.
-            inImage = JAI.create("format", pb, inImage.getRenderingHints());
+            inImage = ImageN.create("format", pb, inImage.getRenderingHints());
         }
         return inImage;
     }
@@ -174,7 +174,7 @@ final class JAIUtil {
             pb.add(offsets);
 
             LOGGER.debug("rescalePixels(): multiplying by {}", multiplier);
-            inImage = JAI.create("rescale", pb);
+            inImage = ImageN.create("rescale", pb);
         }
         return inImage;
     }
@@ -194,7 +194,7 @@ final class JAIUtil {
             pb.add(inImage.getHeight() / 2.0f);      // y origin
             pb.add((float) Math.toRadians(degrees)); // radians
             pb.add(Interpolation.getInstance(Interpolation.INTERP_BILINEAR));
-            inImage = JAI.create("rotate", pb);
+            inImage = ImageN.create("rotate", pb);
         }
         return inImage;
     }
@@ -253,7 +253,7 @@ final class JAIUtil {
             pb.add(0.0f);
             pb.add(0.0f);
             pb.add(interpolation);
-            inImage = JAI.create("scale", pb);
+            inImage = ImageN.create("scale", pb);
         }
         return inImage;
     }
@@ -308,7 +308,7 @@ final class JAIUtil {
             final RenderingHints hints = new RenderingHints(
                     RenderingHints.KEY_RENDERING,
                     RenderingHints.VALUE_RENDER_QUALITY);
-            inImage = JAI.create("SubsampleAverage", pb, hints);
+            inImage = ImageN.create("SubsampleAverage", pb, hints);
         }
         return inImage;
     }
@@ -325,7 +325,7 @@ final class JAIUtil {
             pb.addSource(inImage);
             pb.add(null);
             pb.add((float) sharpen.getAmount());
-            inImage = JAI.create("UnsharpMask", pb);
+            inImage = ImageN.create("UnsharpMask", pb);
         }
         return inImage;
     }
@@ -352,12 +352,12 @@ final class JAIUtil {
             matrix[0][i] = 0;
         }
         pb.add(matrix);
-        RenderedOp filteredImage = JAI.create("bandcombine", pb, null);
+        RenderedOp filteredImage = ImageN.create("bandcombine", pb, null);
         if (ColorTransform.BITONAL.equals(colorTransform)) {
             pb = new ParameterBlock();
             pb.addSource(filteredImage);
             pb.add(1.0 * 128);
-            filteredImage = JAI.create("binarize", pb);
+            filteredImage = ImageN.create("binarize", pb);
         }
         return filteredImage;
     }
@@ -381,9 +381,9 @@ final class JAIUtil {
                 pb.add(TransposeDescriptor.FLIP_VERTICAL);
                 break;
         }
-        return JAI.create("transpose", pb);
+        return ImageN.create("transpose", pb);
     }
 
-    private JAIUtil() {}
+    private ImageNUtil() {}
 
 }

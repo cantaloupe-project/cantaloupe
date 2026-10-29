@@ -26,6 +26,7 @@
         <azure-storage-blob.version>12.35.1</azure-storage-blob.version>
         <jackson.version>3.2.2</jackson.version>
         <jackson2.version>2.22.4</jackson2.version>
+        <imagen.version>0.9.3</imagen.version>
         <jena.version>6.2.0</jena.version>
         <jruby.version>10.1.2.0</jruby.version>
         <surefire.version>3.6.1</surefire.version>
@@ -214,18 +215,72 @@
                  src/main/java and exclude the original in the shade plugin. -->
             <version>2.1.4</version>
         </dependency>
-        <!-- Used by JaiProcessor. imageio-ext-tiff 1.x used to provide these
-             transitively. jai_core needs jai_codec to initialize its
-             operation registry. -->
+        <!-- Eclipse ImageN (successor to JAI), used by ImageNProcessor:
+         https://github.com/eclipse-imagen/imagen -->
         <dependency>
-            <groupId>javax.media</groupId>
-            <artifactId>jai_core</artifactId>
-            <version>1.1.3</version>
+            <groupId>org.eclipse.imagen</groupId>
+            <artifactId>imagen-core</artifactId>
+            <version>${imagen.version}</version>
         </dependency>
         <dependency>
-            <groupId>javax.media</groupId>
-            <artifactId>jai_codec</artifactId>
-            <version>1.1.3</version>
+            <groupId>org.eclipse.imagen</groupId>
+            <artifactId>imagen-legacy-core</artifactId>
+            <version>${imagen.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.imagen</groupId>
+            <artifactId>imagen-bandcombine</artifactId>
+            <version>${imagen.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.imagen</groupId>
+            <artifactId>imagen-bandselect</artifactId>
+            <version>${imagen.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.imagen</groupId>
+            <artifactId>imagen-binarize</artifactId>
+            <version>${imagen.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.imagen</groupId>
+            <artifactId>imagen-colorconvert</artifactId>
+            <version>${imagen.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.imagen</groupId>
+            <artifactId>imagen-convolve</artifactId>
+            <version>${imagen.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.imagen</groupId>
+            <artifactId>imagen-crop</artifactId>
+            <version>${imagen.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.imagen</groupId>
+            <artifactId>imagen-format</artifactId>
+            <version>${imagen.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.imagen</groupId>
+            <artifactId>imagen-nullop</artifactId>
+            <version>${imagen.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.imagen</groupId>
+            <artifactId>imagen-rescale</artifactId>
+            <version>${imagen.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.imagen</groupId>
+            <artifactId>imagen-scale</artifactId>
+            <version>${imagen.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.imagen</groupId>
+            <artifactId>imagen-translate</artifactId>
+            <version>${imagen.version}</version>
         </dependency>
         <dependency>
             <groupId>jakarta.servlet</groupId>
@@ -484,9 +539,6 @@
                 <configuration>
                     <runOrder>random</runOrder>
                     <reuseForks>false</reuseForks>
-                    <!-- JAI requires this in JDK >= 16. -->
-                    <!-- JAI requires this in JDK 16+. It should be removed when JAI is. -->
-                    <argLine>--add-opens java.desktop/sun.awt.image=ALL-UNNAMED</argLine>
                 </configuration>
             </plugin>
 
@@ -630,8 +682,6 @@
                         <configuration>
                             <runOrder>random</runOrder>
                             <reuseForks>false</reuseForks>
-                            <!-- JAI requires this in JDK 16+. It should be removed when JAI is. -->
-                            <argLine>--add-opens java.desktop/sun.awt.image=ALL-UNNAMED</argLine>
                             <excludes>
                                 <exclude>AzureStorage*Test</exclude>
                                 <exclude>FfmpegProcessorTest</exclude>
@@ -661,8 +711,6 @@
                         <configuration>
                             <runOrder>random</runOrder>
                             <reuseForks>false</reuseForks>
-                            <!-- JAI requires this in JDK 16+. It should be removed when JAI is. -->
-                            <argLine>--add-opens java.desktop/sun.awt.image=ALL-UNNAMED</argLine>
                         </configuration>
                     </plugin>
                 </plugins>

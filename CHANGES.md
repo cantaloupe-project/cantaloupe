@@ -37,6 +37,8 @@
 * Updated imageio-ext to 2.1.4, with a patched LZW decompressor that fixes
   corruption of 8-bit, multi-strip LZW TIFFs that use a horizontal predictor.
   (#879)
+* JaiProcessor has been renamed ImageNProcessor and uses Eclipse ImageN, the
+  successor to Java Advanced Imaging (JAI).
 
 ### Delegate Script
 

@@ -34,7 +34,7 @@ import static edu.illinois.library.cantaloupe.test.PerformanceTestConstants.*;
         time = MEASUREMENT_TIME)
 @State(Scope.Benchmark)
 @Fork(value = 1, jvmArgs = { "-server", "-Xms128M", "-Xmx128M", "-Dcantaloupe.config=memory" })
-public class JaiProcessorPerformance {
+public class ImageNProcessorPerformance {
 
     private static final Format OUTPUT_FORMAT = Format.get("png");
 
@@ -43,7 +43,7 @@ public class JaiProcessorPerformance {
     @Setup
     public void setUp() throws Exception {
         Configuration config = Configuration.getInstance();
-        config.setProperty(Key.PROCESSOR_FALLBACK, "JaiProcessor");
+        config.setProperty(Key.PROCESSOR_FALLBACK, "ImageNProcessor");
         processor = (FileProcessor) new ProcessorFactory().newProcessor(Format.get("bmp"));
     }
 

@@ -8,11 +8,11 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 @SuppressWarnings("deprecation")
-public class JaiProcessorTest extends AbstractImageIOProcessorTest {
+public class ImageNProcessorTest extends AbstractImageIOProcessorTest {
 
     @Override
-    protected JaiProcessor newInstance() {
-        return new JaiProcessor();
+    protected ImageNProcessor newInstance() {
+        return new ImageNProcessor();
     }
 
     @Test
