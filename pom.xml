@@ -23,6 +23,7 @@
         <azure-core-http-jdk-httpclient.version>1.3.0</azure-core-http-jdk-httpclient.version>
         <azure-storage-blob.version>12.35.1</azure-storage-blob.version>
         <jackson.version>2.22.3</jackson.version>
+        <imagen.version>0.9.3</imagen.version>
         <jena.version>6.2.0</jena.version>
         <jruby.version>10.1.2.0</jruby.version>
         <surefire.version>3.6.0</surefire.version>
@@ -180,12 +181,80 @@
         <dependency>
             <groupId>it.geosolutions.imageio-ext</groupId>
             <artifactId>imageio-ext-tiff</artifactId>
-            <!-- Delay upgrading to 1.4.x or 2.x.x until
-                 https://github.com/geosolutions-it/imageio-ext/issues/346 is resolved
-                 and we can verify that https://github.com/cantaloupe-project/cantaloupe/issues/879
-                 is solved under those versions
-                 -->
-            <version>1.3.2</version>
+            <!-- 2.x corrupts 8-bit multi-strip LZW TIFFs with a horizontal
+                 predictor (https://github.com/geosolutions-it/imageio-ext/issues/346,
+                 https://github.com/cantaloupe-project/cantaloupe/issues/879).
+                 Until https://github.com/geosolutions-it/imageio-ext/pull/515
+                 is released, we ship a patched TIFFLZWDecompressor in
+                 src/main/java and exclude the original in the shade plugin. -->
+            <version>2.1.4</version>
+        </dependency>
+        <!-- Eclipse ImageN (successor to JAI), used by ImageNProcessor:
+         https://github.com/eclipse-imagen/imagen -->
+        <dependency>
+            <groupId>org.eclipse.imagen</groupId>
+            <artifactId>imagen-core</artifactId>
+            <version>${imagen.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.imagen</groupId>
+            <artifactId>imagen-legacy-core</artifactId>
+            <version>${imagen.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.imagen</groupId>
+            <artifactId>imagen-bandcombine</artifactId>
+            <version>${imagen.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.imagen</groupId>
+            <artifactId>imagen-bandselect</artifactId>
+            <version>${imagen.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.imagen</groupId>
+            <artifactId>imagen-binarize</artifactId>
+            <version>${imagen.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.imagen</groupId>
+            <artifactId>imagen-colorconvert</artifactId>
+            <version>${imagen.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.imagen</groupId>
+            <artifactId>imagen-convolve</artifactId>
+            <version>${imagen.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.imagen</groupId>
+            <artifactId>imagen-crop</artifactId>
+            <version>${imagen.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.imagen</groupId>
+            <artifactId>imagen-format</artifactId>
+            <version>${imagen.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.imagen</groupId>
+            <artifactId>imagen-nullop</artifactId>
+            <version>${imagen.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.imagen</groupId>
+            <artifactId>imagen-rescale</artifactId>
+            <version>${imagen.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.imagen</groupId>
+            <artifactId>imagen-scale</artifactId>
+            <version>${imagen.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.imagen</groupId>
+            <artifactId>imagen-translate</artifactId>
+            <version>${imagen.version}</version>
         </dependency>
         <dependency>
             <groupId>jakarta.servlet</groupId>
@@ -460,9 +529,6 @@
                 <configuration>
                     <runOrder>random</runOrder>
                     <reuseForks>false</reuseForks>
-                    <!-- JAI requires this in JDK >= 16. -->
-                    <!-- JAI requires this in JDK 16+. It should be removed when JAI is. -->
-                    <argLine>--add-opens java.desktop/sun.awt.image=ALL-UNNAMED</argLine>
                 </configuration>
             </plugin>
 
@@ -523,6 +589,14 @@
                                 <exclude>META-INF/*.SF</exclude>
                                 <exclude>META-INF/*.DSA</exclude>
                                 <exclude>META-INF/*.RSA</exclude>
+                            </excludes>
+                        </filter>
+                        <!-- Replaced by our patched copy; see the imageio-ext-tiff
+                             dependency. -->
+                        <filter>
+                            <artifact>it.geosolutions.imageio-ext:imageio-ext-tiff</artifact>
+                            <excludes>
+                                <exclude>it/geosolutions/imageioimpl/plugins/tiff/TIFFLZWDecompressor.class</exclude>
                             </excludes>
                         </filter>
                     </filters>
@@ -598,8 +672,6 @@
                         <configuration>
                             <runOrder>random</runOrder>
                             <reuseForks>false</reuseForks>
-                            <!-- JAI requires this in JDK 16+. It should be removed when JAI is. -->
-                            <argLine>--add-opens java.desktop/sun.awt.image=ALL-UNNAMED</argLine>
                             <excludes>
                                 <exclude>AzureStorage*Test</exclude>
                                 <exclude>FfmpegProcessorTest</exclude>
@@ -629,8 +701,6 @@
                         <configuration>
                             <runOrder>random</runOrder>
                             <reuseForks>false</reuseForks>
-                            <!-- JAI requires this in JDK 16+. It should be removed when JAI is. -->
-                            <argLine>--add-opens java.desktop/sun.awt.image=ALL-UNNAMED</argLine>
                         </configuration>
                     </plugin>
                 </plugins>

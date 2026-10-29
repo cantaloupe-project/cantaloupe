@@ -13,6 +13,7 @@ Commons Collections    Copyright © 2001-2018 The Apache Software Foundation
 Commons Configuration  Copyright © 2001-2018 The Apache Software Foundation
 Commons IO             Copyright © 2002-2017 The Apache Software Foundation
 Commons Lang           Copyright © 2001-2018 The Apache Software Foundation
+Eclipse ImageN         Copyright © The Eclipse Foundation and contributors
 Eclipse Jetty          Copyright © 2016 The Eclipse Foundation
 HikariCP               Copyright © Brett Wooldridge
 Jackson                Copyright © FasterXML, LLC

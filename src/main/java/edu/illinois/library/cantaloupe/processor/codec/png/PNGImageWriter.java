@@ -13,7 +13,7 @@ import javax.imageio.ImageIO;
 import javax.imageio.metadata.IIOMetadata;
 import javax.imageio.metadata.IIOMetadataNode;
 import javax.imageio.stream.ImageOutputStream;
-import javax.media.jai.PlanarImage;
+import org.eclipse.imagen.PlanarImage;
 import java.awt.image.BufferedImage;
 import java.awt.image.RenderedImage;
 import java.io.IOException;
@@ -21,7 +21,7 @@ import java.io.OutputStream;
 
 /**
  * PNG image writer using Image I/O, capable of writing both Java 2D
- * {@link BufferedImage}s and JAI {@link PlanarImage}s as PNGs.
+ * {@link BufferedImage}s and ImageN {@link PlanarImage}s as PNGs.
  *
  * @see <a href="http://libpng.org/pub/png/spec/1.2/PNG-Contents.html">
  *     PNG Specification, Version 1.2</a>

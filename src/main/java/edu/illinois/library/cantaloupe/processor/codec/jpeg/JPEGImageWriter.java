@@ -16,9 +16,9 @@ import javax.imageio.ImageWriteParam;
 import javax.imageio.metadata.IIOMetadata;
 import javax.imageio.metadata.IIOMetadataNode;
 import javax.imageio.stream.ImageOutputStream;
-import javax.media.jai.JAI;
-import javax.media.jai.OpImage;
-import javax.media.jai.PlanarImage;
+import org.eclipse.imagen.ImageN;
+import org.eclipse.imagen.OpImage;
+import org.eclipse.imagen.PlanarImage;
 import java.awt.image.BufferedImage;
 import java.awt.image.IndexColorModel;
 import java.awt.image.RenderedImage;
@@ -30,7 +30,7 @@ import java.util.Arrays;
 
 /**
  * JPEG image writer using ImageIO, capable of writing both Java 2D
- * {@link BufferedImage}s and JAI {@link PlanarImage}s as JPEGs.
+ * {@link BufferedImage}s and ImageN {@link PlanarImage}s as JPEGs.
  */
 public final class JPEGImageWriter extends AbstractIIOImageWriter
         implements ImageWriter {
@@ -190,7 +190,7 @@ public final class JPEGImageWriter extends AbstractIIOImageWriter
     }
 
     /**
-     * Writes a JAI {@link PlanarImage} to the given output stream.
+     * Writes a ImageN {@link PlanarImage} to the given output stream.
      *
      * @param image        Image to write
      * @param outputStream Stream to write the image to
@@ -213,7 +213,7 @@ public final class JPEGImageWriter extends AbstractIIOImageWriter
                 pb.addSource(image);
                 final int[] bands = {0, 1, 2};
                 pb.add(bands);
-                image = JAI.create("bandselect", pb, null);
+                image = ImageN.create("bandselect", pb, null);
             }
         }
         final ImageWriteParam writeParam = getWriteParam();

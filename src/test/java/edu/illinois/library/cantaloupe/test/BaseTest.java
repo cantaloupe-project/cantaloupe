@@ -17,8 +17,6 @@ public abstract class BaseTest {
         // Suppress a Dock icon and annoying Space transition in full-screen
         // mode in macOS.
         System.setProperty("java.awt.headless", "true");
-        // Suppress an exception thrown by the JAI framework.
-        System.setProperty("com.sun.media.jai.disableMediaLib", "true");
     }
 
     @BeforeAll
