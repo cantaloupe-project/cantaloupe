@@ -44,7 +44,7 @@
  * <p>Adding new processors is one way of adding image codec support to the
  * application. However, note that the {@link javax.imageio.ImageIO} framework
  * used by {@link edu.illinois.library.cantaloupe.processor.Java2dProcessor}
- * and {@link edu.illinois.library.cantaloupe.processor.JaiProcessor} supports
+ * and {@link edu.illinois.library.cantaloupe.processor.ImageNProcessor} supports
  * format plugins, which are trivial to make available in these processors.
  * ImageIO also supports image access via an
  * {@link javax.imageio.stream.ImageInputStream ImageInputStream}, which can
