@@ -1,6 +1,5 @@
 package edu.illinois.library.cantaloupe.http;
 
-import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 
 public final class Response {
@@ -9,27 +8,6 @@ public final class Response {
     private final Headers headers = new Headers();
     private int status;
     private Transport transport;
-
-    static Response fromHttpClientResponse(HttpResponse<byte[]> jresponse) {
-        Response response = new Response();
-        response.setBody(jresponse.body());
-        response.setStatus(jresponse.statusCode());
-
-        switch (jresponse.version()) {
-            case HTTP_2:
-                response.setTransport(Transport.HTTP2_0);
-                break;
-            default:
-                response.setTransport(Transport.HTTP1_1);
-                break;
-        }
-
-        jresponse.headers().map().forEach((name, list) ->
-                list.forEach(h ->
-                        response.getHeaders().add(name, h)));
-
-        return response;
-    }
 
     public byte[] getBody() {
         return body;

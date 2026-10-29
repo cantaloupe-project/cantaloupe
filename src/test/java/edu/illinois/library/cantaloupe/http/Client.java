@@ -132,7 +132,7 @@ public final class Client {
         try {
             HttpResponse<byte[]> response = client.send(
                     request, HttpResponse.BodyHandlers.ofByteArray());
-            Response customResponse = Response.fromHttpClientResponse(response);
+            Response customResponse = toResponse(response);
             if (customResponse.getStatus() >= 400) {
                 throw new ResourceException(customResponse);
             }
@@ -218,6 +218,27 @@ public final class Client {
     private String basicAuthToken() {
         byte[] bytes = (username + ":" + secret).getBytes(StandardCharsets.UTF_8);
         return "Basic " + Base64.getEncoder().encodeToString(bytes);
+    }
+
+    static Response toResponse(HttpResponse<byte[]> jresponse) {
+        Response response = new Response();
+        response.setBody(jresponse.body());
+        response.setStatus(jresponse.statusCode());
+
+        switch (jresponse.version()) {
+            case HTTP_2:
+                response.setTransport(Transport.HTTP2_0);
+                break;
+            default:
+                response.setTransport(Transport.HTTP1_1);
+                break;
+        }
+
+        jresponse.headers().map().forEach((name, list) ->
+                list.forEach(h ->
+                        response.getHeaders().add(name, h)));
+
+        return response;
     }
 
     /**
