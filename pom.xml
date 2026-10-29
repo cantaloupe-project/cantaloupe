@@ -8,7 +8,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>4.1.1</version>
+        <version>4.1.2</version>
         <relativePath />
     </parent>
 
@@ -32,14 +32,19 @@
         <!-- The storage API version used by azure-storage-blob must be supported by Azurite, which the tests run against.
              12.36.0 uses API version 2026-10-06; see https://github.com/Azure/Azurite/issues/2844 -->
         <azure-storage-blob.version>12.35.1</azure-storage-blob.version>
-        <jackson.version>3.2.2</jackson.version>
-        <jackson2.version>2.22.4</jackson2.version>
+        <!-- The following override versions managed by
+             spring-boot-starter-parent, so that every module of each
+             library is aligned. -->
+        <jackson-bom.version>3.2.2</jackson-bom.version>
+        <!-- Manages the Jackson 2 dependencies (core, databind,
+             datatype-jsr310) pulled in by azure-core. -->
+        <jackson-2-bom.version>2.22.4</jackson-2-bom.version>
         <jena.version>6.2.0</jena.version>
         <jruby.version>10.1.2.0</jruby.version>
         <surefire.version>3.6.1</surefire.version>
-        <seleniumhq.version>4.52.0</seleniumhq.version>
-        <!-- htmlunit3-driver needs a newer HtmlUnit than the version managed
-             by spring-boot-starter-parent. -->
+        <selenium.version>4.52.0</selenium.version>
+        <selenium-htmlunit.version>4.51.0</selenium-htmlunit.version>
+        <!-- htmlunit3-driver 4.51.0 requires HtmlUnit 5.x. -->
         <htmlunit.version>5.6.0</htmlunit.version>
     </properties>
 
@@ -62,28 +67,6 @@
             <timezone>-6</timezone>
         </developer>
     </developers>
-
-    <dependencyManagement>
-        <dependencies>
-            <dependency>
-                <groupId>tools.jackson</groupId>
-                <artifactId>jackson-bom</artifactId>
-                <version>${jackson.version}</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
-            <!-- Manages the Jackson 2 dependencies (core, databind,
-                 datatype-jsr310) pulled in by azure-core. jackson-annotations
-                 is managed by the Jackson 3 BOM above. -->
-            <dependency>
-                <groupId>com.fasterxml.jackson</groupId>
-                <artifactId>jackson-bom</artifactId>
-                <version>${jackson2.version}</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
-        </dependencies>
-    </dependencyManagement>
 
     <scm>
         <connection>scm:git:git://github.com/cantaloupe-project/cantaloupe</connection>
@@ -350,19 +333,16 @@
         <dependency>
             <groupId>org.seleniumhq.selenium</groupId>
             <artifactId>htmlunit3-driver</artifactId>
-            <version>4.51.0</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.seleniumhq.selenium</groupId>
             <artifactId>selenium-api</artifactId>
-            <version>${seleniumhq.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.seleniumhq.selenium</groupId>
             <artifactId>selenium-support</artifactId>
-            <version>${seleniumhq.version}</version>
             <scope>test</scope>
         </dependency>
 
