@@ -17,14 +17,14 @@
         <maven.compile.target>21</maven.compile.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <jetty.version>12.1.13</jetty.version>
-        <aws-sdk.version>2.54.18</aws-sdk.version>
+        <jetty.version>12.1.14</jetty.version>
+        <aws-sdk.version>2.56.0</aws-sdk.version>
         <jackson.version>2.22.3</jackson.version>
         <jena.version>6.2.0</jena.version>
-        <jruby.version>10.1.1.0</jruby.version>
-        <surefire.version>3.5.3</surefire.version>
-        <seleniumhq.version>4.49.0</seleniumhq.version>
-        <logback.version>1.6.3</logback.version> <!-- slf4j depends on specific versions of logback. -->
+        <jruby.version>10.1.2.0</jruby.version>
+        <surefire.version>3.6.0</surefire.version>
+        <seleniumhq.version>4.51.0</seleniumhq.version>
+        <logback.version>1.6.5</logback.version> <!-- slf4j depends on specific versions of logback. -->
         <slf4j.version>2.0.19</slf4j.version>
     </properties>
 
@@ -81,7 +81,7 @@
         <dependency>
             <groupId>com.github.ben-manes.caffeine</groupId>
             <artifactId>caffeine</artifactId>
-            <version>3.2.4</version>
+            <version>3.3.1</version>
         </dependency>
         <!-- Used by HeapCache -->
         <dependency>
@@ -93,7 +93,7 @@
         <dependency>
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>
-            <version>2.5.250</version>
+            <version>2.5.252</version>
             <scope>test</scope>
         </dependency>
         <!-- Used by com.mortennobel.imagescaling -->
@@ -149,7 +149,7 @@
         <dependency>
             <groupId>io.lettuce</groupId>
             <artifactId>lettuce-core</artifactId>
-            <version>7.7.0.RELEASE</version>
+            <version>7.9.0.RELEASE</version>
         </dependency>
         <!-- Enhanced ImageIO TIFF plugin supporting BigTIFF:
          https://github.com/geosolutions-it/imageio-ext/ -->
@@ -171,7 +171,7 @@
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
-            <version>3.20.0</version>
+            <version>3.21.0</version>
         </dependency>
         <!-- Provides PDFBox for PdfBoxProcessor. Note that there are also some
         other dependencies in this POM used only by PDFBox. -->
@@ -223,19 +223,13 @@
         <dependency>
             <groupId>org.apache.tika</groupId>
             <artifactId>tika-core</artifactId>
-            <version>4.0.0</version>
+            <version>4.1.0</version>
         </dependency>
         <!-- Assists PDFBox in decoding certain PDFs -->
         <dependency>
             <groupId>org.bouncycastle</groupId>
             <artifactId>bcprov-jdk18on</artifactId>
             <version>1.86</version>
-        </dependency>
-        <!-- Supports <if> expressions in logback.xml -->
-        <dependency>
-            <groupId>org.codehaus.janino</groupId>
-            <artifactId>janino</artifactId>
-            <version>3.1.12</version>
         </dependency>
         <!-- Provides HTTP/2 support in the Jetty server.
         N.B.: ALPN support is in a different module. -->
@@ -347,7 +341,7 @@
         <dependency>
             <groupId>org.seleniumhq.selenium</groupId>
             <artifactId>htmlunit3-driver</artifactId>
-            <version>4.48.0</version>
+            <version>4.51.0</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -445,13 +439,13 @@
             <plugin>
                 <groupId>com.github.spotbugs</groupId>
                 <artifactId>spotbugs-maven-plugin</artifactId>
-                <version>4.10.4.1</version>
+                <version>4.10.5.0</version>
                 <dependencies>
                     <!-- overwrite dependency on spotbugs if you want to specify the version of spotbugs -->
                     <dependency>
                         <groupId>com.github.spotbugs</groupId>
                         <artifactId>spotbugs</artifactId>
-                        <version>4.10.4</version>
+                        <version>4.10.5</version>
                     </dependency>
                 </dependencies>
                 <configuration>
@@ -462,7 +456,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.8.1</version>
+                <version>3.16.0</version>
                 <configuration>
                     <source>${maven.compile.source}</source>
                     <target>${maven.compile.target}</target>
@@ -473,7 +467,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
-                <version>3.2.1</version>
+                <version>3.6.2</version>
                 <configuration>
                     <createDependencyReducedPom>false</createDependencyReducedPom>
                     <transformers>
@@ -536,7 +530,7 @@
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>exec-maven-plugin</artifactId>
-                <version>1.6.0</version>
+                <version>3.6.4</version>
                 <configuration>
                     <mainClass>edu.illinois.library.cantaloupe.StandaloneEntry</mainClass>
                     <classpathScope>compile</classpathScope>
@@ -546,7 +540,7 @@
             <plugin>
                 <groupId>org.owasp</groupId>
                 <artifactId>dependency-check-maven</artifactId>
-                <version>12.1.3</version>
+                <version>12.2.2</version>
                 <executions>
                     <execution>
                         <goals>
@@ -606,9 +600,6 @@
                             <reuseForks>false</reuseForks>
                             <!-- JAI requires this in JDK 16+. It should be removed when JAI is. -->
                             <argLine>--add-opens java.desktop/sun.awt.image=ALL-UNNAMED</argLine>
-                            <excludes>
-                                <exclude>Azure*Test</exclude>
-                            </excludes>
                         </configuration>
                     </plugin>
                 </plugins>

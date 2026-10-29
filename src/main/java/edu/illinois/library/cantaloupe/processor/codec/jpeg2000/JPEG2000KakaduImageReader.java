@@ -568,8 +568,9 @@ public final class JPEG2000KakaduImageReader implements AutoCloseable {
                                 exif = Arrays.copyOfRange(buffer, 16, buffer.length);
                             } else if (isIPTC && bufferSize > 16) {
                                 iptc = Arrays.copyOfRange(buffer, 16, buffer.length);
-                            } else if (isXMP) {
-                                xmp = new String(buffer, StandardCharsets.UTF_8);
+                            } else if (isXMP && bufferSize > 16) {
+                                xmp = new String(buffer, 16, buffer.length - 16,
+                                        StandardCharsets.UTF_8);
                                 xmp = Utils.trimXMP(xmp);
                             }
                         } finally {
