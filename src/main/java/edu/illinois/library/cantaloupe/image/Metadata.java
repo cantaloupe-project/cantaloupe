@@ -19,7 +19,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.io.StringReader;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Collections;
@@ -241,13 +240,13 @@ public class Metadata {
                 base = "http://example.com";
             }
 
-            try (StringReader reader = new StringReader(xmp.get())) {
-                xmpModel.read(reader, base, "RDF/XML");
+            try {
+                Utils.readRDFXML(xmpModel, xmp.get(), base);
             } catch (RiotException e) {
                 if (e.getMessage().indexOf("Base URI is null, but there are relative URIs to resolve") != -1) {
                     // Version 4.8+ of jena requires a rdf:about link to not be empty
-                    try (StringReader reader = new StringReader(xmp.get())) {
-                        xmpModel.read(reader, "http://example.com", "RDF/XML");
+                    try {
+                        Utils.readRDFXML(xmpModel, xmp.get(), "http://example.com");
                     } catch (RiotException exception) {
                         LOGGER.info("loadXMP(): {}", exception.getMessage());
                     }    
