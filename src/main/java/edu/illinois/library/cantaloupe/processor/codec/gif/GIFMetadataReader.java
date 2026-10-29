@@ -5,13 +5,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.imageio.stream.ImageInputStream;
-import javax.xml.bind.DatatypeConverter;
 import java.io.EOFException;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
+import java.util.HexFormat;
 
 /**
  * <p>Reads various metadata from a GIF image.</p>
@@ -207,7 +207,7 @@ final class GIFMetadataReader implements AutoCloseable {
     private void checkSignature() throws IOException {
         byte[] bytes = read(3);
         if (!Arrays.equals(bytes, GIF_SIGNATURE)) {
-            String hexStr = DatatypeConverter.printHexBinary(bytes);
+            String hexStr = HexFormat.of().withUpperCase().formatHex(bytes);
             throw new IOException("Invalid signature: " + hexStr +
                     " (is this a GIF?)");
         }
@@ -216,7 +216,7 @@ final class GIFMetadataReader implements AutoCloseable {
     private void readVersion() throws IOException {
         final byte[] bytes = read(3);
         if (Version.UNKNOWN.equals(Version.forBytes(bytes))) {
-            String hexStr = DatatypeConverter.printHexBinary(bytes);
+            String hexStr = HexFormat.of().withUpperCase().formatHex(bytes);
             throw new IOException("Invalid GIF version: " + hexStr);
         }
     }
