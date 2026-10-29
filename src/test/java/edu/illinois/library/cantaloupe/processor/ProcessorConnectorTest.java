@@ -1,7 +1,7 @@
 package edu.illinois.library.cantaloupe.processor;
 
-import edu.illinois.library.cantaloupe.cache.CacheFactory;
 import edu.illinois.library.cantaloupe.cache.CacheDisabledException;
+import edu.illinois.library.cantaloupe.cache.CacheFactory;
 import edu.illinois.library.cantaloupe.cache.MockBrokenSourceImageFileCache;
 import edu.illinois.library.cantaloupe.cache.MockBrokenSourceInputStreamCache;
 import edu.illinois.library.cantaloupe.cache.MockUnreliableSourceImageFileCache;

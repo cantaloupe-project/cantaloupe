@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Test;
 
 import javax.imageio.ImageIO;
 import javax.imageio.stream.ImageInputStream;
+
 import java.nio.file.Path;
 
 import static org.junit.jupiter.api.Assertions.*;

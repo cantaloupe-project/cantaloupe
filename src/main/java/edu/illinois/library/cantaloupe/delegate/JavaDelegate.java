@@ -340,4 +340,3 @@ public interface JavaDelegate {
     String serializeMetaIdentifier(Map<String,Object> metaIdentifier);
 
 }
-

@@ -1,12 +1,12 @@
 package edu.illinois.library.cantaloupe.resource;
 
-import java.util.Enumeration;
-
 import edu.illinois.library.cantaloupe.delegate.DelegateProxyService;
 import edu.illinois.library.cantaloupe.http.Cookies;
+import edu.illinois.library.cantaloupe.http.Reference;
 import edu.illinois.library.cantaloupe.image.MetaIdentifier;
 import edu.illinois.library.cantaloupe.image.ScaleConstraint;
-import edu.illinois.library.cantaloupe.http.Reference;
+
+import java.util.Enumeration;
 
 public class RequestContextDecorator {
     public static void decorateRequestContext(RequestContext context, MetaIdentifier metaID, Reference requestURI, Request request) {

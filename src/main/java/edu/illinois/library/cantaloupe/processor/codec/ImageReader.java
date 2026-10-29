@@ -11,6 +11,7 @@ import edu.illinois.library.cantaloupe.processor.SourceFormatException;
 import edu.illinois.library.cantaloupe.source.StreamFactory;
 
 import javax.imageio.stream.ImageInputStream;
+
 import java.awt.image.BufferedImage;
 import java.awt.image.RenderedImage;
 import java.io.IOException;

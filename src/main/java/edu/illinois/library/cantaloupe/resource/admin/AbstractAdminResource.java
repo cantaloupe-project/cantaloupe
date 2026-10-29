@@ -1,11 +1,11 @@
 package edu.illinois.library.cantaloupe.resource.admin;
 
 import edu.illinois.library.cantaloupe.Application;
+import edu.illinois.library.cantaloupe.auth.BasicAuth;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.resource.AbstractResource;
 import edu.illinois.library.cantaloupe.resource.EndpointDisabledException;
-import edu.illinois.library.cantaloupe.auth.BasicAuth;
 
 abstract class AbstractAdminResource extends AbstractResource {
 

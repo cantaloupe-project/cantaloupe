@@ -4,6 +4,7 @@ import edu.illinois.library.cantaloupe.image.MediaType;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.X509TrustManager;
+
 import java.io.File;
 import java.io.IOException;
 import java.net.Authenticator;

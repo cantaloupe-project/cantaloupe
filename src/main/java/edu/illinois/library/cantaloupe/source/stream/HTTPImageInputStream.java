@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.imageio.stream.ImageInputStream;
 import javax.imageio.stream.ImageInputStreamImpl;
+
 import java.io.IOException;
 
 /**

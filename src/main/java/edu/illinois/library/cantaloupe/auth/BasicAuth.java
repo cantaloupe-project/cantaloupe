@@ -1,12 +1,12 @@
 package edu.illinois.library.cantaloupe.auth;
 
-import java.nio.charset.StandardCharsets;
-import java.util.Base64;
-
 import edu.illinois.library.cantaloupe.http.Status;
 import edu.illinois.library.cantaloupe.resource.ResourceException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 
 public class BasicAuth {
         /**
