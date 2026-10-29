@@ -35,6 +35,9 @@
         <jruby.version>10.1.2.0</jruby.version>
         <surefire.version>3.6.0</surefire.version>
         <seleniumhq.version>4.51.0</seleniumhq.version>
+        <!-- htmlunit3-driver needs a newer HtmlUnit than the version managed
+             by spring-boot-starter-parent. -->
+        <htmlunit.version>5.6.0</htmlunit.version>
     </properties>
 
     <developers>
