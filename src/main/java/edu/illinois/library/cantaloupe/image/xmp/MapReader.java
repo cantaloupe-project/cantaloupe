@@ -5,8 +5,8 @@ import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.rdf.model.Statement;
 import org.apache.jena.rdf.model.StmtIterator;
-import org.apache.jena.riot.RIOT;
 import org.apache.jena.riot.RiotException;
+import org.apache.jena.sys.JenaSystem;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -29,6 +29,13 @@ public final class MapReader {
 
     private static final Logger LOGGER =
             LoggerFactory.getLogger(MapReader.class);
+
+    static {
+        // Normally already done by ApplicationContextListener. The JVM's
+        // class initialization lock makes other threads wait here until Jena
+        // (including RIOT's RDF/XML reader) is fully initialized.
+        JenaSystem.init();
+    }
 
     private static final Map<String,String> PREFIXES = Map.ofEntries(
             Map.entry("http://ns.adobe.com/camera-raw-settings/1.0/", "crs"),
@@ -57,7 +64,6 @@ public final class MapReader {
      * @see Utils#trimXMP
      */
     public MapReader(String xmp) throws IOException {
-        RIOT.init();
         this.model = ModelFactory.createDefaultModel();
         if (xmp != null) {
             String base = null;

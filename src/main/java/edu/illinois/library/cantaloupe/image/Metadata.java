@@ -13,8 +13,8 @@ import edu.illinois.library.cantaloupe.image.xmp.Utils;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.NodeIterator;
-import org.apache.jena.riot.RIOT;
 import org.apache.jena.riot.RiotException;
+import org.apache.jena.sys.JenaSystem;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -43,6 +43,13 @@ public class Metadata {
 
     private static final Logger LOGGER =
             LoggerFactory.getLogger(Metadata.class);
+
+    static {
+        // Normally already done by ApplicationContextListener. The JVM's
+        // class initialization lock makes other threads wait here until Jena
+        // (including RIOT's RDF/XML reader) is fully initialized.
+        JenaSystem.init();
+    }
 
     private static final String XMP_ORIENTATION_PREDICATE =
             "http://ns.adobe.com/tiff/1.0/Orientation";
@@ -227,8 +234,6 @@ public class Metadata {
     private void loadXMP() {
         final Optional<String> xmp = getXMP();
         if (xmpModel == null && xmp.isPresent()) {
-            RIOT.init();
-
             xmpModel = ModelFactory.createDefaultModel();
             String base = null;
             if (xmp.get().indexOf("rdf:about=''") != -1 || xmp.get().indexOf("rdf:about=\"\"") != -1) {
