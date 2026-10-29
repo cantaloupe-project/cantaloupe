@@ -392,20 +392,19 @@ public class Version2_0ConformanceTest {
      */
     @Test
     void testSizeScaledToFitInsideWhenBoxExceedsSource() throws Exception {
-        // ResourceTest.setUp() leaves max_scale at 0 (no ceiling), which does
-        // not reproduce #953. The reporter ran with max_scale = 1.0, the
+        // setUp() leaves max_scale at 0 (no ceiling), which does not
+        // reproduce #953. The reporter ran with max_scale = 1.0, the
         // cantaloupe.properties.sample default, so set it here: source size is
         // "less than or equal to" the requested box and must be returned as
         // is rather than rejected with a ScaleRestrictedException.
-        Configuration config = Configuration.getInstance();
-        config.setProperty(Key.MAX_SCALE, 1.0);
+        when(configuration.getDouble(Key.MAX_SCALE, 1.0)).thenReturn(1.0);
 
-        client = newClient("/" + IMAGE + "/full/!300,300/0/default.jpg");
-        Response response = client.send();
+        MvcResult result = mockMvc.perform(get("/iiif/2/{identifier}/full/!300,300/0/default.jpg", IMAGE))
+                .andExpect(status().isOk())
+                .andReturn();
 
-        assertEquals(200, response.getStatus());
-
-        try (InputStream is = new ByteArrayInputStream(response.getBody())) {
+        byte[] imageBytes = result.getResponse().getContentAsByteArray();
+        try (InputStream is = new ByteArrayInputStream(imageBytes)) {
             BufferedImage image = ImageIO.read(is);
             assertEquals(64, image.getWidth());
             assertEquals(56, image.getHeight());
