@@ -177,12 +177,19 @@ public final class JPEG2000KakaduImageReader implements AutoCloseable {
 
     }
 
+    /**
+     * N.B.: this is installed globally and may be invoked on one of Kakadu's
+     * worker threads, which lack the calling thread's logging context. The
+     * failure resurfaces on the calling thread (e.g. as a failed {@link
+     * Kdu_region_decompressor#Finish()}), which is responsible for reporting
+     * it as an error, so it is only logged at warning level here.
+     */
     private static class KduErrorMessage extends AbstractKduMessage {
 
         @Override
         public void Flush(boolean isEndOfMessage) throws KduException {
             if (isEndOfMessage) {
-                LOGGER.error(builder.toString());
+                LOGGER.warn(builder.toString());
                 throw new KduException(Kdu_global.KDU_ERROR_EXCEPTION,
                         "In " + this.getClass().getSimpleName());
             }
@@ -483,6 +490,14 @@ public final class JPEG2000KakaduImageReader implements AutoCloseable {
 
     public void setSource(Path file) {
         this.sourceFile = file;
+    }
+
+    /**
+     * @return Human-readable description of the source, for log and
+     *         exception messages.
+     */
+    private String getSourceDescription() {
+        return (sourceFile != null) ? sourceFile.toString() : "stream";
     }
 
     private void openImage() throws IOException {
@@ -837,8 +852,16 @@ public final class JPEG2000KakaduImageReader implements AutoCloseable {
                     }
                 }
             } else {
-                // Would be nice if we knew more...
-                LOGGER.error("Fatal error in the codestream management machinery.");
+                // The cause (e.g. a corrupted packet) will have been logged
+                // by KduErrorMessage, possibly on a Kakadu worker thread.
+                // Returning the image here would yield a partially decoded
+                // (and probably blank) result.
+                isDecompressing = false;
+                LOGGER.error("Fatal error in the codestream management " +
+                        "machinery while decoding {} from {}", initialROI,
+                        getSourceDescription());
+                throw new IOException("Failed to decode " + initialROI + " from " +
+                        getSourceDescription());
             }
             isDecompressing = false;
         } catch (KduException e) {
