@@ -1,14 +1,14 @@
 package edu.illinois.library.cantaloupe.processor.codec;
 
 import edu.illinois.library.cantaloupe.image.Dimension;
+import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.MediaType;
 import edu.illinois.library.cantaloupe.image.Rectangle;
 import edu.illinois.library.cantaloupe.image.ScaleConstraint;
 import edu.illinois.library.cantaloupe.operation.Crop;
-import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.operation.CropByPercent;
-import edu.illinois.library.cantaloupe.operation.Scale;
 import edu.illinois.library.cantaloupe.operation.ReductionFactor;
+import edu.illinois.library.cantaloupe.operation.Scale;
 import edu.illinois.library.cantaloupe.operation.ScaleByPercent;
 import edu.illinois.library.cantaloupe.operation.ScaleByPixels;
 import edu.illinois.library.cantaloupe.processor.SourceFormatException;
@@ -20,6 +20,7 @@ import javax.imageio.IIOException;
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReadParam;
 import javax.imageio.stream.ImageInputStream;
+
 import java.awt.image.BufferedImage;
 import java.awt.image.RenderedImage;
 import java.io.IOException;

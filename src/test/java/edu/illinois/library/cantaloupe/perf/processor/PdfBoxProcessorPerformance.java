@@ -1,8 +1,5 @@
 package edu.illinois.library.cantaloupe.perf.processor;
 
-import java.io.OutputStream;
-import java.util.concurrent.TimeUnit;
-
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Format;
@@ -23,6 +20,9 @@ import org.openjdk.jmh.annotations.Setup;
 import org.openjdk.jmh.annotations.State;
 import org.openjdk.jmh.annotations.TearDown;
 import org.openjdk.jmh.annotations.Warmup;
+
+import java.io.OutputStream;
+import java.util.concurrent.TimeUnit;
 
 import static edu.illinois.library.cantaloupe.test.PerformanceTestConstants.*;
 

@@ -1,7 +1,7 @@
 package edu.illinois.library.cantaloupe.auth;
 
-import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.delegate.DelegateProxy;
+import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.junit.jupiter.api.BeforeEach;

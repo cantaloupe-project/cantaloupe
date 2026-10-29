@@ -1,8 +1,8 @@
 package edu.illinois.library.cantaloupe.resource.iiif.v2;
 
+import edu.illinois.library.cantaloupe.image.Dimension;
 import edu.illinois.library.cantaloupe.operation.ScaleByPercent;
 import edu.illinois.library.cantaloupe.operation.ScaleByPixels;
-import edu.illinois.library.cantaloupe.image.Dimension;
 import edu.illinois.library.cantaloupe.resource.IllegalClientArgumentException;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import org.junit.jupiter.api.BeforeEach;

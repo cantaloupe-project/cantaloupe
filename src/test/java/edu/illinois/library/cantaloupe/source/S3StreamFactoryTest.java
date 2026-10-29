@@ -6,9 +6,9 @@ import edu.illinois.library.cantaloupe.source.stream.ClosingMemoryCacheImageInpu
 import edu.illinois.library.cantaloupe.source.stream.HTTPImageInputStream;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.ConfigurationConstants;
-import edu.illinois.library.cantaloupe.util.S3Utils;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import edu.illinois.library.cantaloupe.util.S3AsyncClientBuilder;
+import edu.illinois.library.cantaloupe.util.S3Utils;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -18,6 +18,7 @@ import software.amazon.awssdk.services.s3.S3AsyncClient;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
 import javax.imageio.stream.ImageInputStream;
+
 import java.io.InputStream;
 import java.net.URI;
 import java.nio.file.Path;

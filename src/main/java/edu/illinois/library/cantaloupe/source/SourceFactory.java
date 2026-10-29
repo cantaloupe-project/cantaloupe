@@ -3,13 +3,14 @@ package edu.illinois.library.cantaloupe.source;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationException;
 import edu.illinois.library.cantaloupe.config.Key;
-import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.delegate.DelegateMethod;
 import edu.illinois.library.cantaloupe.delegate.DelegateProxy;
+import edu.illinois.library.cantaloupe.image.Identifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.script.ScriptException;
+
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Set;

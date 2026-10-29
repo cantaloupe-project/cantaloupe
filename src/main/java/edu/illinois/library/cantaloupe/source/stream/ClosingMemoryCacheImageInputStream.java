@@ -1,6 +1,7 @@
 package edu.illinois.library.cantaloupe.source.stream;
 
 import javax.imageio.stream.MemoryCacheImageInputStream;
+
 import java.io.IOException;
 import java.io.InputStream;
 

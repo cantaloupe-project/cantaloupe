@@ -1,9 +1,10 @@
 package edu.illinois.library.cantaloupe.operation.redaction;
 
-import edu.illinois.library.cantaloupe.image.Rectangle;
 import edu.illinois.library.cantaloupe.delegate.DelegateProxy;
+import edu.illinois.library.cantaloupe.image.Rectangle;
 
 import javax.script.ScriptException;
+
 import java.util.List;
 import java.util.stream.Collectors;
 

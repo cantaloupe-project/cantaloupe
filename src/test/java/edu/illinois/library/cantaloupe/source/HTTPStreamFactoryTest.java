@@ -8,6 +8,8 @@ import edu.illinois.library.cantaloupe.source.stream.HTTPImageInputStream;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.WebServer;
 import edu.illinois.library.cantaloupe.util.SocketUtils;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.Response;
 import org.eclipse.jetty.server.handler.DefaultHandler;
@@ -17,9 +19,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import javax.imageio.stream.ImageInputStream;
+
 import java.io.InputStream;
 import java.util.Map;
 

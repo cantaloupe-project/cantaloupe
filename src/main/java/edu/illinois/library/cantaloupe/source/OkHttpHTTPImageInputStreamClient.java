@@ -1,7 +1,6 @@
 package edu.illinois.library.cantaloupe.source;
 
 import edu.illinois.library.cantaloupe.http.Range;
-
 import edu.illinois.library.cantaloupe.http.Response;
 import edu.illinois.library.cantaloupe.source.stream.HTTPImageInputStreamClient;
 import okhttp3.OkHttpClient;

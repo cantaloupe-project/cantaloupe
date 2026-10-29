@@ -1,6 +1,7 @@
 package edu.illinois.library.cantaloupe.processor.codec.jpeg;
 
 import javax.imageio.stream.ImageInputStream;
+
 import java.awt.color.ICC_Profile;
 import java.io.IOException;
 import java.util.ArrayList;

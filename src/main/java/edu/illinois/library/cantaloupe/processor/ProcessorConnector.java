@@ -1,9 +1,9 @@
 package edu.illinois.library.cantaloupe.processor;
 
 import edu.illinois.library.cantaloupe.Application;
+import edu.illinois.library.cantaloupe.cache.CacheDisabledException;
 import edu.illinois.library.cantaloupe.cache.CacheFactory;
 import edu.illinois.library.cantaloupe.cache.SourceCache;
-import edu.illinois.library.cantaloupe.cache.CacheDisabledException;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;

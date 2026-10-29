@@ -1,13 +1,13 @@
 package edu.illinois.library.cantaloupe.processor.codec;
 
-import edu.illinois.library.cantaloupe.image.MediaType;
 import edu.illinois.library.cantaloupe.image.Format;
+import edu.illinois.library.cantaloupe.image.MediaType;
 import edu.illinois.library.cantaloupe.processor.codec.bmp.BMPImageReader;
-import edu.illinois.library.cantaloupe.processor.codec.xpm.XPMImageReader;
 import edu.illinois.library.cantaloupe.processor.codec.gif.GIFImageReader;
 import edu.illinois.library.cantaloupe.processor.codec.jpeg.JPEGImageReader;
 import edu.illinois.library.cantaloupe.processor.codec.png.PNGImageReader;
 import edu.illinois.library.cantaloupe.processor.codec.tiff.TIFFImageReader;
+import edu.illinois.library.cantaloupe.processor.codec.xpm.XPMImageReader;
 import edu.illinois.library.cantaloupe.source.PathStreamFactory;
 import edu.illinois.library.cantaloupe.source.StreamFactory;
 import edu.illinois.library.cantaloupe.test.BaseTest;
@@ -17,6 +17,7 @@ import org.junit.jupiter.api.Test;
 
 import javax.imageio.ImageIO;
 import javax.imageio.stream.ImageInputStream;
+
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;

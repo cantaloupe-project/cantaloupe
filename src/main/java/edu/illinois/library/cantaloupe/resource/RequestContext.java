@@ -1,5 +1,6 @@
 package edu.illinois.library.cantaloupe.resource;
 
+import edu.illinois.library.cantaloupe.delegate.JavaContext;
 import edu.illinois.library.cantaloupe.delegate.JavaRequestContext;
 import edu.illinois.library.cantaloupe.http.Reference;
 import edu.illinois.library.cantaloupe.image.Dimension;
@@ -8,7 +9,6 @@ import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.Metadata;
 import edu.illinois.library.cantaloupe.image.ScaleConstraint;
 import edu.illinois.library.cantaloupe.operation.OperationList;
-import edu.illinois.library.cantaloupe.delegate.JavaContext;
 
 import java.util.Map;
 

@@ -16,6 +16,7 @@ import org.junit.jupiter.api.Test;
 
 import javax.imageio.stream.FileImageInputStream;
 import javax.imageio.stream.ImageInputStream;
+
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.List;

@@ -8,6 +8,7 @@ import javax.imageio.ImageTypeSpecifier;
 import javax.imageio.ImageWriteParam;
 import javax.imageio.metadata.IIOMetadata;
 import javax.imageio.metadata.IIOMetadataNode;
+
 import java.awt.image.RenderedImage;
 import java.io.IOException;
 import java.io.OutputStream;

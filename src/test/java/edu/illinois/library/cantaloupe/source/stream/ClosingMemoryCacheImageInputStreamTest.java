@@ -4,6 +4,7 @@ import edu.illinois.library.cantaloupe.test.BaseTest;
 import org.junit.jupiter.api.Test;
 
 import javax.imageio.stream.ImageInputStream;
+
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 

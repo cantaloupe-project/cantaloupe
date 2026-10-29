@@ -5,6 +5,7 @@ import edu.illinois.library.cantaloupe.processor.codec.IIOMetadata;
 import org.w3c.dom.NodeList;
 
 import javax.imageio.metadata.IIOMetadataNode;
+
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;

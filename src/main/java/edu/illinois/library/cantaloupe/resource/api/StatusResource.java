@@ -1,9 +1,9 @@
 package edu.illinois.library.cantaloupe.resource.api;
 
 import com.fasterxml.jackson.databind.SerializationFeature;
-import edu.illinois.library.cantaloupe.status.ApplicationStatus;
 import edu.illinois.library.cantaloupe.http.Method;
 import edu.illinois.library.cantaloupe.resource.JacksonRepresentation;
+import edu.illinois.library.cantaloupe.status.ApplicationStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

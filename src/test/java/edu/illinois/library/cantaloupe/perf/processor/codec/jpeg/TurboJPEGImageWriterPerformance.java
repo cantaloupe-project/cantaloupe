@@ -1,9 +1,6 @@
 package edu.illinois.library.cantaloupe.perf.processor.codec.jpeg;
 
-import java.util.concurrent.TimeUnit;
-
 import edu.illinois.library.cantaloupe.processor.codec.jpeg.TurboJPEGImageWriterTest;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.BenchmarkMode;
@@ -16,6 +13,8 @@ import org.openjdk.jmh.annotations.Setup;
 import org.openjdk.jmh.annotations.State;
 import org.openjdk.jmh.annotations.TearDown;
 import org.openjdk.jmh.annotations.Warmup;
+
+import java.util.concurrent.TimeUnit;
 
 import static edu.illinois.library.cantaloupe.test.PerformanceTestConstants.*;
 
