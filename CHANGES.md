@@ -34,6 +34,8 @@
 
 * Java2dProcessor no longer swaps the red and blue channels of images with a
   custom pixel layout, such as TIFFs with an alpha channel, when rotating them.
+* KakaduNativeProcessor responds with an error instead of a partially decoded
+  (and probably blank) image when it encounters a corrupted codestream.
 
 ### Delegate Script
 
