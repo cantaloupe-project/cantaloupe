@@ -1126,7 +1126,7 @@ class OperationListTest extends BaseTest {
                         new Encode(Format.get("jpg")))
                 .build();
         ValidationException e = assertThrows(ValidationException.class,
-                () -> ops.validate(fullSize, Format.get("tif")));
+                () -> ops.validate(fullSize, Format.get("tif"), Configuration.getInstance()));
         assertTrue(e.getMessage().contains("105455x785"));
     }
 
@@ -1138,7 +1138,7 @@ class OperationListTest extends BaseTest {
                 .withIdentifier(new Identifier("cats"))
                 .withOperations(new Encode(Format.get("jpg")))
                 .build();
-        ops.validate(fullSize, Format.get("tif"));
+        ops.validate(fullSize, Format.get("tif"), Configuration.getInstance());
     }
 
     @Test
@@ -1148,7 +1148,7 @@ class OperationListTest extends BaseTest {
                 .withIdentifier(new Identifier("cats"))
                 .withOperations(new Encode(Format.get("png")))
                 .build();
-        ops.validate(fullSize, Format.get("tif"));
+        ops.validate(fullSize, Format.get("tif"), Configuration.getInstance());
     }
 
     @Test
