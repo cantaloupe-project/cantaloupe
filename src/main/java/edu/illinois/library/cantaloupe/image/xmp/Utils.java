@@ -1,6 +1,11 @@
 package edu.illinois.library.cantaloupe.image.xmp;
 
 import edu.illinois.library.cantaloupe.Application;
+import org.apache.jena.rdf.model.Model;
+import org.apache.jena.riot.Lang;
+import org.apache.jena.riot.RDFParser;
+import org.apache.jena.riot.RiotException;
+import org.apache.jena.riot.system.ErrorHandlerFactory;
 
 public final class Utils {
 
@@ -47,6 +52,27 @@ public final class Utils {
             return xmp.substring(start, startTagEnd + 1);
         }
         return xmp;
+    }
+
+    /**
+     * Parses an RDF/XML string into the given model. Unlike {@link
+     * Model#read(java.io.Reader, String, String)}, parse errors are not
+     * logged by Jena; they are only thrown, leaving it up to the caller to
+     * decide how to handle them. (XMP embedded in images is frequently
+     * invalid, e.g. containing unescaped ampersands.)
+     *
+     * @param model  Model to read into.
+     * @param rdfXML RDF/XML string.
+     * @param base   Base URI. May be {@code null}.
+     * @throws RiotException if the string is not valid RDF/XML.
+     */
+    public static void readRDFXML(Model model,
+                                  String rdfXML,
+                                  String base) {
+        RDFParser.fromString(rdfXML, Lang.RDFXML)
+                .base(base)
+                .errorHandler(ErrorHandlerFactory.errorHandlerNoLogging)
+                .parse(model);
     }
 
 }

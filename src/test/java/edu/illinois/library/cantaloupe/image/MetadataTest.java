@@ -1,5 +1,9 @@
 package edu.illinois.library.cantaloupe.image;
 
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.Logger;
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.core.read.ListAppender;
 import edu.illinois.library.cantaloupe.image.exif.DataType;
 import edu.illinois.library.cantaloupe.image.exif.Directory;
 import edu.illinois.library.cantaloupe.image.exif.Rational;
@@ -13,6 +17,7 @@ import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.apache.jena.rdf.model.Model;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.slf4j.LoggerFactory;
 
 import java.nio.file.Path;
 import java.util.Collections;
@@ -260,6 +265,35 @@ public class MetadataTest extends BaseTest {
     void testGetOrientationWithMalformedXMP() {
         instance.setXMP("����\u0000\u0010JFIF\u0000\u0001\u0001\u0001\u0000H\u0000H\u0000\u0000��\u0000C\u0000\b\u0006\u0006\u0007\u0006\u0005\b\u0007\u0007\u0007");
         assertEquals(Orientation.ROTATE_0, instance.getOrientation());
+    }
+
+    /**
+     * XMP found in the wild containing an unescaped ampersand in an attribute
+     * value, which Jena would otherwise log at ERROR level.
+     */
+    @Test
+    void testGetOrientationWithXMPContainingUnescapedAmpersand() {
+        instance.setXMP("<x:xmpmeta xmlns:x=\"adobe:ns:meta/\">" +
+                "<rdf:RDF xmlns:rdf=\"http://www.w3.org/1999/02/22-rdf-syntax-ns#\">" +
+                "<rdf:Description rdf:about=\"uuid:3f5456f1-8322-405d-853d-c2b9d70c7d6b\" " +
+                "xmlns:photoshop=\"http://ns.adobe.com/photoshop/1.0/\" " +
+                "xmlns:dc=\"http://purl.org/dc/elements/1.1/\" " +
+                "photoshop:Headline=\"Laguna Seca Camel GT & RS\">" +
+                "<dc:description><rdf:Alt><rdf:li xml:lang=\"x-default\">" +
+                "United States, USA – 1977: Laguna Seca Camel GT &amp; RS" +
+                "</rdf:li></rdf:Alt></dc:description>" +
+                "</rdf:Description></rdf:RDF></x:xmpmeta>");
+        Logger logger = (Logger) LoggerFactory.getLogger("org.apache.jena.riot");
+        ListAppender<ILoggingEvent> appender = new ListAppender<>();
+        appender.start();
+        logger.addAppender(appender);
+        try {
+            assertEquals(Orientation.ROTATE_0, instance.getOrientation());
+            assertTrue(appender.list.stream()
+                    .noneMatch(e -> e.getLevel().isGreaterOrEqual(Level.ERROR)));
+        } finally {
+            logger.detachAppender(appender);
+        }
     }
 
     /* getXMPElements() */

@@ -10,7 +10,6 @@ import org.apache.jena.sys.JenaSystem;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.StringReader;
 import java.io.StringWriter;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
@@ -132,9 +131,7 @@ final class Util {
             // Version 4.8+ of Jena requires a base URI when rdf:about is empty.
             base = "http://example.com";
         }
-        try (StringReader reader = new StringReader(rdfXML)) {
-            model.read(reader, base, "RDF/XML");
-        }
+        Utils.readRDFXML(model, rdfXML, base);
         return model;
     }
 
