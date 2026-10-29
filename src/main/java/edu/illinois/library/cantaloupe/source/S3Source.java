@@ -261,6 +261,14 @@ final class S3Source extends AbstractSource implements Source {
     }
 
     /**
+     * Closes and discards all cached clients. For testing only.
+     */
+    static synchronized void clearClients() {
+        CLIENTS.values().forEach(S3AsyncClient::close);
+        CLIENTS.clear();
+    }
+
+    /**
      * Fetches a whole object.
      *
      * @param info Object info.

@@ -156,6 +156,9 @@ public class S3SourceTest extends AbstractSourceTest {
     public void tearDown() throws Exception {
         super.tearDown();
         S3Utils.emptyBucket(client(), getBucket());
+        // Some tests cache clients configured with bogus endpoints, which
+        // would otherwise be used by subsequent tests.
+        S3Source.clearClients();
     }
 
     @Override
