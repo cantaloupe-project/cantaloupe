@@ -340,6 +340,16 @@ public class HTTPImageInputStream extends ImageInputStreamImpl
         debug("Downloading range: {}", range);
         Response response  = client.sendGETRequest(range);
         byte[] entity      = response.getBody();
+        // A short body (e.g. from a connection that was closed early) must
+        // not be used or cached, as it would be served to readers as though
+        // it were the actual content of the resource.
+        final long expectedLength = range.end - range.start + 1;
+        if (entity == null || entity.length != expectedLength) {
+            throw new IOException(String.format(
+                    "Expected %d bytes for range %d-%d but received %d",
+                    expectedLength, range.start, range.end,
+                    (entity != null) ? entity.length : 0));
+        }
         numBytesDownloaded += entity.length;
         numChunkDownloads++;
         return entity;
