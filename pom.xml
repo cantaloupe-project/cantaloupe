@@ -188,11 +188,17 @@
                  src/main/java and exclude the original in the shade plugin. -->
             <version>2.1.4</version>
         </dependency>
-        <!-- Used by JaiProcessor. imageio-ext-tiff 1.x used to provide this
-             transitively. -->
+        <!-- Used by JaiProcessor. imageio-ext-tiff 1.x used to provide these
+             transitively. jai_core needs jai_codec to initialize its
+             operation registry. -->
         <dependency>
             <groupId>javax.media</groupId>
             <artifactId>jai_core</artifactId>
+            <version>1.1.3</version>
+        </dependency>
+        <dependency>
+            <groupId>javax.media</groupId>
+            <artifactId>jai_codec</artifactId>
             <version>1.1.3</version>
         </dependency>
         <dependency>
