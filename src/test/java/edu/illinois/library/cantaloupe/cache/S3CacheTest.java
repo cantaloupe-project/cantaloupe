@@ -23,6 +23,7 @@ import software.amazon.awssdk.services.s3.S3AsyncClient;
 import software.amazon.awssdk.services.s3.model.HeadObjectRequest;
 import software.amazon.awssdk.services.s3.model.HeadObjectResponse;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
+import software.amazon.awssdk.services.s3.model.S3Exception;
 
 import java.io.InputStream;
 import java.net.URI;
@@ -31,6 +32,8 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
+import java.util.UUID;
+import java.util.concurrent.CompletionException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -63,6 +66,14 @@ public class S3CacheTest extends AbstractCacheTest {
     private final Identifier identifier = new Identifier("jpg-rgb-64x56x8-baseline.jpg");
     private final OperationList opList  = new OperationList();
     private S3Cache instance;
+
+    /**
+     * Unique to each test. S3Cache writes (uploads and touches)
+     * asynchronously, and some of those writes may land after {@link
+     * #tearDown()} has purged the cache, so giving each test its own key
+     * prefix keeps one test's stragglers from showing up in another.
+     */
+    private String keyPrefix;
 
     @BeforeAll
     public static void beforeClass() throws Exception {
@@ -134,22 +145,43 @@ public class S3CacheTest extends AbstractCacheTest {
         return Service.forKey(testConfig.getString(ConfigurationConstants.S3_SERVICE.getKey()));
     }
 
-    private void uploadDerivative(OperationList ops1, Path fixture) throws Exception {
-        CompletableOutputStream outputStream = null;
-        try {
-            outputStream = instance.newDerivativeImageOutputStream(ops1);
-            if (outputStream instanceof S3MultipartAsyncOutputStream) {
-                ((S3MultipartAsyncOutputStream)outputStream).observer = this;
-            }
+    /**
+     * Writes the given fixture to the cache and blocks until the resulting
+     * object is visible in the bucket. {@link S3MultipartAsyncOutputStream}
+     * uploads in the background, so the object may not exist yet when {@link
+     * CompletableOutputStream#close()} returns.
+     */
+    private void uploadDerivative(OperationList ops, Path fixture) throws Exception {
+        try (CompletableOutputStream outputStream =
+                     instance.newDerivativeImageOutputStream(ops)) {
             Files.copy(fixture, outputStream);
             outputStream.setComplete(true);
-        } finally {
-            outputStream.close();
         }
-        if (outputStream instanceof S3MultipartAsyncOutputStream) {
-            synchronized (outputStream) {
-                outputStream.wait();
+        awaitObject(instance.getObjectKey(ops));
+    }
+
+    /**
+     * Polls with HEAD requests (which, unlike reads through the cache, don't
+     * trigger an asynchronous touch) until the given key exists.
+     */
+    private void awaitObject(String key) throws Exception {
+        final HeadObjectRequest request = HeadObjectRequest.builder()
+                .bucket(getBucket())
+                .key(key)
+                .build();
+        final long deadline = System.currentTimeMillis() + 10000;
+        while (true) {
+            try {
+                client().headObject(request).join();
+                return;
+            } catch (CompletionException e) {
+                if (!(e.getCause() instanceof S3Exception s3e) ||
+                        s3e.statusCode() != 404 ||
+                        System.currentTimeMillis() > deadline) {
+                    throw e;
+                }
             }
+            Thread.sleep(50);
         }
     }
 
@@ -157,7 +189,8 @@ public class S3CacheTest extends AbstractCacheTest {
     public void setUp() throws Exception {
         super.setUp();
 
-        instance = newInstance();
+        keyPrefix = "test/" + UUID.randomUUID() + "/";
+        instance  = newInstance();
         instance.initialize();
     }
 
@@ -170,7 +203,7 @@ public class S3CacheTest extends AbstractCacheTest {
     @Override
     S3Cache newInstance() {
         final Configuration config = Configuration.getInstance();
-        config.setProperty(Key.S3CACHE_OBJECT_KEY_PREFIX, "test/");
+        config.setProperty(Key.S3CACHE_OBJECT_KEY_PREFIX, keyPrefix);
         config.setProperty(Key.S3CACHE_ACCESS_KEY_ID, getAccessKeyId());
         config.setProperty(Key.S3CACHE_BUCKET_NAME, getBucket());
         config.setProperty(Key.S3CACHE_SECRET_KEY, getSecretKey());
@@ -210,7 +243,7 @@ public class S3CacheTest extends AbstractCacheTest {
     @Test
     void testGetObjectKeyWithIdentifier() {
         assertEquals(
-                "test/info/083425bc68eece64753ec83a25f87230.json",
+                keyPrefix + "info/083425bc68eece64753ec83a25f87230.json",
                 instance.getObjectKey(identifier));
     }
 
@@ -220,7 +253,7 @@ public class S3CacheTest extends AbstractCacheTest {
     void testGetObjectKeyWithOperationList() {
         opList.setIdentifier(new Identifier("cats"));
         assertEquals(
-                "test/image/0832c1202da8d382318e329a7c133ea0/4520700b2323f4d1e65e1b2074f43d47",
+                keyPrefix + "image/0832c1202da8d382318e329a7c133ea0/4520700b2323f4d1e65e1b2074f43d47",
                 instance.getObjectKey(opList));
     }
 
@@ -524,7 +557,42 @@ public class S3CacheTest extends AbstractCacheTest {
     @Override
     void testPurgeWithIdentifier() throws Exception {
         assumeFalse(SystemUtils.IS_OS_WINDOWS); // TODO: this fails in Windows sometimes
-        super.testPurgeWithIdentifier();
+        final Path fixture = TestUtil.getImage(IMAGE);
+
+        // add an image and an info
+        final Identifier id1        = new Identifier("cats");
+        final OperationList opList1 = OperationList.builder()
+                .withIdentifier(id1)
+                .withOperations(new Encode(Format.get("jpg")))
+                .build();
+        uploadDerivative(opList1, fixture);
+        instance.put(id1, new Info());
+
+        // add another image and another info
+        final Identifier id2        = new Identifier("dogs");
+        final OperationList opList2 = OperationList.builder()
+                .withIdentifier(id2)
+                .withOperations(new Encode(Format.get("jpg")))
+                .build();
+        uploadDerivative(opList2, fixture);
+        instance.put(id2, new Info());
+
+        // Existence is checked with HEAD requests rather than getInfo() or
+        // newDerivativeImageInputStream(), which would fire off asynchronous
+        // touches (copies) that could recreate an object after it's purged.
+        awaitObject(instance.getObjectKey(id1));
+        awaitObject(instance.getObjectKey(id2));
+
+        // purge one of the info/image pairs
+        instance.purge(id1);
+
+        // assert that its info and image are gone
+        assertFalse(instance.getInfo(id1).isPresent());
+        assertNotExists(instance, opList1);
+
+        // ... but the other one is still there
+        assertTrue(instance.getInfo(id2).isPresent());
+        assertExists(instance, opList2);
     }
 
 }
