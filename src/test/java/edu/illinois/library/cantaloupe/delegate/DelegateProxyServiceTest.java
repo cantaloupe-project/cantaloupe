@@ -12,7 +12,11 @@ import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class DelegateProxyServiceTest extends BaseTest {
 
@@ -51,14 +55,14 @@ class DelegateProxyServiceTest extends BaseTest {
 
     @Test
     void isDelegateAvailableWithNoJavaDelegateAndScriptEnabled() {
-        assertTrue(DelegateProxyService.isDelegateAvailable());
+        assertTrue(instance.isDelegateAvailable());
     }
 
     @Test
     void isDelegateAvailableWithNoJavaDelegateAndScriptDisabled() {
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.DELEGATE_SCRIPT_ENABLED, false);
-        assertFalse(DelegateProxyService.isDelegateAvailable());
+        assertFalse(instance.isDelegateAvailable());
     }
 
     /* isScriptEnabled() */
@@ -67,10 +71,10 @@ class DelegateProxyServiceTest extends BaseTest {
     void isScriptEnabled() {
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.DELEGATE_SCRIPT_ENABLED, false);
-        assertFalse(DelegateProxyService.isScriptEnabled());
+        assertFalse(instance.isScriptEnabled());
 
         config.setProperty(Key.DELEGATE_SCRIPT_ENABLED, true);
-        assertTrue(DelegateProxyService.isScriptEnabled());
+        assertTrue(instance.isScriptEnabled());
     }
 
     /* getScriptFile() */

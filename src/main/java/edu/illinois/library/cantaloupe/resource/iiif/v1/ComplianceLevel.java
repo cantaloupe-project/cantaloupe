@@ -9,7 +9,7 @@ import java.util.Set;
  * @see <a href="http://iiif.io/api/image/1.1/compliance.html">Compliance
  * Levels</a>
  */
-enum ComplianceLevel {
+public enum ComplianceLevel {
 
     LEVEL_0("http://library.stanford.edu/iiif/image-api/1.1/compliance.html#level0"),
     LEVEL_1("http://library.stanford.edu/iiif/image-api/1.1/compliance.html#level1"),

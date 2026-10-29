@@ -1,8 +1,5 @@
 package edu.illinois.library.cantaloupe.perf.processor;
 
-import java.io.OutputStream;
-import java.util.concurrent.TimeUnit;
-
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Format;
@@ -24,7 +21,13 @@ import org.openjdk.jmh.annotations.State;
 import org.openjdk.jmh.annotations.TearDown;
 import org.openjdk.jmh.annotations.Warmup;
 
-import static edu.illinois.library.cantaloupe.test.PerformanceTestConstants.*;
+import java.io.OutputStream;
+import java.util.concurrent.TimeUnit;
+
+import static edu.illinois.library.cantaloupe.test.PerformanceTestConstants.MEASUREMENT_ITERATIONS;
+import static edu.illinois.library.cantaloupe.test.PerformanceTestConstants.MEASUREMENT_TIME;
+import static edu.illinois.library.cantaloupe.test.PerformanceTestConstants.WARMUP_ITERATIONS;
+import static edu.illinois.library.cantaloupe.test.PerformanceTestConstants.WARMUP_TIME;
 
 @BenchmarkMode(Mode.AverageTime)
 @OutputTimeUnit(TimeUnit.MICROSECONDS)
@@ -44,7 +47,7 @@ public class OpenJpegProcessorPerformance {
     public void setUp() throws Exception {
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.PROCESSOR_FALLBACK, "OpenJpegProcessor");
-        processor = (FileProcessor) new ProcessorFactory().newProcessor(Format.get("jp2"));
+        processor = (FileProcessor) new ProcessorFactory(Configuration.getInstance()).newProcessor(Format.get("jp2"));
     }
 
     @TearDown

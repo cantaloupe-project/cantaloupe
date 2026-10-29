@@ -1,5 +1,6 @@
 package edu.illinois.library.cantaloupe.cache;
 
+import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 
@@ -11,6 +12,10 @@ import java.util.Optional;
 public class MockUnreliableSourceOutputStreamCache extends MockCache {
 
     private int callCount1 = 0;
+
+    MockUnreliableSourceOutputStreamCache(Configuration configuration) { 
+        super(configuration);
+    }
 
     @Override
     public Optional<Path> getSourceImageFile(Identifier identifier)

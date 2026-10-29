@@ -1,7 +1,7 @@
 package edu.illinois.library.cantaloupe.cache;
 
-import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.config.Configuration;
+import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.Info;
@@ -18,6 +18,8 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import software.amazon.awssdk.core.async.AsyncRequestBody;
 import software.amazon.awssdk.services.s3.S3AsyncClient;
 import software.amazon.awssdk.services.s3.model.HeadObjectRequest;
@@ -32,11 +34,12 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.junit.jupiter.api.Assumptions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assumptions.assumeFalse;
 
 public class S3CacheTest extends AbstractCacheTest {
     private static final Logger LOGGER = LoggerFactory.getLogger(S3CacheTest.class);
@@ -175,7 +178,7 @@ public class S3CacheTest extends AbstractCacheTest {
         config.setProperty(Key.S3CACHE_BUCKET_NAME, getBucket());
         config.setProperty(Key.S3CACHE_SECRET_KEY, getSecretKey());
         config.setProperty(Key.S3CACHE_ENDPOINT, getEndpoint().toString());
-        return new S3Cache();
+        return new S3Cache(config);
     }
 
     /* getBucketName() */
@@ -359,7 +362,7 @@ public class S3CacheTest extends AbstractCacheTest {
         Info info = new Info();
 
         // Add a random file outside the cache key prefix
-        final S3AsyncClient client    = S3Cache.getClientInstance();
+        final S3AsyncClient client         = ((S3Cache) instance).getClientInstance();
         final String keyOutsidePrefix = "some-key";
         final String bucketName       = getBucket();
         final byte[] data             = "some data".getBytes(StandardCharsets.UTF_8);
@@ -471,7 +474,7 @@ public class S3CacheTest extends AbstractCacheTest {
         // Add a random file outside the key prefix, which will be allowed to
         // "expire" as if it were cached. This test will assert that it still
         // exists after purging invalid content.
-        final S3AsyncClient client    = S3Cache.getClientInstance();
+        final S3AsyncClient client         = instance.getClientInstance();
         final String keyOutsidePrefix = "some-key";
         final String bucketName       = getBucket();
         final byte[] data             = "some data".getBytes(StandardCharsets.UTF_8);

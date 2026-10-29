@@ -1,5 +1,6 @@
 package edu.illinois.library.cantaloupe.cache;
 
+import edu.illinois.library.cantaloupe.config.Configuration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,9 +34,10 @@ class ExpiredFileVisitor extends SimpleFileVisitor<Path> {
     @Override
     public FileVisitResult visitFile(Path path,
                                      BasicFileAttributes attrs) {
+        FilesystemCache filesystemCache = new FilesystemCache(Configuration.getInstance());
         try {
             final boolean delete =
-                    (Files.isRegularFile(path) && FilesystemCache.isExpired(path));
+                    (Files.isRegularFile(path) && filesystemCache.isExpired(path));
 
             LOGGER.trace("{}: last accessed: {}; last modified; {}; " +
                             "effective last accessed: {}; delete? {}",

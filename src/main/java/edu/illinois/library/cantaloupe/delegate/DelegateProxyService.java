@@ -3,10 +3,14 @@ package edu.illinois.library.cantaloupe.delegate;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.resource.RequestContext;
+import jakarta.annotation.PreDestroy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import javax.script.ScriptException;
+
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
@@ -19,9 +23,11 @@ import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 
 /**
- * Provides access to the shared {@link DelegateProxy} instance.
+ * Spring-managed service that provides access to delegate proxy instances.
+ * Uses dependency injection instead of Configuration.getInstance() for better testability.
  */
-public final class DelegateProxyService {
+@Service
+public class DelegateProxyService {
 
     private static final Logger LOGGER =
             LoggerFactory.getLogger(DelegateProxyService.class);
@@ -29,15 +35,21 @@ public final class DelegateProxyService {
     static final String DELEGATE_SCRIPT_VM_ARGUMENT =
             "cantaloupe.delegate_script";
 
-    private static DelegateProxyService instance;
-
+    // Static fallback instance for backward compatibility with non-Spring code
+    private static DelegateProxyService staticInstance;
     private static boolean isScriptCodeLoaded;
 
+    private final Configuration configuration;
     private ScriptWatcher scriptWatcher;
-
     private ScheduledExecutorService watcherExecutorService;
-
     private Future<?> watcherFuture;
+
+    @Autowired
+    public DelegateProxyService(Configuration configuration) {
+        this.configuration = configuration;
+        // Set the static instance for backward compatibility
+        staticInstance = this;
+    }
 
     /**
      * @return {@link JavaDelegate} instance, if available.
@@ -49,42 +61,52 @@ public final class DelegateProxyService {
     }
 
     /**
-     * @return Whether a Java delegate is available, or the {@link
-     *         #isScriptEnabled() delegate script is enabled}.
+     * @return Whether a Java delegate is available, or the delegate script is enabled.
      */
-    public static boolean isDelegateAvailable() {
+    public boolean isDelegateAvailable() {
         return getJavaDelegate().isPresent() || isScriptEnabled();
     }
 
     /**
-     * @return Whether the delegate script is enabled.
+     * Instance method for checking if script is enabled using injected Configuration.
      */
-    public static boolean isScriptEnabled() {
-        var config = Configuration.getInstance();
-        return config.getBoolean(Key.DELEGATE_SCRIPT_ENABLED, false);
+    public boolean isScriptEnabled() {
+        return configuration.getBoolean(Key.DELEGATE_SCRIPT_ENABLED, false);
     }
 
     /**
      * For testing only!
      */
-    static synchronized void clearInstance() {
-        instance = null;
+    public static synchronized void clearInstance() {
+        staticInstance = null;
     }
 
     /**
      * @return The shared instance. If the instance is being created from a
-     *         script, the {@link #getScriptFile() script code} will be loaded
-     *         into it.
+     *         script, the script code will be loaded into it.
      */
     public static synchronized DelegateProxyService getInstance() {
-        if (instance == null) {
-            instance = new DelegateProxyService();
+        if (staticInstance != null) {
+            // Load script code if needed
+            staticInstance.loadScriptCodeIfNeeded();
+            return staticInstance;
+        } else {
+            // Fallback for non-Spring contexts - create instance with singleton Configuration
+            var fallbackInstance = new DelegateProxyService(
+                edu.illinois.library.cantaloupe.config.Configuration.getInstance());
+            fallbackInstance.loadScriptCodeIfNeeded();
+            return fallbackInstance;
         }
-        // If we are using a delegate script, load the code into it.
+    }
+
+    /**
+     * Loads script code if using a delegate script and code hasn't been loaded yet.
+     */
+    private void loadScriptCodeIfNeeded() {
         if (getJavaDelegate().isEmpty() && !isScriptCodeLoaded &&
-                Configuration.getInstance().getBoolean(Key.DELEGATE_SCRIPT_ENABLED, false)) {
+                configuration.getBoolean(Key.DELEGATE_SCRIPT_ENABLED, false)) {
             try {
-                Path file = getScriptFile();
+                Path file = getScriptFileInternal();
                 if (file != null) {
                     String code = Files.readString(file);
                     JRubyDelegateProxy.load(code);
@@ -94,31 +116,47 @@ public final class DelegateProxyService {
                 LOGGER.error(e.getMessage());
             }
         }
-        return instance;
     }
 
     /**
      * <p>Returns the absolute path to the delegate script, regardless of
-     * whether the delegate script system is {@link #isScriptEnabled()
-     * enabled}. The path is obtained from the {@link
-     * #DELEGATE_SCRIPT_VM_ARGUMENT delegate script VM argument}, if set, or
-     * the {@link Key#DELEGATE_SCRIPT_PATHNAME configuration} otherwise. If
-     * neither are set, set, {@code null} is returned.</p>
+     * whether the delegate script system is enabled. The path is obtained from the
+     * delegate script VM argument, if set, or the configuration otherwise. If
+     * neither are set, {@code null} is returned.</p>
      *
      * <p>The contents of the script are not validated.</p>
      *
-     * @throws NoSuchFileException If the script specified in {@link
-     *         Key#DELEGATE_SCRIPT_PATHNAME} does not exist.
+     * @throws NoSuchFileException If the script specified in configuration does not exist.
      */
-    static Path getScriptFile() throws NoSuchFileException {
+    public static Path getScriptFile() throws NoSuchFileException {
+        if (staticInstance != null) {
+            return staticInstance.getScriptFileInternal();
+        } else {
+            // Fallback for non-Spring contexts
+            return getScriptFileWithConfiguration(
+                edu.illinois.library.cantaloupe.config.Configuration.getInstance());
+        }
+    }
+
+    /**
+     * Instance method for getting script file using injected Configuration.
+     */
+    public Path getScriptFileInternal() throws NoSuchFileException {
+        return getScriptFileWithConfiguration(configuration);
+    }
+
+    /**
+     * Common logic for getting script file with a given Configuration instance.
+     */
+    private static Path getScriptFileWithConfiguration(Configuration config) throws NoSuchFileException {
         String value = System.getProperty("cantaloupe.delegate_script");
         if (value == null || value.isBlank()) {
-            final Configuration config = Configuration.getInstance();
             // The script name may be an absolute pathname or a filename.
             value = config.getString(Key.DELEGATE_SCRIPT_PATHNAME, "");
         }
-        if (!value.isBlank()) {
-            Path script = findScript(value);
+        // Handle null values that might come from mocked configurations
+        if (value != null && !value.isBlank()) {
+            Path script = findScript(value, config);
             if (!Files.exists(script)) {
                 throw new NoSuchFileException("File not found: " + script);
             }
@@ -132,13 +170,14 @@ public final class DelegateProxyService {
      * absolute pathname. Existence of the underlying file is not checked.
      *
      * @param pathname Pathname or filename.
+     * @param config Configuration instance to use.
      */
-    private static Path findScript(String pathname) {
+    private static Path findScript(String pathname, Configuration config) {
         Path script = Paths.get(pathname);
         if (!script.isAbsolute()) {
             // Search for it in the same directory as the application config
             // (if available), or the current working directory if not.
-            final Optional<Path> configFile = Configuration.getInstance().getFile();
+            final Optional<Path> configFile = config.getFile();
             if (configFile.isPresent()) {
                 script = configFile.get().getParent().resolve(script.getFileName());
             } else {
@@ -224,8 +263,17 @@ public final class DelegateProxyService {
         if (watcherFuture != null) {
             watcherFuture.cancel(true);
         }
-        watcherExecutorService.shutdown();
-        watcherExecutorService = null;
+        if (watcherExecutorService != null) {
+            watcherExecutorService.shutdown();
+            watcherExecutorService = null;
+        }
     }
 
+    /**
+     * Cleanup method called when Spring context is destroyed.
+     */
+    @PreDestroy
+    public void cleanup() {
+        stopWatching();
+    }
 }

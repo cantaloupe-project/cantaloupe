@@ -1,23 +1,25 @@
 package edu.illinois.library.cantaloupe.resource;
 
-import java.util.Enumeration;
-
 import edu.illinois.library.cantaloupe.delegate.DelegateProxyService;
 import edu.illinois.library.cantaloupe.http.Cookies;
 import edu.illinois.library.cantaloupe.image.MetaIdentifier;
 import edu.illinois.library.cantaloupe.image.ScaleConstraint;
-import edu.illinois.library.cantaloupe.http.Reference;
+
+import java.util.Enumeration;
 
 public class RequestContextDecorator {
-    public static void decorateRequestContext(RequestContext context, MetaIdentifier metaID, Reference requestURI, Request request) {
-        if (!DelegateProxyService.isDelegateAvailable()) {
+    public static void decorateRequestContext(IIIFRequest request) {
+        DelegateProxyService proxyService = DelegateProxyService.getInstance();
+        if (!proxyService.isDelegateAvailable()) {
             return;
         }
+        RequestContext context = request.getRequestContext();
         context.setLocalURI(request.getReference());
-        context.setRequestURI(requestURI);
+        context.setRequestURI(request.getPublicReference());
         context.setRequestHeaders(request.getHeaders().toMap());
         context.setClientIP(getCanonicalClientIPAddress(request));
         context.setCookies(getCookies(request).toMap());
+        MetaIdentifier metaID = request.getMetaIdentifier();
         if (metaID != null) {
             context.setIdentifier(metaID.getIdentifier());
             context.setPageNumber(metaID.getPageNumber());
@@ -35,7 +37,7 @@ public class RequestContextDecorator {
      * @return User agent's IP address, respecting the {@code X-Forwarded-For}
      *         request header, if present.
      */
-    private static String getCanonicalClientIPAddress(Request request) {
+    private static String getCanonicalClientIPAddress(IIIFRequest request) {
         // The value is expected to be in the format: "client, proxy1, proxy2"
         final String forwardedFor =
                 request.getHeaders().getFirstValue("X-Forwarded-For", "");
@@ -47,7 +49,7 @@ public class RequestContextDecorator {
         }
     }
 
-    public static Cookies getCookies(Request request) {
+    protected static Cookies getCookies(IIIFRequest request) {
         Cookies cookies = new Cookies();
             final Enumeration<String> headers = request.getServletRequest().getHeaders("Cookie");
             while (headers.hasMoreElements()) {

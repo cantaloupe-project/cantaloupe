@@ -16,22 +16,26 @@ class BasicImageOverlayService extends BasicOverlayService
 
     private URI overlayURI;
 
-    BasicImageOverlayService() throws ConfigurationException {
-        super();
-        readLocation();
+    BasicImageOverlayService(Configuration configuration) {
+        super(configuration);
     }
 
     /**
      * @return Overlay image corresponding to the application configuration.
      */
     @Override
-    public ImageOverlay newOverlay() {
+    public ImageOverlay newOverlay() throws ConfigurationException {
+        readConfig();
         return new ImageOverlay(overlayURI, getPosition(), getInset());
     }
 
+    protected void readConfig() throws ConfigurationException {
+        super.readConfig();
+        readLocation();
+    }
+
     private void readLocation() throws ConfigurationException {
-        final Configuration config = Configuration.getInstance();
-        final String location = config.getString(Key.OVERLAY_IMAGE, "");
+        final String location = configuration.getString(Key.OVERLAY_IMAGE, "");
         if (location.length() < 1) {
             throw new ConfigurationException(Key.OVERLAY_IMAGE + " is not set.");
         }

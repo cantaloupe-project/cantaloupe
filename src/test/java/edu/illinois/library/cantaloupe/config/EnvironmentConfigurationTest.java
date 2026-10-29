@@ -4,7 +4,7 @@ import edu.illinois.library.cantaloupe.test.BaseTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * Does not extend {@link AbstractConfigurationTest} because that requires

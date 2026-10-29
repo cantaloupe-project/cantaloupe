@@ -17,7 +17,10 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 public class InfoServiceTest extends BaseTest {
 
@@ -33,7 +36,7 @@ public class InfoServiceTest extends BaseTest {
         config.setProperty(Key.INFO_CACHE_ENABLED, true);
 
         InfoService.clearInstance();
-        instance = InfoService.getInstance();
+        instance = InfoService.getInstance(config);
     }
 
     private FileProcessor newFileProcessor() throws Exception {
@@ -41,7 +44,7 @@ public class InfoServiceTest extends BaseTest {
         config.setProperty(Key.PROCESSOR_SELECTION_STRATEGY,
                 "ManualSelectionStrategy");
         config.setProperty(Key.PROCESSOR_FALLBACK, "Java2dProcessor");
-        try (FileProcessor proc = (FileProcessor) new ProcessorFactory().
+        try (FileProcessor proc = (FileProcessor) new ProcessorFactory(Configuration.getInstance()).
                 newProcessor(Format.get("jpg"))) {
             proc.setSourceFormat(Format.get("jpg"));
             proc.setSourceFile(TestUtil.getImage("jpg"));
@@ -87,8 +90,9 @@ public class InfoServiceTest extends BaseTest {
 
         final Identifier identifier = new Identifier("jpg");
         final Info info = new Info();
-
-        DerivativeCache cache = CacheFactory.getDerivativeCache().get();
+        
+        CacheFactory cacheFactory = new CacheFactory(Configuration.getInstance());
+        DerivativeCache cache = cacheFactory.getDerivativeCache().get();
         cache.put(identifier, info);
 
         Optional<Info> actualInfo = instance.getInfo(identifier);
@@ -102,7 +106,8 @@ public class InfoServiceTest extends BaseTest {
         final Identifier identifier = new Identifier("jpg");
         final String info           = "{\"this\": is corrupt JSON}";
 
-        DerivativeCache cache = CacheFactory.getDerivativeCache().get();
+        CacheFactory cacheFactory = new CacheFactory(Configuration.getInstance());
+        DerivativeCache cache = cacheFactory.getDerivativeCache().get();
         cache.put(identifier, info);
 
         Optional<Info> actualInfo = instance.getInfo(identifier);
@@ -136,7 +141,8 @@ public class InfoServiceTest extends BaseTest {
         final Identifier identifier = new Identifier("jpg");
         final Info info = new Info();
 
-        DerivativeCache cache = CacheFactory.getDerivativeCache().get();
+        CacheFactory cacheFactory = new CacheFactory(Configuration.getInstance());
+        DerivativeCache cache = cacheFactory.getDerivativeCache().get();
         cache.put(identifier, info);
 
         Optional<Info> actualInfo = instance.getOrReadInfo(identifier, newMockProcessor());
@@ -154,7 +160,9 @@ public class InfoServiceTest extends BaseTest {
         final Identifier identifier = new Identifier("jpg");
         final String info = "{\"this\": is corrupt JSON}";
 
-        DerivativeCache cache = CacheFactory.getDerivativeCache().get();
+
+        CacheFactory cacheFactory = new CacheFactory(Configuration.getInstance());
+        DerivativeCache cache = cacheFactory.getDerivativeCache().get();
         cache.put(identifier, info);
 
         Optional<Info> actualInfo = instance.getOrReadInfo(identifier, newMockProcessor());
