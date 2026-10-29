@@ -1,6 +1,6 @@
 package edu.illinois.library.cantaloupe.cache;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
+import tools.jackson.core.JacksonException;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Identifier;
@@ -309,7 +309,7 @@ class RedisCache implements DerivativeCache {
         }
         try {
             put(identifier, info.toJSON());
-        } catch (JsonProcessingException e) {
+        } catch (JacksonException e) {
             LOGGER.error("put(): {}", e.getMessage());
             throw new IOException(e.getMessage(), e);
         }
