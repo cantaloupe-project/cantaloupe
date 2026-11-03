@@ -48,6 +48,7 @@ import java.awt.image.ColorConvertOp;
 import java.awt.image.ColorModel;
 import java.awt.image.ComponentColorModel;
 import java.awt.image.DataBuffer;
+import java.awt.image.Raster;
 import java.awt.image.WritableRaster;
 import java.io.IOException;
 import java.io.InputStream;
@@ -902,14 +903,26 @@ public final class Java2DUtil {
     }
 
     /**
+     * <p>Multiples of 90 degrees are handled by {@link
+     * #rotateRightAngle(BufferedImage, int)}, which copies pixels without
+     * resampling and returns an image with the same color model and sample
+     * layout as the input. Other angles are drawn onto a larger canvas with
+     * alpha so that the corners can be transparent.</p>
+     *
      * @param inImage Image to rotate.
      * @param rotate  Rotate operation.
      * @return        Rotated image, or the input image if the given
-     *                rotation is a no-op.  The image has alpha.
+     *                rotation is a no-op.
      */
     static BufferedImage rotate(final BufferedImage inImage,
                                 final Rotate rotate) {
         BufferedImage outImage = inImage;
+        final double degrees = rotate.getDegrees();
+        final long quarterTurns = Math.round(degrees / 90.0);
+        if (rotate.hasEffect() &&
+                Math.abs(degrees - quarterTurns * 90.0) < 0.0001) {
+            return rotateRightAngle(inImage, (int) (quarterTurns % 4));
+        }
         if (rotate.hasEffect()) {
             final Stopwatch watch = new Stopwatch();
             final double radians = Math.toRadians(rotate.getDegrees());
@@ -974,6 +987,90 @@ public final class Java2DUtil {
             LOGGER.trace("rotate(): executed in {}", watch);
         }
         return outImage;
+    }
+
+    /**
+     * Rotates an image clockwise by a multiple of 90 degrees by copying its
+     * raster data elements to their new positions. Unlike drawing with an
+     * {@link AffineTransform}, this is lossless, works with any {@link
+     * java.awt.image.SampleModel}, and preserves the color model of the
+     * input.
+     *
+     * @param inImage      Image to rotate.
+     * @param quarterTurns Number of clockwise quarter turns (0&ndash;3).
+     * @return             Rotated image, or the input image if {@literal
+     *                     quarterTurns} is 0.
+     */
+    static BufferedImage rotateRightAngle(final BufferedImage inImage,
+                                          final int quarterTurns) {
+        if (quarterTurns == 0) {
+            return inImage;
+        }
+        final Stopwatch watch     = new Stopwatch();
+        final Raster inRaster     = inImage.getRaster();
+        final int width           = inImage.getWidth();
+        final int height          = inImage.getHeight();
+        final boolean swap        = (quarterTurns % 2 != 0);
+        final WritableRaster outRaster =
+                inRaster.createCompatibleWritableRaster(
+                        swap ? height : width, swap ? width : height);
+
+        Object row = null;
+        switch (quarterTurns) {
+            case 1:
+                // Source row y becomes destination column (height - 1 - y),
+                // read from top to bottom.
+                for (int y = 0; y < height; y++) {
+                    row = inRaster.getDataElements(0, y, width, 1, row);
+                    outRaster.setDataElements(height - 1 - y, 0, 1, width, row);
+                }
+                break;
+            case 2:
+                // Source row y becomes destination row (height - 1 - y),
+                // reversed.
+                final int pixelLength = inRaster.getNumDataElements();
+                for (int y = 0; y < height; y++) {
+                    row = inRaster.getDataElements(0, y, width, 1, row);
+                    reversePixels(row, width, pixelLength);
+                    outRaster.setDataElements(0, height - 1 - y, width, 1, row);
+                }
+                break;
+            case 3:
+                // Source column (width - 1 - y) becomes destination row y,
+                // read from top to bottom.
+                for (int y = 0; y < width; y++) {
+                    row = inRaster.getDataElements(width - 1 - y, 0, 1, height, row);
+                    outRaster.setDataElements(0, y, height, 1, row);
+                }
+                break;
+            default:
+                throw new IllegalArgumentException(
+                        "Quarter turns must be between 0 and 3");
+        }
+
+        final ColorModel cm = inImage.getColorModel();
+        final BufferedImage outImage = new BufferedImage(
+                cm, outRaster, cm.isAlphaPremultiplied(), null);
+        LOGGER.trace("rotateRightAngle(): executed in {}", watch);
+        return outImage;
+    }
+
+    /**
+     * Reverses the order of the pixels in an array returned by {@link
+     * Raster#getDataElements(int, int, int, int, Object)}, keeping the data
+     * elements of each pixel in order.
+     */
+    private static void reversePixels(Object array,
+                                      int numPixels,
+                                      int pixelLength) {
+        final Object tmp = java.lang.reflect.Array.newInstance(
+                array.getClass().getComponentType(), pixelLength);
+        for (int i = 0, j = numPixels - 1; i < j; i++, j--) {
+            final int a = i * pixelLength, b = j * pixelLength;
+            System.arraycopy(array, a, tmp, 0, pixelLength);
+            System.arraycopy(array, b, array, a, pixelLength);
+            System.arraycopy(tmp, 0, array, b, pixelLength);
+        }
     }
 
     /**
