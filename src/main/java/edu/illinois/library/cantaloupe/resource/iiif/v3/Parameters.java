@@ -1,5 +1,6 @@
 package edu.illinois.library.cantaloupe.resource.iiif.v3;
 
+import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.delegate.DelegateProxy;
 import edu.illinois.library.cantaloupe.http.Query;
 import edu.illinois.library.cantaloupe.http.Reference;
@@ -20,7 +21,7 @@ import java.util.stream.Collectors;
  * @see <a href="https://iiif.io/api/image/3.0/#21-image-request-uri-syntax">
  *     IIIF Image API 3.0: Image Request URI Syntax</a>
  */
-class Parameters {
+public class Parameters {
 
     private String identifier;
     private Region region;
@@ -35,7 +36,7 @@ class Parameters {
      * @throws IllegalClientArgumentException if the argument is not in the
      *         correct format.
      */
-    static Parameters fromURI(String paramsStr) {
+    public static Parameters fromURI(String paramsStr) {
         Parameters params = new Parameters();
         String[] parts = StringUtils.split(paramsStr, "/");
         if (parts.length == 5) {
@@ -64,7 +65,7 @@ class Parameters {
     /**
      * Copy constructor.
      */
-    Parameters(Parameters params) {
+    public Parameters(Parameters params) {
         setIdentifier(params.getIdentifier());
         setRegion(params.getRegion());
         setSize(params.getSize());
@@ -85,7 +86,7 @@ class Parameters {
      * @throws IllegalClientArgumentException if any of the other arguments are
      *         invalid.
      */
-    Parameters(String identifier,
+    public Parameters(String identifier,
                String region,
                String size,
                String rotation,
@@ -127,7 +128,7 @@ class Parameters {
         return identifier;
     }
 
-    OutputFormat getOutputFormat() {
+    public OutputFormat getOutputFormat() {
         return outputFormat;
     }
 
@@ -152,7 +153,7 @@ class Parameters {
         return rotation;
     }
 
-    Size getSize() {
+    public Size getSize() {
         return size;
     }
 
@@ -161,7 +162,7 @@ class Parameters {
         return toString().hashCode();
     }
 
-    void setIdentifier(String identifier) {
+    public void setIdentifier(String identifier) {
         this.identifier = identifier;
     }
 
@@ -191,11 +192,12 @@ class Parameters {
 
     /**
      * @param maxScale Maximum scale allowed by the application configuration.
+     * @param configuration Configuration instance for accessing application settings.
      * @return         Analog of the request parameters for processing,
      *                 excluding any additional server-side operations that may
      *                 need to be performed, such as overlays, etc.
      */
-    OperationList toOperationList(DelegateProxy delegateProxy, double maxScale) {
+    public OperationList toOperationList(DelegateProxy delegateProxy, double maxScale, Configuration configuration) {
         final OperationList ops = new OperationList(
                 MetaIdentifier.fromString(getIdentifier(), delegateProxy));
         if (!Region.Type.FULL.equals(getRegion().getType())) {
@@ -203,7 +205,7 @@ class Parameters {
         }
         if (!(Size.Type.MAX.equals(getSize().getType()) &&
                 !getSize().isUpscalingAllowed())) {
-            ops.add(getSize().toScale(maxScale));
+            ops.add(getSize().toScale(maxScale, configuration));
         }
         ops.add(getRotation().toTranspose());
         if (!getRotation().isZero()) {
@@ -212,6 +214,17 @@ class Parameters {
         ops.add(getQuality().toColorTransform());
         ops.add(new Encode(getOutputFormat().toFormat()));
         return ops;
+    }
+
+    /**
+     * @param maxScale Maximum scale allowed by the application configuration.
+     * @return         Analog of the request parameters for processing,
+     *                 excluding any additional server-side operations that may
+     *                 need to be performed, such as overlays, etc.
+     * @deprecated Use {@link #toOperationList(DelegateProxy, double, Configuration)} instead for dependency injection.
+     */
+    public OperationList toOperationList(DelegateProxy delegateProxy, double maxScale) {
+        return toOperationList(delegateProxy, maxScale, Configuration.getInstance());
     }
 
     /**
@@ -248,7 +261,7 @@ class Parameters {
      * @see            <a href="https://iiif.io/api/image/3.0/#47-canonical-uri-syntax">
      *                 Canonical URI Syntax</a>
      */
-    String toCanonicalString(Dimension fullSize) {
+    public String toCanonicalString(Dimension fullSize) {
         final StringBuilder b = new StringBuilder();
         b.append(getIdentifier());
         b.append("/");

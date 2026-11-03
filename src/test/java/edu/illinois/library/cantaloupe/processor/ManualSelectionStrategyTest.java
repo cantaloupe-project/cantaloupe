@@ -10,26 +10,27 @@ import org.junit.jupiter.api.Test;
 import java.util.Collections;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class ManualSelectionStrategyTest extends BaseTest {
 
     private ManualSelectionStrategy instance;
+    private  Configuration config;
 
     @BeforeEach
     public void setUp() throws Exception {
         super.setUp();
-        instance = new ManualSelectionStrategy();
+        config = Configuration.getInstance();
+        instance = new ManualSelectionStrategy(config);
     }
 
     @Test
     void getPreferredProcessorsWhenOnlyAssignedIsSet() {
-        Configuration config = Configuration.getInstance();
         config.setProperty("processor.ManualSelectionStrategy.pdf",
                 PdfBoxProcessor.class.getSimpleName());
 
-        List<Class<? extends Processor>> expected =
-                Collections.singletonList(PdfBoxProcessor.class);
+        List<Class<? extends Processor>> expected = Collections.singletonList(PdfBoxProcessor.class);
         assertEquals(expected, instance.getPreferredProcessors(Format.get("pdf")));
     }
 

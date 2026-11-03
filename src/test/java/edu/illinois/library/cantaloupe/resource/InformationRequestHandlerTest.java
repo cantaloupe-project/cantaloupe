@@ -4,16 +4,24 @@ import edu.illinois.library.cantaloupe.cache.CacheFacade;
 import edu.illinois.library.cantaloupe.cache.DerivativeCache;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
-import edu.illinois.library.cantaloupe.image.*;
-import edu.illinois.library.cantaloupe.delegate.DelegateProxy;
+import edu.illinois.library.cantaloupe.image.Dimension;
+import edu.illinois.library.cantaloupe.image.Format;
+import edu.illinois.library.cantaloupe.image.Identifier;
+import edu.illinois.library.cantaloupe.image.Info;
+import edu.illinois.library.cantaloupe.image.Metadata;
 import edu.illinois.library.cantaloupe.source.StatResult;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.util.ArrayList;
 import java.util.Set;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class InformationRequestHandlerTest extends BaseTest {
     private static class IntrospectiveCallback implements InformationRequestHandler.Callback {
@@ -39,23 +47,37 @@ public class InformationRequestHandlerTest extends BaseTest {
 
     }
 
+    private MockHttpServletRequest servletRequest;
+    private IIIFRequest request;
+    private Configuration configuration;
+
+    @BeforeEach
+    public void setUp() throws Exception {
+        super.setUp();
+        configuration = Configuration.getInstance();
+
+        servletRequest = new MockHttpServletRequest();
+        servletRequest.setRequestURL("http://example.org/iiif/2/foo");
+        request = new IIIFRequest(servletRequest,
+                                  new ArrayList<String>() { { add("jpg-rgb-64x48x8.jpg"); }},
+                                  configuration);
+    }
+
+
     @Test
     void testHandleCallsAuthorizationCallback() throws Exception {
         {   // Configure the application.
-            final Configuration config = Configuration.getInstance();
-            config.setProperty(Key.SOURCE_STATIC, "FilesystemSource");
-            config.setProperty(Key.FILESYSTEMSOURCE_PATH_PREFIX,
+            configuration.setProperty(Key.SOURCE_STATIC, "FilesystemSource");
+            configuration.setProperty(Key.FILESYSTEMSOURCE_PATH_PREFIX,
                     TestUtil.getImagesPath() + "/");
         }
 
         final IntrospectiveCallback callback = new IntrospectiveCallback();
+
         try (InformationRequestHandler handler = new InformationRequestHandler(
-                new Identifier("jpg-rgb-64x48x8.jpg"),
-                null,
-                new RequestContext(),
+                request,
                 callback,
-                false,
-                false)) {
+                configuration)) {
             handler.handle();
             assertTrue(callback.isAuthorizeCalled);
         }
@@ -64,20 +86,16 @@ public class InformationRequestHandlerTest extends BaseTest {
     @Test
     void testHandleCallsSourceAccessedCallback() throws Exception {
         {   // Configure the application.
-            final Configuration config = Configuration.getInstance();
-            config.setProperty(Key.SOURCE_STATIC, "FilesystemSource");
-            config.setProperty(Key.FILESYSTEMSOURCE_PATH_PREFIX,
+            configuration.setProperty(Key.SOURCE_STATIC, "FilesystemSource");
+            configuration.setProperty(Key.FILESYSTEMSOURCE_PATH_PREFIX,
                     TestUtil.getImagesPath() + "/");
         }
 
         final IntrospectiveCallback callback = new IntrospectiveCallback();
         try (InformationRequestHandler handler = new InformationRequestHandler(
-                new Identifier("jpg-rgb-64x48x8.jpg"),
-                null,
-                new RequestContext(),
+                request,
                 callback,
-                false,
-                false)) {
+                configuration)) {
             handler.handle();
             assertTrue(callback.isSourceAccessedCalled);
         }
@@ -86,20 +104,16 @@ public class InformationRequestHandlerTest extends BaseTest {
     @Test
     void testHandleCallsAvailableOutputFormatsCallback() throws Exception {
         {   // Configure the application.
-            final Configuration config = Configuration.getInstance();
-            config.setProperty(Key.SOURCE_STATIC, "FilesystemSource");
-            config.setProperty(Key.FILESYSTEMSOURCE_PATH_PREFIX,
+            configuration.setProperty(Key.SOURCE_STATIC, "FilesystemSource");
+            configuration.setProperty(Key.FILESYSTEMSOURCE_PATH_PREFIX,
                     TestUtil.getImagesPath() + "/");
         }
 
         final IntrospectiveCallback callback = new IntrospectiveCallback();
         try (InformationRequestHandler handler = new InformationRequestHandler(
-                new Identifier("jpg-rgb-64x48x8.jpg"),
-                null,
-                new RequestContext(),
+                request,
                 callback,
-                false,
-                false)) {
+                configuration)) {
             handler.handle();
             assertTrue(callback.isKnowAvailableOutputFormatsCalled);
         }
@@ -108,13 +122,13 @@ public class InformationRequestHandlerTest extends BaseTest {
     @Test
     void testHandleReturnsInstanceFromDerivativeCache() throws Exception {
         {   // Configure the application.
-            final Configuration config = Configuration.getInstance();
-            config.setProperty(Key.CACHE_SERVER_RESOLVE_FIRST, false);
-            config.setProperty(Key.SOURCE_STATIC, "FilesystemSource");
-            config.setProperty(Key.FILESYSTEMSOURCE_PATH_PREFIX,
+            configuration.setProperty(Key.CACHE_SERVER_RESOLVE_FIRST, false);
+            configuration.setProperty(Key.SOURCE_STATIC, "FilesystemSource");
+            configuration.setProperty(Key.FILESYSTEMSOURCE_PATH_PREFIX,
                     TestUtil.getImagesPath() + "/");
-            config.setProperty(Key.DERIVATIVE_CACHE_ENABLED, true);
-            config.setProperty(Key.DERIVATIVE_CACHE, "HeapCache");
+            configuration.setProperty(Key.DERIVATIVE_CACHE_ENABLED, true);
+            configuration.setProperty(Key.DERIVATIVE_CACHE, "HeapCache");
+            configuration.setProperty(Key.HEAPCACHE_TARGET_SIZE, "1MB");
         }
 
         // Configure the request.
@@ -122,7 +136,7 @@ public class InformationRequestHandlerTest extends BaseTest {
         final Metadata metadata     = new Metadata();
 
         // Add an info to the derivative cache.
-        CacheFacade facade = new CacheFacade();
+        CacheFacade facade = new CacheFacade(configuration);
         DerivativeCache cache = facade.getDerivativeCache().orElseThrow();
         Info info = Info.builder()
                 .withSize(64, 48)
@@ -134,12 +148,9 @@ public class InformationRequestHandlerTest extends BaseTest {
 
         final IntrospectiveCallback callback = new IntrospectiveCallback();
         try (InformationRequestHandler handler = new InformationRequestHandler(
-                identifier,
-                null,
-                new RequestContext(),
+                request,
                 callback,
-                false,
-                false)) {
+                configuration)) {
             Info cachedInfo = handler.handle();
             assertEquals(info, cachedInfo);
         }
@@ -149,15 +160,14 @@ public class InformationRequestHandlerTest extends BaseTest {
     void testHandleSetsRequestContextKeysBeforeReturningInstanceFromDerivativeCache()
             throws Exception {
         {   // Configure the application.
-            final Configuration config = Configuration.getInstance();
-            config.setProperty(Key.CACHE_SERVER_RESOLVE_FIRST, false);
-            config.setProperty(Key.SOURCE_STATIC, "FilesystemSource");
-            config.setProperty(Key.FILESYSTEMSOURCE_PATH_PREFIX,
+            configuration.setProperty(Key.CACHE_SERVER_RESOLVE_FIRST, false);
+            configuration.setProperty(Key.SOURCE_STATIC, "FilesystemSource");
+            configuration.setProperty(Key.FILESYSTEMSOURCE_PATH_PREFIX,
                     TestUtil.getImagesPath() + "/");
-            config.setProperty(Key.DERIVATIVE_CACHE_ENABLED, true);
-            config.setProperty(Key.DERIVATIVE_CACHE, "HeapCache");
-            config.setProperty(Key.DELEGATE_SCRIPT_ENABLED, true);
-            config.setProperty(Key.DELEGATE_SCRIPT_PATHNAME,
+            configuration.setProperty(Key.DERIVATIVE_CACHE_ENABLED, true);
+            configuration.setProperty(Key.DERIVATIVE_CACHE, "HeapCache");
+            configuration.setProperty(Key.DELEGATE_SCRIPT_ENABLED, true);
+            configuration.setProperty(Key.DELEGATE_SCRIPT_PATHNAME,
                     TestUtil.getFixture("delegates.rb").toString());
         }
 
@@ -166,7 +176,7 @@ public class InformationRequestHandlerTest extends BaseTest {
         final Metadata metadata     = new Metadata();
 
         // Add an info to the derivative cache.
-        CacheFacade facade = new CacheFacade();
+        CacheFacade facade = new CacheFacade(configuration);
         DerivativeCache cache = facade.getDerivativeCache().orElseThrow();
         Info info = Info.builder()
                 .withSize(64, 48)
@@ -177,13 +187,9 @@ public class InformationRequestHandlerTest extends BaseTest {
         cache.put(identifier, info);
 
         final IntrospectiveCallback callback = new IntrospectiveCallback();
-        try (InformationRequestHandler handler = new InformationRequestHandler(
-                identifier,
-                null,
-                new RequestContext(),
+        try (InformationRequestHandler handler = new InformationRequestHandler(request,
                 callback,
-                false,
-                false)) {
+                configuration)) {
             Info handledInfo = handler.handle();
             assertNotNull(handledInfo);
             assertEquals(1, handledInfo.getNumPages());
@@ -194,20 +200,16 @@ public class InformationRequestHandlerTest extends BaseTest {
     @Test
     void testHandleReturnsInstanceFromProcessor() throws Exception {
         {   // Configure the application.
-            final Configuration config = Configuration.getInstance();
-            config.setProperty(Key.SOURCE_STATIC, "FilesystemSource");
-            config.setProperty(Key.FILESYSTEMSOURCE_PATH_PREFIX,
+            configuration.setProperty(Key.SOURCE_STATIC, "FilesystemSource");
+            configuration.setProperty(Key.FILESYSTEMSOURCE_PATH_PREFIX,
                     TestUtil.getImagesPath() + "/");
         }
 
         final IntrospectiveCallback callback = new IntrospectiveCallback();
         try (InformationRequestHandler handler = new InformationRequestHandler(
-                new Identifier("jpg-rgb-64x48x8.jpg"),
-                null,
-                new RequestContext(),
+                request,
                 callback,
-                false,
-                false)) {
+                configuration)) {
             Info info = handler.handle();
             assertNotNull(info);
         }
@@ -217,20 +219,16 @@ public class InformationRequestHandlerTest extends BaseTest {
     void testHandleSetsRequestContextPageCountBeforeReturningInstanceFromProcessor()
             throws Exception {
         {   // Configure the application.
-            final Configuration config = Configuration.getInstance();
-            config.setProperty(Key.SOURCE_STATIC, "FilesystemSource");
-            config.setProperty(Key.FILESYSTEMSOURCE_PATH_PREFIX,
+            configuration.setProperty(Key.SOURCE_STATIC, "FilesystemSource");
+            configuration.setProperty(Key.FILESYSTEMSOURCE_PATH_PREFIX,
                     TestUtil.getImagesPath() + "/");
         }
 
         final IntrospectiveCallback callback = new IntrospectiveCallback();
         try (InformationRequestHandler handler = new InformationRequestHandler(
-                new Identifier("jpg-rgb-64x48x8.jpg"),
-                null,
-                new RequestContext(),
+                request,
                 callback,
-                false,
-                false)) {
+                configuration)) {
             Info info = handler.handle();
             assertEquals(1, info.getNumPages());
         }
@@ -239,9 +237,7 @@ public class InformationRequestHandlerTest extends BaseTest {
     @Test
     void testHandleReturnsNullWhenAuthorizationFails() throws Exception {
         try (InformationRequestHandler handler = new InformationRequestHandler(
-                new Identifier("jpg-rgb-64x48x8.jpg"),
-                null,
-                new RequestContext(),
+                request,
                 new InformationRequestHandler.Callback() {
                     @Override
                     public boolean authorize() {
@@ -254,8 +250,7 @@ public class InformationRequestHandlerTest extends BaseTest {
                     public void knowAvailableOutputFormats(Set<Format> availableOutputFormats) {
                     }
                 },
-                false,
-                false)) {
+                configuration)) {
             Info info = handler.handle();
             assertNull(info);
         }

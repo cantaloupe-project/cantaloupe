@@ -15,6 +15,11 @@ class ManualSelectionStrategy implements SelectionStrategy {
 
     static final String CONFIGURATION_VALUE =
             ManualSelectionStrategy.class.getSimpleName();
+    private Configuration configuration;
+
+    public ManualSelectionStrategy(Configuration configuration) {
+        this.configuration = configuration;
+    }
 
     @Override
     @SuppressWarnings("unchecked")
@@ -49,14 +54,14 @@ class ManualSelectionStrategy implements SelectionStrategy {
      *         null} if one is not set.
      */
     private String getAssignedProcessorName(Format format) {
-        final String value = Configuration.getInstance().getString(
+        final String value = configuration.getString(
                 "processor.ManualSelectionStrategy." +
                         format.getPreferredExtension());
         return (value != null && !value.isEmpty()) ? value : null;
     }
 
     private String getFallbackProcessorName() {
-        return Configuration.getInstance().getString(Key.PROCESSOR_FALLBACK);
+        return configuration.getString(Key.PROCESSOR_FALLBACK);
     }
 
     @Override

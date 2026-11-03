@@ -2,6 +2,7 @@ package edu.illinois.library.cantaloupe.resource.api;
 
 import com.fasterxml.jackson.annotation.JsonGetter;
 import edu.illinois.library.cantaloupe.cache.CacheFacade;
+import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.image.Identifier;
 
 import java.util.concurrent.Callable;
@@ -13,7 +14,7 @@ final class PurgeItemFromCacheCommand<T> extends Command
 
     @Override
     public T call() throws Exception {
-        new CacheFacade().purge(getIdentifier());
+        new CacheFacade(Configuration.getInstance()).purge(getIdentifier());
         return null;
     }
 

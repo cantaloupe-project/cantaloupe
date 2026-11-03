@@ -56,7 +56,7 @@ class ScaleValidatorTest extends BaseTest {
         MetaIdentifier metaId = new MetaIdentifier("test");
 
         assertDoesNotThrow(() -> ScaleValidator.validateScale(
-                sourceSize, scale, Status.FORBIDDEN, metaId));
+                Configuration.getInstance(), sourceSize, scale, Status.FORBIDDEN, metaId));
     }
 
     /**
@@ -76,9 +76,9 @@ class ScaleValidatorTest extends BaseTest {
 
         // BAD_REQUEST, not NOT_IMPLEMENTED: max_scale is 2.0 here, so the
         // server does support upscaling and an over-ceiling caret request
-        // would be a client error. See v3.ImageResource#upscaleRejectionStatus.
+        // would be a client error. See v3.ImageController#upscaleRejectionStatus.
         assertDoesNotThrow(() -> ScaleValidator.validateScale(
-                sourceSize, scale, Status.BAD_REQUEST, metaId));
+                Configuration.getInstance(), sourceSize, scale, Status.BAD_REQUEST, metaId));
     }
 
     /**
@@ -97,7 +97,7 @@ class ScaleValidatorTest extends BaseTest {
         ScaleRestrictedException e = assertThrows(
                 ScaleRestrictedException.class,
                 () -> ScaleValidator.validateScale(
-                        sourceSize, scale, Status.NOT_IMPLEMENTED, metaId));
+                        Configuration.getInstance(), sourceSize, scale, Status.NOT_IMPLEMENTED, metaId));
         assertEquals(501, e.getStatus().getCode());
     }
 
@@ -117,7 +117,7 @@ class ScaleValidatorTest extends BaseTest {
         MetaIdentifier metaId = new MetaIdentifier("test");
 
         assertThrows(ScaleRestrictedException.class, () -> ScaleValidator.validateScale(
-                sourceSize, scale, Status.FORBIDDEN, metaId));
+                Configuration.getInstance(), sourceSize, scale, Status.FORBIDDEN, metaId));
     }
 
     /**

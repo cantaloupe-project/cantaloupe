@@ -20,52 +20,53 @@ class BasicStringOverlayService extends BasicOverlayService
     private Color strokeColor;
     private float strokeWidth;
 
-    BasicStringOverlayService() throws ConfigurationException {
-        super();
-        readConfig();
+    BasicStringOverlayService(Configuration configuration) {
+        super(configuration);
     }
 
     @Override
-    public StringOverlay newOverlay() {
+    public StringOverlay newOverlay() throws ConfigurationException {
+        readConfig();
+
         return new StringOverlay(string, getPosition(), getInset(), font,
                 minSize, color, backgroundColor, strokeColor, strokeWidth,
                 false);
     }
 
-    private void readConfig() {
-        final Configuration config = Configuration.getInstance();
-
+    @Override
+    protected void readConfig() throws ConfigurationException {
+        super.readConfig();
         // Background color
         backgroundColor = Color.fromString(
-                config.getString(Key.OVERLAY_STRING_BACKGROUND_COLOR));
+                configuration.getString(Key.OVERLAY_STRING_BACKGROUND_COLOR));
 
         // Fill color
-        color = Color.fromString(config.getString(Key.OVERLAY_STRING_COLOR));
+        color = Color.fromString(configuration.getString(Key.OVERLAY_STRING_COLOR));
 
         // Font
         final Map<TextAttribute, Object> attributes = Map.of(
                 TextAttribute.FAMILY,
-                config.getString(Key.OVERLAY_STRING_FONT, "SansSerif"),
+                configuration.getString(Key.OVERLAY_STRING_FONT, "SansSerif"),
                 TextAttribute.SIZE,
-                config.getInt(Key.OVERLAY_STRING_FONT_SIZE, 18),
+                configuration.getInt(Key.OVERLAY_STRING_FONT_SIZE, 18),
                 TextAttribute.WEIGHT,
-                config.getFloat(Key.OVERLAY_STRING_FONT_WEIGHT, 1f),
+                configuration.getFloat(Key.OVERLAY_STRING_FONT_WEIGHT, 1f),
                 TextAttribute.TRACKING,
-                config.getFloat(Key.OVERLAY_STRING_GLYPH_SPACING, 0f));
+                configuration.getFloat(Key.OVERLAY_STRING_GLYPH_SPACING, 0f));
         font = Font.getFont(attributes);
 
         // Min size
-        minSize = config.getInt(Key.OVERLAY_STRING_FONT_MIN_SIZE, 14);
+        minSize = configuration.getInt(Key.OVERLAY_STRING_FONT_MIN_SIZE, 14);
 
         // String
-        string = config.getString(Key.OVERLAY_STRING_STRING, "");
+        string = configuration.getString(Key.OVERLAY_STRING_STRING, "");
 
         // Stroke color
         strokeColor = Color.fromString(
-                config.getString(Key.OVERLAY_STRING_STROKE_COLOR, "black"));
+                configuration.getString(Key.OVERLAY_STRING_STROKE_COLOR, "black"));
 
         // Stroke width
-        strokeWidth = config.getFloat(Key.OVERLAY_STRING_STROKE_WIDTH, 2f);
+        strokeWidth = configuration.getFloat(Key.OVERLAY_STRING_STROKE_WIDTH, 2f);
     }
 
 }

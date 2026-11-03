@@ -17,7 +17,11 @@ import org.junit.jupiter.api.Test;
 import java.io.ByteArrayOutputStream;
 import java.util.Arrays;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 public class PdfBoxProcessorTest extends AbstractProcessorTest {
 
@@ -125,7 +129,7 @@ public class PdfBoxProcessorTest extends AbstractProcessorTest {
                 .withOperations(new Encode(Format.get("jpg")))
                 .build();
         Dimension fullSize = new Dimension(100, 88);
-        instance.validate(ops, fullSize);
+        instance.validate(ops, fullSize, Configuration.getInstance());
     }
 
     @Test
@@ -139,7 +143,7 @@ public class PdfBoxProcessorTest extends AbstractProcessorTest {
                 .build();
         Dimension fullSize = new Dimension(100, 88);
 
-        instance.validate(ops, fullSize);
+        instance.validate(ops, fullSize, Configuration.getInstance());
     }
 
     @Test
@@ -154,7 +158,7 @@ public class PdfBoxProcessorTest extends AbstractProcessorTest {
         Dimension fullSize = new Dimension(100, 88);
 
         assertThrows(ValidationException.class,
-                () -> instance.validate(ops, fullSize));
+                () -> instance.validate(ops, fullSize, Configuration.getInstance()));
     }
 
 }

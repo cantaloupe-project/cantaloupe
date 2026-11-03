@@ -9,7 +9,7 @@ import edu.illinois.library.cantaloupe.image.Format;
  * @see <a href="https://iiif.io/api/image/3.0/#45-format">IIIF Image API 3.0:
  * Format</a>
  */
-enum OutputFormat {
+public enum OutputFormat {
 
     GIF("gif"),
     JP2("jp2"),

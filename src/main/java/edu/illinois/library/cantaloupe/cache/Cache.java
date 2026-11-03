@@ -1,5 +1,6 @@
 package edu.illinois.library.cantaloupe.cache;
 
+import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.operation.OperationList;
@@ -53,7 +54,7 @@ public interface Cache {
      * call {@code super}.
      */
     default void onCacheWorker() {
-        CacheFacade cacheFacade = new CacheFacade();
+        CacheFacade cacheFacade = new CacheFacade(Configuration.getInstance());
 
         // Purge invalid content.
         try {

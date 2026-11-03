@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
  * @see <a href="http://iiif.io/api/request/2.1/#request-request-parameters">IIIF
  *      Image API 2.1</a>
  */
-class Parameters {
+public class Parameters {
 
     private String identifier;
     private Region region;
@@ -66,7 +66,7 @@ class Parameters {
     /**
      * Copy constructor.
      */
-    Parameters(Parameters params) {
+    public Parameters(Parameters params) {
         setIdentifier(params.getIdentifier());
         setRegion(params.getRegion());
         setSize(params.getSize());
@@ -87,7 +87,7 @@ class Parameters {
      * @throws IllegalClientArgumentException if any of the other arguments are
      *         invalid.
      */
-    Parameters(String identifier,
+    public Parameters(String identifier,
                String region,
                String size,
                String rotation,
@@ -196,7 +196,7 @@ class Parameters {
      *         additional operations that may need to be performed, such as
      *         overlays, etc.
      */
-    OperationList toOperationList(DelegateProxy delegateProxy) {
+    public OperationList toOperationList(DelegateProxy delegateProxy) {
         final OperationList ops = new OperationList(
                 MetaIdentifier.fromString(getIdentifier(), delegateProxy));
         if (!Region.Type.FULL.equals(getRegion().getType())) {
@@ -249,7 +249,7 @@ class Parameters {
      * @see            <a href="https://iiif.io/api/image/2.1/#canonical-uri-syntax">
      *                 Canonical URI Syntax</a>
      */
-    String toCanonicalString(Dimension fullSize) {
+    public String toCanonicalString(Dimension fullSize) {
         final StringBuilder b = new StringBuilder();
         b.append(getIdentifier());
         b.append("/");

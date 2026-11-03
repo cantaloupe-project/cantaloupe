@@ -1,5 +1,6 @@
 package edu.illinois.library.cantaloupe.processor;
 
+import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.image.Format;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,8 +33,11 @@ public final class ProcessorFactory {
 
     private static final Set<Processor> ALL_PROCESSORS = new HashSet<>();
 
-    private SelectionStrategy selectionStrategy =
-            SelectionStrategy.fromConfiguration();
+    private SelectionStrategy selectionStrategy;
+    
+    public ProcessorFactory(Configuration configuration) {
+        selectionStrategy = SelectionStrategy.fromConfiguration(configuration);
+    }
 
     public static synchronized Set<Processor> getAllProcessors() {
         if (ALL_PROCESSORS.isEmpty()) {

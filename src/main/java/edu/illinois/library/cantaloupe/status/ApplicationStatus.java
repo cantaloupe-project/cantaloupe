@@ -3,6 +3,7 @@ package edu.illinois.library.cantaloupe.status;
 import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.cache.InfoCache;
 import edu.illinois.library.cantaloupe.cache.InfoService;
+import edu.illinois.library.cantaloupe.config.Configuration;
 
 import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
@@ -14,6 +15,11 @@ import java.util.Map;
  * provide "live" values.
  */
 public final class ApplicationStatus {
+    private InfoService infoService;
+
+    public ApplicationStatus(Configuration configuration) {
+        this.infoService = InfoService.getInstance(configuration);
+    }
 
     public String getApplicationVersion() {
         return Application.getVersion();
@@ -23,7 +29,7 @@ public final class ApplicationStatus {
      * @return Max {@link InfoCache} size in bytes.
      */
     public long getInfoCacheMaxSize() {
-        InfoCache infoCache = InfoService.getInstance().getInfoCache();
+        InfoCache infoCache = infoService.getInfoCache();
         return infoCache.maxSize();
     }
 
@@ -31,7 +37,7 @@ public final class ApplicationStatus {
      * @return Number of {@link InfoCache cached infos}.
      */
     public long getInfoCacheSize() {
-        InfoCache infoCache = InfoService.getInstance().getInfoCache();
+        InfoCache infoCache = infoService.getInfoCache();
         return infoCache.size();
     }
 
