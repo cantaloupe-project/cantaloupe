@@ -7,6 +7,7 @@ import edu.illinois.library.cantaloupe.http.Status;
 import edu.illinois.library.cantaloupe.util.Stopwatch;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
@@ -22,6 +23,14 @@ public class HandlerServlet extends HttpServlet {
 
     private static final Logger LOGGER =
             LoggerFactory.getLogger(HandlerServlet.class);
+
+    /**
+     * {@link MDC} keys populated for the duration of each request, so that
+     * anything logged while handling it (e.g. errors reported to
+     * Honeybadger) can be traced back to the request.
+     */
+    public static final String MDC_REQUEST_METHOD = "request_method";
+    public static final String MDC_REQUEST_URL    = "request_url";
 
     @Override
     protected void doDelete(HttpServletRequest request,
@@ -67,6 +76,9 @@ public class HandlerServlet extends HttpServlet {
                 request.getRequestURI(), request.getContextPath());
 
         AbstractResource resource = null;
+
+        MDC.put(MDC_REQUEST_METHOD, request.getMethod());
+        MDC.put(MDC_REQUEST_URL, getRequestURL(request));
 
         try {
             Route route = Route.forPath(path);
@@ -117,7 +129,16 @@ public class HandlerServlet extends HttpServlet {
             LOGGER.debug("Responded to {} {} with HTTP {} in {}",
                     request.getMethod(), request.getPathInfo(),
                     response.getStatus(), requestClock);
+            MDC.clear();
         }
+    }
+
+    private static String getRequestURL(HttpServletRequest request) {
+        StringBuffer url = request.getRequestURL();
+        if (request.getQueryString() != null) {
+            url.append("?").append(request.getQueryString());
+        }
+        return url.toString();
     }
 
     /**
