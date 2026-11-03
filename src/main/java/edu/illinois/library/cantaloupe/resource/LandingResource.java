@@ -1,9 +1,9 @@
 package edu.illinois.library.cantaloupe.resource;
 
 import edu.illinois.library.cantaloupe.http.Method;
+import edu.illinois.library.cantaloupe.resource.TemplateVariables;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import edu.illinois.library.cantaloupe.resource.TemplateVariables;
 
 public class LandingResource extends AbstractResource {
 

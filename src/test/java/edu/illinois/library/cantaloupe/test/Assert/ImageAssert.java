@@ -2,6 +2,7 @@ package edu.illinois.library.cantaloupe.test.Assert;
 
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
+
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.Closeable;

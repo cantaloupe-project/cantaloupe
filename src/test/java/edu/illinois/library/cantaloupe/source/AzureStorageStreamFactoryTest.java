@@ -13,6 +13,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import javax.imageio.stream.ImageInputStream;
+
 import java.io.InputStream;
 
 import static org.junit.jupiter.api.Assertions.*;

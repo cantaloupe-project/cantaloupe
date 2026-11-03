@@ -9,8 +9,8 @@ import edu.illinois.library.cantaloupe.source.stream.HTTPImageInputStreamClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 
 /**
  * Implementation backed by an Azure Storage client.

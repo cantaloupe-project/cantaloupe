@@ -9,8 +9,8 @@ import edu.illinois.library.cantaloupe.http.Client;
 import edu.illinois.library.cantaloupe.http.ResourceException;
 import edu.illinois.library.cantaloupe.http.Response;
 import edu.illinois.library.cantaloupe.image.Identifier;
-import edu.illinois.library.cantaloupe.test.TestUtil;
 import edu.illinois.library.cantaloupe.resource.IIIFRequest;
+import edu.illinois.library.cantaloupe.test.TestUtil;
 
 import java.io.File;
 import java.net.URI;

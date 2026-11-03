@@ -7,6 +7,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import javax.imageio.stream.MemoryCacheImageInputStream;
+
 import java.io.InputStream;
 import java.nio.file.Files;
 

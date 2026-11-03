@@ -10,6 +10,7 @@ import org.junit.jupiter.api.Test;
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
 import javax.imageio.metadata.IIOMetadata;
+
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Iterator;

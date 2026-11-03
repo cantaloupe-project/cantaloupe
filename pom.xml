@@ -466,6 +466,21 @@
                 </configuration>
             </plugin>
 
+            <!-- Order imports to match IntelliJ with mvn spotless:apply -->
+            <plugin>
+                <groupId>com.diffplug.spotless</groupId>
+                <artifactId>spotless-maven-plugin</artifactId>
+                <version>3.10.4</version>
+                <configuration>
+                    <lineEndings>PRESERVE</lineEndings>
+                    <java>
+                        <importOrder>
+                            <order>,javax,java,\#</order>
+                        </importOrder>
+                    </java>
+                </configuration>
+            </plugin>
+
             <!-- Find bugs with mvn spotbugs:spotbugs spotbugs:gui -->
             <plugin>
                 <groupId>com.github.spotbugs</groupId>

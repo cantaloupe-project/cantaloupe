@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Test;
 
 import javax.imageio.ImageIO;
 import javax.imageio.stream.ImageInputStream;
+
 import java.io.IOException;
 import java.nio.file.Path;
 

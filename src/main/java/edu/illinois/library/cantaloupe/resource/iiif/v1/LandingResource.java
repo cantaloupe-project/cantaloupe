@@ -1,8 +1,8 @@
 package edu.illinois.library.cantaloupe.resource.iiif.v1;
 
 import edu.illinois.library.cantaloupe.http.Method;
-import edu.illinois.library.cantaloupe.resource.ThymeleafRepresentation;
 import edu.illinois.library.cantaloupe.resource.TemplateVariables;
+import edu.illinois.library.cantaloupe.resource.ThymeleafRepresentation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

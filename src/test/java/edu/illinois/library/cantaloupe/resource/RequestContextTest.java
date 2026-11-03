@@ -16,9 +16,8 @@ import org.junit.jupiter.api.Test;
 import java.util.Collections;
 import java.util.Map;
 
-import static org.junit.jupiter.api.Assertions.*;
-
 import static edu.illinois.library.cantaloupe.resource.RequestContextMap.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class RequestContextTest extends BaseTest {
 

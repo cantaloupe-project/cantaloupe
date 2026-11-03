@@ -13,6 +13,7 @@ import edu.illinois.library.cantaloupe.resource.Route;
 import org.junit.jupiter.api.Test;
 
 import javax.imageio.ImageIO;
+
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.File;

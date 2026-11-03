@@ -2,8 +2,10 @@ package edu.illinois.library.cantaloupe.util;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
+import org.apache.commons.lang3.Strings;
 
 import javax.xml.bind.DatatypeConverter;
+
 import java.awt.FontMetrics;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
@@ -13,7 +15,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.apache.commons.lang3.Strings;
 
 public final class StringUtils {
 

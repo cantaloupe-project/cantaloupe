@@ -2,6 +2,7 @@ package edu.illinois.library.cantaloupe.source;
 
 import javax.imageio.stream.FileImageInputStream;
 import javax.imageio.stream.ImageInputStream;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;

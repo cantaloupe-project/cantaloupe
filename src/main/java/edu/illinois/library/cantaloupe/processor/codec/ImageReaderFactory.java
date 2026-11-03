@@ -11,6 +11,7 @@ import edu.illinois.library.cantaloupe.source.StreamFactory;
 import edu.illinois.library.cantaloupe.source.stream.ClosingMemoryCacheImageInputStream;
 
 import javax.imageio.stream.ImageInputStream;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Path;

@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 import org.w3c.dom.NodeList;
 
 import javax.imageio.metadata.IIOMetadataNode;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
