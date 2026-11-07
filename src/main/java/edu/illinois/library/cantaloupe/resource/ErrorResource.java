@@ -12,6 +12,7 @@ import edu.illinois.library.cantaloupe.processor.SourceFormatException;
 import edu.illinois.library.cantaloupe.resource.iiif.FormatException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.eclipse.jetty.io.EofException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.thymeleaf.TemplateEngine;
@@ -54,6 +55,32 @@ class ErrorResource {
     private HttpServletRequest request;
     private HttpServletResponse response;
 
+    /**
+     * @return Whether the given error, or any of its causes, indicates that
+     *         the client closed the connection before the response could be
+     *         fully written. In that case there is nobody to send an error
+     *         page to.
+     */
+    static boolean isClientDisconnect(Throwable t) {
+        while (t != null) {
+            if (t instanceof EofException) {
+                return true;
+            }
+            if (t instanceof IOException) {
+                String msg = t.getMessage();
+                if (msg != null && (msg.startsWith("Broken pipe") ||
+                        msg.startsWith("Connection reset"))) {
+                    return true;
+                }
+            }
+            if (t.getCause() == t) {
+                break;
+            }
+            t = t.getCause();
+        }
+        return false;
+    }
+
     private static Status toStatus(Throwable t) {
         Status status;
         if (t instanceof ResourceException) {
@@ -88,6 +115,14 @@ class ErrorResource {
     }
 
     public void doGET() throws Exception {
+        if (isClientDisconnect(error)) {
+            // Writing an error page to a closed connection would just fail
+            // again (and get logged at ERROR level by Thymeleaf).
+            LOGGER.debug("Client closed the connection during {} {}: {}",
+                    request.getMethod(), request.getRequestURI(),
+                    error.getMessage());
+            return;
+        }
         final Status status = toStatus(error);
         log(status.getCode());
 
