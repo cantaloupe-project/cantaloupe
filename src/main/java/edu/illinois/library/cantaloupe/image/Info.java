@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import tools.jackson.core.JacksonException;
+import tools.jackson.core.exc.JacksonIOException;
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.annotation.JsonDeserialize;
 import tools.jackson.databind.annotation.JsonSerialize;
@@ -15,6 +16,7 @@ import edu.illinois.library.cantaloupe.processor.Processor;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -253,12 +255,24 @@ public final class Info {
         return new Builder(new Info());
     }
 
+    /**
+     * @throws java.nio.file.NoSuchFileException if the file does not exist.
+     * @throws IOException if there is some other problem reading the file.
+     */
     public static Info fromJSON(Path jsonFile) throws IOException {
-        return newMapper().readValue(jsonFile.toFile(), Info.class);
+        try (InputStream is = Files.newInputStream(jsonFile)) {
+            return fromJSON(is);
+        }
     }
 
     public static Info fromJSON(InputStream jsonStream) throws IOException {
-        return newMapper().readValue(jsonStream, Info.class);
+        try {
+            return newMapper().readValue(jsonStream, Info.class);
+        } catch (JacksonIOException e) {
+            // Jackson 3 wraps I/O failures in an unchecked exception;
+            // unwrap it so that callers can handle it as an IOException.
+            throw e.getCause();
+        }
     }
 
     public static Info fromJSON(String json) throws IOException {
