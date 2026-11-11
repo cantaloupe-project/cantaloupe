@@ -869,8 +869,6 @@ public class TJDecompressor implements Closeable {
     try {
       close();
     } catch (TJException e) {
-    } finally {
-      super.finalize();
     }
   };
 
