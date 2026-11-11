@@ -8,9 +8,11 @@ import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.time.Instant;
 
@@ -217,6 +219,14 @@ class InfoTest extends BaseTest {
         }
     }
 
+    @Test
+    void testFromJSONWithMissingPath() throws Exception {
+        Path tempFile = Files.createTempFile("test", "json");
+        Files.delete(tempFile);
+        assertThrows(NoSuchFileException.class,
+                () -> Info.fromJSON(tempFile));
+    }
+
     /* fromJSON(InputStream) */
 
     @Test
@@ -227,6 +237,19 @@ class InfoTest extends BaseTest {
         Info info = Info.fromJSON(inputStream);
         assertEquals(obscureTimestamps(info.toString()),
                 obscureTimestamps(instance.toString()));
+    }
+
+    @Test
+    void testFromJSONWithInputStreamThrowingIOException() {
+        InputStream inputStream = new InputStream() {
+            @Override
+            public int read() throws IOException {
+                throw new IOException("read failed");
+            }
+        };
+        IOException e = assertThrows(IOException.class,
+                () -> Info.fromJSON(inputStream));
+        assertEquals("read failed", e.getMessage());
     }
 
     /* fromJSON(String) */

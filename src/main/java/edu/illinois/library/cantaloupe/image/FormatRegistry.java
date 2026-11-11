@@ -1,8 +1,8 @@
 package edu.illinois.library.cantaloupe.image;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.dataformat.yaml.YAMLFactory;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -85,7 +85,6 @@ final class FormatRegistry {
     private static Map<String, Format> readBundledFormats() throws IOException {
         try (InputStream is = FormatRegistry.class.getClassLoader().getResourceAsStream(FILENAME)) {
             ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
-            mapper.findAndRegisterModules();
 
             TypeReference<Map<String, Format>> ref = new TypeReference<>() {};
             Map<String, Format> formats = mapper.readValue(is, ref);
@@ -101,7 +100,6 @@ final class FormatRegistry {
         if (Files.exists(pathname)) {
             LOGGER.trace("Reading user formats from {}", pathname);
             ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
-            mapper.findAndRegisterModules();
 
             TypeReference<Map<String, Format>> ref = new TypeReference<>() {};
             Map<String, Format> formats = mapper.readValue(pathname.toFile(), ref);
