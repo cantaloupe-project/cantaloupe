@@ -10,6 +10,9 @@ import org.junit.jupiter.api.Test;
 
 import java.net.ConnectException;
 import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -191,6 +194,37 @@ public class ClientTest extends BaseTest {
         Response response = instance.send();
         assertEquals(200, response.getStatus());
         assertEquals(Transport.HTTP2_0, response.getTransport());
+    }
+
+    /* toResponse() */
+
+    @Test
+    void testToResponse() throws Exception {
+        webServer.start();
+
+        HttpClient javaClient = HttpClient.newBuilder()
+                .followRedirects(HttpClient.Redirect.NEVER)
+                .build();
+        HttpRequest request = HttpRequest.newBuilder()
+                .GET()
+                .uri(getValidHTTPURI())
+                .build();
+
+        HttpResponse<byte[]> jresponse = javaClient.send(
+                request, HttpResponse.BodyHandlers.ofByteArray());
+
+        Response response = Client.toResponse(jresponse);
+
+        assertEquals(jresponse.body(), response.getBody());
+        assertEquals(jresponse.statusCode(), response.getStatus());
+        assertEquals(Transport.HTTP2_0, response.getTransport());
+
+        Headers expectedHeaders = new Headers();
+        jresponse.headers().map().forEach((name, list) ->
+                list.forEach(h ->
+                        expectedHeaders.add(name, h)));
+
+        assertEquals(expectedHeaders, response.getHeaders());
     }
 
 }
