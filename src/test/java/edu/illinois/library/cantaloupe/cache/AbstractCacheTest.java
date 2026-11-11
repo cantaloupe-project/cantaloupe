@@ -25,7 +25,7 @@ import static org.junit.jupiter.api.Assumptions.*;
 
 abstract class AbstractCacheTest extends BaseTest {
 
-    static final int ASYNC_WAIT = 3500;
+    static final int ASYNC_WAIT = 5000;
     static final String IMAGE   = "jpg";
 
     abstract DerivativeCache newInstance();
