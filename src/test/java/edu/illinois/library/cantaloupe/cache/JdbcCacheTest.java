@@ -1,5 +1,6 @@
 package edu.illinois.library.cantaloupe.cache;
 
+import edu.illinois.library.cantaloupe.async.TaskQueue;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Format;
@@ -31,6 +32,8 @@ import java.sql.Timestamp;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -78,6 +81,17 @@ public class JdbcCacheTest extends AbstractCacheTest {
         }
 
         return ASYNC_WAIT; // Local development
+    }
+
+    /**
+     * Blocks until all tasks previously submitted to the (serial, FIFO)
+     * {@link TaskQueue} have run.
+     */
+    private static void awaitTaskQueue() throws InterruptedException {
+        CountDownLatch latch = new CountDownLatch(1);
+        TaskQueue.getInstance().submit((Runnable) latch::countDown);
+        assertTrue(latch.await(JDBC_ASYNC_WAIT * 3L, TimeUnit.MILLISECONDS),
+                "Timed out waiting for TaskQueue to drain");
     }
 
     @BeforeEach
@@ -342,6 +356,10 @@ public class JdbcCacheTest extends AbstractCacheTest {
         // assert that a particular info doesn't exist
         assertFalse(instance.getInfo(identifier).isPresent());
 
+        // The misses above queued async purges; let them finish so they
+        // can't delete the image and info we're about to add.
+        awaitTaskQueue();
+
         // add the image
         try (CompletableOutputStream outputStream =
                      instance.newDerivativeImageOutputStream(opList)) {
@@ -358,7 +376,7 @@ public class JdbcCacheTest extends AbstractCacheTest {
 
         // assert that they've been added
         assertExists(instance, opList);
-        assertNotNull(instance.getInfo(identifier));
+        assertTrue(instance.getInfo(identifier).isPresent());
 
         // purge everything
         instance.purge();
