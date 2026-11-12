@@ -437,6 +437,10 @@ public class JdbcCacheTest extends AbstractCacheTest {
         // assert that a particular info doesn't exist
         assertFalse(instance.getInfo(identifier).isPresent());
 
+        // The misses above queued async purges; let them finish so they
+        // can't delete the image and info we're about to add.
+        awaitTaskQueue();
+
         // add the image
         try (CompletableOutputStream outputStream =
                      instance.newDerivativeImageOutputStream(opList)) {
@@ -453,7 +457,7 @@ public class JdbcCacheTest extends AbstractCacheTest {
 
         // assert that they've been added
         assertExists(instance, opList);
-        assertNotNull(instance.getInfo(identifier));
+        assertTrue(instance.getInfo(identifier).isPresent());
 
         // purge infos
         instance.purgeInfos();
