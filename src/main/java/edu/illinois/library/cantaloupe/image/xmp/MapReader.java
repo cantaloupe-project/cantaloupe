@@ -11,7 +11,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -71,8 +70,8 @@ public final class MapReader {
                 // Version 4.8+ of jena requires a rdf:about link to not be empty
                 base = "http://example.com";
             }
-            try (StringReader reader = new StringReader(xmp)) {
-                model.read(reader, base, "RDF/XML");
+            try {
+                Utils.readRDFXML(model, xmp, base);
             } catch (RiotException | NullPointerException e) {
                 // The XMP string may be invalid RDF/XML, or there may be a bug
                 // in Jena (that would be the NPE). Not much we can do.
