@@ -16,6 +16,7 @@ current version.
 3. If you are using a Java delegate, add the following method to your delegate 
    class: 
     * `getJDBCSourceLastModified()`
+4. Change any `JaiProcessor` configuration values to `ImageNProcessor`.
 
 ## 4.1.x → 5.0
 

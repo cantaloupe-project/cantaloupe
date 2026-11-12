@@ -26,8 +26,8 @@ import edu.illinois.library.cantaloupe.processor.codec.ReaderHint;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.media.jai.Interpolation;
-import javax.media.jai.RenderedOp;
+import org.eclipse.imagen.Interpolation;
+import org.eclipse.imagen.RenderedOp;
 import java.awt.color.ColorSpace;
 import java.awt.image.BufferedImage;
 import java.awt.image.RenderedImage;
@@ -38,22 +38,24 @@ import java.util.EnumSet;
 import java.util.Set;
 
 /**
- * <p>Processor using the Java Advanced Imaging (JAI) library.</p>
+ * <p>Processor using the Eclipse ImageN library, the successor to Java
+ * Advanced Imaging (JAI).</p>
  *
  * <p>Because they both use Image I/O, this processor has a lot in common with
  * {@link Java2dProcessor} and so common functionality has been extracted into
  * a base class.</p>
  *
  * @deprecated Since version 4.0.
+ * @see <a href="https://github.com/eclipse-imagen/imagen">Eclipse ImageN</a>
  * @see <a href="http://docs.oracle.com/cd/E19957-01/806-5413-10/806-5413-10.pdf">
  *     Programming in Java Advanced Imaging</a>
  */
 @Deprecated
-class JaiProcessor extends AbstractImageIOProcessor
+class ImageNProcessor extends AbstractImageIOProcessor
         implements FileProcessor, StreamProcessor {
 
     private static final Logger LOGGER =
-            LoggerFactory.getLogger(JaiProcessor.class);
+            LoggerFactory.getLogger(ImageNProcessor.class);
 
     /**
      * Override that disables support for GIF source images.
@@ -100,24 +102,24 @@ class JaiProcessor extends AbstractImageIOProcessor
 
             final RenderedImage renderedImage = reader.readRendered(
                     opList.getPageIndex(), crop, scale, sc, rf, hints);
-            RenderedOp renderedOp = JAIUtil.getAsRenderedOp(
+            RenderedOp renderedOp = ImageNUtil.getAsRenderedOp(
                     RenderedOp.wrapRenderedImage(renderedImage));
 
             Encode encode = (Encode) opList.getFirst(Encode.class);
             if (encode != null && !Format.get("gif").equals(outputFormat)) {
-                renderedOp = JAIUtil.rescalePixels(renderedOp);
-                renderedOp = JAIUtil.reduceTo8Bits(renderedOp);
+                renderedOp = ImageNUtil.rescalePixels(renderedOp);
+                renderedOp = ImageNUtil.reduceTo8Bits(renderedOp);
             }
 
             // Apply the Crop operation, if present.
             if (crop != null) {
-                renderedOp = JAIUtil.cropImage(
+                renderedOp = ImageNUtil.cropImage(
                         renderedOp, opList.getScaleConstraint(), crop, rf);
             }
 
             // Correct for orientation -- this will be a no-op if the
             // orientation is 0.
-            renderedOp = JAIUtil.rotateImage(
+            renderedOp = ImageNUtil.rotateImage(
                     renderedOp, orientation.getDegrees());
 
             // Apply remaining operations, except Overlay.
@@ -128,7 +130,7 @@ class JaiProcessor extends AbstractImageIOProcessor
                         final boolean isLinear = scale.isLinear() &&
                                 !scale.isUp(fullSize, opList.getScaleConstraint());
                         if (isLinear) {
-                            renderedOp = JAIUtil.convertColor(renderedOp,
+                            renderedOp = ImageNUtil.convertColor(renderedOp,
                                     ColorSpace.getInstance(ColorSpace.CS_LINEAR_RGB));
                         }
 
@@ -155,7 +157,7 @@ class JaiProcessor extends AbstractImageIOProcessor
                             LOGGER.debug("process(): detected compressed TIFF; " +
                                     "using the Scale operation with nearest-" +
                                     "neighbor interpolation.");
-                            renderedOp = JAIUtil.scaleImage(
+                            renderedOp = ImageNUtil.scaleImage(
                                     renderedOp, (Scale) op,
                                     opList.getScaleConstraint(),
                                     Interpolation.getInstance(Interpolation.INTERP_NEAREST),
@@ -166,39 +168,39 @@ class JaiProcessor extends AbstractImageIOProcessor
                             // pixels on a side. So, again use the Scale operation,
                             // with a better (but still bad [but it doesn't matter
                             // because of the tiny dimension(s)]) filter.
-                            renderedOp = JAIUtil.scaleImage(
+                            renderedOp = ImageNUtil.scaleImage(
                                     renderedOp, (Scale) op,
                                     opList.getScaleConstraint(),
                                     Interpolation.getInstance(Interpolation.INTERP_BILINEAR),
                                     rf);
                         } else {
                             // All clear to use SubsampleAverage.
-                            renderedOp = JAIUtil.scaleImageUsingSubsampleAverage(
+                            renderedOp = ImageNUtil.scaleImageUsingSubsampleAverage(
                                     renderedOp, (Scale) op,
                                     opList.getScaleConstraint(), rf);
                         }
 
                         if (isLinear) {
-                            renderedOp = JAIUtil.convertColor(renderedOp,
+                            renderedOp = ImageNUtil.convertColor(renderedOp,
                                     ColorSpace.getInstance(ColorSpace.CS_sRGB));
                         }
                     } else if (op instanceof Transpose) {
-                        renderedOp = JAIUtil.
+                        renderedOp = ImageNUtil.
                                 transposeImage(renderedOp, (Transpose) op);
                     } else if (op instanceof Rotate) {
-                        renderedOp = JAIUtil.rotateImage(renderedOp, (Rotate) op);
+                        renderedOp = ImageNUtil.rotateImage(renderedOp, (Rotate) op);
                     } else if (op instanceof ColorTransform) {
-                        renderedOp = JAIUtil.
+                        renderedOp = ImageNUtil.
                                 transformColor(renderedOp, (ColorTransform) op);
                     } else if (op instanceof Sharpen) {
-                        renderedOp = JAIUtil.
+                        renderedOp = ImageNUtil.
                                 sharpenImage(renderedOp, (Sharpen) op);
                     }
                 }
             }
 
             // Apply the Overlay operation, if present. This will be done using
-            // Java 2D because it's harder with JAI, or impossible in the case
+            // Java 2D because it's harder with ImageN, or impossible in the case
             // of drawing text.
             BufferedImage image = null;
             for (Operation op : opList) {

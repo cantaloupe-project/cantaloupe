@@ -182,6 +182,31 @@ public class TIFFImageReaderTest extends AbstractImageReaderTest {
         assertNotEquals(image1.getWidth(), image2.getWidth());
     }
 
+    /**
+     * Tests reading an 8-bit, multi-strip, LZW-compressed TIFF that uses the
+     * horizontal differencing predictor, which imageio-ext 2.x corrupts
+     * without our patched TIFFLZWDecompressor.
+     *
+     * @see <a href="https://github.com/cantaloupe-project/cantaloupe/issues/879">#879</a>
+     */
+    @Test
+    void testRead1WithMultiStripLZWPredictorImage() throws Exception {
+        instance.setSource(TestUtil.getImage("tif-rgb-1res-64x56x8-striped-uncompressed.tif"));
+        BufferedImage expected = instance.read(0);
+        instance.dispose();
+
+        instance = new TIFFImageReader();
+        instance.setSource(TestUtil.getImage("tif-rgb-1res-64x56x8-striped-lzw.tif"));
+        BufferedImage actual = instance.read(0);
+
+        for (int y = 0; y < expected.getHeight(); y++) {
+            for (int x = 0; x < expected.getWidth(); x++) {
+                assertEquals(expected.getRGB(x, y), actual.getRGB(x, y),
+                        "Pixel at " + x + "," + y + " differs");
+            }
+        }
+    }
+
     @Test
     void testRead2WithMultiImageImage() throws Exception {
         instance.setSource(TestUtil.getImage("tif-bw-9image.tif"));

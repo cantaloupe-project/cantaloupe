@@ -512,7 +512,7 @@ abstract class AbstractProcessorTest extends BaseTest {
 
         forEachFixture(ops, new ProcessorAssertion() {
             {
-                if (newInstance() instanceof JaiProcessor) {
+                if (newInstance() instanceof ImageNProcessor) {
                     // These may be JAI bugs, don't know and don't care
                     this.skippedFixtures.addAll(List.of(
                             "bmp-rgba-64x56x8.bmp",
@@ -541,7 +541,7 @@ abstract class AbstractProcessorTest extends BaseTest {
 
         forEachFixture(ops, new ProcessorAssertion() {
             {
-                if (newInstance() instanceof JaiProcessor) {
+                if (newInstance() instanceof ImageNProcessor) {
                     // These may be JAI bugs, don't know and don't care
                     this.skippedFixtures.addAll(List.of(
                             "bmp-rgba-64x56x8.bmp",
@@ -568,7 +568,7 @@ abstract class AbstractProcessorTest extends BaseTest {
         try (Processor proc = newInstance()) {
             proc.setSourceFormat(getAnySupportedSourceFormat(proc));
             outputFormats = proc.getAvailableOutputFormats();
-            if (proc instanceof Java2dProcessor || proc instanceof JaiProcessor) {
+            if (proc instanceof Java2dProcessor || proc instanceof ImageNProcessor) {
                 tmpFlag = true;
             }
         }
@@ -908,7 +908,7 @@ abstract class AbstractProcessorTest extends BaseTest {
         }
 
         Processor proc = newInstance();
-        if (proc instanceof Java2dProcessor || proc instanceof JaiProcessor) {
+        if (proc instanceof Java2dProcessor || proc instanceof ImageNProcessor) {
             if (fixtureName.equals("tif-rgba-1res-64x56x8-tiled-jpeg.tif") ||
                     fixtureName.equals("tif-rgba-1res-64x56x8-striped-jpeg.tif")) {
                 return false;

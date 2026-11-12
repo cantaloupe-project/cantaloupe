@@ -3,13 +3,13 @@ package edu.illinois.library.cantaloupe.util;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
 
-import javax.xml.bind.DatatypeConverter;
 import java.awt.FontMetrics;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HexFormat;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -67,7 +67,7 @@ public final class StringUtils {
             final MessageDigest digest = MessageDigest.getInstance("MD5");
             digest.update(str.getBytes(StandardCharsets.UTF_8));
             byte[] bytes = digest.digest();
-            return DatatypeConverter.printHexBinary(bytes).toLowerCase();
+            return HexFormat.of().formatHex(bytes);
         } catch (NoSuchAlgorithmException e) {
             throw new RuntimeException(e);
         }
