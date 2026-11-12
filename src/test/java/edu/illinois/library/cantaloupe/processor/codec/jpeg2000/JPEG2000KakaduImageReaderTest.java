@@ -187,6 +187,42 @@ public class JPEG2000KakaduImageReaderTest extends BaseTest {
         assertEquals(0.9, diffScales[1], DELTA);
     }
 
+    /**
+     * The fixture has packet length (PLT) markers and a corrupted packet
+     * that is only encountered when decoding certain regions.
+     */
+    @Test
+    public void testReadRegionWithCorruptedPacket() {
+        instance.setSource(TestUtil.getImage("jp2-corrupted-packet.jp2"));
+
+        final Rectangle roi = new Rectangle(0, 28, 32, 28);
+        final Scale scale = new ScaleByPercent(1);
+        final ScaleConstraint scaleConstraint = new ScaleConstraint(1, 1);
+        final ReductionFactor reductionFactor = new ReductionFactor();
+        final double[] diffScales = new double[2];
+
+        assertThrows(IOException.class, () ->
+                instance.readRegion(roi, scale, scaleConstraint,
+                        reductionFactor, diffScales));
+    }
+
+    @Test
+    public void testReadRegionWithCorruptedPacketOutsideOfRegion()
+            throws Exception {
+        instance.setSource(TestUtil.getImage("jp2-corrupted-packet.jp2"));
+
+        final Rectangle roi = new Rectangle(32, 0, 32, 28);
+        final Scale scale = new ScaleByPercent(1);
+        final ScaleConstraint scaleConstraint = new ScaleConstraint(1, 1);
+        final ReductionFactor reductionFactor = new ReductionFactor();
+        final double[] diffScales = new double[2];
+
+        BufferedImage image = instance.readRegion(roi, scale, scaleConstraint,
+                reductionFactor, diffScales);
+        assertEquals(32, image.getWidth());
+        assertEquals(28, image.getHeight());
+    }
+
     @Test
     public void testReadRegionWithInvalidImage() {
         instance.setSource(TestUtil.getImage("unknown"));
