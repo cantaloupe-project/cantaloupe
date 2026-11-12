@@ -17,22 +17,22 @@
         <maven.compile.target>21</maven.compile.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <jetty.version>12.1.14</jetty.version>
-        <aws-sdk.version>2.57.6</aws-sdk.version>
+        <jetty.version>12.1.15</jetty.version>
+        <aws-sdk.version>2.58.0</aws-sdk.version>
         <azure-core.version>1.61.0</azure-core.version>
         <azure-core-http-jdk-httpclient.version>1.3.0</azure-core-http-jdk-httpclient.version>
         <!-- The storage API version used by azure-storage-blob must be supported by Azurite, which the tests run against.
              12.36.0 uses API version 2026-10-06; see https://github.com/Azure/Azurite/issues/2844 -->
         <azure-storage-blob.version>12.35.1</azure-storage-blob.version>
-        <jackson.version>3.2.2</jackson.version>
-        <jackson2.version>2.22.4</jackson2.version>
+        <jackson.version>3.3.0</jackson.version>
+        <jackson2.version>2.23.0</jackson2.version>
         <jena.version>6.2.0</jena.version>
-        <jruby.version>10.1.2.0</jruby.version>
+        <jruby.version>10.1.3.0</jruby.version>
         <surefire.version>3.6.1</surefire.version>
         <seleniumhq.version>4.52.0</seleniumhq.version>
         <logback.version>1.6.6</logback.version> <!-- slf4j depends on specific versions of logback. -->
         <logstash-logback-encoder.version>9.0</logstash-logback-encoder.version>
-        <slf4j.version>2.0.19</slf4j.version>
+        <slf4j.version>2.0.20</slf4j.version>
     </properties>
 
     <developers>
@@ -116,7 +116,7 @@
         <dependency>
             <groupId>com.google.protobuf</groupId>
             <artifactId>protobuf-java</artifactId>
-            <version>4.36.1</version>
+            <version>4.36.2</version>
         </dependency>
         <!-- Used by JdbcSourceTest and JdbcCacheTest -->
         <dependency>
@@ -221,14 +221,14 @@
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
-            <version>3.21.0</version>
+            <version>3.22.0</version>
         </dependency>
         <!-- Provides PDFBox for PdfBoxProcessor. Note that there are also some
         other dependencies in this POM used only by PDFBox. -->
         <dependency>
             <groupId>org.apache.pdfbox</groupId>
             <artifactId>pdfbox</artifactId>
-            <version>2.0.29</version> <!-- v3 still in beta -->
+            <version>2.0.37</version>
         </dependency>
         <!-- Assists PDFBox in decoding JBIG2-encoded images -->
         <dependency>
@@ -279,7 +279,7 @@
         <dependency>
             <groupId>org.bouncycastle</groupId>
             <artifactId>bcprov-jdk18on</artifactId>
-            <version>1.86</version>
+            <version>1.87</version>
         </dependency>
         <!-- Provides HTTP/2 support in the Jetty server.
         N.B.: ALPN support is in a different module. -->
@@ -368,14 +368,14 @@
         <dependency>
             <groupId>org.thymeleaf</groupId>
             <artifactId>thymeleaf</artifactId>
-            <version>3.1.5.RELEASE</version>
+            <version>3.1.7.RELEASE</version>
         </dependency>
         <!-- Selenium is used to test the control panel, using a headless HtmlUnit
         browser. -->
         <dependency>
             <groupId>org.seleniumhq.selenium</groupId>
             <artifactId>htmlunit3-driver</artifactId>
-            <version>4.51.0</version>
+            <version>4.52.0</version>
             <scope>test</scope>
         </dependency>
         <dependency>
