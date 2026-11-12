@@ -8,11 +8,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.imageio.stream.ImageInputStream;
-import javax.xml.bind.DatatypeConverter;
 import java.io.EOFException;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
+import java.util.HexFormat;
 
 /**
  * <p>Reads various information from a JPEG2000 box structure. Only used for
@@ -274,7 +274,7 @@ public final class JPEG2000MetadataReader implements AutoCloseable {
           inputStream.mark();
           byte[] bytes = read(JP2_SIGNATURE.length);
           if (!Arrays.equals(JP2_SIGNATURE, bytes)) {
-              String hexStr = DatatypeConverter.printHexBinary(bytes);
+              String hexStr = HexFormat.of().withUpperCase().formatHex(bytes);
               throw new SourceFormatException("Invalid signature: " + hexStr +
                       " (is this a JP2?)");
           }
