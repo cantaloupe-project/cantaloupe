@@ -89,10 +89,7 @@ public final class Client {
     private String entity;
     private boolean followRedirects = false;
     private final Headers headers = new Headers();
-    private File keyStore;
-    private String keyStorePassword = "password";
     private Method method = Method.GET;
-    private String realm;
     private String secret;
     private Transport transport = Transport.HTTP1_1;
     private boolean trustAll = false;
@@ -257,11 +254,9 @@ public final class Client {
     }
 
     public void setKeyStore(File keyStore) {
-        this.keyStore = keyStore;
     }
 
     public void setKeyStorePassword(String password) {
-        this.keyStorePassword = password;
     }
 
     public void setMethod(Method method) {
@@ -269,9 +264,8 @@ public final class Client {
     }
 
     public void setRealm(String realm) {
-        this.realm = realm;
-
     }
+
     public void setSecret(String secret) {
         this.secret = secret;
     }
