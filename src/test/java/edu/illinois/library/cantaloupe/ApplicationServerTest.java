@@ -1,5 +1,8 @@
 package edu.illinois.library.cantaloupe;
 
+import edu.illinois.library.cantaloupe.config.Configuration;
+import edu.illinois.library.cantaloupe.config.Key;
+import edu.illinois.library.cantaloupe.http.Server;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import edu.illinois.library.cantaloupe.util.SocketUtils;
@@ -8,6 +11,14 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
+
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 import static edu.illinois.library.cantaloupe.test.Assert.HTTPAssert.*;
 import static org.junit.jupiter.api.Assertions.*;
@@ -179,6 +190,47 @@ public class ApplicationServerTest extends BaseTest {
         initializeHTTP();
         instance.start();
         assertStatus(200, "http://localhost:" + HTTP_PORT);
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = {false, true})
+    void acceptsHTTPSourceIdentifierWithEncodedSpace(boolean https,
+                                                    @TempDir Path directory)
+            throws Exception {
+        Files.copy(TestUtil.getFixture("images/jpg-rgb-64x56x8-baseline.jpg"),
+                directory.resolve("Service File.jpg"));
+        Server sourceServer = new Server();
+        sourceServer.setRoot(directory);
+        sourceServer.setHTTP1Enabled(true);
+        try {
+            sourceServer.start();
+            Configuration config = Configuration.getInstance();
+            config.setProperty(Key.SOURCE_STATIC, "HttpSource");
+            config.setProperty("HttpSource.lookup_strategy", "BasicLookupStrategy");
+            config.setProperty(Key.PROCESSOR_SELECTION_STRATEGY,
+                    "ManualSelectionStrategy");
+            config.setProperty("processor.ManualSelectionStrategy.jpg", "Java2dProcessor");
+
+            String endpoint;
+            if (https) {
+                initializeHTTPSWithJKSKeyStoreWithPassword();
+                endpoint = "https://localhost:" + HTTPS_PORT;
+            } else {
+                initializeHTTP();
+                endpoint = "http://localhost:" + HTTP_PORT;
+            }
+            instance.start();
+
+            // %20 in the source URL becomes %2520 in the IIIF identifier.
+            String identifier = URLEncoder.encode(
+                    sourceServer.getHTTPURI().resolve("Service%20File.jpg").toString(),
+                    StandardCharsets.UTF_8);
+            String imageURI = endpoint + "/iiif/2/" + identifier;
+            assertStatus(200, imageURI + "/info.json");
+            assertStatus(200, imageURI + "/full/1,/0/default.jpg");
+        } finally {
+            sourceServer.stop();
+        }
     }
 
     @Test

@@ -267,7 +267,7 @@ public class ApplicationServer {
             if (isHTTPEnabled()) {
                 HttpConfiguration config = new HttpConfiguration();
                 config.setUriCompliance(
-                        UriCompliance.from("DEFAULT,SUSPICIOUS_PATH_CHARACTERS,AMBIGUOUS_PATH_SEPARATOR"));
+                        UriCompliance.from("DEFAULT,SUSPICIOUS_PATH_CHARACTERS,AMBIGUOUS_PATH_SEPARATOR,AMBIGUOUS_PATH_ENCODING"));
                 HttpConnectionFactory http1 = new HttpConnectionFactory(config);
 
                 HTTP2CServerConnectionFactory http2 =
@@ -286,7 +286,7 @@ public class ApplicationServer {
             if (isHTTPSEnabled()) {
                 HttpConfiguration config = new HttpConfiguration();
                 config.setUriCompliance(
-                        UriCompliance.from("DEFAULT,SUSPICIOUS_PATH_CHARACTERS,AMBIGUOUS_PATH_SEPARATOR"));
+                        UriCompliance.from("DEFAULT,SUSPICIOUS_PATH_CHARACTERS,AMBIGUOUS_PATH_SEPARATOR,AMBIGUOUS_PATH_ENCODING"));
 
                 config.setSecureScheme("https");
                 config.setSecurePort(getHTTPSPort());
