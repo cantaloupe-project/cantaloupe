@@ -33,8 +33,9 @@ public class TrailingSlashRemovingResourceTest extends ResourceTest {
         Response response = client.send();
 
         assertEquals(301, response.getStatus());
+
         assertTrue(response.getHeaders().getFirstValue("Location").
-                endsWith("/cats" + getEndpointPath()));
+                equals("/cats" + getEndpointPath()));
         assertTrue(response.getBodyAsString().isEmpty());
     }
 
