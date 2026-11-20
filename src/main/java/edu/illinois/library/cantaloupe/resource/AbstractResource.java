@@ -12,6 +12,7 @@ import edu.illinois.library.cantaloupe.image.MetaIdentifier;
 import edu.illinois.library.cantaloupe.util.StringUtils;
 import jakarta.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
+import org.slf4j.MDC;
 
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
@@ -50,6 +51,13 @@ public abstract class AbstractResource {
      * Cached by {@link #getMetaIdentifier()}.
      */
     private MetaIdentifier metaIdentifier;
+
+    /**
+     * {@link MDC} key under which the decoded identifier is stored once it
+     * has been resolved. Cleared by {@link HandlerServlet} at the end of the
+     * request.
+     */
+    static final String MDC_IDENTIFIER = "identifier";
 
     /**
      * <p>Returns a sanitized value for a {@code Content-Disposition} header
@@ -234,6 +242,8 @@ public abstract class AbstractResource {
                 metaIdentifier = MetaIdentifier.fromURIPathComponent(
                         pathComponent, getDelegateProxy());
                 metaIdentifier.freeze();
+                MDC.put(MDC_IDENTIFIER,
+                        metaIdentifier.getIdentifier().toString());
             }
         }
         return metaIdentifier;
