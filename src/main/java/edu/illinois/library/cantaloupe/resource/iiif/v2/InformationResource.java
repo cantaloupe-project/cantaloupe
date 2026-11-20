@@ -55,11 +55,11 @@ public class InformationResource extends IIIF2Resource {
         if (methods.length > 0) {
             response.setStatus(Status.NO_CONTENT.getCode());
             response.setHeader("Access-Control-Allow-Headers", "Authorization");
-            response.setHeader("Allow", Arrays.stream(methods)
+            response.setHeader("Access-Control-Allow-Methods", Arrays.stream(methods)
                     .map(Method::toString)
                     .collect(Collectors.joining(",")));
         } else {
-            response.setStatus(Status.METHOD_NOT_ALLOWED.getCode());
+            response.setStatus(Status.NOT_ACCEPTABLE.getCode());
         }
     }
 

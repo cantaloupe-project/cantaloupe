@@ -168,11 +168,11 @@ public abstract class AbstractResource {
         Method[] methods = getSupportedMethods();
         if (methods.length > 0) {
             response.setStatus(Status.NO_CONTENT.getCode());
-            response.setHeader("Allow", Arrays.stream(methods)
+            response.setHeader("Access-Control-Allow-Methods", Arrays.stream(methods)
                     .map(Method::toString)
                     .collect(Collectors.joining(",")));
         } else {
-            response.setStatus(Status.METHOD_NOT_ALLOWED.getCode());
+            response.setStatus(Status.NOT_ACCEPTABLE.getCode());
         }
     }
 

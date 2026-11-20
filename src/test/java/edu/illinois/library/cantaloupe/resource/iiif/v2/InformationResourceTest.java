@@ -619,7 +619,7 @@ public class InformationResourceTest extends ResourceTest {
 
         Headers headers = response.getHeaders();
         List<String> methods =
-                List.of(StringUtils.split(headers.getFirstValue("Allow"), ", "));
+                List.of(StringUtils.split(headers.getFirstValue("Access-Control-Allow-Methods"), ", "));
         assertEquals(2, methods.size());
         assertTrue(methods.contains("GET"));
         assertTrue(methods.contains("OPTIONS"));
