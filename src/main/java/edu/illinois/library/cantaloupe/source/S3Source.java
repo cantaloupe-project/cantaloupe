@@ -377,15 +377,19 @@ final class S3Source extends AbstractSource implements Source {
                 case DELEGATE_SCRIPT:
                     try {
                         objectInfo = getObjectInfoUsingDelegateStrategy();
+                        LOGGER.debug("Using delegate strategy object info: {}", objectInfo);
                     } catch (ScriptException e) {
                         throw new IOException(e);
                     }
                     break;
                 default:
                     objectInfo = getObjectInfoUsingBasicStrategy();
+                    LOGGER.debug("Using basic strategy object info: {}", objectInfo);
                     break;
             }
         }
+
+        LOGGER.debug("getObjectInfo() returned: {}", objectInfo);
         return objectInfo;
     }
 
@@ -395,6 +399,7 @@ final class S3Source extends AbstractSource implements Source {
      */
     private S3ObjectInfo getObjectInfoUsingBasicStrategy() {
         final var config        = Configuration.getInstance();
+        final String endpoint   = config.getString(Key.S3SOURCE_ENDPOINT);
         final String bucketName = config.getString(Key.S3SOURCE_BUCKET_NAME);
         final String keyPrefix  = config.getString(Key.S3SOURCE_PATH_PREFIX, "");
         final String keySuffix  = config.getString(Key.S3SOURCE_PATH_SUFFIX, "");
@@ -402,6 +407,7 @@ final class S3Source extends AbstractSource implements Source {
         S3ObjectInfo info       = new S3ObjectInfo();
         info.setBucketName(bucketName);
         info.setKey(key);
+        info.setEndpoint(endpoint);
         return info;
     }
 
