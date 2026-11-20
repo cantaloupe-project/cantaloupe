@@ -23,6 +23,11 @@
 * AzureStorageSource supports a custom blob service endpoint via
   `AzureStorageSource.endpoint`, enabling use with emulators like Azurite.
 
+### Processors
+* Updated Apache PDFBox to version 3.0.3.
+* PdfBoxProcessor property added to reduce memory during render
+    * `processor.pdf.sub_sampling_enabled` Boolean. Defaults to FALSE. Allows the PDFBox Page renderer to discard lines, saving memory by reducing quality.
+
 ### Caches
 
 * S3Cache uses multipart uploads, which reduces memory usage when caching
