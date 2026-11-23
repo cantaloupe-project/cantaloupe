@@ -20,7 +20,7 @@ public class AuditableFutureTask<T> extends FutureTask<T> {
     private volatile Instant dateStopped;
     private volatile Throwable failureException;
     private volatile TaskStatus status = TaskStatus.NEW;
-    private UUID uuid = UUID.randomUUID();
+    private final UUID uuid = UUID.randomUUID();
 
     public AuditableFutureTask(Callable<T> callable) {
         super(callable);
@@ -108,11 +108,6 @@ public class AuditableFutureTask<T> extends FutureTask<T> {
     @JsonIgnore
     void setStatus(TaskStatus status) {
         this.status = status;
-    }
-
-    @JsonIgnore
-    private void setUUID(UUID uuid) {
-        this.uuid = uuid;
     }
 
     @Override
