@@ -11,6 +11,7 @@ import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.operation.Rotate;
 import edu.illinois.library.cantaloupe.operation.Scale;
 import edu.illinois.library.cantaloupe.image.Identifier;
+import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.operation.ScaleByPercent;
 import edu.illinois.library.cantaloupe.test.ConcurrentReaderWriter;
 import edu.illinois.library.cantaloupe.test.TestUtil;
@@ -176,6 +177,48 @@ public class FilesystemCacheTest extends AbstractCacheTest {
                 StringUtils.md5(identifier.toString()) + ".json"
                         + FilesystemCache.tempFileSuffix());
         assertEquals(expected, infoTempFile(identifier));
+    }
+
+    @Test
+    void testMoveIntoPlaceReplacesExistingFile() throws Exception {
+        Path dir      = Files.createDirectories(fixturePath);
+        Path destFile = dir.resolve("dest");
+        Path tempFile = dir.resolve("dest" + tempFileSuffix());
+        Files.writeString(destFile, "old");
+        Files.writeString(tempFile, "new");
+
+        moveIntoPlace(tempFile, destFile);
+
+        assertEquals("new", Files.readString(destFile));
+        assertFalse(Files.exists(tempFile));
+    }
+
+    @Test
+    void testMoveIntoPlaceWithNoExistingFile() throws Exception {
+        Path dir      = Files.createDirectories(fixturePath);
+        Path destFile = dir.resolve("dest");
+        Path tempFile = dir.resolve("dest" + tempFileSuffix());
+        Files.writeString(tempFile, "new");
+
+        moveIntoPlace(tempFile, destFile);
+
+        assertEquals("new", Files.readString(destFile));
+        assertFalse(Files.exists(tempFile));
+    }
+
+    @Test
+    void testPutWithInfoReplacesExistingInfoFile() throws Exception {
+        Identifier identifier = new Identifier("cats");
+        Path infoFile = infoFile(identifier);
+        Files.createDirectories(infoFile.getParent());
+        Files.writeString(infoFile, "stale");
+
+        Info info = new Info();
+        instance.put(identifier, info);
+
+        assertNotEquals("stale", Files.readString(infoFile));
+        assertEquals(info, instance.getInfo(identifier).orElseThrow());
+        assertRecursiveFileCount(infoPath, 1);
     }
 
     @Test

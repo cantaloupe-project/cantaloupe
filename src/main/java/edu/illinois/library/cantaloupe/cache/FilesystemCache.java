@@ -183,8 +183,7 @@ class FilesystemCache implements SourceCache, DerivativeCache {
                     if (isComplete()) {
                         CFOS_LOGGER.debug("close(): moving {} to {}",
                                 tempFile, destinationFile);
-                        Files.move(tempFile, destinationFile,
-                                StandardCopyOption.REPLACE_EXISTING);
+                        moveIntoPlace(tempFile, destinationFile);
                     } else {
                         CFOS_LOGGER.debug("close(): deleting zero-byte file: {}",
                                 tempFile);
@@ -460,6 +459,24 @@ class FilesystemCache implements SourceCache, DerivativeCache {
                 .resolve(hashedPathFragment(identifier.toString()))
                 .resolve(StringUtils.md5(identifier.toString())
                         + tempFileSuffix());
+    }
+
+    /**
+     * Atomically renames {@code tempFile} to {@code destFile}, replacing
+     * {@code destFile} if it exists.
+     *
+     * <p>{@link Files#move} with only {@link
+     * StandardCopyOption#REPLACE_EXISTING} stats the target, unlinks it, and
+     * then renames the source. When the cache lives on a filesystem shared by
+     * several hosts (e.g. NFS), another host can replace the target between
+     * those steps, causing the unlink to fail with {@literal "Stale file
+     * handle"}. An atomic move is a single {@code rename(2)}, which replaces
+     * the target without that race. Temp files always live in the same
+     * directory as their destination, so an atomic move is always
+     * possible.</p>
+     */
+    static void moveIntoPlace(Path tempFile, Path destFile) throws IOException {
+        Files.move(tempFile, destFile, StandardCopyOption.ATOMIC_MOVE);
     }
 
     static String tempFileSuffix() {
@@ -958,7 +975,7 @@ class FilesystemCache implements SourceCache, DerivativeCache {
             }
 
             LOGGER.debug("put(): moving {} to {}", tempFile, destFile);
-            Files.move(tempFile, destFile, StandardCopyOption.REPLACE_EXISTING);
+            moveIntoPlace(tempFile, destFile);
         } catch (IOException e) {
             try {
                 Files.deleteIfExists(tempFile);
@@ -995,7 +1012,7 @@ class FilesystemCache implements SourceCache, DerivativeCache {
             Files.writeString(tempFile, info);
 
             LOGGER.debug("put(): moving {} to {}", tempFile, destFile);
-            Files.move(tempFile, destFile, StandardCopyOption.REPLACE_EXISTING);
+            moveIntoPlace(tempFile, destFile);
         } catch (IOException e) {
             try {
                 Files.deleteIfExists(tempFile);
