@@ -825,6 +825,16 @@ public final class OperationList implements Iterable<Operation> {
         if (resultingSize.isEmpty()) {
             throw new ValidationException("Resulting pixel area is empty.");
         }
+        // Ensure that each resulting dimension is at least one full pixel.
+        // A dimension between 0.5 and 1 would round up to 1 here, but
+        // processors may arrive at 0 by their own rounding (e.g. a 1-pixel-
+        // tall region read at a reduced resolution level) and fail.
+        if (resultingSize.width() < 1 || resultingSize.height() < 1) {
+            throw new ValidationException(String.format(
+                    "The resulting image (%.3fx%.3f) is less than 1 pixel " +
+                            "in at least one dimension.",
+                    resultingSize.width(), resultingSize.height()));
+        }
 
         // Ensure that the resulting dimensions can be encoded as JPEG.
         if (Format.get("jpg").equals(getOutputFormat()) &&

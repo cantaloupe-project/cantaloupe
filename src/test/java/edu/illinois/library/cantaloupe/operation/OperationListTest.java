@@ -1007,6 +1007,22 @@ class OperationListTest extends BaseTest {
     }
 
     @Test
+    void validateWithSubPixelResultingDimension() {
+        // e.g. /2048,4096,449,1/225,/ yields a height of 225/449 ≈ 0.501
+        Dimension fullSize = new Dimension(5000, 5000);
+        OperationList ops = OperationList.builder()
+                .withIdentifier(new Identifier("cats"))
+                .withOperations(
+                        new CropByPixels(2048, 4096, 449, 1),
+                        new ScaleByPixels(225, null,
+                                ScaleByPixels.Mode.ASPECT_FIT_WIDTH),
+                        new Encode(Format.get("jpg")))
+                .build();
+        assertThrows(ValidationException.class,
+                () -> ops.validate(fullSize, Format.get("jp2")));
+    }
+
+    @Test
     void validateWithScaleGreaterThanMaxAllowed() {
         Dimension fullSize = new Dimension(1000, 1000);
         Identifier identifier = new Identifier("cats");
