@@ -81,7 +81,7 @@ public final class TurboJPEGImageReader implements AutoCloseable {
     private Rectangle region, mcuSafeRegion;
     private TJScalingFactor scalingFactor = new TJScalingFactor(1, 1);
     private Transform transform;
-    private boolean useGrayscaleConversion, useFastUpsample, useFastDCT,
+    private boolean useGrayscaleConversion, useFastDCT,
             useAccurateDCT;
 
     /**
@@ -383,17 +383,6 @@ public final class TurboJPEGImageReader implements AutoCloseable {
     }
 
     /**
-     * When decompressing an image that was compressed using chrominance
-     * subsampling, use the fastest chrominance upsampling algorithm available
-     * in the underlying codec. The default is to use smooth upsampling, which
-     * creates a smooth transition between neighboring chrominance components
-     * in order to reduce upsampling artifacts in the decompressed image.
-     */
-    public void setUseFastUpsample(boolean useFastUpsample) {
-        this.useFastUpsample = useFastUpsample;
-    }
-
-    /**
      * @param useGrayscaleConversion Whether to apply lossless grayscale
      *                               conversion to the image before
      *                               decompressing it.
@@ -438,9 +427,6 @@ public final class TurboJPEGImageReader implements AutoCloseable {
      */
     private int getFlags() {
         int flags = 0;
-        if (useFastUpsample) {
-            flags |= TJ.FLAG_FASTUPSAMPLE;
-        }
         if (useFastDCT) {
             flags |= TJ.FLAG_FASTDCT;
         } else if (useAccurateDCT) {
