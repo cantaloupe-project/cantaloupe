@@ -1,7 +1,5 @@
 package edu.illinois.library.cantaloupe.controller.iiif.v3;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.cache.CacheFactory;
 import edu.illinois.library.cantaloupe.cache.MockBrokenDerivativeInputStreamCache;
@@ -31,6 +29,8 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
 
 import java.io.OutputStream;
 import java.nio.file.Files;

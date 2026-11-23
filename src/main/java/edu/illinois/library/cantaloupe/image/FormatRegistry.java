@@ -182,7 +182,6 @@ public class FormatRegistry {
     private static Map<String, Format> readBundledFormatsStatic() throws IOException {
         try (InputStream is = FormatRegistry.class.getClassLoader().getResourceAsStream(FILENAME)) {
             ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
-            mapper.findAndRegisterModules();
 
             TypeReference<Map<String, Format>> ref = new TypeReference<>() {};
             Map<String, Format> formats = mapper.readValue(is, ref);
@@ -198,7 +197,6 @@ public class FormatRegistry {
         if (Files.exists(pathname)) {
             LOGGER.trace("Reading user formats from {}", pathname);
             ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
-            mapper.findAndRegisterModules();
 
             TypeReference<Map<String, Format>> ref = new TypeReference<>() {};
             Map<String, Format> formats = mapper.readValue(pathname.toFile(), ref);

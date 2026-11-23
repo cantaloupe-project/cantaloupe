@@ -16,9 +16,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectReader;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectReader;
 
 import edu.illinois.library.cantaloupe.Application;
 import edu.illinois.library.cantaloupe.async.TaskQueue;
@@ -93,7 +93,7 @@ public class TasksController {
             final String taskURI = "/tasks/" + task.getUUID().toString();
             response.setHeader("Location", taskURI);
             return ResponseEntity.status(HttpStatus.ACCEPTED).build();
-        } catch (NullPointerException | JsonProcessingException e) {
+        } catch (NullPointerException | JacksonException e) {
             throw new IllegalClientArgumentException(e.getMessage(), e);
         }
     }

@@ -1,10 +1,10 @@
 package edu.illinois.library.cantaloupe.resource.iiif.v3;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
 
 import java.util.Arrays;
 
@@ -83,7 +83,7 @@ class InformationTest {
     }
 
     @Test
-    void testJsonSerialization() throws JsonProcessingException {
+    void testJsonSerialization() throws JacksonException {
         // Set up complete IIIF v3 information object
         information.put("@context", "http://iiif.io/api/image/3/context.json");
         information.put("id", "https://example.com/iiif/3/test");
@@ -116,7 +116,7 @@ class InformationTest {
     }
 
     @Test
-    void testPropertyOrder() throws JsonProcessingException {
+    void testPropertyOrder() throws JacksonException {
         // IIIF requires certain properties to be in a specific order
         information.put("width", 1000);
         information.put("@context", "http://iiif.io/api/image/3/context.json");
