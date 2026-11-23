@@ -10,7 +10,6 @@ public class ResampleFilters {
 
     private static BellFilter bellFilter = new BellFilter();
     private static BiCubicFilter biCubicFilter = new BiCubicFilter();
-    private static BiCubicHighFreqResponse biCubicHighFreqResponse = new BiCubicHighFreqResponse();
     private static BoxFilter boxFilter = new BoxFilter();
     private static BSplineFilter bSplineFilter = new BSplineFilter();
     private static HermiteFilter hermiteFilter = new HermiteFilter();
@@ -24,10 +23,6 @@ public class ResampleFilters {
 
     public static ResampleFilter getBiCubicFilter() {
         return biCubicFilter;
-    }
-
-    public static ResampleFilter getBiCubicHighFreqResponse() {
-        return biCubicHighFreqResponse;
     }
 
     public static ResampleFilter getBoxFilter() {

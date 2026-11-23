@@ -19,10 +19,6 @@ class BiCubicFilter implements ResampleFilter {
         a = -0.5f;
     }
 
-    BiCubicFilter(float a) {
-        this.a = a;
-    }
-
     public float apply(float value) {
         if (value == 0)
             return 1.0f;
