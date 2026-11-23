@@ -8,6 +8,8 @@ import edu.illinois.library.cantaloupe.resource.EndpointDisabledException;
 import edu.illinois.library.cantaloupe.resource.IllegalClientArgumentException;
 import edu.illinois.library.cantaloupe.resource.ResourceException;
 import edu.illinois.library.cantaloupe.resource.iiif.FormatException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,6 +18,7 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
+import org.springframework.web.util.DisconnectedClientHelper;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -30,6 +33,9 @@ import java.util.Map;
  */
 @ControllerAdvice
 public class GlobalExceptionHandler {
+
+    private static final Logger LOGGER =
+            LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
     private final Configuration configuration;
 
@@ -199,6 +205,14 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Map<String, Object>> handleGenericException(
             Exception ex, WebRequest request) {
+        if (DisconnectedClientHelper.isClientDisconnectedException(ex)) {
+            // The client closed the connection (e.g. while waiting on a large
+            // image), so there is nobody to send an error response to, and
+            // writing one to the closed stream would just fail again.
+            LOGGER.debug("Client closed the connection during {}: {}",
+                    request.getDescription(false), ex.getMessage());
+            return null;
+        }
 
         Map<String, Object> errorResponse = new HashMap<>();
         ex.printStackTrace();
