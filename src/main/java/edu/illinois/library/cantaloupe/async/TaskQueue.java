@@ -56,4 +56,12 @@ public final class TaskQueue {
         runner.submit(runnable);
     }
 
+    /**
+     * Adds a task to the queue, setting its {@link TaskStatus#QUEUED status}
+     * and {@link AuditableFutureTask#getInstantQueued() queued time}.
+     */
+    public void submit(AuditableFutureTask<?> task) {
+        runner.submit(task);
+    }
+
 }

@@ -61,14 +61,22 @@ final class TaskRunner implements Runnable {
      */
     boolean submit(Runnable runnable) {
         LOGGER.trace("submit(): {} (queue size: {})", runnable, queue.size());
-        final boolean result = queue.add(runnable);
+        return queue.add(runnable);
+    }
 
-        if (runnable instanceof AuditableFutureTask) {
-            AuditableFutureTask<?> aTask = (AuditableFutureTask<?>) runnable;
-            aTask.setStatus(TaskStatus.QUEUED);
-            aTask.setInstantQueued(Instant.now());
-        }
-        return result;
+    /**
+     * Marks the task as queued and submits it to the queue.
+     *
+     * @param task Task to submit to the queue.
+     * @throws IllegalStateException If the queue is full.
+     */
+    boolean submit(AuditableFutureTask<?> task) {
+        // This must happen before the task is added to the queue; otherwise
+        // the runner thread may start it first, and its RUNNING status would
+        // then be overwritten with QUEUED.
+        task.setStatus(TaskStatus.QUEUED);
+        task.setInstantQueued(Instant.now());
+        return submit((Runnable) task);
     }
 
 }
