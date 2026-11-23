@@ -146,7 +146,12 @@ abstract class AbstractCacheTest extends BaseTest {
     @Test
     void testNewDerivativeImageInputStreamWithNonzeroTTL() throws Exception {
         final DerivativeCache instance = newInstance();
-        Configuration.getInstance().setProperty(Key.DERIVATIVE_CACHE_TTL, 3);
+        // Some caches (e.g. AzureStorageCache) compare a last-modified time
+        // with only one-second precision against a cutoff that is also
+        // truncated to the second, so an item can be considered expired up
+        // to ~1 second earlier than the TTL would suggest. The TTL and sleeps
+        // below leave enough margin on both sides for that.
+        Configuration.getInstance().setProperty(Key.DERIVATIVE_CACHE_TTL, 4);
 
         OperationList ops = OperationList.builder()
                 .withIdentifier(new Identifier("cats"))
@@ -155,8 +160,6 @@ abstract class AbstractCacheTest extends BaseTest {
         Path fixture = TestUtil.getImage(IMAGE);
 
         // Add an image.
-        // This method may return before data is fully (or even partially)
-        // written to the cache.
         // N.B.: This method may return before data is fully (or even
         // partially) written to the cache.
         try (CompletableOutputStream os =
@@ -166,13 +169,13 @@ abstract class AbstractCacheTest extends BaseTest {
         }
 
         // Wait for it to finish, hopefully.
-        Thread.sleep(2000);
+        Thread.sleep(1000);
 
         // Assert that it has been added.
         assertExists(instance, ops);
 
         // Wait for it to invalidate.
-        Thread.sleep(4000);
+        Thread.sleep(5000);
 
         // Assert that it has been purged.
         assertNotExists(instance, ops);
