@@ -1,6 +1,7 @@
 package edu.illinois.library.cantaloupe.cache;
 
 import edu.illinois.library.cantaloupe.async.TaskQueue;
+import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.operation.OperationList;
@@ -20,6 +21,14 @@ public final class CacheFacade {
 
     private static final Logger LOGGER = LoggerFactory.
             getLogger(CacheFacade.class);
+
+    private CacheFactory cacheFactory;
+    private InfoService infoService;
+
+    public CacheFacade(Configuration configuration) {
+        this.cacheFactory = new CacheFactory(configuration);
+        this.infoService = InfoService.getInstance(configuration);
+    }
 
     /**
      * @see Cache#cleanUp
@@ -42,7 +51,7 @@ public final class CacheFacade {
      * @see CacheFactory#getDerivativeCache
      */
     public Optional<DerivativeCache> getDerivativeCache() {
-        return CacheFactory.getDerivativeCache();
+        return cacheFactory.getDerivativeCache();
     }
 
     /**
@@ -52,7 +61,7 @@ public final class CacheFacade {
      * @see #getOrReadInfo(Identifier, Processor)
      */
     public Optional<Info> getInfo(Identifier identifier) throws IOException {
-        return InfoService.getInstance().getInfo(identifier);
+        return infoService.getInfo(identifier);
     }
 
     /**
@@ -64,15 +73,16 @@ public final class CacheFacade {
      */
     public Optional<Info> getOrReadInfo(Identifier identifier,
                                         Processor processor) throws IOException {
-        return InfoService.getInstance().getOrReadInfo(identifier, processor);
+        return infoService.getOrReadInfo(identifier, processor);
     }
 
     /**
      * @see CacheFactory#getSourceCache
      */
     public Optional<SourceCache> getSourceCache() {
-        return CacheFactory.getSourceCache();
+        return cacheFactory.getSourceCache();
     }
+
 
     /**
      * @param identifier Image identifier.
@@ -95,7 +105,7 @@ public final class CacheFacade {
     }
 
     public boolean isInfoCacheAvailable() {
-        return InfoService.getInstance().isObjectCacheEnabled();
+        return infoService.isObjectCacheEnabled();
     }
 
     /**
@@ -127,7 +137,7 @@ public final class CacheFacade {
      */
     public void purge() throws IOException {
         // Purge the info service.
-        InfoService.getInstance().purgeObjectCache();
+        infoService.purgeObjectCache();
 
         // Purge the derivative cache.
         Optional<DerivativeCache> optDerivativeCache = getDerivativeCache();
@@ -147,7 +157,7 @@ public final class CacheFacade {
      */
     public void purge(Identifier identifier) throws IOException {
         // Purge it from the info service.
-        InfoService.getInstance().purgeObjectCache(identifier);
+        infoService.purgeObjectCache(identifier);
 
         // Purge it from the derivative cache.
         Optional<DerivativeCache> optDerivativeCache = getDerivativeCache();

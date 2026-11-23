@@ -9,7 +9,8 @@ import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class ProcessorFactoryTest extends BaseTest {
 
@@ -18,7 +19,7 @@ public class ProcessorFactoryTest extends BaseTest {
     @BeforeEach
     public void setUp() throws Exception {
         super.setUp();
-        instance = new ProcessorFactory();
+        instance = new ProcessorFactory(Configuration.getInstance());
     }
 
     @Test

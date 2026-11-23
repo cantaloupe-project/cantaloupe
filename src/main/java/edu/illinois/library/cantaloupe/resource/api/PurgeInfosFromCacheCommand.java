@@ -1,6 +1,7 @@
 package edu.illinois.library.cantaloupe.resource.api;
 
 import edu.illinois.library.cantaloupe.cache.CacheFacade;
+import edu.illinois.library.cantaloupe.config.Configuration;
 
 import java.util.concurrent.Callable;
 
@@ -12,7 +13,7 @@ final class PurgeInfosFromCacheCommand<T> extends Command
 
     @Override
     public T call() throws Exception {
-        new CacheFacade().purgeInfos();
+        new CacheFacade(Configuration.getInstance()).purgeInfos();
         return null;
     }
 

@@ -3,16 +3,20 @@ package edu.illinois.library.cantaloupe.source;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationException;
 import edu.illinois.library.cantaloupe.config.Key;
-import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.delegate.DelegateMethod;
 import edu.illinois.library.cantaloupe.delegate.DelegateProxy;
+import edu.illinois.library.cantaloupe.image.Identifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import javax.script.ScriptException;
+
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import static edu.illinois.library.cantaloupe.source.SourceFactory.SelectionStrategy.DELEGATE_SCRIPT;
 
@@ -20,6 +24,7 @@ import static edu.illinois.library.cantaloupe.source.SourceFactory.SelectionStra
  * Used to obtain an instance of a {@link Source} defined in the
  * configuration, or returned by a delegate method.
  */
+@Component
 public final class SourceFactory {
 
     /**
@@ -44,18 +49,35 @@ public final class SourceFactory {
     private static final Logger LOGGER =
             LoggerFactory.getLogger(SourceFactory.class);
 
-    private static final Set<Source> ALL_SOURCES = Set.of(
-            new AzureStorageSource(),
-            new FilesystemSource(),
-            new HttpSource(),
-            new JdbcSource(),
-            new S3Source());
+    private static final Set<String> ALL_SOURCE_CLASSES = Set.of(
+            "AzureStorageSource",
+            "FilesystemSource",
+            "HttpSource",
+            "JdbcSource",
+            "S3Source");
+
+    private Configuration configuration;
+
+    @Autowired
+    public SourceFactory(Configuration config) {
+        this.configuration = config;
+    }
 
     /**
      * @return Set of instances of each unique source.
      */
-    public static Set<Source> getAllSources() {
-        return ALL_SOURCES;
+    public Set<Source> getAllSources() {
+        return ALL_SOURCE_CLASSES.stream()
+                .map(className -> {
+                    try {
+                        return newSource(className);
+                    } catch (Exception e) {
+                        LOGGER.warn("Failed to instantiate source {}: {}", className, e.getMessage());
+                        return null;
+                    }
+                })
+                .filter(source -> source != null)
+                .collect(Collectors.toSet());
     }
 
     /**
@@ -124,13 +146,12 @@ public final class SourceFactory {
                         identifier);
                 return source;
             default:
-                final Configuration config = Configuration.getInstance();
-                final String sourceName = config.getString(Key.SOURCE_STATIC);
+                final String sourceName = configuration.getString(Key.SOURCE_STATIC);
                 if (sourceName != null) {
                     return newSource(sourceName, identifier, proxy);
                 } else {
                     throw new ConfigurationException(Key.SOURCE_STATIC +
-                            " is not set to a valid source.");
+                            " is not set to a valid source. '" + sourceName + "' ");
                 }
         }
     }
@@ -139,8 +160,7 @@ public final class SourceFactory {
      * @return How sources are chosen by {@link #newSource}.
      */
     public SelectionStrategy getSelectionStrategy() {
-        final Configuration config = Configuration.getInstance();
-        return config.getBoolean(Key.SOURCE_DELEGATE, false) ?
+        return configuration.getBoolean(Key.SOURCE_DELEGATE, false) ?
                 DELEGATE_SCRIPT : SelectionStrategy.STATIC;
     }
 
@@ -155,9 +175,32 @@ public final class SourceFactory {
         Class<?> class_ = Class.forName(fullName);
 
         Source source = (Source) class_.getDeclaredConstructor().newInstance();
+
+        // Inject Configuration if the source supports it
+        injectConfigurationIfSupported(source);
+
         source.setIdentifier(identifier);
         source.setDelegateProxy(proxy);
         return source;
+    }
+
+    /**
+     * Injects Configuration into sources that support dependency injection.
+     * This allows sources to use injected Configuration instead of Configuration.getInstance().
+     *
+     * @param source The source instance to inject Configuration into
+     */
+    private void injectConfigurationIfSupported(Source source) {
+        // Check if the source has a setConfiguration method (duck typing approach)
+        try {
+            java.lang.reflect.Method setConfigMethod = source.getClass().getMethod("setConfiguration", Configuration.class);
+            setConfigMethod.invoke(source, configuration);
+            LOGGER.debug("Injected Configuration into {}", source.getClass().getSimpleName());
+        } catch (Exception e) {
+            // Source doesn't support Configuration injection, that's fine
+            LOGGER.trace("Source {} does not support Configuration injection: {}",
+                        source.getClass().getSimpleName(), e.getMessage());
+        }
     }
 
     /**

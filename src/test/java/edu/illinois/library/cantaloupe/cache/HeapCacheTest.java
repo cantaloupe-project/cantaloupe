@@ -1,12 +1,12 @@
 package edu.illinois.library.cantaloupe.cache;
 
+import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.ConfigurationException;
 import edu.illinois.library.cantaloupe.config.Key;
-import edu.illinois.library.cantaloupe.image.Info;
-import edu.illinois.library.cantaloupe.test.BaseTest;
-import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.image.Identifier;
+import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.operation.OperationList;
+import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
@@ -15,7 +15,13 @@ import org.junit.jupiter.api.Test;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 public class HeapCacheTest extends AbstractCacheTest {
 
@@ -78,7 +84,7 @@ public class HeapCacheTest extends AbstractCacheTest {
         Configuration config = Configuration.getInstance();
         config.setProperty(Key.HEAPCACHE_TARGET_SIZE, Math.pow(1024, 2));
 
-        return new HeapCache();
+        return new HeapCache(config);
     }
 
     /* dumpToPersistentStore() */
@@ -236,7 +242,7 @@ public class HeapCacheTest extends AbstractCacheTest {
 
             instance.dumpToPersistentStore();
 
-            instance = new HeapCache();
+            instance = new HeapCache(config);
             instance.loadFromPersistentStore();
             assertEquals(1, instance.size());
 

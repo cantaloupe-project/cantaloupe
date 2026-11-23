@@ -1,12 +1,15 @@
 package edu.illinois.library.cantaloupe.status;
 
+import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.Map;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class ApplicationStatusTest extends BaseTest {
 
@@ -15,7 +18,7 @@ public class ApplicationStatusTest extends BaseTest {
     @BeforeEach
     public void setUp() throws Exception {
         super.setUp();
-        instance = new ApplicationStatus();
+        instance = new ApplicationStatus(Configuration.getInstance());
     }
 
     @Test

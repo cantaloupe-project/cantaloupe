@@ -1,5 +1,9 @@
 package edu.illinois.library.cantaloupe.operation.overlay;
 
+import javax.script.ScriptException;
+
+import edu.illinois.library.cantaloupe.config.ConfigurationException;
+
 /**
  * Provides access to {@link Overlay}s.
  */
@@ -11,6 +15,6 @@ interface OverlayService {
      */
     boolean isAvailable();
 
-    Overlay newOverlay() throws Exception;
+    Overlay newOverlay() throws ConfigurationException, ScriptException;
 
 }

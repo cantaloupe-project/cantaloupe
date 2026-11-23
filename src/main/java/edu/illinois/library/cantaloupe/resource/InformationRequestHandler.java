@@ -11,7 +11,6 @@ import edu.illinois.library.cantaloupe.processor.Processor;
 import edu.illinois.library.cantaloupe.processor.ProcessorConnector;
 import edu.illinois.library.cantaloupe.processor.ProcessorFactory;
 import edu.illinois.library.cantaloupe.processor.SourceFormatException;
-import edu.illinois.library.cantaloupe.delegate.DelegateProxy;
 import edu.illinois.library.cantaloupe.source.Source;
 import edu.illinois.library.cantaloupe.source.SourceFactory;
 import edu.illinois.library.cantaloupe.source.StatResult;
@@ -103,28 +102,20 @@ public class InformationRequestHandler extends AbstractRequestHandler
     private Future<Path> tempFileFuture;
 
     /**
-     * Creates a new InformationRequestHandler with full configuration options.
+     * Creates a new InformationRequestHandler with injected Configuration.
      *
-     * @param identifier           Identifier of the image.
-     * @param delegateProxy        Delegate proxy. If null, requestContext must also be null.
-     * @param requestContext       Request context. If null, delegateProxy must also be null.
+     * @param request              The IIIF request.
      * @param callback             Callback to receive events during request handling.
-     * @param isBypassingCache     True to bypass cache reads and writes.
-     * @param isBypassingCacheRead True to bypass cache reads only.
+     * @param configuration        The Configuration instance to inject.
      */
-    public InformationRequestHandler(Identifier identifier,
-                                     DelegateProxy delegateProxy,
-                                     RequestContext requestContext,
-                                     Callback callback,
-                                     boolean isBypassingCache,
-                                     boolean isBypassingCacheRead) {
-
-        this.identifier = identifier;
-        this.delegateProxy = delegateProxy;
-        this.requestContext = requestContext;
+    public InformationRequestHandler(IIIFRequest request, Callback callback, Configuration configuration) {
+        this.identifier = request.getMetaIdentifier().getIdentifier();
+        this.delegateProxy = request.getDelegateProxy();
+        this.requestContext = request.getRequestContext();
         this.callback = callback;
-        this.isBypassingCache = isBypassingCache;
-        this.isBypassingCacheRead = isBypassingCacheRead;
+        this.isBypassingCache = request.isBypassingCache();
+        this.isBypassingCacheRead = request.isBypassingCacheRead();
+        this.configuration = configuration;
     }
 
     /**
@@ -153,14 +144,15 @@ public class InformationRequestHandler extends AbstractRequestHandler
 
     /**
      * Handles an information request.
+     * If the return value is null, you should immediately return.
+     * In this case the headers and response codes should already be set.
      */
     public Info handle() throws Exception {
         if (!callback.authorize()) {
             return null;
         }
 
-        final Configuration config    = Configuration.getInstance();
-        final CacheFacade cacheFacade = new CacheFacade();
+        final CacheFacade cacheFacade = new CacheFacade(configuration);
 
         // If we are using a cache, and don't need to resolve first, and the
         // cache contains an info matching the request, skip all the setup and
@@ -185,7 +177,8 @@ public class InformationRequestHandler extends AbstractRequestHandler
             }
         }
 
-        final Source source = new SourceFactory().newSource(
+        SourceFactory sourceFactory = new SourceFactory(configuration);
+        final Source source = sourceFactory.newSource(
                 identifier, delegateProxy);
 
         // If we are resolving first, or if the source image is not present in
@@ -197,7 +190,7 @@ public class InformationRequestHandler extends AbstractRequestHandler
                 StatResult result = source.stat();
                 callback.sourceAccessed(result);
             } catch (NoSuchFileException e) { // this needs to be rethrown!
-                if (config.getBoolean(Key.CACHE_SERVER_PURGE_MISSING, false)) {
+                if (configuration.getBoolean(Key.CACHE_SERVER_PURGE_MISSING, false)) {
                     // If the image was not found, purge it from the cache.
                     cacheFacade.purgeAsync(identifier);
                 }
@@ -227,10 +220,10 @@ public class InformationRequestHandler extends AbstractRequestHandler
             final Format format = formatIterator.next();
             // Obtain an instance of the processor assigned to this format.
             String processorName = "unknown processor";
-            try (Processor processor = new ProcessorFactory().newProcessor(format)) {
+            try (Processor processor = new ProcessorFactory(configuration).newProcessor(format)) {
                 processorName = processor.getClass().getSimpleName();
                 // Connect it to the source.
-                tempFileFuture = new ProcessorConnector().connect(
+                tempFileFuture = new ProcessorConnector(configuration).connect(
                         source, processor, identifier, format);
                 callback.knowAvailableOutputFormats(
                         processor.getAvailableOutputFormats());

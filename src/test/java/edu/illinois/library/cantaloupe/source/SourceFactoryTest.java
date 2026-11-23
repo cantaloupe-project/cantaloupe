@@ -2,14 +2,16 @@ package edu.illinois.library.cantaloupe.source;
 
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
-import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.delegate.DelegateProxy;
+import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import edu.illinois.library.cantaloupe.test.TestUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class SourceFactoryTest extends BaseTest {
 
@@ -18,12 +20,13 @@ public class SourceFactoryTest extends BaseTest {
     @BeforeEach
     public void setUp() throws Exception {
         super.setUp();
-        instance = new SourceFactory();
+        instance = new SourceFactory(Configuration.getInstance());
     }
 
     @Test
     void getAllSources() {
-        assertEquals(5, SourceFactory.getAllSources().size());
+        SourceFactory sourceFactory = new SourceFactory(Configuration.getInstance());
+        assertEquals(5, sourceFactory.getAllSources().size());
     }
 
     /* newSource(String) */

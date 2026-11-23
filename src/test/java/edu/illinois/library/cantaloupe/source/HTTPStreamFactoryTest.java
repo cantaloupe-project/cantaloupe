@@ -18,10 +18,13 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import javax.imageio.stream.ImageInputStream;
+
 import java.io.InputStream;
 import java.util.Map;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class HTTPStreamFactoryTest extends BaseTest {
 
@@ -57,10 +60,12 @@ public class HTTPStreamFactoryTest extends BaseTest {
                 server.getHTTPURI().resolve("/" + PRESENT_READABLE_IDENTIFIER).toString());
         requestInfo.setHeaders(headers);
 
+        HttpSource httpSource = new HttpSource();
         return new HTTPStreamFactory(
                 requestInfo,
                 5439,
-                serverAcceptsRanges);
+                serverAcceptsRanges,
+                httpSource);
     }
 
     @Test

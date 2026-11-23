@@ -1,7 +1,7 @@
 package edu.illinois.library.cantaloupe.cache;
 
-import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.config.Configuration;
+import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.operation.OperationList;
 import edu.illinois.library.cantaloupe.test.AzureStorageTestUtil;
@@ -11,7 +11,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class AzureStorageCacheTest extends AbstractCacheTest {
 
@@ -60,7 +60,7 @@ public class AzureStorageCacheTest extends AbstractCacheTest {
         config.setProperty(Key.AZURESTORAGECACHE_ENDPOINT,
                 AzureStorageTestUtil.getEndpoint());
 
-        return new AzureStorageCache();
+        return new AzureStorageCache(config);
     }
 
     /* getContainerName() */
@@ -69,7 +69,7 @@ public class AzureStorageCacheTest extends AbstractCacheTest {
     void testGetContainerName() {
         assertEquals(
                 Configuration.getInstance().getString(Key.AZURESTORAGECACHE_CONTAINER_NAME),
-                AzureStorageCache.getContainerName());
+                instance.getContainerName());
     }
 
     /* getObjectKey(Identifier) */

@@ -1,5 +1,6 @@
 package edu.illinois.library.cantaloupe.cache;
 
+import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.image.Identifier;
 import edu.illinois.library.cantaloupe.image.Info;
 import edu.illinois.library.cantaloupe.operation.OperationList;
@@ -9,6 +10,8 @@ import java.io.InputStream;
 import java.util.Optional;
 
 public class MockBrokenDerivativeCache implements DerivativeCache {
+    MockBrokenDerivativeCache(Configuration configuration) { 
+    }
 
     @Override
     public Optional<Info> getInfo(Identifier identifier) throws IOException {

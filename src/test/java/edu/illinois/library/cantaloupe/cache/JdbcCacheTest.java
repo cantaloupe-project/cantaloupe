@@ -98,11 +98,10 @@ public class JdbcCacheTest extends AbstractCacheTest {
     public void setUp() throws Exception {
         super.setUp();
 
-        configure();
+        instance = newInstance();
 
-        try (Connection connection = JdbcCache.getConnection()) {
+        try (Connection connection = instance.getConnection()) {
             createTables(connection);
-            instance = newInstance();
             seed(connection);
         }
     }
@@ -114,10 +113,6 @@ public class JdbcCacheTest extends AbstractCacheTest {
 
     @Override
     JdbcCache newInstance() {
-        return new JdbcCache();
-    }
-
-    private void configure() {
         Configuration config = Configuration.getInstance();
         // use an in-memory H2 database
         config.setProperty(Key.JDBCCACHE_JDBC_URL, "jdbc:h2:mem:test");
@@ -125,6 +120,7 @@ public class JdbcCacheTest extends AbstractCacheTest {
         config.setProperty(Key.JDBCCACHE_PASSWORD, "");
         config.setProperty(Key.JDBCCACHE_DERIVATIVE_IMAGE_TABLE, "deriv");
         config.setProperty(Key.JDBCCACHE_INFO_TABLE, "info");
+        return new JdbcCache(config);
     }
 
     private void createTables(Connection connection) throws SQLException {
@@ -133,7 +129,7 @@ public class JdbcCacheTest extends AbstractCacheTest {
                 "%s VARCHAR(4096) NOT NULL, " +
                 "%s BLOB, " +
                 "%s TIMESTAMP);",
-                JdbcCache.getDerivativeImageTableName(),
+                instance.getDerivativeImageTableName(),
                 JdbcCache.DERIVATIVE_IMAGE_TABLE_OPERATIONS_COLUMN,
                 JdbcCache.DERIVATIVE_IMAGE_TABLE_IMAGE_COLUMN,
                 JdbcCache.DERIVATIVE_IMAGE_TABLE_LAST_ACCESSED_COLUMN);
@@ -146,7 +142,7 @@ public class JdbcCacheTest extends AbstractCacheTest {
                         "%s VARCHAR(4096) NOT NULL, " +
                         "%s VARCHAR(8192) NOT NULL, " +
                         "%s TIMESTAMP);",
-                JdbcCache.getInfoTableName(),
+                instance.getInfoTableName(),
                 JdbcCache.INFO_TABLE_IDENTIFIER_COLUMN,
                 JdbcCache.INFO_TABLE_INFO_COLUMN,
                 JdbcCache.INFO_TABLE_LAST_ACCESSED_COLUMN);
@@ -248,7 +244,7 @@ public class JdbcCacheTest extends AbstractCacheTest {
 
         final Identifier identifier = new Identifier("cats");
 
-        try (Connection connection = JdbcCache.getConnection()) {
+        try (Connection connection = instance.getConnection()) {
             // get the initial last-accessed time
             String sql = String.format("SELECT %s FROM %s WHERE %s = ?;",
                     JdbcCache.INFO_TABLE_LAST_ACCESSED_COLUMN,
@@ -297,7 +293,7 @@ public class JdbcCacheTest extends AbstractCacheTest {
 
         final OperationList opList = new OperationList();
 
-        try (Connection connection = JdbcCache.getConnection()) {
+        try (Connection connection = instance.getConnection()) {
             // get the initial last-accessed time
             String sql = String.format("SELECT %s FROM %s WHERE %s = ?;",
                     JdbcCache.DERIVATIVE_IMAGE_TABLE_LAST_ACCESSED_COLUMN,
@@ -401,7 +397,7 @@ public class JdbcCacheTest extends AbstractCacheTest {
         Info info = new Info();
         instance.put(identifier, info);
 
-        try (Connection connection = JdbcCache.getConnection()) {
+        try (Connection connection = instance.getConnection()) {
             // get the initial last-accessed time
             String sql = String.format("SELECT %s FROM %s WHERE %s = ?;",
                     JdbcCache.INFO_TABLE_LAST_ACCESSED_COLUMN,

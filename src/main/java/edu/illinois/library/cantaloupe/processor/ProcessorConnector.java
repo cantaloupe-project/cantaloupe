@@ -1,9 +1,10 @@
 package edu.illinois.library.cantaloupe.processor;
 
 import edu.illinois.library.cantaloupe.Application;
+import edu.illinois.library.cantaloupe.cache.CacheDisabledException;
 import edu.illinois.library.cantaloupe.cache.CacheFactory;
 import edu.illinois.library.cantaloupe.cache.SourceCache;
-import edu.illinois.library.cantaloupe.cache.CacheDisabledException;
+import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.image.Format;
 import edu.illinois.library.cantaloupe.image.Identifier;
@@ -26,6 +27,12 @@ public final class ProcessorConnector {
 
     private static final Logger LOGGER =
             LoggerFactory.getLogger(ProcessorConnector.class);
+
+    private Configuration configuration;
+
+    public ProcessorConnector(Configuration configuration) {
+        this.configuration = configuration;
+    }
 
     /**
      * @return Strategy from the application configuration, or a default.
@@ -183,7 +190,7 @@ public final class ProcessorConnector {
                         }
                         return dl;
                     case CACHE:
-                        SourceCache sourceCache = CacheFactory.getSourceCache()
+                        SourceCache sourceCache = new CacheFactory(configuration).getSourceCache()
                                 .orElseThrow(() -> new CacheDisabledException(
                                         "The source cache is not available."));
                         LOGGER.debug("Using {} to work around the " +
@@ -229,7 +236,7 @@ public final class ProcessorConnector {
                             RetrievalStrategy.CACHE,
                             processorName,
                             StreamProcessor.class.getSimpleName());
-                    SourceCache sourceCache = CacheFactory.getSourceCache()
+                    SourceCache sourceCache = new CacheFactory(configuration).getSourceCache()
                             .orElseThrow(() -> new CacheDisabledException(
                                     "Source cache is disabled."));
                     Path file = downloadToSourceCache(

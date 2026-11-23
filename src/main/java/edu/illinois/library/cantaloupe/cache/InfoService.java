@@ -1,6 +1,5 @@
 package edu.illinois.library.cantaloupe.cache;
 
-import tools.jackson.core.exc.StreamReadException;
 import edu.illinois.library.cantaloupe.async.TaskQueue;
 import edu.illinois.library.cantaloupe.config.Configuration;
 import edu.illinois.library.cantaloupe.config.Key;
@@ -11,6 +10,7 @@ import edu.illinois.library.cantaloupe.util.ObjectCache;
 import edu.illinois.library.cantaloupe.util.Stopwatch;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import tools.jackson.core.exc.StreamReadException;
 
 import java.io.IOException;
 import java.util.Optional;
@@ -29,20 +29,27 @@ public final class InfoService {
     private static InfoService instance;
 
     private final InfoCache infoCache = new InfoCache();
+    private CacheFactory cacheFactory;
+    private Configuration configuration;
+
+    InfoService(Configuration configuration) {
+        this.cacheFactory = new CacheFactory(configuration);
+        this.configuration = configuration;
+    }
 
     /**
      * For testing only!
      */
-    static synchronized void clearInstance() {
+    public static synchronized void clearInstance() {
         instance = null;
     }
 
     /**
      * @return Shared instance.
      */
-    public static synchronized InfoService getInstance() {
+    public static synchronized InfoService getInstance(Configuration configuration) {
         if (instance == null) {
-            instance = new InfoService();
+            instance = new InfoService(configuration);
         }
         return instance;
     }
@@ -80,7 +87,7 @@ public final class InfoService {
         }
         // Check the derivative cache.
         final DerivativeCache derivCache =
-                CacheFactory.getDerivativeCache().orElse(null);
+                cacheFactory.getDerivativeCache().orElse(null);
         if (derivCache != null) {
             Stopwatch watch = new Stopwatch();
             try {
@@ -154,7 +161,7 @@ public final class InfoService {
 
             // Add it to the derivative and object caches.
             final DerivativeCache derivCache =
-                    CacheFactory.getDerivativeCache().orElse(null);
+                    cacheFactory.getDerivativeCache().orElse(null);
             putInCachesAsync(identifier, info, derivCache);
             optInfo = Optional.of(info);
         }
@@ -163,8 +170,7 @@ public final class InfoService {
     }
 
     boolean isObjectCacheEnabled() {
-        return Configuration.getInstance().
-                getBoolean(Key.INFO_CACHE_ENABLED, false);
+        return configuration.getBoolean(Key.INFO_CACHE_ENABLED, false);
     }
 
     public void purgeObjectCache() {

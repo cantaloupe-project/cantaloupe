@@ -5,7 +5,7 @@ import edu.illinois.library.cantaloupe.config.Key;
 import edu.illinois.library.cantaloupe.test.BaseTest;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class SelectionStrategyTest extends BaseTest {
 
@@ -15,11 +15,11 @@ public class SelectionStrategyTest extends BaseTest {
 
         config.setProperty(Key.PROCESSOR_SELECTION_STRATEGY,
                 "AutomaticSelectionStrategy");
-        assertTrue(SelectionStrategy.fromConfiguration() instanceof AutomaticSelectionStrategy);
+        assertTrue(SelectionStrategy.fromConfiguration(config) instanceof AutomaticSelectionStrategy);
 
         config.setProperty(Key.PROCESSOR_SELECTION_STRATEGY,
                 "ManualSelectionStrategy");
-        assertTrue(SelectionStrategy.fromConfiguration() instanceof ManualSelectionStrategy);
+        assertTrue(SelectionStrategy.fromConfiguration(config) instanceof ManualSelectionStrategy);
     }
 
 }

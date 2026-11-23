@@ -16,7 +16,7 @@ import org.apache.commons.lang3.StringUtils;
  * @see <a href="http://iiif.io/api/image/1.1/#parameters">IIIF Image API
  * 1.1</a>
  */
-final class Parameters {
+public final class Parameters {
 
     private String identifier;
     private Format outputFormat;
@@ -73,7 +73,7 @@ final class Parameters {
      * @throws IllegalClientArgumentException if any of the other arguments are
      *         invalid.
      */
-    Parameters(String identifier,
+    public Parameters(String identifier,
                String region,
                String size,
                String rotation,
@@ -164,7 +164,7 @@ final class Parameters {
      *         additional operations that may need to be performed, such as
      *         overlays, etc.
      */
-    OperationList toOperationList(DelegateProxy delegateProxy) {
+    public OperationList toOperationList(DelegateProxy delegateProxy) {
         final OperationList ops = new OperationList(
                 MetaIdentifier.fromString(getIdentifier(), delegateProxy));
         if (!getRegion().isFull()) {
