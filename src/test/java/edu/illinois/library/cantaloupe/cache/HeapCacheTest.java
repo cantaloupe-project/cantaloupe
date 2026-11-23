@@ -132,11 +132,13 @@ public class HeapCacheTest extends AbstractCacheTest {
 
         assertEquals(5439, instance.getByteSize());
 
-        // Seed an info
-        Info info = new Info();
-        instance.put(id1, info);
+        // Seed an info. Serialize it once up front: each call to toJSON()
+        // embeds Instant.now(), whose string length varies with the
+        // number of trailing zeros in its fractional seconds.
+        String infoJSON = new Info().toJSON();
+        instance.put(id1, infoJSON);
 
-        assertEquals(5439 + info.toJSON().length(), instance.getByteSize());
+        assertEquals(5439 + infoJSON.length(), instance.getByteSize());
     }
 
     /* getInfo(Identifier) */
